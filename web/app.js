@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div class="card-actions">
                         ${c.demoPath ? `<a href="${c.demoPath}" target="_blank" class="btn btn-primary">Abrir Curso 🚀</a>` : ''}
-                        ${!isStudentUnlocked && c.enlaceCompra ? `<a href="${c.enlaceCompra}" target="_blank" class="btn btn-secondary" style="border-color:var(--accent-amber); color:var(--accent-amber);">Comprar Curso 🛒</a>` : ''}
+                        ${!isStudentUnlocked && c.enlaceCompra ? `<button class="btn btn-secondary" onclick="openPaymentModal('${c.id}')" style="border-color:var(--accent-amber); color:var(--accent-amber);">Comprar Curso 🛒</button>` : ''}
                         <button class="btn btn-secondary" onclick="openCourseDetails('${c.id}')">Temario 📋</button>
                     </div>
                 </div>
@@ -300,5 +300,172 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.closeModal = function() {
         document.getElementById('course-modal').classList.remove('active');
+    };
+
+    // 5. Renderizar Artículos de Squash & Física del Deporte
+    function renderSquashArticles() {
+        const grid = document.getElementById('articulos-grid');
+        if (!grid || !data.articulosSquash) return;
+
+        grid.innerHTML = data.articulosSquash.map(art => `
+            <div class="card">
+                <div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                        <span class="card-tag interactive">${art.tag}</span>
+                        <span style="font-size:0.75rem; color:var(--text-muted);">${art.tiempoLectura}</span>
+                    </div>
+                    <h3 style="font-size:1.25rem; line-height:1.35; margin-bottom:0.4rem;">${art.icono} ${art.titulo}</h3>
+                    <div style="font-size:0.85rem; color:var(--accent-blue); font-weight:600; margin-bottom:0.85rem;">
+                        ${art.subtitulo}
+                    </div>
+                    <p style="font-size:0.9rem; color:var(--text-muted); line-height:1.5; margin-bottom:1.25rem;">
+                        ${art.resumen}
+                    </p>
+                </div>
+                <div>
+                    <div class="card-actions" style="margin-top:auto;">
+                        <button class="btn btn-primary" onclick="openArticle('${art.id}')" style="flex:1;">
+                            Leer Artículo 📖
+                        </button>
+                        <a href="${art.demoPath}" target="_blank" class="btn btn-secondary" style="font-size:0.85rem;">
+                            Probar Simulador 🎾
+                        </a>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    renderSquashArticles();
+
+    // Modal de Artículos de Squash
+    window.openArticle = function(id) {
+        const art = (data.articulosSquash || []).find(a => a.id === id);
+        if (!art) return;
+
+        const modal = document.getElementById('article-modal');
+        const modalBody = document.getElementById('modal-article-body');
+        modalBody.innerHTML = `
+            <div style="display:flex; gap:0.5rem; align-items:center; margin-bottom:0.5rem;">
+                <span class="badge" style="background:rgba(16, 185, 129, 0.1); border-color:rgba(16, 185, 129, 0.3); color:var(--accent-emerald);">${art.tag}</span>
+                <span style="font-size:0.8rem; color:var(--text-muted);">⏱️ ${art.tiempoLectura}</span>
+            </div>
+            <h2 style="font-size:1.85rem; line-height:1.3; color:#fff; margin-bottom:0.5rem;">${art.icono} ${art.titulo}</h2>
+            <p style="color:var(--accent-blue); font-weight:600; margin-bottom:1.5rem;">${art.subtitulo}</p>
+            <div style="line-height:1.75; color:var(--text-main); font-size:1rem; border-top:1px solid rgba(255,255,255,0.1); padding-top:1.25rem; margin-bottom:2rem;">
+                ${art.contenido}
+            </div>
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-color); border-radius:12px; padding:1.25rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+                <div>
+                    <strong style="color:#fff; display:block;">¿Quieres experimentar la física interactiva?</strong>
+                    <span style="font-size:0.85rem; color:var(--text-muted);">Prueba el modelo de cadena cinética y la simulación de impacto en tiempo real.</span>
+                </div>
+                <a href="${art.demoPath}" target="_blank" class="btn btn-primary">Abrir Simulador de Squash 🎾</a>
+            </div>
+        `;
+        modal.classList.add('active');
+    };
+
+    window.closeArticleModal = function() {
+        document.getElementById('article-modal').classList.remove('active');
+    };
+
+    // Modal de Checkout / Pasarela de Pago
+    window.openPaymentModal = function(courseId) {
+        const course = data.cursos.find(c => c.id === courseId);
+        if (!course) return;
+
+        const modal = document.getElementById('payment-modal');
+        const modalBody = document.getElementById('modal-payment-body');
+        
+        modalBody.innerHTML = `
+            <div style="text-align:center; margin-bottom:1.5rem;">
+                <span class="badge" style="background:rgba(245,158,11,0.15); color:var(--accent-amber); border-color:rgba(245,158,11,0.3); margin-bottom:0.5rem;">
+                    🛒 Checkout Seguro · PhysicsAILab
+                </span>
+                <h2 style="font-size:1.75rem; color:#fff; margin-bottom:0.35rem;">${course.titulo}</h2>
+                <div style="font-size:0.9rem; color:var(--text-muted);">${course.tipo} · ${course.modulos}</div>
+            </div>
+
+            <div style="background:linear-gradient(135deg, rgba(30, 41, 59, 0.6), rgba(15, 23, 42, 0.8)); border:1px solid var(--border-color); border-radius:16px; padding:1.5rem; margin-bottom:1.5rem; text-align:center;">
+                <div style="font-size:0.85rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:0.25rem;">Precio de Lanzamiento</div>
+                <div style="font-size:2.5rem; font-weight:800; color:#fff; margin-bottom:0.25rem;">
+                    ${course.precioEstimado.split(' ')[0]} <span style="font-size:1.15rem; color:var(--accent-blue); font-weight:600;">USD</span>
+                </div>
+                <div style="font-size:0.95rem; color:var(--accent-emerald); font-weight:600; margin-bottom:0.75rem;">
+                    ${course.precioEstimado.includes('COP') ? course.precioEstimado.substring(course.precioEstimado.indexOf('(~')) : 'Aproximadamente $115.000 - $195.000 COP'}
+                </div>
+                <div style="display:flex; justify-content:center; gap:1rem; font-size:0.8rem; color:var(--text-muted);">
+                    <span>🔒 Acceso Permanente</span>
+                    <span>⚡ Sin mensualidades</span>
+                    <span>🎓 Soporte de Autor</span>
+                </div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:0.85rem;">
+                <a href="https://hotmart.com" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="justify-content:center; padding:0.85rem; font-size:1rem; background:linear-gradient(135deg, #f97316, #ea580c); border:none; box-shadow:0 8px 25px rgba(234,88,12,0.35);">
+                    Comprar vía Hotmart (Tarjeta / PayPal / PSE) 💳
+                </a>
+                
+                <a href="https://wa.me/?text=${encodeURIComponent('Hola Mg. Manuel Obando, me interesa adquirir el curso: ' + course.titulo + ' en PhysicsAILab.com. ¿Cuáles son los datos para transferencia / Nequi?')}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="justify-content:center; padding:0.75rem; font-size:0.9rem; border-color:rgba(16,185,129,0.4); color:#34d399;">
+                    💬 Pago por Transferencia / Nequi / Bancolombia
+                </a>
+
+                <a href="mailto:manuelobando@unicauca.edu.co?subject=${encodeURIComponent('Interés en curso: ' + course.titulo)}&body=${encodeURIComponent('Cordial saludo profesor Manuel,\n\nEstoy interesado en adquirir el curso ' + course.titulo + ' en PhysicsAILab.com.\n\nPor favor indíqueme el método de pago.')}" class="btn btn-secondary" style="justify-content:center; padding:0.75rem; font-size:0.9rem;">
+                    ✉️ Consultar al Docente por Correo
+                </a>
+            </div>
+
+            <p style="font-size:0.75rem; text-align:center; color:var(--text-muted); margin-top:1.25rem;">
+                Docente de autoría: Mg. Manuel Alejandro Obando (Universidad del Cauca) · Cuenta oficial Hotmart: @manuel_obando_963654
+            </p>
+        `;
+
+        modal.classList.add('active');
+    };
+
+    window.openBookPaymentModal = function(bookId) {
+        const book = (data.librosHotmart || []).find(b => b.id === bookId);
+        if (!book) return;
+
+        const modal = document.getElementById('payment-modal');
+        const modalBody = document.getElementById('modal-payment-body');
+        
+        modalBody.innerHTML = `
+            <div style="text-align:center; margin-bottom:1.5rem;">
+                <span class="badge" style="background:rgba(234,88,12,0.15); color:#f97316; border-color:rgba(234,88,12,0.3); margin-bottom:0.5rem;">
+                    📚 Librería Digital Oficial Hotmart
+                </span>
+                <h2 style="font-size:1.75rem; color:#fff; margin-bottom:0.35rem;">${book.titulo}</h2>
+                <div style="font-size:0.9rem; color:var(--text-muted);">Autor: ${book.autor}</div>
+            </div>
+
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-color); border-radius:16px; padding:1.25rem; margin-bottom:1.5rem;">
+                <p style="font-size:0.95rem; color:var(--text-main); margin-bottom:0.75rem; line-height:1.6;">${book.descripcion}</p>
+                <div style="font-size:0.85rem; color:var(--accent-blue);">
+                    Formatos: PDF de alta resolución + Códigos computacionales + ePub
+                </div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:0.85rem;">
+                <a href="https://hotmart.com" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="justify-content:center; padding:0.85rem; font-size:1rem; background:linear-gradient(135deg, #f97316, #ea580c); border:none;">
+                    Adquirir en Hotmart Oficial 🛒
+                </a>
+
+                <a href="mailto:manuelobando@unicauca.edu.co?subject=${encodeURIComponent('Consulta Libro: ' + book.titulo)}" class="btn btn-secondary" style="justify-content:center; padding:0.75rem; font-size:0.9rem;">
+                    ✉️ Contactar al Autor por Correo
+                </a>
+            </div>
+
+            <p style="font-size:0.75rem; text-align:center; color:var(--text-muted); margin-top:1.25rem;">
+                Cuenta oficial en Hotmart: @manuel_obando_963654 · Garantía de satisfacción de 7 días.
+            </p>
+        `;
+
+        modal.classList.add('active');
+    };
+
+    window.closePaymentModal = function() {
+        document.getElementById('payment-modal').classList.remove('active');
     };
 });

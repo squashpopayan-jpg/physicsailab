@@ -8,8 +8,16 @@ window.PLATFORM_DATA = {
         maestria: "Maestría en Ciencias (Énfasis en Física de Materiales) — Universidad Federal de Ouro Preto (UFOP, Brasil)",
         especializacion: "Especialización en Inteligencia Artificial — Universidad Internacional de La Rioja (UNIR)",
         cargo: "Docente del Departamento de Física — Universidad del Cauca",
-        bio: "Ingeniero Físico graduado de la Universidad del Cauca, con maestría en Ciencias con énfasis en Física de Materiales por la Universidad Federal de Ouro Preto (Brasil) y actualmente cursando la especialización en Inteligencia Artificial en la UNIR. Apasionado por la divulgación científica y por la constante búsqueda y desarrollo de nuevas herramientas tecnológicas e interactivas para enseñar y democratizar la física.",
-        mision: "Transformar la enseñanza de la física a través de laboratorios virtuales matemáticamente rigurosos, cuadernos computacionales interactivos y divulgación científica abierta creada por los propios estudiantes."
+        bio: "Ingeniero Físico graduado de la Universidad del Cauca, con maestría en Ciencias con énfasis en Física de Materiales por la Universidad Federal de Ouro Preto (Brasil) y actualmente cursando la especialización en Inteligencia Artificial en la UNIR. Apasionado por la divulgación científica y por desarrollar nuevas herramientas tecnológicas e interactivas para enseñar y democratizar la física. Además, soy un apasionado jugador y entrenador de Squash; en esta plataforma he diseñado un espacio dedicado especialmente para los amantes de este deporte, donde exploramos la ciencia, la biomecánica articular y las leyes físicas que rigen cada golpe y movimiento en la cancha.",
+        mision: "Transformar la enseñanza de la física a través de laboratorios virtuales matemáticamente rigurosos, cuadernos computacionales interactivos, ciencia del deporte y divulgación científica abierta creada por los propios estudiantes.",
+        redes: {
+            instagram: "https://www.instagram.com/manu_squash/",
+            instagramUser: "@manu_squash",
+            linkedin: "https://www.linkedin.com/in/manuel-alejandro-obando/",
+            linkedinUser: "manuel-alejandro-obando",
+            email: "manuelobando@unicauca.edu.co"
+        },
+        hotmartUser: "@manuel_obando_963654"
     },
     
     // Claves privadas que el docente entrega a sus alumnos en el aula para desbloquear los cursos
@@ -235,6 +243,76 @@ window.PLATFORM_DATA = {
             precio: "Disponible en Hotmart",
             enlaceHotmart: "#",
             disponible: false
+        }
+    ],
+
+    // Artículos de divulgación y Física del Deporte (Squash) para captación de público
+    articulosSquash: [
+        {
+            id: "art-1",
+            titulo: "Termodinámica y Rebote: ¿Por qué calentar la pelota de squash lo cambia todo?",
+            subtitulo: "Física de Polímeros & Coeficiente de Restitución",
+            tag: "Termodinámica & Materiales",
+            tiempoLectura: "5 min de lectura",
+            icono: "🎾",
+            resumen: "A diferencia de las pelotas de tenis o pádel, la pelota de squash de doble punto amarillo es casi inerte en frío. Descubre la física de los gases internos, la viscoelasticidad del caucho sintético y cómo pasar de 20°C a 45°C duplica su capacidad de rebote.",
+            demoPath: "/material/1_cursos/squash_sim/dist/index.html",
+            contenido: `
+                <h3>La física detrás de una pelota que 'despierta' con el calor</h3>
+                <p>Cualquier jugador de squash sabe que comenzar un partido con una pelota fría es frustrante: la bola parece 'muerta', apenas levanta del piso y los desplazamientos se hacen pesados. Tras cinco minutos de peloteo continuo, la pelota parece otra: viva, rápida y con bote predecible.</p>
+                <div style="background:rgba(56,189,248,0.08); border-left:4px solid var(--accent-blue); padding:1rem; border-radius:8px; margin:1rem 0;">
+                    <strong>Fórmula del Coeficiente de Restitución (e):</strong><br>
+                    <code>e = v_rebote / v_impacto = √(h_rebote / h_caida)</code>
+                </div>
+                <p>A temperatura ambiente (20°C), el coeficiente de una bola oficial de doble punto amarillo es de apenas <strong>e ≈ 0.25</strong> (disipa más del 93% de su energía en calor interno). Al alcanzar su temperatura de régimen en juego (45°C), el coeficiente salta a <strong>e ≈ 0.50</strong>, cuadruplicando la energía conservada en cada bote.</p>
+                <h4>¿Por qué ocurre esto?</h4>
+                <p>El compuesto de caucho butílico experimenta una reducción en su fricción interna molecular. Simultáneamente, el aire confinado en el interior se expande según la ley de los gases ideales (PV = nRT), aumentando la presión manométrica y dotando a la pelota de una respuesta elástica óptima.</p>
+            `
+        },
+        {
+            id: "art-2",
+            titulo: "Biomecánica del Golpe: La Cadena Cinética y el Codo de Tenista",
+            subtitulo: "Transferencia de Momento Angular & Salud Articular",
+            tag: "Biomecánica & Salud",
+            tiempoLectura: "6 min de lectura",
+            icono: "🦾",
+            resumen: "¿Por qué tantos jugadores sufren de epicondilitis? La física demuestra que la potencia no proviene de la fuerza del brazo, sino de la aceleración secuencial de la cadena cinética: piernas, cadera, rotación torácica y retardo de muñeca.",
+            demoPath: "/material/1_cursos/squash_sim/dist/index.html",
+            contenido: `
+                <h3>El mito de golpear con el brazo</h3>
+                <p>En el squash de alta competencia, la cabeza de la raqueta puede superar los 180 km/h al momento del impacto. Intentar generar esa velocidad utilizando los pequeños músculos flexores y extensores del antebrazo produce microdesgarros en la inserción tendinosa del epicóndilo lateral (codo de tenista).</p>
+                <div style="background:rgba(16,185,129,0.08); border-left:4px solid var(--accent-emerald); padding:1rem; border-radius:8px; margin:1rem 0;">
+                    <strong>Principio de la Cadena Cinética:</strong><br>
+                    Sumar velocidades angulares en orden estricto de distal a proximal con desfases de 30 a 60 milisegundos.
+                </div>
+                <h4>Las cuatro fases del swing eficiente:</h4>
+                <ol>
+                    <li><strong>Estocada y anclaje:</strong> El talón trasero anclado frena la inercia del cuerpo y transfiere la reacción del suelo a la pelvis.</li>
+                    <li><strong>Rotación pélvica y de torso:</strong> Almacena energía elástica en los oblicuos abdominales y la fascia toracolumbar.</li>
+                    <li><strong>Aceleración del hombro:</strong> Conduce el brazo como una palanca de tercer género.</li>
+                    <li><strong>Retardo de muñeca (Cocked Wrist):</strong> La muñeca se mantiene a 90° durante la bajada y se desancla en el último instante, multiplicando el momento lineal en el punto de contacto.</li>
+                </ol>
+            `
+        },
+        {
+            id: "art-3",
+            titulo: "Geometría en la Cancha: Control de la 'T' y Optimización de Trayectorias",
+            subtitulo: "Cinemática de Cobertura & Tiempos de Reacción",
+            tag: "Cinemática & Táctica",
+            tiempoLectura: "4 min de lectura",
+            icono: "📐",
+            resumen: "La 'T' del squash no es solo una marca en la duela; es el centro baricéntrico óptimo de cobertura espacial. Descubre por qué recortar 50 centímetros de distancia hacia la 'T' duplica tu tiempo de anticipación.",
+            demoPath: "/material/1_cursos/squash_sim/dist/index.html",
+            contenido: `
+                <h3>La cancha de 9.75 x 6.40 m como espacio vectorial</h3>
+                <p>El squash ha sido denominado 'el ajedrez a 200 pulsaciones por minuto'. La pelota puede cruzar la cancha de la pared frontal a la trasera en menos de 400 milisegundos, rozando el límite fisiológico del tiempo de reacción motora humana.</p>
+                <div style="background:rgba(245,158,11,0.08); border-left:4px solid var(--accent-amber); padding:1rem; border-radius:8px; margin:1rem 0;">
+                    <strong>El Principio del Centroide de Distancia Mínima:</strong><br>
+                    Estar parado en la 'T' minimiza la distancia euclidiana máxima hacia cualquiera de las 4 esquinas de la cancha a menos de 4.6 metros.
+                </div>
+                <h4>Física de los ángulos de pared (Boast y Nick):</h4>
+                <p>Al impactar las paredes laterales con efecto, el rozamiento no uniforme altera la ley clásica de reflexión óptica especular (θ_incidencia ≠ θ_reflexión). Dominar esta desviación cinemática permite anticipar con exactitud el segundo bote y forzar al rival fuera de su centro de equilibrio.</p>
+            `
         }
     ],
 
