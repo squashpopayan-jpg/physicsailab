@@ -1,0 +1,76 @@
+<template class="chapter-src" data-id="reflexion" data-num="13" data-title="Reflexión y transmisión" data-part="Parte IV · Ondas mecánicas" data-short="Extremos fijo y libre, unión de dos medios, coeficientes de reflexión y transmisión, terminaciones e impedancia y capas de acople">
+<p class="lead">Cuando una onda llega a un cambio del medio, parte de ella sigue adelante y parte regresa. Cuánto se refleja depende de una sola propiedad: la diferencia de impedancias. Este principio explica por qué se usa gel en una ecografía, por qué las gafas tienen recubrimientos antirreflejo y por qué los cables de antena llevan conectores de 50 Ω.</p>
+
+<section>
+<h2>Extremos fijo y libre</h2>
+<p>En un <strong>extremo fijo</strong> la cuerda no puede moverse: \(y(0,t)=0\). La onda reflejada debe cancelar a la incidente en ese punto en todo instante, de modo que el pulso regresa <em>invertido</em>. Matemáticamente, es como si desde el otro lado llegara un pulso «imagen» de signo opuesto.</p>
+<p>En un <strong>extremo libre</strong> (un anillo sin masa que desliza sin fricción por una varilla), la cuerda no puede ejercer fuerza transversal: \(\partial y/\partial x=0\). La imagen tiene el mismo signo, y el pulso regresa <em>sin invertirse</em>; durante la reflexión el extremo alcanza el doble de la altura del pulso.</p>
+<div class="sim" data-sim="pulse-reflection" data-title="Reflexión en un extremo fijo, libre o absorbente"></div>
+<div class="sim-guide"><ul>
+<li>Active «mostrar la imagen»: la reflexión es exactamente la continuación de un pulso imagen que viene del otro lado del extremo.</li>
+<li>En el extremo libre, observe el instante en que el anillo sube al doble de la altura del pulso.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>La unión de dos cuerdas</h2>
+<p>Dos cuerdas de impedancias \(Z_1=\sqrt{T\mu_1}\) y \(Z_2=\sqrt{T\mu_2}\) están unidas en \(x=0\). Una onda incidente \(y_i=A_i\cos(\omega t-k_1x)\) produce una reflejada \(A_r\cos(\omega t+k_1x)\) y una transmitida \(A_t\cos(\omega t-k_2x)\). En la unión deben cumplirse dos condiciones:</p>
+<ul>
+<li>La cuerda no se rompe: \(y\) es continua, \(A_i+A_r=A_t\).</li>
+<li>La unión no tiene masa, así que la fuerza neta sobre ella es nula: \(T\,\partial y/\partial x\) es continua, \(k_1(A_i-A_r)=k_2A_t\).</li>
+</ul>
+<p>Como \(Tk=Z\omega\), la segunda condición es \(Z_1(A_i-A_r)=Z_2A_t\). Resolviendo:</p>
+<div class="eq key" data-name="Coeficientes de reflexión y transmisión">\[r=\frac{A_r}{A_i}=\frac{Z_1-Z_2}{Z_1+Z_2},\qquad \tau=\frac{A_t}{A_i}=\frac{2Z_1}{Z_1+Z_2}.\]</div>
+<p>Si la segunda cuerda es más pesada (\(Z_2\gt Z_1\)), \(r\lt0\): la reflexión se invierte, como en un extremo fijo (que es el límite \(Z_2\to\infty\)). Si es más liviana, \(r\gt0\), como en un extremo libre (\(Z_2\to0\)). La onda transmitida nunca se invierte.</p>
+<p>La energía se conserva. Con \(P=\tfrac12Z\omega^2A^2\), los coeficientes de potencia son</p>
+<div class="eq key" data-name="Reflectancia y transmitancia">\[R=r^2=\left(\frac{Z_1-Z_2}{Z_1+Z_2}\right)^2,\qquad \mathcal T=\frac{Z_2}{Z_1}\tau^2=\frac{4Z_1Z_2}{(Z_1+Z_2)^2},\qquad R+\mathcal T=1 .\]</div>
+<div class="sim" data-sim="string-junction" data-title="Pulso en la unión de dos cuerdas"></div>
+<div class="sim-guide"><ul>
+<li>Con \(\mu_2=4\mu_1\) (\(Z_2=2Z_1\)): \(r=-1/3\), \(\tau=2/3\). El pulso transmitido es más angosto, porque viaja a la mitad de velocidad.</li>
+<li>Con \(\mu_2=\mu_1/4\): \(\tau=4/3\). La amplitud transmitida <em>supera</em> a la incidente, pero la energía no: \(\mathcal T=8/9\).</li>
+</ul></div>
+<div class="box ex">
+<h4>Ecografía</h4>
+<p>La impedancia acústica (\(Z=\rho v\)) del aire es 413 Pa·s/m y la del tejido blando, \(1.63\times10^6\) Pa·s/m. ¿Qué fracción de la potencia de ultrasonido pasa del aire al tejido? ¿Y del gel (\(1.5\times10^6\)) al tejido?</p>
+<details><summary>Solución</summary>
+<p>Aire–tejido: \(\mathcal T=4Z_1Z_2/(Z_1+Z_2)^2\approx4Z_1/Z_2=1.0\times10^{-3}\): pasa el 0.1 %. Gel–tejido: \(\mathcal T=0.998\). Sin gel, una capa de aire de micrones bastaría para reflejar casi todo el ultrasonido.</p>
+</details>
+</div>
+</section>
+
+<section>
+<h2>Terminaciones e impedancia</h2>
+<p>Si el extremo de la cuerda se une a un amortiguador de constante \(b\) (un anillo que desliza con fricción viscosa), la condición de borde es \(-T\,\partial y/\partial x=b\,\partial y/\partial t\), y la reflexión es</p>
+<div class="eq">\[r=\frac{Z-b}{Z+b}.\]</div>
+<p>Si \(b=Z\), no hay ninguna reflexión: el amortiguador absorbe toda la energía como si la cuerda continuara infinitamente. Se dice que la terminación está <span class="term">acoplada</span> (o adaptada) a la línea. Por eso un cable coaxial de 50 Ω debe terminar en una carga de 50 Ω: si no, parte de la señal regresa y produce ecos o, en una antena transmisora, calienta el amplificador.</p>
+<div class="sim" data-sim="impedance-end" data-title="Cuerda terminada en un amortiguador: acople de impedancias"></div>
+</section>
+
+<section>
+<h2>Transmisión a través de una capa: el acoplador de cuarto de onda</h2>
+<p>Entre dos medios de impedancias muy distintas casi todo se refleja. Una capa intermedia puede resolverlo. Si la capa tiene espesor \(\lambda_m/4\) (medido en la capa), la onda reflejada en su cara posterior regresa con un retraso de media longitud de onda y puede cancelar a la reflejada en la cara anterior. La cancelación es completa si las dos reflexiones tienen la misma amplitud, lo que ocurre cuando</p>
+<div class="eq key" data-name="Acoplador de cuarto de onda">\[Z_m=\sqrt{Z_1Z_2},\qquad d=\frac{\lambda_m}{4}=\frac{v_m}{4f}.\]</div>
+<p>El acople es perfecto sólo a una frecuencia (y sus múltiplos impares); en el resto, la transmisión es intermedia. Los recubrimientos antirreflejo de las lentes (fluoruro de magnesio sobre vidrio), las capas de acople de los transductores de ultrasonido y los transformadores de cuarto de onda de las líneas de microondas aplican esta misma idea.</p>
+<div class="sim" data-sim="quarter-wave" data-title="Transmisión a través de una capa intermedia"></div>
+<div class="sim-guide"><ul>
+<li>Con \(Z_m=\sqrt{Z_1Z_2}\), la transmisión llega al 100 % en \(d=\lambda_m/4\) y vuelve a su valor sin capa en \(d=\lambda_m/2\) (la capa se vuelve «invisible»).</li>
+<li>Con una impedancia de capa distinta, el máximo no alcanza el 100 %.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Una cuerda de 2 g/m se une a otra de 18 g/m con la misma tensión. Halle \(r\), \(\tau\), \(R\) y \(\mathcal T\) para una onda que viene por la cuerda liviana.
+<details><summary>Respuesta</summary><p>\(Z_2=3Z_1\): \(r=-0.5\), \(\tau=0.5\), \(R=0.25\), \(\mathcal T=0.75\).</p></details></li>
+<li><span class="lvl">Básico</span>Repita el problema anterior para una onda que viene por la cuerda pesada.
+<details><summary>Respuesta</summary><p>\(r=+0.5\), \(\tau=1.5\), \(R=0.25\), \(\mathcal T=0.75\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Un cable coaxial de 75 Ω se conecta a una entrada de 50 Ω. ¿Qué fracción de la potencia se refleja?
+<details><summary>Respuesta</summary><p>\(R=(25/125)^2=4\) %.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Qué índice de refracción y espesor debe tener un recubrimiento antirreflejo sobre vidrio (\(n=1.52\)) para luz de 550 nm? (Para la luz, \(Z\propto1/n\).)
+<details><summary>Respuesta</summary><p>\(n_m=\sqrt{1.52}=1.23\); \(d=550/(4\cdot1.23)=112\) nm. En la práctica se usa MgF<sub>2</sub>, \(n=1.38\).</p></details></li>
+<li><span class="lvl">Avanzado</span>Demuestre que una cuerda terminada en una masa \(m\) (sin resorte) refleja una onda armónica con \(|r|=1\) y un desfase que depende de \(m\omega/Z\).
+<details><summary>Respuesta</summary><p>Con incidente \(A\ee^{\ii(kx-\omega t)}\) y reflejada \(B\ee^{\ii(-kx-\omega t)}\), la condición \(-T\partial_xy=m\partial_t^2y\) en \(x=0\) da \(r=\dfrac{B}{A}=\dfrac{\ii Z-m\omega}{\ii Z+m\omega}\), de módulo 1: la masa no disipa, sólo retrasa la reflexión. Con \(m=0\), \(r=1\) (extremo libre); con \(m\to\infty\), \(r=-1\) (extremo fijo).</p></details></li>
+</ol>
+</section>
+</template>

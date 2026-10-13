@@ -1,0 +1,109 @@
+<template class="chapter-src" data-id="herramientas" data-num="1" data-title="Herramientas: complejos, fasores y ecuaciones lineales" data-part="Parte I · Fundamentos" data-short="Por qué todo oscila, fórmula de Euler, fasores, ecuaciones diferenciales lineales y aproximaciones">
+<p class="lead">Casi todo sistema físico que se aparta un poco de su equilibrio estable oscila. Para describir esas oscilaciones con economía, el curso usa tres herramientas: la expansión de Taylor alrededor del equilibrio, los números complejos (con la fórmula de Euler) y la teoría de ecuaciones diferenciales lineales con coeficientes constantes.</p>
+
+<section>
+<h2>¿Por qué todo oscila?</h2>
+<p>Sea \(U(x)\) la energía potencial de un sistema con un grado de libertad y \(x_0\) un mínimo, es decir, \(U'(x_0)=0\) y \(U''(x_0)\gt0\). Expandiendo en serie de Taylor alrededor del mínimo,</p>
+<div class="eq">\[U(x)=U(x_0)+\underbrace{U'(x_0)}_{0}(x-x_0)+\tfrac12U''(x_0)(x-x_0)^2+\tfrac16U'''(x_0)(x-x_0)^3+\cdots\]</div>
+<p>Para desplazamientos pequeños dominan los dos primeros términos no nulos: el potencial es una parábola, la fuerza \(F=-\dd U/\dd x\approx-U''(x_0)(x-x_0)\) es lineal y restauradora, y el movimiento es armónico con</p>
+<div class="eq key" data-name="Frecuencia de pequeñas oscilaciones">\[\omega_0=\sqrt{\frac{U''(x_0)}{m}} .\]</div>
+<p>Por eso el oscilador armónico aparece en todas partes: átomos en una red cristalina, moléculas, circuitos eléctricos, edificios, el aire de una flauta. Los términos cúbicos y superiores producen las correcciones <em>no lineales</em> que estudiaremos en el capítulo 8.</p>
+<div class="box ex">
+<h4>Potencial de Lennard-Jones</h4>
+<p>La interacción entre dos átomos de argón se modela con \(U(r)=4\varepsilon\left[(\sigma/r)^{12}-(\sigma/r)^6\right]\). Halle la posición del mínimo y la constante elástica efectiva.</p>
+<details><summary>Solución</summary>
+<p>\(U'(r)=0\Rightarrow r_0=2^{1/6}\sigma\). Derivando dos veces y evaluando, \(U''(r_0)=\dfrac{72\varepsilon}{2^{1/3}\sigma^2}\approx57.1\,\varepsilon/\sigma^2\). Para el argón (\(\varepsilon=1.65\times10^{-21}\) J, \(\sigma=0.34\) nm) resulta \(k\approx0.82\) N/m y, con la masa reducida \(\mu=m/2=3.3\times10^{-26}\) kg, \(\omega_0=\sqrt{k/\mu}\approx5\times10^{12}\) rad/s, en el infrarrojo lejano.</p>
+</details>
+</div>
+</section>
+
+<section>
+<h2>Números complejos y fórmula de Euler</h2>
+<p>Un número complejo \(z=a+\ii b\) (con \(\ii^2=-1\)) se representa como un punto del plano. En forma polar, \(z=r(\cos\theta+\ii\sen\theta)\), con módulo \(r=|z|=\sqrt{a^2+b^2}\) y argumento \(\theta=\arg z\). La identidad central de este curso es la <span class="term">fórmula de Euler</span>:</p>
+<div class="eq key" data-name="Fórmula de Euler">\[\ee^{\ii\theta}=\cos\theta+\ii\sen\theta,\qquad \cos\theta=\frac{\ee^{\ii\theta}+\ee^{-\ii\theta}}{2},\qquad \sen\theta=\frac{\ee^{\ii\theta}-\ee^{-\ii\theta}}{2\ii}.\]</div>
+<p>Se demuestra comparando las series de Taylor de las tres funciones. Sus consecuencias prácticas son enormes: multiplicar complejos equivale a multiplicar módulos y sumar argumentos, \(r_1\ee^{\ii\theta_1}\cdot r_2\ee^{\ii\theta_2}=r_1r_2\ee^{\ii(\theta_1+\theta_2)}\); derivar \(\ee^{\ii\omega t}\) respecto al tiempo equivale a multiplicar por \(\ii\omega\), es decir, a girar \(90^\circ\) y escalar por \(\omega\).</p>
+<p>Si \(\theta=\omega t\), el punto \(\ee^{\ii\omega t}\) recorre la circunferencia unidad con velocidad angular \(\omega\); su parte real es una oscilación armónica. Esta es la conexión entre el movimiento circular uniforme y el movimiento armónico simple.</p>
+<div class="sim" data-sim="euler-circle" data-title="Fórmula de Euler: un punto que gira y sus proyecciones"></div>
+<div class="sim-guide"><ul>
+<li>Observe que \(\cos\omega t\) y \(\sen\omega t\) son la misma curva desplazada un cuarto de período: \(\sen\omega t=\cos(\omega t-\pi/2)\).</li>
+<li>Active la derivada: el vector \(\ii\omega\,\ee^{\ii\omega t}\) es siempre tangente a la circunferencia y va adelantado \(90^\circ\).</li>
+<li>Con \(\sigma\lt0\) el punto describe una espiral hacia el origen: \(\ee^{(\sigma+\ii\omega)t}\) es una oscilación amortiguada.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Fasores</h2>
+<p>Una oscilación armónica \(x(t)=A\cos(\omega t+\varphi)\) es la parte real de \(\tl{x}(t)=\tl{A}\,\ee^{\ii\omega t}\), donde \(\tl{A}=A\ee^{\ii\varphi}\) es la <span class="term">amplitud compleja</span> o <span class="term">fasor</span>. Toda la información (amplitud y fase) está en un solo número complejo.</p>
+<div class="eq key" data-name="Representación fasorial">\[x(t)=A\cos(\omega t+\varphi)=\Rea\!\left[\tl{A}\,\ee^{\ii\omega t}\right],\qquad \tl{A}=A\,\ee^{\ii\varphi}.\]</div>
+<p>Como la parte real es lineal, la suma de oscilaciones de la misma frecuencia es la suma de sus fasores: \(A_1\cos(\omega t+\varphi_1)+A_2\cos(\omega t+\varphi_2)=\Rea[(\tl A_1+\tl A_2)\ee^{\ii\omega t}]\). Sumando vectores en el plano complejo se obtiene</p>
+<div class="eq">\[A^2=A_1^2+A_2^2+2A_1A_2\cos(\varphi_2-\varphi_1),\qquad \tg\varphi=\frac{A_1\sen\varphi_1+A_2\sen\varphi_2}{A_1\cos\varphi_1+A_2\cos\varphi_2}.\]</div>
+<p>Este resultado es la base de la interferencia (capítulo 21): dos oscilaciones en fase suman sus amplitudes; en oposición, las restan.</p>
+<div class="sim" data-sim="phasor-sum" data-title="Suma de fasores de la misma frecuencia"></div>
+<div class="sim-guide"><ul>
+<li>Con \(A_1=A_2\) y desfase \(180^\circ\) la suma se anula en todo instante: interferencia destructiva total.</li>
+<li>Agregue un tercer fasor y busque una combinación de fases que dé suma nula (por ejemplo, tres fasores iguales a \(120^\circ\)): así funciona la red trifásica.</li>
+</ul></div>
+<div class="box warn">
+<h4>Cuidado con los productos</h4>
+<p>La parte real de un producto no es el producto de las partes reales. Para calcular energías o potencias (cuadráticas en \(x\)), hay que tomar la parte real <em>antes</em> de multiplicar, o usar el promedio temporal \(\langle\Rea(\tl a\ee^{\ii\omega t})\,\Rea(\tl b\ee^{\ii\omega t})\rangle=\tfrac12\Rea(\tl a\,\tl b^{*})\).</p>
+</div>
+</section>
+
+<section>
+<h2>Ecuaciones diferenciales lineales</h2>
+<p>Las ecuaciones de movimiento de los osciladores de este curso tienen la forma</p>
+<div class="eq key" data-name="Ecuación lineal de segundo orden">\[\ddot x+\gamma\dot x+\omega_0^2x=f(t),\]</div>
+<p>con coeficientes constantes. Dos propiedades la vuelven tratable:</p>
+<ul>
+<li><strong>Superposición:</strong> si \(x_1\) y \(x_2\) resuelven la ecuación homogénea (\(f=0\)), también la resuelve \(c_1x_1+c_2x_2\). Si \(x_p\) es una solución particular con \(f\neq0\), la solución general es \(x=x_p+c_1x_1+c_2x_2\).</li>
+<li><strong>Exponenciales como soluciones:</strong> probando \(x=\ee^{st}\) en la ecuación homogénea se obtiene la <span class="term">ecuación característica</span> \(s^2+\gamma s+\omega_0^2=0\), con raíces</li>
+</ul>
+<div class="eq">\[s_\pm=-\frac{\gamma}{2}\pm\sqrt{\frac{\gamma^2}{4}-\omega_0^2}.\]</div>
+<p>La ubicación de las raíces en el plano complejo determina el comportamiento: raíces imaginarias puras (\(\gamma=0\)) dan oscilación sin pérdida; complejas con parte real negativa, oscilación amortiguada; reales negativas, decaimiento sin oscilar. Si alguna raíz tuviera parte real positiva, la solución crecería sin límite: el equilibrio sería inestable.</p>
+<div class="sim" data-sim="char-roots" data-title="Raíces de la ecuación característica y forma de la solución"></div>
+<div class="sim-guide"><ul>
+<li>Aumente \(\gamma\) desde cero: las dos raíces se acercan al eje real por un arco de circunferencia de radio \(\omega_0\) y se juntan cuando \(\gamma=2\omega_0\) (amortiguamiento crítico).</li>
+<li>Haga \(\omega_0^2\) negativo (un equilibrio en un máximo del potencial): una raíz se vuelve positiva y la solución diverge.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Aproximaciones de uso constante</h2>
+<p>En física de oscilaciones se trabaja casi siempre con desplazamientos pequeños. Conviene tener a mano los primeros términos de algunas series (válidas para \(|x|\ll1\)):</p>
+<div class="tablewrap narrow"><table>
+<tr><th>Función</th><th class="c">Aproximación</th><th class="c">Primer término omitido</th></tr>
+<tr><td>\(\sen x\)</td><td class="c">\(x\)</td><td class="c">\(-x^3/6\)</td></tr>
+<tr><td>\(\cos x\)</td><td class="c">\(1-x^2/2\)</td><td class="c">\(x^4/24\)</td></tr>
+<tr><td>\(\tg x\)</td><td class="c">\(x\)</td><td class="c">\(x^3/3\)</td></tr>
+<tr><td>\((1+x)^n\)</td><td class="c">\(1+nx\)</td><td class="c">\(n(n-1)x^2/2\)</td></tr>
+<tr><td>\(\ee^{x}\)</td><td class="c">\(1+x\)</td><td class="c">\(x^2/2\)</td></tr>
+<tr><td>\(\ln(1+x)\)</td><td class="c">\(x\)</td><td class="c">\(-x^2/2\)</td></tr>
+</table></div>
+<p>Por ejemplo, para un ángulo de \(10^\circ=0.1745\) rad, \(\sen\theta=0.1736\): el error de la aproximación \(\sen\theta\approx\theta\) es apenas del 0.5 %.</p>
+<div class="box ex">
+<h4>Péndulo con hilo elástico en reposo</h4>
+<p>Un resorte de constante \(k\) cuelga una masa \(m\). Muestre que la gravedad sólo desplaza el punto de equilibrio y no cambia la frecuencia.</p>
+<details><summary>Solución</summary>
+<p>\(m\ddot y=-ky+mg\). Con \(y=y_0+\xi\), \(y_0=mg/k\), queda \(m\ddot\xi=-k\xi\): la misma ecuación del resorte horizontal. La fuerza constante sólo cambia el equilibrio; el potencial total sigue siendo una parábola con la misma curvatura.</p>
+</details>
+</div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Escriba \(z=-1+\ii\sqrt3\) en forma polar y calcule \(z^6\).
+<details><summary>Respuesta</summary><p>\(z=2\ee^{\ii2\pi/3}\); \(z^6=64\ee^{\ii4\pi}=64\).</p></details></li>
+<li><span class="lvl">Básico</span>Exprese \(x(t)=3\cos\omega t+4\sen\omega t\) como \(A\cos(\omega t+\varphi)\).
+<details><summary>Respuesta</summary><p>\(A=5\), \(\varphi=-\arctan(4/3)=-53.1^\circ\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Sume \(2\cos(\omega t)+2\cos(\omega t+2\pi/3)+2\cos(\omega t+4\pi/3)\) con fasores.
+<details><summary>Respuesta</summary><p>Cero: los tres fasores forman un triángulo equilátero cerrado.</p></details></li>
+<li><span class="lvl">Intermedio</span>Una partícula de masa \(m\) se mueve en \(U(x)=U_0\left(x^4/a^4-2x^2/a^2\right)\). Halle los equilibrios estables y la frecuencia de pequeñas oscilaciones alrededor de ellos.
+<details><summary>Respuesta</summary><p>Mínimos en \(x=\pm a\) con \(U''=8U_0/a^2\): \(\omega_0=\sqrt{8U_0/(ma^2)}\). En \(x=0\) hay un máximo (inestable).</p></details></li>
+<li><span class="lvl">Avanzado</span>Demuestre que \(\langle\Rea(\tl a\ee^{\ii\omega t})\,\Rea(\tl b\ee^{\ii\omega t})\rangle=\tfrac12\Rea(\tl a\tl b^*)\), donde \(\langle\cdot\rangle\) es el promedio sobre un período.
+<details><summary>Respuesta</summary><p>Use \(\Rea w=(w+w^*)/2\); los términos con \(\ee^{\pm2\ii\omega t}\) promedian cero y quedan \((\tl a\tl b^*+\tl a^*\tl b)/4\).</p></details></li>
+<li><span class="lvl">Avanzado</span>Resuelva \(\ddot x+4\dot x+13x=0\) con \(x(0)=1\), \(\dot x(0)=0\).
+<details><summary>Respuesta</summary><p>\(s=-2\pm3\ii\); \(x=\ee^{-2t}\left(\cos3t+\tfrac23\sen3t\right)\).</p></details></li>
+</ol>
+</section>
+</template>

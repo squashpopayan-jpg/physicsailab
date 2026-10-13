@@ -95,14 +95,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         coursesGrid.innerHTML = data.cursos.map(c => {
             const isLab = c.id === 'transformadores' || c.esLaboratorio;
-            const isSquashFree = c.id === 'squash_sim';
-            const openBtnText = isStudentUnlocked || isSquashFree
-                ? (isLab ? 'Abrir Laboratorio 🚀' : 'Abrir Curso Completo 🎓')
-                : (isLab ? 'Vista Previa del Banco 👁️' : 'Vista Previa Gratuita 👁️');
-            const buyBtnText = isLab ? 'Adquirir Lab 🛒' : 'Comprar Curso 🛒';
-            const detailsBtnText = isLab ? 'Ficha Técnica 🔬' : 'Temario 📋';
+            const isSquash = c.id === 'squash_sim';
+            const openBtnText = isStudentUnlocked
+                ? (isLab ? 'Abrir Laboratorio 🚀' : (isSquash ? 'Abrir Simulador Completo 🎾' : 'Abrir Curso Completo 🎓'))
+                : (isLab ? 'Vista Previa del Banco 👁️' : (isSquash ? 'Vista Previa de Rutinas 👁️' : 'Vista Previa Gratuita 👁️'));
+            const buyBtnText = isLab ? 'Adquirir Lab 🛒' : (isSquash ? 'Adquirir Simulador 🛒' : 'Comprar Curso 🛒');
+            const detailsBtnText = isLab ? 'Ficha Técnica 🔬' : (isSquash ? 'Módulos 📋' : 'Temario 📋');
             const tagClass = isLab ? 'lab-tag' : (c.destacado ? 'interactive' : '');
-            const lockStatusBadge = (isStudentUnlocked || isSquashFree)
+            const lockStatusBadge = isStudentUnlocked
                 ? '<span class="unlocked-tag">🎓 Libre Estudiante</span>' 
                 : `<span class="badge" style="font-size:0.65rem; padding:0.2rem 0.5rem; background:rgba(245,158,11,0.12); color:var(--accent-amber); border-color:rgba(245,158,11,0.25);">👁️ Vista Previa</span>`;
             
@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <h3>${c.titulo}</h3>
                     <p>${c.descripcion}</p>
                     <div style="background:rgba(255,255,255,0.03); border-radius:8px; padding:0.75rem; margin-bottom:1rem; font-size:0.85rem;">
-                        <strong style="color:var(--text-main);">${isLab ? 'Equipamiento:' : 'Estructura:'}</strong> <span style="color:var(--accent-indigo);">${c.modulos}</span>
+                        <strong style="color:var(--text-main);">${isLab ? 'Equipamiento:' : (isSquash ? 'Contenido:' : 'Estructura:')}</strong> <span style="color:var(--accent-indigo);">${c.modulos}</span>
                         <br>
                         <strong style="color:var(--text-main);">Nivel:</strong> ${c.nivel}
                     </div>
@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             ${!isStudentUnlocked && c.descuentoTag ? `<span class="badge" style="font-size:0.65rem; padding:0.2rem 0.5rem; background:rgba(245,158,11,0.15); color:var(--accent-amber); border-color:rgba(245,158,11,0.3);">${c.descuentoTag}</span>` : '<span style="color:var(--accent-emerald);">● Activo</span>'}
                         </div>
                         <div style="font-size:0.75rem; color:var(--text-muted);">
-                            ${isStudentUnlocked ? 'Acceso 100% completo activado' : (isSquashFree ? 'Acceso libre como demostración' : 'Cap. 0 y 1 abiertos en demo · Resto con clave o compra')}
+                            ${isStudentUnlocked ? 'Acceso 100% completo activado' : (isSquash ? 'Demo con rutinas pre-generadas · Controles de edición bloqueados' : (isLab ? 'Banco de pruebas y teoría libres · Ensayos bloqueados' : 'Cap. 0 y 1 abiertos en demo · Resto con clave o compra'))}
                         </div>
                     </div>
                     <div class="card-actions">

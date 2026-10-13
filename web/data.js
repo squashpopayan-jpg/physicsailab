@@ -96,6 +96,31 @@ window.PLATFORM_DATA = {
             enlaceCompra: "https://hotmart.com"
         },
         {
+            id: "ondas",
+            titulo: "Cuaderno Interactivo de Vibraciones y Ondas",
+            nivel: "Universitario / Ingeniería",
+            modulos: "24 Capítulos Interactivos + Simuladores Numéricos",
+            categoria: "Oscilaciones, Acústica & Óptica",
+            descripcion: "Tratado interactivo exhaustivo que cubre desde osciladores armónicos, péndulos caóticos y sistemas acoplados, hasta la ecuación de onda 1D/2D, series de Fourier, efecto Doppler, acústica arquitectónica, interferencia, difracción y óptica electromagnética.",
+            temas: [
+                "01. Movimiento Armónico Simple & Péndulos",
+                "02. Oscilaciones Amortiguadas y Forzadas (Resonancia)",
+                "03. Osciladores Eléctricos & Sistemas Acoplados",
+                "04. Ecuación de Onda 1D & Ondas Armónicas",
+                "05. Reflexión, Transmisión y Ondas Estacionarias",
+                "06. Análisis Espectral y Series de Fourier",
+                "07. Acústica Arquitectónica, Sonido & Efecto Doppler",
+                "08. Ondas en 2D, Interferencia, Difracción y Óptica Ondulatoria"
+            ],
+            destacado: true,
+            tipo: "Cuaderno Interactivo HTML5/JS",
+            demoPath: "/material/1_cursos/ondas/dist/index.html",
+            precioEstimado: "$29 USD (~$115.000 COP)",
+            valorReal: "$49 USD",
+            descuentoTag: "40% OFF Lanzamiento",
+            enlaceCompra: "https://hotmart.com"
+        },
+        {
             id: "cuantica",
             titulo: "Exploraciones en Física Cuántica Interactiva",
             nivel: "Avanzado / Universitario",
@@ -138,21 +163,25 @@ window.PLATFORM_DATA = {
         {
             id: "squash_sim",
             titulo: "Física del Deporte: Simulador de Squash",
-            nivel: "Divulgación & Física Aplicada",
-            modulos: "Cinemática y Dinámica de Impacto",
-            categoria: "Física & Simulación 3D",
-            descripcion: "Estudio del coeficiente de restitución térmico en pelotas de goma, trayectorias en frontón y efecto Magnus en deportes de raqueta.",
+            nivel: "Deportistas, Entrenadores & Física Aplicada",
+            modulos: "Rutinas Pre-generadas + Editor Táctico y Biomecánico",
+            categoria: "Física del Deporte & Simulación 3D",
+            descripcion: "Entorno interactivo de cinemática y biomecánica en cancha. La vista previa incluye reproducción de rutinas tácticas pre-generadas; adquiere o desbloquea la licencia para personalizar trayectorias, manipular controles en tiempo real, exportar datos y acceder al análisis muscular.",
             temas: [
-                "Termodinámica del balón de squash", "Rozamiento aerodinámico no lineal",
-                "Impacto elástico/inelástico en paredes", "Optimización de tiros estratégicos"
+                "01. Cinemática de Desplazamiento y Cobertura desde la T",
+                "02. Cadena Cinética y Transferencia de Momento en Estocada",
+                "03. Termodinámica del Balón y Coeficiente de Restitución",
+                "04. Ángulos de Rebote y Física de Paredes (Boast, Nick, Drop)",
+                "05. Análisis Muscular y Prevención de Lesiones",
+                "06. Editor Táctico de Rutinas Personalizadas y Exportación"
             ],
             destacado: false,
-            tipo: "Simulador Físico",
+            tipo: "Simulador Táctico & Biomecánico",
             demoPath: "/material/1_cursos/squash_sim/dist/index.html",
-            precioEstimado: "100% Gratuito (Lead Magnet)",
-            valorReal: "$20 USD",
-            descuentoTag: "Acceso Libre / Demo",
-            enlaceCompra: null
+            precioEstimado: "$25 USD (~$99.000 COP)",
+            valorReal: "$45 USD",
+            descuentoTag: "Acceso Premium / Demo de Rutinas",
+            enlaceCompra: "https://hotmart.com"
         }
     ],
 

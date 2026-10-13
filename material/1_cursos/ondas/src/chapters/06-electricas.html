@@ -1,0 +1,78 @@
+<template class="chapter-src" data-id="electricas" data-num="6" data-title="Oscilaciones eléctricas" data-part="Parte II · Oscilaciones de un grado de libertad" data-short="Circuito LC, RLC libre y forzado, impedancia, analogía electromecánica y filtros">
+<p class="lead">Un condensador y una bobina conectados entre sí forman un oscilador perfecto: la energía pasa del campo eléctrico al magnético y de vuelta. Las ecuaciones son idénticas a las del bloque y el resorte, de modo que todo lo aprendido se traslada sin cambios a la electrónica, donde las oscilaciones se pueden medir, sintonizar y escuchar con enorme precisión.</p>
+
+<section>
+<h2>El circuito LC</h2>
+<p>Un condensador de capacitancia \(C\), cargado inicialmente con \(q_0\), se conecta a una bobina de inductancia \(L\). La ley de las mallas de Kirchhoff (la suma de caídas de tensión es cero) con \(i=\dot q\):</p>
+<div class="eq key" data-name="Circuito LC">\[L\frac{\dd i}{\dd t}+\frac qC=0\quad\Longleftrightarrow\quad\ddot q+\omega_0^2q=0,\qquad \omega_0=\frac1{\sqrt{LC}} .\]</div>
+<p>La carga oscila armónicamente, \(q=q_0\cos\omega_0t\), y la corriente \(i=-\omega_0q_0\sen\omega_0t\) va adelantada un cuarto de ciclo. La energía total se conserva:</p>
+<div class="eq">\[E=\frac{q^2}{2C}+\frac12Li^2=\frac{q_0^2}{2C}.\]</div>
+<p>Cuando el condensador está descargado, toda la energía está en el campo magnético de la bobina, y la corriente es máxima; la inercia de la bobina (su fem inducida) recarga el condensador con la polaridad opuesta.</p>
+<div class="sim" data-sim="lc-circuit" data-title="Circuito LC: intercambio de energía eléctrica y magnética"></div>
+<div class="sim-guide"><ul>
+<li>Compare con el sistema masa–resorte: la carga hace el papel de la posición; la corriente, el de la velocidad; la bobina, el de la masa.</li>
+<li>Con \(L=10\) mH y \(C=1\) nF la frecuencia es de 50 kHz: los circuitos LC permiten oscilaciones mucho más rápidas que las mecánicas.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El circuito RLC</h2>
+<p>Toda bobina real tiene resistencia. Agregando la caída \(Ri\):</p>
+<div class="eq key" data-name="Circuito RLC serie">\[L\ddot q+R\dot q+\frac qC=\mathcal{E}(t)\quad\Longleftrightarrow\quad\ddot q+\gamma\dot q+\omega_0^2q=\frac{\mathcal{E}(t)}{L},\qquad \gamma=\frac RL,\quad Q=\frac{\omega_0L}{R}=\frac1R\sqrt{\frac LC}.\]</div>
+<p>La resistencia crítica es \(R_c=2\sqrt{L/C}\). Por debajo, la descarga del condensador es oscilante; por encima, monótona.</p>
+<h3>Régimen sinusoidal e impedancia</h3>
+<p>Con una fuente \(\mathcal{E}=\mathcal{E}_0\cos\omega t\), en fasores cada elemento tiene una <span class="term">impedancia</span> compleja (la razón entre los fasores de tensión y corriente): \(Z_R=R\), \(Z_L=\ii\omega L\), \(Z_C=1/(\ii\omega C)\). En serie se suman:</p>
+<div class="eq key" data-name="Impedancia del RLC serie">\[Z=R+\ii\left(\omega L-\frac1{\omega C}\right),\qquad |Z|=\sqrt{R^2+\left(\omega L-\frac1{\omega C}\right)^2},\qquad I_0=\frac{\mathcal{E}_0}{|Z|}.\]</div>
+<p>En resonancia (\(\omega=\omega_0\)) las reactancias se cancelan, la impedancia es mínima e igual a \(R\), y la corriente está en fase con la fuente. Las tensiones en la bobina y el condensador, en cambio, son \(Q\) veces la de la fuente y están en oposición entre sí: un RLC con \(Q=50\) alimentado con 1 V tiene 50 V en el condensador.</p>
+<div class="sim" data-sim="rlc-forced" data-title="Circuito RLC forzado: corriente, fase y tensiones"></div>
+<div class="sim-guide"><ul>
+<li>Barra la frecuencia y observe el diagrama de fasores: en resonancia los fasores de \(V_L\) y \(V_C\) son iguales y opuestos, y la fuente sólo «ve» la resistencia.</li>
+<li>Reduzca \(R\): la curva de corriente se estrecha y las tensiones parciales crecen. Por eso los condensadores de los circuitos resonantes deben soportar tensiones mucho mayores que la de la fuente.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>La analogía electromecánica</h2>
+<p>Las ecuaciones \(m\ddot x+b\dot x+kx=F(t)\) y \(L\ddot q+R\dot q+q/C=\mathcal{E}(t)\) son la misma. El diccionario es:</p>
+<div class="tablewrap"><table>
+<tr><th>Mecánico</th><th class="c">Eléctrico</th><th>Papel</th></tr>
+<tr><td>Posición \(x\)</td><td class="c">Carga \(q\)</td><td>Coordenada</td></tr>
+<tr><td>Velocidad \(\dot x\)</td><td class="c">Corriente \(i\)</td><td>Flujo</td></tr>
+<tr><td>Masa \(m\)</td><td class="c">Inductancia \(L\)</td><td>Inercia; almacena energía «cinética»</td></tr>
+<tr><td>Constante \(k\)</td><td class="c">Elastancia \(1/C\)</td><td>Rigidez; almacena energía «potencial»</td></tr>
+<tr><td>Fricción \(b\)</td><td class="c">Resistencia \(R\)</td><td>Disipación</td></tr>
+<tr><td>Fuerza \(F\)</td><td class="c">Fem \(\mathcal E\)</td><td>Excitación</td></tr>
+<tr><td>Potencia \(F\dot x\)</td><td class="c">Potencia \(\mathcal{E}i\)</td><td>Flujo de energía</td></tr>
+</table></div>
+<p>La analogía es más que una curiosidad: antes de las computadoras digitales, los ingenieros estudiaban vibraciones de puentes, aviones y máquinas construyendo el circuito eléctrico equivalente (computadoras analógicas). Hoy la usamos en sentido inverso: los altavoces, los micrófonos y los sensores piezoeléctricos se describen como circuitos con elementos mecánicos.</p>
+<div class="sim" data-sim="em-analogy" data-title="Un mismo oscilador, mecánico y eléctrico"></div>
+</section>
+
+<section>
+<h2>Filtros</h2>
+<p>Tomando la salida en distintos elementos del RLC serie se obtienen filtros. La <span class="term">función de transferencia</span> \(H(\omega)=V_{\text{sal}}/V_{\text{ent}}\) es la razón entre la impedancia del elemento de salida y la total:</p>
+<div class="eq">\[H_R=\frac{R}{Z}\ \ (\text{pasa banda}),\qquad H_C=\frac{1/\ii\omega C}{Z}\ \ (\text{pasa bajos}),\qquad H_L=\frac{\ii\omega L}{Z}\ \ (\text{pasa altos}).\]</div>
+<p>Fuera de la resonancia, \(|H_C|\) cae como \(1/\omega^2\) (\(-40\) dB por década) y \(|H_L|\) sube como \(\omega^2\). Los filtros de los ecualizadores de audio, los separadores de vías de los parlantes (<em>crossovers</em>) y los sintonizadores de radio son variaciones de este circuito.</p>
+<div class="sim" data-sim="rlc-filter" data-title="Filtros RLC: diagrama de Bode"></div>
+<div class="sim-guide"><ul>
+<li>Con \(Q\) alto, el pasa bajos tiene un pico de resonancia antes de caer: la señal se <em>amplifica</em> cerca de \(f_0\).</li>
+<li>Escuche una señal con muchos armónicos antes y después del filtro: el pasa bajos la vuelve opaca; el pasa altos, metálica.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un condensador de 2.0 µF cargado a 12 V se conecta a una bobina de 50 mH. Halle la frecuencia, la carga máxima y la corriente máxima.
+<details><summary>Respuesta</summary><p>\(\omega_0=3162\) rad/s (\(f=503\) Hz); \(q_0=24\ \mu\)C; \(I_{\max}=\omega_0q_0=75.9\) mA.</p></details></li>
+<li><span class="lvl">Básico</span>¿Qué capacitancia se necesita con una bobina de 250 µH para sintonizar una emisora de AM de 1100 kHz?
+<details><summary>Respuesta</summary><p>\(C=1/(\omega^2L)=83.7\) pF.</p></details></li>
+<li><span class="lvl">Intermedio</span>Un RLC serie tiene \(R=10\ \Omega\), \(L=0.10\) H, \(C=10\ \mu\)F, con una fuente de 5.0 V de amplitud. Halle \(f_0\), \(Q\), la corriente en resonancia y la tensión en el condensador en resonancia.
+<details><summary>Respuesta</summary><p>\(f_0=159\) Hz; \(Q=10\); \(I_0=0.50\) A; \(V_C=Q\mathcal{E}_0=50\) V.</p></details></li>
+<li><span class="lvl">Intermedio</span>Un bloque de 0.25 kg con un resorte de 100 N/m y \(b=0.5\) kg/s. Proponga un circuito equivalente con \(L=25\) mH.
+<details><summary>Respuesta</summary><p>Factor de escala \(L/m=0.1\) H/kg: \(1/C=0.1\,k\Rightarrow C=0.1\) F y \(R=0.1\,b=0.05\ \Omega\). Ambos oscilan a \(\omega_0=20\) rad/s con \(Q=10\).</p></details></li>
+<li><span class="lvl">Avanzado</span>Muestre que, en un RLC serie, la tensión del condensador es máxima en \(\omega=\omega_0\sqrt{1-1/(2Q^2)}\) y la de la bobina en \(\omega=\omega_0/\sqrt{1-1/(2Q^2)}\).
+<details><summary>Respuesta</summary><p>\(|V_C|=\mathcal E_0/(\omega C|Z|)\) es la amplitud del oscilador mecánico (máximo en \(\omega_r\)); \(|V_L|=\omega L\mathcal E_0/|Z|\) se maximiza minimizando \((\omega_0^2/\omega^2-1)^2+\gamma^2/\omega^2\) en la variable \(1/\omega^2\).</p></details></li>
+</ol>
+</section>
+</template>

@@ -41,9 +41,51 @@
     const isTransformadores = !!document.querySelector('#benchSvg') || 
                              location.pathname.toLowerCase().includes('transformadores') ||
                              document.title.toLowerCase().includes('transformador');
+    const isSquash = !!document.querySelector('#courtTop') ||
+                     location.pathname.toLowerCase().includes('squash') ||
+                     document.title.toLowerCase().includes('squash');
 
     // Inyectar estilos CSS del modal y candados
     const css = `
+        /* Squash Demo Banner y Controles Bloqueados */
+        .pg-squash-demo-banner {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(15, 23, 42, 0.9));
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            font-size: 0.85rem;
+            color: #F1F5F9;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        .pg-squash-demo-banner strong {
+            color: #F59E0B;
+        }
+        .pg-squash-demo-banner button {
+            background: linear-gradient(135deg, #F59E0B, #D97706);
+            color: #0A0E17;
+            font-weight: 700;
+            font-size: 0.8rem;
+            border: none;
+            padding: 0.35rem 0.85rem;
+            border-radius: 9999px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: opacity 0.2s;
+        }
+        .pg-squash-demo-banner button:hover {
+            opacity: 0.85;
+        }
+        .pg-locked-control {
+            position: relative;
+            cursor: not-allowed !important;
+            opacity: 0.55 !important;
+        }
+
         /* Candados y tags en navegación */
         .pg-lock-pill {
             display: inline-flex;
@@ -347,15 +389,28 @@
         const isLab = isTransformadores;
         const targetLabel = attemptedTarget ? ` el acceso a «${attemptedTarget}»` : ' este módulo completo';
 
+        let modalTitle = 'Contenido Premium Bloqueado';
+        let modalDesc = `Has llegado al límite de la demostración gratuita. Para desbloquear${targetLabel}, los motores de simulación numérica, la totalidad de los capítulos interactivos y la autoevaluación, ingresa tu clave de estudiante o adquiere la licencia completa.`;
+        let buyEntityName = 'Curso';
+
+        if (isLab) {
+            modalTitle = 'Laboratorio Completo Bloqueado';
+            buyEntityName = 'Laboratorio';
+        } else if (isSquash) {
+            modalTitle = 'Controles & Suite de Squash Bloqueados';
+            modalDesc = `Has llegado al límite de la vista previa de rutinas pre-generadas. Para manipular los controles en tiempo real, personalizar velocidades y trayectorias, crear rutinas propias en el editor, exportar datos y acceder a la suite completa de biomecánica y análisis muscular, ingresa tu clave de estudiante o adquiere la licencia completa.`;
+            buyEntityName = 'Simulador de Squash';
+        }
+
         const overlay = document.createElement('div');
         overlay.className = 'pg-overlay';
         overlay.innerHTML = `
             <div class="pg-modal">
                 <button class="pg-close" aria-label="Cerrar">✕</button>
                 <span class="pg-badge">🔒 Vista Previa Gratuita Finalizada</span>
-                <h3 class="pg-title">${isLab ? 'Laboratorio Completo Bloqueado' : 'Contenido Premium Bloqueado'}</h3>
+                <h3 class="pg-title">${modalTitle}</h3>
                 <p class="pg-desc">
-                    Has llegado al límite de la demostración gratuita. Para desbloquear${targetLabel}, los motores de simulación numérica, la totalidad de los capítulos interactivos y la autoevaluación, ingresa tu clave de estudiante o adquiere la licencia completa.
+                    ${modalDesc}
                 </p>
 
                 <!-- Opción 1: Clave Estudiante Aula -->
@@ -370,7 +425,7 @@
 
                 <!-- Opción 2: Adquisición / Compra -->
                 <div class="pg-card-buy">
-                    <h4>🛒 Adquirir Licencia del ${isLab ? 'Laboratorio' : 'Curso'}</h4>
+                    <h4>🛒 Adquirir Licencia del ${buyEntityName}</h4>
                     <p>Acceso permanente de por vida · Sin mensualidades · Certificación y soporte de autor (Mg. Manuel Alejandro Obando).</p>
                     <div class="pg-buy-actions">
                         <a href="https://physicsailab.com" target="_blank" class="pg-btn-buy">
@@ -615,11 +670,120 @@
         }
     }
 
+    // Intercepción en Simulador de Squash & Biomecánica
+    function applySquashGuard() {
+        const unlocked = isUnlocked();
+        const lockedNavs = ['editor', 'anatomia', 'fisiologia', 'biomecanica', 'lesiones', 'fundamentos'];
+
+        // 1. Candados en botones de navegación
+        lockedNavs.forEach((tabId) => {
+            const btn = document.querySelector(`.nav button[data-go="${tabId}"]`);
+            if (btn) {
+                const existingPill = btn.querySelector('.pg-lock-pill');
+                if (!unlocked) {
+                    btn.classList.add('pg-locked-tab');
+                    if (!existingPill) {
+                        const pill = document.createElement('span');
+                        pill.className = 'pg-lock-pill';
+                        pill.textContent = '🔒';
+                        btn.appendChild(pill);
+                    }
+                } else {
+                    btn.classList.remove('pg-locked-tab');
+                    if (existingPill) existingPill.remove();
+                }
+            }
+        });
+
+        // 2. Banner de demostración en panel de simulador
+        let demoBanner = document.getElementById('pg-squash-demo-banner');
+        const simPanel = document.querySelector('#p-simulador .panel') || document.querySelector('#p-simulador');
+        if (!unlocked) {
+            if (!demoBanner && simPanel) {
+                demoBanner = document.createElement('div');
+                demoBanner.id = 'pg-squash-demo-banner';
+                demoBanner.className = 'pg-squash-demo-banner';
+                demoBanner.innerHTML = `
+                    <div>
+                        <span>🔒 <strong>Modo Demostración</strong>: Reproduciendo rutina táctica pre-generada. Controles de edición y personalización bloqueados.</span>
+                    </div>
+                    <button type="button" id="pg-squash-banner-btn">Desbloquear Suite 🔑</button>
+                `;
+                simPanel.insertBefore(demoBanner, simPanel.firstChild);
+                const bBtn = demoBanner.querySelector('#pg-squash-banner-btn');
+                if (bBtn) bBtn.addEventListener('click', () => openPaywall('Controles del Simulador'));
+            }
+        } else {
+            if (demoBanner) demoBanner.remove();
+        }
+
+        // 3. Estilo y estado para controles de edición y exportación
+        const restrictedSelectors = [
+            '#btnEditThis', '#btnExport', '[data-exp]',
+            '#btnPrev', '#btnNext', '#rtSel',
+            '[data-sp="0.25"]', '[data-sp="0.5"]', '[data-sp="1.5"]', '[data-sp="2"]'
+        ];
+        restrictedSelectors.forEach(sel => {
+            document.querySelectorAll(sel).forEach(el => {
+                if (!unlocked) {
+                    el.classList.add('pg-locked-control');
+                    el.setAttribute('title', '🔒 Bloqueado en Modo Demostración');
+                } else {
+                    el.classList.remove('pg-locked-control');
+                    el.removeAttribute('title');
+                }
+            });
+        });
+
+        // Intercepción de clics
+        document.removeEventListener('click', handleSquashClick, true);
+        document.addEventListener('click', handleSquashClick, true);
+
+        // Si intentó ir directamente a una sección bloqueada
+        const currentHash = location.hash.replace(/^#/, '');
+        if (!unlocked && lockedNavs.includes(currentHash)) {
+            setTimeout(() => {
+                const simBtn = document.querySelector('.nav button[data-go="simulador"]');
+                if (simBtn) simBtn.click();
+                openPaywall(currentHash);
+            }, 300);
+        }
+    }
+
+    function handleSquashClick(e) {
+        if (isUnlocked()) return;
+
+        // Clic en nav button bloqueado
+        const navBtn = e.target.closest('.nav button[data-go]');
+        if (navBtn) {
+            const goTarget = navBtn.getAttribute('data-go');
+            const lockedNavs = ['editor', 'anatomia', 'fisiologia', 'biomecanica', 'lesiones', 'fundamentos'];
+            if (lockedNavs.includes(goTarget)) {
+                e.preventDefault();
+                e.stopPropagation();
+                const name = navBtn.textContent.replace('🔒', '').trim();
+                openPaywall(name);
+                return;
+            }
+        }
+
+        // Clic en controles bloqueados del simulador
+        const lockedCtrl = e.target.closest('#btnEditThis, #btnExport, [data-exp], #rtSel, .pg-locked-control');
+        if (lockedCtrl) {
+            e.preventDefault();
+            e.stopPropagation();
+            openPaywall('Edición y Parámetros del Simulador');
+            return;
+        }
+    }
+
     // Actualización de estado
     function updateGuardState() {
         renderTopBar();
         if (isTransformadores) {
             applyTransformadoresGuard();
+        } else if (isSquash) {
+            applySquashGuard();
         } else {
             applyNotebookGuard();
         }

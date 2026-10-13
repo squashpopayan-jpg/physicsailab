@@ -1,0 +1,80 @@
+<template class="chapter-src" data-id="fourier" data-num="15" data-title="Análisis de Fourier" data-part="Parte IV · Ondas mecánicas" data-short="Series de Fourier, fenómeno de Gibbs, espectro y teorema de Parseval, transformada de Fourier y relación entre duración y ancho de banda">
+<p class="lead">En 1807 Joseph Fourier afirmó algo que sus contemporáneos consideraron exagerado: cualquier función periódica, incluso una con saltos, es una suma de senos y cosenos. Tenía razón, y la idea transformó la física. Como las ecuaciones lineales tratan cada frecuencia por separado, basta conocer la respuesta a una onda sinusoidal para conocer la respuesta a cualquier onda.</p>
+
+<section>
+<h2>Series de Fourier</h2>
+<p>Una función \(f(t)\) de período \(T\) (frecuencia fundamental \(\omega_1=2\pi/T\)) se puede escribir como</p>
+<div class="eq key" data-name="Serie de Fourier">\[f(t)=\frac{a_0}2+\sum_{n=1}^\infty\left[a_n\cos(n\omega_1t)+b_n\sen(n\omega_1t)\right],\]</div>
+<div class="eq key" data-name="Coeficientes de Fourier">\[a_n=\frac2T\int_0^Tf(t)\cos(n\omega_1t)\,\dd t,\qquad b_n=\frac2T\int_0^Tf(t)\sen(n\omega_1t)\,\dd t .\]</div>
+<p>Las fórmulas de los coeficientes se obtienen multiplicando la serie por \(\cos m\omega_1t\) o \(\sen m\omega_1t\) e integrando sobre un período: por la ortogonalidad de los senos y cosenos, sólo sobrevive el término con \(n=m\). Cada coeficiente mide «cuánto se parece» la función a cada armónico.</p>
+<p>Algunas series clásicas (amplitud 1, período \(2\pi\)):</p>
+<div class="tablewrap"><table>
+<tr><th>Onda</th><th class="c">Serie</th><th class="c">Decaimiento</th></tr>
+<tr><td>Cuadrada</td><td class="c">\(\dfrac4\pi\left(\sen t+\tfrac13\sen3t+\tfrac15\sen5t+\cdots\right)\)</td><td class="c">\(1/n\), impares</td></tr>
+<tr><td>Diente de sierra</td><td class="c">\(\dfrac2\pi\left(\sen t-\tfrac12\sen2t+\tfrac13\sen3t-\cdots\right)\)</td><td class="c">\(1/n\), todos</td></tr>
+<tr><td>Triangular</td><td class="c">\(\dfrac8{\pi^2}\left(\sen t-\tfrac19\sen3t+\tfrac1{25}\sen5t-\cdots\right)\)</td><td class="c">\(1/n^2\), impares</td></tr>
+<tr><td>Rectificada de onda completa \(|\sen t|\)</td><td class="c">\(\dfrac2\pi-\dfrac4\pi\left(\tfrac13\cos2t+\tfrac1{15}\cos4t+\cdots\right)\)</td><td class="c">\(1/n^2\), pares</td></tr>
+</table></div>
+<p>La rapidez con que decaen los coeficientes refleja la suavidad de la función: una función con saltos decae como \(1/n\); una continua con picos, como \(1/n^2\); una muy suave, más rápido. Las simetrías también dejan su huella: una función impar sólo tiene senos; una con «simetría de media onda», \(f(t+T/2)=-f(t)\), sólo armónicos impares.</p>
+<div class="sim" data-sim="fourier-synthesis" data-title="Síntesis de Fourier: sumando armónicos"></div>
+<div class="sim-guide"><ul>
+<li>Agregue armónicos uno a uno a la onda cuadrada: cerca de los saltos queda siempre un sobrepaso.</li>
+<li>Escuche la cuadrada con 1, 3 y 15 armónicos: la altura (la nota) no cambia, el timbre sí.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El fenómeno de Gibbs</h2>
+<p>En un salto de la función, la serie truncada sobrepasa el valor verdadero en un 9 % del salto, por muchos términos que se tomen: el sobrepaso se estrecha pero no disminuye. Este <span class="term">fenómeno de Gibbs</span> no contradice la convergencia: en cada punto fijo la serie converge (al promedio de los límites laterales en el salto), pero no lo hace uniformemente. En el procesamiento de señales aparece como «anillos» alrededor de los bordes nítidos, por ejemplo en las imágenes JPEG muy comprimidas.</p>
+</section>
+
+<section>
+<h2>Forma compleja, espectro y Parseval</h2>
+<p>Con la fórmula de Euler, la serie toma una forma más compacta:</p>
+<div class="eq key" data-name="Serie de Fourier compleja">\[f(t)=\sum_{n=-\infty}^{\infty}c_n\,\ee^{\ii n\omega_1t},\qquad c_n=\frac1T\int_0^Tf(t)\,\ee^{-\ii n\omega_1t}\,\dd t,\qquad c_{-n}=c_n^*\ \ (f\text{ real}).\]</div>
+<p>La lista de los \(|c_n|\) (o de las amplitudes \(A_n=\sqrt{a_n^2+b_n^2}\)) en función de la frecuencia es el <span class="term">espectro</span> de la señal. La potencia media se reparte entre los armónicos sin interferencia: es el <span class="term">teorema de Parseval</span>,</p>
+<div class="eq key" data-name="Teorema de Parseval">\[\frac1T\int_0^T f^2\,\dd t=\sum_{n=-\infty}^\infty|c_n|^2=\frac{a_0^2}4+\frac12\sum_{n=1}^\infty\left(a_n^2+b_n^2\right).\]</div>
+<p>Aplicado a la onda cuadrada (cuyo valor cuadrático medio es 1) da \(\tfrac12\cdot\tfrac{16}{\pi^2}\sum\tfrac1{n^2}=1\) sobre los impares, es decir \(1+\tfrac19+\tfrac1{25}+\cdots=\pi^2/8\).</p>
+<div class="sim" data-sim="fourier-draw" data-title="Dibuje una onda: espectro y sonido"></div>
+<div class="sim-guide"><ul>
+<li>Dibuje una onda con un salto brusco y otra suave: compare cómo caen los armónicos altos.</li>
+<li>Dibuje cualquier forma y escúchela: el oído es un analizador de Fourier. Formas muy distintas con el mismo espectro de amplitudes (sólo cambian las fases) suenan casi igual.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>La transformada de Fourier</h2>
+<p>Una señal que no se repite (un pulso, una palabra, un golpe) puede verse como periódica con período infinito. Al crecer \(T\), los armónicos se acercan (\(\Delta\omega=2\pi/T\to0\)) y la suma se convierte en una integral:</p>
+<div class="eq key" data-name="Transformada de Fourier">\[f(t)=\frac1{2\pi}\int_{-\infty}^\infty F(\omega)\,\ee^{\ii\omega t}\,\dd\omega,\qquad F(\omega)=\int_{-\infty}^\infty f(t)\,\ee^{-\ii\omega t}\,\dd t .\]</div>
+<p>El espectro deja de ser una lista de líneas y se vuelve una función continua. Dos pares importantes:</p>
+<ul>
+<li><strong>Pulso rectangular</strong> de duración \(\tau\): \(F(\omega)=\tau\,\dfrac{\sen(\omega\tau/2)}{\omega\tau/2}\) (una función sinc). Su primer cero está en \(\omega=2\pi/\tau\).</li>
+<li><strong>Pulso gaussiano</strong> \(\ee^{-t^2/2\sigma_t^2}\): su transformada es otra gaussiana, de ancho \(\sigma_\omega=1/\sigma_t\).</li>
+</ul>
+<h3>Duración y ancho de banda</h3>
+<p>En ambos casos, cuanto más corto es el pulso, más ancho es su espectro. Definiendo los anchos como desviaciones estándar de \(|f|^2\) y \(|F|^2\), se demuestra que</p>
+<div class="eq key" data-name="Relación de incertidumbre de las ondas">\[\Delta t\,\Delta\omega\ge\frac12,\]</div>
+<p>con igualdad sólo para el pulso gaussiano. Es una propiedad matemática de las ondas, no una limitación de los instrumentos: una nota que dura 10 ms no puede tener una frecuencia definida mejor que unos 15 Hz. Multiplicada por \(\hbar\), esta relación es el principio de incertidumbre de Heisenberg, \(\Delta t\,\Delta E\ge\hbar/2\).</p>
+<div class="sim" data-sim="fourier-transform" data-title="Pulsos y sus transformadas: duración frente a ancho de banda"></div>
+<div class="sim-guide"><ul>
+<li>Reduzca la duración del pulso a la mitad: el espectro se ensancha al doble. El producto de anchos permanece constante.</li>
+<li>Con un tren de \(N\) ciclos de una sinusoide, el espectro es un pico centrado en la frecuencia de la portadora, de ancho \(\sim f/N\). Escuche un tren de 2 ciclos y uno de 200: el primero suena como un clic sin altura definida.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Calcule los coeficientes de Fourier de la onda cuadrada que vale \(+1\) en \((0,\pi)\) y \(-1\) en \((\pi,2\pi)\).
+<details><summary>Respuesta</summary><p>\(a_n=0\); \(b_n=\dfrac{2}{n\pi}(1-\cos n\pi)\): \(4/n\pi\) para \(n\) impar y 0 para par.</p></details></li>
+<li><span class="lvl">Básico</span>¿Qué fracción de la potencia de una onda cuadrada está en su fundamental?
+<details><summary>Respuesta</summary><p>\(\tfrac12(4/\pi)^2=8/\pi^2=81\) %.</p></details></li>
+<li><span class="lvl">Intermedio</span>Use Parseval con la onda diente de sierra para demostrar que \(\sum1/n^2=\pi^2/6\).
+<details><summary>Respuesta</summary><p>La sierra \(f=t/\pi\) en \((-\pi,\pi)\) tiene \(\langle f^2\rangle=1/3\) y \(b_n=2(-1)^{n+1}/(n\pi)\): \(\tfrac12\sum4/(n^2\pi^2)=1/3\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Un radar emite pulsos de 1 µs. ¿Qué ancho de banda necesita el receptor? ¿Cuál es la mínima separación entre dos blancos que puede distinguir?
+<details><summary>Respuesta</summary><p>\(\Delta f\sim1/\tau=1\) MHz; \(\Delta x=c\tau/2=150\) m.</p></details></li>
+<li><span class="lvl">Avanzado</span>Calcule la transformada de Fourier de \(f(t)=\ee^{-\gamma t/2}\cos\omega_0t\) para \(t\ge0\) (cero antes) y muestre que, cerca de \(\omega_0\), \(|F|^2\) es una lorentziana de ancho \(\gamma\).
+<details><summary>Respuesta</summary><p>\(F\approx\dfrac{1/2}{\gamma/2+\ii(\omega-\omega_0)}\Rightarrow|F|^2=\dfrac{1/4}{(\omega-\omega_0)^2+\gamma^2/4}\): el espectro de un oscilador amortiguado es la curva de resonancia del capítulo 5.</p></details></li>
+</ol>
+</section>
+</template>
