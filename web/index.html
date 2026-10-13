@@ -20,7 +20,7 @@
                     <span style="font-size:0.65rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.8px;">Laboratorios & Simulación</span>
                 </div>
             </a>
-            <nav>
+            <nav class="desktop-nav">
                 <ul class="nav-links">
                     <li><a href="#inicio" class="active">Inicio</a></li>
                     <li><a href="#curiosidades">💡 Curiosidades</a></li>
@@ -33,7 +33,7 @@
                     <li><a href="#comentarios">💬 Opiniones</a></li>
                 </ul>
             </nav>
-            <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+            <div class="nav-actions desktop-actions">
                 <div class="counter-pill" title="Visitas registradas a la plataforma">
                     <span>👁️ Visitas:</span>
                     <strong id="visit-counter-value">...</strong>
@@ -44,6 +44,12 @@
                 </div>
                 <a href="#cursos" class="btn btn-primary" style="font-size:0.85rem; padding:0.5rem 1rem;">Explorar Labs</a>
             </div>
+            <!-- Botón Hamburguesa Móvil -->
+            <button class="mobile-menu-btn" onclick="toggleMobileDrawer()" aria-label="Abrir Menú de Navegación">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
         </div>
     </header>
 
@@ -88,6 +94,23 @@
         </div>
     </section>
 
+    <!-- Barra Flotante de Acceso Rápido / Navegación por Chips -->
+    <nav class="quick-nav-bar" id="quick-nav-bar" aria-label="Navegación Rápida">
+        <div class="container quick-nav-inner">
+            <span class="quick-nav-label">⚡ Acceso Rápido:</span>
+            <div class="quick-nav-chips">
+                <a href="#cursos" class="quick-chip">🚀 Cursos & Labs (7)</a>
+                <a href="#curiosidades" class="quick-chip">💡 Curiosidades (8)</a>
+                <a href="#comics" class="quick-chip">🎨 Cómics (56)</a>
+                <a href="#podcasts" class="quick-chip">🎙️ Podcasts Spotify</a>
+                <a href="#articulos" class="quick-chip">🎾 Física del Squash</a>
+                <a href="#libros" class="quick-chip">📚 Librería Hotmart</a>
+                <a href="#profesor" class="quick-chip">🔬 Sobre el Docente</a>
+                <a href="#comentarios" class="quick-chip">💬 Opiniones</a>
+            </div>
+        </div>
+    </nav>
+
     <!-- 0. Datos Fascinantes de la Física (Curiosidades Científicas) -->
     <section class="section" id="curiosidades" style="padding-top:2.5rem;">
         <div class="container">
@@ -117,6 +140,7 @@
             <div class="cards-grid" id="facts-grid">
                 <!-- Inyectado dinámicamente por JavaScript -->
             </div>
+            <div id="facts-toggle-controls" class="section-toggle-controls"></div>
         </div>
     </section>
 
@@ -136,6 +160,7 @@
             <div class="cards-grid" id="courses-grid">
                 <!-- Injected by JavaScript -->
             </div>
+            <div id="courses-toggle-controls" class="section-toggle-controls"></div>
         </div>
     </section>
 
@@ -213,6 +238,7 @@
             <div class="cards-grid" id="comics-grid">
                 <!-- Injected by JavaScript -->
             </div>
+            <div id="comics-pagination-controls" class="section-toggle-controls"></div>
         </div>
     </section>
 
@@ -226,9 +252,10 @@
             </div>
 
             <!-- Grid de Canales Spotify con Reproductores Embebidos -->
-            <div class="cards-grid" id="spotify-grid" style="margin-bottom:4rem;">
+            <div class="cards-grid" id="spotify-grid" style="margin-bottom:2rem;">
                 <!-- Injected by JavaScript -->
             </div>
+            <div id="spotify-toggle-controls" class="section-toggle-controls" style="margin-bottom:3rem;"></div>
 
             <!-- Archivo de Episodios Especiales -->
             <div class="section-header" style="margin-top:3rem;">
@@ -399,6 +426,7 @@
                     <div class="comments-grid" id="comments-list">
                         <!-- Inyectado dinámicamente por JavaScript -->
                     </div>
+                    <div id="comments-toggle-controls" class="section-toggle-controls"></div>
                 </div>
             </div>
         </div>
@@ -406,6 +434,87 @@
 
     <!-- Notificaciones Toast -->
     <div id="toast-container" class="toast-container"></div>
+
+    <!-- Menú Lateral Móvil (Drawer) -->
+    <div class="mobile-drawer-backdrop" id="mobile-drawer-backdrop" onclick="closeMobileDrawer()"></div>
+    <aside class="mobile-drawer" id="mobile-drawer" aria-label="Menú Móvil">
+        <div class="drawer-header">
+            <div class="logo">
+                <div class="logo-icon">⚛️</div>
+                <div style="display:flex; flex-direction:column; line-height:1.1;">
+                    <span style="font-weight:800; font-size:1.15rem;">Physics<span style="color:var(--accent-blue);">AI</span>Lab</span>
+                    <span style="font-size:0.65rem; color:var(--text-muted); text-transform:uppercase;">Menú de Navegación</span>
+                </div>
+            </div>
+            <button class="drawer-close-btn" onclick="closeMobileDrawer()" aria-label="Cerrar Menú">✕</button>
+        </div>
+
+        <div class="drawer-body">
+            <div class="drawer-stats">
+                <div class="drawer-stat-item">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">👁️ Visitas:</span>
+                    <strong id="drawer-visits-value">+1.485</strong>
+                </div>
+                <div class="drawer-stat-item">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">📥 Descargas:</span>
+                    <strong id="drawer-downloads-value">+428</strong>
+                </div>
+            </div>
+
+            <ul class="drawer-links">
+                <li><a href="#inicio" onclick="closeMobileDrawer()"><span class="drawer-icon">🏠</span> <span>Inicio</span></a></li>
+                <li><a href="#cursos" onclick="closeMobileDrawer()"><span class="drawer-icon">🚀</span> <span>Cursos & Laboratorios (7)</span></a></li>
+                <li><a href="#curiosidades" onclick="closeMobileDrawer()"><span class="drawer-icon">💡</span> <span>Datos Curiosos de Física</span></a></li>
+                <li><a href="#comics" onclick="closeMobileDrawer()"><span class="drawer-icon">🎨</span> <span>Cómics Estudiantiles (56)</span></a></li>
+                <li><a href="#podcasts" onclick="closeMobileDrawer()"><span class="drawer-icon">🎙️</span> <span>Canales en Spotify (6)</span></a></li>
+                <li><a href="#articulos" onclick="closeMobileDrawer()"><span class="drawer-icon">🎾</span> <span>Física & Squash</span></a></li>
+                <li><a href="#libros" onclick="closeMobileDrawer()"><span class="drawer-icon">📚</span> <span>Librería Hotmart</span></a></li>
+                <li><a href="#profesor" onclick="closeMobileDrawer()"><span class="drawer-icon">🔬</span> <span>Sobre el Docente</span></a></li>
+                <li><a href="#comentarios" onclick="closeMobileDrawer()"><span class="drawer-icon">💬</span> <span>Muro de la Comunidad</span></a></li>
+            </ul>
+
+            <div class="drawer-footer">
+                <p style="font-size:0.78rem; color:var(--text-muted); margin-bottom:0.75rem; text-align:center;">Docente: Mg. Manuel Alejandro Obando</p>
+                <div style="display:flex; gap:0.5rem; justify-content:center;">
+                    <a href="https://www.instagram.com/manu_squash/" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="font-size:0.8rem; padding:0.4rem 0.75rem;">Instagram</a>
+                    <a href="mailto:manuelobando@unicauca.edu.co" class="btn btn-secondary" style="font-size:0.8rem; padding:0.4rem 0.75rem;">Correo</a>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Barra de Navegación Móvil Inferior (Bottom App Bar) -->
+    <nav class="mobile-bottom-nav" id="mobile-bottom-nav" aria-label="Navegación Inferior Móvil">
+        <a href="#inicio" class="bottom-nav-item active" data-section="inicio">
+            <span class="bottom-nav-icon">🏠</span>
+            <span class="bottom-nav-label">Inicio</span>
+        </a>
+        <a href="#cursos" class="bottom-nav-item" data-section="cursos">
+            <span class="bottom-nav-icon">🚀</span>
+            <span class="bottom-nav-label">Cursos</span>
+        </a>
+        <a href="#comics" class="bottom-nav-item" data-section="comics">
+            <span class="bottom-nav-icon">🎨</span>
+            <span class="bottom-nav-label">Cómics</span>
+        </a>
+        <a href="#articulos" class="bottom-nav-item" data-section="articulos">
+            <span class="bottom-nav-icon">🎾</span>
+            <span class="bottom-nav-label">Squash</span>
+        </a>
+        <a href="#comentarios" class="bottom-nav-item" data-section="comentarios">
+            <span class="bottom-nav-icon">💬</span>
+            <span class="bottom-nav-label">Muro</span>
+        </a>
+        <button class="bottom-nav-item" onclick="toggleMobileDrawer()" style="background:none; border:none; color:inherit; cursor:pointer;" aria-label="Abrir Menú">
+            <span class="bottom-nav-icon">☰</span>
+            <span class="bottom-nav-label">Menú</span>
+        </button>
+    </nav>
+
+    <!-- Botón Flotante Volver Arriba -->
+    <button id="back-to-top-btn" class="back-to-top-btn" onclick="scrollToTop()" title="Volver al inicio" aria-label="Volver al inicio">
+        ↑
+    </button>
 
     <!-- Modal para Detalle de Cursos -->
     <div class="modal" id="course-modal">

@@ -8,20 +8,98 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const visitCounterElem = document.getElementById('visit-counter-value');
     const heroVisitsElem = document.getElementById('stat-visits');
+    const drawerVisitsElem = document.getElementById('drawer-visits-value');
     const navDownloadsElem = document.getElementById('nav-download-counter-value');
     const heroDownloadsElem = document.getElementById('stat-downloads');
+    const drawerDownloadsElem = document.getElementById('drawer-downloads-value');
 
     function updateVisitsDisplay(count) {
         const formatted = Number(count).toLocaleString('es-ES');
         if (visitCounterElem) visitCounterElem.textContent = formatted;
         if (heroVisitsElem) heroVisitsElem.textContent = '+' + formatted;
+        if (drawerVisitsElem) drawerVisitsElem.textContent = '+' + formatted;
     }
 
     function updateDownloadsDisplay(count) {
         const formatted = Number(count).toLocaleString('es-ES');
         if (navDownloadsElem) navDownloadsElem.textContent = formatted;
         if (heroDownloadsElem) heroDownloadsElem.textContent = '+' + formatted;
+        if (drawerDownloadsElem) drawerDownloadsElem.textContent = '+' + formatted;
     }
+
+    // Navegación Móvil (Drawer y ScrollSpy)
+    window.toggleMobileDrawer = function() {
+        const drawer = document.getElementById('mobile-drawer');
+        const backdrop = document.getElementById('mobile-drawer-backdrop');
+        if (!drawer) return;
+        const isActive = drawer.classList.toggle('active');
+        if (backdrop) backdrop.classList.toggle('active', isActive);
+        document.body.classList.toggle('drawer-open', isActive);
+    };
+
+    window.closeMobileDrawer = function() {
+        const drawer = document.getElementById('mobile-drawer');
+        const backdrop = document.getElementById('mobile-drawer-backdrop');
+        if (drawer) drawer.classList.remove('active');
+        if (backdrop) backdrop.classList.remove('active');
+        document.body.classList.remove('drawer-open');
+    };
+
+    // Botón Volver Arriba
+    const backToTopBtn = document.getElementById('back-to-top-btn');
+    window.scrollToTop = function() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const observedSections = ['inicio', 'curiosidades', 'cursos', 'libros', 'comics', 'podcasts', 'articulos', 'profesor', 'comentarios'];
+    function highlightActiveSectionOnScroll() {
+        const scrollPos = window.scrollY + 180;
+        let currentSectionId = 'inicio';
+
+        for (const sId of observedSections) {
+            const el = document.getElementById(sId);
+            if (el && el.offsetTop <= scrollPos) {
+                currentSectionId = sId;
+            }
+        }
+
+        document.querySelectorAll('.bottom-nav-item').forEach(item => {
+            if (item.dataset.section === currentSectionId) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
+
+        document.querySelectorAll('.quick-chip').forEach(chip => {
+            const href = chip.getAttribute('href');
+            if (href === '#' + currentSectionId) {
+                chip.classList.add('active');
+            } else {
+                chip.classList.remove('active');
+            }
+        });
+
+        document.querySelectorAll('.nav-links a').forEach(a => {
+            const href = a.getAttribute('href');
+            if (href === '#' + currentSectionId) {
+                a.classList.add('active');
+            } else {
+                a.classList.remove('active');
+            }
+        });
+    }
+
+    window.addEventListener('scroll', () => {
+        if (backToTopBtn) {
+            if (window.scrollY > 350) {
+                backToTopBtn.classList.add('visible');
+            } else {
+                backToTopBtn.classList.remove('visible');
+            }
+        }
+        highlightActiveSectionOnScroll();
+    }, { passive: true });
 
     // Inicializar Visitas
     let storedVisits = parseInt(localStorage.getItem('physicsailab_visits') || '0', 10);
@@ -153,12 +231,27 @@ document.addEventListener('DOMContentLoaded', () => {
         renderCourses();
     };
 
-    // 3. Renderizar Cursos
+    // 3. Renderizar Cursos (con modo compacto en móvil)
+    let coursesExpanded = false;
+    window.toggleCoursesExpansion = function() {
+        coursesExpanded = !coursesExpanded;
+        renderCourses();
+        if (!coursesExpanded) {
+            const el = document.getElementById('cursos');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+
     function renderCourses() {
         const coursesGrid = document.getElementById('courses-grid');
+        const toggleContainer = document.getElementById('courses-toggle-controls');
         if (!coursesGrid) return;
 
-        coursesGrid.innerHTML = data.cursos.map(c => {
+        const isMobile = window.innerWidth <= 768;
+        const total = data.cursos.length;
+        const coursesToRender = (isMobile && !coursesExpanded) ? data.cursos.slice(0, 3) : data.cursos;
+
+        coursesGrid.innerHTML = coursesToRender.map(c => {
             const isLab = c.id === 'transformadores' || c.esLaboratorio;
             const isSquash = c.id === 'squash_sim';
             const openBtnText = isStudentUnlocked
@@ -208,15 +301,42 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             `;
         }).join('');
+
+        if (toggleContainer) {
+            if (isMobile && total > 3) {
+                toggleContainer.innerHTML = coursesExpanded
+                    ? `<button class="btn-toggle-section" onclick="toggleCoursesExpansion()">Mostrar menos cursos ⬆️</button>`
+                    : `<button class="btn-toggle-section" onclick="toggleCoursesExpansion()">Ver los ${total} Cursos y Laboratorios (quedan ${total - 3}) 🚀</button>`;
+            } else {
+                toggleContainer.innerHTML = '';
+            }
+        }
     }
 
     updateStudentBannerState();
     renderCourses();
 
-    // 4. Renderizar Canales Oficiales en Spotify (Visual Nativo con Portadas Oficiales)
-    const spotifyGrid = document.getElementById('spotify-grid');
-    if (spotifyGrid) {
-        spotifyGrid.innerHTML = data.canalesSpotify.map(sp => `
+    // 4. Renderizar Canales Oficiales en Spotify (Visual Nativo y Carga Compacta Móvil)
+    let spotifyExpanded = false;
+    window.toggleSpotifyExpansion = function() {
+        spotifyExpanded = !spotifyExpanded;
+        renderSpotifyChannels();
+        if (!spotifyExpanded) {
+            const el = document.getElementById('podcasts');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+
+    function renderSpotifyChannels() {
+        const spotifyGrid = document.getElementById('spotify-grid');
+        const toggleContainer = document.getElementById('spotify-toggle-controls');
+        if (!spotifyGrid || !data.canalesSpotify) return;
+
+        const isMobile = window.innerWidth <= 768;
+        const total = data.canalesSpotify.length;
+        const channelsToRender = (isMobile && !spotifyExpanded) ? data.canalesSpotify.slice(0, 3) : data.canalesSpotify;
+
+        spotifyGrid.innerHTML = channelsToRender.map(sp => `
             <div class="spotify-card">
                 <div>
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.85rem;">
@@ -254,7 +374,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>
         `).join('');
+
+        if (toggleContainer) {
+            if (isMobile && total > 3) {
+                toggleContainer.innerHTML = spotifyExpanded
+                    ? `<button class="btn-toggle-section" onclick="toggleSpotifyExpansion()">Mostrar menos canales ⬆️</button>`
+                    : `<button class="btn-toggle-section" onclick="toggleSpotifyExpansion()">Ver los ${total} Canales Oficiales en Spotify 🎙️</button>`;
+            } else {
+                toggleContainer.innerHTML = '';
+            }
+        }
     }
+
+    renderSpotifyChannels();
 
     window.toggleSpotifyPlayer = function(elemId, spotifyId, btn) {
         const container = document.getElementById('embed-container-' + elemId);
@@ -271,9 +403,32 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // 5. Renderizar Cómics
+    // 5. Renderizar Cómics (con paginación progresiva)
+    let comicDisplayLimit = 6;
+    let currentComicCategory = 'all';
+
+    window.loadMoreComics = function() {
+        comicDisplayLimit += 6;
+        renderComics(currentComicCategory);
+    };
+
+    window.showAllComics = function() {
+        comicDisplayLimit = data.comics.length;
+        renderComics(currentComicCategory);
+    };
+
+    window.showFewerComics = function() {
+        comicDisplayLimit = 6;
+        renderComics(currentComicCategory);
+        const el = document.getElementById('comics');
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+    };
+
     const comicsGrid = document.getElementById('comics-grid');
+    const comicsPaginationControls = document.getElementById('comics-pagination-controls');
+
     window.renderComics = function(category = 'all') {
+        currentComicCategory = category;
         if (!comicsGrid) return;
         const cat = (category || 'all').toLowerCase().trim();
         const filtered = cat === 'all' 
@@ -310,10 +465,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     <button class="btn btn-secondary" onclick="renderComics('all')">Ver todos los cómics (${data.comics.length})</button>
                 </div>
             `;
+            if (comicsPaginationControls) comicsPaginationControls.innerHTML = '';
             return;
         }
 
-        comicsGrid.innerHTML = filtered.map(c => `
+        const displayed = filtered.slice(0, comicDisplayLimit);
+
+        comicsGrid.innerHTML = displayed.map(c => `
             <div class="comic-card">
                 <div class="comic-cover-wrap">
                     <img src="${c.portada}" alt="${c.titulo}" loading="lazy" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'300\\' height=\\'400\\' viewBox=\\'0 0 300 400\\'><rect width=\\'300\\' height=\\'400\\' fill=\\'%23111827\\'/><text x=\\'50%\\' y=\\'50%\\' fill=\\'%23F59E0B\\' font-family=\\'sans-serif\\' font-size=\\'48\\' text-anchor=\\'middle\\' dy=\\'.3em\\'>🎨</text></svg>';" />
@@ -350,6 +508,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>
         `).join('');
+
+        if (comicsPaginationControls) {
+            if (filtered.length > comicDisplayLimit) {
+                comicsPaginationControls.innerHTML = `
+                    <div class="toggle-info-text">Mostrando ${displayed.length} de ${filtered.length} cómics estudiantiles</div>
+                    <div style="display:flex; gap:0.6rem; flex-wrap:wrap; justify-content:center;">
+                        <button class="btn-toggle-section" onclick="loadMoreComics()">📖 Cargar más cómics (+6)</button>
+                        <button class="btn-toggle-section" onclick="showAllComics()">Mostrar los ${filtered.length} cómics completos ⚡</button>
+                    </div>
+                `;
+            } else if (filtered.length > 6 && comicDisplayLimit >= filtered.length) {
+                comicsPaginationControls.innerHTML = `
+                    <div class="toggle-info-text">Mostrando todos los ${filtered.length} cómics disponibles</div>
+                    <button class="btn-toggle-section" onclick="showFewerComics()">Mostrar menos (primeros 6) ⬆️</button>
+                `;
+            } else {
+                comicsPaginationControls.innerHTML = '';
+            }
+        }
     };
     renderComics('all');
 
@@ -358,6 +535,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', (e) => {
             document.querySelectorAll('.comic-filter-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
+            comicDisplayLimit = 6; // Reset limit al cambiar filtro
             renderComics(btn.dataset.filter);
         });
     });
@@ -609,17 +787,34 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // ========================================================
-    // 7. Renderizar Datos Fascinantes de la Física
+    // 7. Renderizar Datos Fascinantes de la Física (con modo compacto en móvil)
     // ========================================================
+    let factsExpanded = false;
+    window.toggleFactsExpansion = function() {
+        factsExpanded = !factsExpanded;
+        renderPhysicsFacts(currentFactFilter);
+        if (!factsExpanded) {
+            const el = document.getElementById('curiosidades');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+
+    let currentFactFilter = 'all';
     const factsGrid = document.getElementById('facts-grid');
+    const factsToggleControls = document.getElementById('facts-toggle-controls');
+
     window.renderPhysicsFacts = function(filter = 'all') {
+        currentFactFilter = filter;
         if (!factsGrid || !data.datosCuriosos) return;
         const f = (filter || 'all').toLowerCase();
         const filtered = f === 'all'
             ? data.datosCuriosos
             : data.datosCuriosos.filter(item => (item.categoriaTag || '').toLowerCase().includes(f));
 
-        factsGrid.innerHTML = filtered.map(item => `
+        const isMobile = window.innerWidth <= 768;
+        const factsToRender = (isMobile && !factsExpanded) ? filtered.slice(0, 4) : filtered;
+
+        factsGrid.innerHTML = factsToRender.map(item => `
             <div class="fact-card" id="fact-card-${item.id}">
                 <div>
                     <span class="fact-badge ${item.categoriaTag || ''}">
@@ -634,6 +829,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>
         `).join('');
+
+        if (factsToggleControls) {
+            if (isMobile && filtered.length > 4) {
+                factsToggleControls.innerHTML = factsExpanded
+                    ? `<button class="btn-toggle-section" onclick="toggleFactsExpansion()">Mostrar menos curiosidades ⬆️</button>`
+                    : `<button class="btn-toggle-section" onclick="toggleFactsExpansion()">Ver todas las ${filtered.length} curiosidades (quedan ${filtered.length - 4}) 💡</button>`;
+            } else {
+                factsToggleControls.innerHTML = '';
+            }
+        }
     };
 
     renderPhysicsFacts('all');
@@ -651,6 +856,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.fact-filter-btn').forEach(b => b.classList.remove('active'));
         const allBtn = document.querySelector('.fact-filter-btn[data-filter="all"]');
         if (allBtn) allBtn.classList.add('active');
+        factsExpanded = true; // Expandir para asegurar que el dato seleccionado sea visible
         renderPhysicsFacts('all');
 
         const randomIndex = Math.floor(Math.random() * data.datosCuriosos.length);
@@ -667,9 +873,27 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // ========================================================
-    // 8. Muro de Opiniones y Comentarios de la Comunidad
+    // 8. Muro de Opiniones y Comentarios de la Comunidad (con modo compacto)
     // ========================================================
+    let commentsDisplayLimit = 3;
+    window.toggleCommentsExpansion = function() {
+        const userComments = getStoredComments();
+        const baseComments = data.comentarios || [];
+        const total = userComments.length + baseComments.length;
+
+        if (commentsDisplayLimit >= total) {
+            commentsDisplayLimit = 3;
+            renderComments();
+            const el = document.getElementById('comentarios');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+        } else {
+            commentsDisplayLimit = total;
+            renderComments();
+        }
+    };
+
     const commentsList = document.getElementById('comments-list');
+    const commentsToggleControls = document.getElementById('comments-toggle-controls');
     const commentsTotalCounter = document.getElementById('comments-total-counter');
 
     function getStoredComments() {
@@ -690,7 +914,9 @@ document.addEventListener('DOMContentLoaded', () => {
             commentsTotalCounter.textContent = allComments.length;
         }
 
-        commentsList.innerHTML = allComments.map(c => {
+        const displayed = allComments.slice(0, commentsDisplayLimit);
+
+        commentsList.innerHTML = displayed.map(c => {
             const stars = '⭐'.repeat(c.calificacion || 5);
             const initials = (c.nombre || 'U').trim().substring(0, 2).toUpperCase();
             const isUser = !!c.isCustomUser;
@@ -722,6 +948,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
         }).join('');
+
+        if (commentsToggleControls) {
+            if (allComments.length > 3) {
+                commentsToggleControls.innerHTML = (commentsDisplayLimit >= allComments.length)
+                    ? `<button class="btn-toggle-section" onclick="toggleCommentsExpansion()">Mostrar menos opiniones ⬆️</button>`
+                    : `<button class="btn-toggle-section" onclick="toggleCommentsExpansion()">Ver más opiniones (${allComments.length} en total) 💬</button>`;
+            } else {
+                commentsToggleControls.innerHTML = '';
+            }
+        }
     };
 
     renderComments();
@@ -794,6 +1030,7 @@ document.addEventListener('DOMContentLoaded', () => {
         existing.unshift(newComment);
         localStorage.setItem('physicsailab_user_comments', JSON.stringify(existing));
 
+        commentsDisplayLimit = Math.max(commentsDisplayLimit, existing.length);
         renderComments();
 
         // Reset inputs
@@ -810,4 +1047,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }, 1200);
     };
+
+    // Adaptar dinámicamente si cambia el tamaño de pantalla
+    window.addEventListener('resize', () => {
+        renderCourses();
+        renderSpotifyChannels();
+        renderPhysicsFacts(currentFactFilter);
+    });
 });
