@@ -1,0 +1,117 @@
+<template class="chapter-src" data-id="kmeans" data-num="20" data-title="Agrupamiento: k-medias y mezclas gaussianas" data-part="Parte V · Aprendizaje no supervisado" data-short="Qué es un grupo; el algoritmo de Lloyd; inercia, mínimos locales y k-means++; elegir k con el codo y la silueta; limitaciones; mezclas gaussianas, EM, responsabilidades y BIC">
+<p class="lead">Sin etiquetas no hay respuestas correctas que imitar: el agrupamiento busca estructura, conjuntos de puntos más parecidos entre sí que con el resto. k-medias es el método más usado por su sencillez y velocidad; las mezclas gaussianas lo generalizan con probabilidades y formas elípticas. Ambos exigen decisiones (cuántos grupos, qué escala, qué distancia) que cambian el resultado.</p>
+
+<section>
+<h2>Qué es un grupo</h2>
+<p>No existe una definición única. Un grupo puede ser un conjunto compacto alrededor de un centro (k-medias), una región densa separada por zonas vacías (DBSCAN, capítulo 21), o una componente de una distribución de probabilidad (mezclas gaussianas). Cada algoritmo trae su propia definición, y elegir algoritmo es elegir qué entiende por grupo. Dos consecuencias prácticas:</p>
+<ul>
+<li>Un algoritmo de agrupamiento siempre devuelve grupos, aunque los datos no tengan ninguno. Hay que comprobar que la estructura es real (estabilidad ante remuestreos, silueta, sentido de dominio).</li>
+<li>La escala de las variables decide qué es «parecido»: estandarice o elija pesos con criterio, como en k-NN.</li>
+</ul>
+</section>
+
+<section>
+<h2>k-medias y el algoritmo de Lloyd</h2>
+<p>k-medias busca \(k\) centros \(\boldsymbol\mu_1,\dots,\boldsymbol\mu_k\) y una asignación de cada punto a un centro que minimicen la <span class="term">inercia</span>, la suma de distancias al cuadrado:</p>
+<div class="eq key" data-name="Objetivo de k-medias">\[J=\sum_{i=1}^n\norm{\vb x_i-\boldsymbol\mu_{c(i)}}^2 .\]</div>
+<p>El algoritmo de Lloyd alterna dos pasos, cada uno de los cuales no puede aumentar \(J\):</p>
+<ol>
+<li><b>Asignar</b>: cada punto al centro más cercano (las regiones resultantes son celdas de Voronoi).</li>
+<li><b>Actualizar</b>: cada centro a la media de sus puntos (la media minimiza la suma de distancias al cuadrado).</li>
+</ol>
+<p>Converge en pocas iteraciones, pero a un <b>mínimo local</b> que depende de los centros iniciales. Por eso se usa <span class="term">k-means++</span> (Arthur y Vassilvitskii, 2007), que elige cada centro inicial con probabilidad proporcional al cuadrado de su distancia a los ya elegidos, y se repite con varias inicializaciones (<code>n_init</code>) quedándose con la de menor inercia.</p>
+<div class="sim" data-sim="kmeans-pasos" data-title="k-medias paso a paso"></div>
+<div class="sim-guide"><ul>
+<li>Pulse «Paso» varias veces: asignar colorea los puntos según la celda del centro más cercano; actualizar mueve cada centro (las trazas punteadas muestran su recorrido).</li>
+<li>Con la inicialización «amontonada» los centros arrancan juntos en una esquina: a veces dos terminan compartiendo un grupo y otro queda partido. La inercia final es mayor: un mínimo local.</li>
+<li>Con k-means++ los centros arrancan separados y el resultado suele ser el bueno desde el principio.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Elegir k</h2>
+<p>La inercia baja siempre al aumentar \(k\) (con \(k=n\) vale cero), así que no sirve para elegir \(k\) directamente. Dos herramientas habituales:</p>
+<ul>
+<li><b>Método del codo</b>: graficar la inercia frente a \(k\) y buscar el punto a partir del cual las mejoras se vuelven pequeñas. A menudo el codo es ambiguo.</li>
+<li><b>Coeficiente de silueta</b>: para cada punto, con \(a(i)\) la distancia media a su propio grupo y \(b(i)\) la distancia media al grupo vecino más cercano,</li>
+</ul>
+<div class="eq key" data-name="Silueta">\[s(i)=\frac{b(i)-a(i)}{\max\{a(i),b(i)\}}\in[-1,1].\]</div>
+<p>\(s\) cerca de 1: el punto está bien dentro de su grupo; cerca de 0: en la frontera; negativo: probablemente en el grupo equivocado. La silueta media se maximiza en un \(k\) razonable, y el <b>gráfico de silueta</b> muestra si algún grupo está mal formado. El estadístico de brecha (<i>gap</i>), el BIC de las mezclas y, sobre todo, la utilidad de los grupos para el problema completan la decisión.</p>
+<div class="sim" data-sim="codo-silueta" data-title="Codo, silueta media y gráfico de silueta"></div>
+<div class="sim-guide"><ul>
+<li>Con grupos bien separados, el codo y la silueta coinciden en el \(k\) verdadero.</li>
+<li>Aumente la dispersión: el codo se suaviza y la silueta media baja para todos los \(k\). Con grupos solapados no hay respuesta clara, y eso también es información.</li>
+<li>En el gráfico de silueta, un \(k\) demasiado grande produce grupos con barras cortas o negativas.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Limitaciones de k-medias</h2>
+<ul>
+<li>Supone grupos <b>convexos y aproximadamente esféricos</b>, de tamaño parecido: las fronteras son rectas a medio camino entre centros. Grupos alargados, de densidades o tamaños muy distintos, o con formas curvas, se parten mal.</li>
+<li>Es sensible a la <b>escala</b> y a los <b>atípicos</b> (la media se deja arrastrar; k-medoides usa puntos reales como centros y es más robusto).</li>
+<li>Asigna cada punto a un grupo sin expresar duda.</li>
+<li>Con muchos datos, <code>MiniBatchKMeans</code> usa mini-lotes y es mucho más rápido.</li>
+</ul>
+</section>
+
+<section>
+<h2>Mezclas gaussianas y el algoritmo EM</h2>
+<p>Una <span class="term">mezcla gaussiana</span> supone que cada punto proviene de una de \(k\) normales multivariantes, elegida con probabilidad \(\pi_j\):</p>
+<div class="eq key" data-name="Mezcla gaussiana">\[p(\vb x)=\sum_{j=1}^k\pi_j\,\mathcal N(\vb x\mid\boldsymbol\mu_j,\Sigma_j),\qquad \gamma_{ij}=\frac{\pi_j\,\mathcal N(\vb x_i\mid\boldsymbol\mu_j,\Sigma_j)}{\sum_l\pi_l\,\mathcal N(\vb x_i\mid\boldsymbol\mu_l,\Sigma_l)} .\]</div>
+<p>La <span class="term">responsabilidad</span> \(\gamma_{ij}\) es la probabilidad de que el punto \(i\) provenga del componente \(j\): una asignación suave. El algoritmo <span class="term">EM</span> (esperanza–maximización) alterna:</p>
+<ul>
+<li><b>Paso E</b>: calcular las responsabilidades con los parámetros actuales.</li>
+<li><b>Paso M</b>: reestimar \(\pi_j\), \(\boldsymbol\mu_j\) y \(\Sigma_j\) como promedios ponderados por \(\gamma_{ij}\).</li>
+</ul>
+<p>Cada iteración no disminuye la verosimilitud. k-medias es el caso límite de EM con covarianzas esféricas iguales y asignaciones duras. Las covarianzas completas permiten grupos elípticos e inclinados; las opciones <code>covariance_type</code> (<code>'full'</code>, <code>'tied'</code>, <code>'diag'</code>, <code>'spherical'</code>) controlan la complejidad. El número de componentes se elige con el <span class="term">BIC</span> \(=-2\log L+q\log n\), que penaliza los \(q\) parámetros.</p>
+<div class="sim" data-sim="gmm-em" data-title="EM ajustando una mezcla gaussiana"></div>
+<div class="sim-guide"><ul>
+<li>Con grupos alargados y paralelos, las elipses de EM se estiran hasta seguir cada franja. Active la comparación con k-medias: sus fronteras rectas cortan las franjas por la mitad.</li>
+<li>Con tamaños distintos, la mezcla da poco peso y una elipse pequeña al grupo compacto.</li>
+<li>Pruebe varias inicializaciones: EM también cae en mínimos locales y a veces una elipse se queda con dos grupos.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Práctica: k-medias, silueta y mezclas</h2>
+<div class="box py"><p>El programa elige \(k\) con inercia y silueta en cuatro grupos sintéticos, mide la sensibilidad a la inicialización, compara k-medias y mezclas en grupos alargados, usa el BIC y prueba si k-medias recupera las especies de iris.</p>
+<div class="py" data-py="20-kmeans-gmm"></div></div>
+<div class="box read"><ul>
+<li><b>Elegir k</b>: la inercia baja siempre (2 936 → 587), pero el salto grande ocurre hasta \(k=4\) (856) y luego las mejoras son pequeñas: el codo. La silueta es máxima en \(k=4\) (0.576), el número verdadero de grupos.</li>
+<li><b>Inicialización</b>: con una sola inicialización aleatoria, la inercia final varía entre 855 y 1 681 en 20 intentos: muchos terminan en mínimos locales malos. k-means++ con 10 inicializaciones encuentra 855 y un ARI de 0.943 con los grupos verdaderos.</li>
+<li><b>Grupos alargados</b>: k-medias obtiene ARI ≈ 0 (corta las franjas en vertical). La mezcla gaussiana iniciada desde k-medias, que es el valor por defecto de scikit-learn, hereda ese error (ARI ≈ 0, log-verosimilitud −3.962); con 10 inicializaciones al azar encuentra la solución correcta (ARI 0.987, log-verosimilitud −3.525, mayor). La verosimilitud distingue cuál solución es mejor aunque no conozcamos las etiquetas.</li>
+<li><b>BIC</b>: baja hasta \(k=4\) (4 735) y sube en \(k=5\): elige cuatro componentes.</li>
+<li><b>Iris</b>: la silueta prefiere \(k=2\) (0.582 frente a 0.460), porque <i>versicolor</i> y <i>virginica</i> se solapan y forman casi un solo grupo; con \(k=3\) el ARI con las especies es solo 0.620. Los grupos «naturales» de los datos no tienen por qué coincidir con las categorías que nos interesan.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>k-medias minimiza la inercia alternando asignar y actualizar; converge a mínimos locales: use k-means++ y varias inicializaciones.</li>
+<li>La inercia no elige \(k\); use el codo, la silueta, el BIC y el sentido del problema.</li>
+<li>k-medias supone grupos esféricos, de tamaño parecido; es sensible a la escala y a los atípicos.</li>
+<li>Las mezclas gaussianas dan asignaciones suaves y formas elípticas; se ajustan con EM y se comparan con BIC.</li>
+<li>Un algoritmo de agrupamiento siempre encuentra grupos: valide su estabilidad y su utilidad.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Puntos 1, 2, 9, 10, 11 en una recta y centros iniciales 1 y 2. Haga dos iteraciones de Lloyd.
+<details><summary>Respuesta</summary><p>Asignar: {1} y {2, 9, 10, 11}; actualizar: 1 y 8. Asignar: {1, 2} y {9, 10, 11}; actualizar: 1.5 y 10. Ya no cambia.</p></details></li>
+<li><span class="lvl">Básico</span>Un punto tiene \(a=0.4\) y \(b=1.2\). ¿Su silueta?
+<details><summary>Respuesta</summary><p>\((1.2-0.4)/1.2=0.667\).</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Cuántos parámetros tiene una mezcla de 3 gaussianas con covarianza completa en 2D?
+<details><summary>Respuesta</summary><p>Medias \(3\cdot2=6\), covarianzas \(3\cdot3=9\), pesos 2 (suman 1): 17.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué no se puede elegir \(k\) minimizando la inercia?
+<details><summary>Respuesta</summary><p>Porque disminuye siempre con \(k\) y vale 0 con un grupo por punto. Es como elegir el grado de un polinomio por el error de entrenamiento.</p></details></li>
+<li><span class="lvl">Avanzado</span>Muestre que en el paso de actualización la media es el centro óptimo para un grupo fijo.
+<details><summary>Respuesta</summary><p>\(\sum\norm{\vb x_i-\boldsymbol\mu}^2\) tiene gradiente \(-2\sum(\vb x_i-\boldsymbol\mu)\), que se anula en \(\boldsymbol\mu=\bar{\vb x}\); la función es convexa, así que es el mínimo.</p></details></li>
+</ol>
+<div class="box links"><ul>
+<li><a href="https://scikit-learn.org/stable/modules/clustering.html">scikit-learn — Clustering</a><small>Comparación visual de todos los algoritmos de agrupamiento y sus métricas.</small></li>
+<li><a href="https://scikit-learn.org/stable/auto_examples/cluster/plot_kmeans_silhouette_analysis.html">scikit-learn — Selecting the number of clusters with silhouette analysis</a><small>Gráficos de silueta para varios valores de k.</small></li>
+<li><a href="https://scikit-learn.org/stable/modules/mixture.html">scikit-learn — Gaussian mixture models</a><small>Tipos de covarianza, BIC y mezclas bayesianas.</small></li>
+<li><a href="https://www.naftaliharris.com/blog/visualizing-k-means-clustering/">Naftali Harris — Visualizing K-Means Clustering</a><small>Simulador interactivo de k-medias con varios conjuntos de datos.</small></li>
+</ul></div>
+</section>
+</template>

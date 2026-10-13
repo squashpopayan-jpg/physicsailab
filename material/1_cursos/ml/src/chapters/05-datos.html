@@ -1,0 +1,128 @@
+<template class="chapter-src" data-id="datos" data-num="5" data-title="Preparar los datos" data-part="Parte I · Fundamentos" data-short="Exploración; escalado; variables categóricas; valores faltantes; atípicos y transformaciones; ingeniería de características; ColumnTransformer y pipelines">
+<p class="lead">Los algoritmos reciben números y devuelven números; todo lo que hay entre el mundo y esa tabla numérica lo decide usted. Escalar, codificar categorías, imputar faltantes y construir buenas características suele mejorar un modelo más que cambiar de algoritmo. Y hacerlo mal, por ejemplo con información del conjunto de prueba, invalida la evaluación.</p>
+
+<section>
+<h2>Explorar antes de modelar</h2>
+<p>La exploración de datos (EDA) responde preguntas concretas antes de tocar un algoritmo:</p>
+<ul>
+<li><b>Tipos</b>: numéricas continuas o discretas; categóricas nominales (ciudad), ordinales (nivel educativo), binarias; texto; fechas; identificadores (que casi nunca deben usarse como variables).</li>
+<li><b>Calidad</b>: valores faltantes y su patrón, duplicados, valores imposibles (edad −3, 999 como código de «no sabe»), unidades mezcladas.</li>
+<li><b>Distribuciones</b>: asimetría (ingresos, tiempos, conteos suelen tener colas largas), atípicos, valores concentrados en un punto.</li>
+<li><b>Relaciones</b>: correlaciones entre variables (colinealidad) y de cada variable con el objetivo; variables que lo predicen «demasiado bien» (sospecha de fuga).</li>
+<li><b>Objetivo</b>: proporción de clases, rango y asimetría de \(y\) en regresión.</li>
+</ul>
+<div class="box warn"><p>Haga la exploración que lleva a decisiones (qué variables crear, qué transformar) solo con el conjunto de entrenamiento. Mirar el conjunto de prueba para decidir es una forma de fuga.</p></div>
+</section>
+
+<section>
+<h2>Escalado</h2>
+<p>Muchos algoritmos son sensibles a la escala de las variables:</p>
+<div class="eq key" data-name="Tres escalados">\[z=\frac{x-\bar x}{s}\ \ (\text{estandarizar}),\qquad z=\frac{x-x_{\min}}{x_{\max}-x_{\min}}\ \ (\text{min–max}),\qquad z=\frac{x-\text{mediana}}{\text{RIC}}\ \ (\text{robusto}).\]</div>
+<div class="tablewrap"><table>
+<thead><tr><th>Necesitan escalado</th><th>Por qué</th><th>No lo necesitan</th></tr></thead>
+<tbody>
+<tr><td>k-NN, k-medias, SVM con RBF, PCA</td><td>usan distancias o varianzas</td><td rowspan="3">árboles, bosques y boosting: cada división compara una sola variable con un umbral, y un cambio de escala solo mueve el umbral</td></tr>
+<tr><td>Ridge, Lasso, logística regularizada</td><td>la penalización trata igual a todos los coeficientes, que dependen de las unidades</td></tr>
+<tr><td>Redes neuronales y todo lo que use descenso de gradiente</td><td>escalas distintas producen valles alargados y entrenamiento lento (capítulo 7)</td></tr>
+</tbody></table></div>
+<div class="sim" data-sim="escalado-knn" data-title="k vecinos con una variable en años y otra en miles de pesos"></div>
+<div class="sim-guide"><ul>
+<li>Sin escalar, el ingreso (miles) domina la distancia y la frontera queda casi horizontal: la edad no cuenta, aunque la clase depende de ambas.</li>
+<li>Al estandarizar, las dos variables pesan igual y la exactitud de prueba sube.</li>
+<li>Active el atípico extremo de ingreso: min–max comprime a todos los demás en una franja estrecha; el escalado robusto (mediana y rango intercuartílico) no se deja arrastrar.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Variables categóricas</h2>
+<p>Los algoritmos necesitan números, pero asignar 1, 2, 3 a «Bogotá, Cali, Popayán» inventa un orden y unas distancias que no existen.</p>
+<ul>
+<li><b>One-hot</b> (variables indicadoras): una columna 0/1 por categoría. Es la opción por defecto para categorías nominales con pocas modalidades. Con modelos lineales con intercepto se elimina una columna (<code>drop='first'</code>) para evitar colinealidad perfecta, o se regulariza.</li>
+<li><b>Ordinal</b>: enteros que respetan el orden (bajo &lt; medio &lt; alto). Adecuado para variables realmente ordinales, y aceptable con árboles para casi cualquier categórica.</li>
+<li><b>Codificación por objetivo</b> (<i>target encoding</i>): reemplaza cada categoría por la media de \(y\) en esa categoría. Muy útil con alta cardinalidad (miles de códigos postales), pero filtra el objetivo si se calcula con las mismas filas que se entrenan; debe hacerse con validación cruzada interna, como hace <code>TargetEncoder</code> de scikit-learn.</li>
+<li><b>Categorías nuevas en producción</b>: decida de antemano qué hacer (<code>handle_unknown='ignore'</code>).</li>
+</ul>
+</section>
+
+<section>
+<h2>Valores faltantes</h2>
+<p>Antes de imputar conviene preguntar por qué falta el dato:</p>
+<ul>
+<li><b>Completamente al azar</b> (MCAR): la falta no depende de nada. Eliminar filas solo pierde potencia.</li>
+<li><b>Al azar condicional</b> (MAR): la falta depende de otras variables observadas (los mayores responden menos la pregunta de ingresos). Imputar con las otras variables corrige buena parte del sesgo.</li>
+<li><b>No al azar</b> (MNAR): la falta depende del propio valor (quien gana mucho no declara su ingreso). Ningún método lo corrige del todo; el hecho de faltar es información y conviene una variable indicadora.</li>
+</ul>
+<div class="sim" data-sim="imputacion" data-title="Cinco formas de imputar y lo que le hacen a los datos"></div>
+<div class="sim-guide"><ul>
+<li>Los puntos huecos son los valores imputados de \(x_2\). Con la media todos quedan en una línea horizontal: la varianza se encoge y la correlación con \(x_1\) se debilita.</li>
+<li>La imputación por regresión o por vecinos respeta la relación entre variables; con faltantes MAR, eliminar filas o imputar con la media sesga la media estimada.</li>
+<li>Ninguna imputación recupera la información perdida: la varianza de los datos imputados por regresión es menor que la real porque no incluye el ruido.</li>
+</ul></div>
+<div class="box ex"><p>En scikit-learn: <code>SimpleImputer(strategy='median', add_indicator=True)</code> imputa con la mediana y agrega una columna 0/1 por cada variable con faltantes; <code>KNNImputer</code> usa vecinos; <code>IterativeImputer</code> modela cada variable con las demás. Los árboles de <code>HistGradientBoosting</code> aceptan faltantes directamente y aprenden hacia qué lado enviarlos.</p></div>
+</section>
+
+<section>
+<h2>Atípicos y transformaciones</h2>
+<p>Un <span class="term">atípico</span> puede ser un error (una estatura de 17 metros) o un caso real e importante (una transacción fraudulenta). Los errores se corrigen o eliminan; los casos reales se conservan y se elige un método que no se deje dominar por ellos.</p>
+<ul>
+<li><b>Logaritmo</b> \(\log(1+x)\) para variables positivas con cola larga (ingresos, conteos, precios): vuelve multiplicativos los efectos y reduce la influencia de los valores extremos. También para el objetivo, si los errores relativos importan más que los absolutos.</li>
+<li><b>Box–Cox y Yeo–Johnson</b> (<code>PowerTransformer</code>): buscan automáticamente la potencia que acerca la variable a una normal.</li>
+<li><b>Recortar</b> (<i>winsorizar</i>) a los percentiles 1 y 99: limita la influencia sin eliminar filas.</li>
+<li><b>Pérdidas robustas</b> (Huber, absoluta) en lugar de transformar: capítulo 9.</li>
+</ul>
+</section>
+
+<section>
+<h2>Ingeniería de características</h2>
+<p>Una buena característica expresa en forma simple algo que el modelo tendría que descubrir con dificultad. Un modelo lineal no puede representar «estar lejos del centro», pero sí puede usar la variable \(r^2=x_1^2+x_2^2\).</p>
+<div class="sim" data-sim="ingenieria-rasgos" data-title="Una regresión logística con las características adecuadas"></div>
+<div class="sim-guide"><ul>
+<li>Con solo \(x_1,x_2\) la logística traza una recta y no puede separar los círculos (exactitud ≈ 50 %).</li>
+<li>Agregue \(x_1^2\) y \(x_2^2\) (o directamente \(r^2\)): la frontera se vuelve una circunferencia y la exactitud sube a más del 95 %.</li>
+<li>Pase al XOR: lo que hace falta es el producto \(x_1x_2\). Cada problema pide su característica.</li>
+</ul></div>
+<p>Fuentes típicas de características: interacciones y razones (precio por metro cuadrado), agregados por grupo (gasto medio del cliente en los últimos 30 días), componentes de fechas (día de la semana, mes, festivo; codificación cíclica con seno y coseno de la hora), distancias geográficas, conteos de texto. Los modelos de árboles y las redes descubren parte de esto solos, pero el conocimiento del dominio sigue siendo la ventaja más grande.</p>
+</section>
+
+<section>
+<h2>Práctica: un preprocesamiento completo con ColumnTransformer</h2>
+<div class="box py"><p>El programa construye una tabla de clientes con columnas numéricas (con faltantes y una muy asimétrica), una categórica nominal y una ordinal. Un <code>ColumnTransformer</code> aplica a cada grupo de columnas su propio tratamiento, y el <code>Pipeline</code> completo se evalúa con validación cruzada sin fuga.</p>
+<div class="py" data-py="05-preprocesamiento"></div></div>
+<div class="box read"><ul>
+<li><b>Faltantes</b>: el resumen muestra cuántos hay por columna; el imputador agrega columnas indicadoras <code>missingindicator_…</code>, que el modelo puede usar si el hecho de faltar predice algo.</li>
+<li><b>Nombres de salida</b>: <code>get_feature_names_out</code> revela las columnas que realmente ve el modelo: las numéricas escaladas, una columna por ciudad y el plan como entero ordenado.</li>
+<li><b>Comparación</b>: el ingreso en escala logarítmica sube el AUC de la logística de 0.743 a 0.754, porque la relación verdadera es con el logaritmo del ingreso. La mejora es pequeña pero consistente: la desviación entre pliegues (0.014) es la misma para ambos y los pliegues son idénticos.</li>
+<li>El árbol potenciado (<code>HistGradientBoostingClassifier</code>) no necesita escalado y acepta los faltantes directamente, pero con su configuración por defecto queda en 0.695: aquí la relación verdadera es suave y aditiva, justo lo que modela la logística, y 2 000 filas no alcanzan para que 100 árboles profundos la aproximen sin sobreajustar. Con árboles poco profundos y una tasa de aprendizaje menor llega a 0.742. El modelo más complejo no siempre gana; el que se parece a la estructura real de los datos, sí.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Explore con el conjunto de entrenamiento: tipos, faltantes, asimetrías, relaciones y posibles fugas.</li>
+<li>Escale para métodos basados en distancias, penalizaciones o gradiente; los árboles no lo necesitan.</li>
+<li>One-hot para nominales, ordinal para ordinales; codificación por objetivo con validación cruzada interna.</li>
+<li>Pregunte por qué faltan los datos; imputar con la media encoge varianzas y correlaciones; añada indicadores.</li>
+<li>Transformaciones (logaritmo) y nuevas características suelen rendir más que cambiar de algoritmo.</li>
+<li>Todo el preprocesamiento va dentro de un Pipeline.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Estandarice el valor 180 de una variable con media 170 y desviación 8.
+<details><summary>Respuesta</summary><p>\(z=(180-170)/8=1.25\): está 1.25 desviaciones por encima de la media.</p></details></li>
+<li><span class="lvl">Básico</span>Una variable «ciudad» tiene 5 categorías. ¿Cuántas columnas genera one-hot con y sin <code>drop='first'</code>?
+<details><summary>Respuesta</summary><p>5 columnas sin eliminar, 4 con <code>drop='first'</code> (la categoría eliminada queda como referencia en el intercepto).</p></details></li>
+<li><span class="lvl">Intermedio</span>En una encuesta, quienes tienen ingresos altos dejan más a menudo en blanco esa pregunta. ¿Qué tipo de faltante es y qué haría?
+<details><summary>Respuesta</summary><p>MNAR: la falta depende del propio valor. Imputar (por ejemplo con otras variables) y agregar un indicador de faltante; ser explícito sobre el sesgo residual.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué codificar «código postal» (3 000 valores) por la media del objetivo calculada con todas las filas produce un modelo sobreoptimista?
+<details><summary>Respuesta</summary><p>Cada fila contribuye a la media de su propia categoría; en categorías con pocas filas la codificación casi contiene la etiqueta. Hay que calcularla fuera de cada fila (validación cruzada interna) y suavizar hacia la media global.</p></details></li>
+<li><span class="lvl">Avanzado</span>Una variable hora del día (0–23) se usa en un modelo lineal. ¿Qué problema hay y cómo se codifica?
+<details><summary>Respuesta</summary><p>Como número, 23 y 0 quedan lejos aunque son contiguas. Se codifica con \(\sen(2\pi h/24)\) y \(\cos(2\pi h/24)\): dos variables que colocan las horas en un círculo.</p></details></li>
+</ol>
+<div class="box links"><ul>
+<li><a href="https://scikit-learn.org/stable/modules/preprocessing.html">scikit-learn — Preprocessing data</a><small>Escaladores, transformaciones de potencia, codificadores y discretización.</small></li>
+<li><a href="https://scikit-learn.org/stable/modules/impute.html">scikit-learn — Imputation of missing values</a><small>SimpleImputer, KNNImputer, IterativeImputer e indicadores de faltantes.</small></li>
+<li><a href="https://scikit-learn.org/stable/modules/compose.html">scikit-learn — Pipelines and composite estimators</a><small>Pipeline, ColumnTransformer y cómo inspeccionar los nombres de las columnas.</small></li>
+<li><a href="https://feat.engineering/">Kuhn y Johnson — Feature Engineering and Selection</a><small>Libro gratuito y práctico sobre cómo construir y elegir características.</small></li>
+</ul></div>
+</section>
+</template>

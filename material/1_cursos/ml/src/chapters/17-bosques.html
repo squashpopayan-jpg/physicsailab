@@ -1,0 +1,96 @@
+<template class="chapter-src" data-id="bosques" data-num="17" data-title="Bagging y bosques aleatorios" data-part="Parte IV · Ensambles y ajuste" data-short="Promediar para reducir varianza; bootstrap y bagging; estimación fuera de bolsa; bosques aleatorios y la decorrelación; hiperparámetros; importancias sesgadas y por permutación">
+<p class="lead">Un árbol profundo tiene poco sesgo y mucha varianza. Si se entrenan muchos árboles distintos y se promedian sus predicciones, la varianza baja y el sesgo casi no cambia. Esa idea, más un poco de azar para que los árboles se parezcan menos entre sí, es el bosque aleatorio: uno de los algoritmos más fiables y menos exigentes de ajustar que existen.</p>
+
+<section>
+<h2>Promediar reduce la varianza</h2>
+<p>Si \(B\) estimadores tienen cada uno varianza \(\sigma^2\) y correlación \(\rho\) entre pares, la varianza de su promedio es</p>
+<div class="eq key" data-name="Varianza de un promedio correlacionado">\[\Var\Big(\frac1B\sum_{b=1}^B\hat f_b\Big)=\rho\,\sigma^2+\frac{1-\rho}{B}\,\sigma^2 .\]</div>
+<p>Con modelos independientes (\(\rho=0\)) la varianza cae como \(1/B\). Con modelos correlacionados queda un piso \(\rho\sigma^2\) que ningún número de árboles elimina. Por eso hay dos objetivos: muchos modelos y <b>poco correlacionados</b>.</p>
+<div class="box explain"><p>Si cien personas estiman el peso de un buey, el promedio suele acertar mejor que casi cualquiera de ellas, siempre que sus errores no vayan todos en la misma dirección. Si todas copian al vecino, promediar no ayuda: el error común se queda.</p></div>
+</section>
+
+<section>
+<h2>Bootstrap, bagging y la estimación fuera de bolsa</h2>
+<p>Para tener muchos modelos distintos con un solo conjunto de datos, el <span class="term">bagging</span> (<i>bootstrap aggregating</i>, Breiman 1996) entrena cada árbol con una <span class="term">muestra bootstrap</span>: \(n\) filas sorteadas con reemplazo. Cada muestra contiene en promedio el 63.2 % de las filas originales, porque la probabilidad de que una fila no salga en \(n\) sorteos es \((1-1/n)^n\to\ee^{-1}=0.368\).</p>
+<p>Las filas que no entraron en la muestra de un árbol son sus datos <span class="term">fuera de bolsa</span> (OOB). Prediciendo cada fila solo con los árboles que no la vieron se obtiene una estimación del error de generalización casi gratis, comparable a una validación cruzada.</p>
+<div class="sim" data-sim="bosque-votacion" data-title="Árboles individuales y su voto"></div>
+<div class="sim-guide"><ul>
+<li>Las seis miniaturas son árboles entrenados con muestras bootstrap distintas: fronteras muy irregulares y distintas entre sí.</li>
+<li>El mapa grande es el promedio de \(B\) árboles: una frontera más suave y estable que la de cualquiera de ellos.</li>
+<li>Compare la exactitud de prueba del árbol único con la del bosque, y la estimación OOB con la de prueba.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Bosques aleatorios: decorrelacionar los árboles</h2>
+<p>Con bagging, si una variable es muy fuerte, casi todos los árboles la usan en la raíz y se parecen: \(\rho\) es alto. El <span class="term">bosque aleatorio</span> (Breiman, 2001) añade un segundo azar: en cada división, solo se consideran <span class="hp">max_features</span> variables elegidas al azar. Los árboles quedan más distintos y el promedio reduce más la varianza, aunque cada árbol individual sea algo peor.</p>
+<ul>
+<li><b>max_features</b>: \(\sqrt p\) en clasificación (por defecto en scikit-learn) y \(p\) o \(p/3\) en regresión. Es el hiperparámetro más influyente, aunque el desempeño suele ser poco sensible a él.</li>
+<li><b>n_estimators</b>: más árboles nunca empeoran el error esperado (no sobreajusta por añadir árboles); solo cuestan tiempo. Con unos cientos suele bastar; mire la curva OOB para decidir.</li>
+<li><b>Profundidad</b>: los árboles se dejan crecer completos (sesgo bajo); el promedio se encarga de la varianza. Con datos muy ruidosos, <code>min_samples_leaf</code> de 3 a 10 ayuda.</li>
+<li>Las probabilidades son la media de las proporciones de las hojas: tienden a ser poco extremas (subconfiadas, capítulo 12).</li>
+</ul>
+<div class="sim" data-sim="bosque-varianza" data-title="Error de prueba al añadir árboles: árbol único, bagging y bosque"></div>
+<div class="sim-guide"><ul>
+<li>Los datos tienen 8 variables, dos de ellas casi copias de otras. El árbol único es la referencia horizontal.</li>
+<li>Bagging baja el error con los primeros árboles y luego se estanca: sus árboles están correlacionados. El bosque, con una variable candidata por división, llega más abajo.</li>
+<li>La curva OOB acompaña a la de prueba sin haber usado datos de prueba.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Importancia de variables: cuidado con la impureza</h2>
+<p>Los bosques reportan dos importancias. La <b>MDI</b> (reducción media de impureza) se calcula durante el entrenamiento y está sesgada: una variable continua con muchos valores distintos ofrece muchísimos umbrales, y árboles profundos la usan para separar el ruido de los datos de entrenamiento. La <b>importancia por permutación</b> mide cuánto empeora el desempeño en datos no vistos al barajar una variable; una variable inútil da cero (más o menos ruido).</p>
+<div class="sim" data-sim="importancia-sesgo" data-title="Una variable aleatoria «importantísima» según la impureza"></div>
+<div class="sim-guide"><ul>
+<li>El resultado depende de dos variables con pocos valores (binaria y de 3 categorías); la tercera es ruido continuo.</li>
+<li>La MDI le da a la variable aleatoria la mayor importancia. La permutación en datos de prueba la deja cerca de cero.</li>
+<li>Aumente <code>min_samples_leaf</code>: los árboles dejan de memorizar con la variable aleatoria y el sesgo de la MDI se reduce.</li>
+</ul></div>
+<div class="box when"><ul>
+<li><b>Úselo</b> como primer modelo serio en datos tabulares: funciona bien con los valores por defecto, no necesita escalado, tolera variables irrelevantes y da una estimación OOB gratis.</li>
+<li><b>Limitaciones</b>: modelos grandes y predicción más lenta que un modelo lineal; no extrapola; probabilidades poco calibradas; con datos tabulares grandes, el gradient boosting bien ajustado (capítulo 18) suele ganarle por un margen pequeño.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Práctica: bagging, bosques e importancias</h2>
+<div class="box py"><p>El programa compara un árbol, bagging y un bosque con distinto número de árboles en el cáncer de mama, revisa la estimación OOB y la sensibilidad a <code>max_features</code>, y reproduce el sesgo de la importancia por impureza con datos sintéticos.</p>
+<div class="py" data-py="17-bosques"></div></div>
+<div class="box read"><ul>
+<li><b>Árbol frente a ensambles</b>: un árbol completo da 0.906; el bosque llega a 0.953 con 100 árboles y se queda ahí con 500. Bagging se estanca en 0.92–0.94: sus árboles se parecen demasiado. Con 111 tumores de prueba, cada acierto vale 0.6 puntos: las diferencias entre 0.936 y 0.924 son uno o dos casos.</li>
+<li><b>B = 1</b>: un bosque de un solo árbol (0.889) es peor que un árbol normal, porque ese árbol vio solo el 63 % de las filas y elegía entre pocas variables. El azar que perjudica a un árbol es lo que ayuda al conjunto.</li>
+<li><b>OOB</b>: 0.965 frente a 0.953 en prueba; ambas son estimaciones con incertidumbre de un par de puntos, y concuerdan.</li>
+<li><b>max_features</b>: de 1 a todas, el OOB se mueve entre 0.957 y 0.967. Los bosques son poco sensibles a sus hiperparámetros, una de sus grandes virtudes.</li>
+<li><b>Importancias</b>: la MDI le asigna 0.783 a la variable puramente aleatoria y solo 0.130 al sexo, que es la que más importa. La permutación en prueba lo corrige: sexo 0.039, clase 0.017 y azar 0.007 ± 0.011, indistinguible de cero. La exactitud de entrenamiento perfecta (1.000) frente a 0.606 en prueba revela que los árboles usaron el azar para memorizar.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Promediar \(B\) modelos reduce la varianza hasta el piso \(\rho\sigma^2\): hacen falta modelos poco correlacionados.</li>
+<li>Bagging: árboles sobre muestras bootstrap; cada fila queda fuera de bolsa en el 36.8 % de los árboles.</li>
+<li>Bosque aleatorio: además, \(\sqrt p\) variables candidatas por división; más árboles nunca sobreajustan.</li>
+<li>La importancia por impureza favorece variables con muchos valores; use permutación en datos no vistos.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Qué fracción de filas distintas contiene en promedio una muestra bootstrap de \(n=10\)?
+<details><summary>Respuesta</summary><p>\(1-(0.9)^{10}=0.651\) (frente a 0.632 en el límite).</p></details></li>
+<li><span class="lvl">Básico</span>Con \(\sigma^2=1\), \(\rho=0.3\) y \(B=100\), ¿varianza del promedio? ¿Y con \(B\to\infty\)?
+<details><summary>Respuesta</summary><p>\(0.3+0.7/100=0.307\); con infinitos árboles, 0.3.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué añadir más árboles a un bosque no causa sobreajuste, mientras que hacer más profundo un árbol sí?
+<details><summary>Respuesta</summary><p>Más árboles solo hacen que el promedio converja a su valor esperado (la varianza de Monte Carlo baja); no aumentan la capacidad del modelo promedio. La profundidad sí aumenta la capacidad de cada árbol.</p></details></li>
+<li><span class="lvl">Intermedio</span>Con \(p=100\) variables, ¿cuántas candidatas por división usa por defecto un <code>RandomForestClassifier</code>?
+<details><summary>Respuesta</summary><p>\(\sqrt{100}=10\).</p></details></li>
+<li><span class="lvl">Avanzado</span>Dos variables muy correlacionadas, ambas útiles. ¿Qué le pasa a su importancia por permutación en un bosque y por qué?
+<details><summary>Respuesta</summary><p>Ambas aparecen poco importantes: al barajar una, el bosque usa la otra, que conserva la información, y el desempeño casi no cae. La permutación mide la importancia condicional a que las demás estén presentes (capítulo 29).</p></details></li>
+</ol>
+<div class="box links"><ul>
+<li><a href="https://scikit-learn.org/stable/modules/ensemble.html#random-forests-and-other-randomized-tree-ensembles">scikit-learn — Random forests and other randomized tree ensembles</a><small>Bosques, árboles extremadamente aleatorios, OOB e importancias.</small></li>
+<li><a href="https://doi.org/10.1023/A:1010933404324">Breiman (2001) — Random Forests</a><small>El artículo original, con la cota de error en función de la fuerza y la correlación de los árboles.</small></li>
+<li><a href="https://scikit-learn.org/stable/auto_examples/inspection/plot_permutation_importance.html">scikit-learn — Permutation Importance vs Random Forest Feature Importance (MDI)</a><small>El sesgo de la MDI con una variable aleatoria, en el conjunto Titanic.</small></li>
+<li><a href="https://mlu-explain.github.io/random-forest/">MLU-Explain — Random Forest</a><small>Bootstrap, votación y decorrelación de forma visual.</small></li>
+</ul></div>
+</section>
+</template>

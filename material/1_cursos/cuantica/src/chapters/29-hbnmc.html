@@ -1,0 +1,158 @@
+<template class="chapter-src" data-id="hbnmc" data-num="29" data-title="hBN-MC de principio a fin" data-part="Parte VI · El modelo de hBN-MC" data-short="El flujo completo DFT → modelo → Monte Carlo, un hBN-MC en miniatura, equilibrio frente a atrapamiento, cómo leer cada panel de la aplicación y sus limitaciones">
+<p class="lead">Este capítulo final arma la aplicación completa con las piezas del curso y la pone a funcionar: un hBN-MC en miniatura con el mismo Hamiltoniano, los mismos protocolos y los mismos movimientos. Después se usa para responder la pregunta científica central (¿un poro triangular es estable o se fragmenta?) con la honestidad estadística de la Parte V, y se cierra con una guía para leer, usar y explicar la aplicación real.</p>
+
+<section>
+<h2>El flujo completo</h2>
+<figure class="fig">
+<svg viewBox="0 0 760 210" role="img" aria-label="Flujo de hBN-MC: DFT, modelo de enlaces, Monte Carlo y observables" style="width:100%;height:auto">
+<defs><marker id="flecha29" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--ink-3)"/></marker></defs>
+<g font-family="var(--font-ui)" font-size="13" text-anchor="middle">
+<rect x="10" y="40" width="160" height="120" rx="12" fill="var(--accent-soft)" stroke="var(--accent)"/>
+<text x="90" y="68" font-weight="700" fill="var(--ink)">DFT (SIESTA)</text>
+<text x="90" y="92" fill="var(--ink-2)">energías totales de</text>
+<text x="90" y="110" fill="var(--ink-2)">celdas B–C–N, poros,</text>
+<text x="90" y="128" fill="var(--ink-2)">moléculas</text>
+<text x="90" y="150" fill="var(--ink-3)" font-size="11.5">caps. 15–18</text>
+<rect x="205" y="40" width="160" height="120" rx="12" fill="var(--hbn-bg)" stroke="var(--ink-3)"/>
+<text x="285" y="68" font-weight="700" fill="var(--ink)">Modelo de enlaces</text>
+<text x="285" y="92" fill="var(--ink-2)">E = Σ n<tspan font-size="10" dy="4">αβ</tspan><tspan dy="-4"> ε</tspan><tspan font-size="10" dy="4">αβ</tspan></text>
+<text x="285" y="112" fill="var(--ink-2)">10 parámetros,</text>
+<text x="285" y="130" fill="var(--ink-2)">mínimos cuadrados</text>
+<text x="285" y="150" fill="var(--ink-3)" font-size="11.5">cap. 27</text>
+<rect x="400" y="40" width="160" height="120" rx="12" fill="var(--exp-bg)" stroke="var(--ink-3)"/>
+<text x="480" y="68" font-weight="700" fill="var(--ink)">Monte Carlo</text>
+<text x="480" y="92" fill="var(--ink-2)">intercambios de</text>
+<text x="480" y="110" fill="var(--ink-2)">Kawasaki + Metropolis,</text>
+<text x="480" y="128" fill="var(--ink-2)">reservorio de H, T(s)</text>
+<text x="480" y="150" fill="var(--ink-3)" font-size="11.5">caps. 22–26, 28</text>
+<rect x="595" y="40" width="155" height="120" rx="12" fill="var(--val-bg)" stroke="var(--ink-3)"/>
+<text x="672" y="68" font-weight="700" fill="var(--ink)">Observables</text>
+<text x="672" y="92" fill="var(--ink-2)">E, C<tspan font-size="10" dy="4">v</tspan><tspan dy="-4">, poros, N</tspan><tspan font-size="10" dy="4">H</tspan></text>
+<text x="672" y="112" fill="var(--ink-2)">forma, α<tspan font-size="10" dy="4">C</tspan><tspan dy="-4">, E</tspan><tspan font-size="10" dy="4">form</tspan></text>
+<text x="672" y="130" fill="var(--ink-2)">media ± IC95</text>
+<text x="672" y="150" fill="var(--ink-3)" font-size="11.5">caps. 19, 25, 26</text>
+<line x1="172" y1="100" x2="201" y2="100" stroke="var(--ink-3)" stroke-width="2" marker-end="url(#flecha29)"/>
+<line x1="367" y1="100" x2="396" y2="100" stroke="var(--ink-3)" stroke-width="2" marker-end="url(#flecha29)"/>
+<line x1="562" y1="100" x2="591" y2="100" stroke="var(--ink-3)" stroke-width="2" marker-end="url(#flecha29)"/>
+<text x="380" y="22" fill="var(--ink-2)" font-size="12.5">la mecánica cuántica (caps. 1–14) explica por qué el modelo de enlaces tiene sentido</text>
+<text x="380" y="195" fill="var(--ink-2)" font-size="12.5">la mecánica estadística (caps. 19–23) dice qué significan los promedios</text>
+</g>
+</svg>
+<figcaption>El camino de los electrones a los nanoporos. Cada flecha es una aproximación con sus propias suposiciones.</figcaption>
+</figure>
+<p>Cada etapa tiene su propia aproximación y su propia fuente de error: la DFT (funcional, pseudopotenciales, base), el modelo de enlaces (solo primeros vecinos, red rígida, residuos de 0.6 eV por celda), el Monte Carlo (equilibrio, tamaño finito, estadística) y la interpretación (temperatura de simulación, reservorio). Un resultado confiable es el que sobrevive a cambios razonables en todas ellas.</p>
+</section>
+
+<section>
+<h2>Un hBN-MC en miniatura</h2>
+<p>La simulación siguiente usa el motor de red del curso: el mismo Hamiltoniano de enlaces (capítulo 27), los dos reservorios de H (capítulo 28), intercambios locales y globales con la regla de Metropolis (capítulos 24 y 25) y los cuatro protocolos de temperatura de hBN-MC (capítulo 26), con las mismas fórmulas de <code>temperatureAtStep</code>. Cuenta el avance en <em>pasos</em> (intentos), como la aplicación, y muestra también los barridos equivalentes.</p>
+<div class="sim" data-sim="mini-hbnmc" data-title="hBN-MC en miniatura: protocolo, reservorio y observables"></div>
+<div class="sim-guide"><ul>
+<li>Con los valores iniciales (poro triangular de 25 vacancias con borde de N, red 24 × 24, gran canónico con \(\Delta\mu_\text{H}=-1.5\) eV, protocolo de 3 fases) observe cómo el poro conserva o pierde su forma según la fase.</li>
+<li>Cambie al reservorio de la tesis: sin la penalización H–H, el poro se disuelve en monovacancias en pocos miles de pasos (\(e_\text{H}=-8.46\) eV).</li>
+<li>Use el protocolo «ciclo» y compare las ramas de calentamiento (roja) y enfriamiento (azul) de \(E(T)\).</li>
+<li>Pruebe una estructura con carbono y observe \(\alpha_\text{C}\): el carbono tiende a agruparse.</li>
+</ul></div>
+<div class="box warn"><p>El motor del curso no incluye la penalización estérica H–H ni los generadores de paralelogramos y hexágonos, ni el clasificador de formas de la aplicación. Con el reservorio de la tesis, sus resultados corresponden al caso «sin penalización H–H» del informe científico.</p></div>
+</section>
+
+<section>
+<h2>¿Estable o atrapado? El experimento del informe</h2>
+<p>El informe científico de hBN-MC estudia un poro triangular de borde N (25 vacancias) en una red 24 × 24 con 60 000 pasos y semilla 7. El motor del curso, con solo intercambios locales, reproduce sus resultados:</p>
+<table class="vtable">
+<thead><tr><th>Reservorio</th><th>5000 K</th><th>10 000 K</th><th>20 000 K</th></tr></thead>
+<tbody>
+<tr><td>Tesis (sin penalización H–H)</td><td>25 monovacancias (Δ<i>E</i> ≈ −503 eV)</td><td>25 monovacancias</td><td>25 monovacancias</td></tr>
+<tr><td>H<sub>2</sub>, Δμ<sub>H</sub> = 0</td><td>25 monovacancias</td><td>fragmentado</td><td>fragmentado</td></tr>
+<tr><td>H<sub>2</sub>, Δμ<sub>H</sub> = −1.5 eV</td><td>triángulo (24 + 1)</td><td>parcialmente fragmentado</td><td>fragmentado</td></tr>
+</tbody>
+</table>
+<p>(El informe da −507 eV y «paralelogramo de 14 + fragmentos» a 10 000 K; las diferencias de detalle se deben a la ausencia del clasificador y de la penalización.) Pero la tabla tiene una trampa. Con \(\Delta\mu_\text{H}=-1.5\) eV, \(e_\text{H}=+0.56\) eV: fragmentar el triángulo de orden 5 <em>sube</em> la energía en \(60\times0.56=33\) eV. ¿Por qué entonces se fragmenta a 10 000 K? Por la <strong>entropía</strong>: hay muchísimas más maneras de repartir 25 monovacancias por la red que de colocar un triángulo. La comparación correcta es la de energías libres (capítulo 21),</p>
+<div class="eq key" data-name="Fragmentación como competencia energía–entropía">\[\Delta F_\text{frag}=\Delta E_\text{frag}-T\,\Delta S_\text{frag},\qquad \Delta S_\text{frag}\approx\kB\Big[\ln\binom{288}{15}+\ln\binom{288}{10}\Big]\approx98\,\kB ,\]</div>
+<p>(15 vacancias de B y 10 de N repartidas en las 288 posiciones de cada subred). La temperatura de cruce es \(T^*\approx\Delta E/\Delta S\approx33.4\ \text{eV}/(98\kB)\approx3950\) K. Por encima, el estado de equilibrio es fragmentado; por debajo, compacto. Entonces, ¿el triángulo intacto a 5000 K es estable? No: está <span class="term">atrapado</span>. Los intercambios locales necesitan atravesar barreras de varios eV para sacar una vacancia del poro (aceptación 0.01 %), y en 60 000 pasos no lo logran.</p>
+<p>La prueba definitiva del capítulo 26 es partir de los dos extremos. Con 30 % de intercambios globales y \(3\times10^6\) pasos, el motor del curso da:</p>
+<table class="vtable">
+<thead><tr><th>T</th><th>⟨tamaño del mayor poro⟩ desde el triángulo</th><th>desde 25 monovacancias</th></tr></thead>
+<tbody>
+<tr><td>2500 K</td><td>22.3</td><td>23.3</td></tr>
+<tr><td>3500 K</td><td>15.0</td><td>15.7</td></tr>
+<tr><td>4500 K</td><td>8.0</td><td>6.4</td></tr>
+<tr><td>5500 K</td><td>4.4</td><td>4.3</td></tr>
+</tbody>
+</table>
+<p>Ambos inicios llegan al mismo estado: eso sí es equilibrio. A 2500 K las monovacancias se reúnen espontáneamente en un poro compacto; a 5500 K el triángulo se disuelve. La transición está entre 3500 y 4500 K, como predice la estimación de energía libre.</p>
+<div class="sim" data-sim="dos-inicios" data-title="Equilibrio frente a atrapamiento: dos simulaciones desde extremos opuestos"></div>
+<div class="sim-guide"><ul>
+<li>A 3000 K, con 30 % de intercambios globales, las monovacancias se reúnen y las dos curvas llegan a un poro compacto (unas 22 vacancias) en unos 500 barridos. A 5500 K ambas terminan en poros pequeños.</li>
+<li>Entre 3500 y 4000 K el tamaño del mayor poro fluctúa muchísimo: es la zona de transición, donde hacen falta miles de barridos para comparar promedios.</li>
+<li>Ponga los intercambios globales en 0: las curvas quedan separadas mucho tiempo. Ninguna de las dos es «la respuesta».</li>
+<li>Cambie \(\Delta\mu_\text{H}\) hacia −1 eV: \(e_\text{H}\) se acerca a 0 y la fragmentación gana a temperaturas más bajas.</li>
+</ul></div>
+<div class="box explain"><p>Es como preguntar si una familia prefiere vivir junta o dispersa por la ciudad. Vivir juntos ahorra (energía), pero hay muchísimas más formas de vivir dispersos (entropía). Cuando «hace calor» (T alta), pesa más la variedad y se dispersan. Pero si las calles están bloqueadas (solo movimientos locales con barreras altas), una familia que empezó junta seguirá junta aunque prefiera dispersarse: eso no es una preferencia, es un atasco.</p></div>
+<div class="box warn"><p>La entropía de fragmentación crece con el tamaño de la red (hay más sitios donde poner las monovacancias), así que \(T^*\) depende de la red simulada: en el límite de una lámina infinita con un número fijo de vacancias, la fragmentación gana a cualquier temperatura finita. Por eso las conclusiones sobre estabilidad deben darse junto con el tamaño de la red y, mejor, en términos de energías de formación a \(T=0\) (capítulo 28), que no dependen de la escala de temperatura.</p></div>
+</section>
+
+<section>
+<h2>Cómo leer cada panel de la aplicación</h2>
+<table class="vtable">
+<thead><tr><th>Panel de hBN-MC</th><th>Qué hace</th><th>Dónde se explica</th></tr></thead>
+<tbody>
+<tr><td>CTRL · Paso 1 (red)</td><td>Red de panal Nx × Ny, orientación, condiciones periódicas (dimensiones pares para conservar la bipartición B/N)</td><td>caps. 12, 14</td></tr>
+<tr><td>CTRL · Paso 2 (estructura)</td><td>Poros triangulares (\(n^2\) vacancias), paralelogramos, hexágonos, carbono, nanocintas</td><td>caps. 14, 27, 28</td></tr>
+<tr><td>CTRL · Paso 3 (protocolo)</td><td>Recocido, isotérmico, 3 fases, ciclo; T hasta 20 000 K; intercambio global; semilla</td><td>caps. 24–26</td></tr>
+<tr><td>CTRL · Paso 4 (modelo)</td><td>Reservorio de H y energía de borde, ε<sub>CH</sub>, penalización H–H, \(E_\text{form}\) y ventana química, lote con IC95</td><td>caps. 22, 27, 28, 26</td></tr>
+<tr><td>STAT</td><td>Energía, aceptación, composición, \(E_\text{form}\), tabla de enlaces con ε efectivos</td><td>caps. 27, 28</td></tr>
+<tr><td>GRAF</td><td>Series temporales y \(E(T)\) con ramas de calentamiento y enfriamiento</td><td>caps. 25, 26</td></tr>
+<tr><td>INV · Reajuste</td><td>Mínimos cuadrados con errores, correlación y validación cruzada</td><td>cap. 27</td></tr>
+<tr><td>INV · Escala energética</td><td>ΔE de los intercambios posibles y aceptación esperada</td><td>caps. 21, 27</td></tr>
+<tr><td>INV · Energética de poros</td><td>\(E_\text{form}\) a \(T=0\) por forma y tamaño</td><td>cap. 28</td></tr>
+<tr><td>INV · Barrido / réplicas</td><td>⟨E⟩, \(C_v\) por fluctuaciones, intercambio de réplicas, forma mayoritaria, α<sub>C</sub></td><td>caps. 21, 25, 26</td></tr>
+<tr><td>INV · Análisis</td><td>Tabla de poros, α<sub>C</sub> de Warren–Cowley, fracción de enlaces BN</td><td>caps. 23, 25</td></tr>
+</tbody>
+</table>
+<div class="box explain"><p><strong>hBN-MC en cinco frases.</strong> (1) Con la DFT se calculan las energías de unas pocas estructuras pequeñas de boro, nitrógeno, carbono e hidrógeno. (2) Esas energías se resumen en un modelo donde la energía de una lámina es la suma de las energías de sus enlaces. (3) Con ese modelo, la aplicación simula láminas de cientos de átomos intercambiando átomos y vacancias al azar, aceptando cada cambio con la regla de Metropolis a una temperatura dada. (4) Así se observa qué forma adoptan los poros, si se fragmentan o se compactan, y cómo se agrupa el carbono. (5) Los resultados valen como orden relativo de estabilidad y tendencias, siempre que se verifiquen con varias semillas, inicios y condiciones del reservorio de hidrógeno.</p></div>
+</section>
+
+<section>
+<h2>Limitaciones y lista de verificación</h2>
+<p>Las limitaciones conocidas, según el propio archivo de limitaciones y el informe científico de la aplicación:</p>
+<ul>
+<li><strong>Del modelo</strong>: primeros vecinos, red rígida sin relajación, sin carga ni magnetismo; temperaturas de simulación no físicas (movimientos de 6–20 eV).</li>
+<li><strong>De los parámetros</strong>: ε<sub>CH</sub> provisional; doble escala de ε<sub>NB</sub> (ajuste frente a \(E(\text{BN})/3\)); inconsistencias entre tablas de la tesis; ventana química vacía con \(\Delta\mu_\text{H}=0\).</li>
+<li><strong>Del Hamiltoniano de la tesis</strong>: \(e_\text{H}=-8.46\) eV obliga a usar la penalización empírica H–H; además, en el listado Fortran impreso los términos X–B, X–N y X–X aparecen tras un signo de comentario, de modo que debe comprobarse qué versión produjo las figuras de la tesis.</li>
+<li><strong>Del muestreo</strong>: con geometrías importadas la selección de pares no conserva balance detallado exacto; los movimientos locales se atrapan con facilidad.</li>
+</ul>
+<div class="box keys"><p><strong>Lista de verificación antes de reportar un resultado de hBN-MC</strong></p><ol>
+<li>Declarar el reservorio de H (y \(\Delta\mu_\text{H}\)), el uso o no de la penalización H–H, la red, el protocolo y el número de pasos convertido a barridos.</li>
+<li>Fijar y reportar la semilla; repetir con un lote de réplicas y dar media ± IC95 con la \(t\) de Student.</li>
+<li>Comprobar el equilibrio: partir de inicios opuestos, usar intercambios globales o intercambio de réplicas, y verificar que el resultado no cambie al alargar la corrida.</li>
+<li>Comprobar la histéresis con ciclos a dos velocidades.</li>
+<li>Comprobar la sensibilidad a los parámetros (cada ε dentro de ±2σ) y al tamaño de la red.</li>
+<li>Comparar con los experimentos el orden relativo de energías de formación a \(T=0\), no la temperatura de simulación.</li>
+</ol></div>
+<div class="box valid"><p>El apéndice B verifica el motor del curso: el \(\Delta E\) local de 200 intercambios con carbono y vacancias coincide con el recálculo completo (error < \(10^{-8}\) eV), los poros triangulares tienen \(n^2\) vacancias y \(3n\) enlaces N–H, la identidad de la energía de borde se cumple con error < \(10^{-7}\) eV y el experimento del informe a 5000 K (gran canónico, \(\Delta\mu_\text{H}=-1.5\) eV, 60 000 pasos locales, semilla 7) deja un poro de 24 vacancias.</p></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>hBN-MC = DFT → modelo de enlaces → Monte Carlo de Kawasaki con reservorio de H → observables con estadística.</li>
+<li>Con el Hamiltoniano de la tesis los poros se disuelven salvo por la penalización empírica H–H; en gran canónico con \(\Delta\mu_\text{H}\lt-0.943\) eV los poros compactos son favorables energéticamente.</li>
+<li>La entropía de fragmentación compite con la energía de borde: hay una temperatura de cruce que depende del tamaño de la red.</li>
+<li>Un poro que «sobrevive» con movimientos locales puede estar atrapado: la prueba es partir de inicios opuestos con movimientos globales.</li>
+<li>Lo robusto es el orden relativo de energías de formación y las tendencias verificadas con réplicas, no las temperaturas absolutas.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Una corrida de hBN-MC tiene 400 000 pasos en una red 24 × 24. ¿Cuántos barridos son?
+<details><summary>Respuesta</summary><p>\(400\,000/576\approx694\) barridos.</p></details></li>
+<li><span class="lvl">Básico</span>¿Por qué con el reservorio de la tesis un poro triangular de 25 vacancias se fragmenta en 25 monovacancias?
+<details><summary>Respuesta</summary><p>Porque \(e_\text{H}=-8.46\) eV: cada H adicional del borde baja la energía, y las monovacancias tienen 75 H frente a 15 del triángulo (\(\Delta E\approx-507\) eV).</p></details></li>
+<li><span class="lvl">Intermedio</span>Estime \(T^*\) para un triángulo de orden 4 (16 vacancias: 10 de B y 6 de N) en una red 24 × 24 con \(\Delta\mu_\text{H}=-1.5\) eV.
+<details><summary>Respuesta</summary><p>\(\Delta E=(48-12)\times0.557=20\) eV. \(\ln\binom{288}{10}+\ln\binom{288}{6}\approx41.5+27.6=69\). \(T^*\approx20/(69\times8.617\times10^{-5})\approx3400\) K.</p></details></li>
+<li><span class="lvl">Intermedio</span>Dos réplicas desde inicios opuestos dan ⟨mayor poro⟩ = 22 y 8 después de 400 000 pasos. ¿Qué concluye y qué hace?
+<details><summary>Respuesta</summary><p>Que no hay equilibrio (al menos una está atrapada). Hay que alargar las corridas, añadir intercambios globales o usar intercambio de réplicas hasta que ambas coincidan.</p></details></li>
+<li><span class="lvl">Avanzado</span>Explique, en lenguaje sencillo y en menos de un minuto, qué es hBN-MC y qué no puede predecir.
+<details><summary>Respuesta</summary><p>Es un simulador que, a partir de energías calculadas con mecánica cuántica para estructuras pequeñas, estima cómo se organizan los átomos y los huecos en láminas grandes de nitruro de boro con carbono e hidrógeno, usando reglas probabilísticas de la física estadística. Predice tendencias: qué formas de poro son más estables, si los poros se compactan o se fragmentan, si el carbono se agrupa. No predice temperaturas reales de transformación, propiedades electrónicas ni distancias atómicas, y sus resultados dependen del reservorio de hidrógeno elegido.</p></details></li>
+</ol>
+</section>
+</template>

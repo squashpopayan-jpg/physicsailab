@@ -1,0 +1,102 @@
+<template class="chapter-src" data-id="cnn" data-num="27" data-title="Redes convolucionales" data-part="Parte VI · Redes neuronales" data-short="Imágenes como tensores; la convolución y sus filtros; paso, relleno y tamaños; agrupación; campo receptivo y jerarquía de rasgos; arquitecturas de LeNet a ResNet; transferencia de aprendizaje; aumento de datos">
+<p class="lead">Una imagen de 224×224 píxeles en color tiene 150 528 números. Una capa densa que la conecte con solo 1 000 neuronas necesitaría 150 millones de pesos y no sabría que un gato en la esquina es el mismo gato en el centro. Las redes convolucionales aprovechan dos propiedades de las imágenes, la localidad y la invariancia ante traslaciones, para reconocer patrones con muchos menos parámetros.</p>
+
+<section>
+<h2>La convolución</h2>
+<p>Una imagen es un tensor de alto × ancho × canales. Una capa convolucional desliza un <span class="term">filtro</span> (núcleo) pequeño, por ejemplo de 3×3, sobre toda la imagen, y en cada posición calcula la suma de productos entre el filtro y el parche que cubre:</p>
+<div class="eq key" data-name="Convolución 2D (correlación cruzada)">\[(I*K)_{ij}=\sum_{a=0}^{k-1}\sum_{b=0}^{k-1}\sum_{c}I_{i+a,\,j+b,\,c}\,K_{a,b,c}+b .\]</div>
+<ul>
+<li><b>Conectividad local</b>: cada salida depende solo de un parche pequeño.</li>
+<li><b>Pesos compartidos</b>: el mismo filtro se usa en todas las posiciones. Si detecta un borde vertical en una esquina, lo detecta en cualquier parte (equivarianza ante traslaciones).</li>
+<li>Cada filtro produce un <span class="term">mapa de rasgos</span>; una capa con 64 filtros produce 64 mapas, que son los canales de la capa siguiente.</li>
+<li>Los filtros no se diseñan: se aprenden con retropropagación. Los de la primera capa suelen parecerse a detectores de bordes y de color, como los clásicos de procesamiento de imágenes.</li>
+</ul>
+<div class="sim" data-sim="convolucion-dibujo" data-title="Convolución, ReLU y agrupación sobre su dibujo"></div>
+<div class="sim-guide"><ul>
+<li>Con el filtro de borde vertical, el mapa resalta (en naranja y azul) los bordes izquierdo y derecho de cada trazo vertical; los trazos horizontales casi desaparecen. Cambie al horizontal y ocurre lo contrario.</li>
+<li>ReLU conserva solo las respuestas positivas; la agrupación máxima 2×2 reduce el mapa a la mitad conservando la respuesta más fuerte de cada bloque.</li>
+<li>Quite el relleno: el mapa pierde un píxel en cada borde (16 → 14). Con paso 2, se reduce a la mitad.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Tamaños, parámetros y campo receptivo</h2>
+<p>Con entrada \(N\times N\), núcleo \(k\), paso \(s\) y relleno \(p\):</p>
+<div class="eq key" data-name="Tamaño de salida y parámetros">\[N_\text{sal}=\Big\lfloor\frac{N+2p-k}{s}\Big\rfloor+1,\qquad \text{parámetros}=F\,(k\cdot k\cdot C_\text{ent}+1).\]</div>
+<p>Con \(k=3\), \(p=1\) y \(s=1\) el tamaño se conserva («relleno <i>same</i>»). La <span class="term">agrupación</span> (<i>pooling</i>) máxima o promedio de 2×2 con paso 2 reduce el tamaño a la mitad y da algo de tolerancia a pequeños desplazamientos. El <span class="term">campo receptivo</span> de una neurona es la región de la entrada de la que depende: con cada capa 3×3 crece en 2 píxeles, y con cada agrupación se duplica. Apilar capas pequeñas logra campos receptivos grandes con pocos parámetros: tres capas 3×3 ven 7×7 con 27 pesos por canal, frente a 49 de una sola capa 7×7, y con tres no linealidades en lugar de una.</p>
+<div class="sim" data-sim="calculadora-capas" data-title="Calculadora de una capa convolucional"></div>
+<div class="sim-guide"><ul>
+<li>Con entrada 32×32×3, 64 filtros 3×3, paso 1 y relleno 1, la salida es 32×32×64 con 1 792 parámetros. Una capa densa con la misma entrada y salida tendría más de 200 millones.</li>
+<li>Pruebe paso 2 sin relleno: la salida se reduce a 15×15.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Jerarquías y arquitecturas</h2>
+<p>Las capas iniciales detectan bordes y texturas; las intermedias, combinaciones (esquinas, círculos, partes de objetos); las finales, objetos completos. Al final, una o dos capas densas (o una agrupación promedio global) producen la clasificación. Algunos hitos:</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Arquitectura</th><th>Año</th><th>Idea clave</th></tr></thead>
+<tbody>
+<tr><td>LeNet-5</td><td>1998</td><td>convolución + agrupación + densas para leer cheques (LeCun)</td></tr>
+<tr><td>AlexNet</td><td>2012</td><td>ReLU, dropout, GPU y aumento de datos; ganó ImageNet por amplio margen</td></tr>
+<tr><td>VGG</td><td>2014</td><td>solo filtros 3×3 apilados, red profunda y uniforme</td></tr>
+<tr><td>ResNet</td><td>2015</td><td>conexiones residuales \(\vb y=F(\vb x)+\vb x\): el gradiente fluye por el atajo y se pueden entrenar 100+ capas</td></tr>
+<tr><td>EfficientNet, ConvNeXt</td><td>2019–2022</td><td>escalado equilibrado de profundidad, ancho y resolución; diseños modernizados</td></tr>
+<tr><td>Vision Transformer (ViT)</td><td>2020</td><td>parches de imagen como «palabras» con atención (capítulo 28)</td></tr>
+</tbody></table></div>
+<div class="box explain"><p>Una red convolucional mira una imagen como un equipo de especialistas en cadena: los primeros solo saben ver rayas en distintas direcciones; los siguientes reconocen esquinas y curvas combinando rayas; los últimos reconocen ojos, ruedas o letras combinando esas formas. Nadie les dijo qué buscar: cada uno aprendió lo que les sirve a los de arriba.</p></div>
+</section>
+
+<section>
+<h2>Transferencia de aprendizaje y aumento de datos</h2>
+<p>Entrenar una red grande desde cero exige millones de imágenes. Casi nunca se hace: se toma una red <b>preentrenada</b> en ImageNet (o un modelo base moderno), se reemplaza la última capa por una con las clases propias y se entrena con los datos disponibles. Dos variantes: congelar todo menos la cabeza (extracción de rasgos, pocos datos) o ajustar también las últimas capas con una tasa pequeña (<i>fine-tuning</i>, más datos). Con unos cientos de imágenes por clase se obtienen resultados que serían imposibles desde cero.</p>
+<p>El <b>aumento de datos</b> genera variantes de cada imagen de entrenamiento (recortes, giros, reflejos, cambios de brillo y color, desplazamientos) en cada época. Enseña a la red las invariancias que el problema exige y es una de las regularizaciones más eficaces. Debe respetar el problema: reflejar horizontalmente un 6 está bien para fotos de gatos, pero convierte letras en otras.</p>
+<div class="sim" data-sim="digitos-red" data-title="Dibuje un dígito: lo reconoce una red entrenada en su navegador"></div>
+<div class="sim-guide"><ul>
+<li>La red (densa, 64–32–10) se entrena con 500 imágenes de 8×8 mientras usted mira; en unos segundos supera el 90 % en las 200 de prueba.</li>
+<li>Dibuje un dígito grueso y centrado. Luego dibújelo pequeño y en una esquina: la red, que no es convolucional y no vio dígitos desplazados, suele fallar. Eso es lo que resuelven la convolución y el aumento de datos.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Práctica: una CNN pequeña en PyTorch</h2>
+<div class="box py"><p>El programa construye una CNN de dos capas convolucionales para los dígitos de 8×8, imprime el tamaño de cada capa, la compara con una red densa y mide la robustez a un desplazamiento de un píxel, con y sin aumento de datos.</p>
+<div class="py" data-py="27-cnn"></div></div>
+<div class="box read"><ul>
+<li><b>Tamaños</b>: cada convolución con relleno 1 conserva el tamaño (8×8, luego 4×4) y cada agrupación lo divide por 2; al final quedan 32 canales de 2×2 = 128 números para la capa densa.</li>
+<li><b>Parámetros</b>: la CNN tiene 6 090 parámetros frente a 9 610 de la red densa 64–128–10, y es más exacta (0.987 frente a 0.979). La primera convolución tiene solo 160 parámetros.</li>
+<li><b>Desplazamiento de un píxel</b> (en diagonal, rellenando con ceros): la red densa cae a 0.121 y la CNN a 0.303. Un píxel en una imagen de 8×8 es el 12 % del ancho: la agrupación tolera desplazamientos pequeños, pero no tanto.</li>
+<li><b>Aumento de datos</b>: entrenando con desplazamientos aleatorios de ±1 píxel, la CNN mantiene 0.978 en las imágenes originales y sube a 0.954 en las desplazadas. La red aprendió la invariancia que se le enseñó.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Convolución = filtro pequeño que se desliza: conectividad local y pesos compartidos.</li>
+<li>\(N_\text{sal}=\lfloor(N+2p-k)/s\rfloor+1\); parámetros \(F(k^2C+1)\), independientes del tamaño de la imagen.</li>
+<li>Agrupación y apilamiento hacen crecer el campo receptivo; las capas forman una jerarquía de rasgos.</li>
+<li>ResNet: conexiones residuales para redes muy profundas.</li>
+<li>En la práctica: transferencia de aprendizaje y aumento de datos.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Entrada 28×28, núcleo 5, paso 1, sin relleno. ¿Tamaño de salida?
+<details><summary>Respuesta</summary><p>\(28-5+1=24\): 24×24.</p></details></li>
+<li><span class="lvl">Básico</span>¿Cuántos parámetros tiene una capa con 128 filtros 3×3 sobre una entrada de 64 canales?
+<details><summary>Respuesta</summary><p>\(128\cdot(9\cdot64+1)=73\,856\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Entrada 224×224, convolución 7×7 con paso 2 y relleno 3, luego agrupación 3×3 con paso 2 y relleno 1. ¿Tamaño final? (Es el inicio de ResNet.)
+<details><summary>Respuesta</summary><p>\(\lfloor(224+6-7)/2\rfloor+1=112\); luego \(\lfloor(112+2-3)/2\rfloor+1=56\): 56×56.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué un reflejo horizontal es un buen aumento para clasificar perros y gatos, pero no para reconocer dígitos?
+<details><summary>Respuesta</summary><p>Un gato reflejado sigue siendo gato; un 2 reflejado no es un 2 válido y algunas formas reflejadas se confunden con otras clases. El aumento debe conservar la etiqueta.</p></details></li>
+<li><span class="lvl">Avanzado</span>Muestre que, en una capa residual \(\vb y=\vb x+F(\vb x)\), \(\partial L/\partial\vb x=\partial L/\partial\vb y\,(I+\partial F/\partial\vb x)\). ¿Por qué ayuda al flujo del gradiente?
+<details><summary>Respuesta</summary><p>Por la regla de la cadena, el término \(I\) pasa el gradiente sin atenuar por el atajo, aunque \(\partial F/\partial\vb x\) sea pequeño. Apilando bloques, el gradiente tiene siempre un camino directo hacia las primeras capas.</p></details></li>
+</ol>
+<div class="box links"><ul>
+<li><a href="https://poloclub.github.io/cnn-explainer/">CNN Explainer (Georgia Tech)</a><small>Visualización interactiva de una CNN real: convolución, ReLU, agrupación y capa final.</small></li>
+<li><a href="https://cs231n.github.io/convolutional-networks/">CS231n — Convolutional Neural Networks</a><small>Los apuntes de Stanford: tamaños, parámetros, arquitecturas.</small></li>
+<li><a href="https://arxiv.org/abs/1512.03385">He, Zhang, Ren y Sun (2015) — Deep Residual Learning for Image Recognition</a><small>El artículo de ResNet.</small></li>
+<li><a href="https://docs.pytorch.org/tutorials/beginner/transfer_learning_tutorial.html">PyTorch — Transfer Learning for Computer Vision</a><small>Ajustar una ResNet preentrenada a un problema propio.</small></li>
+<li><a href="https://distill.pub/2017/feature-visualization/">Olah, Mordvintsev y Schubert (2017) — Feature Visualization (Distill)</a><small>Qué detectan las neuronas de cada capa de una CNN.</small></li>
+</ul></div>
+</section>
+</template>

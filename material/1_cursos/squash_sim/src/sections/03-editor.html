@@ -1,0 +1,83 @@
+<section class="page wrap" id="p-editor" data-page="editor">
+  <div class="page-head">
+    <div>
+      <p class="eyebrow">Rutinas</p>
+      <h2>Crear, guardar y exportar rutinas</h2>
+      <p class="lead">Arma una secuencia de golpes para 1, 2 o 3 jugadores. El motor calcula la trayectoria real de cada tiro, dónde la recibe el siguiente jugador y si llega a tiempo. Luego exporta la rutina para transferirla.</p>
+    </div>
+    <div class="chips">
+      <button class="btn" id="edNew">Nueva rutina</button>
+      <button class="btn" id="edImport">Importar</button>
+      <input type="file" id="edFile" accept=".json,application/json,text/plain" hidden>
+    </div>
+  </div>
+  <div class="ed-grid">
+    <div class="grid" style="align-content:start">
+      <div class="card">
+        <h3>Datos de la rutina</h3>
+        <div class="grid cols-2">
+          <label class="fld"><span>Nombre</span><input type="text" id="edName" maxlength="70"></label>
+          <label class="fld"><span>Nivel recomendado</span><input type="text" id="edNivel" maxlength="40" placeholder="Ej.: Intermedio"></label>
+        </div>
+        <label class="fld" style="margin-top:10px"><span>Objetivo</span><input type="text" id="edObj" maxlength="200"></label>
+        <label class="fld" style="margin-top:10px"><span>Descripción e indicaciones</span><textarea id="edDesc" rows="3" maxlength="900"></textarea></label>
+        <div class="settings" style="margin-top:10px">
+          <label class="fld"><span>Ritmo de bola</span><select id="edRitmo"><option value="lento">Lento</option><option value="medio" selected>Medio</option><option value="rapido">Rápido</option></select></label>
+          <label class="fld"><span>Repeticiones del ciclo</span><input type="number" id="edCiclos" min="1" max="20" value="4"></label>
+          <label class="fld"><span>Intensidad (ghosting)</span><select id="edInt"><option value="suave">Suave</option><option value="media">Media</option><option value="alta" selected>Alta</option><option value="maxima">Máxima</option></select></label>
+          <label class="fld"><span>Series sugeridas</span><input type="text" id="edSeries" maxlength="80" placeholder="Ej.: 4 × 3 min"></label>
+        </div>
+      </div>
+      <div class="card">
+        <h3 style="display:flex;justify-content:space-between;align-items:center;gap:8px">Jugadores <button class="btn" id="edAddP">Añadir jugador</button></h3>
+        <div class="ed-players" id="edPlayers"></div>
+        <p class="tiny muted" style="margin-top:8px">La posición base se marca tocando la vista previa con el jugador seleccionado. Máximo tres jugadores.</p>
+      </div>
+      <div class="card">
+        <h3 style="display:flex;justify-content:space-between;align-items:center;gap:8px">Secuencia de golpes <button class="btn primary" id="edAddS">Añadir golpe</button></h3>
+        <div class="ed-steps" id="edSteps"></div>
+        <details style="margin-top:10px"><summary class="small" style="cursor:pointer;font-weight:600">Qué significa cada columna</summary>
+          <ul class="small muted keys">
+            <li><b>Golpe</b>: el tiro que juega ese jugador. «Fantasma» es ghosting: desplazamiento sin bola a la zona elegida.</li>
+            <li><b>Destino</b>: zona donde debe botar (o esquina del ghosting). «Auto» usa el destino natural del golpe.</li>
+            <li><b>Impacto</b>: cuándo golpea el jugador la bola que le llega: volea (B4), sobre pique (B5), punto máximo (B6) o bajo (B7).</li>
+            <li><b>Recupera a</b>: adónde vuelve después de golpear.</li>
+          </ul>
+        </details>
+      </div>
+      <div class="card">
+        <h3>Primera bola (alimentación)</h3>
+        <div class="settings">
+          <label class="fld"><span>x (m)</span><input type="number" id="edIx" min="0.1" max="6.3" step="0.05"></label>
+          <label class="fld"><span>y (m)</span><input type="number" id="edIy" min="0.3" max="9.5" step="0.05"></label>
+          <label class="fld"><span>altura (m)</span><input type="number" id="edIz" min="0.1" max="2" step="0.05"></label>
+        </div>
+        <p class="tiny muted" style="margin-top:6px">x desde la pared izquierda, y desde la pared frontal. Toca la vista previa con «Primera bola» seleccionada para ubicarla.</p>
+      </div>
+    </div>
+    <div class="grid" style="align-content:start;position:sticky;top:76px">
+      <div class="card ed-preview">
+        <h3 style="display:flex;justify-content:space-between;align-items:center;gap:8px">Vista previa <span class="seg" id="edPick"></span></h3>
+        <canvas id="edCanvas"></canvas>
+        <div id="edWarn" style="margin-top:8px"></div>
+        <div class="chips" style="margin-top:10px">
+          <button class="btn primary" id="edTry"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Probar en el simulador</button>
+          <button class="btn" id="edSave">Guardar en mis rutinas</button>
+        </div>
+        <div class="chips" style="margin-top:8px">
+          <button class="btn" data-edexp="json">Archivo .json</button>
+          <button class="btn" data-edexp="code">Código</button>
+          <button class="btn" data-edexp="png">Ficha PNG</button>
+          <button class="btn" data-edexp="pdf">Ficha PDF</button>
+          <button class="btn" data-edexp="video">Video</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Mis rutinas</h3>
+        <div class="mylist" id="myList"></div>
+        <div class="chips" style="margin-top:10px"><button class="btn" id="myExportAll">Exportar todas (.json)</button></div>
+        <p class="tiny muted" style="margin-top:8px">Se guardan en este navegador. Para pasarlas a otro equipo, exporta el archivo o el código y usa «Importar» allá.</p>
+      </div>
+    </div>
+  </div>
+</section>

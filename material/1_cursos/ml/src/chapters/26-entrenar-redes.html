@@ -1,0 +1,115 @@
+<template class="chapter-src" data-id="entrenar-redes" data-num="26" data-title="Entrenar redes en la práctica" data-part="Parte VI · Redes neuronales" data-short="Leer curvas de pérdida; tasa de aprendizaje y su búsqueda; programas de tasa y calentamiento; tamaño de lote; weight decay, dropout, parada temprana y aumento de datos; normalización; una receta de trabajo">
+<p class="lead">Saber cómo funciona una red no basta para entrenarla bien. Entre la arquitectura y un modelo útil hay decenas de decisiones (tasa, lote, regularización, normalización, cuándo parar) y casi todas se diagnostican mirando las curvas de pérdida. Este capítulo enseña a leer esas curvas y reúne las prácticas que más importan.</p>
+
+<section>
+<h2>Leer las curvas de pérdida</h2>
+<p>Registre siempre la pérdida de entrenamiento y la de validación por época (o cada cierto número de pasos). Las formas típicas tienen diagnósticos claros:</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Lo que se ve</th><th>Diagnóstico</th><th>Qué probar</th></tr></thead>
+<tbody>
+<tr><td>La pérdida oscila, salta o se vuelve NaN</td><td>tasa demasiado alta; datos sin escalar; gradientes que explotan</td><td>dividir la tasa por 3–10; escalar; recortar el gradiente</td></tr>
+<tr><td>Baja muy despacio, casi en línea recta</td><td>tasa demasiado baja; inicialización mala</td><td>subir la tasa; revisar la inicialización y la activación</td></tr>
+<tr><td>Ambas se estancan juntas en un valor alto</td><td>subajuste: poca capacidad o malas variables</td><td>red más grande, más épocas, menos regularización</td></tr>
+<tr><td>Entrenamiento baja, validación toca un mínimo y sube</td><td>sobreajuste</td><td>parada temprana, regularización, más datos, aumento de datos</td></tr>
+<tr><td>Validación mejor que entrenamiento</td><td>dropout o aumento activos solo en entrenamiento; validación más fácil</td><td>comparar con el modo de evaluación; revisar la partición</td></tr>
+<tr><td>Curva muy ruidosa</td><td>lote pequeño o tasa alta</td><td>lote mayor, tasa menor, promedio móvil para leer la tendencia</td></tr>
+</tbody></table></div>
+<div class="sim" data-sim="diagnostico-curvas" data-title="¿Qué le pasa a este entrenamiento?"></div>
+<div class="sim-guide"><ul>
+<li>Cada escenario es un entrenamiento real de una red en las lunas con una configuración distinta.</li>
+<li>Active el modo adivinanza o pulse «Escenario al azar» y elija el diagnóstico antes de leer la respuesta. Un experto reconoce estas formas a simple vista.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>La tasa de aprendizaje, el lote y los programas</h2>
+<p>La tasa es el hiperparámetro más importante (capítulo 7). Un procedimiento práctico es la <span class="term">búsqueda de rango</span>: entrenar unos cientos de pasos subiendo la tasa exponencialmente desde \(10^{-7}\) hasta 10 y graficar la pérdida; se elige un valor un orden de magnitud por debajo de aquel donde la pérdida empieza a dispararse. Para Adam, \(10^{-3}\) es un punto de partida razonable; para SGD con momento, \(10^{-2}\) a \(10^{-1}\).</p>
+<ul>
+<li><b>Programas de tasa</b>: empezar alto para avanzar rápido y terminar bajo para asentarse en el mínimo. Escalones (dividir por 10 en ciertas épocas), decaimiento coseno, y ciclos (<i>one-cycle</i>).</li>
+<li><b>Calentamiento</b> (<i>warmup</i>): subir la tasa linealmente durante las primeras iteraciones. Estabiliza el inicio, cuando los estadísticos de Adam y las capas de normalización aún no son fiables; es estándar en transformers.</li>
+<li><b>Tamaño de lote</b>: lotes grandes dan gradientes menos ruidosos y aprovechan mejor la GPU, pero menos actualizaciones por época y a veces peor generalización. Al multiplicar el lote por \(k\), una regla aproximada es multiplicar la tasa por \(k\) (con calentamiento).</li>
+</ul>
+<div class="sim" data-sim="programa-tasa" data-title="Cuatro programas de tasa, la misma red"></div>
+<div class="sim-guide"><ul>
+<li>Con tasa constante la pérdida baja pero sigue rebotando al final. Los programas que reducen la tasa terminan más abajo y más suaves.</li>
+<li>Suba la tasa máxima: el calentamiento evita los saltos iniciales que sufren los demás.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Regularizar una red</h2>
+<ul>
+<li><b>Weight decay</b> (penalización \(L_2\)): encoge los pesos en cada paso. Con Adam conviene la versión desacoplada, <b>AdamW</b> (Loshchilov y Hutter, 2019), en la que la penalización no se mezcla con las tasas adaptativas.</li>
+<li><b>Dropout</b> (Srivastava y colaboradores, 2014): durante el entrenamiento, cada neurona se apaga al azar con probabilidad \(p\) y las demás se escalan por \(1/(1-p)\). Obliga a no depender de neuronas concretas; equivale a promediar muchas subredes. En evaluación se desactiva (<code>model.eval()</code>).</li>
+<li><b>Parada temprana</b>: guardar los pesos con la mejor pérdida de validación y detenerse tras \(k\) épocas sin mejora (paciencia). La regularización más simple y eficaz.</li>
+<li><b>Aumento de datos</b>: crear variaciones plausibles de cada ejemplo (girar, recortar, cambiar el brillo de una imagen; ruido en audio). Es, en la práctica, la regularización más potente en visión.</li>
+<li><b>Normalización por lotes</b> (BatchNorm) y <b>por capa</b> (LayerNorm): normalizan las activaciones de cada capa; estabilizan y aceleran el entrenamiento y permiten tasas mayores. LayerNorm es la habitual en transformers.</li>
+</ul>
+<div class="sim" data-sim="regularizar-red" data-title="Una red de 4 400 parámetros con 50 datos"></div>
+<div class="sim-guide"><ul>
+<li>Sin regularización, la frontera rodea cada punto ruidoso y la validación empieza a subir pronto.</li>
+<li>Suba el weight decay o el dropout: la frontera se suaviza y la curva de validación deja de subir.</li>
+<li>Active «parada temprana»: el mapa muestra la red en su mejor época de validación, sin cambiar nada más.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Una receta de trabajo</h2>
+<p>Adaptada de la «receta» de Andrej Karpathy (2019), en orden:</p>
+<ol>
+<li><b>Mire los datos</b>: ejemplos, etiquetas, desbalance, duplicados, rangos.</li>
+<li><b>Monte el esqueleto completo</b> con un modelo trivial y una línea base; compruebe que la pérdida inicial es la esperada (\(\log K\) para \(K\) clases equilibradas).</li>
+<li><b>Sobreajuste un lote pequeño</b>: con 10–20 ejemplos, la red debe llegar a pérdida casi cero. Si no puede, hay un error en el código, no en los hiperparámetros.</li>
+<li><b>Aumente la capacidad</b> hasta que la pérdida de entrenamiento sea baja.</li>
+<li><b>Regularice</b> (más datos, aumento, weight decay, dropout, parada temprana) hasta cerrar la brecha con validación.</li>
+<li><b>Ajuste</b> la tasa y su programa; luego el resto de hiperparámetros con búsqueda aleatoria.</li>
+<li><b>Exprima</b>: ensambles de varias semillas, más épocas con el mejor programa.</li>
+</ol>
+<div class="box warn"><p>Fije las semillas y anote todo, pero no confunda reproducibilidad con robustez: entrene con 3–5 semillas antes de afirmar que una configuración es mejor que otra. Las diferencias entre semillas suelen ser del mismo tamaño que las mejoras que se reportan.</p></div>
+</section>
+
+<section>
+<h2>Práctica: tasa, regularización y parada temprana en PyTorch</h2>
+<div class="box py"><p>El programa entrena una red 64–256–256–10 sobre solo 300 imágenes de dígitos con distintas tasas de aprendizaje, y luego compara weight decay, dropout, parada temprana y un programa coseno, siempre restaurando los pesos de la mejor época de validación.</p>
+<div class="py" data-py="26-entrenar-redes"></div></div>
+<div class="box read"><ul>
+<li><b>Tasa demasiado baja</b> (\(10^{-5}\)): la pérdida pasa de 2.295 a 1.921 en 60 épocas; apenas empezó (exactitud 0.741).</li>
+<li><b>Buena tasa</b> (\(10^{-3}\)): la pérdida de entrenamiento cae a 0.022 en 10 épocas y a 0.001 en 60 (la red memorizó las 300 imágenes); exactitud de prueba 0.943.</li>
+<li><b>Tasa alta</b> (0.1): baja algo y luego vuelve a subir (2.128): diverge lentamente; exactitud 0.150. <b>Tasa 1</b>: la pérdida de la primera época es 553 y la red queda inutilizada (0.104, el azar con 10 clases es 0.10).</li>
+<li><b>Sobreajuste</b>: sin regularizar, la mejor validación (0.170) llega en la época 21 y luego empeora (0.195 al final). Restaurar esos pesos da 0.943 en prueba; la parada temprana con paciencia 20 obtiene lo mismo en 41 épocas en lugar de 200.</li>
+<li><b>Dropout</b> da la mejor prueba (0.963) y la mejor validación mínima (0.159), aunque su validación final sube a 0.244: la entropía cruzada castiga la sobreconfianza de las últimas épocas aunque la exactitud se mantenga. Por eso se restauran los mejores pesos.</li>
+<li><b>Weight decay 0.1</b> (AdamW) casi elimina la subida de la validación (0.167 → 0.170) pero no mejora la exactitud. <b>Coseno + dropout</b> con tasa mayor no ayudó aquí: los programas de tasa importan sobre todo en entrenamientos largos.</li>
+<li>Con 300 imágenes de entrenamiento, ±1 punto de diferencia en prueba (540 imágenes) son unas 5 imágenes: confirme con varias semillas antes de concluir.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Las curvas de entrenamiento y validación diagnostican tasa, capacidad y sobreajuste.</li>
+<li>Busque la tasa con un barrido; use programas que la reduzcan y calentamiento si hace falta.</li>
+<li>Regularice con parada temprana, weight decay (AdamW), dropout y aumento de datos; normalice las activaciones.</li>
+<li>Sobreajuste primero un lote pequeño: si no puede, hay un error.</li>
+<li>Compare configuraciones con varias semillas.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Qué pérdida inicial espera de una red con 10 clases equilibradas y salida casi uniforme?
+<details><summary>Respuesta</summary><p>\(\log10=2.303\). Si la pérdida inicial es muy distinta, revise la inicialización de la última capa o las etiquetas.</p></details></li>
+<li><span class="lvl">Básico</span>Con dropout \(p=0.3\), ¿por qué factor se multiplican las activaciones que sobreviven durante el entrenamiento?
+<details><summary>Respuesta</summary><p>\(1/(1-0.3)=1.43\), para que el valor esperado sea igual que en evaluación.</p></details></li>
+<li><span class="lvl">Intermedio</span>La validación es sistemáticamente mejor que el entrenamiento desde la primera época. Dé dos explicaciones.
+<details><summary>Respuesta</summary><p>(1) La pérdida de entrenamiento se mide con dropout o aumento de datos activos y la de validación sin ellos. (2) La validación es más fácil (otra distribución, menos ruido) o hay fuga entre ambas.</p></details></li>
+<li><span class="lvl">Intermedio</span>Al pasar de lotes de 32 a 512, el modelo generaliza peor con la misma tasa. ¿Qué ajusta?
+<details><summary>Respuesta</summary><p>Subir la tasa (regla lineal: ×16, con calentamiento), entrenar más épocas (hay 16 veces menos pasos) o volver a lotes menores.</p></details></li>
+<li><span class="lvl">Avanzado</span>¿Por qué el weight decay acoplado (L2 sumado al gradiente) no es equivalente al desacoplado en Adam?
+<details><summary>Respuesta</summary><p>En Adam el gradiente se divide por \(\sqrt{\hat v}\); si la penalización se suma al gradiente, también se divide, así que los pesos con gradientes grandes se regularizan menos. AdamW resta \(\eta\lambda w\) directamente, igual para todos.</p></details></li>
+</ol>
+<div class="box links"><ul>
+<li><a href="https://karpathy.github.io/2019/04/25/recipe/">Karpathy (2019) — A Recipe for Training Neural Networks</a><small>La guía práctica más citada para entrenar redes sin perder semanas.</small></li>
+<li><a href="https://github.com/google-research/tuning_playbook">Google Research — Deep Learning Tuning Playbook</a><small>Cómo ajustar sistemáticamente redes profundas: tasa, lote, programas y experimentos.</small></li>
+<li><a href="https://jmlr.org/papers/v15/srivastava14a.html">Srivastava y colaboradores (2014) — Dropout: A Simple Way to Prevent Neural Networks from Overfitting</a><small>El artículo original del dropout.</small></li>
+<li><a href="https://arxiv.org/abs/1711.05101">Loshchilov y Hutter (2019) — Decoupled Weight Decay Regularization</a><small>AdamW y por qué el weight decay debe desacoplarse.</small></li>
+<li><a href="https://arxiv.org/abs/1502.03167">Ioffe y Szegedy (2015) — Batch Normalization</a><small>La normalización por lotes.</small></li>
+</ul></div>
+</section>
+</template>

@@ -1,0 +1,100 @@
+<template class="chapter-src" data-id="atencion" data-num="28" data-title="Secuencias, embeddings y atención" data-part="Parte VI · Redes neuronales" data-short="Datos secuenciales; redes recurrentes y LSTM; embeddings y similitud; atención de producto escalar; transformers; modelos de lenguaje, temperatura y muestreo; ajuste fino">
+<p class="lead">Texto, audio, series temporales y ADN son secuencias: el significado depende del orden y de relaciones entre elementos lejanos. Las redes recurrentes procesaban las secuencias paso a paso; los transformers, basados en la atención, las procesan en paralelo dejando que cada elemento consulte directamente a todos los demás. Sobre esa idea se construyen los grandes modelos de lenguaje.</p>
+
+<section>
+<h2>Redes recurrentes y sus límites</h2>
+<p>Una <span class="term">red recurrente</span> (RNN) lee la secuencia un elemento por vez y mantiene un estado oculto que resume lo visto: \(\vb h_t=\tanh(W\vb h_{t-1}+U\vb x_t+\vb b)\). Se entrena con retropropagación a través del tiempo, que multiplica muchas veces por \(W\): los gradientes se desvanecen o explotan (capítulo 25), y la red olvida lo que ocurrió hace decenas de pasos. Las <b>LSTM</b> (Hochreiter y Schmidhuber, 1997) y las <b>GRU</b> añaden puertas aprendidas que deciden qué guardar, qué olvidar y qué mostrar, con un camino casi lineal para la memoria que conserva el gradiente. Dominaron la traducción y el reconocimiento de voz hasta 2017. Su limitación de fondo es secuencial: el paso \(t\) necesita el \(t-1\), así que no se paralelizan bien.</p>
+</section>
+
+<section>
+<h2>Embeddings: palabras como vectores</h2>
+<p>Una palabra (o un fragmento de palabra, un <span class="term">token</span>) se representa con un vector denso aprendido, su <span class="term">embedding</span>. La capa de embedding es una tabla de \(V\times d\) parámetros (vocabulario por dimensión) que se aprende junto con el resto de la red. Palabras que aparecen en contextos parecidos terminan con vectores parecidos, y la <b>similitud coseno</b> mide ese parecido. Word2vec (Mikolov y colaboradores, 2013) mostró que algunas relaciones quedan como direcciones aproximadamente constantes: \(\text{rey}-\text{hombre}+\text{mujer}\approx\text{reina}\).</p>
+<div class="sim" data-sim="embeddings" data-title="Analogías en un espacio de embeddings de juguete"></div>
+<div class="sim-guide"><ul>
+<li>Este espacio está construido a mano en 2D para que se vea la idea; los embeddings reales tienen cientos de dimensiones aprendidas.</li>
+<li>La flecha naranja punteada es \(a-b\) (de «hombre» a «rey»: la dirección «realeza»); trasladada desde \(c\) («mujer») llega cerca de «reina».</li>
+<li>Pruebe «gato − gata + perra»: la dirección «femenino» es la misma para animales y personas.</li>
+</ul></div>
+<div class="box warn"><p>Los embeddings aprenden también los sesgos de los textos con los que se entrenan (estereotipos de género, de origen, de profesión). Las analogías «elegantes» de los artículos se eligen entre muchas que no funcionan. Úselos como representaciones útiles, no como verdades sobre el lenguaje.</p></div>
+</section>
+
+<section>
+<h2>Atención de producto escalar</h2>
+<p>La <span class="term">atención</span> permite que cada elemento de la secuencia construya su nueva representación como un promedio ponderado de todos los demás, con pesos que dependen del contenido. Cada embedding se proyecta en tres vectores: una <b>consulta</b> \(\vb q\) («qué busco»), una <b>clave</b> \(\vb k\) («qué ofrezco») y un <b>valor</b> \(\vb v\) («qué entrego»):</p>
+<div class="eq key" data-name="Atención de producto escalar escalado">\[Q=XW_Q,\quad K=XW_K,\quad V=XW_V,\qquad \text{Atención}(Q,K,V)=\softmax\!\Big(\frac{QK\T}{\sqrt{d_k}}\Big)V .\]</div>
+<ul>
+<li>El producto \(\vb q_i\cdot\vb k_j\) mide la compatibilidad entre el elemento \(i\) y el \(j\); el softmax de cada fila convierte esos puntajes en pesos que suman 1.</li>
+<li>Se divide por \(\sqrt{d_k}\) porque el producto punto de vectores aleatorios tiene desviación \(\sqrt{d_k}\): sin escalar, en dimensión alta el softmax se satura y los gradientes se anulan.</li>
+<li>La <b>máscara causal</b> pone \(-\infty\) en los puntajes de posiciones futuras: así se entrenan los modelos que generan texto de izquierda a derecha.</li>
+<li><b>Atención multicabeza</b>: varias atenciones en paralelo con proyecciones distintas (una puede seguir la sintaxis, otra la referencia de los pronombres); sus salidas se concatenan.</li>
+<li>El costo es cuadrático en la longitud de la secuencia: \(n^2\) puntajes. Por eso los contextos largos son caros.</li>
+</ul>
+<div class="sim" data-sim="atencion" data-title="Calculadora de autoatención sobre seis tokens"></div>
+<div class="sim-guide"><ul>
+<li>La matriz muestra, para cada token (fila), cuánto atiende a cada uno de los demás. Cada fila suma 1.</li>
+<li>Baje la temperatura: cada token atiende casi solo a uno (atención «dura»). Súbala: los pesos se reparten.</li>
+<li>Active la máscara causal: la matriz se vuelve triangular; «el» solo puede mirarse a sí mismo.</li>
+<li>Quite la codificación posicional: la atención no sabe el orden de las palabras; con ella, tokens iguales en posiciones distintas se distinguen.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Transformers y modelos de lenguaje</h2>
+<p>El <span class="term">transformer</span> (Vaswani y colaboradores, 2017) apila bloques idénticos: atención multicabeza, una red densa aplicada a cada posición, conexiones residuales y normalización por capa. Como la atención no distingue el orden, se suma a cada embedding una <b>codificación posicional</b> (sinusoidal o aprendida). Variantes:</p>
+<ul>
+<li><b>Codificador</b> (BERT): atención bidireccional; se entrena rellenando palabras ocultas. Bueno para clasificar y extraer información.</li>
+<li><b>Decodificador</b> (GPT y la mayoría de los modelos de lenguaje actuales): atención causal; se entrena prediciendo el siguiente token sobre cantidades enormes de texto. Es aprendizaje autosupervisado: las etiquetas salen del propio texto.</li>
+<li>Los mismos bloques procesan parches de imágenes (ViT), audio y proteínas.</li>
+</ul>
+<p>Un modelo de lenguaje produce, para el siguiente token, un vector de logits sobre todo el vocabulario. Para generar se muestrea de \(\softmax(\vb z/T)\): la <span class="term">temperatura</span> \(T\) controla la aleatoriedad. Top-k y top-p (núcleo) recortan la cola de candidatos improbables. Después del preentrenamiento, los modelos se ajustan con ejemplos de instrucciones y con retroalimentación humana, y para tareas concretas se adaptan con ajuste fino eficiente (LoRA) o se les proporciona contexto recuperado de documentos (RAG).</p>
+<div class="sim" data-sim="temperatura" data-title="Temperatura, top-k y top-p al elegir el siguiente token"></div>
+<div class="sim-guide"><ul>
+<li>Con \(T\to0\) la elección es casi determinista: siempre «pescado». Con \(T=2\) aparecen continuaciones raras como «papel».</li>
+<li>Top-p = 0.8 deja solo los candidatos que suman el 80 % de la probabilidad; la cola absurda («piedras») queda fuera aunque la temperatura sea alta.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Práctica: atención con NumPy y un bloque transformer</h2>
+<div class="box py"><p>El programa calcula la autoatención de cuatro tokens paso a paso, aplica la máscara causal, comprueba por qué se escala por \(\sqrt d\), construye la codificación posicional sinusoidal, explora la temperatura y cuenta los parámetros de un bloque transformer de PyTorch.</p>
+<div class="py" data-py="28-atencion"></div></div>
+<div class="box read"><ul>
+<li><b>Pesos de atención</b>: cada fila suma 1; «gato» atiende sobre todo a «pescado» (0.564) y «come» (0.348). Con matrices \(W\) aleatorias estos pesos no significan nada lingüístico: en un modelo entrenado, los aprende la retropropagación.</li>
+<li><b>Máscara causal</b>: la matriz queda triangular inferior; la primera fila es [1, 0, 0, 0] porque «el» solo puede mirarse a sí mismo. La última fila no cambia: el último token ya podía ver a todos los anteriores.</li>
+<li><b>Escalado</b>: la desviación del producto \(\vb q\cdot\vb k\) crece como \(\sqrt d\) (2.0, 8.0 y 22.5 para \(d=4\), 64 y 512); dividido por \(\sqrt d\) queda en 1 para cualquier dimensión.</li>
+<li><b>Codificación posicional</b>: la similitud de la posición 10 consigo misma es 8.0 (la norma al cuadrado con \(d=16\)), con la 11 es 7.49 y cae con la distancia (3.65 con la 20, 2.70 con la 40): posiciones cercanas tienen códigos parecidos.</li>
+<li><b>Temperatura</b>: con \(T=0.2\), el 99.3 % de la probabilidad va al primer candidato (entropía 0.04); con \(T=2\) se reparte (0.42, 0.25, 0.15…; entropía 1.42).</li>
+<li><b>Bloque transformer</b> con \(d=64\), 4 cabezas y red interna de 256: 49 984 parámetros, de los cuales 16 640 son de atención (las cuatro matrices de 64×64 más sesgos) y 33 088 de la red densa. La forma de la salida es igual a la de la entrada, por eso los bloques se apilan.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Las RNN y LSTM procesan secuencias paso a paso; sufren con dependencias largas y no se paralelizan.</li>
+<li>Los embeddings representan tokens como vectores aprendidos; el coseno mide similitud.</li>
+<li>Atención: \(\softmax(QK\T/\sqrt d)V\); cada token combina los valores de todos según su compatibilidad.</li>
+<li>Transformer = atención multicabeza + red densa + residuales + normalización + codificación posicional.</li>
+<li>Los modelos de lenguaje predicen el siguiente token; la temperatura y top-p controlan el muestreo.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Cuántos parámetros tiene una tabla de embeddings con vocabulario de 50 000 tokens y dimensión 768?
+<details><summary>Respuesta</summary><p>\(50\,000\cdot768=38.4\) millones.</p></details></li>
+<li><span class="lvl">Básico</span>Puntajes [2, 1, 0] para tres tokens. Calcule los pesos de atención (sin escalar adicional).
+<details><summary>Respuesta</summary><p>\(\ee^2,\ee^1,\ee^0=7.39, 2.72, 1\); suma 11.11: pesos 0.665, 0.245, 0.090.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Cuántos puntajes de atención calcula una capa con 8 cabezas sobre una secuencia de 4 096 tokens?
+<details><summary>Respuesta</summary><p>\(8\cdot4096^2\approx1.34\times10^8\) por capa y por secuencia: por eso los contextos largos son costosos.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Qué le pasa a la salida de la atención si se permutan los tokens de entrada y no hay codificación posicional?
+<details><summary>Respuesta</summary><p>Las salidas se permutan igual (la atención es equivariante a permutaciones): el modelo no distingue «el perro muerde al hombre» de «el hombre muerde al perro» salvo por la posición.</p></details></li>
+<li><span class="lvl">Avanzado</span>Muestre que si \(\vb q\) y \(\vb k\) tienen componentes independientes de media 0 y varianza 1, \(\Var(\vb q\cdot\vb k)=d\).
+<details><summary>Respuesta</summary><p>\(\vb q\cdot\vb k=\sum_{i=1}^dq_ik_i\); cada término tiene media 0 y varianza \(\E[q_i^2]\E[k_i^2]=1\), y son independientes: la varianza de la suma es \(d\).</p></details></li>
+</ol>
+<div class="box links"><ul>
+<li><a href="https://arxiv.org/abs/1706.03762">Vaswani y colaboradores (2017) — Attention Is All You Need</a><small>El artículo del transformer.</small></li>
+<li><a href="https://jalammar.github.io/illustrated-transformer/">Jay Alammar — The Illustrated Transformer</a><small>La explicación visual más conocida de la atención y del transformer.</small></li>
+<li><a href="https://colah.github.io/posts/2015-08-Understanding-LSTMs/">Christopher Olah (2015) — Understanding LSTM Networks</a><small>Las puertas de la LSTM explicadas con diagramas.</small></li>
+<li><a href="https://www.youtube.com/watch?v=kCc8FmEb1nY">Andrej Karpathy — Let's build GPT: from scratch, in code, spelled out</a><small>Un modelo de lenguaje tipo GPT programado desde cero en PyTorch.</small></li>
+<li><a href="https://huggingface.co/learn/llm-course">Hugging Face — LLM Course</a><small>Transformers en la práctica: tokenizadores, ajuste fino y uso de modelos preentrenados.</small></li>
+</ul></div>
+</section>
+</template>

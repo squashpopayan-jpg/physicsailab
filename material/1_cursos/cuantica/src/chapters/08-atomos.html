@@ -1,0 +1,103 @@
+<template class="chapter-src" data-id="atomos" data-num="8" data-title="Átomos de muchos electrones" data-part="Parte II · Átomos, moléculas y sólidos" data-short="Hamiltoniano atómico, helio, apantallamiento, reglas de Slater, configuración electrónica, Hund y tendencias periódicas">
+<p class="lead">Con dos o más electrones, la repulsión entre ellos impide resolver exactamente la ecuación de Schrödinger. Sin embargo, una idea sencilla explica casi toda la química: cada electrón se mueve en el campo del núcleo parcialmente apantallado por los demás. De ahí salen el orden de llenado de los orbitales, la tabla periódica y la electronegatividad que hace del enlace B–N un enlace polar.</p>
+
+<section>
+<h2>El hamiltoniano atómico</h2>
+<p>Para un núcleo de carga \(Z\) y \(N\) electrones, en unidades atómicas y con el núcleo fijo,</p>
+<div class="eq key" data-name="Hamiltoniano de un átomo">\[\op H=\sum_{i=1}^{N}\Big(-\frac12\lap_i-\frac{Z}{r_i}\Big)+\sum_{i\lt j}\frac{1}{|\vb r_i-\vb r_j|}.\]</div>
+<p>Los dos primeros términos son una suma de problemas hidrogenoides independientes. El tercero, la <span class="term">repulsión electrón–electrón</span>, acopla todas las coordenadas: la función de onda depende de \(3N\) variables a la vez y no se separa. Este término es el origen de toda la dificultad de la química cuántica y el motivo de ser de la DFT.</p>
+</section>
+
+<section>
+<h2>El helio: el primer problema difícil</h2>
+<p>Si se ignora la repulsión, cada electrón del helio ocupa un orbital 1s de \(Z=2\) y la energía es \(2\times(-Z^2/2)=-4\) Ha \(=-108.8\) eV. El valor experimental es \(-2.9037\) Ha \(=-79.0\) eV: la repulsión vale casi 30 eV y no puede despreciarse.</p>
+<p>Tratándola como perturbación, su valor medio en el producto de dos orbitales 1s es \(\expval{1/r_{12}}=\frac58Z\), y \(E\approx-Z^2+\frac58Z=-2.75\) Ha. Mejor aún es el <span class="term">método variacional</span> (capítulo 9): usamos orbitales 1s con una carga efectiva \(\zeta\) como parámetro libre. La energía resulta</p>
+<div class="eq key" data-name="Helio con carga efectiva">\[E(\zeta)=\underbrace{\zeta^2}_{\text{cinética}}\ \underbrace{-\,2Z\zeta}_{\text{núcleo}}\ \underbrace{+\,\tfrac58\zeta}_{\text{repulsión}},\qquad \zeta_\text{ópt}=Z-\frac{5}{16}=\frac{27}{16},\qquad E_\text{mín}=-\Big(\frac{27}{16}\Big)^2=-2.8477\un{Ha}.\]</div>
+<p>El resultado óptimo, \(\zeta=1.69\lt2\), tiene una interpretación física: cada electrón ve el núcleo <span class="term">apantallado</span> por el otro, con una carga efectiva menor que la real. El error que queda, 0.056 Ha (1.5 eV), se debe a que los dos electrones se evitan más de lo que permite una función de onda producto: es la <span class="term">correlación electrónica</span>, un tema central de los capítulos 15–17.</p>
+<div class="sim" data-sim="helio-variacional" data-title="Helio variacional: el balance entre energía cinética, atracción y repulsión"></div>
+<div class="sim-guide"><ul>
+<li>Con \(\zeta\) pequeño los orbitales son difusos: poca energía cinética, pero poca atracción. Con \(\zeta\) grande, lo contrario. El mínimo equilibra ambos.</li>
+<li>En el mínimo, la energía cinética es exactamente menos la energía total (teorema del virial).</li>
+<li>Pruebe los iones de dos electrones (H⁻, Li⁺, Be²⁺): el apantallamiento \(5/16\) es el mismo para todos. Para H⁻ el modelo no llega a ligar el segundo electrón, aunque en la realidad sí lo está.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Campo central y apantallamiento</h2>
+<p>La <span class="term">aproximación de campo central</span> supone que cada electrón se mueve en un potencial esférico promedio \(V(r)\) creado por el núcleo y los demás electrones. Cerca del núcleo, \(V\approx-Z/r\); lejos, el electrón ve una sola carga neta, \(V\approx-1/r\). Como \(V\) ya no es \(\propto1/r\), la degeneración en \(l\) del hidrógeno desaparece:</p>
+<ul>
+<li>Un electrón s <span class="term">penetra</span> hasta cerca del núcleo, donde el apantallamiento es débil: siente una carga efectiva mayor y queda más ligado que un p del mismo \(n\).</li>
+<li>El orden de energías resulta \(1s\lt2s\lt2p\lt3s\lt3p\lt4s\lt3d\lt4p\dots\): regla de Madelung (\(n+l\) creciente y, a igual \(n+l\), \(n\) creciente).</li>
+</ul>
+<p>Slater propuso en 1930 reglas empíricas para estimar la carga efectiva \(Z_\text{ef}=Z-s\) de un electrón: agrupando los orbitales en (1s)(2s,2p)(3s,3p)(3d)…, los otros electrones del mismo grupo apantallan 0.35 (0.30 en 1s), los de la capa \(n-1\) apantallan 0.85 y los más internos 1.00 (para electrones d, todo lo interior apantalla 1.00).</p>
+<div class="box ex">
+<h4>Carga efectiva del nitrógeno</h4>
+<p>Calcule con las reglas de Slater la carga efectiva que siente un electrón 2p del nitrógeno (\(1s^22s^22p^3\)).</p>
+<details><summary>Solución</summary>
+<p>Otros 4 electrones del grupo (2s,2p): \(4\times0.35=1.40\); los 2 electrones 1s: \(2\times0.85=1.70\). \(s=3.10\), \(Z_\text{ef}=7-3.10=3.90\). Para el carbono sale 3.25 y para el boro 2.60: la carga efectiva crece a lo largo del periodo, y con ella la atracción sobre los electrones de valencia.</p>
+</details>
+</div>
+</section>
+
+<section>
+<h2>Configuración electrónica y reglas de Hund</h2>
+<p>El estado fundamental se construye con el <span class="term">principio de construcción</span> (Aufbau): se llenan los orbitales en orden de energía respetando el principio de Pauli (dos electrones por orbital, espines opuestos). Cuando una subcapa queda incompleta, las <span class="term">reglas de Hund</span> deciden cómo se reparten los electrones:</p>
+<ol>
+<li>Máximo espín total: los electrones ocupan orbitales distintos con espines paralelos (para aprovechar el hueco de intercambio del capítulo 7).</li>
+<li>A igual espín, máximo momento angular orbital total.</li>
+</ol>
+<p>Los elementos de hBN-MC son:</p>
+<div class="tablewrap"><table>
+<tr><th>Elemento</th><th>\(Z\)</th><th>Configuración</th><th>Electrones de valencia</th><th>\(Z_\text{ef}\) (Slater, valencia)</th></tr>
+<tr><td><span class="at H">H</span> hidrógeno</td><td class="c">1</td><td>1s¹</td><td class="c">1</td><td class="num">1.00</td></tr>
+<tr><td><span class="at B">B</span> boro</td><td class="c">5</td><td>1s² 2s² 2p¹</td><td class="c">3</td><td class="num">2.60</td></tr>
+<tr><td><span class="at C">C</span> carbono</td><td class="c">6</td><td>1s² 2s² 2p²</td><td class="c">4</td><td class="num">3.25</td></tr>
+<tr><td><span class="at N">N</span> nitrógeno</td><td class="c">7</td><td>1s² 2s² 2p³</td><td class="c">5</td><td class="num">3.90</td></tr>
+</table></div>
+<p>Una observación clave: un par B+N tiene \(3+5=8\) electrones de valencia, exactamente como un par C+C. El h-BN y el grafeno son <span class="term">isoelectrónicos</span>, y por eso ambos forman la misma red de panal con tres enlaces por átomo. La diferencia está en que N atrae los electrones mucho más que B.</p>
+<div class="sim" data-sim="configuracion" data-title="Configuración electrónica de los elementos 1 a 36"></div>
+<div class="sim-guide"><ul>
+<li>Recorra el periodo 2: el 2p se llena primero con espines paralelos (Hund) y luego empieza a emparejarse en el oxígeno.</li>
+<li>Observe el potasio (Z = 19): el 4s se ocupa antes que el 3d, porque penetra más.</li>
+<li>Cromo y cobre son excepciones: prefieren \(3d^54s^1\) y \(3d^{10}4s^1\) (subcapas d a medio llenar o llenas).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Tendencias periódicas y electronegatividad</h2>
+<p>La <span class="term">energía de ionización</span> (arrancar el electrón más externo) crece a lo largo de un periodo, porque \(Z_\text{ef}\) aumenta, y cae bruscamente al empezar una capa nueva. Hay dos «dientes» instructivos en el periodo 2: el boro ioniza más fácil que el berilio (su electrón 2p penetra menos que un 2s) y el oxígeno más fácil que el nitrógeno (su cuarto electrón 2p debe emparejarse y sufre repulsión extra).</p>
+<p>La <span class="term">electronegatividad</span> mide la tendencia de un átomo a atraer los electrones de un enlace. En la escala de Mulliken es el promedio de la energía de ionización y la afinidad electrónica, \(\chi=(I+A)/2\); la escala de Pauling, la más usada, se construye a partir de energías de enlace. En la escala de Pauling:</p>
+<div class="eq">\[\chi_\text{B}=2.04,\qquad \chi_\text{H}=2.20,\qquad \chi_\text{C}=2.55,\qquad \chi_\text{N}=3.04 .\]</div>
+<p>La diferencia \(\chi_\text{N}-\chi_\text{B}=1.0\) hace que el enlace B–N sea polar: los electrones se desplazan hacia el nitrógeno. Esa asimetría, que en el modelo de dos niveles del capítulo 3 corresponde a \(\varepsilon_\text{B}\ne\varepsilon_\text{N}\), abre la brecha de 6 eV del h-BN, mientras que el grafeno, con dos átomos iguales, no tiene brecha.</p>
+<div class="sim" data-sim="tendencias" data-title="Energía de ionización y electronegatividad frente a Z"></div>
+<div class="sim-guide"><ul>
+<li>Localice los máximos (gases nobles) y los mínimos (alcalinos): la estructura de capas se ve en los datos experimentales.</li>
+<li>Compare B, C, N y H en la electronegatividad: el carbono queda justo entre el boro y el nitrógeno.</li>
+</ul></div>
+<div class="box hbn"><p>La electronegatividad reaparece en los parámetros de hBN-MC. La energía de hidrogenación implícita en cada \(\varepsilon_{X\alpha}\) (capítulo 27) sigue el orden de electronegatividad: \(-1.32\) eV para B–H, \(-1.72\) eV para C–H y \(-2.12\) eV para N–H. La aplicación verifica que el valor del carbono quede entre el del boro y el del nitrógeno (función <code>checkParameterConsistency</code>).</p></div>
+<div class="box valid"><p>Las reglas de Slater implementadas dan \(Z_\text{ef}=3.25\) para el 2p del carbono y 3.90 para el del nitrógeno, y el mínimo variacional del helio es exactamente \(-(27/16)^2\) Ha (apéndice B). Las energías de ionización y electronegatividades provienen de las tablas del NIST y de Pauling.</p></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>La repulsión electrón–electrón acopla todas las coordenadas: el átomo con \(N\gt1\) no tiene solución exacta.</li>
+<li>Helio: con carga efectiva \(\zeta=27/16\) se obtiene \(-2.848\) Ha; falta la correlación (\(-0.056\) Ha).</li>
+<li>Campo central apantallado: los orbitales s penetran más y quedan más ligados; orden de Madelung.</li>
+<li>Aufbau + Pauli + Hund determinan la configuración; B, C y N comparten la capa 2 con 3, 4 y 5 electrones de valencia.</li>
+<li>BN y CC son isoelectrónicos; la diferencia de electronegatividad B/N hace polar el enlace y abre la brecha del h-BN.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Escriba la configuración del oxígeno y diga cuántos electrones desapareados tiene según Hund.
+<details><summary>Respuesta</summary><p>1s² 2s² 2p⁴: dos electrones desapareados (estado triplete).</p></details></li>
+<li><span class="lvl">Básico</span>¿Por qué la energía de ionización del boro (8.30 eV) es menor que la del berilio (9.32 eV)?
+<details><summary>Respuesta</summary><p>El electrón que se arranca en B es un 2p, que penetra menos que el 2s del Be y está mejor apantallado.</p></details></li>
+<li><span class="lvl">Intermedio</span>Minimice \(E(\zeta)=\zeta^2-2Z\zeta+\frac58\zeta\) para \(Z=3\) (Li⁺) y compare con el valor exacto \(-7.2799\) Ha.
+<details><summary>Respuesta</summary><p>\(\zeta=2.6875\), \(E=-7.2227\) Ha; error 0.057 Ha, casi igual que en el helio.</p></details></li>
+<li><span class="lvl">Intermedio</span>Con las reglas de Slater, estime el radio del orbital 2p del boro y del nitrógeno como \(n^2a_0/Z_\text{ef}\).
+<details><summary>Respuesta</summary><p>B: \(4\times0.529/2.60=0.81\) Å; N: \(4\times0.529/3.90=0.54\) Å. El nitrógeno es más pequeño.</p></details></li>
+<li><span class="lvl">Avanzado</span>Demuestre el teorema del virial para el helio variacional: en el mínimo, \(T=-E\).
+<details><summary>Respuesta</summary><p>\(T=\zeta^2\) y \(V=-2Z\zeta+\frac58\zeta\) (lineal en \(\zeta\)). En el mínimo \(2\zeta=2Z-\frac58\), luego \(V=-\zeta(2Z-\frac58)=-2\zeta^2=-2T\) y \(E=T+V=-T\).</p></details></li>
+</ol>
+</section>
+</template>

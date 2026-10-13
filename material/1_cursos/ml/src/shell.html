@@ -1,0 +1,107 @@
+<title>Aprender de los datos</title>
+<meta name="author" content="Mg. Manuel Alejandro Obando — Departamento de Física, Universidad del Cauca">
+<meta name="description" content="Curso interactivo de machine learning: fundamentos, regresión, clasificación, ensambles, aprendizaje no supervisado, redes neuronales, interpretación de resultados, errores frecuentes y cómo elegir el algoritmo, con simulaciones validadas contra scikit-learn y práctica en Python.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=JetBrains+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400..700;1,8..60,400..600&display=swap">
+<style>
+/*CSS*/
+</style>
+<!--BODY-->
+<div class="app" id="app" lang="es">
+  <aside class="sidebar" id="sidebar" aria-label="Índice del curso">
+    <a class="brand" href="#inicio">
+      <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true">
+        <rect width="40" height="40" rx="7" fill="var(--ink)"/>
+        <path d="M6 30 C 14 28, 16 12, 34 9" fill="none" stroke="var(--accent-2)" stroke-width="1.6" stroke-dasharray="2.2 1.8"/>
+        <circle cx="10" cy="12" r="2.6" fill="var(--k0)"/>
+        <circle cx="16" cy="8" r="2.6" fill="var(--k0)"/>
+        <circle cx="8" cy="20" r="2.6" fill="var(--k0)"/>
+        <circle cx="15" cy="16" r="2.6" fill="var(--k0)"/>
+        <circle cx="22" cy="26" r="2.6" fill="var(--k1)"/>
+        <circle cx="30" cy="20" r="2.6" fill="var(--k1)"/>
+        <circle cx="27" cy="31" r="2.6" fill="var(--k1)"/>
+        <circle cx="33" cy="28" r="2.6" fill="var(--k1)"/>
+      </svg>
+      <span class="brand-name">Aprender de los datos<small>Machine learning de los fundamentos a la práctica</small></span>
+    </a>
+    <div class="search" role="search">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10.5 10.5 14 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <input id="searchIn" type="search" placeholder="Buscar en el curso  ( / )" aria-label="Buscar en el curso" autocomplete="off">
+      <div class="search-results" id="searchRes" hidden></div>
+    </div>
+    <nav class="toc" id="toc" aria-label="Capítulos"></nav>
+    <div class="sidebar-foot"><div class="credit">Elaborado por <b>Mg. Manuel Alejandro Obando</b><br>Departamento de Física<br>Universidad del Cauca</div>Algoritmos validados contra scikit-learn 1.7</div>
+  </aside>
+  <div class="mainwrap">
+    <header class="topbar">
+      <button class="iconbtn menu-btn" id="menuBtn" type="button" aria-label="Abrir índice">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </button>
+      <div class="crumb" id="crumb"></div>
+      <button class="iconbtn" id="themeBtn" type="button">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 2.5a5.5 5.5 0 0 1 0 11z" fill="currentColor"/></svg>
+        <span>Sistema</span>
+      </button>
+      <div class="progress" id="progress"></div>
+    </header>
+    <main id="main">
+      <noscript><div class="noscript">Esta aplicación necesita JavaScript para mostrar la teoría y las simulaciones.<br>Elaborado por <b>Mg. Manuel Alejandro Obando</b> · Departamento de Física, Universidad del Cauca</div></noscript>
+      <div id="chapters"></div>
+      <footer class="site-foot"><b>Aprender de los datos</b> · Elaborado por <b>Mg. Manuel Alejandro Obando</b> · Departamento de Física, Universidad del Cauca</footer>
+    </main>
+  </div>
+</div>
+<!--TEMPLATES-->
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['\\(', '\\)']],
+    displayMath: [['\\[', '\\]']],
+    processEscapes: true,
+    macros: {
+      vb: ['\\boldsymbol{#1}', 1],
+      uv: ['\\hat{\\boldsymbol{#1}}', 1],
+      dd: '\\mathrm{d}',
+      ee: '\\mathrm{e}',
+      E: '\\mathbb{E}',
+      R: '\\mathbb{R}',
+      Pr: '\\operatorname{P}',
+      expval: ['\\left\\langle #1\\right\\rangle', 1],
+      grad: '\\nabla',
+      pdv: ['\\frac{\\partial #1}{\\partial #2}', 2],
+      odv: ['\\frac{\\mathrm{d} #1}{\\mathrm{d} #2}', 2],
+      abs: ['\\left|#1\\right|', 1],
+      norm: ['\\left\\lVert #1\\right\\rVert', 1],
+      sen: '\\operatorname{sen}',
+      Var: '\\operatorname{Var}',
+      Cov: '\\operatorname{Cov}',
+      sgn: '\\operatorname{sgn}',
+      Tr: '\\operatorname{Tr}',
+      argmin: '\\operatorname*{arg\\,min}',
+      argmax: '\\operatorname*{arg\\,max}',
+      softmax: '\\operatorname{softmax}',
+      diag: '\\operatorname{diag}',
+      T: '^{\\top}',
+      yh: '\\hat{y}',
+      ind: ['\\mathbb{1}\\!\\left[#1\\right]', 1]
+    }
+  },
+  svg: { fontCache: 'global' },
+  options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code', 'template', 'canvas', 'select', 'option'] },
+  startup: {
+    typeset: false,
+    ready: function () {
+      MathJax.startup.defaultReady();
+      MathJax.startup.promise.then(function () {
+        window.__mjReady = true;
+        if (window.ML && window.ML.mathReady) window.ML.mathReady();
+      });
+    }
+  }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg-full.js" id="MathJax-script" async></script>
+<script>
+/*JS*/
+</script>

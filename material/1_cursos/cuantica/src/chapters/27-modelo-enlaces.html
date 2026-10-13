@@ -1,0 +1,118 @@
+<template class="chapter-src" data-id="modelo-enlaces" data-num="27" data-title="El modelo de enlaces de hBN-MC" data-part="Parte VI · El modelo de hBN-MC" data-short="Energía como suma de enlaces, conteo e identidad de coordinación, ajuste por mínimos cuadrados a la DFT, identificabilidad, parámetros del hidrógeno y costo de los movimientos">
+<p class="lead">Aquí se juntan todas las piezas del curso. La DFT (Parte III) da energías totales de estructuras pequeñas; un modelo muy simple, «la energía es la suma de las energías de sus enlaces», las resume en diez números; y la mecánica estadística (Partes IV y V) usa esos números para simular miles de átomos a temperatura finita. Este capítulo explica el modelo, de dónde salen sus parámetros y qué tan confiables son.</p>
+
+<section>
+<h2>La energía como suma de enlaces</h2>
+<p>En una lámina de panal cada sitio tiene tres vecinos. Si cada sitio está ocupado por N, B, C o está vacío (X), la configuración queda descrita por cuántos enlaces hay de cada tipo, \(n_{\alpha\beta}\). El modelo de hBN-MC (ecuación 1 del artículo) es</p>
+<div class="eq key" data-name="Modelo de enlaces">\[E=\sum_{\alpha\le\beta}n_{\alpha\beta}\,\varepsilon_{\alpha\beta},\qquad \alpha,\beta\in\{\text{N},\text{B},\text{C},\text{X}\},\]</div>
+<p>con diez parámetros \(\varepsilon_{\alpha\beta}\). Es la versión más simple de una <span class="term">expansión en clústeres</span> (Sanchez, Ducastelle y Gratias, 1984): la energía de una aleación en una red se escribe como suma de contribuciones de puntos, pares, tríos… y se trunca. Aquí se conservan solo los pares de primeros vecinos. La justificación física viene de la Parte II: en una red covalente \(sp^2\) los enlaces son cortos y localizados, y en el modelo de enlace fuerte la energía electrónica es, en primera aproximación, una suma sobre enlaces.</p>
+<div class="box explain"><p>Piense en un muro de Lego: si cada tipo de unión entre piezas tiene un «costo» fijo, el costo total del muro es contar cuántas uniones hay de cada tipo y multiplicar. No importa la forma del muro, solo el inventario de uniones. El modelo de enlaces hace exactamente eso con los átomos.</p></div>
+<p>Las limitaciones están en la propia definición: solo primeros vecinos, red rígida (los átomos no se desplazan de los sitios del panal), sin carga, sin magnetismo y sin curvatura. Lo que el modelo puede predecir es qué <em>arreglos</em> de átomos y vacancias son más estables, no las distancias ni las propiedades electrónicas.</p>
+</section>
+
+<section>
+<h2>Contar enlaces: la identidad de coordinación</h2>
+<p>Como cada átomo tiene exactamente tres enlaces, los conteos no son independientes. Para cada especie,</p>
+<div class="eq key" data-name="Identidad de coordinación">\[3N_\alpha=2n_{\alpha\alpha}+\sum_{\beta\ne\alpha}n_{\alpha\beta},\]</div>
+<p>(un enlace \(\alpha\alpha\) aporta dos extremos \(\alpha\); uno \(\alpha\beta\), uno). Despejando \(n_{\alpha\alpha}\) y sustituyendo en el modelo, la energía se separa en dos partes:</p>
+<div class="eq key" data-name="Energía por átomo y energía de mezcla">\[E=\sum_\alpha N_\alpha\,\frac{3\varepsilon_{\alpha\alpha}}{2}+\sum_{\alpha\lt\beta}n_{\alpha\beta}\,w_{\alpha\beta},\qquad w_{\alpha\beta}=\varepsilon_{\alpha\beta}-\frac{\varepsilon_{\alpha\alpha}+\varepsilon_{\beta\beta}}{2}.\]</div>
+<p>El primer término depende solo de la composición; el segundo, de cómo están mezclados los átomos. En una simulación que conserva la composición (Kawasaki, capítulo 25) el primer término es constante: <strong>solo las energías de mezcla \(w_{\alpha\beta}\) deciden el comportamiento</strong>. Con los parámetros de la tesis:</p>
+<table class="vtable">
+<thead><tr><th>Par</th><th>\(w_{\alpha\beta}\) (eV)</th><th>Significado</th></tr></thead>
+<tbody>
+<tr><td>N–B</td><td>−1.560</td><td>cada enlace B–N es 1.56 eV mejor que el promedio de N–N y B–B: orden fortísimo</td></tr>
+<tr><td>C–N</td><td>−0.715</td><td>C y N se mezclan con ganancia moderada</td></tr>
+<tr><td>C–B</td><td>−0.393</td><td>C y B se mezclan con ganancia pequeña</td></tr>
+</tbody>
+</table>
+<p>De aquí salen de inmediato los números de los capítulos anteriores: el intercambio B↔N en h-BN perfecto convierte 4 enlaces N–B en 2 N–N y 2 B–B, y cuesta \(-4w_\text{NB}=6.24\) eV; la energía de mezcla BN–C es \(w_\text{CN}+w_\text{CB}-w_\text{NB}=+0.45\) eV.</p>
+<p>Las vacancias se tratan como una cuarta especie X. Un enlace X–N significa que un N del borde perdió a su vecino y su enlace colgante está pasivado con un hidrógeno: <strong>el número de H es \(N_\text{H}=n_\text{XN}+n_\text{XB}+n_\text{XC}\)</strong>. Un enlace X–X está «dentro» del poro, entre dos sitios vacíos.</p>
+<div class="sim" data-sim="laboratorio-enlaces" data-title="Laboratorio de enlaces: pinte átomos, cuente enlaces e intercambie sitios"></div>
+<div class="sim-guide"><ul>
+<li>Elija una especie y haga clic en los sitios para cambiarlos. La tabla de enlaces, el número de H y la energía se actualizan; la identidad de coordinación se verifica en cada cambio.</li>
+<li>En modo «intercambiar», haga clic en dos sitios: verá el \(\Delta E\) del intercambio (calculado localmente, como en hBN-MC) y su probabilidad de aceptación a la temperatura elegida.</li>
+<li>Pruebe los ejemplos: V<sub>B</sub> + 3H, V<sub>N</sub> + 3H, un antisitio B↔N y un poro triangular.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Del DFT a los parámetros: mínimos cuadrados</h2>
+<p>Los seis parámetros entre átomos (\(\varepsilon_\text{NN},\varepsilon_\text{NB},\varepsilon_\text{BB},\varepsilon_\text{CC},\varepsilon_\text{CN},\varepsilon_\text{CB}\)) se ajustaron en la tesis a las energías DFT (SIESTA) de 20 estructuras B<sub>x</sub>C<sub>y</sub>N<sub>z</sub> de 8 átomos estudiadas por Mazzoni y colaboradores. Cada celda tiene 12 enlaces; para la estructura \(i\) el modelo predice \(E_i=\sum_kX_{ik}\varepsilon_k\), donde \(X_{ik}\) es el número de enlaces de tipo \(k\). Con 20 ecuaciones y 6 incógnitas no hay solución exacta: se busca la que minimiza la suma de residuos al cuadrado,</p>
+<div class="eq key" data-name="Mínimos cuadrados">\[\min_{\boldsymbol\varepsilon}\ \sum_{i}\Big(E_i^\text{DFT}-\sum_kX_{ik}\varepsilon_k\Big)^2\quad\Longrightarrow\quad (X^\mathsf TX)\,\boldsymbol\varepsilon=X^\mathsf T\vb E^\text{DFT}\ \ \text{(ecuaciones normales).}\]</div>
+<p>Además de los parámetros, el ajuste da su incertidumbre:</p>
+<div class="eq key" data-name="Errores del ajuste">\[s^2=\frac{\text{RSS}}{n-p},\qquad \operatorname{Cov}(\boldsymbol\varepsilon)=s^2\,(X^\mathsf TX)^{-1},\qquad \sigma_k=\sqrt{\operatorname{Cov}_{kk}},\]</div>
+<p>donde RSS es la suma de residuos al cuadrado, \(n=20\) estructuras y \(p=6\) parámetros. Dos medidas de calidad complementan los errores:</p>
+<ul>
+<li>\(R^2=1-\text{RSS}/\text{SST}\): fracción de la variación de las energías que el modelo explica. Es casi 1 porque las energías totales varían en cientos de eV; por sí solo no dice mucho.</li>
+<li>El error de <span class="term">validación cruzada</span> «dejando uno fuera» (LOO): se ajusta sin la estructura \(i\) y se predice \(E_i\). No hace falta repetir el ajuste: el residuo LOO es \(e_i/(1-h_{ii})\), con \(h_{ii}=\vb x_i^\mathsf T(X^\mathsf TX)^{-1}\vb x_i\). Mide la capacidad de <em>predecir</em> estructuras nuevas.</li>
+</ul>
+<div class="box def"><p><strong>Identificabilidad.</strong> Si las columnas de \(X\) son linealmente dependientes, \(X^\mathsf TX\) es singular y los parámetros no quedan determinados: infinitas combinaciones dan el mismo ajuste. Por la identidad de coordinación, si todas las estructuras tuvieran la misma composición, solo se determinarían las energías de mezcla \(w_{\alpha\beta}\) y no los \(\varepsilon\) individuales. Las 20 estructuras de Mazzoni tienen cuatro composiciones (B<sub>2</sub>C<sub>2</sub>N<sub>4</sub>, B<sub>4</sub>C<sub>2</sub>N<sub>2</sub>, B<sub>2</sub>C<sub>4</sub>N<sub>2</sub> y B<sub>3</sub>C<sub>2</sub>N<sub>3</sub>), y hacen falta todas: si se quita la familia B<sub>2</sub>C<sub>4</sub>N<sub>2</sub>, las tres restantes tienen todas 2 átomos de C y una es el promedio de las otras dos, así que el ajuste se vuelve singular.</p></div>
+<div class="sim" data-sim="ajuste-mazzoni" data-title="El ajuste de la Tabla 5.8: residuos, errores, validación cruzada e identificabilidad"></div>
+<div class="sim-guide"><ul>
+<li>Con las 20 estructuras se reproduce la Tabla 5.8 de la tesis con sus errores estándar (0.07–0.30 eV).</li>
+<li>Quite una estructura: los parámetros cambian menos que su \(\sigma\), salvo con las de mayor residuo.</li>
+<li>Elija «sin la familia B<sub>2</sub>C<sub>4</sub>N<sub>2</sub>» o «solo una composición»: el ajuste es singular.</li>
+<li>Fije \(\varepsilon_\text{NB}=E(\text{BN})/3\): el RMS se triplica y \(\varepsilon_\text{NN}\), \(\varepsilon_\text{BB}\) se desplazan 1.6 eV. Es el problema de escala (D3) que el informe de hBN-MC deja pendiente.</li>
+</ul></div>
+<div class="box valid"><p>El apéndice B reproduce la Tabla 5.8 (diferencias < 0.004 eV), el RMS de 0.630 eV por celda, \(R^2=0.99996\) y el RMS de validación cruzada de 0.904 eV del informe científico de hBN-MC, y comprueba que sin la familia B<sub>2</sub>C<sub>4</sub>N<sub>2</sub> el ajuste es singular.</p></div>
+</section>
+
+<section>
+<h2>Los parámetros del hidrógeno y de las vacancias</h2>
+<p>Los cuatro parámetros con X no salen del ajuste de Mazzoni:</p>
+<ul>
+<li>\(\varepsilon_\text{XN}=-109.7987\) y \(\varepsilon_\text{XB}=-50.3121\) eV se obtuvieron de cálculos DFT de poros triangulares pasivados (Tabla 5.7 de la tesis).</li>
+<li>\(\varepsilon_\text{XX}=-15.031\) eV \(=E(\text{H}_2)/2\) es una convención del código Fortran de la tesis.</li>
+<li>\(\varepsilon_\text{XC}=-70.41\) eV es <em>provisional</em>: no procede de un cálculo DFT y debe recalibrarse con nanocintas de grafeno pasivadas.</li>
+</ul>
+<p>Una forma de entender estos números es la <span class="term">energía de hidrogenación</span>: romper un enlace Y–Y y pasivar los dos extremos con el H de una molécula de H<sub>2</sub> (\(\text{Y–Y}+\text{H}_2\to2\,\text{Y–H}\)) cambia la energía, por H, en</p>
+<div class="eq key" data-name="Identidad de hidrogenación">\[\Delta E_\text{hidrog}(\text{Y–H})=\varepsilon_\text{XY}-\frac{E(\text{H}_2)}{2}-\frac{\varepsilon_\text{YY}}{2}.\]</div>
+<p>Con los parámetros de la tesis: \(-2.12\) eV para N–H, \(-1.32\) eV para B–H y \(-1.72\) eV para C–H. Son cantidades físicas razonables (del orden de energías de enlace X–H menos la mitad de la del H<sub>2</sub>), aunque los \(\varepsilon\) individuales, de −50 a −185 eV, no lo parezcan.</p>
+<div class="box warn"><p>Los \(\varepsilon\) no son energías de enlace físicas: absorben las energías totales de los átomos en SIESTA, incluidos sus electrones internos (pseudopotenciales, capítulo 18). Por eso valen cientos de eV. Lo que tiene significado físico son las <em>diferencias</em>: energías de mezcla, de hidrogenación, de formación. Además, \(\varepsilon_\text{XN}\) y \(\varepsilon_\text{XB}\) se derivaron con \(\varepsilon_\text{NB}=E(\text{BN})/3=-128.9067\) eV y no con el valor ajustado (−128.1626 eV): una diferencia de escala de 0.744 eV por enlace B–N que el informe de la aplicación registra como decisión pendiente.</p></div>
+</section>
+
+<section>
+<h2>El costo de los movimientos y la escala de temperatura</h2>
+<p>Con el modelo se calcula cuánto cuesta cada movimiento elemental del Monte Carlo. Algunos ejemplos en h-BN:</p>
+<table class="vtable">
+<thead><tr><th>Movimiento</th><th>\(\Delta E\) (eV)</th></tr></thead>
+<tbody>
+<tr><td>Antisitio: intercambiar un B y un N vecinos en h-BN perfecto</td><td>+6.24</td></tr>
+<tr><td>Una vacancia V<sub>B</sub> intercambia lugar con un N vecino</td><td>+4.72</td></tr>
+<tr><td>Un C de un dímero C–C intercambia lugar con un N vecino</td><td>+2.34</td></tr>
+<tr><td>Una vacancia V<sub>B</sub> salta a otro sitio B (movimiento global)</td><td>0</td></tr>
+</tbody>
+</table>
+<p>A 5000 K, \(\kB T=0.43\) eV, y la aceptación de un intercambio B↔N es \(5\times10^{-7}\); a 20 000 K sube a \(2.7\times10^{-2}\). Por eso hBN-MC trabaja a miles o decenas de miles de kelvin: la temperatura es un <em>parámetro de control del muestreo</em>, no la temperatura física de la lámina (que se descompone mucho antes).</p>
+<div class="sim" data-sim="costos-movimientos" data-title="Costo de los movimientos elementales y su probabilidad de aceptación"></div>
+<div class="sim-guide"><ul>
+<li>Cada curva es \(\ee^{-\Delta E/\kB T}\) para un movimiento calculado con el motor del curso sobre una red real.</li>
+<li>Cambie el reservorio de hidrógeno: los movimientos que cambian el número de H (erosión de bordes) cambian mucho; los que no, nada.</li>
+<li>Observe que un movimiento que cuesta 0 eV (salto de una vacancia por su propia subred) siempre se acepta: por eso los movimientos globales ayudan tanto.</li>
+</ul></div>
+<div class="box hbn"><p>La pestaña INV → <em>Escala energética</em> de hBN-MC calcula el \(\Delta E\) de todos los intercambios locales posibles en la configuración actual y la aceptación esperada a varias temperaturas. INV → <em>Reajuste</em> rehace el ajuste de esta sección y permite añadir estructuras en CSV, liberar o fijar parámetros y aplicar el resultado. INV → <em>Parámetros</em> permite variar cada \(\varepsilon\) dentro de \(\pm2\sigma\) para comprobar la robustez de una conclusión.</p></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Modelo: \(E=\sum n_{\alpha\beta}\varepsilon_{\alpha\beta}\) con N, B, C y vacancias X; diez parámetros; red rígida y primeros vecinos.</li>
+<li>Identidad de coordinación \(3N_\alpha=2n_{\alpha\alpha}+\sum_{\beta\ne\alpha}n_{\alpha\beta}\); a composición fija solo importan las energías de mezcla \(w_{\alpha\beta}\).</li>
+<li>Seis parámetros por mínimos cuadrados a 20 estructuras DFT: errores 0.07–0.30 eV, RMS 0.63 eV, LOO 0.90 eV. Se necesitan varias composiciones para que el ajuste sea identificable.</li>
+<li>\(N_\text{H}=n_\text{XN}+n_\text{XB}+n_\text{XC}\); los parámetros X se entienden mejor como energías de hidrogenación.</li>
+<li>Los movimientos cuestan varios eV: temperaturas de simulación altas, sin significado físico directo.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Cuántos enlaces tiene una lámina perfecta de h-BN con 200 átomos y de qué tipo son?
+<details><summary>Respuesta</summary><p>\(3\cdot200/2=300\) enlaces, todos N–B.</p></details></li>
+<li><span class="lvl">Básico</span>Una vacancia de B pasivada (V<sub>B</sub> + 3H): ¿qué enlaces desaparecen y cuáles aparecen?
+<details><summary>Respuesta</summary><p>Desaparecen 3 enlaces N–B y aparecen 3 enlaces X–N (3 N–H).</p></details></li>
+<li><span class="lvl">Intermedio</span>Demuestre que el intercambio B↔N en h-BN perfecto cuesta \(-4w_\text{NB}\).
+<details><summary>Respuesta</summary><p>Antes del intercambio los dos sitios participan en 5 enlaces distintos, todos N–B (el enlace entre ellos se cuenta una vez). Después, el N que quedó en el sitio de B tiene dos vecinos N y el B que quedó en el sitio de N tiene dos vecinos B; el enlace entre ellos sigue siendo N–B. Se pierden 4 enlaces N–B y aparecen 2 N–N y 2 B–B:\(\Delta E=2\varepsilon_\text{NN}+2\varepsilon_\text{BB}-4\varepsilon_\text{NB}=-4w_\text{NB}\).</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué el \(R^2=0.99996\) no basta para decir que el ajuste es bueno?
+<details><summary>Respuesta</summary><p>Porque las energías totales varían en cientos de eV entre composiciones y cualquier modelo que capture la composición tendrá \(R^2\approx1\). Lo relevante es el residuo (0.63 eV por celda, 0.08 eV por átomo) comparado con las diferencias de energía que interesan (décimas de eV) y el error de predicción LOO.</p></details></li>
+<li><span class="lvl">Avanzado</span>En la simulación del ajuste, fije \(\varepsilon_\text{NB}=E(\text{BN})/3\). ¿Cuánto cambian los demás parámetros y el RMS? ¿Qué se concluye sobre las dos escalas de \(\varepsilon_\text{NB}\)?
+<details><summary>Respuesta</summary><p>\(\varepsilon_\text{NN}\) y \(\varepsilon_\text{BB}\) suben 1.64 eV, \(\varepsilon_\text{CN}\) y \(\varepsilon_\text{CB}\) 0.48 eV y \(\varepsilon_\text{CC}\) 0.30 eV, y aun así el RMS crece de 0.63 a 1.90 eV. Los datos de Mazzoni rechazan el valor \(E(\text{BN})/3\): las dos escalas no son compatibles dentro de este conjunto y hace falta un ajuste global que incluya las estructuras de poros con las que se obtuvieron \(\varepsilon_\text{XN}\) y \(\varepsilon_\text{XB}\).</p></details></li>
+</ol>
+</section>
+</template>

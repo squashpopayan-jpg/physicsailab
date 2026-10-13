@@ -1,0 +1,117 @@
+<template class="chapter-src" data-id="laplace" data-num="8" data-title="Laplace, unicidad e imágenes" data-part="Parte II · Electrostática" data-short="Ecuaciones de Poisson y Laplace, unicidad, imágenes, separación de variables y relajación">
+<p class="lead">En los problemas reales no se conoce la distribución de carga: se conocen los conductores y sus potenciales, y las cargas se redistribuyen por su cuenta. Entonces hay que resolver una ecuación diferencial para el potencial con condiciones de frontera. Este capítulo presenta los métodos clásicos: soluciones directas, imágenes, separación de variables y relajación numérica.</p>
+
+<section>
+<h2>Ecuaciones de Poisson y de Laplace</h2>
+<p>Combinando la ley de Gauss en forma diferencial, \(\divg\vb{E}=\rho_v/\eo\), con \(\vb{E}=-\nabla V\):</p>
+<div class="eq key" data-name="Poisson y Laplace">\[\lap V=-\frac{\rho_v}{\eo}\quad(\text{Poisson}),\qquad \lap V=0\quad(\text{Laplace, donde }\rho_v=0).\]</div>
+<p>En la región entre conductores no hay carga, así que el problema típico de la electrostática es: <em>resolver la ecuación de Laplace con valores prescritos de \(V\) en las superficies de los conductores</em>. Cuando \(V\) depende de una sola coordenada, la ecuación se integra directamente (use las formas del laplaciano del capítulo 2):</p>
+<div class="tablewrap"><table>
+<tr><th>Geometría</th><th>Ecuación</th><th>Solución general</th><th>Ejemplo</th></tr>
+<tr><td>Placas paralelas</td><td>\(\dfrac{\dd^2V}{\dd x^2}=0\)</td><td>\(V=Ax+B\)</td><td>\(V=V_0x/d\): campo uniforme</td></tr>
+<tr><td>Cilindros coaxiales</td><td>\(\dfrac1\rho\dfrac{\dd}{\dd\rho}\left(\rho\dfrac{\dd V}{\dd\rho}\right)=0\)</td><td>\(V=A\ln\rho+B\)</td><td>\(V=V_0\dfrac{\ln(b/\rho)}{\ln(b/a)}\)</td></tr>
+<tr><td>Esferas concéntricas</td><td>\(\dfrac{1}{r^2}\dfrac{\dd}{\dd r}\left(r^2\dfrac{\dd V}{\dd r}\right)=0\)</td><td>\(V=\dfrac{A}{r}+B\)</td><td>\(V=V_0\dfrac{1/r-1/b}{1/a-1/b}\)</td></tr>
+<tr><td>Cuña (dos semiplanos)</td><td>\(\dfrac{1}{\rho^2}\dfrac{\dd^2V}{\dd\phi^2}=0\)</td><td>\(V=A\phi+B\)</td><td>\(V=V_0\phi/\alpha\)</td></tr>
+</table></div>
+<div class="box ex">
+<h4>Diodo de vacío (Poisson unidimensional)</h4>
+<p>Entre dos placas a \(x=0\) (\(V=0\)) y \(x=d\) (\(V=V_0\)) hay una densidad de carga uniforme \(\rho_0\). Halle \(V(x)\).</p>
+<details><summary>Solución</summary>
+<p>\(V''=-\rho_0/\eo\Rightarrow V=-\dfrac{\rho_0}{2\eo}x^2+Ax+B\). Con \(V(0)=0\), \(B=0\); con \(V(d)=V_0\), \(A=\dfrac{V_0}{d}+\dfrac{\rho_0d}{2\eo}\). El campo \(E=-V'\) ya no es uniforme: varía linealmente con \(x\).</p>
+</details>
+</div>
+</section>
+
+<section>
+<h2>Propiedades de las soluciones: unicidad</h2>
+<p>Las funciones armónicas (\(\lap V=0\)) tienen dos propiedades que organizan toda la electrostática:</p>
+<ul>
+<li><strong>Valor medio.</strong> El potencial en un punto es el promedio de \(V\) sobre cualquier esfera centrada en él que no contenga cargas.</li>
+<li><strong>Sin extremos interiores.</strong> En consecuencia, \(V\) no tiene máximos ni mínimos locales en una región sin carga; los valores extremos están en la frontera. Por eso una carga no puede quedar en equilibrio estable sólo por fuerzas electrostáticas (<span class="term">teorema de Earnshaw</span>): necesitaría un mínimo de energía potencial \(qV\).</li>
+</ul>
+<div class="box law"><h4>Teoremas de unicidad</h4>
+<p><strong>Primero.</strong> La solución de la ecuación de Poisson en un volumen \(V\) queda determinada de forma única si se especifica el potencial en toda la frontera de \(V\).</p>
+<p><strong>Segundo.</strong> En una región rodeada de conductores, con una densidad de carga dada entre ellos, el campo queda determinado de forma única si se especifica la carga total de cada conductor.</p></div>
+<p>La consecuencia práctica es enorme: <em>cualquier</em> función que satisfaga la ecuación y las condiciones de frontera es <em>la</em> solución, sin importar cómo se haya obtenido. Se puede adivinar, construir con cargas ficticias o armar con series; si cumple las condiciones, es correcta. En esto se basa el método de imágenes.</p>
+</section>
+
+<section>
+<h2>Método de imágenes</h2>
+<h3>Carga frente a un plano conductor</h3>
+<p>Una carga \(q\) está a una distancia \(d\) sobre un plano conductor infinito a tierra (\(z=0\)). Buscamos \(V\) en \(z\gt0\) con \(V=0\) en el plano y \(V\to0\) lejos. El problema es idéntico, en la región \(z\gt0\), a uno sin plano con una <em>carga imagen</em> \(-q\) en \(z=-d\):</p>
+<div class="eq key" data-name="Imagen en un plano">\[V(x,y,z)=\frac{q}{4\pi\eo}\left[\frac{1}{\sqrt{x^2+y^2+(z-d)^2}}-\frac{1}{\sqrt{x^2+y^2+(z+d)^2}}\right]\quad(z\ge0).\]</div>
+<p>Esta función cumple Laplace en \(z\gt0\) (salvo en \(q\)), vale cero en \(z=0\) y tiende a cero lejos: por el primer teorema de unicidad, es la solución. En \(z\lt0\) el potencial es cero (interior del conductor). La carga inducida en el plano es</p>
+<div class="eq">\[\sigma=-\eo\left.\pdv{V}{z}\right|_{z=0}=-\frac{q\,d}{2\pi\,(x^2+y^2+d^2)^{3/2}},\qquad \int\sigma\,\dd S=-q .\]</div>
+<p>La carga es atraída hacia el plano con la fuerza que le haría la imagen, \(F=\dfrac{q^2}{4\pi\eo(2d)^2}\). Pero la energía para traerla desde el infinito es \(W=-\dfrac{q^2}{4\pi\eo(4d)}\), la <em>mitad</em> de la energía del sistema carga–imagen: la imagen no es real y se mueve a la vez que la carga.</p>
+<div class="sim" data-sim="image-plane" data-title="Carga puntual frente a un plano conductor a tierra"></div>
+<div class="sim-guide"><ul>
+<li>Active la carga imagen: por encima del plano, las líneas de campo son exactamente las de un dipolo; por debajo, el campo real es nulo.</li>
+<li>Acerque la carga al plano: la carga inducida se concentra bajo ella y la fuerza crece como \(1/d^2\). El área bajo la curva \(\sigma(x)\) (en 3D) siempre suma \(-q\).</li>
+</ul></div>
+<h3>Carga frente a una esfera conductora</h3>
+<p>Para una esfera de radio \(R\) a tierra y una carga \(q\) a distancia \(a\gt R\) del centro, la imagen es</p>
+<div class="eq key" data-name="Imagen en una esfera">\[q'=-\frac{R}{a}\,q\qquad\text{situada a}\qquad b=\frac{R^2}{a}\ \text{del centro.}\]</div>
+<p>Si la esfera está aislada y neutra, se añade una segunda imagen \(+qR/a\) en el centro (para que la carga total sea cero sin alterar la condición de equipotencial). La fuerza sobre \(q\) es siempre atractiva, incluso si la esfera es neutra.</p>
+<div class="sim" data-sim="image-sphere" data-title="Carga frente a una esfera conductora: a tierra o aislada"></div>
+<div class="sim-guide"><ul>
+<li>Compare la distribución \(\sigma(\theta)\) de la esfera a tierra (toda del signo opuesto a \(q\)) con la de la esfera neutra (cambia de signo).</li>
+<li>La gráfica de fuerza muestra que la esfera neutra atrae a la carga con menor intensidad que la esfera a tierra; ambas se acercan a \(q^2/(4\pi\eo(2d)^2)\) cuando la carga está muy cerca de la superficie (el plano “visto de cerca”).</li>
+</ul></div>
+<h3>Otras configuraciones</h3>
+<ul>
+<li><strong>Esquina de 90°</strong> formada por dos planos a tierra: tres imágenes, \(-q\), \(-q\) y \(+q\), en los reflejos. En general, una cuña de ángulo \(\pi/n\) (con \(n\) entero) requiere \(2n-1\) imágenes.</li>
+<li><strong>Línea de carga paralela a un cilindro conductor</strong>: imagen \(-\lambda\) en el punto inverso \(b=R^2/a\); da la capacitancia de la línea bifilar.</li>
+</ul>
+<div class="sim" data-sim="image-corner" data-title="Carga en una cuña conductora: imágenes múltiples"></div>
+</section>
+
+<section>
+<h2>Separación de variables</h2>
+<p>Cuando las fronteras coinciden con superficies coordenadas, se busca la solución como producto de funciones de una sola variable, \(V=X(x)Y(y)\). Sustituyendo en Laplace, \(\frac{X''}{X}+\frac{Y''}{Y}=0\): cada término debe ser una constante, lo que produce exponenciales en una dirección y senos y cosenos en la otra.</p>
+<h3>Ranura rectangular</h3>
+<p>Dos placas a tierra en \(y=0\) y \(y=a\), que se extienden a \(x\to\infty\), cerradas en \(x=0\) por una tira aislada a potencial \(V_0\). Las condiciones \(V=0\) en \(y=0,a\) y \(V\to0\) en \(x\to\infty\) seleccionan \(V_n=e^{-n\pi x/a}\sen(n\pi y/a)\). Imponiendo \(V(0,y)=V_0\) mediante una serie de Fourier:</p>
+<div class="eq key" data-name="Solución por series">\[V(x,y)=\frac{4V_0}{\pi}\sum_{n=1,3,5,\dots}\frac1n\,e^{-n\pi x/a}\sen\frac{n\pi y}{a}.\]</div>
+<p>Los armónicos altos decaen muy rápido con \(x\): a una distancia \(a\) de la tira, basta el primer término. Cerca de las esquinas, donde \(V\) salta de \(V_0\) a \(0\), la serie converge lentamente y muestra el <span class="term">fenómeno de Gibbs</span> (un sobrepaso de aproximadamente 9 %).</p>
+<div class="sim" data-sim="separation-slot" data-title="Solución por series de Fourier en una ranura rectangular"></div>
+<div class="sim-guide"><ul>
+<li>Con un solo término, la frontera \(V(0,y)\) es una sinusoide; con muchos, se aproxima a la tira constante pero con oscilaciones cerca de las esquinas.</li>
+<li>Observe en el mapa que las equipotenciales se suavizan rápidamente al alejarse de \(x=0\).</li>
+</ul></div>
+<h3>Esfera conductora en un campo uniforme</h3>
+<p>En esféricas, las soluciones con simetría azimutal son \(V=\sum_\ell\left(A_\ell r^\ell+\dfrac{B_\ell}{r^{\ell+1}}\right)P_\ell(\cos\theta)\). Para una esfera conductora sin carga en un campo \(E_0\uv{z}\), lejos \(V\to-E_0r\cos\theta\) y en la superficie \(V=0\), de donde</p>
+<div class="eq key" data-name="Esfera en campo uniforme">\[V=-E_0\left(r-\frac{R^3}{r^2}\right)\cos\theta,\qquad \sigma=3\eo E_0\cos\theta .\]</div>
+<p>El segundo término es el potencial de un dipolo \(p=4\pi\eo R^3E_0\) inducido en la esfera. El campo en los polos es \(3E_0\): la esfera concentra las líneas de campo.</p>
+<div class="sim" data-sim="sphere-uniform" data-title="Esfera conductora en un campo eléctrico uniforme"></div>
+</section>
+
+<section>
+<h2>Solución numérica: el método de relajación</h2>
+<p>Para geometrías arbitrarias se discretiza el espacio en una malla de paso \(h\). Aproximando las segundas derivadas por diferencias centradas, la ecuación de Laplace en 2D se convierte en</p>
+<div class="eq key" data-name="Laplace en diferencias finitas">\[V_{i,j}=\frac14\left(V_{i+1,j}+V_{i-1,j}+V_{i,j+1}+V_{i,j-1}\right)\ \left(+\frac{h^2\rho_{i,j}}{4\eo}\ \text{para Poisson}\right),\]</div>
+<p>la versión discreta de la propiedad del valor medio. Se fijan los nodos de los electrodos y se reemplaza repetidamente cada nodo libre por el promedio de sus vecinos (método de Jacobi o de Gauss–Seidel) hasta que los cambios son despreciables. La <em>sobrerrelajación sucesiva</em> (SOR) acelera la convergencia exagerando cada corrección por un factor \(1\lt\omega\lt2\): \(V\leftarrow V+\omega(V_{\text{promedio}}-V)\).</p>
+<div class="sim" data-sim="laplace-solver" data-title="Resolución numérica de Laplace por relajación"></div>
+<div class="sim-guide"><ul>
+<li>Pulse “Reiniciar” y observe cómo el potencial se difunde desde los electrodos: al principio sólo los nodos vecinos cambian.</li>
+<li>Compare \(\omega=1\) (Gauss–Seidel) con \(\omega=1.9\): la sobrerrelajación converge decenas de veces más rápido.</li>
+<li>En la jaula de Faraday, el potencial dentro de la caja a tierra es prácticamente constante: el campo interior es nulo.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Una carga de 2 nC está a 5 cm de un plano conductor a tierra. Halle la fuerza sobre ella y la densidad de carga inducida justo debajo.
+<details><summary>Respuesta</summary><p>\(F=kq^2/(2d)^2=3.6\times10^{-6}\) N (atractiva); \(\sigma=-q/(2\pi d^2)=-1.27\times10^{-7}\) C/m².</p></details></li>
+<li><span class="lvl">Intermedio</span>Demuestre que la carga total inducida en el plano es \(-q\) integrando \(\sigma\) en coordenadas polares.
+<details><summary>Respuesta</summary><p>\(\displaystyle\int_0^\infty\frac{-qd}{2\pi(\rho^2+d^2)^{3/2}}\,2\pi\rho\,\dd\rho=-qd\left[-\frac{1}{\sqrt{\rho^2+d^2}}\right]_0^\infty=-qd\cdot\frac1d=-q\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Entre dos esferas concéntricas de radios \(a\) y \(b\) a potenciales \(V_a\) y \(0\), halle \(V(r)\) y la carga en la esfera interior.
+<details><summary>Respuesta</summary><p>\(V=V_a\dfrac{1/r-1/b}{1/a-1/b}\); \(Q=4\pi\eo V_a\dfrac{ab}{b-a}\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Una carga \(q\) está en \((d,d)\) frente a dos planos a tierra que forman una esquina recta (\(x=0\) e \(y=0\)). Halle la fuerza sobre ella.
+<details><summary>Respuesta</summary><p>Imágenes: \(-q\) en \((-d,d)\) y en \((d,-d)\), \(+q\) en \((-d,-d)\). Sumando, \(\vb{F}=-\dfrac{q^2}{4\pi\eo d^2}\left(\dfrac14-\dfrac{1}{8\sqrt2}\right)(\uv{x}+\uv{y})\), de magnitud \(\dfrac{(2\sqrt2-1)\,q^2}{32\pi\eo d^2}\approx0.229\,\dfrac{q^2}{4\pi\eo d^2}\), dirigida hacia la esquina.</p></details></li>
+<li><span class="lvl">Avanzado</span>En la ranura rectangular, ¿a qué distancia \(x\) el segundo término no nulo (\(n=3\)) es menor que el 1 % del primero, en \(y=a/2\)?
+<details><summary>Respuesta</summary><p>Cociente \(\frac13e^{-2\pi x/a}\lt0.01\Rightarrow x\gt0.56\,a\).</p></details></li>
+<li><span class="lvl">Avanzado</span>Una esfera conductora de radio 5 cm está en un campo de \(10^5\) V/m. Halle \(\sigma_{\max}\) y el momento dipolar inducido.
+<details><summary>Respuesta</summary><p>\(\sigma_{\max}=3\eo E_0=2.66\times10^{-6}\) C/m²; \(p=4\pi\eo R^3E_0=1.39\times10^{-9}\) C·m.</p></details></li>
+</ol>
+</section>
+</template>

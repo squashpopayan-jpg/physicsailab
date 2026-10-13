@@ -1,0 +1,70 @@
+<template class="chapter-src" data-id="t-librecad" data-num="29" data-title="Taller 2 · LibreCAD: planos base y láminas E01 a E04" data-part="Parte V · Talleres de software" data-short="Instalación y configuración en milímetros, el DXF del kit con sus capas y bloques, quince pasos desde el plano base hasta las láminas impresas a 1:50 en PDF y el PNG que va a SketchUp">
+<p class="lead">LibreCAD es un programa de dibujo 2D libre y gratuito que trabaja de forma nativa en DXF, el formato que leen también AutoCAD, Revit y QElectroTech. En la ruta inicial produce el A01 y las láminas eléctricas, y exporta el PNG que lleva la planta a SketchUp. Este taller arranca del DXF de la casa ejemplo, que ya trae las capas y los símbolos.</p>
+
+<section>
+<h2>El DXF del kit, capa por capa</h2>
+<p>El archivo <code>casa-ejemplo.dxf</code> se genera desde el mismo modelo de datos que dibuja las plantas y el 3D de esta guía. Está en milímetros, con el origen en el cruce de los ejes A y 1, y trae una lámina A3 con rótulo y convenciones a 1:50. Cada lámina de la entrega es una combinación de capas encendidas.</p>
+<div class="sim" data-sim="capas-dxf" data-title="Capas del DXF de la casa ejemplo"></div>
+<div class="sim-guide"><ul>
+<li>Escoja una lámina para ver qué capas la componen. Encienda o apague capas sueltas con un clic en la lista.</li>
+<li>Pase el cursor sobre el dibujo: las coordenadas se leen en milímetros, como en la barra de estado de LibreCAD. El punto A-1 es (0, 0).</li>
+<li>Descargue el DXF (dentro de un ZIP) y ábralo en LibreCAD: verá las mismas capas con los mismos colores.</li>
+</ul></div>
+<div class="tablewrap narrow"><table>
+<thead><tr><th>Prefijo</th><th>Disciplina</th><th>Equivale en SketchUp a</th></tr></thead>
+<tbody>
+<tr><td><code>A-</code></td><td>Arquitectura: ejes, muros, vanos, mobiliario, nombres, cotas</td><td><code>A-MUROS</code>, <code>A-MOBILIARIO</code></td></tr>
+<tr><td><code>S-</code></td><td>Estructura: columnas, vigas, cimentación</td><td><code>S-ESTRUCTURA</code></td></tr>
+<tr><td><code>E-</code></td><td>Eléctrica: puntos, tablero, canalizaciones, tierra, etiquetas</td><td><code>E-PUNTOS</code>, <code>E-CANAL</code>, <code>E-TEXTO</code></td></tr>
+<tr><td><code>X-</code></td><td>Lámina: marco, rótulo y convenciones</td><td>(no se modela)</td></tr>
+</tbody></table></div>
+<p>En CAD las capas son más finas que las etiquetas del 3D, pero los prefijos y los nombres coinciden: así cualquiera del equipo sabe dónde buscar.</p>
+</section>
+
+<section>
+<h2>Paso a paso</h2>
+<div class="pasos" data-pasos="librecad"></div>
+</section>
+
+<section>
+<h2>Qué capas lleva cada lámina</h2>
+<div class="tablewrap"><table>
+<thead><tr><th>Lámina</th><th>Capas encendidas</th><th>Contenido que se revisa</th></tr></thead>
+<tbody>
+<tr><td>A01</td><td><code>A-*</code>, <code>S-COLUMNAS</code>, <code>S-VIGAS</code>, <code>X-*</code></td><td>Ejes, muros, vanos, áreas, cotas, estructura</td></tr>
+<tr><td>E01</td><td><code>A-*</code> sin cotas, <code>E-ILUMINACION</code>, <code>E-TABLERO</code>, <code>E-ETIQUETAS</code></td><td>Luminarias, interruptores, conmutables y su control</td></tr>
+<tr><td>E02</td><td><code>A-*</code> sin cotas, <code>E-TOMAS</code>, <code>E-ESPECIALES</code>, <code>E-TABLERO</code>, <code>E-ETIQUETAS</code></td><td>Tomas, GFCI, salidas especiales, circuitos</td></tr>
+<tr><td>E03</td><td><code>A-MUROS</code>, <code>A-VANOS</code>, <code>S-VIGAS</code>, <code>E-CANAL-*</code>, puntos y etiquetas</td><td>Recorridos por losa y piso, tramos y cruces</td></tr>
+<tr><td>E04</td><td><code>A-MUROS</code>, <code>E-TABLERO</code>, <code>E-ACOMETIDA</code>, <code>E-TIERRA</code> + unifilar</td><td>Acometida, puesta a tierra, unifilar y cuadro</td></tr>
+</tbody></table></div>
+</section>
+
+<section>
+<h2>Comandos de LibreCAD usados en el taller</h2>
+<p>Los comandos se escriben en la línea de comandos (<b>Widgets ▸ Dock Widgets ▸ Command line</b> si no está visible) y se confirman con <kbd>Enter</kbd>. Las coordenadas absolutas se escriben <code>x,y</code>; las relativas, <code>@dx,dy</code>.</p>
+<div class="tablewrap narrow"><table>
+<thead><tr><th>Comando</th><th>Acción</th><th>Ejemplo en el proyecto</th></tr></thead>
+<tbody>
+<tr><td><code>li</code></td><td>Línea entre dos puntos</td><td>Eje A: <code>0,-1100</code> y <code>@0,12100</code></td></tr>
+<tr><td><code>re</code></td><td>Rectángulo por dos esquinas</td><td>Columna: <code>-150,-150</code> y <code>@300,300</code></td></tr>
+<tr><td><code>pl</code></td><td>Polilínea (rectas y arcos)</td><td>Recorrido de tubería con arcos</td></tr>
+<tr><td><code>mo</code></td><td>Paralela (equidistancia)</td><td>Caras de muro a 75 mm del eje</td></tr>
+<tr><td><code>tm</code></td><td>Recortar</td><td>Limpiar los cruces de muros</td></tr>
+<tr><td><code>mv</code></td><td>Mover o copiar</td><td>Copiar columnas a los cruces de ejes</td></tr>
+<tr><td><code>dh</code> · <code>dv</code></td><td>Cota horizontal · vertical</td><td>Cotas entre ejes</td></tr>
+<tr><td><code>tx</code> · <code>mt</code></td><td>Texto de una línea · de varias líneas</td><td>Nombres de ambientes, rótulo</td></tr>
+<tr><td><code>ha</code></td><td>Sombreado o relleno</td><td>Relleno sólido de muros y columnas</td></tr>
+</tbody></table></div>
+<p style="font-size:14px;color:var(--ink-3)">Alias tomados del manual de usuario de LibreCAD (docs.librecad.org), versión 2.2.</p>
+</section>
+
+<section>
+<h2>Resumen</h2>
+<div class="box keys"><ul>
+<li>Dibujo en milímetros, origen en A-1, capas con prefijo de disciplina y los mismos nombres del 3D.</li>
+<li>El plano base se calca sobre la imagen escalada; los símbolos son bloques dibujados en la capa 0.</li>
+<li>Cada lámina es una combinación de capas encendidas; se imprime a 1:50 con la escala fija.</li>
+<li>El PNG para SketchUp se exporta con solo las capas de arquitectura y estructura.</li>
+</ul></div>
+</section>
+</template>

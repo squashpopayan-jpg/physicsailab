@@ -1,0 +1,100 @@
+<template class="chapter-src" data-id="circuitos-dc" data-num="12" data-title="Circuitos de corriente continua" data-part="Parte III · Corriente eléctrica" data-short="Fem, resistencias, leyes de Kirchhoff, puente de Wheatstone, circuito RC e instrumentos">
+<p class="lead">Un circuito combina fuentes que mantienen una diferencia de potencial con elementos que la aprovechan. Las leyes de Kirchhoff, consecuencias directas de la conservación de la carga y de la energía, bastan para analizar cualquier red de fuentes y resistores; con un condensador aparece además el tiempo como variable.</p>
+
+<section>
+<h2>Fuerza electromotriz y resistencia interna</h2>
+<p>En un circuito cerrado el campo electrostático no puede mantener una corriente: su circulación es cero, y los portadores perderían energía en los resistores sin recuperarla. Hace falta una <span class="term">fuente de fuerza electromotriz</span> (pila, generador, celda solar) que, mediante procesos no electrostáticos (químicos, mecánicos, luminosos), transporte las cargas “cuesta arriba” en el potencial. La fem es el trabajo por unidad de carga que realiza la fuente:</p>
+<div class="eq key" data-name="Fem">\[\mathcal{E}=\oint\frac{\vb{F}_{\text{no elec}}}{q}\cdot\dd\vb{l}\qquad[\mathrm{V}].\]</div>
+<p>Una fuente real tiene una <span class="term">resistencia interna</span> \(r\). Con una carga externa \(R\) circula \(I=\mathcal{E}/(R+r)\) y la tensión en bornes es menor que la fem:</p>
+<div class="eq key" data-name="Tensión en bornes">\[V_{ab}=\mathcal{E}-Ir .\]</div>
+<p>La potencia que la fuente entrega a la carga, \(P=I^2R=\dfrac{\mathcal{E}^2R}{(R+r)^2}\), es máxima cuando \(R=r\) (<span class="term">adaptación de impedancias</span>): entonces \(P_{\max}=\mathcal{E}^2/4r\) y el rendimiento es sólo del 50 %.</p>
+<div class="sim" data-sim="battery-internal" data-title="Fuente real: tensión en bornes y transferencia de potencia"></div>
+<div class="sim-guide"><ul>
+<li>Recorra \(R\) de 0 a valores grandes: con \(R=0\) (cortocircuito) la corriente es \(\mathcal{E}/r\) y la tensión en bornes es cero; con \(R\to\infty\), \(V_{ab}\to\mathcal{E}\).</li>
+<li>Localice el máximo de potencia en \(R=r\) y compruebe que allí el rendimiento es 50 %.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resistencias en serie y en paralelo</h2>
+<p>En <strong>serie</strong> circula la misma corriente y las tensiones se suman; en <strong>paralelo</strong> la tensión es común y las corrientes se suman:</p>
+<div class="eq key" data-name="Resistencias equivalentes">\[R_{\text{serie}}=R_1+R_2+\cdots,\qquad \frac{1}{R_{\text{paralelo}}}=\frac{1}{R_1}+\frac{1}{R_2}+\cdots\]</div>
+<p>Dos reglas útiles: el <em>divisor de tensión</em>, \(V_2=V\dfrac{R_2}{R_1+R_2}\), y el <em>divisor de corriente</em>, \(I_2=I\dfrac{R_1}{R_1+R_2}\). Observe la analogía inversa con los condensadores del capítulo 9: las fórmulas de serie y paralelo están intercambiadas.</p>
+</section>
+
+<section>
+<h2>Leyes de Kirchhoff</h2>
+<div class="box law"><h4>Leyes de Kirchhoff</h4>
+<p><strong>Nodos (conservación de la carga):</strong> en cualquier nodo, \(\sum I_{\text{entran}}=\sum I_{\text{salen}}\).</p>
+<p><strong>Mallas (conservación de la energía):</strong> en cualquier lazo cerrado, \(\sum\Delta V=0\).</p></div>
+<p>Convenciones de signo al recorrer una malla: al atravesar un resistor en el sentido supuesto de la corriente, \(\Delta V=-IR\); en sentido contrario, \(+IR\). Al atravesar una fuente del terminal \(-\) al \(+\), \(\Delta V=+\mathcal{E}\). Si al resolver una corriente sale negativa, simplemente circula en el sentido opuesto al supuesto.</p>
+<p>Método sistemático: con \(n\) nodos y \(b\) ramas, se escriben \(n-1\) ecuaciones de nodo y \(b-(n-1)\) ecuaciones de malla independientes. Alternativamente, el <em>método de las tensiones de nodo</em> toma como incógnitas los potenciales de los nodos y suele dar menos ecuaciones.</p>
+<div class="box ex">
+<h4>Circuito de dos mallas</h4>
+<p>Tres ramas conectan los nodos \(a\) (arriba) y \(b\) (abajo, a tierra): la izquierda tiene una fuente de 12 V (positivo hacia \(a\)) y \(R_1=4\ \Omega\); la central, \(R_2=6\ \Omega\); la derecha, una fuente de 6 V (positivo hacia \(a\)) y \(R_3=3\ \Omega\). Halle las corrientes.</p>
+<details><summary>Solución</summary>
+<p>Con \(V_a\) como incógnita, las corrientes hacia \(a\) por las ramas laterales son \(I_1=(12-V_a)/4\) e \(I_3=(6-V_a)/3\), y la que baja por el centro es \(I_2=V_a/6\). La ley de nodos, \(I_1+I_3=I_2\), da \(V_a\left(\tfrac14+\tfrac16+\tfrac13\right)=3+2\), así que \(V_a=6.67\) V.</p>
+<p>Entonces \(I_1=1.33\) A, \(I_2=1.11\) A e \(I_3=-0.222\) A: la corriente en la rama derecha circula en sentido contrario al supuesto, es decir, la fuente de 6 V se está <em>cargando</em>. Balance: la fuente de 12 V entrega 16.0 W; los resistores disipan \(7.11+7.41+0.15=14.7\) W y la fuente de 6 V absorbe 1.33 W.</p>
+</details>
+</div>
+<div class="sim" data-sim="kirchhoff" data-title="Circuito de dos mallas: corrientes y potenciales"></div>
+<div class="sim-guide"><ul>
+<li>Los puntos móviles representan la corriente convencional; su rapidez es proporcional a la intensidad.</li>
+<li>Busque valores para los que la corriente de la rama derecha se anule: la fuente de 6 V ni entrega ni absorbe energía.</li>
+<li>Verifique en cada instante que la suma de potencias entregadas es igual a la suma de potencias disipadas.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El puente de Wheatstone</h2>
+<p>Para medir con precisión una resistencia desconocida \(R_x\) se usa un puente: dos ramas de dos resistores cada una, conectadas a una fuente, con un galvanómetro entre sus puntos medios. Se ajusta una resistencia variable hasta que el galvanómetro marca cero; entonces los puntos medios están al mismo potencial y</p>
+<div class="eq key" data-name="Condición de equilibrio">\[\frac{R_1}{R_2}=\frac{R_3}{R_x}\qquad\Longrightarrow\qquad R_x=\frac{R_2R_3}{R_1}.\]</div>
+<p>La medida no depende de la fem de la fuente ni de la resistencia del galvanómetro; sólo de la precisión de las resistencias de referencia. Los puentes con galgas extensométricas y termistores se usan en balanzas electrónicas y sensores.</p>
+<div class="sim" data-sim="wheatstone" data-title="Puente de Wheatstone"></div>
+</section>
+
+<section>
+<h2>El circuito RC</h2>
+<p>Al cerrar un interruptor que conecta una fuente \(\mathcal{E}\) a un resistor \(R\) y un condensador \(C\) descargado, la ley de mallas da \(\mathcal{E}-iR-q/C=0\) con \(i=\dd q/\dd t\). La solución es</p>
+<div class="eq key" data-name="Carga del condensador">\[q(t)=C\mathcal{E}\left(1-e^{-t/\tau}\right),\qquad i(t)=\frac{\mathcal{E}}{R}e^{-t/\tau},\qquad \tau=RC .\]</div>
+<p>La <span class="term">constante de tiempo</span> \(\tau\) es el tiempo en que la carga alcanza el 63.2 % de su valor final (\(1-e^{-1}\)); al cabo de \(5\tau\) supera el 99 %. Al descargar a través de \(R\):</p>
+<div class="eq key" data-name="Descarga">\[q(t)=Q_0\,e^{-t/\tau},\qquad i(t)=-\frac{Q_0}{RC}e^{-t/\tau}.\]</div>
+<p>Balance de energía durante la carga: la fuente entrega \(Q\mathcal{E}=C\mathcal{E}^2\); el condensador almacena \(\tfrac12C\mathcal{E}^2\) y el resistor disipa exactamente la otra mitad, \(\int_0^\infty i^2R\,\dd t=\tfrac12C\mathcal{E}^2\), sin importar el valor de \(R\).</p>
+<div class="sim" data-sim="rc-circuit" data-title="Carga y descarga de un condensador"></div>
+<div class="sim-guide"><ul>
+<li>Mida en la gráfica el tiempo en que \(v_C\) alcanza el 63 % de \(\mathcal{E}\) y compárelo con \(\tau=RC\).</li>
+<li>Cambie a descarga a mitad de la carga: la nueva exponencial parte del valor en que quedó el condensador.</li>
+<li>Las barras de energía muestran que, al terminar la carga, la energía disipada en \(R\) es igual a la almacenada.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Instrumentos de medida</h2>
+<p>Un <span class="term">amperímetro</span> se conecta en serie y debe tener resistencia muy pequeña; un <span class="term">voltímetro</span> se conecta en paralelo y debe tener resistencia muy grande. Un instrumento real perturba el circuito que mide (efecto de carga). Los medidores analógicos se construyen con un galvanómetro: una resistencia en paralelo (<em>shunt</em>) lo convierte en amperímetro y una resistencia en serie, en voltímetro. Un multímetro digital típico tiene una resistencia de entrada de 10 MΩ como voltímetro.</p>
+<div class="sim" data-sim="meter-loading" data-title="Efecto de carga de un voltímetro y de un amperímetro"></div>
+<div class="sim-guide"><ul>
+<li>Con resistencias de 100 kΩ en el divisor, un voltímetro de 1 MΩ comete un error de casi 5 %; con 10 MΩ, del 0.5 %.</li>
+<li>Regla práctica: el voltímetro debe tener una resistencia al menos cien veces mayor que la del tramo que mide.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Una batería de 9 V con \(r=0.5\ \Omega\) alimenta un resistor de 4 Ω. Halle la corriente, la tensión en bornes y la potencia disipada en la carga y en la batería.
+<details><summary>Respuesta</summary><p>\(I=2\) A; \(V_{ab}=8\) V; 16 W en la carga y 2 W en la batería.</p></details></li>
+<li><span class="lvl">Básico</span>Tres resistores de 6, 3 y 2 Ω. Halle la resistencia equivalente en serie y en paralelo.
+<details><summary>Respuesta</summary><p>Serie 11 Ω; paralelo 1 Ω.</p></details></li>
+<li><span class="lvl">Intermedio</span>Un condensador de 100 µF se carga a través de 50 kΩ con 12 V. ¿Cuánto tarda en llegar a 10 V? ¿Cuál es la corriente en ese instante?
+<details><summary>Respuesta</summary><p>\(t=\tau\ln6=5\text{ s}\times1.792=8.96\) s; \(i=(12-10)/50\text{ k}\Omega=40\ \mu\)A.</p></details></li>
+<li><span class="lvl">Intermedio</span>En un puente equilibrado \(R_1=100\ \Omega\), \(R_2=250\ \Omega\) y \(R_3=40\ \Omega\). Halle \(R_x\).
+<details><summary>Respuesta</summary><p>\(R_x=R_2R_3/R_1=100\ \Omega\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Un galvanómetro de 50 Ω da desviación completa con 1 mA. ¿Qué resistencia hay que conectar para convertirlo en un amperímetro de 1 A y en un voltímetro de 10 V?
+<details><summary>Respuesta</summary><p>Shunt en paralelo: \(R_s=50\times10^{-3}/0.999=0.050\ \Omega\). Resistencia en serie: \(10/10^{-3}-50=9950\ \Omega\).</p></details></li>
+<li><span class="lvl">Avanzado</span>Demuestre que la energía disipada en \(R\) durante la carga completa de un condensador es \(\tfrac12C\mathcal{E}^2\).
+<details><summary>Respuesta</summary><p>\(\int_0^\infty\frac{\mathcal{E}^2}{R}e^{-2t/RC}\dd t=\frac{\mathcal{E}^2}{R}\cdot\frac{RC}{2}=\frac12C\mathcal{E}^2\).</p></details></li>
+<li><span class="lvl">Avanzado</span>Una red infinita en escalera tiene en cada peldaño un resistor \(R\) en serie y otro \(R\) en paralelo. Halle su resistencia equivalente.
+<details><summary>Respuesta</summary><p>\(R_{eq}=R+\dfrac{RR_{eq}}{R+R_{eq}}\Rightarrow R_{eq}^2-RR_{eq}-R^2=0\Rightarrow R_{eq}=\dfrac{1+\sqrt5}{2}R\approx1.618R\).</p></details></li>
+</ol>
+</section>
+</template>

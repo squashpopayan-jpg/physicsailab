@@ -1,0 +1,92 @@
+<template class="chapter-src" data-id="montecarlo" data-num="24" data-title="Monte Carlo y el algoritmo de Metropolis" data-part="Parte V · Simulación Monte Carlo" data-short="Integración por muestreo, muestreo por importancia, cadenas de Markov, balance detallado, Metropolis, generadores pseudoaleatorios y semillas">
+<p class="lead">La mecánica estadística da la probabilidad de cada configuración, \(p_i\propto\ee^{-E_i/\kB T}\), pero en un sistema de cientos de átomos hay más configuraciones que átomos en el universo: no se pueden enumerar. El método de Monte Carlo las muestrea al azar con la probabilidad correcta. El algoritmo de Metropolis (1953), uno de los diez algoritmos más influyentes del siglo XX, es el motor de hBN-MC.</p>
+
+<section>
+<h2>Integrar tirando dados</h2>
+<p>Para estimar \(\pi\), se lanzan \(N\) puntos al azar en un cuadrado de lado 2 y se cuenta la fracción que cae dentro del círculo de radio 1: tiende a \(\pi/4\). En general, una integral se escribe como un promedio y se estima con muestras aleatorias:</p>
+<div class="eq key" data-name="Integración Monte Carlo">\[I=\int_Vf(\vb x)\,\dd\vb x=V\expval{f}\approx\frac VN\sum_{k=1}^{N}f(\vb x_k),\qquad \text{error}\approx V\frac{\sigma_f}{\sqrt N}.\]</div>
+<p>El error disminuye como \(1/\sqrt N\) (capítulo 19), lentamente, pero <em>independientemente de la dimensión</em>. Una cuadratura en una malla de \(p\) puntos por eje necesita \(p^d\) evaluaciones; en \(d=100\) dimensiones es imposible, mientras que Monte Carlo sigue funcionando. Las integrales de la mecánica estadística tienen tantas dimensiones como grados de libertad.</p>
+<div class="sim" data-sim="mc-pi" data-title="Estimar π con puntos al azar"></div>
+<div class="sim-guide"><ul>
+<li>El error relativo cae como \(1/\sqrt N\): en la gráfica logarítmica, una recta de pendiente −½.</li>
+<li>Para ganar un decimal de \(\pi\) hacen falta cien veces más puntos.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Muestreo por importancia</h2>
+<p>Muestrear uniformemente es ineficiente si el integrando está concentrado en una región pequeña: la mayoría de los puntos aportan casi nada. Si los puntos se toman con una densidad \(w(\vb x)\) parecida a \(|f|\), el estimador \(\frac1N\sum f(\vb x_k)/w(\vb x_k)\) tiene mucha menos varianza: es el <span class="term">muestreo por importancia</span>.</p>
+<p>En mecánica estadística el promedio de un observable es \(\expval A=\sum_iA_i\,\ee^{-\beta E_i}/Z\). Casi todas las configuraciones tienen energía altísima y peso despreciable. Lo ideal sería muestrear directamente con \(w_i=\ee^{-\beta E_i}/Z\): entonces \(\expval A\approx\frac1N\sum_kA(k)\), un promedio simple. El problema es que no conocemos \(Z\). La solución es construir una cadena de Markov.</p>
+</section>
+
+<section>
+<h2>Cadenas de Markov y balance detallado</h2>
+<div class="box def"><p>Una <span class="term">cadena de Markov</span> es una sucesión de estados en la que el siguiente depende solo del actual, con probabilidades de transición \(W_{ij}=P(i\to j)\), \(\sum_jW_{ij}=1\). Una distribución \(\pi\) es <span class="term">estacionaria</span> si \(\sum_i\pi_iW_{ij}=\pi_j\).</p></div>
+<p>Si la cadena es <span class="term">ergódica</span> (desde cualquier estado se puede llegar a cualquier otro) y aperiódica, converge a su distribución estacionaria sea cual sea el estado inicial. Una condición suficiente para que \(\pi\) sea estacionaria es el <span class="term">balance detallado</span>:</p>
+<div class="eq key" data-name="Balance detallado">\[\pi_i\,W_{ij}=\pi_j\,W_{ji}\qquad\text{para todo par } i,j .\]</div>
+<p>Sumando sobre \(i\) se obtiene \(\sum_i\pi_iW_{ij}=\pi_j\sum_iW_{ji}=\pi_j\). Es decir: si en equilibrio el flujo de probabilidad de \(i\) a \(j\) es igual al de \(j\) a \(i\) para cada par, la distribución no cambia.</p>
+<div class="sim" data-sim="markov3" data-title="Una cadena de Markov de tres estados que converge a Boltzmann"></div>
+<div class="sim-guide"><ul>
+<li>Empiece con toda la probabilidad en un estado: en pocas decenas de pasos la distribución alcanza las poblaciones de Boltzmann y ya no cambia.</li>
+<li>Compruebe el balance detallado: los flujos \(\pi_iW_{ij}\) y \(\pi_jW_{ji}\) coinciden en equilibrio.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El algoritmo de Metropolis</h2>
+<p>Metropolis, Rosenbluth, Rosenbluth, Teller y Teller (1953) construyeron una cadena con \(\pi_i\propto\ee^{-\beta E_i}\) en dos pasos: <span class="term">proponer</span> un cambio con una probabilidad simétrica (\(g_{ij}=g_{ji}\)) y <span class="term">aceptarlo</span> con probabilidad</p>
+<div class="eq key" data-name="Criterio de Metropolis">\[A_{ij}=\min\!\Big(1,\ \ee^{-\beta(E_j-E_i)}\Big)=\begin{cases}1&\text{si }\Delta E\le0,\\ \ee^{-\Delta E/\kB T}&\text{si }\Delta E\gt0.\end{cases}\]</div>
+<p>Si el cambio se rechaza, el sistema se queda donde estaba (y ese estado se vuelve a contar). Comprobemos el balance detallado para \(E_j\gt E_i\): \(\pi_iW_{ij}=\pi_ig\,\ee^{-\beta(E_j-E_i)}\propto\ee^{-\beta E_j}g\) y \(\pi_jW_{ji}=\pi_jg\cdot1\propto\ee^{-\beta E_j}g\). Iguales. La función de partición nunca aparece: solo hacen falta <em>diferencias</em> de energía.</p>
+<div class="box law"><p><strong>El algoritmo, paso a paso.</strong></p><ol>
+<li>Partir de una configuración cualquiera.</li>
+<li>Proponer un cambio pequeño al azar (mover una partícula, voltear un espín, intercambiar dos átomos).</li>
+<li>Calcular \(\Delta E=E_\text{nueva}-E_\text{actual}\).</li>
+<li>Si \(\Delta E\le0\), aceptar. Si no, sortear \(u\in[0,1)\) y aceptar si \(u\lt\ee^{-\Delta E/\kB T}\).</li>
+<li>Registrar los observables (también si se rechazó) y volver al paso 2.</li>
+</ol></div>
+<div class="sim" data-sim="metropolis-1d" data-title="Metropolis en un potencial unidimensional"></div>
+<div class="sim-guide"><ul>
+<li>El histograma de posiciones visitadas converge a la distribución de Boltzmann exacta \(\propto\ee^{-V(x)/\kB T}\).</li>
+<li>Con pasos muy pequeños casi todo se acepta pero el caminante avanza lento; con pasos muy grandes casi todo se rechaza. Lo eficiente es una aceptación intermedia (30–60 %).</li>
+<li>En el doble pozo a baja temperatura el caminante queda atrapado en un pozo durante mucho tiempo: es el problema que resuelve el intercambio de réplicas (capítulo 26).</li>
+</ul></div>
+<div class="box explain"><p>Imagine a un excursionista con los ojos vendados en un terreno montañoso que quiere pasar más tiempo en los valles. En cada paso tantea una dirección al azar: si es cuesta abajo, va; si es cuesta arriba, lanza una moneda cargada que le deja subir con más probabilidad si la subida es pequeña o si hace «calor» (energía para gastar). Tras muchos pasos, el tiempo que pasa en cada lugar es exactamente proporcional a \(\ee^{-\text{altura}/\kB T}\).</p></div>
+<div class="box hbn"><p>La función <code>attemptSwapPair</code> de hBN-MC implementa exactamente esto: <code>if (dE &lt; 0 || Math.exp(-dE / (KB * T)) &gt; rand())</code> acepta el intercambio de dos sitios, con <code>KB = 8.6173324e-5</code> eV/K. La propuesta es el intercambio de dos sitios vecinos (o de dos sitios cualesquiera, en los movimientos globales), y \(\Delta E\) se calcula localmente, solo con los enlaces que cambian.</p></div>
+</section>
+
+<section>
+<h2>Números pseudoaleatorios y semillas</h2>
+<p>Los computadores no producen azar: usan <span class="term">generadores pseudoaleatorios</span>, algoritmos deterministas cuya salida parece aleatoria. El más antiguo es el congruencial lineal, \(x_{n+1}=(ax_n+c)\bmod m\). Uno muy usado en los años 60, RANDU (\(a=65539\), \(m=2^{31}\)), tenía un defecto grave: las ternas consecutivas \((x_n,x_{n+1},x_{n+2})\) caen sobre solo 15 planos del cubo unidad, y arruinó muchas simulaciones de su época. Los generadores modernos (Mersenne Twister, xoshiro, PCG) pasan baterías estadísticas exigentes.</p>
+<p>La sucesión depende de un valor inicial, la <span class="term">semilla</span>. Con la misma semilla se obtiene exactamente la misma sucesión: la simulación es reproducible bit a bit, algo esencial para depurar y para publicar. Con semillas distintas se obtienen réplicas estadísticamente independientes.</p>
+<div class="sim" data-sim="rng" data-title="Generadores pseudoaleatorios: RANDU frente a Mulberry32"></div>
+<div class="sim-guide"><ul>
+<li>Gire la nube de ternas de RANDU: desde cierto ángulo aparecen los 15 planos. Mulberry32 llena el cubo uniformemente.</li>
+<li>Cambie la semilla y vuelva a ella: la secuencia se repite exactamente.</li>
+</ul></div>
+<div class="box hbn"><p>hBN-MC usa el generador Mulberry32 (función <code>setRandomSeed</code> de <code>core.js</code>): con una semilla fija, una corrida es reproducible bit a bit, y el modo LOTE asigna a la réplica \(i\) la semilla \(\text{base}+i\cdot1\,000\,003\), de modo que todo el lote es reproducible a partir de un solo número. El curso usa el mismo generador en sus simulaciones.</p></div>
+<div class="box valid"><p>El apéndice B comprueba que una cadena de Markov con la regla de Metropolis converge a las poblaciones de Boltzmann con error menor que \(10^{-10}\) y que el muestreo de Metropolis de un oscilador da \(\expval{x^2}=\kB T/k\) dentro del error estadístico.</p></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Monte Carlo estima integrales con error \(\propto1/\sqrt N\) en cualquier dimensión.</li>
+<li>Muestrear con la distribución de Boltzmann convierte los promedios térmicos en promedios simples.</li>
+<li>Una cadena de Markov ergódica con balance detallado converge a la distribución deseada.</li>
+<li>Metropolis: propuesta simétrica + aceptación \(\min(1,\ee^{-\Delta E/\kB T})\); solo necesita diferencias de energía.</li>
+<li>Generadores pseudoaleatorios deterministas; la semilla garantiza la reproducibilidad.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Cuántos puntos hacen falta para estimar \(\pi\) con error de \(10^{-3}\)?
+<details><summary>Respuesta</summary><p>\(\sigma=4\sqrt{p(1-p)}\) con \(p=\pi/4\): 1.64; \(N=(1.64/10^{-3})^2\approx2.7\times10^6\).</p></details></li>
+<li><span class="lvl">Básico</span>Un movimiento cuesta \(\Delta E=0.3\) eV a 2000 K. ¿Probabilidad de aceptarlo?
+<details><summary>Respuesta</summary><p>\(\ee^{-0.3/0.1723}=0.175\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Demuestre que la regla de «baño térmico» \(A_{ij}=\frac{1}{1+\ee^{\beta(E_j-E_i)}}\) también cumple balance detallado.
+<details><summary>Respuesta</summary><p>\(\frac{A_{ij}}{A_{ji}}=\frac{1+\ee^{\beta(E_i-E_j)}}{1+\ee^{\beta(E_j-E_i)}}=\ee^{-\beta(E_j-E_i)}=\frac{\pi_j}{\pi_i}\).</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué al rechazar un movimiento hay que volver a contar el estado actual?
+<details><summary>Respuesta</summary><p>Porque el rechazo es la transición \(W_{ii}\) de la cadena; omitirla cambia la distribución estacionaria y sesga los promedios hacia los estados con muchos movimientos aceptados.</p></details></li>
+<li><span class="lvl">Avanzado</span>Si la propuesta no es simétrica (\(g_{ij}\ne g_{ji}\)), ¿cómo debe modificarse la aceptación?
+<details><summary>Respuesta</summary><p>Metropolis–Hastings: \(A_{ij}=\min\big(1,\frac{\pi_jg_{ji}}{\pi_ig_{ij}}\big)\). Es la razón por la que el archivo de limitaciones de hBN-MC advierte que, con geometrías importadas, el número de pares permitidos varía y la selección no conserva balance detallado exacto.</p></details></li>
+</ol>
+</section>
+</template>

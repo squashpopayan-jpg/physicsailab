@@ -1,0 +1,135 @@
+<template class="chapter-src" data-id="crisis" data-num="1" data-title="La crisis de la física clásica" data-part="Parte I · Fundamentos de la mecánica cuántica" data-short="Escalas atómicas, cuerpo negro, fotones, átomo de Bohr, ondas de materia y la doble rendija">
+<p class="lead">A finales del siglo XIX la física parecía casi terminada: la mecánica de Newton y el electromagnetismo de Maxwell explicaban desde los planetas hasta la luz. Pero cuatro experimentos sencillos se negaron a encajar. Este capítulo cuenta por qué, y cómo de sus respuestas nacen las dos ideas que sostienen todo el curso: la energía viene en paquetes y la materia se comporta como una onda.</p>
+
+<section>
+<h2>Las escalas del mundo atómico</h2>
+<p>Antes de estudiar la física cuántica conviene fijar las unidades en que habla. Los átomos miden unos \(10^{-10}\) m, un <span class="term">ángstrom</span> (\(1\un{Å}=10^{-10}\un{m}\)); la distancia entre un boro y un nitrógeno vecinos en el nitruro de boro hexagonal (h-BN) es de 1.45 Å. Las energías de los electrones en los átomos y enlaces se miden en <span class="term">electronvoltios</span>: la energía que gana un electrón al atravesar una diferencia de potencial de un voltio,</p>
+<div class="eq key" data-name="Electronvoltio">\[1\un{eV}=1.602\,176\,634\times10^{-19}\un{J}.\]</div>
+<p>La constante que marca la frontera entre lo clásico y lo cuántico es la <span class="term">constante de Planck</span> \(h=6.626\times10^{-34}\un{J\,s}\), o su versión reducida \(\hbar=h/2\pi=1.055\times10^{-34}\un{J\,s}=6.582\times10^{-16}\un{eV\,s}\). Cuando las acciones típicas de un sistema (energía por tiempo, o momento por distancia) son comparables con \(\hbar\), la física clásica deja de funcionar.</p>
+<p>La temperatura también se expresa como energía mediante la constante de Boltzmann, \(\kB=8.617\times10^{-5}\un{eV/K}\). A temperatura ambiente, \(\kB T=25.9\un{meV}\approx\tfrac1{40}\un{eV}\): la agitación térmica es mucho menor que la energía de un enlace químico (varios eV). Por eso los sólidos no se deshacen a temperatura ambiente.</p>
+<div class="tablewrap"><table>
+<tr><th>Magnitud</th><th>Valor típico</th><th>Comentario</th></tr>
+<tr><td>Distancia B–N en h-BN</td><td class="num">1.45 Å</td><td>longitud de enlace</td></tr>
+<tr><td>Radio de Bohr \(a_0\)</td><td class="num">0.529 Å</td><td>tamaño del átomo de hidrógeno</td></tr>
+<tr><td>Energía de ionización del H</td><td class="num">13.6 eV</td><td>arrancar el electrón del hidrógeno</td></tr>
+<tr><td>Energía de un enlace B–N</td><td class="num">≈ 4 eV</td><td>romperlo hacia átomos libres</td></tr>
+<tr><td>Brecha de energía del h-BN</td><td class="num">≈ 6 eV</td><td>por eso es aislante y transparente</td></tr>
+<tr><td>\(\kB T\) a 300 K</td><td class="num">0.0259 eV</td><td>agitación térmica ambiente</td></tr>
+<tr><td>\(\kB T\) a 5000 K</td><td class="num">0.431 eV</td><td>temperatura típica en hBN-MC</td></tr>
+</table></div>
+<div class="box explain"><p>Un electronvoltio es a los átomos lo que un peso es a las compras: una moneda pequeña, pero del tamaño justo para lo que se paga. Medir la energía de un enlace en julios sería como pagar un pan en billones de pesos.</p></div>
+<div class="box hbn"><p>Todas las energías de hBN-MC están en eV y la temperatura entra siempre como \(\kB T\) con \(\kB=8.6173324\times10^{-5}\) eV/K, el mismo valor que usa el archivo <code>core.js</code>. Comparar una energía con \(\kB T\) es la operación más repetida de la aplicación.</p></div>
+</section>
+
+<section>
+<h2>La radiación del cuerpo negro</h2>
+<p>Todo cuerpo caliente emite luz: el hierro al rojo, el filamento de una bombilla, el Sol. Un <span class="term">cuerpo negro</span> es un absorbente perfecto (no refleja nada), y su espectro de emisión solo depende de la temperatura. Experimentalmente, la intensidad por unidad de longitud de onda crece desde cero, alcanza un máximo y vuelve a caer.</p>
+<h3>La catástrofe ultravioleta</h3>
+<p>La física clásica trata la radiación dentro de una cavidad como un conjunto de ondas estacionarias (modos). El número de modos con longitud de onda entre \(\lambda\) y \(\lambda+\dd\lambda\) crece como \(\lambda^{-4}\), y el teorema de equipartición asigna a cada modo una energía media \(\kB T\). El resultado es la ley de Rayleigh–Jeans,</p>
+<div class="eq">\[B_\lambda^{\text{RJ}}(\lambda,T)=\frac{2c\,\kB T}{\lambda^4},\]</div>
+<p>que funciona para longitudes de onda largas pero diverge para \(\lambda\to0\): un horno emitiría energía infinita en el ultravioleta. Esa «catástrofe ultravioleta» mostró que algo fundamental fallaba.</p>
+<h3>La hipótesis de Planck</h3>
+<p>En 1900 Max Planck propuso que un modo de frecuencia \(\nu\) solo puede tener energías múltiplos de un cuanto, \(E_n=nh\nu\) con \(n=0,1,2,\dots\) Con esta regla, la energía media de un modo ya no es \(\kB T\), sino</p>
+<div class="eq">\[\expval{E}=\frac{\sum_n nh\nu\,\ee^{-nh\nu/\kB T}}{\sum_n\ee^{-nh\nu/\kB T}}=\frac{h\nu}{\ee^{h\nu/\kB T}-1},\]</div>
+<p>que vale \(\kB T\) si \(h\nu\ll\kB T\) (límite clásico) pero se anula exponencialmente si \(h\nu\gg\kB T\): los modos de alta frecuencia quedan «congelados» porque el primer escalón de energía es demasiado alto para la agitación térmica. Así se obtiene la <span class="term">ley de Planck</span>:</p>
+<div class="eq key" data-name="Ley de Planck">\[B_\lambda(\lambda,T)=\frac{2hc^2}{\lambda^5}\,\frac{1}{\ee^{hc/\lambda\kB T}-1}.\]</div>
+<p>De ella se deducen dos leyes empíricas conocidas. El máximo del espectro cumple la <span class="term">ley de desplazamiento de Wien</span>, y la potencia total emitida por unidad de área, la <span class="term">ley de Stefan–Boltzmann</span>:</p>
+<div class="eq key" data-name="Wien y Stefan–Boltzmann">\[\lambda_{\max}T=b=2.898\times10^{-3}\un{m\,K},\qquad M=\sigma T^4,\quad \sigma=\frac{2\pi^5\kB^4}{15h^3c^2}=5.670\times10^{-8}\un{W\,m^{-2}K^{-4}}.\]</div>
+<div class="sim" data-sim="cuerpo-negro" data-title="Espectro del cuerpo negro: Planck frente a Rayleigh–Jeans"></div>
+<div class="sim-guide"><ul>
+<li>Suba la temperatura: el máximo se corre hacia el azul (Wien) y el área bajo la curva crece como \(T^4\). Compare la lectura numérica de \(\lambda_{\max}T\) con \(b\).</li>
+<li>Active Rayleigh–Jeans: coincide con Planck a longitudes de onda largas y se dispara en el ultravioleta.</li>
+<li>El Sol (\(T\approx5800\) K) tiene su máximo en el visible; un cuerpo a 300 K emite en el infrarrojo lejano (unas 10 µm).</li>
+</ul></div>
+<div class="box explain"><p>Imagine una escalera cuyos peldaños son más altos cuanto mayor es la frecuencia. La agitación térmica es como un niño que salta: sube con facilidad los peldaños bajos (frecuencias pequeñas) pero no alcanza los altos. La física clásica suponía una rampa sin peldaños, que el niño podía subir hasta cualquier altura: de ahí la catástrofe.</p></div>
+<div class="box valid"><p>La simulación busca numéricamente el máximo de la ley de Planck e integra el espectro completo. El apéndice B comprueba que \(\lambda_{\max}T\) coincide con la constante de Wien de CODATA con error relativo menor que \(10^{-8}\) y que la integral reproduce \(\sigma\) con error menor que \(10^{-10}\).</p></div>
+</section>
+
+<section>
+<h2>El efecto fotoeléctrico: la luz viene en fotones</h2>
+<p>Al iluminar un metal con luz ultravioleta salen electrones. Los experimentos de Lenard (1902) mostraron tres hechos que la teoría ondulatoria no explicaba:</p>
+<ul>
+<li>Existe una frecuencia umbral \(\nu_0\): por debajo no sale ningún electrón, por intensa que sea la luz.</li>
+<li>La energía cinética máxima de los electrones depende de la frecuencia, no de la intensidad.</li>
+<li>La emisión es instantánea, incluso con luz muy débil.</li>
+</ul>
+<p>Einstein (1905) propuso que la luz está formada por <span class="term">fotones</span> de energía \(E=h\nu\), y que cada electrón absorbe un fotón completo. Si \(\phi\) es la <span class="term">función de trabajo</span> del metal (la energía mínima para arrancar un electrón),</p>
+<div class="eq key" data-name="Ecuación de Einstein">\[K_{\max}=h\nu-\phi=eV_0,\qquad \nu_0=\frac{\phi}{h},\qquad E_\text{fotón}=h\nu=\frac{hc}{\lambda}=\frac{1239.84\un{eV\,nm}}{\lambda}.\]</div>
+<p>\(V_0\) es el <span class="term">potencial de frenado</span>, el voltaje que detiene a los electrones más rápidos. La intensidad solo cambia el número de fotones por segundo, y con él la corriente, pero no la energía de cada electrón. Millikan midió en 1916 la pendiente de \(K_{\max}\) frente a \(\nu\) y obtuvo \(h\) con un error del 0.5 %.</p>
+<div class="sim" data-sim="fotoelectrico" data-title="Efecto fotoeléctrico: fotones y electrones"></div>
+<div class="sim-guide"><ul>
+<li>Con el cesio (\(\phi=2.14\) eV) la luz verde ya arranca electrones; con el cobre hace falta ultravioleta.</li>
+<li>Por debajo del umbral, suba la intensidad al máximo: no sale nada. Por encima, la intensidad solo cambia cuántos electrones salen.</li>
+<li>La recta \(K_{\max}(\nu)\) tiene la misma pendiente \(h\) para todos los metales; lo que cambia es el punto de corte.</li>
+</ul></div>
+<div class="box explain"><p>Piense en una máquina expendedora que solo acepta monedas de una sola vez y no da crédito. Si el producto cuesta 2 000 pesos, mil monedas de 500 no sirven: ninguna alcanza por sí sola. La frecuencia es el valor de cada moneda y la intensidad es cuántas monedas tiene. El electrón «compra» su salida con un único fotón.</p></div>
+</section>
+
+<section>
+<h2>Espectros atómicos y el átomo de Bohr</h2>
+<p>Un gas de hidrógeno excitado no emite un espectro continuo, sino líneas finas de colores bien definidos. Balmer (1885) y Rydberg encontraron que sus longitudes de onda obedecen</p>
+<div class="eq key" data-name="Fórmula de Rydberg">\[\frac1\lambda=R_\text{H}\left(\frac1{n_f^2}-\frac1{n_i^2}\right),\qquad R_\text{H}=1.09678\times10^{7}\un{m^{-1}},\]</div>
+<p>con \(n_f=1\) (serie de Lyman, ultravioleta), \(n_f=2\) (Balmer, visible), \(n_f=3\) (Paschen, infrarrojo). La física clásica no podía explicarlo: un electrón que gira debería radiar de forma continua y caer al núcleo en unos \(10^{-11}\) s.</p>
+<h3>Los postulados de Bohr (1913)</h3>
+<ol>
+<li>El electrón se mueve en órbitas circulares estables en las que no radia.</li>
+<li>Solo están permitidas las órbitas cuyo momento angular es un múltiplo de \(\hbar\): \(L=m_evr=n\hbar\).</li>
+<li>Al saltar de una órbita a otra emite o absorbe un fotón con \(h\nu=E_i-E_f\).</li>
+</ol>
+<p>Combinando la segunda condición con la fuerza de Coulomb como fuerza centrípeta, \(m_ev^2/r=e^2/(4\pi\eo r^2)\), se obtienen los radios y las energías de un ion hidrogenoide de carga nuclear \(Ze\):</p>
+<div class="eq key" data-name="Átomo de Bohr">\[r_n=\frac{n^2}{Z}\,a_0,\quad a_0=\frac{4\pi\eo\hbar^2}{m_ee^2}=0.529\un{Å};\qquad E_n=-\frac{Z^2}{n^2}\,\frac{m_ee^4}{2(4\pi\eo)^2\hbar^2}=-\frac{13.606\un{eV}\,Z^2}{n^2}.\]</div>
+<p>La energía negativa indica un estado ligado; para ionizar el hidrógeno desde \(n=1\) hacen falta 13.6 eV. Las energías de los saltos reproducen la fórmula de Rydberg. La pequeña diferencia entre \(R_\infty=1.09737\times10^7\) m⁻¹ y \(R_\text{H}\) se debe a que el núcleo no es infinitamente pesado: se corrige con la masa reducida \(\mu=m_em_p/(m_e+m_p)\).</p>
+<div class="sim" data-sim="bohr" data-title="Niveles de Bohr y líneas espectrales"></div>
+<div class="sim-guide"><ul>
+<li>Elija la serie de Balmer y recorra las transiciones: \(3\to2\) es la línea roja H\(\alpha\) (656 nm), \(4\to2\) la cian H\(\beta\) (486 nm).</li>
+<li>Aumente \(Z\): para He⁺ (\(Z=2\)) todas las energías se multiplican por 4 y las líneas se mueven al ultravioleta.</li>
+<li>Los niveles se apiñan hacia \(E=0\): por encima está el continuo del electrón libre.</li>
+</ul></div>
+<div class="box warn"><p>El modelo de Bohr acierta en las energías del hidrógeno pero es incorrecto como imagen: no hay órbitas definidas, predice momento angular \(\hbar\) para el estado fundamental (el valor real es cero) y falla para cualquier átomo con más de un electrón. La mecánica cuántica de los capítulos siguientes lo sustituye por completo.</p></div>
+</section>
+
+<section>
+<h2>Ondas de materia y la doble rendija</h2>
+<p>En 1924 Louis de Broglie invirtió el razonamiento de Einstein: si las ondas de luz se comportan como partículas, quizá las partículas se comporten como ondas. A una partícula de momento \(p\) le asoció una longitud de onda</p>
+<div class="eq key" data-name="Relación de de Broglie">\[\lambda=\frac hp,\qquad \text{para un electrón no relativista: }\ \lambda=\frac{h}{\sqrt{2m_eK}}=\frac{1.226\un{nm}}{\sqrt{K/\text{eV}}}.\]</div>
+<p>Un electrón de 100 eV tiene \(\lambda=1.23\) Å, del orden de la distancia entre átomos: un cristal actúa como red de difracción. Davisson y Germer (1927) lo confirmaron dispersando electrones en níquel. En cambio, una pelota de 0.15 kg a 40 m/s tiene \(\lambda\approx10^{-34}\) m, imposible de detectar: por eso no vemos efectos ondulatorios en la vida diaria. La condición de Bohr, \(2\pi r=n\lambda\), resulta ser la condición de que la onda del electrón encaje en la órbita sin interferir destructivamente consigo misma.</p>
+<h3>La doble rendija, partícula a partícula</h3>
+<p>Si se envían electrones de uno en uno hacia dos rendijas, cada electrón llega a la pantalla en un punto definido, como una partícula. Pero al acumular miles de impactos aparece un patrón de franjas de interferencia, como el de una onda que pasó por ambas rendijas a la vez. La intensidad acumulada es proporcional a</p>
+<div class="eq">\[I(x)\propto\big|\psi_1(x)+\psi_2(x)\big|^2=|\psi_1|^2+|\psi_2|^2+2\Rea\big(\psi_1^*\psi_2\big),\]</div>
+<p>y el último término, la interferencia, desaparece si se averigua por cuál rendija pasó cada electrón. La conclusión, que se formaliza en el capítulo 2, es que la onda no transporta energía ni materia repartida: determina la <em>probabilidad</em> de encontrar la partícula en cada lugar.</p>
+<div class="sim" data-sim="doble-rendija" data-title="Doble rendija con partículas que llegan de una en una"></div>
+<div class="sim-guide"><ul>
+<li>Al principio los impactos parecen aleatorios; las franjas emergen solo después de cientos de partículas.</li>
+<li>Duplique la separación de las rendijas: la separación entre franjas se reduce a la mitad (\(\Delta x=\lambda L/d\)).</li>
+<li>Active «detector de camino»: las franjas desaparecen y queda la suma de dos campanas.</li>
+</ul></div>
+<div class="box hbn"><p>Los nanoporos triangulares de borde de nitrógeno que hBN-MC intenta explicar se observan con microscopía electrónica de transmisión de alta resolución (HRTEM; Pham <i>et al.</i>, 2016). Esos microscopios aceleran electrones a 80 kV: su longitud de onda de de Broglie (con corrección relativista) es de 4.2 pm, cien veces menor que la distancia B–N. La misma naturaleza ondulatoria que produce las franjas de la doble rendija es la que permite «ver» los átomos del borde de un poro.</p></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>La energía de los osciladores de la radiación está cuantizada, \(E=nh\nu\); eso elimina la catástrofe ultravioleta y da la ley de Planck.</li>
+<li>La luz está formada por fotones de energía \(h\nu\); cada electrón absorbe un fotón completo: \(K_{\max}=h\nu-\phi\).</li>
+<li>Los átomos tienen niveles discretos, \(E_n=-13.6\,Z^2/n^2\) eV en el hidrógeno; las líneas espectrales son saltos entre niveles.</li>
+<li>La materia tiene longitud de onda \(\lambda=h/p\); los electrones interfieren, y la onda determina probabilidades.</li>
+<li>Las escalas del curso: Å para distancias, eV para energías, \(\kB T\) para comparar la energía térmica con cualquier otra.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Cuánta energía, en eV, tiene un fotón de 500 nm? ¿Y uno de 10 µm?
+<details><summary>Respuesta</summary><p>\(E=1239.84/500=2.48\) eV; para 10 µm, 0.124 eV.</p></details></li>
+<li><span class="lvl">Básico</span>Calcule \(\kB T\) a 1000 K y a 20 000 K en eV.
+<details><summary>Respuesta</summary><p>0.0862 eV y 1.72 eV.</p></details></li>
+<li><span class="lvl">Básico</span>¿Cuál es la longitud de onda del máximo de emisión de la piel humana (310 K)?
+<details><summary>Respuesta</summary><p>\(\lambda_{\max}=2.898\times10^{-3}/310=9.35\) µm (infrarrojo; por eso funcionan las cámaras térmicas).</p></details></li>
+<li><span class="lvl">Intermedio</span>Luz de 250 nm incide sobre cobre (\(\phi=4.65\) eV). Halle \(K_{\max}\), el potencial de frenado y la rapidez máxima de los electrones.
+<details><summary>Respuesta</summary><p>\(h\nu=4.96\) eV, \(K_{\max}=0.31\) eV, \(V_0=0.31\) V, \(v=\sqrt{2K/m_e}=3.3\times10^5\) m/s.</p></details></li>
+<li><span class="lvl">Intermedio</span>Demuestre que \(E_n=-13.6\,\text{eV}/n^2\) a partir de \(L=n\hbar\) y de la fuerza de Coulomb.
+<details><summary>Respuesta</summary><p>De \(mv^2/r=ke^2/r^2\) y \(mvr=n\hbar\): \(r=n^2\hbar^2/(mke^2)\), \(E=\tfrac12mv^2-ke^2/r=-ke^2/(2r)=-mk^2e^4/(2n^2\hbar^2)\).</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Qué longitud de onda tiene la línea de Lyman \(2\to1\)? ¿Puede verse a simple vista?
+<details><summary>Respuesta</summary><p>\(1/\lambda=R_\text{H}(1-\tfrac14)\) → \(\lambda=121.6\) nm, ultravioleta: invisible.</p></details></li>
+<li><span class="lvl">Avanzado</span>Calcule la longitud de onda de un electrón acelerado a 80 kV, con y sin corrección relativista.
+<details><summary>Respuesta</summary><p>No relativista: \(\lambda=1.226/\sqrt{80000}\) nm \(=4.34\) pm. Relativista: \(pc=\sqrt{K^2+2Km_ec^2}=\sqrt{80^2+2\cdot80\cdot511}\) keV \(=296.9\) keV, \(\lambda=hc/pc=4.18\) pm.</p></details></li>
+</ol>
+</section>
+</template>

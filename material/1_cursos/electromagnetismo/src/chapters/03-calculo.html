@@ -1,0 +1,208 @@
+<template class="chapter-src" data-id="calculo-vectorial" data-num="3" data-title="Cálculo vectorial" data-part="Parte I · Herramientas matemáticas" data-short="Gradiente, divergencia, rotacional, teoremas de Gauss y Stokes, delta de Dirac">
+<p class="lead">Las leyes del electromagnetismo relacionan cómo cambian los campos de un punto a otro con sus fuentes. El gradiente, la divergencia y el rotacional son las tres formas de medir esos cambios, y los teoremas de la divergencia y de Stokes permiten pasar de la forma integral de las leyes a su forma local y viceversa.</p>
+
+<section>
+<h2>El operador nabla</h2>
+<p>Para un campo escalar \(f(x,y,z)\), el cambio al desplazarse \(\dd\vb{l}=\dd x\,\uv{x}+\dd y\,\uv{y}+\dd z\,\uv{z}\) es</p>
+<div class="eq">\[\dd f=\pdv{f}{x}\dd x+\pdv{f}{y}\dd y+\pdv{f}{z}\dd z=\left(\pdv{f}{x}\uv{x}+\pdv{f}{y}\uv{y}+\pdv{f}{z}\uv{z}\right)\cdot\dd\vb{l}.\]</div>
+<p>Esto sugiere definir el operador vectorial diferencial <span class="term">nabla</span>:</p>
+<div class="eq key" data-name="Nabla en cartesianas">\[\nabla=\uv{x}\pdv{}{x}+\uv{y}\pdv{}{y}+\uv{z}\pdv{}{z}.\]</div>
+<p>Nabla no es un vector en sentido estricto (no tiene magnitud por sí mismo), pero se combina con campos de tres maneras que imitan los productos del capítulo 1:</p>
+<div class="tablewrap narrow"><table>
+<tr><th>Operación</th><th>Actúa sobre</th><th>Resultado</th><th>Mide</th></tr>
+<tr><td>\(\nabla f\) (gradiente)</td><td>escalar</td><td>vector</td><td>dirección y rapidez de máximo crecimiento</td></tr>
+<tr><td>\(\divg\vb{F}\) (divergencia)</td><td>vector</td><td>escalar</td><td>flujo neto saliente por unidad de volumen</td></tr>
+<tr><td>\(\curl\vb{F}\) (rotacional)</td><td>vector</td><td>vector</td><td>circulación por unidad de área</td></tr>
+</table></div>
+<div class="box warn"><p>La expresión de \(\nabla\) como “\(\uv{u}_1\partial_1+\uv{u}_2\partial_2+\uv{u}_3\partial_3\)” sólo es válida en cartesianas. En cilíndricas y esféricas hay que usar los factores de escala y recordar que los unitarios varían; las fórmulas correctas están en el capítulo 2.</p></div>
+</section>
+
+<section>
+<h2>Gradiente</h2>
+<p>El <span class="term">gradiente</span> de un campo escalar es el vector \(\nabla f\) tal que, para todo desplazamiento,</p>
+<div class="eq key" data-name="Definición de gradiente">\[\dd f=\nabla f\cdot\dd\vb{l},\qquad \nabla f=\pdv{f}{x}\uv{x}+\pdv{f}{y}\uv{y}+\pdv{f}{z}\uv{z}.\]</div>
+<p>Si \(\dd\vb{l}=\dd l\,\uv{u}\), la <span class="term">derivada direccional</span> es \(\dd f/\dd l=\nabla f\cdot\uv{u}=\abs{\nabla f}\cos\alpha\), donde \(\alpha\) es el ángulo entre \(\uv{u}\) y \(\nabla f\). De aquí se leen las tres propiedades geométricas fundamentales:</p>
+<ol>
+<li>\(\nabla f\) apunta en la dirección en que \(f\) crece más rápido (\(\alpha=0\)).</li>
+<li>Su magnitud \(\abs{\nabla f}\) es esa tasa máxima de crecimiento.</li>
+<li>Es perpendicular a las superficies de nivel \(f=\text{cte}\): a lo largo de ellas \(\dd f=0\), luego \(\nabla f\cdot\dd\vb{l}=0\).</li>
+</ol>
+<p>En electrostática, el campo eléctrico es \(\vb{E}=-\nabla V\): apunta hacia donde el potencial disminuye más rápido y es perpendicular a las superficies equipotenciales.</p>
+<div class="box ex">
+<h4>Gradiente de la distancia y de su inverso</h4>
+<p>Sea \(R=\abs{\vb{r}-\vb{r}'}\) con \(\vb{r}'\) fijo. Calcule \(\nabla R\) y \(\nabla(1/R)\).</p>
+<details><summary>Solución</summary>
+<p>\(\pdv{R}{x}=\dfrac{x-x'}{R}\) y análogo en \(y,z\), así \(\nabla R=\dfrac{\vb{R}}{R}=\uv{R}\). Con la regla de la cadena, \(\nabla\dfrac1R=-\dfrac{1}{R^2}\nabla R=-\dfrac{\uv{R}}{R^2}\). Por eso el potencial \(V=\dfrac{q}{4\pi\eo R}\) produce \(\vb{E}=-\nabla V=\dfrac{q}{4\pi\eo}\dfrac{\uv{R}}{R^2}\). Si se deriva respecto a las coordenadas primadas, \(\nabla'(1/R)=+\uv{R}/R^2\).</p>
+</details>
+</div>
+<div class="sim" data-sim="grad-explorer" data-title="Gradiente, curvas de nivel y derivada direccional"></div>
+<div class="sim-guide"><ul>
+<li>Observe que las flechas de \(\nabla f\) son perpendiculares a las curvas de nivel y más largas donde las curvas están más juntas.</li>
+<li>Gire la dirección \(\uv{u}\): la gráfica de la derecha muestra \(D_{\uv{u}}f=\abs{\nabla f}\cos\alpha\). ¿En qué dirección es máxima? ¿En cuáles es nula?</li>
+<li>En el caso “silla” lleve la sonda al origen: allí \(\nabla f=\vb{0}\) aunque \(f\) no tenga un máximo ni un mínimo.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Integrales de línea, de superficie y de volumen</h2>
+<h3>Integral de línea</h3>
+<p>Dada una curva \(C\) orientada y un campo \(\vb{F}\), la integral de línea suma la componente tangencial del campo a lo largo de la curva:</p>
+<div class="eq">\[\int_C\vb{F}\cdot\dd\vb{l}=\int_{t_a}^{t_b}\vb{F}(\vb{r}(t))\cdot\odv{\vb{r}}{t}\,\dd t .\]</div>
+<p>Si \(\vb{F}\) es una fuerza, es el trabajo; si es un campo eléctrico, es menos la diferencia de potencial o, en un circuito, la fuerza electromotriz. Cuando la curva es cerrada se llama <span class="term">circulación</span> y se escribe \(\oint_C\vb{F}\cdot\dd\vb{l}\).</p>
+<h3>Integral de superficie (flujo)</h3>
+<p>El flujo de \(\vb{F}\) a través de una superficie orientada \(S\) suma la componente normal:</p>
+<div class="eq">\[\Phi=\int_S\vb{F}\cdot\dd\vb{S}=\int_S\vb{F}\cdot\uv{n}\,\dd S .\]</div>
+<p>Para una superficie cerrada, \(\uv{n}\) se elige siempre <strong>hacia afuera</strong>. Para una superficie abierta limitada por una curva \(C\), la orientación de \(\uv{n}\) y el sentido de recorrido de \(C\) se relacionan con la regla de la mano derecha: los dedos siguen \(C\) y el pulgar señala \(\uv{n}\).</p>
+<h3>Integral de volumen</h3>
+<p>Integra un escalar (o cada componente cartesiana de un vector) sobre una región: carga total \(Q=\int_V\rho_v\,\dd V\), energía \(W=\int_V w\,\dd V\).</p>
+<div class="box ex">
+<h4>Circulación de un campo de rotación</h4>
+<p>Calcule \(\oint\vb{F}\cdot\dd\vb{l}\) para \(\vb{F}=-y\,\uv{x}+x\,\uv{y}\) sobre la circunferencia \(\rho=a\) recorrida en sentido antihorario.</p>
+<details><summary>Solución</summary>
+<p>En cilíndricas \(\vb{F}=\rho\,\uv{\phi}\) (capítulo 2) y sobre la curva \(\dd\vb{l}=a\,\dd\phi\,\uv{\phi}\). Entonces \(\oint\vb{F}\cdot\dd\vb{l}=\int_0^{2\pi}a\cdot a\,\dd\phi=2\pi a^2\).</p>
+</details>
+</div>
+<div class="sim" data-sim="line-integral" data-title="Integral de línea: ¿depende del camino?"></div>
+<div class="sim-guide"><ul>
+<li>Con un campo conservativo (\(\nabla(xy)\) o radial) las dos trayectorias dan el mismo resultado, sin importar dónde ponga el punto intermedio \(C\).</li>
+<li>Con el campo de rotación la diferencia es igual al flujo del rotacional encerrado (teorema de Stokes).</li>
+<li>Con el vórtice \(\uv{\phi}/\rho\) la diferencia es cero salvo que el triángulo encierre el origen: entonces vale \(\pm2\pi\). El rotacional es nulo en todas partes excepto en un punto.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Divergencia</h2>
+<p>La <span class="term">divergencia</span> de un campo vectorial en un punto es el flujo neto que sale de una superficie cerrada pequeña que lo rodea, por unidad de volumen:</p>
+<div class="eq key" data-name="Definición de divergencia">\[\divg\vb{F}=\lim_{\Delta V\to0}\frac{\oint_S\vb{F}\cdot\dd\vb{S}}{\Delta V}=\pdv{F_x}{x}+\pdv{F_y}{y}+\pdv{F_z}{z}.\]</div>
+<p>Para obtener la forma cartesiana, tome un cubo de aristas \(\Delta x,\Delta y,\Delta z\). Las caras perpendiculares a \(x\) aportan \([F_x(x+\Delta x)-F_x(x)]\Delta y\Delta z\approx\pdv{F_x}{x}\Delta V\); sumando las tres parejas de caras y dividiendo por \(\Delta V\) resulta la fórmula. Interpretación:</p>
+<ul>
+<li>\(\divg\vb{F}\gt0\): el punto es una <em>fuente</em> (sale más de lo que entra).</li>
+<li>\(\divg\vb{F}\lt0\): el punto es un <em>sumidero</em>.</li>
+<li>\(\divg\vb{F}=0\): el campo es <em>solenoidal</em> en ese punto; lo que entra, sale.</li>
+</ul>
+<p>La ley de Gauss en forma diferencial, \(\divg\vb{E}=\rho_v/\eo\), dice que las fuentes del campo eléctrico son las cargas; \(\divg\vb{B}=0\) dice que el campo magnético no tiene fuentes puntuales (no hay monopolos magnéticos).</p>
+<div class="box warn"><p>Que las líneas de campo “se abran” no implica divergencia positiva. El campo \(\uv{r}/r^2\) de una carga puntual tiene líneas que se separan, pero su divergencia es cero en todo punto fuera de la carga: la separación de las líneas se compensa exactamente con la disminución de la magnitud.</p></div>
+<div class="sim" data-sim="divcurl-explorer" data-title="Divergencia y rotacional como flujo y circulación por unidad de área"></div>
+<div class="sim-guide"><ul>
+<li>Arrastre la sonda cuadrada. El flujo neto dividido por el área tiende a \(\divg\vb{F}\) al reducir el tamaño; la circulación dividida por el área tiende a \((\curl\vb{F})_z\).</li>
+<li>La rueda de paletas gira con velocidad angular \(\tfrac12(\curl\vb{F})_z\). En la cizalla \((y,0)\) gira aunque las líneas de campo sean rectas.</li>
+<li>En el vórtice \(\uv{\phi}/\rho\) la rueda no gira (salvo en el origen) aunque las líneas sean circunferencias.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Teorema de la divergencia</h2>
+<div class="eq key" data-name="Teorema de Gauss (divergencia)">\[\oint_S\vb{F}\cdot\dd\vb{S}=\int_V(\divg\vb{F})\,\dd V .\]</div>
+<p>El flujo que sale de una superficie cerrada \(S\) es igual a la integral de la divergencia sobre el volumen \(V\) que encierra. Idea de la demostración: divida \(V\) en cubitos. Para cada uno, el flujo saliente es \((\divg\vb{F})\Delta V\). Al sumar, el flujo por cada cara interna se cuenta dos veces con signos opuestos (lo que sale de un cubito entra al vecino) y se cancela; sólo sobreviven las caras que forman \(S\).</p>
+<div class="box ex">
+<h4>Verificación con el vector de posición</h4>
+<p>Compruebe el teorema para \(\vb{F}=\vb{r}=x\uv{x}+y\uv{y}+z\uv{z}\) y una esfera de radio \(a\).</p>
+<details><summary>Solución</summary>
+<p>Superficie: sobre la esfera \(\vb{F}=a\,\uv{r}\) y \(\dd\vb{S}=a^2\sen\theta\,\dd\theta\,\dd\phi\,\uv{r}\), así \(\oint\vb{F}\cdot\dd\vb{S}=a^3\cdot4\pi\). Volumen: \(\divg\vb{r}=3\), luego \(\int_V3\,\dd V=3\cdot\tfrac43\pi a^3=4\pi a^3\). ✔</p>
+</details>
+</div>
+</section>
+
+<section>
+<h2>Rotacional</h2>
+<p>El <span class="term">rotacional</span> mide la circulación por unidad de área. Su componente a lo largo de un unitario \(\uv{n}\) es</p>
+<div class="eq key" data-name="Definición de rotacional">\[(\curl\vb{F})\cdot\uv{n}=\lim_{\Delta S\to0}\frac{\oint_C\vb{F}\cdot\dd\vb{l}}{\Delta S},\]</div>
+<p>donde \(C\) rodea al área \(\Delta S\) en sentido dado por la mano derecha respecto de \(\uv{n}\). En cartesianas:</p>
+<div class="eq">\[\curl\vb{F}=\begin{vmatrix}\uv{x}&\uv{y}&\uv{z}\\\partial_x&\partial_y&\partial_z\\F_x&F_y&F_z\end{vmatrix}=\left(\pdv{F_z}{y}-\pdv{F_y}{z}\right)\uv{x}+\left(\pdv{F_x}{z}-\pdv{F_z}{x}\right)\uv{y}+\left(\pdv{F_y}{x}-\pdv{F_x}{y}\right)\uv{z}.\]</div>
+<p>Si \(\vb{F}\) fuera la velocidad de un fluido, una pequeña rueda de paletas colocada en el punto giraría con velocidad angular \(\boldsymbol\omega=\tfrac12\curl\vb{F}\). Un campo con rotacional nulo en toda una región se llama <span class="term">irrotacional</span>. La ley de Ampère, \(\curl\vb{B}=\mo\vb{J}\), dice que las corrientes son los “remolinos” que generan el campo magnético; la ley de Faraday, \(\curl\vb{E}=-\partial\vb{B}/\partial t\), que un campo magnético variable genera un campo eléctrico con circulación. La simulación de la sección de divergencia muestra también la circulación y la rueda de paletas.</p>
+<div class="box ex">
+<h4>Dos campos engañosos</h4>
+<p>Calcule el rotacional de la cizalla \(\vb{F}_1=y\,\uv{x}\) y del vórtice \(\vb{F}_2=\uv{\phi}/\rho\).</p>
+<details><summary>Solución</summary>
+<p>\(\curl\vb{F}_1=\left(0-\pdv{y}{y}\right)\uv{z}=-\uv{z}\): la cizalla tiene rotacional aunque sus líneas sean rectas (las capas vecinas se mueven a distinta velocidad). \(\curl\vb{F}_2=\frac1\rho\pdv{}{\rho}\left(\rho\cdot\frac1\rho\right)\uv{z}=\vb{0}\) para \(\rho\ne0\): el vórtice es irrotacional fuera del eje aunque sus líneas sean circunferencias. Toda su circulación está concentrada en el eje: \(\oint\vb{F}_2\cdot\dd\vb{l}=2\pi\) para cualquier curva que rodee el eje una vez.</p>
+</details>
+</div>
+</section>
+
+<section>
+<h2>Teorema de Stokes</h2>
+<div class="eq key" data-name="Teorema de Stokes">\[\oint_C\vb{F}\cdot\dd\vb{l}=\int_S(\curl\vb{F})\cdot\dd\vb{S}.\]</div>
+<p>La circulación de \(\vb{F}\) alrededor de una curva cerrada \(C\) es igual al flujo del rotacional a través de <em>cualquier</em> superficie \(S\) limitada por \(C\), con la orientación de la mano derecha. La demostración es análoga a la del teorema de la divergencia: se divide \(S\) en parches pequeños, las circulaciones por los lados internos se cancelan y queda la circulación por el borde.</p>
+<p>En el plano, con \(\vb{F}=F_x\uv{x}+F_y\uv{y}\), el teorema de Stokes se reduce al <span class="term">teorema de Green</span>: \(\oint_C(F_x\dd x+F_y\dd y)=\iint_S\left(\pdv{F_y}{x}-\pdv{F_x}{y}\right)\dd x\,\dd y\). Y la versión plana del teorema de la divergencia es \(\oint_C\vb{F}\cdot\uv{n}\,\dd l=\iint_S\divg\vb{F}\,\dd S\).</p>
+<div class="sim" data-sim="theorems-2d" data-title="Verificación numérica de los teoremas de Gauss y Stokes en el plano"></div>
+<div class="sim-guide"><ul>
+<li>El mapa de color muestra \(\divg\vb{F}\) (o \((\curl\vb{F})_z\)). Mueva y agrande la región: la integral de borde y la de área coinciden siempre.</li>
+<li>Con la fuente puntual o el vórtice, encierre el origen: la integral de borde vale \(2\pi\) pero la integral de área calculada punto a punto da cero. La diferencia es la “delta” concentrada en el origen.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Laplaciano e identidades vectoriales</h2>
+<p>El <span class="term">laplaciano</span> de un escalar es la divergencia de su gradiente:</p>
+<div class="eq">\[\lap f=\divg(\nabla f)=\frac{\partial^2f}{\partial x^2}+\frac{\partial^2f}{\partial y^2}+\frac{\partial^2f}{\partial z^2}.\]</div>
+<p>Mide cuánto se aparta \(f\) en un punto del promedio de sus vecinos: si \(\lap f=0\) (función <span class="term">armónica</span>), el valor en cada punto es el promedio sobre cualquier esfera centrada en él, y por eso \(f\) no puede tener máximos ni mínimos locales en el interior de la región. Las ecuaciones de Poisson \(\lap V=-\rho_v/\eo\) y de Laplace \(\lap V=0\) gobiernan el potencial electrostático.</p>
+<h3>Segundas derivadas</h3>
+<div class="eq key" data-name="Identidades fundamentales">\[\curl(\nabla f)=\vb{0},\qquad \divg(\curl\vb{A})=0,\qquad \curl(\curl\vb{A})=\nabla(\divg\vb{A})-\lap\vb{A}.\]</div>
+<p>Las dos primeras son la base de los potenciales: como \(\curl\vb{E}=\vb{0}\) en electrostática, \(\vb{E}=-\nabla V\); como \(\divg\vb{B}=0\) siempre, \(\vb{B}=\curl\vb{A}\).</p>
+<h3>Reglas de productos</h3>
+<div class="tablewrap"><table>
+<tr><th>Identidad</th></tr>
+<tr><td>\(\nabla(fg)=f\nabla g+g\nabla f\)</td></tr>
+<tr><td>\(\divg(f\vb{A})=f\,\divg\vb{A}+\vb{A}\cdot\nabla f\)</td></tr>
+<tr><td>\(\curl(f\vb{A})=f\,\curl\vb{A}+\nabla f\times\vb{A}\)</td></tr>
+<tr><td>\(\divg(\vb{A}\times\vb{B})=\vb{B}\cdot(\curl\vb{A})-\vb{A}\cdot(\curl\vb{B})\)</td></tr>
+<tr><td>\(\curl(\vb{A}\times\vb{B})=\vb{A}(\divg\vb{B})-\vb{B}(\divg\vb{A})+(\vb{B}\cdot\nabla)\vb{A}-(\vb{A}\cdot\nabla)\vb{B}\)</td></tr>
+<tr><td>\(\nabla(\vb{A}\cdot\vb{B})=\vb{A}\times(\curl\vb{B})+\vb{B}\times(\curl\vb{A})+(\vb{A}\cdot\nabla)\vb{B}+(\vb{B}\cdot\nabla)\vb{A}\)</td></tr>
+</table></div>
+<p>La cuarta identidad es la que conduce al teorema de Poynting sobre la energía electromagnética (capítulo 19).</p>
+</section>
+
+<section>
+<h2>Clasificación de campos y teorema de Helmholtz</h2>
+<p>En una región simplemente conexa (sin “agujeros” que una curva pueda rodear) las siguientes afirmaciones sobre un campo \(\vb{F}\) son equivalentes:</p>
+<div class="tablewrap"><table>
+<tr><th>Campo irrotacional (conservativo)</th><th>Campo solenoidal</th></tr>
+<tr><td>\(\curl\vb{F}=\vb{0}\) en todo punto</td><td>\(\divg\vb{F}=0\) en todo punto</td></tr>
+<tr><td>\(\oint_C\vb{F}\cdot\dd\vb{l}=0\) para toda curva cerrada</td><td>\(\oint_S\vb{F}\cdot\dd\vb{S}=0\) para toda superficie cerrada</td></tr>
+<tr><td>\(\int_a^b\vb{F}\cdot\dd\vb{l}\) no depende del camino</td><td>\(\int_S\vb{F}\cdot\dd\vb{S}\) sólo depende del borde de \(S\)</td></tr>
+<tr><td>\(\vb{F}=-\nabla V\) (potencial escalar)</td><td>\(\vb{F}=\curl\vb{A}\) (potencial vectorial)</td></tr>
+<tr><td>Ejemplo: campo electrostático</td><td>Ejemplo: campo magnético</td></tr>
+</table></div>
+<div class="box warn"><p>El vórtice \(\uv{\phi}/\rho\) es irrotacional en la región \(\rho\gt0\), pero su circulación alrededor del eje es \(2\pi\ne0\). No hay contradicción: la región \(\rho\gt0\) no es simplemente conexa (el eje es un “agujero”). Es exactamente el campo magnético de un hilo recto.</p></div>
+<div class="box law"><h4>Teorema de Helmholtz</h4><p>Un campo vectorial que se anula suficientemente rápido en el infinito queda determinado de forma única por su divergencia y su rotacional:</p>
+\[\vb{F}=-\nabla\Phi+\curl\vb{A},\qquad \Phi(\vb{r})=\frac{1}{4\pi}\int\frac{\nabla'\cdot\vb{F}(\vb{r}')}{R}\dd V',\qquad \vb{A}(\vb{r})=\frac{1}{4\pi}\int\frac{\nabla'\times\vb{F}(\vb{r}')}{R}\dd V'.\]
+<p>Por eso las ecuaciones de Maxwell se escriben dando precisamente la divergencia y el rotacional de \(\vb{E}\) y de \(\vb{B}\).</p></div>
+</section>
+
+<section>
+<h2>La delta de Dirac</h2>
+<p>La densidad de una carga puntual es cero en todas partes salvo en un punto, donde es infinita, y su integral es finita. La <span class="term">delta de Dirac</span> formaliza esa idea. En una dimensión:</p>
+<div class="eq key" data-name="Delta de Dirac">\[\delta(x-a)=0\ \ (x\ne a),\qquad \int_{-\infty}^{\infty}\delta(x-a)\,\dd x=1,\qquad \int_{-\infty}^{\infty}f(x)\,\delta(x-a)\,\dd x=f(a).\]</div>
+<p>No es una función ordinaria sino el límite de una sucesión de funciones cada vez más altas y estrechas con área unidad (rectángulos, gaussianas, lorentzianas). Propiedades útiles: \(\delta(kx)=\delta(x)/\abs{k}\) y \(\int f(x)\,\delta'(x-a)\,\dd x=-f'(a)\). En tres dimensiones, \(\delta^3(\vb{r})=\delta(x)\delta(y)\delta(z)\) y la densidad de una carga puntual \(q\) en \(\vb{r}'\) es \(\rho_v(\vb{r})=q\,\delta^3(\vb{r}-\vb{r}')\).</p>
+<p>El resultado central del capítulo es que la divergencia del campo \(\uv{R}/R^2\) no es cero en el origen sino una delta:</p>
+<div class="eq key" data-name="Divergencia del campo coulombiano">\[\divg\left(\frac{\uv{R}}{R^2}\right)=4\pi\,\delta^3(\vb{R}),\qquad \lap\left(\frac1R\right)=-4\pi\,\delta^3(\vb{R}).\]</div>
+<p>Se justifica con el teorema de la divergencia: el flujo de \(\uv{r}/r^2\) por cualquier esfera centrada en el origen es \(\int(1/r^2)\,r^2\dd\Omega=4\pi\), independientemente del radio, mientras que la divergencia es nula fuera del origen. Toda la “fuente” está en \(r=0\). De aquí saldrá la ley de Gauss en el capítulo 6.</p>
+<div class="sim" data-sim="dirac-delta" data-title="La delta de Dirac como límite de funciones de área unidad"></div>
+<div class="sim-guide"><ul>
+<li>Reduzca el ancho \(\varepsilon\): el pico crece pero el área se mantiene en 1.</li>
+<li>La integral \(\int f(x)\,\delta_\varepsilon(x-a)\,\dd x\) se acerca a \(f(a)\) para cualquier forma del pico.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Calcule el gradiente de \(f=x^2y+e^{z}\) en \((1,2,0)\) y la derivada direccional en la dirección de \(\uv{x}+\uv{y}\).
+<details><summary>Respuesta</summary><p>\(\nabla f=2xy\,\uv{x}+x^2\uv{y}+e^z\uv{z}=(4,1,1)\); \(D_{\uv{u}}f=(4+1)/\sqrt2\approx3.536\).</p></details></li>
+<li><span class="lvl">Básico</span>Calcule la divergencia y el rotacional de \(\vb{F}=xy\,\uv{x}+yz\,\uv{y}+zx\,\uv{z}\).
+<details><summary>Respuesta</summary><p>\(\divg\vb{F}=y+z+x\); \(\curl\vb{F}=-y\,\uv{x}-z\,\uv{y}-x\,\uv{z}\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Verifique el teorema de la divergencia para \(\vb{F}=x^2\uv{x}+y^2\uv{y}+z^2\uv{z}\) en el cubo unitario \(0\le x,y,z\le1\).
+<details><summary>Respuesta</summary><p>Flujo: sólo las caras \(x=1\), \(y=1\), \(z=1\) aportan, cada una con 1; total 3. Volumen: \(\int(2x+2y+2z)\dd V=3\). ✔</p></details></li>
+<li><span class="lvl">Intermedio</span>Verifique el teorema de Stokes para \(\vb{F}=\rho\,\uv{\phi}+z\,\uv{z}\) sobre el disco \(\rho\le a\), \(z=0\).
+<details><summary>Respuesta</summary><p>\(\oint\vb{F}\cdot\dd\vb{l}=2\pi a^2\). \(\curl\vb{F}=2\uv{z}\), flujo \(2\pi a^2\). ✔</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Es conservativo \(\vb{F}=(2xy+z^3)\uv{x}+x^2\uv{y}+3xz^2\uv{z}\)? Si lo es, halle \(V\) con \(\vb{F}=-\nabla V\).
+<details><summary>Respuesta</summary><p>\(\curl\vb{F}=\vb{0}\). \(V=-(x^2y+xz^3)+C\).</p></details></li>
+<li><span class="lvl">Avanzado</span>Calcule \(\divg\vb{F}\) para \(\vb{F}=r^n\uv{r}\). ¿Para qué \(n\) es nula fuera del origen?
+<details><summary>Respuesta</summary><p>\(\divg\vb{F}=\frac1{r^2}\pdv{}{r}(r^{n+2})=(n+2)r^{n-1}\); es nula para \(n=-2\), el campo coulombiano.</p></details></li>
+<li><span class="lvl">Avanzado</span>Evalúe \(\int_V(r^2+2)\,\divg(\uv{r}/r^2)\,\dd V\) sobre una esfera de radio \(R\) centrada en el origen.
+<details><summary>Respuesta</summary><p>\(\divg(\uv{r}/r^2)=4\pi\delta^3(\vb{r})\); la integral vale \(4\pi(0+2)=8\pi\).</p></details></li>
+<li><span class="lvl">Avanzado</span>Demuestre \(\divg(\vb{A}\times\vb{B})=\vb{B}\cdot(\curl\vb{A})-\vb{A}\cdot(\curl\vb{B})\) desarrollando en cartesianas.
+<details><summary>Respuesta</summary><p>Escriba \((\vb{A}\times\vb{B})_x=A_yB_z-A_zB_y\), derive, y agrupe los términos que contienen derivadas de \(\vb{A}\) y los que contienen derivadas de \(\vb{B}\).</p></details></li>
+</ol>
+</section>
+</template>

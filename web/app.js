@@ -1,0 +1,304 @@
+document.addEventListener('DOMContentLoaded', () => {
+    const data = window.PLATFORM_DATA;
+    if (!data) return;
+
+    // 1. Contador de Visitas Real y Persistente
+    const visitCounterElem = document.getElementById('visit-counter-value');
+    if (visitCounterElem) {
+        fetch('/api/visit')
+            .then(res => res.json())
+            .then(resData => {
+                if (resData && resData.visits) {
+                    visitCounterElem.textContent = Number(resData.visits).toLocaleString('es-ES');
+                }
+            })
+            .catch(() => {
+                // Fallback si no hay red o modo estatico
+                let localCount = parseInt(localStorage.getItem('visitas_locales') || '350', 10) + 1;
+                localStorage.setItem('visitas_locales', localCount);
+                visitCounterElem.textContent = localCount.toLocaleString('es-ES');
+            });
+    }
+
+    // 2. Estado de Desbloqueo Estudiantil
+    let isStudentUnlocked = localStorage.getItem('estudiante_desbloqueado') === 'true';
+
+    function updateStudentBannerState() {
+        const bannerContainer = document.getElementById('student-banner-container');
+        if (!bannerContainer) return;
+
+        if (isStudentUnlocked) {
+            bannerContainer.innerHTML = `
+                <div class="student-banner" style="border-color:var(--accent-emerald); background:rgba(16, 185, 129, 0.1);">
+                    <div>
+                        <span class="unlocked-tag">🎓 Modo Estudiante Activo</span>
+                        <h4 style="margin:0.25rem 0; color:#fff;">¡Acceso Gratuito de Semestre Desbloqueado!</h4>
+                        <p style="font-size:0.85rem; color:var(--text-muted); margin:0;">
+                            Tienes acceso libre a todos los laboratorios y cuadernos de la Universidad del Cauca.
+                        </p>
+                    </div>
+                    <div>
+                        <button class="btn btn-secondary" style="font-size:0.8rem; padding:0.4rem 0.8rem;" onclick="bloquearModoEstudiante()">
+                            Cerrar sesión de estudiante 🔒
+                        </button>
+                    </div>
+                </div>
+            `;
+        } else {
+            bannerContainer.innerHTML = `
+                <div class="student-banner">
+                    <div>
+                        <span class="card-tag interactive" style="margin-bottom:0.25rem;">🎓 Estudiantes de la Universidad</span>
+                        <h4 style="margin:0.25rem 0; color:#fff;">¿Eres estudiante del profesor este semestre?</h4>
+                        <p style="font-size:0.85rem; color:var(--text-muted); margin:0;">
+                            Ingresa el código que dio el profesor en clase para liberar todos los cursos gratis.
+                        </p>
+                    </div>
+                    <div class="code-input-group">
+                        <input type="text" id="student-code-input" class="code-input" placeholder="Ej: UNICAUCA2026" />
+                        <button class="btn btn-primary" onclick="canjearCodigoEstudiante()">Desbloquear 🔓</button>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    window.canjearCodigoEstudiante = function() {
+        const input = document.getElementById('student-code-input');
+        if (!input) return;
+        const code = input.value.trim().toUpperCase();
+        
+        if (data.codigosEstudiantilesValidos.includes(code)) {
+            isStudentUnlocked = true;
+            localStorage.setItem('estudiante_desbloqueado', 'true');
+            alert(`🎉 ¡Código ${code} válido!\n\nBienvenido(a). Todos los cursos y laboratorios han sido desbloqueados para ti sin costo durante este periodo académico.`);
+            updateStudentBannerState();
+            renderCourses();
+        } else {
+            alert('❌ Código no válido o expirado para este periodo académico. Consulta con tu profesor en clase.');
+        }
+    };
+
+    window.bloquearModoEstudiante = function() {
+        isStudentUnlocked = false;
+        localStorage.removeItem('estudiante_desbloqueado');
+        updateStudentBannerState();
+        renderCourses();
+    };
+
+    // 3. Renderizar Cursos
+    function renderCourses() {
+        const coursesGrid = document.getElementById('courses-grid');
+        if (!coursesGrid) return;
+
+        coursesGrid.innerHTML = data.cursos.map(c => `
+            <div class="card">
+                <div>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span class="card-tag ${c.destacado ? 'interactive' : ''}">${c.categoria}</span>
+                        ${isStudentUnlocked ? '<span class="unlocked-tag">🎓 Libre Estudiante</span>' : `<span style="font-size:0.75rem; color:var(--accent-blue); font-weight:600;">${c.tipo}</span>`}
+                    </div>
+                    <h3>${c.titulo}</h3>
+                    <p>${c.descripcion}</p>
+                    <div style="background:rgba(255,255,255,0.03); border-radius:8px; padding:0.75rem; margin-bottom:1rem; font-size:0.85rem;">
+                        <strong style="color:var(--text-main);">Estructura:</strong> <span style="color:var(--accent-indigo);">${c.modulos}</span>
+                        <br>
+                        <strong style="color:var(--text-main);">Nivel:</strong> ${c.nivel}
+                    </div>
+                </div>
+                <div>
+                    <div class="card-meta" style="flex-direction:column; align-items:flex-start; gap:0.35rem;">
+                        <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+                            <div>
+                                ${!isStudentUnlocked && c.valorReal ? `<span style="text-decoration:line-through; font-size:0.75rem; color:var(--text-muted); margin-right:0.4rem;">${c.valorReal}</span>` : ''}
+                                <span style="font-weight:700; color:var(--text-main); font-size:0.95rem;">${isStudentUnlocked ? 'Gratis (Semestre Académico)' : c.precioEstimado}</span>
+                            </div>
+                            ${!isStudentUnlocked && c.descuentoTag ? `<span class="badge" style="font-size:0.65rem; padding:0.2rem 0.5rem; background:rgba(245,158,11,0.15); color:var(--accent-amber); border-color:rgba(245,158,11,0.3);">${c.descuentoTag}</span>` : '<span style="color:var(--accent-emerald);">● Activo</span>'}
+                        </div>
+                    </div>
+                    <div class="card-actions">
+                        ${c.demoPath ? `<a href="${c.demoPath}" target="_blank" class="btn btn-primary">Abrir Simulador 🚀</a>` : ''}
+                        ${!isStudentUnlocked && c.enlaceCompra ? `<a href="${c.enlaceCompra}" target="_blank" class="btn btn-secondary" style="border-color:var(--accent-amber); color:var(--accent-amber);">Comprar Curso 🛒</a>` : ''}
+                        <button class="btn btn-secondary" onclick="openCourseDetails('${c.id}')">Temario 📋</button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    updateStudentBannerState();
+    renderCourses();
+
+    // 4. Renderizar Canales Oficiales en Spotify (Visual Nativo con Portadas Oficiales)
+    const spotifyGrid = document.getElementById('spotify-grid');
+    if (spotifyGrid) {
+        spotifyGrid.innerHTML = data.canalesSpotify.map(sp => `
+            <div class="spotify-card">
+                <div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.85rem;">
+                        <span style="font-size:0.75rem; background:rgba(29, 185, 84, 0.2); color:#1DB954; font-weight:700; padding:0.25rem 0.65rem; border-radius:9999px;">
+                            🟢 ${sp.curso}
+                        </span>
+                        <span style="font-size:0.75rem; color:var(--text-muted);">${sp.facultad}</span>
+                    </div>
+
+                    <div style="display:flex; gap:1.25rem; align-items:flex-start; margin-bottom:1rem;">
+                        <img src="${sp.portada}" alt="${sp.titulo}" onerror="this.src='https://open.spotifycdn.com/cdn/images/favicon.0f31d2ea.ico'" style="width:105px; height:105px; border-radius:12px; object-fit:cover; box-shadow:0 8px 20px rgba(0,0,0,0.45); flex-shrink:0; border:1px solid rgba(255,255,255,0.1);" />
+                        <div style="flex-grow:1;">
+                            <h3 style="font-size:1.25rem; font-weight:700; margin-bottom:0.35rem; line-height:1.25;">${sp.titulo}</h3>
+                            <div style="font-size:0.85rem; color:#1DB954; font-weight:600; margin-bottom:0.35rem;">
+                                🎙️ Creador: ${sp.autor}
+                            </div>
+                            <div style="font-size:0.75rem; color:var(--text-muted);">
+                                📍 Universidad del Cauca
+                            </div>
+                        </div>
+                    </div>
+
+                    <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:1.25rem; line-height:1.5;">${sp.descripcion}</p>
+                    
+                    <div id="embed-container-${sp.id}" style="display:none; margin-bottom:1rem; border-radius:12px; overflow:hidden;"></div>
+                </div>
+
+                <div style="display:flex; gap:0.6rem; flex-wrap:wrap;">
+                    <a href="${sp.url}" target="_blank" class="btn btn-spotify" style="flex:1; justify-content:center; text-decoration:none;">
+                        Escuchar en Spotify 🎧
+                    </a>
+                    <button class="btn btn-secondary" style="font-size:0.8rem; padding:0.5rem 0.85rem;" onclick="toggleSpotifyPlayer('${sp.id}', '${sp.spotifyId}', this)">
+                        Reproductor Web ⚡
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    window.toggleSpotifyPlayer = function(elemId, spotifyId, btn) {
+        const container = document.getElementById('embed-container-' + elemId);
+        if (!container) return;
+
+        if (container.style.display === 'block') {
+            container.style.display = 'none';
+            container.innerHTML = '';
+            btn.textContent = 'Reproductor Web ⚡';
+        } else {
+            container.style.display = 'block';
+            container.innerHTML = `<iframe style="border-radius:12px" src="https://open.spotify.com/embed/show/${spotifyId}?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>`;
+            btn.textContent = 'Ocultar Reproductor ✕';
+        }
+    };
+
+    // 5. Renderizar Cómics
+    const comicsGrid = document.getElementById('comics-grid');
+    window.renderComics = function(category = 'all') {
+        if (!comicsGrid) return;
+        const filtered = category === 'all' 
+            ? data.comics 
+            : data.comics.filter(c => c.categoria.toLowerCase().includes(category.toLowerCase()));
+        
+        comicsGrid.innerHTML = filtered.map(c => `
+            <div class="card">
+                <div>
+                    <span class="card-tag">${c.categoria}</span>
+                    <h3>${c.titulo}</h3>
+                    <p>${c.descripcion}</p>
+                    <div style="margin-bottom:1rem; font-size:0.85rem;">
+                        <div style="color:var(--accent-amber); font-weight:600; margin-bottom:0.25rem;">
+                            🔬 Concepto: ${c.conceptoFisico}
+                        </div>
+                        <div style="color:var(--text-muted); font-size:0.8rem;">
+                            🎓 Créditos: ${c.creditos}
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="card-actions">
+                        <a href="${c.archivo}" target="_blank" class="btn btn-primary">Leer Cómic (PDF) 📖</a>
+                        <a href="${c.archivo}" download class="btn btn-secondary">Descargar ⬇️</a>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    };
+    renderComics('all');
+
+    // Comic Filter Buttons
+    document.querySelectorAll('.comic-filter-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.comic-filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderComics(btn.dataset.filter);
+        });
+    });
+
+    // 6. Renderizar Episodios Locales de Podcasts
+    const podcastsGrid = document.getElementById('podcasts-grid');
+    if (podcastsGrid) {
+        podcastsGrid.innerHTML = data.podcasts.map((p, idx) => `
+            <div class="card">
+                <div>
+                    <span class="card-tag">${p.categoria}</span>
+                    <h3>${p.titulo}</h3>
+                    <p>${p.descripcion}</p>
+                    <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1rem;">
+                        🎙️ Producción: ${p.creditos}
+                    </div>
+                </div>
+                <div>
+                    <div class="card-actions">
+                        <button class="btn btn-primary" onclick="playPodcast('${p.archivo}', '${p.titulo.replace(/'/g, "\\'")}', '${p.categoria}')">
+                            Reproducir Episodio ▶️
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // Audio Player setup
+    window.playPodcast = function(url, title, category) {
+        const playerCard = document.getElementById('podcast-player-card');
+        const audioElement = document.getElementById('main-audio-player');
+        const playerTitle = document.getElementById('current-podcast-title');
+        const playerCat = document.getElementById('current-podcast-cat');
+
+        if (playerCard && audioElement) {
+            playerCard.style.display = 'block';
+            playerTitle.textContent = title;
+            playerCat.textContent = "Categoría: " + category;
+            audioElement.src = url;
+            audioElement.play().catch(e => console.log('Autoplay blocked: ', e));
+            playerCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    };
+
+    // Course Modal
+    window.openCourseDetails = function(courseId) {
+        const course = data.cursos.find(c => c.id === courseId);
+        if (!course) return;
+
+        const modal = document.getElementById('course-modal');
+        const modalBody = document.getElementById('modal-course-body');
+        modalBody.innerHTML = `
+            <h2 style="font-size:1.85rem; margin-bottom:0.5rem; color:var(--accent-blue);">${course.titulo}</h2>
+            <p style="color:var(--text-muted); margin-bottom:1.5rem;">${course.descripcion}</p>
+            <div style="background:rgba(255,255,255,0.03); border-radius:12px; padding:1.25rem; margin-bottom:1.5rem; border:1px solid var(--border-color);">
+                <h4 style="margin-bottom:0.75rem; color:var(--text-main);">Temario y Contenidos de la Suite:</h4>
+                <ul style="display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:0.6rem; list-style:none;">
+                    ${course.temas.map(t => `<li style="font-size:0.9rem; color:var(--text-muted);"><span style="color:var(--accent-emerald);">✓</span> ${t}</li>`).join('')}
+                </ul>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+                <div>
+                    <span style="font-size:0.85rem; color:var(--text-muted);">Modalidad:</span>
+                    <strong style="color:var(--text-main); font-size:1rem; display:block;">100% Interactivo con simulación matemática</strong>
+                </div>
+                ${course.demoPath ? `<a href="${course.demoPath}" target="_blank" class="btn btn-primary">Abrir Entorno de Laboratorio 🚀</a>` : ''}
+            </div>
+        `;
+        modal.classList.add('active');
+    };
+
+    window.closeModal = function() {
+        document.getElementById('course-modal').classList.remove('active');
+    };
+});

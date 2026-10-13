@@ -1,0 +1,126 @@
+<template class="chapter-src" data-id="errores" data-num="31" data-title="Errores frecuentes y el modelo en producción" data-part="Parte VII · Práctica profesional" data-short="Catálogo de errores metodológicos; correlación, confusión y Simpson; deriva de datos y de concepto; monitoreo con PSI; equidad y sus criterios incompatibles; lista de verificación de un proyecto">
+<p class="lead">Los modelos rara vez fallan por el algoritmo. Fallan porque la evaluación estaba contaminada, porque los datos cambiaron después del despliegue, porque se confundió una correlación con una causa o porque el modelo trata de forma desigual a grupos de personas. Este capítulo reúne esos errores, enseña a detectarlos y termina con una lista de verificación para todo el ciclo de un proyecto.</p>
+
+<section>
+<h2>Catálogo de errores metodológicos</h2>
+<div class="tablewrap"><table>
+<thead><tr><th>Error</th><th>Síntoma</th><th>Prevención</th><th>Capítulo</th></tr></thead>
+<tbody>
+<tr><td>Fuga del objetivo</td><td>una variable «lo explica todo»</td><td>preguntar si cada variable existe en el momento de predecir</td><td>4</td></tr>
+<tr><td>Preprocesar o seleccionar con todos los datos</td><td>validación muy superior a producción</td><td>todo dentro de un <code>Pipeline</code></td><td>4, 5</td></tr>
+<tr><td>Duplicados o grupos repartidos</td><td>exactitud casi perfecta con 1-NN</td><td>deduplicar; <code>GroupKFold</code></td><td>4</td></tr>
+<tr><td>Validación aleatoria en datos temporales</td><td>error bajo en validación, alto al usar</td><td><code>TimeSeriesSplit</code>, rasgos con información pasada</td><td>4</td></tr>
+<tr><td>Métrica inadecuada</td><td>exactitud alta con la clase rara ignorada</td><td>métrica del costo real; AP, exhaustividad, costo esperado</td><td>11, 12</td></tr>
+<tr><td>Reutilizar el conjunto de prueba</td><td>mejoras que no se repiten</td><td>prueba una sola vez; validación anidada</td><td>4, 19</td></tr>
+<tr><td>Ignorar la incertidumbre</td><td>«ganadores» por décimas de punto</td><td>intervalos, varias semillas, diferencias pareadas</td><td>4, 19</td></tr>
+<tr><td>Probabilidades descalibradas usadas como riesgos</td><td>decisiones de umbral equivocadas</td><td>diagrama de fiabilidad; calibrar</td><td>12</td></tr>
+<tr><td>Extrapolar</td><td>predicciones absurdas fuera del rango de entrenamiento</td><td>vigilar el dominio; modelos que extrapolen con sensatez</td><td>13, 16</td></tr>
+<tr><td>Explicaciones leídas como causas</td><td>«subir esta variable reducirá el riesgo»</td><td>separar predicción de intervención; diseño causal</td><td>29</td></tr>
+</tbody></table></div>
+<div class="sim" data-sim="detective-errores" data-title="Detective de errores: lo que se reporta y lo que pasará"></div>
+<div class="sim-guide"><ul>
+<li>Cada caso calcula el mismo modelo dos veces: con el error metodológico y con el procedimiento correcto, sobre datos sintéticos.</li>
+<li>Repita con otros datos: la brecha entre ambos números se mantiene; no es mala suerte, es sistemática.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Correlación, confusión y la paradoja de Simpson</h2>
+<p>Un modelo predictivo aprende asociaciones. Si una variable de <span class="term">confusión</span> afecta a la vez a la causa supuesta y al resultado, la asociación observada puede tener cualquier signo. La <b>paradoja de Simpson</b> es el caso extremo: una relación que vale dentro de cada grupo se invierte al juntar los grupos. Ocurre cuando los grupos difieren en la variable de confusión y en el reparto del «tratamiento».</p>
+<div class="box ex"><p>En el programa de práctica, el tratamiento nuevo tiene menor supervivencia en total (0.650 frente a 0.782), pero mayor en cada hospital (A: 0.582 frente a 0.505; B: 0.920 frente a 0.851). El hospital A atiende los casos graves y usa más el tratamiento nuevo. Un modelo que prediga la supervivencia con el tratamiento como variable, sin el hospital, aprendería el signo equivocado.</p></div>
+<p>Para decidir intervenciones (¿qué pasa si cambio X?) se necesita inferencia causal: experimentos aleatorizados, o supuestos explícitos sobre las variables de confusión con métodos como el ajuste por puntaje de propensión, las variables instrumentales o las diferencias en diferencias.</p>
+</section>
+
+<section>
+<h2>Deriva: cuando el mundo cambia</h2>
+<ul>
+<li><b>Deriva de las entradas</b> (<i>covariate shift</i>): cambia la distribución de \(\vb x\), no la relación \(P(y\mid\vb x)\). Un modelo bien especificado puede seguir funcionando, pero entra en zonas con pocos datos de entrenamiento.</li>
+<li><b>Deriva de concepto</b>: cambia la relación \(P(y\mid\vb x)\) (las tácticas de fraude, el comportamiento de los clientes tras una crisis). Degrada el modelo aunque las entradas parezcan iguales.</li>
+<li><b>Deriva de la prevalencia</b>: cambia \(P(y)\); las probabilidades quedan desplazadas y el umbral óptimo cambia.</li>
+</ul>
+<p>Se vigila comparando la distribución actual de cada variable con la de entrenamiento. El <span class="term">índice de estabilidad poblacional</span> es un estándar en la industria financiera:</p>
+<div class="eq key" data-name="PSI">\[\text{PSI}=\sum_{b}\big(p_b^\text{actual}-p_b^\text{ref}\big)\ln\frac{p_b^\text{actual}}{p_b^\text{ref}},\qquad <0.1\ \text{estable},\quad 0.1\text{–}0.25\ \text{moderado},\quad >0.25\ \text{grande}.\]</div>
+<p>La prueba de Kolmogórov–Smirnov compara distribuciones, pero con muchos datos detecta cambios ínfimos: más útil es el tamaño del cambio que su valor p. Lo decisivo es vigilar el desempeño real cuando llegan las etiquetas, y la calibración (tasa predicha frente a tasa observada).</p>
+<div class="sim" data-sim="deriva-datos" data-title="Deriva de las entradas frente a deriva de concepto"></div>
+<div class="sim-guide"><ul>
+<li>Desplace solo las entradas: el PSI se dispara, pero el AUC y la calibración casi no cambian, porque la relación entre \(x\) y \(y\) sigue siendo la que aprendió el modelo.</li>
+<li>Cambie solo el concepto: el PSI no detecta nada, pero el AUC cae y la calibración se tuerce. Vigilar solo las entradas no basta.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Equidad</h2>
+<p>Un modelo puede tratar de forma desigual a grupos (por sexo, origen, edad) aunque no use la variable del grupo, porque otras variables la reflejan. Hay varios criterios de equidad estadística, y en general <b>no se pueden cumplir todos a la vez</b> cuando las prevalencias difieren entre grupos (Kleinberg y colaboradores, 2016; Chouldechova, 2017):</p>
+<ul>
+<li><b>Paridad demográfica</b>: la misma tasa de decisiones positivas en cada grupo.</li>
+<li><b>Igualdad de oportunidades</b>: la misma exhaustividad (TPR) en cada grupo: los que merecen el crédito lo obtienen por igual.</li>
+<li><b>Igualdad de probabilidades</b> (<i>equalized odds</i>): igual TPR e igual FPR.</li>
+<li><b>Paridad predictiva y calibración por grupo</b>: una predicción positiva (o una probabilidad de 0.7) significa lo mismo en cada grupo.</li>
+</ul>
+<div class="sim" data-sim="equidad-umbral" data-title="Un umbral, dos grupos, cuatro criterios"></div>
+<div class="sim-guide"><ul>
+<li>Con el mismo umbral para ambos grupos, las tasas de aprobación, los TPR, los FPR y las precisiones difieren, porque el grupo B tiene otra prevalencia y el modelo es menos preciso con él.</li>
+<li>Ajuste el umbral del grupo B hasta igualar el TPR: la precisión y la tasa de aprobación siguen distintas. Iguale la aprobación: el TPR se separa.</li>
+<li>Iguale también las prevalencias: las diferencias se reducen pero no desaparecen, porque el puntaje es más ruidoso en el grupo B. La incompatibilidad viene de los datos (prevalencia y calidad de la señal en cada grupo), no del algoritmo.</li>
+</ul></div>
+<div class="box warn"><p>Elegir un criterio de equidad es una decisión ética y legal, no técnica: depende de qué error es más dañino y para quién. Lo técnico es medir el desempeño por grupo, documentarlo y hacer explícito el compromiso. Quitar la variable sensible no resuelve el problema y puede impedir medirlo.</p></div>
+</section>
+
+<section>
+<h2>Lista de verificación de un proyecto</h2>
+<ol>
+<li><b>Problema</b>: decisión que se apoya, métrica de negocio, costo de cada error, línea base actual (humana o de reglas).</li>
+<li><b>Datos</b>: origen, período, cómo se generó la etiqueta, unidad de observación (cliente, transacción), grupos y tiempo; diccionario de variables con la fecha en que cada una se conoce.</li>
+<li><b>Partición</b>: prueba apartada al inicio, por tiempo o por grupo si corresponde.</li>
+<li><b>Preprocesamiento y modelo</b> dentro de un <code>Pipeline</code>; validación cruzada con el mismo protocolo para todos los candidatos; línea base.</li>
+<li><b>Evaluación</b>: métricas con intervalos, por segmento y por grupo; calibración; umbral por costos.</li>
+<li><b>Interpretación</b>: importancias y explicaciones locales comprobadas con sentido de dominio; casos de error revisados uno a uno.</li>
+<li><b>Documentación</b>: ficha del modelo (datos, métricas, limitaciones, usos no previstos), versiones de datos, código y semillas.</li>
+<li><b>Despliegue</b>: mismo preprocesamiento en entrenamiento y en producción (el mismo <code>Pipeline</code> serializado), pruebas, latencia.</li>
+<li><b>Monitoreo</b>: deriva de entradas, calibración, desempeño cuando llegan las etiquetas, equidad; umbrales de alerta y plan de reentrenamiento.</li>
+<li><b>Retiro</b>: criterio para dejar de usar el modelo.</li>
+</ol>
+</section>
+
+<section>
+<h2>Práctica: Simpson, deriva y equidad</h2>
+<div class="box py"><p>El programa construye un caso de la paradoja de Simpson, entrena un modelo con datos de 2024 y lo vigila durante cinco meses de deriva de las entradas y en tres escenarios de deriva de concepto, y mide las tasas de error por grupo con un umbral común.</p>
+<div class="py" data-py="31-errores-produccion"></div></div>
+<div class="box read"><ul>
+<li><b>Simpson</b>: el nuevo tratamiento parece peor en total (0.650 frente a 0.782) y es mejor en cada hospital (+7.7 y +6.9 puntos). La causa es el reparto desigual de los casos graves.</li>
+<li><b>Deriva de las entradas</b>: del mes 1 al 5 la media del ingreso pasa de 0.01 a 1.51 y el PSI de 0.002 a 2.03; el KS da valores p minúsculos desde el mes 2 (PSI 0.048, un cambio pequeño). El AUC apenas baja (0.789 → 0.772) y la tasa predicha sigue a la real (0.605 frente a 0.624): la relación no cambió y el modelo se adapta solo. Las alarmas de entrada no siempre significan degradación.</li>
+<li><b>Deriva de concepto</b>: con las mismas entradas (PSI ≈ 0), el AUC cae de 0.787 a 0.681 si el efecto del ingreso se reduce a la mitad, y a 0.709 si se invierte el efecto de ser joven; en ese caso la tasa real (0.453) se aleja de la predicha (0.342). Solo vigilando el desempeño se detecta.</li>
+<li><b>Equidad</b>: con el mismo umbral, el grupo 0 tiene exhaustividad 0.79, falsos positivos 0.19 y precisión 0.82; el grupo 1, 0.69, 0.29 y 0.50. En el grupo 1 la mitad de las aprobaciones son errores y se pierden más casos verdaderos: el mismo umbral no trata igual a ambos grupos.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>La mayoría de los fracasos son metodológicos: fuga, particiones que ignoran grupos o tiempo, métricas inadecuadas, prueba reutilizada.</li>
+<li>Predicción no es causalidad; la paradoja de Simpson muestra cuánto puede engañar una asociación.</li>
+<li>Vigile entradas (PSI), calibración y desempeño; la deriva de concepto solo se ve con etiquetas.</li>
+<li>Los criterios de equidad se contradicen cuando las prevalencias difieren: mida por grupo y decida explícitamente.</li>
+<li>Use una lista de verificación de principio a fin.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un modelo de abandono de clientes usa «fecha de cancelación registrada». ¿Qué error es?
+<details><summary>Respuesta</summary><p>Fuga del objetivo: esa fecha solo existe si el cliente ya canceló. En producción no estará disponible.</p></details></li>
+<li><span class="lvl">Básico</span>Una variable tiene PSI 0.32 respecto del entrenamiento. ¿Qué hace?
+<details><summary>Respuesta</summary><p>Es un cambio grande: revisar su causa (cambio real o error de datos), comprobar la calibración y el desempeño en datos recientes y considerar reentrenar.</p></details></li>
+<li><span class="lvl">Intermedio</span>Las ventas de un producto suben más en las tiendas donde se anuncia más. ¿Concluye que el anuncio causa las ventas?
+<details><summary>Respuesta</summary><p>No necesariamente: las tiendas grandes (o de zonas más ricas) pueden anunciar más y vender más por otras razones. Hace falta controlar por esas variables o, mejor, un experimento (asignar anuncios al azar).</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué no se pueden tener a la vez calibración por grupo e igualdad de TPR y FPR cuando las prevalencias difieren?
+<details><summary>Respuesta</summary><p>La precisión depende de la prevalencia, el TPR y el FPR (Bayes). Si TPR y FPR son iguales en ambos grupos pero las prevalencias no, las precisiones (y la calibración) tienen que diferir, salvo con un clasificador perfecto.</p></details></li>
+<li><span class="lvl">Avanzado</span>Diseñe el monitoreo de un modelo de fraude cuyas etiquetas llegan 60 días después.
+<details><summary>Respuesta</summary><p>Diario: PSI de las variables principales y de la puntuación, tasa de alertas, calibración aproximada con etiquetas parciales (contracargos tempranos). Mensual: desempeño con las etiquetas que maduraron (AP, exhaustividad al número de revisiones disponibles), por segmento y grupo. Umbrales de alerta y reentrenamiento programado o al superar umbrales.</p></details></li>
+</ol>
+<div class="box links"><ul>
+<li><a href="https://fairmlbook.org/">Barocas, Hardt y Narayanan — Fairness and Machine Learning</a><small>Libro gratuito sobre los criterios de equidad, sus límites y su contexto social.</small></li>
+<li><a href="https://arxiv.org/abs/1810.03993">Mitchell y colaboradores (2019) — Model Cards for Model Reporting</a><small>Cómo documentar un modelo: datos, métricas por grupo, limitaciones y usos.</small></li>
+<li><a href="https://papers.nips.cc/paper_files/paper/2015/hash/86df7dcfd896fcaf2674f757a2463eba-Abstract.html">Sculley y colaboradores (2015) — Hidden Technical Debt in Machine Learning Systems</a><small>Los costos ocultos de mantener sistemas de ML en producción.</small></li>
+<li><a href="https://mixtape.scunning.com/">Cunningham — Causal Inference: The Mixtape</a><small>Introducción gratuita a la inferencia causal: confusión, experimentos y métodos cuasiexperimentales.</small></li>
+<li><a href="https://developers.google.com/machine-learning/guides/rules-of-ml">Google — Rules of Machine Learning</a><small>Prácticas de ingeniería para llevar y mantener modelos en producción.</small></li>
+</ul></div>
+</section>
+</template>

@@ -1,0 +1,96 @@
+<template class="chapter-src" data-id="recocido" data-num="26" data-title="Recocido, intercambio de réplicas y protocolos" data-part="Parte V · Simulación Monte Carlo" data-short="Recocido simulado, metaestabilidad y barreras, intercambio de réplicas, histéresis, protocolos térmicos y réplicas independientes con intervalos de confianza">
+<p class="lead">Metropolis garantiza llegar al equilibrio… en un tiempo que puede ser astronómico si el paisaje de energía tiene valles profundos separados por barreras altas. Este capítulo trata las herramientas para ese problema: bajar la temperatura poco a poco (recocido), dejar que réplicas a distintas temperaturas intercambien configuraciones, detectar la falta de equilibrio con ciclos y estimar errores con réplicas independientes. Son los protocolos que ofrece hBN-MC.</p>
+
+<section>
+<h2>Barreras y tiempos de escape</h2>
+<p>Si para pasar de un valle a otro el sistema debe subir una barrera \(\Delta E\), la probabilidad de cada intento exitoso es del orden de \(\ee^{-\Delta E/\kB T}\), y el tiempo de escape sigue la ley de Arrhenius (capítulo 21):</p>
+<div class="eq key" data-name="Tiempo de escape">\[\tau_\text{escape}\approx\tau_0\,\ee^{\Delta E/\kB T}.\]</div>
+<p>Con \(\Delta E/\kB T=20\), \(\tau\sim5\times10^{8}\) intentos: una simulación «larga» puede no ver ni un solo cruce. El sistema queda en un estado <span class="term">metaestable</span> y los promedios describen solo el valle donde empezó. Ningún indicador interno (la energía estable, la aceptación) lo delata: la energía parece convergida aunque no lo esté.</p>
+<div class="box warn"><p>En hBN-MC los movimientos elementales cuestan de 6 a 20 eV (por ejemplo, 6.24 eV para un intercambio B↔N). Por eso las simulaciones se hacen a miles o decenas de miles de kelvin: son temperaturas <em>de simulación</em> que permiten cruzar barreras en un número razonable de pasos, no temperaturas físicas del material (así lo advierte el archivo de limitaciones de la aplicación).</p></div>
+</section>
+
+<section>
+<h2>Recocido simulado</h2>
+<p>En metalurgia, el <span class="term">recocido</span> consiste en calentar un metal y enfriarlo lentamente: los átomos tienen tiempo de encontrar posiciones ordenadas y el material queda con pocos defectos. Un <span class="term">templado</span> (enfriamiento brusco) congela el desorden. Kirkpatrick, Gelatt y Vecchi (1983) trasladaron la idea a la optimización: para minimizar una función de costo, se trata como una energía y se simula con Metropolis mientras \(T\) baja gradualmente.</p>
+<ul>
+<li>A \(T\) alta se aceptan casi todos los movimientos: la búsqueda es global y no se queda atrapada.</li>
+<li>Al bajar \(T\), el sistema se concentra en las regiones de baja energía.</li>
+<li>Si el enfriamiento es suficientemente lento, termina en el mínimo global (o muy cerca).</li>
+</ul>
+<p>Existe un teorema (Geman y Geman, 1984): con \(T_k\ge c/\ln(1+k)\) el recocido alcanza el mínimo global con probabilidad 1. Es demasiado lento en la práctica; se usan rampas lineales o geométricas (\(T_{k+1}=\alpha T_k\), \(\alpha\approx0.95\)–0.999) y se repite con varias semillas.</p>
+<div class="sim" data-sim="recocido-tsp" data-title="Recocido simulado para el problema del viajante"></div>
+<div class="sim-guide"><ul>
+<li>El problema: recorrer todas las ciudades una vez y volver al inicio con la ruta más corta. Hay \((n-1)!/2\) rutas posibles: con 60 ciudades, \(\sim10^{80}\).</li>
+<li>Compare el templado (\(T=0\) desde el inicio) con el recocido lento: el primero queda en una ruta con cruces (mínimo local); el segundo la desenreda.</li>
+<li>El movimiento «2-opt» invierte un tramo de la ruta: elimina dos aristas y añade otras dos.</li>
+</ul></div>
+<div class="box hbn"><p>El protocolo <strong>anneal</strong> de hBN-MC es una rampa lineal de \(T_i\) a \(T_f\) a lo largo de todos los pasos: \(T(s)=T_i+(T_f-T_i)\,s/n\). El protocolo <strong>iso</strong> mantiene \(T_i\) constante (muestreo de equilibrio a una temperatura). El protocolo <strong>3 fases</strong> mantiene \(T_i\) durante el 30 % inicial, baja linealmente hasta \(T_f\) entre el 30 % y el 70 %, y mantiene \(T_f\) el 30 % final: la primera fase desordena y la última relaja a la temperatura final.</p></div>
+</section>
+
+<section>
+<h2>Intercambio de réplicas</h2>
+<p>El recocido no sirve para <em>muestrear</em> el equilibrio a baja temperatura, solo para buscar mínimos. Para muestrear se usa el <span class="term">intercambio de réplicas</span> o <em>parallel tempering</em> (Swendsen y Wang 1986; Geyer 1991; Hukushima y Nemoto 1996). Se simulan a la vez \(K\) copias del sistema a temperaturas \(T_1\lt T_2\lt\dots\lt T_K\). Cada cierto número de pasos se propone intercambiar las configuraciones de dos temperaturas vecinas, y se acepta con</p>
+<div class="eq key" data-name="Aceptación del intercambio de réplicas">\[A=\min\!\Big(1,\ \ee^{(\beta_i-\beta_j)(E_i-E_j)}\Big),\qquad \beta=\frac1{\kB T}.\]</div>
+<p>La justificación: el conjunto de las \(K\) réplicas tiene la distribución producto \(\prod_k\ee^{-\beta_kE(x_k)}/Z_k\). Intercambiar \(x_i\leftrightarrow x_j\) multiplica ese peso por \(\ee^{-\beta_iE_j-\beta_jE_i+\beta_iE_i+\beta_jE_j}=\ee^{(\beta_i-\beta_j)(E_i-E_j)}\), y la regla de Metropolis con ese cociente cumple balance detallado. Cada réplica sigue muestreando exactamente su temperatura.</p>
+<p>El efecto: una configuración atrapada a baja \(T\) sube por la escalera de temperaturas, cruza la barrera a \(T\) alta y vuelve a bajar a otro valle. Para que funcione, las energías de temperaturas vecinas deben solaparse; las temperaturas suelen elegirse en progresión geométrica, con aceptaciones de intercambio del 20 al 40 %.</p>
+<div class="sim" data-sim="intercambio-replicas" data-title="Intercambio de réplicas en un paisaje rugoso"></div>
+<div class="sim-guide"><ul>
+<li>El caminante de Metropolis simple a la temperatura más baja queda atrapado en el pozo izquierdo: su histograma no se parece a la distribución exacta.</li>
+<li>Con intercambio de réplicas, la réplica más fría visita ambos pozos con los pesos correctos.</li>
+<li>Reduzca el número de réplicas: las aceptaciones de intercambio caen y el método pierde eficacia.</li>
+</ul></div>
+<div class="box hbn"><p>El modo «barrido de temperatura» de la pestaña de investigación de hBN-MC usa una réplica por temperatura. En modo <code>pt</code>, cada <code>swapEvery</code> pasos intenta intercambiar configuraciones de temperaturas vecinas con <code>arg = (1/(KB·Ta) − 1/(KB·Tb))·(Ea − Eb)</code> y la regla <code>arg ≥ 0 || rand() &lt; exp(arg)</code>, alternando pares pares e impares: exactamente la fórmula de esta sección. Descarta una fracción inicial de pasos (por defecto 30 %) y calcula \(C_v/\kB=\Var(E)/(\kB T)^2\) por fluctuaciones.</p></div>
+</section>
+
+<section>
+<h2>Histéresis y ciclos de temperatura</h2>
+<p>Una forma práctica de detectar la falta de equilibrio es recorrer un parámetro de ida y vuelta. Si el sistema estuviera siempre en equilibrio, las dos ramas coincidirían. Si no, aparece un lazo de <span class="term">histéresis</span>. En un imán por debajo de \(T_c\), al barrer el campo de \(-h\) a \(+h\) la magnetización tarda en invertirse; al volver, tarda otra vez. El área del lazo depende de la velocidad del barrido: más lento, lazo más estrecho.</p>
+<div class="sim" data-sim="histeresis" data-title="Histéresis: ciclos de campo y de temperatura"></div>
+<div class="sim-guide"><ul>
+<li>Ciclo de campo a \(T=1.5\): un lazo ancho. Aumente los barridos por punto y el lazo se estrecha, pero no desaparece del todo por debajo de \(T_c\) (las barreras de nucleación crecen con el tamaño).</li>
+<li>Ciclo de temperatura, como el protocolo «ciclo» de hBN-MC: al enfriar, la energía queda por encima de la del calentamiento porque los dominios no alcanzan a ordenarse.</li>
+<li>Por encima de \(T_c\) (ciclo de campo con \(T=3\)) no hay lazo: la respuesta es reversible.</li>
+</ul></div>
+<div class="box hbn"><p>El protocolo <strong>ciclo</strong> de hBN-MC sube linealmente de \(T_i\) a \(T_f\) en la primera mitad de los pasos y vuelve a \(T_i\) en la segunda; la gráfica \(E(T)\) muestra la rama de calentamiento en rojo y la de enfriamiento en azul. Un lazo significa que el sistema no siguió al equilibrio. Para separar lo termodinámico de lo cinético hay que repetir el ciclo más lento: si el lazo se cierra, era cinético.</p></div>
+</section>
+
+<section>
+<h2>Réplicas independientes e intervalos de confianza</h2>
+<p>Una sola corrida da un solo número. Para saber cuánto confiar en él se repite la simulación con \(R\) semillas distintas y se calcula la media y su intervalo de confianza con la \(t\) de Student (capítulo 19):</p>
+<div class="eq key" data-name="Intervalo de confianza de un lote">\[\bar E\pm t_{0.975,\,R-1}\,\frac{s}{\sqrt R},\qquad s^2=\frac1{R-1}\sum_{r=1}^{R}(E_r-\bar E)^2 .\]</div>
+<p>Las réplicas son independientes por construcción (no hay autocorrelación entre ellas), lo que hace este error especialmente confiable. Pero hay una trampa importante:</p>
+<div class="box warn"><p>El intervalo de confianza mide solo la dispersión <em>estadística</em>. Si todas las réplicas son demasiado cortas y quedan atrapadas de la misma manera, el intervalo puede ser estrecho y estar lejos del valor de equilibrio: un <em>sesgo sistemático</em> que ninguna cantidad de réplicas corrige. Se detecta cambiando la longitud de las corridas o el protocolo y comprobando que el resultado no cambie.</p></div>
+<div class="sim" data-sim="lote-ic95" data-title="Un lote de réplicas: intervalo de confianza y sesgo sistemático"></div>
+<div class="sim-guide"><ul>
+<li>Con pocos barridos por réplica, la media sale por encima del valor exacto de Onsager y el intervalo no lo contiene: sesgo de no-equilibrio.</li>
+<li>Al alargar las corridas, el sesgo disminuye y el intervalo termina conteniendo el valor exacto.</li>
+<li>Con más réplicas el intervalo se estrecha como \(1/\sqrt R\), pero eso no corrige el sesgo.</li>
+</ul></div>
+<div class="box hbn"><p>El modo <strong>LOTE</strong> de hBN-MC ejecuta \(n\) réplicas con semillas \(\text{base}+i\cdot1\,000\,003\) y reporta media, desviación estándar muestral (\(n-1\)) e IC95 con el cuantil de Student \(t_{0.975,n-1}\) (función <code>tCrit975</code>; antes de la versión 14.7 usaba 1.96, que subestima el intervalo para lotes pequeños). Para \(n=5\), \(t=2.776\): el intervalo es un 42 % más ancho que con 1.96.</p></div>
+<div class="box valid"><p>El apéndice B comprueba que el intercambio de réplicas reproduce la simetría exacta de un doble pozo rugoso (fracción 0.5 en cada pozo, dentro del 3 %) y que los cuantiles de Student usados para el IC95 coinciden con las tablas.</p></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Barreras altas: \(\tau\propto\ee^{\Delta E/\kB T}\); la energía puede parecer convergida sin estarlo.</li>
+<li>Recocido: bajar \(T\) lentamente para encontrar mínimos; templado: congela defectos.</li>
+<li>Intercambio de réplicas: \(A=\min(1,\ee^{(\beta_i-\beta_j)(E_i-E_j)})\); muestrea correctamente cada temperatura y cruza barreras.</li>
+<li>Histéresis en ciclos: diagnóstico de no-equilibrio; depende de la velocidad.</li>
+<li>Lotes de réplicas: IC95 con \(t\) de Student; no detecta sesgos sistemáticos.</li>
+<li>hBN-MC: protocolos anneal, iso, 3 fases y ciclo; barrido con réplicas; LOTE con IC95.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Una barrera de 6.24 eV a 20 000 K: ¿cuántos intentos se necesitan, en promedio, para un cruce?
+<details><summary>Respuesta</summary><p>\(\ee^{6.24/1.723}=\ee^{3.62}\approx37\).</p></details></li>
+<li><span class="lvl">Básico</span>En el intercambio de réplicas, ¿se acepta siempre el intercambio cuando la réplica fría tiene más energía que la caliente?
+<details><summary>Respuesta</summary><p>Sí: \((\beta_i-\beta_j)(E_i-E_j)\gt0\) si \(T_i\lt T_j\) y \(E_i\gt E_j\). Bajar la configuración de menor energía a la temperatura fría siempre es favorable.</p></details></li>
+<li><span class="lvl">Intermedio</span>Un lote de 5 réplicas da \(\bar E=-512.40\) eV y \(s=0.80\) eV. Calcule el IC95.
+<details><summary>Respuesta</summary><p>\(\pm2.776\times0.80/\sqrt5=\pm0.99\) eV (con 1.96 se habría obtenido \(\pm0.70\)).</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué el protocolo «3 fases» mantiene la temperatura final durante el último 30 %?
+<details><summary>Respuesta</summary><p>Para que el sistema relaje y se puedan promediar observables a la temperatura final; si se mide durante la rampa, la temperatura cambia mientras se mide.</p></details></li>
+<li><span class="lvl">Avanzado</span>Para que los intercambios entre \(T\) y \(T'=T(1+\delta)\) se acepten con frecuencia, las distribuciones de energía deben solaparse: \(|\expval{E}_{T'}-\expval E_T|\lesssim\sigma_E\). Muestre que esto exige \(\delta\lesssim1/\sqrt{N}\) en un sistema de \(N\) partículas.
+<details><summary>Respuesta</summary><p>\(\Delta\expval E\approx C\,T\delta\) y \(\sigma_E=\sqrt{\kB T^2C}\), con \(C\propto N\). La condición \(CT\delta\lesssim T\sqrt{\kB C}\) da \(\delta\lesssim\sqrt{\kB/C}\propto1/\sqrt N\): sistemas grandes necesitan muchas réplicas.</p></details></li>
+</ol>
+</section>
+</template>

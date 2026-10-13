@@ -1,0 +1,63 @@
+1. EXPLORACIÓN
+filas × columnas: 8000 × 11   tasa de abandono: 0.185
+faltantes: datos_gb 9.0 %, edad 6.2 %
+abandono por plan: hogar 0.233, pospago 0.173, prepago 0.180
+faltante de datos_gb por plan: hogar 4.0 %, pospago 4.4 %, prepago 14.7 %
+AUC de cada variable numérica sola (detector de fugas):
+  antiguedad             0.706
+  cargo_mensual          0.536
+  llamadas_soporte       0.624
+  datos_gb               0.564
+  pago_electronico       0.557
+  edad                   0.533
+  solicito_portabilidad  0.917   <-- sospechosa: ¿se conoce antes de la decisión?
+  id_cliente             0.504
+decisión: se descartan solicito_portabilidad (se registra cuando el cliente ya decidió irse) e id_cliente
+
+2. PARTICIÓN  entrenamiento 6400 (abandono 0.185)   prueba 1600 (abandono 0.185)
+
+4. VALIDACIÓN CRUZADA (5 pliegues, media ± desviación entre pliegues)
+modelo                                 AUC            AP      log loss         Brier
+línea base (tasa global)       0.500 ± 0.000   0.185 ± 0.000   0.479 ± 0.000   0.151 ± 0.000
+regresión logística            0.746 ± 0.016   0.437 ± 0.030   0.417 ± 0.010   0.130 ± 0.003
+bosque aleatorio               0.746 ± 0.013   0.451 ± 0.032   0.415 ± 0.008   0.129 ± 0.003
+gradient boosting (HGB)        0.728 ± 0.015   0.420 ± 0.025   0.434 ± 0.011   0.134 ± 0.004
+
+5. BÚSQUEDA ALEATORIA (25 combinaciones, métrica AP)
+mejores hiperparámetros: l2_regularization=5.96, learning_rate=0.127, max_iter=111, max_leaf_nodes=5, min_samples_leaf=75
+AP de validación: mejor 0.458 ± 0.031 (AUC 0.754)   5.ª mejor 0.447   peor 0.385
+
+6. PRUEBA (1 600 clientes nunca vistos)
+AUC = 0.785  [IC 95 % 0.753–0.813]   AP = 0.499  [0.436–0.559]   log loss = 0.392   Brier = 0.121   (AP del azar = 0.185)
+
+7. CALIBRACIÓN EN LA PRUEBA (quintiles de la probabilidad predicha)
+  quintil 1: predicha media 0.044   abandono observado 0.044   (n = 320)
+  quintil 2: predicha media 0.084   abandono observado 0.078   (n = 320)
+  quintil 3: predicha media 0.129   abandono observado 0.103   (n = 320)
+  quintil 4: predicha media 0.214   abandono observado 0.212   (n = 320)
+  quintil 5: predicha media 0.471   abandono observado 0.487   (n = 320)
+
+8. DECISIÓN  contactar si p ≥ umbral   (umbral teórico = costo / (éxito · margen) = 0.222)
+umbral elegido con predicciones fuera de pliegue del entrenamiento: 0.22
+  no contactar a nadie     contactados   0.0 %   abandonos cubiertos   0.0 %   ganancia   0.00 millones por cada 1 000 clientes
+  contactar a todos        contactados 100.0 %   abandonos cubiertos 100.0 %   ganancia  -3.35 millones por cada 1 000 clientes
+  umbral 0.5               contactados   7.8 %   abandonos cubiertos  26.4 %   ganancia   2.84 millones por cada 1 000 clientes
+  umbral teórico 0.22      contactados  27.5 %   abandonos cubiertos  63.2 %   ganancia   5.02 millones por cada 1 000 clientes
+  umbral validado 0.22     contactados  27.9 %   abandonos cubiertos  63.2 %   ganancia   4.94 millones por cada 1 000 clientes
+
+9. IMPORTANCIA POR PERMUTACIÓN EN LA PRUEBA (caída de la AP, 10 repeticiones)
+  antiguedad          0.228 ± 0.013
+  llamadas_soporte    0.111 ± 0.013
+  pago_electronico    0.035 ± 0.010
+  datos_gb            0.020 ± 0.008
+  cargo_mensual       0.012 ± 0.009
+  edad                0.007 ± 0.007
+  ciudad              0.003 ± 0.008
+  plan                0.001 ± 0.001
+dependencia parcial de la antigüedad (probabilidad media de abandono si todos tuvieran esa antigüedad):
+  1 m → 0.481   3 m → 0.481   5 m → 0.445   6 m → 0.228   9 m → 0.219   12 m → 0.181   24 m → 0.136   48 m → 0.068
+
+10. POR SEGMENTO EN LA PRUEBA
+  prepago  n =  736   abandono 0.200   predicho 0.179   AUC 0.772   contactados con el umbral  26.4 %
+  pospago  n =  638   abandono 0.161   predicho 0.177   AUC 0.802   contactados con el umbral  24.6 %
+  hogar    n =  226   abandono 0.204   predicho 0.249   AUC 0.804   contactados con el umbral  42.0 %

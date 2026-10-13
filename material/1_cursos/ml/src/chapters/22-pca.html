@@ -1,0 +1,101 @@
+<template class="chapter-src" data-id="pca" data-num="22" data-title="Reducción de dimensionalidad: PCA, t-SNE y UMAP" data-part="Parte V · Aprendizaje no supervisado" data-short="Por qué reducir; PCA como máxima varianza y como mejor aproximación; varianza explicada, cargas y escalado; reconstrucción; t-SNE y UMAP para visualizar y sus trampas">
+<p class="lead">Datos con decenas o miles de variables casi nunca ocupan todo su espacio: viven cerca de una superficie de dimensión mucho menor. Reducir la dimensión sirve para visualizar, comprimir, quitar ruido y combatir la colinealidad. El análisis de componentes principales (PCA) es lineal, exacto y rápido; t-SNE y UMAP son no lineales y producen mapas espectaculares que hay que saber leer.</p>
+
+<section>
+<h2>Proyectar conservando la mayor varianza</h2>
+<p>PCA busca la dirección \(\vb u\) (unitaria) sobre la que la proyección de los datos centrados tiene la mayor varianza; luego la siguiente, perpendicular a la primera, y así sucesivamente:</p>
+<div class="eq key" data-name="Componentes principales">\[\vb u_1=\argmax_{\norm{\vb u}=1}\ \vb u\T S\,\vb u,\qquad S=\frac{1}{n-1}X_c\T X_c,\qquad S\vb u_j=\lambda_j\vb u_j,\qquad \frac{\lambda_j}{\sum_l\lambda_l}=\text{varianza explicada}.\]</div>
+<p>Las direcciones son los autovectores de la matriz de covarianza (capítulo 2) y la varianza que captura cada una es su autovalor. Equivalentemente, la proyección sobre los \(k\) primeros componentes es la <b>mejor aproximación de rango \(k\)</b> de los datos en error cuadrático (teorema de Eckart–Young): maximizar la varianza proyectada es minimizar el error de reconstrucción. En la práctica se calcula con la descomposición en valores singulares de \(X_c\).</p>
+<div class="sim" data-sim="pca-2d" data-title="Gire la recta hasta capturar la mayor varianza"></div>
+<div class="sim-guide"><ul>
+<li>Los puntos rojos son las proyecciones sobre la recta. Gírela: su dispersión es máxima cuando la recta coincide con la flecha negra (CP1) y mínima en la perpendicular (CP2).</li>
+<li>Con correlación cero y desviaciones iguales, todas las direcciones valen lo mismo: PCA no tiene nada que comprimir.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Varianza explicada, cargas y escalado</h2>
+<ul>
+<li>El <b>gráfico de sedimentación</b> (varianza por componente) y la varianza acumulada indican cuántos componentes conservar: un codo, o el número necesario para un porcentaje (80–95 %).</li>
+<li>Las <b>cargas</b> son los coeficientes de cada componente: \(\text{CP}_1=u_{11}x_1+\dots+u_{1p}x_p\). Muestran qué variables combina cada componente, y el <b>biplot</b> dibuja datos y cargas a la vez.</li>
+<li>El <b>escalado decide el resultado</b>: PCA maximiza varianza, así que una variable en unidades grandes domina. Sin estandarizar, el largo del pétalo de iris (rango de 6 cm) acapara el 92.5 % de la varianza. Con variables en unidades distintas, estandarice; con variables en las mismas unidades y varianzas significativas (píxeles), a veces conviene no hacerlo.</li>
+<li>Los signos de los componentes son arbitrarios: \(\vb u\) y \(-\vb u\) son igual de válidos.</li>
+</ul>
+<div class="sim" data-sim="pca-iris" data-title="PCA de iris: puntuaciones, cargas y varianza explicada"></div>
+<div class="sim-guide"><ul>
+<li>Con las variables estandarizadas, la CP1 combina las medidas del pétalo y el largo del sépalo: separa <i>setosa</i> del resto. La CP2 es casi solo el ancho del sépalo.</li>
+<li>Quite la estandarización: la CP1 pasa a ser casi solo el largo del pétalo (la variable de mayor varianza) y explica más del 90 %.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Comprimir y reconstruir</h2>
+<p>Con \(k\) componentes, cada dato se resume en \(k\) números y se reconstruye como \(\hat{\vb x}=\bar{\vb x}+\sum_{j\le k}t_j\vb u_j\). En imágenes, los componentes son «imágenes propias» (las <i>eigenfaces</i> del reconocimiento facial clásico): patrones de píxeles que se suman con distintos pesos.</p>
+<div class="sim" data-sim="pca-digitos" data-title="Reconstruir dígitos con k componentes"></div>
+<div class="sim-guide"><ul>
+<li>Con \(k=0\) la reconstrucción es el dígito promedio. Con 5–10 componentes ya se reconoce el número; con 30, casi idéntico.</li>
+<li>Las primeras componentes (azul negativo, naranja positivo) son trazos amplios; las últimas, detalles finos y ruido.</li>
+</ul></div>
+<div class="box warn"><p>PCA no mira la etiqueta: las direcciones de mayor varianza no tienen por qué ser las más útiles para predecir. A veces la información que separa las clases está en un componente de poca varianza que PCA descarta. Si la meta es clasificar, compare siempre con y sin PCA, y considere LDA (capítulo 14) o simplemente regularizar.</p></div>
+</section>
+
+<section>
+<h2>t-SNE y UMAP: mapas no lineales</h2>
+<p><span class="term">t-SNE</span> (van der Maaten y Hinton, 2008) convierte las distancias en alta dimensión en probabilidades de ser vecinos, \(p_{j\mid i}\propto\exp(-\norm{\vb x_i-\vb x_j}^2/2\sigma_i^2)\), con \(\sigma_i\) elegida para que cada punto tenga un número efectivo de vecinos igual a la <span class="term">perplejidad</span>. Luego coloca puntos en 2D con probabilidades \(q_{ij}\propto(1+\norm{\vb y_i-\vb y_j}^2)^{-1}\) (una t de Student, de colas pesadas) y minimiza la divergencia de Kullback–Leibler \(\sum p_{ij}\log(p_{ij}/q_{ij})\) por descenso de gradiente.</p>
+<p><span class="term">UMAP</span> (McInnes, Healy y Melville, 2018) parte de una idea parecida (un grafo de vecinos difuso), es mucho más rápido, conserva algo mejor la estructura global y puede transformar datos nuevos. Ambos son herramientas de <b>visualización</b>.</p>
+<div class="sim" data-sim="tsne" data-title="t-SNE en vivo sobre 260 dígitos"></div>
+<div class="sim-guide"><ul>
+<li>Durante las primeras 100 iteraciones (exageración temprana) los grupos se forman; luego se ordenan y se separan.</li>
+<li>Con perplejidad 2–5 aparecen muchos grupitos fragmentados; con 30–50, un grupo por dígito; con perplejidad alta los grupos se acercan.</li>
+<li>Compare con PCA en 2D: PCA conserva las grandes distancias pero mezcla los dígitos; t-SNE separa los grupos locales.</li>
+</ul></div>
+<div class="box err"><ul>
+<li><b>El tamaño de un grupo no significa nada</b>: t-SNE expande los grupos densos y contrae los dispersos.</li>
+<li><b>Las distancias entre grupos no significan casi nada</b>: dos grupos lejanos en el mapa no están necesariamente más lejos que dos cercanos.</li>
+<li><b>Puede inventar estructura</b>: con perplejidad baja, el ruido puro forma «grupos». Pruebe varias perplejidades y semillas.</li>
+<li><b>No se usa como entrada de un modelo</b>: no transforma datos nuevos de forma consistente, y agrupar sobre el mapa hereda todas sus distorsiones.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Práctica: PCA en iris y dígitos, t-SNE</h2>
+<div class="box py"><p>El programa compara PCA con y sin estandarizar en iris, interpreta las cargas, mide cuántos componentes necesitan los dígitos y cuánto se pierde al comprimir, y compara mapas 2D de t-SNE y PCA.</p>
+<div class="py" data-py="22-pca-tsne"></div></div>
+<div class="box read"><ul>
+<li><b>Escalado</b>: sin estandarizar, la CP1 explica el 92.5 % (es casi el largo del pétalo); estandarizado, 73.0 % y 22.9 %. Ninguno es «correcto»: responden a preguntas distintas.</li>
+<li><b>Cargas</b>: CP1 ≈ 0.52 largo sépalo − 0.27 ancho sépalo + 0.58 largo pétalo + 0.56 ancho pétalo: un índice de «tamaño de la flor» en el que el ancho del sépalo va en contra. CP2 es casi solo el ancho del sépalo (0.92).</li>
+<li><b>Dígitos</b>: 5 componentes explican el 50 % de la varianza, 21 el 90 % y 41 el 99 %. Las 64 dimensiones originales tienen mucha redundancia.</li>
+<li><b>Compresión y clasificación</b>: con 10 componentes la logística logra 0.888, con 40 llega a 0.910, frente a 0.914 con las 64 variables. Con 2 componentes, solo 0.574: la varianza de las dos primeras direcciones no basta para separar diez dígitos.</li>
+<li><b>t-SNE frente a PCA en 2D</b>: un 5-NN sobre el mapa de t-SNE acierta el 97.5 % (perplejidad 5–30); sobre el mapa de PCA, el 60.3 %. t-SNE conserva los vecindarios; PCA, las varianzas globales. Ojo: ese 97.5 % se calcula sobre un mapa construido con todas las imágenes, así que mide cuán bien separa el mapa, no un modelo utilizable con datos nuevos.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>PCA: autovectores de la covarianza; maximiza la varianza proyectada y minimiza el error de reconstrucción.</li>
+<li>Varianza explicada para elegir \(k\); cargas para interpretar; escalado decisivo.</li>
+<li>PCA no usa la etiqueta: lo más variable no siempre es lo más predictivo.</li>
+<li>t-SNE y UMAP: vecindarios locales para visualizar; tamaños y distancias entre grupos no son interpretables.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Los autovalores de una covarianza son 6, 3 y 1. ¿Qué fracción explica cada componente y cuántos necesita para el 85 %?
+<details><summary>Respuesta</summary><p>0.6, 0.3 y 0.1. Con dos componentes, 0.9 ≥ 0.85.</p></details></li>
+<li><span class="lvl">Básico</span>Si todas las variables están incorrelacionadas y tienen la misma varianza, ¿qué hace PCA?
+<details><summary>Respuesta</summary><p>Todos los autovalores son iguales: cualquier dirección es un componente principal y no hay compresión posible.</p></details></li>
+<li><span class="lvl">Intermedio</span>Una imagen de 100×100 píxeles se reconstruye con 50 componentes. ¿Cuántos números se guardan por imagen y cuántos en total para 10 000 imágenes (incluyendo los componentes)?
+<details><summary>Respuesta</summary><p>50 por imagen (500 000 en total), más 50 componentes de 10 000 valores y la media (510 000): ~1 millón frente a 100 millones originales.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué no conviene usar las coordenadas de t-SNE como variables de un clasificador en producción?
+<details><summary>Respuesta</summary><p>t-SNE no define una función que transforme datos nuevos de forma consistente (cada ejecución reacomoda todo), distorsiona distancias y depende de la perplejidad y la semilla.</p></details></li>
+<li><span class="lvl">Avanzado</span>Muestre que la varianza de la proyección sobre \(\vb u\) unitario es \(\vb u\T S\vb u\) y que su máximo es el mayor autovalor.
+<details><summary>Respuesta</summary><p>\(\Var(\vb u\T\vb x)=\vb u\T S\vb u\). Con multiplicador de Lagrange para \(\vb u\T\vb u=1\): \(S\vb u=\lambda\vb u\), y el valor es \(\vb u\T S\vb u=\lambda\); el máximo es el mayor autovalor.</p></details></li>
+</ol>
+<div class="box links"><ul>
+<li><a href="https://scikit-learn.org/stable/modules/decomposition.html">scikit-learn — Decomposing signals in components</a><small>PCA, PCA incremental, kernel PCA, SVD truncada, NMF.</small></li>
+<li><a href="https://distill.pub/2016/misread-tsne/">Wattenberg, Viégas y Johnson (2016) — How to Use t-SNE Effectively (Distill)</a><small>Lo que significan (y no) los mapas de t-SNE, con ejemplos interactivos.</small></li>
+<li><a href="https://jmlr.org/papers/v9/vandermaaten08a.html">van der Maaten y Hinton (2008) — Visualizing Data using t-SNE</a><small>El artículo original.</small></li>
+<li><a href="https://umap-learn.readthedocs.io/en/latest/">UMAP — documentación</a><small>Uso, parámetros (n_neighbors, min_dist) y comparación con t-SNE.</small></li>
+<li><a href="https://setosa.io/ev/principal-component-analysis/">Setosa — Principal Component Analysis explained visually</a><small>Explicación interactiva de PCA en 2D y 3D.</small></li>
+</ul></div>
+</section>
+</template>

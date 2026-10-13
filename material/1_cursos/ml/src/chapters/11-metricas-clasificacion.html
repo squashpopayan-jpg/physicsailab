@@ -1,0 +1,117 @@
+<template class="chapter-src" data-id="metricas-clasificacion" data-num="11" data-title="Métricas de clasificación" data-part="Parte III · Clasificación" data-short="Matriz de confusión; la paradoja de la exactitud; precisión, exhaustividad, F1 y especificidad; umbrales; curvas ROC y precisión–exhaustividad; AUC, AP, MCC, kappa y log-loss; promedios multiclase">
+<p class="lead">Un clasificador que acierta el 94.5 % puede no detectar ni un caso de cada veinte. Las métricas de clasificación separan los distintos tipos de error, que casi nunca cuestan lo mismo, y distinguen dos preguntas diferentes: qué tan bien ordena el modelo los casos (su puntuación) y qué tan bien decide con un umbral concreto.</p>
+
+<section>
+<h2>La matriz de confusión</h2>
+<p>Toda métrica binaria se construye con cuatro conteos. Llamemos <i>positivo</i> a la clase de interés (enfermo, fraude, spam):</p>
+<div class="tablewrap narrow"><table>
+<thead><tr><th></th><th class="c">predicho positivo</th><th class="c">predicho negativo</th></tr></thead>
+<tbody>
+<tr><td><b>realmente positivo</b></td><td class="c">VP (verdadero positivo)</td><td class="c">FN (falso negativo, error tipo II)</td></tr>
+<tr><td><b>realmente negativo</b></td><td class="c">FP (falso positivo, error tipo I)</td><td class="c">VN (verdadero negativo)</td></tr>
+</tbody></table></div>
+<div class="eq key" data-name="Métricas derivadas">\[\begin{aligned}
+\text{exactitud}&=\frac{VP+VN}{n}, & \text{precisión}&=\frac{VP}{VP+FP}, & \text{exhaustividad (recall, sensibilidad)}&=\frac{VP}{VP+FN},\\
+\text{especificidad}&=\frac{VN}{VN+FP}, & \text{FPR}&=1-\text{especificidad}, & F_1&=\frac{2\cdot\text{prec}\cdot\text{rec}}{\text{prec}+\text{rec}} .
+\end{aligned}\]</div>
+<ul>
+<li><b>Precisión</b>: de lo que el modelo marca como positivo, ¿cuánto lo es? Importa cuando cada alarma cuesta (revisar manualmente una transacción, una biopsia).</li>
+<li><b>Exhaustividad</b>: de los positivos reales, ¿cuántos encuentra? Importa cuando perder un caso es grave (cáncer, fraude grande).</li>
+<li><b>Especificidad</b>: de los negativos, ¿cuántos deja tranquilos?</li>
+<li>\(F_1\) es la media armónica de precisión y exhaustividad: es baja si cualquiera de las dos lo es. \(F_\beta\) da \(\beta\) veces más peso a la exhaustividad.</li>
+</ul>
+<div class="box explain"><p>Un detector de humo muy exhaustivo suena en cada incendio, pero también cuando se quema una tostada (precisión baja). Uno muy preciso solo suena en incendios de verdad, pero a veces tarde o nunca (exhaustividad baja). No se pueden tener las dos cosas gratis: se elige un compromiso.</p></div>
+</section>
+
+<section>
+<h2>La paradoja de la exactitud</h2>
+<p>Con clases desbalanceadas la exactitud engaña. Si el 5.7 % de los casos son positivos, el clasificador que siempre dice «negativo» tiene 94.3 % de exactitud y no sirve para nada. Por eso se usan métricas que no premian ignorar a la minoría:</p>
+<ul>
+<li><b>Exactitud balanceada</b>: promedio de la exhaustividad de cada clase; vale 0.5 para el clasificador trivial binario.</li>
+<li><b>Coeficiente de Matthews</b> (MCC): una correlación entre predicción y realidad, de −1 a 1, que usa las cuatro celdas; vale 0 para cualquier clasificador trivial.</li>
+<li><b>Kappa de Cohen</b>: acuerdo corregido por el acuerdo esperado al azar.</li>
+</ul>
+<div class="sim" data-sim="paradoja-exactitud" data-title="Exactitud alta, modelo inútil"></div>
+<div class="sim-guide"><ul>
+<li>Con prevalencia 2 %, el modelo «todo negativo» tiene 98 % de exactitud y MCC = 0.</li>
+<li>El modelo real tiene menos exactitud pero detecta casos: su MCC y su exactitud balanceada son claramente mayores.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Puntuaciones, umbrales y la curva ROC</h2>
+<p>La mayoría de los clasificadores producen una <span class="term">puntuación</span> (una probabilidad o un margen) y la convierten en decisión comparándola con un <span class="term">umbral</span>. Bajar el umbral marca más casos: sube la exhaustividad y baja la precisión. El umbral no es parte del modelo; es una decisión de negocio (capítulo 12).</p>
+<p>La <span class="term">curva ROC</span> recorre todos los umbrales y grafica la tasa de verdaderos positivos (exhaustividad) frente a la de falsos positivos. Su área, el <span class="term">AUC</span>, resume la capacidad de ordenar:</p>
+<div class="eq key" data-name="AUC como probabilidad">\[\text{AUC}=P\big(s(\vb x^+)>s(\vb x^-)\big)\]</div>
+<p>es la probabilidad de que un positivo elegido al azar reciba mayor puntuación que un negativo elegido al azar (el estadístico de Mann–Whitney). AUC = 0.5 es ordenar al azar; 1, ordenar perfectamente. No depende del umbral ni de la prevalencia.</p>
+<div class="sim" data-sim="umbral-metricas" data-title="Mover el umbral: matriz de confusión, ROC y precisión–exhaustividad"></div>
+<div class="sim-guide"><ul>
+<li>Las dos campanas son las puntuaciones de los negativos (azul) y los positivos (naranja). Todo lo que queda a la derecha del umbral se predice positivo.</li>
+<li>Mueva el umbral: el punto recorre la curva ROC y la curva PR, y la matriz de confusión cambia. El AUC no se mueve: es una propiedad de las puntuaciones.</li>
+<li>Separe más las campanas: ambas curvas se acercan a la esquina ideal.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Precisión–exhaustividad cuando los positivos son raros</h2>
+<p>Con pocos positivos, la ROC puede verse muy bien aunque el modelo genere muchas falsas alarmas: un FPR de 5 % sobre 100 000 negativos son 5 000 alarmas falsas. La <span class="term">curva precisión–exhaustividad</span> (PR) lo muestra directamente. Su área, la <span class="term">precisión promedio</span> (AP), tiene como referencia la prevalencia: un modelo al azar obtiene AP ≈ prevalencia, no 0.5.</p>
+<div class="sim" data-sim="prevalencia-roc-pr" data-title="La misma calidad de puntuación con distintas prevalencias"></div>
+<div class="sim-guide"><ul>
+<li>Las puntuaciones tienen siempre la misma separación; solo cambia la proporción de positivos.</li>
+<li>La curva ROC y el AUC no cambian. La curva PR se hunde al bajar la prevalencia: la misma prueba produce muchas más falsas alarmas por cada acierto (el efecto Bayes del capítulo 2).</li>
+<li>Por eso, en fraude, enfermedades raras o recuperación de información, informe AP y precisión a la exhaustividad que el negocio necesita, no solo AUC.</li>
+</ul></div>
+<div class="box law"><p>ROC y AUC miden la capacidad de ordenar y son comparables entre poblaciones con distinta prevalencia. Precisión, F1 y AP miden lo que se vivirá en la práctica con la prevalencia real. Informe ambas familias.</p></div>
+</section>
+
+<section>
+<h2>Métricas probabilísticas y multiclase</h2>
+<p>Si las probabilidades se van a usar como tales (riesgo de un paciente, precio de un seguro), hay que evaluarlas como probabilidades. La <b>log-loss</b> y la <b>puntuación de Brier</b> \(\frac1n\sum(\hat p_i-y_i)^2\) son <span class="term">reglas de puntuación propias</span>: su valor esperado es mínimo cuando el modelo reporta las probabilidades verdaderas. El AUC no lo es: cualquier transformación monótona de las puntuaciones da el mismo AUC.</p>
+<p>Con \(K\) clases, precisión, exhaustividad y F1 se calculan por clase y se promedian: <b>macro</b> (promedio simple, cada clase pesa igual), <b>ponderado</b> (por el soporte de cada clase) o <b>micro</b> (sumando los conteos, igual a la exactitud). Con clases desbalanceadas, el macro es el que revela si el modelo ignora a las minoritarias.</p>
+</section>
+
+<section>
+<h2>Práctica: evaluar un detector de casos raros</h2>
+<div class="box py"><p>El programa genera 6 000 casos con 5.7 % de positivos, entrena una regresión logística y la evalúa con todas las métricas del capítulo, a varios umbrales.</p>
+<div class="py" data-py="11-metricas-clasificacion"></div></div>
+<div class="box read"><ul>
+<li><b>Línea base</b>: «todo negativo» tiene exactitud 0.943 y exactitud balanceada 0.500. Cualquier exactitud por debajo de 0.943 es peor que no hacer nada… según la exactitud.</li>
+<li><b>Umbral 0.5</b>: exactitud 0.945, apenas mejor que el trivial. La matriz lo explica: de 136 positivos solo encuentra 5 (exhaustividad 0.037). Su precisión es alta (5 de 6 alertas aciertan), pero casi no alerta. MCC = 0.168 y exactitud balanceada 0.518 delatan el problema que la exactitud esconde.</li>
+<li><b>Promedios del informe</b>: el «weighted avg» de F1 (0.921) parece excelente porque lo domina la clase mayoritaria; el «macro avg» (0.521) muestra la verdad.</li>
+<li><b>Ordenamiento</b>: AUC = 0.777 y AP = 0.233, cuatro veces la prevalencia (0.057). El modelo sí ordena razonablemente; lo que falla es el umbral 0.5, inadecuado cuando las probabilidades de los positivos rara vez superan 0.5.</li>
+<li><b>Tabla de umbrales</b>: con umbral 0.1 se detecta el 52 % de los positivos a cambio de 387 alertas con precisión 0.18 (una de cada 5.5 acierta). Con 0.05, el 73.5 % con 819 alertas. Cuál elegir depende del costo de revisar una alerta frente al de perder un caso.</li>
+<li><b>Restricciones de negocio</b>: si se exige precisión ≥ 0.5, solo se alcanza exhaustividad 0.096; si se tolera como máximo 1 % de falsos positivos, se detecta el 11.8 %. Así se reportan los modelos en la práctica.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Precisión: calidad de las alarmas. Exhaustividad: cobertura de los positivos. Especificidad: tranquilidad de los negativos.</li>
+<li>Con desbalance, la exactitud engaña: use exactitud balanceada, MCC, F1 macro y AP.</li>
+<li>El umbral es una decisión aparte del modelo; las métricas de umbral cambian con él, AUC y AP no.</li>
+<li>AUC = probabilidad de ordenar bien un par positivo–negativo; no depende de la prevalencia.</li>
+<li>La curva PR y la AP reflejan la prevalencia real; su referencia es la prevalencia, no 0.5.</li>
+<li>Log-loss y Brier evalúan probabilidades; son reglas de puntuación propias.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>VP = 40, FP = 10, FN = 20, VN = 930. Calcule exactitud, precisión, exhaustividad, especificidad y F1.
+<details><summary>Respuesta</summary><p>Exactitud 0.970; precisión 0.800; exhaustividad 0.667; especificidad 0.989; F1 = 0.727.</p></details></li>
+<li><span class="lvl">Básico</span>Un modelo tiene AUC 0.5. ¿Qué significa? ¿Y AUC 0.3?
+<details><summary>Respuesta</summary><p>0.5: ordena como el azar. 0.3: ordena al revés de forma sistemática; invertir sus puntuaciones daría AUC 0.7 (probablemente hay un error de signo o de etiquetas).</p></details></li>
+<li><span class="lvl">Intermedio</span>Con prevalencia 1 %, un modelo tiene exhaustividad 0.9 y FPR 0.05. ¿Cuál es su precisión?
+<details><summary>Respuesta</summary><p>Por cada 10 000 casos: 100 positivos, 90 detectados; 9 900 negativos, 495 falsas alarmas. Precisión = 90/585 = 0.154.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué el F1 «weighted» de un problema muy desbalanceado puede ser alto aunque el modelo nunca detecte la clase minoritaria?
+<details><summary>Respuesta</summary><p>Pondera cada clase por su soporte; la mayoritaria (con F1 cercano a 1) domina el promedio. El F1 macro da igual peso a la minoritaria y revela el fallo.</p></details></li>
+<li><span class="lvl">Avanzado</span>Muestre que aplicar \(s\mapsto s^3\) a las puntuaciones no cambia el AUC pero sí la log-loss y el Brier.
+<details><summary>Respuesta</summary><p>El AUC solo depende del orden de las puntuaciones, que una función estrictamente creciente conserva. La log-loss y el Brier usan los valores numéricos como probabilidades, y \(s^3\neq s\) en \((0,1)\).</p></details></li>
+</ol>
+<div class="box links"><ul>
+<li><a href="https://scikit-learn.org/stable/modules/model_evaluation.html#classification-metrics">scikit-learn — Classification metrics</a><small>Todas las métricas con sus definiciones exactas y los promedios multiclase.</small></li>
+<li><a href="https://mlu-explain.github.io/roc-auc/">MLU-Explain — ROC & AUC</a><small>La curva ROC construida umbral a umbral.</small></li>
+<li><a href="https://mlu-explain.github.io/precision-recall/">MLU-Explain — Precision & Recall</a><small>Explicación visual del compromiso entre precisión y exhaustividad.</small></li>
+<li><a href="https://doi.org/10.1371/journal.pone.0118432">Saito y Rehmsmeier (2015) — The precision-recall plot is more informative than the ROC plot when evaluating binary classifiers on imbalanced datasets</a><small>El argumento cuantitativo para usar curvas PR con desbalance.</small></li>
+<li><a href="https://doi.org/10.1186/s12864-019-6413-7">Chicco y Jurman (2020) — The advantages of the Matthews correlation coefficient over F1 score and accuracy</a><small>Por qué el MCC es una buena métrica única para clasificación binaria.</small></li>
+</ul></div>
+</section>
+</template>

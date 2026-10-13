@@ -1,0 +1,130 @@
+<template class="chapter-src" data-id="formulario" data-num="A" data-title="Formulario" data-part="Apéndices" data-short="Las fórmulas del curso en una página: pérdidas, modelos, regularización, optimización, métricas, agrupamiento, reducción de dimensionalidad y redes">
+<p class="lead">Las fórmulas del curso reunidas para consulta. La notación es la del texto: \(n\) ejemplos, \(p\) variables, matriz de diseño \(\vb X\in\R^{n\times p}\), respuesta \(\vb y\), predicción \(\yh\), probabilidad predicha \(\hat p\). Cada bloque enlaza al capítulo donde se deduce e interpreta.</p>
+
+<section>
+<h2>Generalización y evaluación</h2>
+<div class="tablewrap"><table class="cmp">
+<thead><tr><th>Concepto</th><th>Fórmula</th><th>Cap.</th></tr></thead>
+<tbody>
+<tr><td>Riesgo y riesgo empírico</td><td>\(R(f)=\E\,[L(y,f(\vb x))]\), \(\ \hat R(f)=\tfrac1n\sum_i L(y_i,f(\vb x_i))\)</td><td><a href="#aprender">1</a></td></tr>
+<tr><td>Sesgo–varianza</td><td>\(\E[(y-\hat f(x))^2]=\sigma^2+\big(f(x)-\E\hat f(x)\big)^2+\Var\hat f(x)\)</td><td><a href="#generalizacion">3</a></td></tr>
+<tr><td>Validación cruzada</td><td>\(\text{CV}_k=\tfrac1k\sum_{j=1}^k \hat R_j\big(\hat f^{(-j)}\big)\); error estándar \(\approx s/\sqrt k\) (optimista)</td><td><a href="#evaluacion">4</a></td></tr>
+<tr><td>Intervalo de una proporción</td><td>\(\hat a\pm 1.96\sqrt{\hat a(1-\hat a)/n}\)</td><td><a href="#evaluacion">4</a></td></tr>
+<tr><td>Estandarizar</td><td>\(z=(x-\bar x_\text{entr})/s_\text{entr}\) con estadísticos del entrenamiento</td><td><a href="#datos">5</a></td></tr>
+</tbody></table></div>
+</section>
+
+<section>
+<h2>Regresión</h2>
+<div class="tablewrap"><table class="cmp">
+<thead><tr><th>Concepto</th><th>Fórmula</th><th>Cap.</th></tr></thead>
+<tbody>
+<tr><td>Mínimos cuadrados</td><td>\(\hat{\vb w}=(\vb X\T\vb X)^{-1}\vb X\T\vb y\); \(\ \Var\hat{\vb w}=\sigma^2(\vb X\T\vb X)^{-1}\); \(\ \hat\sigma^2=\text{SSR}/(n-p-1)\)</td><td><a href="#regresion-lineal">6</a></td></tr>
+<tr><td>Prueba \(t\) e intervalo</td><td>\(t_j=\hat w_j/\text{se}_j\); \(\ \hat w_j\pm t_{0.975,\,n-p-1}\,\text{se}_j\)</td><td><a href="#regresion-lineal">6</a></td></tr>
+<tr><td>Apalancamiento y Cook</td><td>\(\vb H=\vb X(\vb X\T\vb X)^{-1}\vb X\T\), \(h_{ii}=H_{ii}\); \(\ D_i=\dfrac{r_i^2}{(p+1)\hat\sigma^2}\dfrac{h_{ii}}{(1-h_{ii})^2}\)</td><td><a href="#regresion-lineal">6</a></td></tr>
+<tr><td>Factor de inflación de varianza</td><td>\(\text{VIF}_j=1/(1-R_j^2)\)</td><td><a href="#regresion-lineal">6</a></td></tr>
+<tr><td>Ridge</td><td>\(\hat{\vb w}=(\vb X\T\vb X+\lambda\vb I)^{-1}\vb X\T\vb y\)</td><td><a href="#regularizacion">8</a></td></tr>
+<tr><td>Lasso y Elastic Net (scikit-learn)</td><td>\(\dfrac1{2n}\norm{\vb y-\vb X\vb w}^2+\alpha\rho\norm{\vb w}_1+\dfrac{\alpha(1-\rho)}2\norm{\vb w}_2^2\)</td><td><a href="#regularizacion">8</a></td></tr>
+<tr><td>Umbral suave (coordenadas)</td><td>\(S_\lambda(z)=\sgn(z)\max(\abs z-\lambda,0)\); \(\ \alpha_\text{máx}=\max_j\abs{\vb x_j\T\vb y}/n\)</td><td><a href="#regularizacion">8</a></td></tr>
+<tr><td>Huber</td><td>\(L_\delta(r)=\tfrac12r^2\) si \(\abs r\le\delta\); \(\ \delta(\abs r-\tfrac12\delta)\) si no</td><td><a href="#metricas-regresion">9</a></td></tr>
+<tr><td>Pérdida cuantílica</td><td>\(L_\tau(r)=\max(\tau r,(\tau-1)r)\), \(r=y-\yh\)</td><td><a href="#metricas-regresion">9</a></td></tr>
+<tr><td>Métricas</td><td>\(\text{MAE}=\tfrac1n\sum\abs{r_i}\), \(\ \text{RMSE}=\sqrt{\tfrac1n\sum r_i^2}\), \(\ R^2=1-\dfrac{\sum r_i^2}{\sum(y_i-\bar y)^2}\)</td><td><a href="#metricas-regresion">9</a></td></tr>
+</tbody></table></div>
+</section>
+
+<section>
+<h2>Optimización</h2>
+<div class="tablewrap"><table class="cmp">
+<thead><tr><th>Método</th><th>Actualización</th><th>Cap.</th></tr></thead>
+<tbody>
+<tr><td>Descenso de gradiente</td><td>\(\vb w\leftarrow\vb w-\eta\grad L(\vb w)\); converge si \(\eta\lt 2/\lambda_\text{máx}(\text{hessiana})\)</td><td><a href="#gradiente">7</a></td></tr>
+<tr><td>Momento</td><td>\(\vb v\leftarrow\beta\vb v+\grad L\), \(\ \vb w\leftarrow\vb w-\eta\vb v\)</td><td><a href="#gradiente">7</a></td></tr>
+<tr><td>RMSprop</td><td>\(\vb s\leftarrow\rho\vb s+(1-\rho)\vb g^2\), \(\ \vb w\leftarrow\vb w-\eta\,\vb g/(\sqrt{\vb s}+\epsilon)\)</td><td><a href="#gradiente">7</a></td></tr>
+<tr><td>Adam</td><td>\(\vb m\leftarrow\beta_1\vb m+(1-\beta_1)\vb g\), \(\vb v\leftarrow\beta_2\vb v+(1-\beta_2)\vb g^2\), \(\ \vb w\leftarrow\vb w-\eta\,\dfrac{\vb m/(1-\beta_1^t)}{\sqrt{\vb v/(1-\beta_2^t)}+\epsilon}\)</td><td><a href="#gradiente">7</a></td></tr>
+<tr><td>Newton (logística)</td><td>\(\vb w\leftarrow\vb w-\vb H^{-1}\grad L\), \(\ \vb H=\vb X\T\diag(\hat p_i(1-\hat p_i))\vb X\)</td><td><a href="#logistica">10</a></td></tr>
+</tbody></table></div>
+</section>
+
+<section>
+<h2>Clasificación</h2>
+<div class="tablewrap"><table class="cmp">
+<thead><tr><th>Concepto</th><th>Fórmula</th><th>Cap.</th></tr></thead>
+<tbody>
+<tr><td>Logística</td><td>\(\hat p=\sigma(\vb w\T\vb x+b)=1/(1+\ee^{-z})\); \(\ \log\dfrac{\hat p}{1-\hat p}=\vb w\T\vb x+b\)</td><td><a href="#logistica">10</a></td></tr>
+<tr><td>Entropía cruzada (log loss)</td><td>\(-\tfrac1n\sum_i\big[y_i\log\hat p_i+(1-y_i)\log(1-\hat p_i)\big]\); gradiente \(\vb X\T(\hat{\vb p}-\vb y)/n\)</td><td><a href="#logistica">10</a></td></tr>
+<tr><td>Softmax</td><td>\(\hat p_k=\ee^{z_k}/\sum_j\ee^{z_j}\)</td><td><a href="#logistica">10</a></td></tr>
+<tr><td>Bayes ingenuo</td><td>\(\Pr(y\mid\vb x)\propto\Pr(y)\prod_j\Pr(x_j\mid y)\)</td><td><a href="#bayes-discriminante">14</a></td></tr>
+<tr><td>LDA</td><td>\(\delta_k(\vb x)=\vb x\T\vb\Sigma^{-1}\vb\mu_k-\tfrac12\vb\mu_k\T\vb\Sigma^{-1}\vb\mu_k+\log\pi_k\)</td><td><a href="#bayes-discriminante">14</a></td></tr>
+<tr><td>SVM de margen blando</td><td>\(\min\ \tfrac12\norm{\vb w}^2+C\sum_i\max\big(0,1-y_i(\vb w\T\vb x_i+b)\big)\); margen \(2/\norm{\vb w}\)</td><td><a href="#svm">15</a></td></tr>
+<tr><td>Kernel RBF</td><td>\(K(\vb x,\vb x')=\exp(-\gamma\norm{\vb x-\vb x'}^2)\); \(\ f(\vb x)=\sum_i\alpha_iy_iK(\vb x_i,\vb x)+b\)</td><td><a href="#svm">15</a></td></tr>
+<tr><td>Impureza</td><td>Gini \(1-\sum_kp_k^2\); entropía \(-\sum_kp_k\log_2p_k\); ganancia = impureza del padre − promedio ponderado de los hijos</td><td><a href="#arboles">16</a></td></tr>
+<tr><td>Poda por costo–complejidad</td><td>\(R_\alpha(T)=R(T)+\alpha\,\abs{T}\)</td><td><a href="#arboles">16</a></td></tr>
+<tr><td>Varianza de un promedio correlacionado</td><td>\(\rho\sigma^2+\dfrac{1-\rho}{B}\sigma^2\)</td><td><a href="#bosques">17</a></td></tr>
+<tr><td>AdaBoost (SAMME)</td><td>\(\alpha_m=\log\dfrac{1-\text{err}_m}{\text{err}_m}+\log(K-1)\); \(\ w_i\leftarrow w_i\,\ee^{\alpha_m\ind{y_i\ne h_m(\vb x_i)}}\)</td><td><a href="#boosting">18</a></td></tr>
+<tr><td>Gradient boosting</td><td>\(F_m=F_{m-1}+\nu\,h_m\), \(h_m\) ajustado a \(-\partial L/\partial F\); hoja de Newton \(\gamma=-\sum g_i/\sum h_i\) (\(g,h\): primera y segunda derivada de \(L\) en la hoja)</td><td><a href="#boosting">18</a></td></tr>
+</tbody></table></div>
+</section>
+
+<section>
+<h2>Métricas de clasificación</h2>
+<div class="tablewrap"><table class="cmp">
+<thead><tr><th>Métrica</th><th>Fórmula</th><th>Cap.</th></tr></thead>
+<tbody>
+<tr><td>Exactitud y balanceada</td><td>\(\dfrac{VP+VN}{n}\); \(\ \tfrac12\big(\text{TPR}+\text{TNR}\big)\)</td><td><a href="#metricas-clasificacion">11</a></td></tr>
+<tr><td>Precisión, exhaustividad, FPR</td><td>\(\dfrac{VP}{VP+FP}\), \(\ \dfrac{VP}{VP+FN}\), \(\ \dfrac{FP}{FP+VN}\)</td><td><a href="#metricas-clasificacion">11</a></td></tr>
+<tr><td>\(F_\beta\)</td><td>\((1+\beta^2)\dfrac{P\cdot R}{\beta^2P+R}\)</td><td><a href="#metricas-clasificacion">11</a></td></tr>
+<tr><td>Precisión y prevalencia</td><td>\(P=\dfrac{\text{TPR}\,\pi}{\text{TPR}\,\pi+\text{FPR}(1-\pi)}\)</td><td><a href="#metricas-clasificacion">11</a></td></tr>
+<tr><td>AUC</td><td>\(\Pr(\hat s^+\gt\hat s^-)\), con empates a ½</td><td><a href="#metricas-clasificacion">11</a></td></tr>
+<tr><td>Precisión promedio</td><td>\(\text{AP}=\sum_k(R_k-R_{k-1})P_k\); el azar da \(\pi\)</td><td><a href="#metricas-clasificacion">11</a></td></tr>
+<tr><td>MCC</td><td>\(\dfrac{VP\cdot VN-FP\cdot FN}{\sqrt{(VP+FP)(VP+FN)(VN+FP)(VN+FN)}}\)</td><td><a href="#metricas-clasificacion">11</a></td></tr>
+<tr><td>Brier</td><td>\(\tfrac1n\sum_i(\hat p_i-y_i)^2\)</td><td><a href="#calibracion">12</a></td></tr>
+<tr><td>Umbral óptimo por costos</td><td>\(t^*=\dfrac{c_{FP}}{c_{FP}+c_{FN}}\) (probabilidades calibradas)</td><td><a href="#calibracion">12</a></td></tr>
+<tr><td>Pesos balanceados</td><td>\(w_k=\dfrac{n}{K\,n_k}\)</td><td><a href="#calibracion">12</a></td></tr>
+</tbody></table></div>
+</section>
+
+<section>
+<h2>No supervisado</h2>
+<div class="tablewrap"><table class="cmp">
+<thead><tr><th>Concepto</th><th>Fórmula</th><th>Cap.</th></tr></thead>
+<tbody>
+<tr><td>k-medias</td><td>\(\min\sum_i\norm{\vb x_i-\vb\mu_{c(i)}}^2\) (inercia); \(\vb\mu_k=\) media del grupo \(k\)</td><td><a href="#kmeans">20</a></td></tr>
+<tr><td>Silueta</td><td>\(s_i=\dfrac{b_i-a_i}{\max(a_i,b_i)}\)</td><td><a href="#kmeans">20</a></td></tr>
+<tr><td>Mezcla gaussiana (EM)</td><td>\(r_{ik}=\dfrac{\pi_k\mathcal N(\vb x_i\mid\vb\mu_k,\vb\Sigma_k)}{\sum_j\pi_j\mathcal N(\vb x_i\mid\vb\mu_j,\vb\Sigma_j)}\); \(\ \text{BIC}=-2\log L+d\log n\)</td><td><a href="#kmeans">20</a></td></tr>
+<tr><td>Enlace de Ward</td><td>aumento de la inercia al unir: \(\dfrac{n_An_B}{n_A+n_B}\norm{\vb\mu_A-\vb\mu_B}^2\)</td><td><a href="#jerarquico-dbscan">21</a></td></tr>
+<tr><td>PCA</td><td>\(\vb X_c=\vb U\vb S\vb V\T\); componentes = columnas de \(\vb V\); varianza explicada \(s_k^2/\sum_js_j^2\)</td><td><a href="#pca">22</a></td></tr>
+<tr><td>t-SNE</td><td>\(\min\ \text{KL}(P\Vert Q)=\sum_{ij}p_{ij}\log\dfrac{p_{ij}}{q_{ij}}\), \(\ q_{ij}\propto(1+\norm{\vb y_i-\vb y_j}^2)^{-1}\)</td><td><a href="#pca">22</a></td></tr>
+<tr><td>Mahalanobis</td><td>\(d^2=(\vb x-\vb\mu)\T\vb\Sigma^{-1}(\vb x-\vb\mu)\sim\chi^2_p\) (gaussiana)</td><td><a href="#anomalias">23</a></td></tr>
+<tr><td>Bosque de aislamiento</td><td>\(s(x)=2^{-\E[h(x)]/c(n)}\), \(\ c(n)=2H(n-1)-2(n-1)/n\)</td><td><a href="#anomalias">23</a></td></tr>
+</tbody></table></div>
+</section>
+
+<section>
+<h2>Redes neuronales</h2>
+<div class="tablewrap"><table class="cmp">
+<thead><tr><th>Concepto</th><th>Fórmula</th><th>Cap.</th></tr></thead>
+<tbody>
+<tr><td>Capa densa</td><td>\(\vb a^{(l)}=\phi\big(\vb W^{(l)}\vb a^{(l-1)}+\vb b^{(l)}\big)\)</td><td><a href="#mlp">24</a></td></tr>
+<tr><td>Activaciones</td><td>ReLU \(\max(0,z)\); sigmoide \(\sigma'=\sigma(1-\sigma)\le\tfrac14\); \(\tanh'=1-\tanh^2\)</td><td><a href="#mlp">24</a></td></tr>
+<tr><td>Retropropagación</td><td>\(\vb\delta^{(l)}=\big(\vb W^{(l+1)\top}\vb\delta^{(l+1)}\big)\odot\phi'(\vb z^{(l)})\); \(\ \pdv{L}{\vb W^{(l)}}=\vb\delta^{(l)}\vb a^{(l-1)\top}\)</td><td><a href="#backprop">25</a></td></tr>
+<tr><td>Salida softmax + entropía cruzada</td><td>\(\vb\delta^{(L)}=\hat{\vb p}-\vb y\)</td><td><a href="#backprop">25</a></td></tr>
+<tr><td>Inicialización</td><td>Glorot \(\Var w=\dfrac{2}{n_\text{ent}+n_\text{sal}}\); He \(\Var w=\dfrac{2}{n_\text{ent}}\) (ReLU)</td><td><a href="#entrenar-redes">26</a></td></tr>
+<tr><td>Normalización por lotes</td><td>\(\hat z=\dfrac{z-\mu_B}{\sqrt{\sigma_B^2+\epsilon}}\), \(\ y=\gamma\hat z+\beta\)</td><td><a href="#entrenar-redes">26</a></td></tr>
+<tr><td>Convolución: tamaño de salida</td><td>\(\Big\lfloor\dfrac{n+2p-k}{s}\Big\rfloor+1\); parámetros \((k^2C_\text{ent}+1)\,C_\text{sal}\)</td><td><a href="#cnn">27</a></td></tr>
+<tr><td>Atención</td><td>\(\softmax\!\Big(\dfrac{\vb Q\vb K\T}{\sqrt{d_k}}\Big)\vb V\)</td><td><a href="#atencion">28</a></td></tr>
+<tr><td>Temperatura</td><td>\(\hat p_k\propto\ee^{z_k/T}\)</td><td><a href="#atencion">28</a></td></tr>
+</tbody></table></div>
+</section>
+
+<section>
+<h2>Interpretación y producción</h2>
+<div class="tablewrap"><table class="cmp">
+<thead><tr><th>Concepto</th><th>Fórmula</th><th>Cap.</th></tr></thead>
+<tbody>
+<tr><td>Importancia por permutación</td><td>\(I_j=s(\vb X,\vb y)-\tfrac1K\sum_k s\big(\vb X^{(\pi_k,j)},\vb y\big)\)</td><td><a href="#interpretabilidad">29</a></td></tr>
+<tr><td>Dependencia parcial</td><td>\(\text{PD}_j(v)=\tfrac1n\sum_i\hat f(v,\vb x_{i,-j})\)</td><td><a href="#interpretabilidad">29</a></td></tr>
+<tr><td>Valor de Shapley</td><td>\(\phi_j=\sum_{S\subseteq F\setminus\{j\}}\dfrac{\abs S!\,(\abs F-\abs S-1)!}{\abs F!}\big[v(S\cup\{j\})-v(S)\big]\); \(\ \sum_j\phi_j=\hat f(\vb x)-\E\hat f\)</td><td><a href="#interpretabilidad">29</a></td></tr>
+<tr><td>Índice de estabilidad poblacional</td><td>\(\text{PSI}=\sum_b(p_b^\text{act}-p_b^\text{ref})\ln(p_b^\text{act}/p_b^\text{ref})\)</td><td><a href="#errores">31</a></td></tr>
+</tbody></table></div>
+</section>
+</template>

@@ -1,0 +1,93 @@
+<template class="chapter-src" data-id="cristales" data-num="12" data-title="Redes cristalinas y teorema de Bloch" data-part="Parte II · Átomos, moléculas y sólidos" data-short="Redes de Bravais, red de panal y subredes, zigzag y armchair, red recíproca, zona de Brillouin, teorema de Bloch y condiciones periódicas">
+<p class="lead">Un cristal es un motivo que se repite. Describirlo exige separar la red (dónde se repite) de la base (qué se repite). El h-BN es el ejemplo perfecto: una red triangular con una base de dos átomos, uno de boro y uno de nitrógeno. La periodicidad tiene una consecuencia cuántica profunda, el teorema de Bloch, que convierte un problema con \(10^{23}\) electrones en un problema dentro de una sola celda.</p>
+
+<section>
+<h2>Redes de Bravais y bases</h2>
+<div class="box def"><p>Una <span class="term">red de Bravais</span> es el conjunto de puntos \(\vb R=n_1\vb a_1+n_2\vb a_2\) (en 2D; tres vectores en 3D) con \(n_i\) enteros. Los \(\vb a_i\) son los <span class="term">vectores primitivos</span>; el paralelogramo que generan es una <span class="term">celda primitiva</span>, y desde cualquier punto de la red el entorno es idéntico. Un cristal es una red de Bravais con una <span class="term">base</span>: un grupo de átomos asociado a cada punto.</p></div>
+<p>En dos dimensiones hay cinco redes de Bravais (oblicua, rectangular, rectangular centrada, cuadrada y hexagonal). La red de <span class="term">panal de abeja</span> del grafeno y del h-BN <em>no</em> es de Bravais: desde un átomo los vecinos apuntan «hacia arriba» y desde el vecino apuntan «hacia abajo». Es una red hexagonal (triangular) con una base de dos átomos.</p>
+</section>
+
+<section>
+<h2>La red de panal del h-BN</h2>
+<p>Con la distancia de enlace \(d\) (1.446 Å en h-BN, 1.42 Å en grafeno) y el eje \(x\) a lo largo de una dirección zigzag, los tres vecinos de un átomo de la subred A (boro) están en</p>
+<div class="eq key" data-name="Vecinos y vectores del panal">\[\vb\delta_1=d\,(0,1),\quad \vb\delta_2=d\Big(\tfrac{\sqrt3}{2},-\tfrac12\Big),\quad \vb\delta_3=d\Big(-\tfrac{\sqrt3}{2},-\tfrac12\Big);\qquad \vb a_1=\sqrt3d\,(1,0),\quad \vb a_2=\sqrt3d\Big(\tfrac12,\tfrac{\sqrt3}{2}\Big).\]</div>
+<ul>
+<li>El parámetro de red es \(a=|\vb a_1|=\sqrt3\,d=2.504\) Å para el h-BN, en acuerdo con el valor experimental.</li>
+<li>La celda primitiva tiene área \(A_c=\frac{\sqrt3}{2}a^2=5.43\) Å² y contiene un B y un N: hay 36.8 átomos por nm².</li>
+<li>Cada átomo tiene 3 primeros vecinos de la otra subred (a \(d\)), 6 segundos vecinos de su misma subred (a \(a=\sqrt3d\)) y 3 terceros vecinos (a \(2d\)).</li>
+<li>La red es <span class="term">bipartita</span>: todos los primeros vecinos de un B son N y viceversa. En h-BN perfecto no hay enlaces B–B ni N–N.</li>
+</ul>
+<h3>Zigzag y armchair</h3>
+<p>Las dos direcciones cristalográficas de alta simetría son la <span class="term">zigzag</span> (a lo largo de \(\vb a_1\); un borde zigzag tiene átomos de una sola subred) y la <span class="term">armchair</span> o «sillón» (perpendicular, a lo largo de \(\vb a_1+2\vb a_2\); un borde armchair alterna B y N en pares). Los bordes de los nanoporos triangulares que estudia hBN-MC son zigzag y, por eso, están formados por átomos de una sola especie: todos N o todos B.</p>
+<div class="sim" data-sim="red-panal" data-title="La red de panal: vectores, celda, vecinos y direcciones"></div>
+<div class="sim-guide"><ul>
+<li>Active los vecinos: 3 a \(d\), 6 a \(\sqrt3d\) y 3 a \(2d\). Los primeros vecinos son siempre de la otra especie.</li>
+<li>La celda primitiva (paralelogramo) contiene exactamente dos átomos.</li>
+<li>Las flechas muestran las direcciones zigzag y armchair; compare los bordes de cada tipo en los extremos de la lámina.</li>
+</ul></div>
+<div class="box hbn"><p>hBN-MC guarda la red en una malla lógica \(N_x\times N_y\) en la que cada sitio \((i,j)\) tiene dos vecinos en su fila y uno arriba o abajo según la paridad de \(i+j\) (la llamada red de «muro de ladrillos», topológicamente idéntica al panal). La función <code>atomPos()</code> convierte índices en coordenadas físicas con \(d=1.44\) Å, y la subred se decide por la paridad: así el estado inicial es un h-BN perfecto sin enlaces homonucleares. Las orientaciones AC y ZZ de la interfaz solo giran la lámina 90°.</p></div>
+</section>
+
+<section>
+<h2>La red recíproca y la zona de Brillouin</h2>
+<p>Las ondas que «encajan» en la periodicidad del cristal se describen con la <span class="term">red recíproca</span>: los vectores \(\vb G\) tales que \(\ee^{i\vb G\cdot\vb R}=1\) para todo \(\vb R\) de la red. Sus vectores primitivos \(\vb b_j\) cumplen</p>
+<div class="eq key" data-name="Red recíproca">\[\vb a_i\cdot\vb b_j=2\pi\,\delta_{ij},\qquad |\vb b_j|=\frac{4\pi}{\sqrt3\,a}\ \ \text{(red hexagonal)}.\]</div>
+<p>La red recíproca de una red hexagonal es otra red hexagonal, girada 30°. La <span class="term">primera zona de Brillouin</span> es la celda de Wigner–Seitz de la red recíproca: los puntos más cercanos al origen \(\Gamma\) que a cualquier otro \(\vb G\). Para el panal es un hexágono con puntos de alta simetría:</p>
+<ul>
+<li>\(\Gamma=(0,0)\), el centro.</li>
+<li>\(K=\big(\frac{4\pi}{3\sqrt3d},0\big)\) y \(K'\), los vértices (dos inequivalentes). Allí se tocan las bandas del grafeno y se abre la brecha del h-BN.</li>
+<li>\(M\), el punto medio de cada lado, a distancia \(\frac{2\pi}{3d}\) de \(\Gamma\).</li>
+</ul>
+<div class="sim" data-sim="red-reciproca" data-title="Del espacio real al espacio recíproco"></div>
+<div class="sim-guide"><ul>
+<li>La zona de Brillouin se construye con las mediatrices de los segmentos que unen \(\Gamma\) con sus vecinos más cercanos de la red recíproca.</li>
+<li>Al aumentar \(d\) la red real se expande y la recíproca se contrae: son inversas.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El teorema de Bloch</h2>
+<p>Si el potencial es periódico, \(V(\vb r+\vb R)=V(\vb r)\), el hamiltoniano conmuta con todas las traslaciones de la red y sus autoestados pueden elegirse también como autoestados de las traslaciones. El resultado es el teorema de Bloch (1928):</p>
+<div class="box law"><div class="eq key" data-name="Teorema de Bloch">\[\psi_{n\vb k}(\vb r)=\ee^{i\vb k\cdot\vb r}\,u_{n\vb k}(\vb r),\qquad u_{n\vb k}(\vb r+\vb R)=u_{n\vb k}(\vb r)\quad\Longleftrightarrow\quad \psi_{n\vb k}(\vb r+\vb R)=\ee^{i\vb k\cdot\vb R}\,\psi_{n\vb k}(\vb r).\]</div>
+<p>Cada estado es una onda plana modulada por una función con la periodicidad de la red. Se etiqueta con un vector de onda \(\vb k\) dentro de la primera zona de Brillouin y un índice de banda \(n\).</p></div>
+<ul>
+<li>\(\vb k\) y \(\vb k+\vb G\) describen el mismo estado: basta considerar la primera zona.</li>
+<li>\(\hbar\vb k\) es el <span class="term">momento cristalino</span>, que se conserva en el cristal perfecto (salvo vectores \(\hbar\vb G\)).</li>
+<li>Para cada \(\vb k\), la ecuación de Schrödinger se resuelve en una sola celda: las energías \(E_n(\vb k)\) son las <span class="term">bandas</span> (capítulo 13).</li>
+</ul>
+<h3>Condiciones periódicas de contorno</h3>
+<p>Un cristal real es finito. Born y von Kármán propusieron cerrarlo sobre sí mismo: una lámina de \(N_1\times N_2\) celdas con \(\psi(\vb r+N_1\vb a_1)=\psi(\vb r)\). Entonces \(\ee^{i\vb k\cdot N_1\vb a_1}=1\) y los vectores de onda permitidos son discretos:</p>
+<div class="eq key" data-name="Cuantización de k">\[\vb k=\frac{m_1}{N_1}\vb b_1+\frac{m_2}{N_2}\vb b_2,\qquad m_i=0,1,\dots,N_i-1 .\]</div>
+<p>Hay exactamente tantos valores de \(\vb k\) en la zona de Brillouin como celdas tiene el cristal. Con condiciones periódicas no hay bordes: la lámina es topológicamente un toro, y todos los sitios son equivalentes.</p>
+<div class="sim" data-sim="bloch-anillo" data-title="Ondas de Bloch en un anillo de N átomos"></div>
+<div class="sim-guide"><ul>
+<li>Solo hay \(N\) valores de \(k\) permitidos, igualmente espaciados en \([-\pi/a,\pi/a)\).</li>
+<li>Pase de \(k\) a \(k+2\pi/a\): en los sitios atómicos la onda es idéntica (solo cambia entre átomos, donde no hay nada que medir).</li>
+<li>En \(k=0\) todos los átomos oscilan en fase; en \(k=\pi/a\), en contrafase con sus vecinos.</li>
+</ul></div>
+<div class="box hbn"><p>Tanto SIESTA como hBN-MC usan condiciones periódicas. SIESTA repite la supercelda en el plano (y deja vacío en la dirección perpendicular para aislar la lámina; capítulo 18). hBN-MC aplica periodicidad en \(x\) y/o \(y\) (<code>pbcX</code>, <code>pbcY</code>), y por eso ajusta las dimensiones periódicas a números pares: con un número impar de columnas la red se cerraría con dos sitios de la misma subred enlazados, rompiendo la bipartición B/N.</p></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Cristal = red de Bravais + base; el panal es una red hexagonal con base de dos átomos (B y N).</li>
+<li>\(a=\sqrt3d\); 3 primeros vecinos de la otra subred; la red es bipartita.</li>
+<li>Bordes zigzag: una sola especie; bordes armchair: B y N alternados.</li>
+<li>La red recíproca cumple \(\vb a_i\cdot\vb b_j=2\pi\delta_{ij}\); la zona de Brillouin del panal es un hexágono con puntos \(\Gamma\), \(K\), \(M\).</li>
+<li>Bloch: \(\psi_{n\vb k}=\ee^{i\vb k\cdot\vb r}u_{n\vb k}\); con condiciones periódicas hay tantos \(\vb k\) como celdas.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Calcule el parámetro de red del grafeno (\(d=1.42\) Å) y su densidad de átomos por nm².
+<details><summary>Respuesta</summary><p>\(a=2.46\) Å; \(A_c=5.24\) Å²; 38.2 átomos/nm².</p></details></li>
+<li><span class="lvl">Básico</span>¿A qué distancia de \(\Gamma\) está el punto \(K\) del h-BN?
+<details><summary>Respuesta</summary><p>\(|K|=4\pi/(3\sqrt3d)=1.672\) Å⁻¹ con \(d=1.446\) Å.</p></details></li>
+<li><span class="lvl">Intermedio</span>Compruebe que \(f(K)=\sum_j\ee^{iK\cdot\delta_j}=0\).
+<details><summary>Respuesta</summary><p>Las fases son 0, \(2\pi/3\) y \(-2\pi/3\): \(1+\ee^{2\pi i/3}+\ee^{-2\pi i/3}=0\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Una lámina periódica de \(24\times24\) celdas, ¿cuántos vectores \(\vb k\) permitidos tiene? ¿Cuántos estados \(\pi\)?
+<details><summary>Respuesta</summary><p>576 vectores \(\vb k\) y dos bandas \(\pi\): 1152 estados (uno por átomo).</p></details></li>
+<li><span class="lvl">Avanzado</span>Demuestre que un borde zigzag del panal contiene átomos de una sola subred.
+<details><summary>Respuesta</summary><p>Los átomos de una fila zigzag están unidos por \(\vb\delta_2\) y \(\vb\delta_3\) alternadamente, pero los átomos más externos de la fila (los que perdieron su vecino \(\vb\delta_1\)) son todos del mismo tipo, separados por \(\vb a_1\), un vector de la red de Bravais.</p></details></li>
+</ol>
+</section>
+</template>

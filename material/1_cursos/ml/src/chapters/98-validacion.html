@@ -1,0 +1,21 @@
+<template class="chapter-src" data-id="validacion" data-num="C" data-title="Validación de los algoritmos" data-part="Apéndices" data-short="Las pruebas que comparan cada algoritmo escrito para el curso con scikit-learn, SciPy y PyTorch, ejecutables en el navegador">
+<p class="lead">Las simulaciones del curso no llaman a ninguna biblioteca: cada algoritmo (mínimos cuadrados, Lasso, regresión logística, SVM, árboles, boosting, k-medias, PCA, redes neuronales…) está escrito desde cero en JavaScript. Para confiar en lo que muestran, cada uno se compara aquí con la implementación de referencia que usted usará en Python.</p>
+
+<section>
+<h2>Cómo se valida</h2>
+<p>Un programa en Python (<code>tests/referencias.py</code>) genera conjuntos de datos pequeños, los redondea a cuatro decimales y ajusta con ellos los modelos de scikit-learn, SciPy y PyTorch. Los mismos datos redondeados y los resultados esperados se incrustan en el curso, de modo que JavaScript y Python trabajan exactamente con los mismos números. Cada prueba tiene cinco elementos: qué se calcula, el valor obtenido, el valor de referencia, la fuente y la tolerancia.</p>
+<ul>
+<li><strong>Comparaciones directas</strong>: coeficientes de MCO, Ridge, Lasso, Elastic Net y regresión logística; probabilidades de Bayes ingenuo, LDA, QDA y k-NN; funciones de decisión de SVM lineal, RBF y polinómica; caminos de poda de árboles; predicciones de gradient boosting; pesos de AdaBoost; inercia de k-medias; alturas de los dendrogramas; varianza explicada por PCA; métricas (AUC, AP, log-loss, MCC, kappa, Brier, curva de calibración).</li>
+<li><strong>Retropropagación</strong>: la pérdida y los gradientes de una red 3–4–2 con pesos fijos, comparados con el autograd de PyTorch en doble precisión.</li>
+<li><strong>Identidades exactas</strong>: el AUC trapezoidal es igual al estadístico de Mann–Whitney; los valores de Shapley de un modelo lineal valen \(w_j(x_j-\bar x_j)\) y suman \(f(x)-\E f\); la PCA con todos los componentes reconstruye los datos.</li>
+</ul>
+<p>Cuando una prueba compara vectores, el valor calculado es el máximo de las diferencias absolutas y la referencia es cero. Las tolerancias reflejan el criterio de parada de cada algoritmo: \(10^{-12}\) para cálculos cerrados, \(10^{-6}\) a \(10^{-5}\) para optimizadores iterativos.</p>
+<div class="box note"><p>Fuera del navegador, <code>node tests/validar.js</code> ejecuta las mismas pruebas y escribe el informe <code>docs/VALIDACION.md</code>. Si se actualiza scikit-learn, <code>python tests/referencias.py</code> regenera las referencias.</p></div>
+</section>
+
+<section>
+<h2>Ejecutar las pruebas</h2>
+<div class="sim" data-sim="validacion" data-title="Batería de validación del núcleo de algoritmos"></div>
+<div id="val-tabla" class="tablewrap"></div>
+</section>
+</template>

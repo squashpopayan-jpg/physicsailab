@@ -1,0 +1,105 @@
+<template class="chapter-src" data-id="arboles" data-num="16" data-title="Árboles de decisión" data-part="Parte III · Clasificación" data-short="Particionar con preguntas; impureza de Gini y entropía; ganancia de información; crecer, detener y podar; árboles de regresión; importancias; inestabilidad; cuándo usarlos">
+<p class="lead">Un árbol de decisión clasifica haciendo preguntas sencillas en cadena: ¿el perímetro del tumor supera 106? ¿Hay muchos puntos cóncavos? El resultado se lee como un diagrama de flujo, maneja variables de cualquier escala sin preprocesar y captura interacciones. Solo, un árbol suele predecir peor que otros modelos y es inestable; como pieza de los bosques y del boosting (Parte IV), es el algoritmo más exitoso con datos tabulares.</p>
+
+<section>
+<h2>Particionar con preguntas</h2>
+<p>Un árbol divide el espacio de las variables en rectángulos alineados con los ejes. Cada nodo interno pregunta «¿\(x_j\le t\)?» y envía el caso a la izquierda o a la derecha; cada hoja predice la clase mayoritaria de los casos de entrenamiento que llegaron a ella (o su media, en regresión), y su proporción de clases es la probabilidad.</p>
+<p>El algoritmo CART (Breiman y colaboradores, 1984) crece el árbol de forma <span class="term">voraz</span>: en cada nodo prueba todas las variables y todos los umbrales posibles (los puntos medios entre valores consecutivos) y elige la división que más reduce la impureza. No reconsidera divisiones anteriores; encontrar el árbol óptimo global es un problema NP-difícil.</p>
+</section>
+
+<section>
+<h2>Impureza: Gini y entropía</h2>
+<p>Un nodo es <span class="term">puro</span> si todos sus casos son de la misma clase. Con proporciones \(p_k\) de cada clase en el nodo:</p>
+<div class="eq key" data-name="Impureza y ganancia">\[G=1-\sum_kp_k^2\ \ (\text{Gini}),\qquad H=-\sum_kp_k\log_2p_k\ \ (\text{entropía}),\qquad \Delta=I(\text{padre})-\frac{n_I}{n}I(\text{izq})-\frac{n_D}{n}I(\text{der}).\]</div>
+<ul>
+<li>Gini es la probabilidad de equivocarse al etiquetar un caso al azar con una etiqueta sorteada según las proporciones del nodo. Vale 0 en un nodo puro y 0.5 en un nodo binario 50/50.</li>
+<li>La entropía mide la incertidumbre en bits; su reducción es la <span class="term">ganancia de información</span>. En la práctica Gini y entropía eligen casi siempre la misma división.</li>
+<li>La ganancia pondera cada hijo por su tamaño: una división que aísla un solo caso puro casi no gana nada.</li>
+</ul>
+<div class="box ex"><p>Un nodo con 100 tumores (60 benignos, 40 malignos) tiene \(G=1-0.6^2-0.4^2=0.48\). La división «perímetro ≤ 106» produce un hijo con 55 benignos y 5 malignos (\(G=1-0.917^2-0.083^2=0.153\)) y otro con 5 y 35 (\(G=1-0.125^2-0.875^2=0.219\)). La impureza ponderada es \(0.6\cdot0.153+0.4\cdot0.219=0.179\); la ganancia, \(0.48-0.179=0.301\).</p></div>
+<div class="sim" data-sim="elegir-corte" data-title="Buscar el mejor umbral para una variable"></div>
+<div class="sim-guide"><ul>
+<li>Mueva el umbral: las barras muestran la composición de cada hijo y la curva, la ganancia de Gini para cada umbral posible.</li>
+<li>El algoritmo elige el máximo de la curva (marca verde). Compare las dos variables: CART haría lo mismo con todas y se quedaría con la mejor.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Crecer, detener y podar</h2>
+<p>Si nada lo detiene, el árbol crece hasta que cada hoja es pura: exactitud de entrenamiento perfecta y sobreajuste seguro. Hay dos estrategias:</p>
+<ul>
+<li><b>Detener antes</b> (prepoda): <span class="hp">max_depth</span>, <span class="hp">min_samples_leaf</span>, <span class="hp">min_samples_split</span>, <span class="hp">max_leaf_nodes</span>, <span class="hp">min_impurity_decrease</span>. Simple y eficaz; <code>min_samples_leaf</code> entre 5 y 50 suele ser el control más útil.</li>
+<li><b>Podar después</b>: crecer el árbol completo y recortar las ramas que menos aportan. La <span class="term">poda de costo–complejidad</span> minimiza \(R_\alpha(T)=R(T)+\alpha\,\abs{T}\), donde \(R\) es la impureza total de las hojas y \(\abs T\) su número. Cada \(\alpha\) da un subárbol; \(\alpha\) se elige por validación cruzada (<code>ccp_alpha</code>).</li>
+</ul>
+<div class="sim" data-sim="arbol-crece" data-title="Un árbol que crece: particiones y diagrama"></div>
+<div class="sim-guide"><ul>
+<li>Cada nivel de profundidad parte los rectángulos en dos. Las fronteras son siempre escalones paralelos a los ejes; para aproximar una diagonal hacen falta muchas divisiones.</li>
+<li>Profundidad 2–4: una frontera sencilla. Sin límite: rectángulos diminutos alrededor de puntos aislados y la exactitud de prueba baja.</li>
+<li>Suba \(\alpha\) de poda: las ramas que aportan poco desaparecen del diagrama y del mapa.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Árboles de regresión e inestabilidad</h2>
+<p>En regresión la impureza es la varianza (error cuadrático) de \(y\) en el nodo y cada hoja predice la media. El resultado es una función escalonada. Los árboles no extrapolan: fuera del rango de entrenamiento predicen el valor de la hoja del borde.</p>
+<div class="sim" data-sim="arbol-regresion" data-title="Un árbol de regresión y su inestabilidad"></div>
+<div class="sim-guide"><ul>
+<li>Cada nivel duplica como mucho el número de escalones. Con profundidad grande la curva persigue cada punto.</li>
+<li>Active «diez muestras bootstrap»: diez árboles ajustados a remuestreos de los mismos datos dibujan escalones muy distintos. Esa varianza es el defecto de los árboles y la razón de los bosques (capítulo 17), cuyo promedio aparece en negro.</li>
+</ul></div>
+<p>La inestabilidad tiene otra cara: un cambio pequeño en los datos puede cambiar la primera pregunta del árbol, y con ella todas las demás. Un árbol se lee bien, pero su lectura no es robusta: dos árboles con la misma exactitud pueden contar historias distintas.</p>
+</section>
+
+<section>
+<h2>Importancias y cuándo usar un árbol</h2>
+<p>La <span class="term">importancia por impureza</span> (MDI, <code>feature_importances_</code>) suma, para cada variable, la reducción de impureza de todas las divisiones que la usan, ponderada por el número de casos. Es gratuita pero sesgada: favorece variables con muchos valores distintos (que ofrecen muchos umbrales) y se calcula sobre los datos de entrenamiento. La <span class="term">importancia por permutación</span> (capítulo 29) es más fiable.</p>
+<div class="box when"><ul>
+<li><b>Úselo</b> cuando la interpretabilidad sea un requisito (reglas que un médico o un regulador pueda auditar), con un árbol poco profundo; como componente de bosques y boosting; para explorar interacciones.</li>
+<li><b>Ventajas</b>: sin escalado; maneja variables mixtas, interacciones y relaciones no monótonas; las implementaciones modernas aceptan faltantes; rápido.</li>
+<li><b>Evítelo</b> como modelo final cuando importe la exactitud: un árbol solo casi siempre pierde contra un bosque o un boosting. También con fronteras diagonales suaves (las aproxima con escaleras) o cuando se necesite extrapolar.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Práctica: un árbol para tumores de mama</h2>
+<div class="box py"><p>El programa ajusta un árbol de profundidad 3 a los 30 rasgos del cáncer de mama (aquí la clase 1 es benigno), imprime sus reglas, recorre la profundidad, elige la poda por validación cruzada y mide la inestabilidad de la primera pregunta.</p>
+<div class="py" data-py="16-arboles"></div></div>
+<div class="box read"><ul>
+<li><b>Las reglas</b>: la raíz pregunta por «worst perimeter» ≤ 106.1. Por la izquierda, casi todos los tumores son benignos (231 de 234 en la primera hoja); por la derecha, con perímetro mayor que 115.35, casi todos malignos (120 de 121). <code>weights</code> son los conteos [malignos, benignos] de entrenamiento en cada hoja: la probabilidad que reporta el árbol en esa hoja es su proporción.</li>
+<li><b>Hojas diminutas</b>: varias hojas tienen 1 caso ([1, 0], [0, 1]). Son divisiones que solo explican un tumor: ruido aprendido, candidatas a poda.</li>
+<li><b>Importancias</b>: «worst perimeter» acapara el 86 % de la reducción de Gini. No significa que las demás variables no sirvan: las muy correlacionadas con el perímetro (radio, área) quedan sin usar porque el perímetro ya hizo su trabajo.</li>
+<li><b>Profundidad</b>: desde profundidad 6 el árbol es completo (16 hojas, entrenamiento 1.000) y la prueba se estanca en 0.906, igual que con profundidad 2. Más complejidad no compró nada. Una logística sobre los mismos datos supera 0.95: un árbol solo es un predictor mediocre.</li>
+<li><b>Poda</b>: el camino tiene 12 valores de \(\alpha\); el mejor por validación cruzada (0.0196) deja un árbol de solo 4 hojas con prueba 0.901, prácticamente lo mismo que el de 16 hojas y mucho más legible.</li>
+<li><b>Inestabilidad</b>: en 20 remuestreos, la raíz es «worst perimeter» solo 12 veces; en las otras 8 es «worst concave points», «worst radius» o «mean concave points». La historia que cuenta el árbol cambia con los datos.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Un árbol parte el espacio en rectángulos con preguntas \(x_j\le t\), elegidas de forma voraz por máxima ganancia de impureza.</li>
+<li>Gini y entropía son casi equivalentes; la ganancia pondera los hijos por tamaño.</li>
+<li>Sin límites sobreajusta: controle profundidad y tamaño de hoja, o pode con \(\alpha\) por validación cruzada.</li>
+<li>No necesita escalado, captura interacciones, no extrapola, es inestable.</li>
+<li>Importancia por impureza: rápida pero sesgada; prefiera la de permutación.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Calcule el Gini y la entropía de un nodo con proporciones 0.9 y 0.1.
+<details><summary>Respuesta</summary><p>\(G=1-0.81-0.01=0.18\); \(H=-0.9\log_20.9-0.1\log_20.1=0.469\) bits.</p></details></li>
+<li><span class="lvl">Básico</span>¿Cuántas hojas tiene como máximo un árbol binario de profundidad 5?
+<details><summary>Respuesta</summary><p>\(2^5=32\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Un nodo de 200 casos (100/100) se divide en hijos de 120 (90/30) y 80 (10/70). Calcule la ganancia de Gini.
+<details><summary>Respuesta</summary><p>Padre 0.5. Izquierdo \(1-0.75^2-0.25^2=0.375\); derecho \(1-0.125^2-0.875^2=0.219\). Ponderado \(0.6\cdot0.375+0.4\cdot0.219=0.3125\). Ganancia 0.1875.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué un árbol no necesita que se estandaricen las variables?
+<details><summary>Respuesta</summary><p>Cada división compara una sola variable con un umbral; una transformación monótona (escalar, logaritmo) solo cambia el valor del umbral, no qué casos van a cada lado.</p></details></li>
+<li><span class="lvl">Avanzado</span>Con dos variables y la frontera verdadera \(x_1=x_2\), ¿cuántas hojas necesita aproximadamente un árbol para seguirla con un error de ancho \(\varepsilon\) en el cuadrado unidad?
+<details><summary>Respuesta</summary><p>Una escalera de escalones de tamaño \(\varepsilon\): del orden de \(1/\varepsilon\) escalones, cada uno con un par de hojas. Con \(\varepsilon=0.01\), cientos de hojas para una frontera que una logística representa con 3 parámetros.</p></details></li>
+</ol>
+<div class="box links"><ul>
+<li><a href="https://scikit-learn.org/stable/modules/tree.html">scikit-learn — Decision Trees</a><small>CART, criterios, consejos prácticos, poda de costo–complejidad y visualización.</small></li>
+<li><a href="https://r2d3.us/visual-intro-to-machine-learning-part-1/">R2D3 — A visual introduction to machine learning</a><small>Un árbol de decisión construido paso a paso con animaciones.</small></li>
+<li><a href="https://mlu-explain.github.io/decision-tree/">MLU-Explain — Decision Trees</a><small>Entropía, ganancia y sobreajuste de los árboles, de forma visual.</small></li>
+<li><a href="https://www.statlearning.com/">ISLP — capítulo 8: Tree-Based Methods</a><small>Árboles, poda y la transición a bagging, bosques y boosting.</small></li>
+</ul></div>
+</section>
+</template>

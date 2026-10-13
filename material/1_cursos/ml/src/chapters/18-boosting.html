@@ -1,0 +1,114 @@
+<template class="chapter-src" data-id="boosting" data-num="18" data-title="Boosting: AdaBoost y gradient boosting" data-part="Parte IV · Ensambles y ajuste" data-short="Aprender de los errores en secuencia; AdaBoost y sus pesos; gradient boosting como descenso de gradiente en funciones; tasa de aprendizaje, árboles y parada temprana; XGBoost, LightGBM y CatBoost">
+<p class="lead">El bosque promedia árboles independientes para reducir la varianza. El boosting construye árboles pequeños en secuencia, cada uno dedicado a corregir lo que los anteriores hacen mal, y así reduce sobre todo el sesgo. Con datos tabulares, el gradient boosting bien ajustado es el algoritmo que gana con más frecuencia, y entenderlo es indispensable para usar XGBoost, LightGBM o CatBoost con criterio.</p>
+
+<section>
+<h2>La idea: aprendices débiles en secuencia</h2>
+<p>Un <span class="term">aprendiz débil</span> es un modelo apenas mejor que el azar, como un tocón (árbol de una sola división). El boosting suma muchos de ellos, ponderados, de modo que cada uno se concentre en lo que el conjunto aún no resuelve:</p>
+<div class="eq key" data-name="Modelo aditivo">\[F_M(\vb x)=F_0(\vb x)+\sum_{m=1}^M\eta\,h_m(\vb x),\qquad h_m\ \text{elegido para reducir la pérdida de }F_{m-1}.\]</div>
+<p>A diferencia del bosque, los árboles no son intercambiables ni se entrenan en paralelo: el árbol \(m\) depende de todos los anteriores. Y a diferencia del bosque, añadir árboles <b>sí</b> puede sobreajustar.</p>
+</section>
+
+<section>
+<h2>AdaBoost: repesar los datos mal clasificados</h2>
+<p>AdaBoost (Freund y Schapire, 1997) mantiene un peso por cada dato. En cada ronda entrena un tocón con esos pesos, mide su error ponderado \(\varepsilon_m\), le asigna un voto y aumenta el peso de los datos que clasificó mal:</p>
+<div class="eq key" data-name="AdaBoost (SAMME)">\[\alpha_m=\eta\Big[\log\frac{1-\varepsilon_m}{\varepsilon_m}+\log(K-1)\Big],\qquad w_i\leftarrow w_i\,\ee^{\alpha_m\,\ind{h_m(\vb x_i)\neq y_i}},\qquad \hat y=\argmax_k\sum_m\alpha_m\ind{h_m(\vb x)=k}.\]</div>
+<div class="sim" data-sim="adaboost-pesos" data-title="AdaBoost ronda a ronda"></div>
+<div class="sim-guide"><ul>
+<li>En la ronda 1 todos los puntos pesan igual y el tocón (línea roja) hace un único corte.</li>
+<li>Avance las rondas: los puntos mal clasificados crecen y los siguientes tocones se ocupan de ellos. La frontera del conjunto (negra) se vuelve tan compleja como haga falta con cortes simples.</li>
+<li>Con ruido alto, AdaBoost termina dando pesos enormes a los puntos ruidosos: es sensible a etiquetas erróneas, porque su pérdida implícita (exponencial) castiga mucho los errores grandes.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Gradient boosting: descenso de gradiente en el espacio de funciones</h2>
+<p>Friedman (2001) generalizó la idea a cualquier pérdida diferenciable. En cada paso se calculan los <span class="term">pseudo-residuos</span>, el gradiente negativo de la pérdida respecto de la predicción actual, y se ajusta un árbol de regresión a ellos:</p>
+<div class="eq key" data-name="Gradient boosting">\[r_{im}=-\left.\pdv{\ell(y_i,F)}{F}\right|_{F=F_{m-1}(\vb x_i)},\qquad h_m\approx\argmin_h\sum_i\big(r_{im}-h(\vb x_i)\big)^2,\qquad F_m=F_{m-1}+\eta\,h_m .\]</div>
+<ul>
+<li>Con error cuadrático, \(r=y-F\): el árbol nuevo aprende literalmente los <b>residuos</b> del modelo actual.</li>
+<li>Con log-loss (clasificación), \(r=y-\sigma(F)\): la diferencia entre la etiqueta y la probabilidad actual. El valor de cada hoja se ajusta con un paso de Newton \(\sum r/\sum p(1-p)\).</li>
+<li>\(F_0\) es la constante óptima: la media de \(y\) o el log-odds de la prevalencia.</li>
+</ul>
+<div class="sim" data-sim="gboost-pasos" data-title="Gradient boosting árbol por árbol"></div>
+<div class="sim-guide"><ul>
+<li>Pulse «Siguiente árbol»: abajo, los residuos actuales (grises) y el tocón que se les ajusta (rojo); arriba, el modelo acumulado, que avanza una fracción \(\eta\) de ese tocón.</li>
+<li>Con \(\eta=1\) el modelo se ajusta rápido pero de forma brusca; con \(\eta=0.1\) necesita muchos más árboles, pero la curva final es más suave y el error de prueba suele ser menor.</li>
+<li>Siga añadiendo árboles hasta 200: el error de entrenamiento baja sin parar y el de prueba termina subiendo.</li>
+</ul></div>
+<div class="box explain"><p>Es como afinar un instrumento: primero un ajuste grueso, luego pequeños retoques donde todavía desafina. Cada retoque corrige el error que queda. Si se retoca demasiado, se termina «afinando» el ruido de la sala.</p></div>
+</section>
+
+<section>
+<h2>Tasa de aprendizaje, número de árboles y parada temprana</h2>
+<p>Los hiperparámetros del boosting interactúan fuertemente:</p>
+<ul>
+<li><span class="hp">learning_rate</span> \(\eta\) (contracción): valores pequeños (0.01–0.1) generalizan mejor pero piden más árboles. \(\eta\) y <span class="hp">n_estimators</span> se ajustan juntos: al dividir \(\eta\) por 10, hacen falta unas 10 veces más iteraciones.</li>
+<li><b>Tamaño de los árboles</b> (<span class="hp">max_depth</span> 3–8 o <span class="hp">num_leaves</span>): controla el orden de las interacciones que se pueden capturar. Árboles de profundidad 1 dan un modelo aditivo sin interacciones.</li>
+<li><b>Submuestreo</b> (<span class="hp">subsample</span>, <span class="hp">colsample_bytree</span> 0.5–0.9): cada árbol ve una parte de las filas o columnas; añade azar como en los bosques y reduce la varianza («boosting estocástico»).</li>
+<li><b>Regularización</b> de las hojas (\(\lambda\) en XGBoost, <span class="hp">min_child_weight</span>, <span class="hp">min_samples_leaf</span>).</li>
+<li><b>Parada temprana</b>: se monitoriza la pérdida en un conjunto de validación y se detiene cuando deja de mejorar durante \(k\) iteraciones. Fija automáticamente el número de árboles para la tasa elegida. Es la regularización más importante del boosting.</li>
+</ul>
+<div class="sim" data-sim="parada-temprana" data-title="Curvas de entrenamiento y validación del boosting"></div>
+<div class="sim-guide"><ul>
+<li>La pérdida de entrenamiento baja siempre. La de validación baja, toca un mínimo y luego sube: ese mínimo es donde debería pararse.</li>
+<li>Con tasa 1 el mínimo llega en pocos árboles y luego la validación empeora rápido; con 0.03 el mínimo es más bajo pero llega mucho más tarde.</li>
+<li>Mueva el número de árboles del mapa: más allá del mínimo, la frontera empieza a rodear puntos ruidosos.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Las bibliotecas modernas</h2>
+<div class="tablewrap"><table class="cmp">
+<thead><tr><th>Biblioteca</th><th>Ideas clave</th><th>Cuándo destaca</th></tr></thead>
+<tbody>
+<tr><td>XGBoost (2016)</td><td>objetivo regularizado con segundo orden (gradiente y hessiano), poda por ganancia mínima, manejo de faltantes, histogramas</td><td>el estándar robusto; ganador histórico de competencias</td></tr>
+<tr><td>LightGBM (2017)</td><td>histogramas, crecimiento por hoja (no por nivel), muestreo por gradiente (GOSS), agrupación de variables exclusivas</td><td>muy rápido con muchos datos; cuidado con <code>num_leaves</code> grande y pocos datos</td></tr>
+<tr><td>CatBoost (2018)</td><td>codificación ordenada de categorías (estadísticos del objetivo sin fuga), árboles simétricos</td><td>muchas variables categóricas; buenos resultados con valores por defecto</td></tr>
+<tr><td><code>HistGradientBoosting</code></td><td>la versión de scikit-learn inspirada en LightGBM; faltantes y categorías nativas, parada temprana por defecto con más de 10 000 filas</td><td>sin dependencias externas; integración total con pipelines</td></tr>
+</tbody></table></div>
+<div class="box law"><p>Con datos tabulares de tamaño medio, los métodos basados en árboles (boosting y bosques) siguen superando en general a las redes neuronales profundas (Grinsztajn, Oyallon y Varoquaux, 2022), por su robustez a variables irrelevantes, a distribuciones irregulares y a funciones no suaves.</p></div>
+</section>
+
+<section>
+<h2>Práctica: boosting con cuatro bibliotecas</h2>
+<div class="box py"><p>El programa estudia la interacción entre la tasa de aprendizaje y el número de árboles, usa parada temprana y compara AdaBoost, un bosque, <code>HistGradientBoosting</code>, XGBoost y LightGBM sobre 20 000 casos sintéticos con 30 variables. La primera parte entrena 4 000 árboles y tarda unos minutos.</p>
+<div class="py" data-py="18-boosting"></div></div>
+<div class="box read"><ul>
+<li><b>Tasa y árboles</b>: con \(\eta=1\) el mínimo de validación llega con solo 18 árboles (log-loss 0.307) y con 1 000 árboles la pérdida se dispara a 0.753: sobreajuste severo. Con 0.3, el mínimo está en 178 árboles; con 0.1, en 759 y es el más bajo (0.219); con 0.03 ni siquiera 1 000 árboles alcanzan el mínimo (0.238 y sigue bajando). Tasa menor, mejor resultado, más árboles.</li>
+<li><b>Parada temprana</b>: <code>HistGradientBoosting</code> se detuvo solo en 317 de 2 000 iteraciones posibles.</li>
+<li><b>Comparación</b>: los tres gradient boosting quedan prácticamente empatados (AUC 0.982–0.983, log-loss 0.158–0.159), por encima del bosque (0.979 y 0.247: el bosque ordena casi igual pero sus probabilidades son peores). XGBoost y LightGBM pararon solos con unos 540 árboles.</li>
+<li><b>AdaBoost</b> con tocones queda lejos (AUC 0.891) y su log-loss (0.624) muestra que sus puntuaciones no son probabilidades: los tocones no pueden representar las interacciones de estos datos y SAMME no está pensado para estimar probabilidades.</li>
+<li><b>Tiempo</b>: <code>HistGradientBoosting</code> tardó 2.3 s, XGBoost 4.2 s y LightGBM 7.0 s en esta máquina (sin GPU); AdaBoost, 18 s. Los tiempos dependen del hardware; las diferencias de exactitud entre las tres primeras, no tanto.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Boosting: árboles pequeños en secuencia, cada uno corrige al conjunto; reduce sesgo.</li>
+<li>AdaBoost repesa los datos mal clasificados; es sensible al ruido de etiquetas.</li>
+<li>Gradient boosting ajusta cada árbol al gradiente negativo de la pérdida (los residuos, con error cuadrático).</li>
+<li>Tasa pequeña + muchos árboles + parada temprana; profundidad 3–8; submuestreo de filas y columnas.</li>
+<li>XGBoost, LightGBM, CatBoost y HistGradientBoosting: misma idea, distintas optimizaciones.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Con \(F_0=\bar y=10\), un dato con \(y=13\) y error cuadrático, ¿cuál es el residuo que verá el primer árbol? Si ese árbol predice 2.5 para el dato y \(\eta=0.2\), ¿cuánto vale \(F_1\)?
+<details><summary>Respuesta</summary><p>Residuo 3. \(F_1=10+0.2\cdot2.5=10.5\).</p></details></li>
+<li><span class="lvl">Básico</span>Un tocón de AdaBoost tiene error ponderado 0.3 en un problema binario. ¿Cuánto vale su voto \(\alpha\) con \(\eta=1\)?
+<details><summary>Respuesta</summary><p>\(\log(0.7/0.3)=0.847\) (el término \(\log(K-1)\) es 0 con \(K=2\)).</p></details></li>
+<li><span class="lvl">Intermedio</span>Para log-loss con \(F=0\) (probabilidad 0.5), ¿cuál es el pseudo-residuo de un positivo y de un negativo?
+<details><summary>Respuesta</summary><p>\(y-\sigma(0)\): 0.5 para el positivo y −0.5 para el negativo.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué, a diferencia del bosque, añadir árboles al boosting puede sobreajustar?
+<details><summary>Respuesta</summary><p>Cada árbol nuevo se ajusta a los residuos de entrenamiento y aumenta la capacidad del modelo sumado; cuando lo que queda en los residuos es ruido, los árboles siguen ajustándolo. En el bosque, los árboles se promedian, no se suman.</p></details></li>
+<li><span class="lvl">Avanzado</span>Muestre que gradient boosting con pérdida absoluta ajusta cada árbol al signo de los residuos. ¿Qué ventaja tiene?
+<details><summary>Respuesta</summary><p>\(-\partial\abs{y-F}/\partial F=\sgn(y-F)\): cada dato empuja con fuerza ±1 sin importar el tamaño de su error, así que los atípicos no dominan el ajuste (robustez, como la mediana del capítulo 9).</p></details></li>
+</ol>
+<div class="box links"><ul>
+<li><a href="https://scikit-learn.org/stable/modules/ensemble.html#gradient-boosted-trees">scikit-learn — Gradient-boosted trees</a><small>GradientBoosting e HistGradientBoosting: pérdidas, contracción, submuestreo y parada temprana.</small></li>
+<li><a href="https://doi.org/10.1214/aos/1013203451">Friedman (2001) — Greedy function approximation: a gradient boosting machine</a><small>El artículo que formuló el gradient boosting.</small></li>
+<li><a href="https://arxiv.org/abs/1603.02754">Chen y Guestrin (2016) — XGBoost: A Scalable Tree Boosting System</a><small>El objetivo regularizado de segundo orden y las optimizaciones de sistema.</small></li>
+<li><a href="https://lightgbm.readthedocs.io/en/latest/Parameters-Tuning.html">LightGBM — Parameters Tuning</a><small>Guía práctica para num_leaves, min_data_in_leaf y la tasa de aprendizaje.</small></li>
+<li><a href="https://arxiv.org/abs/2207.08815">Grinsztajn, Oyallon y Varoquaux (2022) — Why do tree-based models still outperform deep learning on tabular data?</a><small>Comparación sistemática entre árboles y redes en datos tabulares.</small></li>
+</ul></div>
+</section>
+</template>

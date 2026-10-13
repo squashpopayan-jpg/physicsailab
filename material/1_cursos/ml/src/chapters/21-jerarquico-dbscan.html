@@ -1,0 +1,100 @@
+<template class="chapter-src" data-id="jerarquico-dbscan" data-num="21" data-title="Agrupamiento jerárquico y por densidad" data-part="Parte V · Aprendizaje no supervisado" data-short="Aglomerativo y dendrogramas; enlaces simple, completo, promedio y de Ward; DBSCAN: núcleos, bordes y ruido; elegir ε; HDBSCAN; comparar agrupamientos">
+<p class="lead">k-medias necesita saber cuántos grupos hay y supone que son redondos. Dos familias evitan esos supuestos: el agrupamiento jerárquico construye todas las particiones posibles a la vez y deja elegir después, y los métodos por densidad definen un grupo como una región poblada rodeada de vacío, sin importar su forma, y marcan como ruido lo que no pertenece a ninguna.</p>
+
+<section>
+<h2>Agrupamiento aglomerativo</h2>
+<p>El método aglomerativo empieza con cada punto como su propio grupo y, en cada paso, fusiona los dos grupos más cercanos, hasta que queda uno solo. Las \(n-1\) fusiones forman un árbol, el <span class="term">dendrograma</span>, cuya altura de cada unión es la distancia a la que se fusionaron. Cortarlo a una altura da una partición; cortarlo más abajo, más grupos.</p>
+<p>Todo depende de cómo se mide la distancia entre dos grupos \(A\) y \(B\), el <span class="term">enlace</span>:</p>
+<div class="eq key" data-name="Enlaces">\[d_\text{simple}=\min_{a\in A,b\in B}d(a,b),\quad d_\text{completo}=\max_{a,b}d(a,b),\quad d_\text{promedio}=\frac{1}{\abs A\abs B}\sum_{a,b}d(a,b),\quad d_\text{Ward}=\sqrt{\frac{2\abs A\abs B}{\abs A+\abs B}}\,\norm{\bar{\vb a}-\bar{\vb b}} .\]</div>
+<ul>
+<li><b>Simple</b>: sigue cadenas de puntos cercanos; encuentra formas alargadas o curvas, pero un puente de pocos puntos une grupos distintos (efecto cadena) y el ruido lo arruina.</li>
+<li><b>Completo</b>: grupos compactos de diámetro parecido; sensible a atípicos.</li>
+<li><b>Promedio</b>: un compromiso entre ambos.</li>
+<li><b>Ward</b>: fusiona el par que menos aumenta la inercia total; da grupos compactos y de tamaño parecido, como k-medias. Es la opción por defecto en scikit-learn.</li>
+</ul>
+<div class="sim" data-sim="dendrograma" data-title="Dendrograma y corte en k grupos"></div>
+<div class="sim-guide"><ul>
+<li>La línea roja es el corte: cada rama que cruza por debajo es un grupo. Un salto grande en la altura de las fusiones indica un corte natural.</li>
+<li>Con «dos nubes y un puente», el enlace simple une ambas nubes a través del puente; Ward las separa.</li>
+<li>Con las lunas, el enlace simple sigue su forma curva (sin ruido); Ward las corta como k-medias.</li>
+</ul></div>
+<p>El costo es su límite: el algoritmo básico guarda todas las distancias por pares (\(O(n^2)\) de memoria) y tarda entre \(O(n^2)\) y \(O(n^3)\). Sirve para miles de puntos, no para millones. A cambio, el dendrograma es una herramienta exploratoria excelente: muestra la estructura a todas las escalas.</p>
+</section>
+
+<section>
+<h2>DBSCAN: grupos como regiones densas</h2>
+<p>DBSCAN (Ester y colaboradores, 1996) tiene dos parámetros: un radio \(\varepsilon\) y un número mínimo de vecinos \(m\) (<code>min_samples</code>, que incluye al propio punto). Clasifica cada punto en:</p>
+<ul>
+<li><b>Núcleo</b>: tiene al menos \(m\) puntos a distancia \(\le\varepsilon\).</li>
+<li><b>Borde</b>: no es núcleo pero está a distancia \(\le\varepsilon\) de uno.</li>
+<li><b>Ruido</b>: ni lo uno ni lo otro.</li>
+</ul>
+<p>Un grupo es el conjunto de núcleos conectados entre sí por cadenas de vecinos, más sus bordes. No hay que fijar el número de grupos, las formas pueden ser arbitrarias y los atípicos quedan identificados como ruido.</p>
+<div class="sim" data-sim="dbscan" data-title="DBSCAN con radio ε y vecinos mínimos"></div>
+<div class="sim-guide"><ul>
+<li>Con \(\varepsilon\) bien elegido, las dos lunas son dos grupos y los puntos sueltos quedan como ruido (×).</li>
+<li>Con \(\varepsilon\) pequeño, casi todo es ruido y aparecen muchos grupos diminutos. Con \(\varepsilon\) grande, todo se une en un solo grupo.</li>
+<li>La gráfica de la derecha ordena la distancia de cada punto a su \(m\)-ésimo vecino. El codo, donde la curva se dispara, separa los puntos de zonas densas del ruido: un buen \(\varepsilon\).</li>
+<li>Con densidades distintas, ningún \(\varepsilon\) sirve para ambos grupos: o el difuso se desintegra en ruido o el compacto se fusiona con todo lo que lo rodea.</li>
+</ul></div>
+<div class="box note"><p><b>HDBSCAN</b> (Campello, Moulavi y Sander, 2013) resuelve el problema de las densidades distintas: construye la jerarquía de DBSCAN para todos los \(\varepsilon\) y elige los grupos más estables. Su parámetro principal, <code>min_cluster_size</code>, es mucho más intuitivo que \(\varepsilon\). Está en scikit-learn desde la versión 1.3.</p></div>
+</section>
+
+<section>
+<h2>Comparar agrupamientos</h2>
+<p>Cuando existen etiquetas de referencia (para validar un método, no para entrenarlo), se usan índices que no dependen de los nombres de los grupos:</p>
+<ul>
+<li><b>Índice de Rand ajustado</b> (ARI): proporción de pares de puntos en los que ambas particiones coinciden (juntos o separados), corregida por azar. 1 = idénticas, ≈ 0 = como al azar.</li>
+<li><b>Información mutua normalizada</b> (NMI): cuánta información comparten las dos particiones.</li>
+</ul>
+<p>Sin etiquetas, la silueta y el índice de Davies–Bouldin miden compacidad y separación, pero favorecen grupos convexos: castigan a DBSCAN aunque encuentre las lunas perfectamente. La <b>estabilidad</b> ante remuestreos y, sobre todo, la <b>utilidad</b> de los grupos para la decisión que motivó el análisis son los criterios definitivos.</p>
+<div class="box when"><ul>
+<li><b>k-medias / Ward</b>: grupos compactos, muchos datos, número de grupos aproximadamente conocido.</li>
+<li><b>Mezclas gaussianas</b>: grupos elípticos, pertenencia probabilística, selección de \(k\) por BIC.</li>
+<li><b>Aglomerativo</b>: exploración a varias escalas, pocos miles de puntos, interés en la jerarquía (taxonomías).</li>
+<li><b>DBSCAN / HDBSCAN</b>: formas arbitrarias, ruido y atípicos, número de grupos desconocido.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Práctica: lunas con ruido y densidades distintas</h2>
+<div class="box py"><p>El programa compara k-medias, cuatro enlaces aglomerativos, DBSCAN con varios radios y HDBSCAN sobre dos lunas con 20 puntos de ruido; luego prueba un caso con densidades muy distintas y corta un dendrograma a varias alturas.</p>
+<div class="py" data-py="21-jerarquico-dbscan"></div></div>
+<div class="box read"><ul>
+<li><b>Métodos de partición</b>: k-medias (ARI 0.263) y Ward (0.324) cortan las lunas en dos mitades redondas. Promedio, completo y simple dan ARI ≈ 0: con los 20 puntos de ruido, el enlace simple deja un punto aislado como «grupo» y junta todo lo demás. Ninguno de estos métodos tiene noción de ruido.</li>
+<li><b>Elegir ε</b>: la distancia al 5.º vecino es 0.071 en la mediana, 0.161 en el percentil 95 y salta a 0.573 en el 99: el codo está entre 0.13 y 0.16. Con \(\varepsilon=0.15\), DBSCAN encuentra exactamente 2 grupos con ARI 0.995 y marca 14 puntos como ruido (13 de los 20 reales; los otros 7 cayeron cerca de las lunas). Con 0.05 hay 21 grupos y 293 puntos de ruido; con 0.3 o más, todo es un solo grupo.</li>
+<li><b>HDBSCAN</b> encuentra los 2 grupos (ARI 0.976) y 20 puntos de ruido sin que haya que elegir \(\varepsilon\).</li>
+<li><b>Densidades distintas</b>: con \(\varepsilon=0.2\) el grupo difuso se rompe (4 grupos, 267 de ruido); con 0.5 se obtienen 2 grupos pero 48 puntos del borde difuso quedan como ruido. HDBSCAN da 2 grupos con ARI 0.810.</li>
+<li><b>Dendrograma</b>: cortado a alturas 2, 5 y 15 da 8, 4 y 2 grupos. Una sola construcción, todas las particiones.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Aglomerativo: fusiones sucesivas; el dendrograma resume todas las particiones; el enlace define el resultado.</li>
+<li>Simple encadena; completo y Ward compactan; promedio está en medio.</li>
+<li>DBSCAN: núcleos, bordes y ruido; formas arbitrarias; elija ε en el codo de la gráfica de distancias k.</li>
+<li>HDBSCAN maneja densidades distintas con un parámetro más intuitivo.</li>
+<li>Compare con ARI si hay referencia; valide estabilidad y utilidad.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Puntos en una recta: 0, 1, 5, 6, 20. Con enlace simple, ¿en qué orden se fusionan?
+<details><summary>Respuesta</summary><p>{0,1} a distancia 1, {5,6} a 1, luego {0,1}+{5,6} a 4, y por último con 20 a distancia 14.</p></details></li>
+<li><span class="lvl">Básico</span>Con \(m=4\), un punto tiene 2 vecinos a menos de \(\varepsilon\), uno de ellos núcleo. ¿Qué es?
+<details><summary>Respuesta</summary><p>Borde: no alcanza los 4 vecinos para ser núcleo, pero está a menos de \(\varepsilon\) de un núcleo.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué la silueta puede preferir k-medias aunque DBSCAN recupere perfectamente dos lunas?
+<details><summary>Respuesta</summary><p>La silueta compara distancias medias dentro y entre grupos; las lunas son alargadas y curvas, así que dentro de cada una hay puntos lejanos entre sí y cerca de la otra luna. Mide compacidad convexa, no conectividad.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Qué complejidad de memoria tiene el aglomerativo básico con \(n=100\,000\) y por qué es un problema?
+<details><summary>Respuesta</summary><p>La matriz de distancias tiene \(n^2/2=5\times10^9\) entradas: unos 40 GB en doble precisión. Hay que submuestrear o usar métodos que no guarden todas las distancias.</p></details></li>
+<li><span class="lvl">Avanzado</span>Muestre que, en una dimensión, el enlace simple produce los mismos grupos que cortar en los \(k-1\) huecos más grandes entre puntos consecutivos.
+<details><summary>Respuesta</summary><p>En 1D la distancia mínima entre dos grupos contiguos es el hueco entre sus extremos; el enlace simple fusiona siempre el hueco más pequeño, así que las últimas \(k-1\) fusiones (que se deshacen al cortar en \(k\) grupos) son los \(k-1\) huecos más grandes.</p></details></li>
+</ol>
+<div class="box links"><ul>
+<li><a href="https://scikit-learn.org/stable/modules/clustering.html#hierarchical-clustering">scikit-learn — Hierarchical clustering</a><small>Enlaces, restricciones de conectividad y dendrogramas.</small></li>
+<li><a href="https://scikit-learn.org/stable/modules/clustering.html#dbscan">scikit-learn — DBSCAN y HDBSCAN</a><small>Definiciones de núcleo, borde y ruido; parámetros y complejidad.</small></li>
+<li><a href="https://hdbscan.readthedocs.io/en/latest/how_hdbscan_works.html">How HDBSCAN Works</a><small>Explicación paso a paso de la jerarquía de densidades y la selección de grupos estables.</small></li>
+<li><a href="https://docs.scipy.org/doc/scipy/reference/cluster.hierarchy.html">SciPy — Hierarchical clustering (scipy.cluster.hierarchy)</a><small>linkage, dendrogram y fcluster para dibujar y cortar dendrogramas.</small></li>
+</ul></div>
+</section>
+</template>

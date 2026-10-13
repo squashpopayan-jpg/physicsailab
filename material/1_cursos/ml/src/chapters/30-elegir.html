@@ -1,0 +1,92 @@
+<template class="chapter-src" data-id="elegir" data-num="30" data-title="Cómo elegir el algoritmo" data-part="Parte VII · Práctica profesional" data-short="No hay almuerzo gratis; preguntas que deciden; tabla comparativa de algoritmos; líneas base; una arena con ocho algoritmos; comparación real en tres conjuntos de datos">
+<p class="lead">No existe el mejor algoritmo en abstracto: el teorema de «no hay almuerzo gratis» (Wolpert, 1996) dice que, promediado sobre todos los problemas posibles, ningún método supera a otro. Lo que existe es el mejor algoritmo para un tipo de datos, un tamaño, un costo de error y unas restricciones de uso. Este capítulo reúne los criterios de todo el curso en una guía de decisión y la pone a prueba.</p>
+
+<section>
+<h2>Las preguntas que deciden</h2>
+<ol>
+<li><b>¿Qué se predice y cómo se juzga?</b> Regresión, clasificación, grupos o anomalías; la métrica y el costo de cada error (capítulos 9, 11 y 12).</li>
+<li><b>¿Qué tipo de datos?</b> Con tablas de variables heterogéneas dominan los árboles potenciados; con imágenes, audio y texto, las redes profundas preentrenadas.</li>
+<li><b>¿Cuántos datos?</b> Con cientos de filas, modelos simples y regularizados; con millones, casi cualquier modelo flexible y el costo computacional pasa a importar.</li>
+<li><b>¿Hay que explicar cada decisión?</b> Si la regulación o el usuario lo exigen, un modelo intrínsecamente interpretable puede valer más que un punto de exactitud.</li>
+<li><b>¿Dónde y con qué rapidez se usará?</b> Latencia, memoria, actualización frecuente, dispositivo.</li>
+<li><b>¿Cómo son las variables?</b> Escalas distintas, categóricas de alta cardinalidad, faltantes, muchas irrelevantes, estructura temporal o de grupos.</li>
+</ol>
+<div class="sim" data-sim="asistente-algoritmo" data-title="Asistente: por dónde empezar"></div>
+<div class="sim-guide"><ul>
+<li>Describa su problema con los controles. El asistente aplica las reglas del curso y propone un orden para probar, con las razones.</li>
+<li>Es un punto de partida, no un veredicto: la decisión final la da la validación cruzada con sus datos.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Tabla comparativa</h2>
+<div class="tablewrap"><table class="cmp">
+<thead><tr><th>Algoritmo</th><th>Escalar</th><th>No linealidad</th><th>Interpretable</th><th>Datos ideales</th><th>Hiperparámetros clave</th><th>Cuidado con</th></tr></thead>
+<tbody>
+<tr><td>Regresión lineal / logística</td><td class="y">sí (si se regulariza)</td><td class="n">solo con rasgos</td><td class="y">alta</td><td>pocos a muchos</td><td>α o C, penalización L1/L2</td><td>colinealidad, separación perfecta, relaciones curvas</td></tr>
+<tr><td>k vecinos</td><td class="y">imprescindible</td><td class="y">sí</td><td class="m">media (casos)</td><td>pocas variables, datos densos</td><td>k, distancia, pesos</td><td>dimensión alta, variables irrelevantes, predicción lenta</td></tr>
+<tr><td>Bayes ingenuo</td><td class="m">no</td><td class="m">limitada</td><td class="y">alta</td><td>texto, conteos, pocos datos</td><td>suavizado α</td><td>probabilidades descalibradas</td></tr>
+<tr><td>LDA / QDA</td><td class="m">no</td><td class="m">QDA cuadrática</td><td class="y">alta</td><td>pocos datos, clases normales</td><td>regularización de la covarianza</td><td>atípicos, no normalidad</td></tr>
+<tr><td>SVM con núcleo</td><td class="y">imprescindible</td><td class="y">sí</td><td class="n">baja</td><td>pocos a decenas de miles</td><td>C, γ, núcleo</td><td>costo n²–n³, probabilidades, ajuste de C y γ</td></tr>
+<tr><td>Árbol de decisión</td><td class="n">no hace falta</td><td class="y">sí (escalones)</td><td class="y">alta si es pequeño</td><td>cualquiera</td><td>profundidad, mínimo por hoja, poda</td><td>inestabilidad, sobreajuste, no extrapola</td></tr>
+<tr><td>Bosque aleatorio</td><td class="n">no hace falta</td><td class="y">sí</td><td class="m">media (importancias)</td><td>tabular, cientos a millones</td><td>número de árboles, max_features</td><td>modelos grandes, MDI sesgada, no extrapola</td></tr>
+<tr><td>Gradient boosting</td><td class="n">no hace falta</td><td class="y">sí</td><td class="m">media (SHAP)</td><td>tabular, miles a millones</td><td>tasa, árboles, profundidad, submuestreo</td><td>sobreajuste sin parada temprana, ajuste fino</td></tr>
+<tr><td>Red neuronal densa</td><td class="y">imprescindible</td><td class="y">sí</td><td class="n">baja</td><td>muchos datos</td><td>arquitectura, tasa, regularización</td><td>muchas decisiones de entrenamiento; con tablas suele perder contra boosting</td></tr>
+<tr><td>CNN / transformer preentrenado</td><td class="y">normalizar</td><td class="y">sí</td><td class="n">baja</td><td>imágenes, texto, audio</td><td>qué capas ajustar, tasa, aumento</td><td>costo computacional, sesgos del preentrenamiento</td></tr>
+</tbody></table></div>
+<div class="box law"><p>Un orden de prueba que rara vez falla con datos tabulares: (1) línea base trivial; (2) modelo lineal regularizado con un buen preprocesamiento; (3) bosque aleatorio con valores por defecto; (4) gradient boosting con parada temprana; (5) ajuste de hiperparámetros del mejor. Si la diferencia entre (2) y (4) es pequeña, el modelo lineal suele ser la mejor elección: más simple, más rápido, más explicable y más estable.</p></div>
+</section>
+
+<section>
+<h2>Una arena: ocho algoritmos, los mismos datos</h2>
+<div class="sim" data-sim="arena" data-title="Arena: el mismo conjunto de datos para ocho algoritmos"></div>
+<div class="sim-guide"><ul>
+<li>Con datos lineales, la logística es tan buena como cualquier otro y su frontera es la más sencilla.</li>
+<li>Con espirales o XOR, la logística y Bayes ingenuo fracasan; los métodos flexibles (SVM RBF, bosques, boosting, red) compiten entre sí.</li>
+<li>Con pocos puntos y mucho ruido, los modelos más flexibles sobreajustan y las diferencias entre los mejores caben en el ruido de la prueba.</li>
+<li>Observe las formas: escalones paralelos a los ejes en los árboles, curvas suaves en la SVM y la red, islas en k-NN.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Práctica: el mismo protocolo en tres problemas</h2>
+<div class="box py"><p>El programa compara nueve modelos (incluida la línea base) con la misma validación cruzada estratificada de 5 pliegues en tres conjuntos: el cáncer de mama (tabla pequeña y limpia), los dígitos (imágenes pequeñas) y una tabla sintética con 30 de sus 40 variables inútiles y 5 % de etiquetas erróneas.</p>
+<div class="py" data-py="30-elegir"></div></div>
+<div class="box read"><ul>
+<li><b>No hay un ganador universal</b>: en el cáncer de mama gana la regresión logística (0.979), empatada con la red; en los dígitos, la SVM RBF (0.981); en la tabla con variables inútiles, el gradient boosting (0.897) y el bosque (0.892).</li>
+<li><b>Cáncer de mama</b>: la frontera es casi lineal en las 30 variables estandarizadas; los árboles (0.926) y el bosque (0.958) quedan por debajo de los modelos lineales. Con 569 casos, la diferencia entre 0.979 y 0.970 (boosting) son unos 5 tumores: dentro del ruido (desviaciones de ±0.01).</li>
+<li><b>Dígitos</b>: los métodos basados en distancias y en núcleos brillan (k-NN 0.974, SVM 0.981) porque los píxeles están en la misma escala y los dígitos parecidos son vecinos. El árbol solo es el peor (0.838).</li>
+<li><b>Tabla sintética</b>: los métodos de árboles ignoran las 30 variables inútiles; k-NN (0.804) y la red (0.829) sufren con ellas, y la logística no captura las interacciones (0.825). Así se ven los datos tabulares reales en los que dominan los árboles.</li>
+<li><b>Línea base</b>: 0.627, 0.101 y 0.501. Sin ella, 0.80 en la tabla sintética podría parecer mal o bien: es 30 puntos sobre el azar.</li>
+<li><b>Tiempo</b>: la logística entrena en milisegundos; boosting, bosque y red en décimas a segundos. Con datos de este tamaño el tiempo no decide, pero con millones de filas sí.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Ningún algoritmo es el mejor en general: decida por tipo de datos, tamaño, costo de error y restricciones.</li>
+<li>Tablas: líneas base, modelo lineal, bosque, boosting. Imágenes y texto: modelos preentrenados.</li>
+<li>Compare siempre con el mismo protocolo, la misma métrica y una línea base, e interprete las diferencias con su incertidumbre.</li>
+<li>Ante empate, gana el modelo más simple, rápido y explicable.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Tiene 300 pacientes, 12 variables clínicas y debe explicar cada predicción a los médicos. ¿Qué probaría primero?
+<details><summary>Respuesta</summary><p>Regresión logística regularizada (odds ratios) y un árbol poco profundo, contra una línea base; un boosting solo como referencia de cuánto se pierde por interpretar.</p></details></li>
+<li><span class="lvl">Básico</span>Clasificar 50 000 fotos de productos en 20 categorías. ¿Qué haría?
+<details><summary>Respuesta</summary><p>Transferencia de aprendizaje con una CNN o ViT preentrenado, ajustando la última capa (o las últimas) con aumento de datos.</p></details></li>
+<li><span class="lvl">Intermedio</span>Dos modelos obtienen 0.912 ± 0.010 y 0.918 ± 0.012 en validación cruzada de 5 pliegues. ¿Cuál elige?
+<details><summary>Respuesta</summary><p>La diferencia (0.006) es menor que la desviación entre pliegues; compare las diferencias pareadas por pliegue y, si siguen sin ser consistentes, elija por simplicidad, costo o interpretabilidad.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué k-NN pierde mucho en la tabla sintética del programa y no en los dígitos?
+<details><summary>Respuesta</summary><p>En la tabla, 30 de 40 variables son ruido y dominan la distancia; en los dígitos casi todos los píxeles aportan y están en la misma escala.</p></details></li>
+<li><span class="lvl">Avanzado</span>Explique el teorema de «no hay almuerzo gratis» y por qué, aun así, el gradient boosting gana tan a menudo con datos tabulares.
+<details><summary>Respuesta</summary><p>Promediado sobre todas las funciones objetivo posibles (incluidas las caóticas), todos los algoritmos rinden igual. Los problemas reales no son uniformes: las tablas reales tienen interacciones de orden bajo, variables irrelevantes y relaciones irregulares, exactamente el sesgo inductivo de los árboles potenciados.</p></details></li>
+</ol>
+<div class="box links"><ul>
+<li><a href="https://scikit-learn.org/stable/machine_learning_map.html">scikit-learn — Choosing the right estimator</a><small>El clásico diagrama de decisión de scikit-learn.</small></li>
+<li><a href="https://doi.org/10.1162/neco.1996.8.7.1341">Wolpert (1996) — The Lack of A Priori Distinctions Between Learning Algorithms</a><small>El teorema de «no hay almuerzo gratis» para el aprendizaje supervisado.</small></li>
+<li><a href="https://arxiv.org/abs/2207.08815">Grinsztajn, Oyallon y Varoquaux (2022) — Why do tree-based models still outperform deep learning on tabular data?</a><small>Evidencia sistemática sobre árboles frente a redes en tablas.</small></li>
+<li><a href="https://developers.google.com/machine-learning/guides/rules-of-ml">Google — Rules of Machine Learning</a><small>43 reglas prácticas de ingeniería de ML: empezar simple, medir, iterar.</small></li>
+</ul></div>
+</section>
+</template>

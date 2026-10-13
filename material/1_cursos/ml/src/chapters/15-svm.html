@@ -1,0 +1,99 @@
+<template class="chapter-src" data-id="svm" data-num="15" data-title="Máquinas de vectores de soporte" data-part="Parte III · Clasificación" data-short="Margen máximo; vectores de soporte; margen blando y C; pérdida bisagra; el truco del núcleo; RBF y γ; ajustar C y γ; costo y escala; SVR">
+<p class="lead">Entre las infinitas rectas que separan dos clases, la máquina de vectores de soporte (SVM) elige la que deja el mayor pasillo libre entre ellas. De esa idea geométrica salen una solución que depende solo de unos pocos puntos, una pérdida robusta y, con el truco del núcleo, fronteras no lineales sin construir explícitamente las nuevas variables.</p>
+
+<section>
+<h2>El margen máximo</h2>
+<p>Con etiquetas \(y_i\in\{-1,+1\}\), un clasificador lineal decide con el signo de \(f(\vb x)=\vb w\cdot\vb x+b\). Si los datos son separables, la distancia del hiperplano a los puntos más cercanos de cada lado, el <span class="term">margen</span>, vale \(1/\norm{\vb w}\) cuando se normaliza \(y_if(\vb x_i)\ge1\). Maximizar el margen es minimizar \(\norm{\vb w}\):</p>
+<div class="eq key" data-name="SVM de margen duro">\[\min_{\vb w,b}\ \tfrac12\norm{\vb w}^2\qquad\text{sujeto a}\qquad y_i(\vb w\cdot\vb x_i+b)\ge1\quad\forall i .\]</div>
+<p>Los puntos que quedan exactamente sobre el borde del pasillo son los <span class="term">vectores de soporte</span>. La solución depende solo de ellos: mover o quitar cualquier otro punto (sin cruzar el pasillo) no cambia nada.</p>
+<div class="sim" data-sim="svm-margen" data-title="El pasillo más ancho entre dos clases"></div>
+<div class="sim-guide"><ul>
+<li>Arrastre los puntos. Los vectores de soporte (con anillo) son los que tocan el borde del pasillo; mover los demás no cambia la frontera mientras no entren en él.</li>
+<li>Lleve un punto azul al lado naranja: con \(C\) grande la SVM estrecha el pasillo para clasificarlo bien; con \(C\) pequeño acepta el error y conserva un pasillo ancho.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Margen blando: el papel de C</h2>
+<p>Con datos reales casi nunca hay separación perfecta. La SVM de <span class="term">margen blando</span> permite violaciones \(\xi_i\ge0\) y las castiga:</p>
+<div class="eq key" data-name="SVM de margen blando y pérdida bisagra">\[\min_{\vb w,b}\ \tfrac12\norm{\vb w}^2+C\sum_{i=1}^n\xi_i,\quad \xi_i=\max\big(0,\ 1-y_if(\vb x_i)\big)\qquad\Longleftrightarrow\qquad \min\ \sum_i\ell_\text{bisagra}+\frac{1}{2C}\norm{\vb w}^2 .\]</div>
+<ul>
+<li>La <span class="term">pérdida bisagra</span> \(\max(0,1-yf)\) vale cero para los puntos bien clasificados fuera del pasillo, y crece linealmente para los que entran o lo cruzan. Por eso la SVM ignora los puntos «fáciles» y es robusta a los lejanos.</li>
+<li>\(C\) es el inverso de la regularización, como en la logística: <b>\(C\) grande</b> = pocas violaciones, pasillo estrecho, riesgo de sobreajuste; <b>\(C\) pequeño</b> = pasillo ancho, más errores de entrenamiento, más sesgo.</li>
+<li>La función \(f(\vb x)\) no es una probabilidad: es un margen con signo. Para probabilidades se calibra (Platt, capítulo 12; <code>probability=True</code> lo hace con validación cruzada interna).</li>
+</ul>
+</section>
+
+<section>
+<h2>El truco del núcleo</h2>
+<p>La solución de la SVM se puede escribir como \(\vb w=\sum_i\alpha_iy_i\vb x_i\), con \(\alpha_i>0\) solo para los vectores de soporte. Entonces</p>
+<div class="eq key" data-name="Forma dual y núcleo">\[f(\vb x)=\sum_{i\in\text{VS}}\alpha_iy_i\,K(\vb x_i,\vb x)+b,\qquad K(\vb x,\vb z)=\phi(\vb x)\cdot\phi(\vb z).\]</div>
+<p>Los datos solo aparecen a través de productos punto. Si se reemplaza el producto punto por una función <span class="term">núcleo</span> \(K\), la SVM trabaja implícitamente en un espacio de rasgos \(\phi(\vb x)\) que puede tener dimensión enorme o infinita, sin calcularlo nunca. Los núcleos habituales:</p>
+<ul>
+<li><b>Lineal</b>: \(K=\vb x\cdot\vb z\).</li>
+<li><b>Polinómico</b>: \(K=(\gamma\,\vb x\cdot\vb z+r)^d\), equivale a todos los productos de variables hasta grado \(d\).</li>
+<li><b>RBF (gaussiano)</b>: \(K=\exp(-\gamma\norm{\vb x-\vb z}^2)\). Cada vector de soporte es una «colina» de anchura \(1/\sqrt{\gamma}\); la frontera es la curva de nivel cero de la suma de colinas.</li>
+</ul>
+<div class="sim" data-sim="truco-kernel" data-title="Círculos inseparables en el plano, separables en tres dimensiones"></div>
+<div class="sim-guide"><ul>
+<li>En el plano ninguna recta separa los círculos. Añadiendo la coordenada \(z=x_1^2+x_2^2\), los puntos interiores quedan abajo y los exteriores arriba: un plano horizontal los separa.</li>
+<li>Gire la vista con el ratón. El corte del plano con el paraboloide, proyectado al plano original, es una circunferencia: la frontera curva de la SVM.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>γ y C: dos perillas que interactúan</h2>
+<p>Con núcleo RBF, \(\gamma\) fija el alcance de cada vector de soporte. Con \(\gamma\) pequeño las colinas son anchas y la frontera, casi lineal (sesgo). Con \(\gamma\) grande son estrechas: cada punto crea su propia isla y la frontera memoriza los datos (varianza). \(C\) y \(\gamma\) se ajustan juntos sobre una rejilla logarítmica; la buena región suele ser una diagonal (más \(\gamma\) pide menos \(C\)). El valor por defecto <code>gamma='scale'</code> usa \(1/(p\,\Var(X))\), razonable con datos estandarizados.</p>
+<div class="sim" data-sim="svm-kernel" data-title="SVM con núcleo RBF o polinómico sobre datos no lineales"></div>
+<div class="sim-guide"><ul>
+<li>Los puntos con anillo son vectores de soporte; las líneas punteadas, los bordes del pasillo \(f=\pm1\).</li>
+<li>Suba \(\gamma\) a 50: islas alrededor de cada punto, exactitud de entrenamiento casi perfecta y la de prueba cae. Bájelo a 0.05: la frontera se vuelve casi recta.</li>
+<li>Con \(\gamma\) fijo, \(C\) grande reduce los vectores de soporte y ajusta más los datos.</li>
+</ul></div>
+<div class="box warn"><p>La SVM con núcleo exige variables estandarizadas: el núcleo RBF usa distancias. Y su costo de entrenamiento crece entre \(n^2\) y \(n^3\): por encima de unas decenas de miles de filas se vuelve impráctica. Para datos grandes se usa <code>LinearSVC</code> o <code>SGDClassifier(loss='hinge')</code>, o aproximaciones del núcleo (<code>Nystroem</code>, <code>RBFSampler</code>).</p></div>
+<div class="box note"><p><b>SVR</b>: la versión para regresión usa una pérdida «ε-insensible»: los errores menores que \(\varepsilon\) no cuestan nada, y los mayores, linealmente. Los vectores de soporte son los puntos fuera del tubo de anchura \(2\varepsilon\) alrededor de la predicción.</p></div>
+</section>
+
+<section>
+<h2>Práctica: ajustar C y γ</h2>
+<div class="box py"><p>El programa ajusta una SVM RBF a los 30 rasgos del cáncer de mama con una búsqueda en rejilla, estudia en las lunas cómo cambian los vectores de soporte con \(C\) y \(\gamma\), y compara el tiempo de la SVM con núcleo y la lineal.</p>
+<div class="py" data-py="15-svm"></div></div>
+<div class="box read"><ul>
+<li><b>Escalado</b>: sin estandarizar, 0.921; con estandarización, 0.977.</li>
+<li><b>La rejilla</b>: con \(C=0.01\) todas las celdas valen 0.627, la proporción de tumores benignos: el modelo predice siempre la clase mayoritaria. Con \(\gamma=1\) (columna derecha), unos 0.63 para todo \(C\): en 30 dimensiones estandarizadas, un núcleo tan estrecho hace que cada punto solo se parezca a sí mismo. Las mejores celdas forman una diagonal: (\(C=100\), \(\gamma=0.001\)) da 0.981, (\(C=10\), \(\gamma=0.01\)) da 0.979. Ese patrón diagonal es típico.</li>
+<li><b>C en las lunas</b>: al subir \(C\) de 0.01 a \(10^4\) los vectores de soporte bajan de 131 a 24 de 150. La prueba es mejor con \(C\) entre 1 y 10 (0.980) y cae con \(C=10^4\) (0.920): menos vectores de soporte significa un pasillo estrecho que persigue cada punto.</li>
+<li><b>γ en las lunas</b>: con \(\gamma=100\), 142 de 150 puntos son vectores de soporte, entrenamiento 0.987 y prueba 0.833: memorización. Muchos vectores de soporte con \(\gamma\) grande es señal de sobreajuste; con \(\gamma\) pequeño, de subajuste.</li>
+<li><b>Probabilidades</b>: \(f=+0.82\) se convierte en 0.936 y \(f=-0.46\) en 0.192. La relación es monótona pero no lineal; \(f\) solo ordena.</li>
+<li><b>Tiempo</b>: con 4 veces más datos, la SVC lineal tarda 22 veces más (0.16 → 3.58 s); <code>LinearSVC</code> resuelve el mismo problema en milisegundos.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>La SVM maximiza el margen; la solución depende solo de los vectores de soporte.</li>
+<li>Margen blando = pérdida bisagra + penalización \(L_2\); \(C\) grande, menos regularización.</li>
+<li>El truco del núcleo da fronteras no lineales trabajando solo con \(K(\vb x_i,\vb x_j)\).</li>
+<li>RBF: \(\gamma\) controla el alcance; \(C\) y \(\gamma\) se ajustan juntos en escala logarítmica.</li>
+<li>Escalar siempre; costo \(\sim n^2\)–\(n^3\); \(f(\vb x)\) no es una probabilidad.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Si \(\vb w=(3,4)\), ¿cuánto mide el margen (distancia de la frontera al borde del pasillo)?
+<details><summary>Respuesta</summary><p>\(1/\norm{\vb w}=1/5=0.2\); el pasillo completo mide 0.4.</p></details></li>
+<li><span class="lvl">Básico</span>Calcule la pérdida bisagra para \(y=+1\) y \(f=2\), \(f=0.3\) y \(f=-1\).
+<details><summary>Respuesta</summary><p>0, 0.7 y 2.</p></details></li>
+<li><span class="lvl">Intermedio</span>Con núcleo RBF y \(\gamma=0.5\), ¿cuánto vale \(K\) entre dos puntos a distancia 1 y a distancia 3?
+<details><summary>Respuesta</summary><p>\(\ee^{-0.5}=0.607\) y \(\ee^{-4.5}=0.011\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Una SVM RBF tiene 95 % de sus datos como vectores de soporte. ¿Qué sospecha y qué prueba?
+<details><summary>Respuesta</summary><p>O \(\gamma\) demasiado grande (cada punto es su propia isla) o \(C\) demasiado pequeño (pasillo enorme con todos dentro). Mire las exactitudes de entrenamiento y validación para distinguirlo y recorra la rejilla.</p></details></li>
+<li><span class="lvl">Avanzado</span>Muestre que el núcleo \((\vb x\cdot\vb z)^2\) en 2D corresponde a \(\phi(\vb x)=(x_1^2,\sqrt2x_1x_2,x_2^2)\).
+<details><summary>Respuesta</summary><p>\((x_1z_1+x_2z_2)^2=x_1^2z_1^2+2x_1x_2z_1z_2+x_2^2z_2^2=\phi(\vb x)\cdot\phi(\vb z)\).</p></details></li>
+</ol>
+<div class="box links"><ul>
+<li><a href="https://scikit-learn.org/stable/modules/svm.html">scikit-learn — Support Vector Machines</a><small>SVC, LinearSVC, SVR, núcleos, complejidad y consejos prácticos.</small></li>
+<li><a href="https://scikit-learn.org/stable/auto_examples/svm/plot_rbf_parameters.html">scikit-learn — RBF SVM parameters</a><small>El mapa de C y γ, con la diagonal de buenos valores.</small></li>
+<li><a href="https://www.csie.ntu.edu.tw/~cjlin/papers/guide/guide.pdf">Hsu, Chang y Lin — A Practical Guide to Support Vector Classification</a><small>La guía de los autores de LIBSVM: escalar, RBF, rejilla logarítmica.</small></li>
+<li><a href="https://doi.org/10.1023/A:1009715923555">Burges (1998) — A Tutorial on Support Vector Machines for Pattern Recognition</a><small>El tutorial clásico, con la geometría y la forma dual.</small></li>
+</ul></div>
+</section>
+</template>

@@ -1,0 +1,97 @@
+<template class="chapter-src" data-id="aproximados" data-num="9" data-title="Métodos aproximados" data-part="Parte II · Átomos, moléculas y sólidos" data-short="Principio variacional, Rayleigh–Ritz lineal, conjuntos de base, teoría de perturbaciones de primer y segundo orden">
+<p class="lead">Como casi ningún problema real tiene solución exacta, la física cuántica vive de aproximaciones controladas. Dos herramientas dominan: el principio variacional, que garantiza que cualquier función de prueba da una energía por encima de la verdadera, y la teoría de perturbaciones, que corrige una solución conocida cuando el problema cambia poco. Del principio variacional salen los conjuntos de base que usan SIESTA y todos los programas de química cuántica.</p>
+
+<section>
+<h2>El principio variacional</h2>
+<div class="box law"><p>Para cualquier función \(\ket\phi\) (no necesariamente normalizada) que cumpla las condiciones de contorno,</p>
+<div class="eq key" data-name="Principio variacional">\[E[\phi]=\frac{\mel{\phi}{\op H}{\phi}}{\braket{\phi}{\phi}}\ \ge\ E_0 ,\]</div>
+<p>y la igualdad solo se cumple si \(\phi\) es el estado fundamental.</p></div>
+<p>La demostración es breve. Desarrollamos \(\phi=\sum_nc_n\ket n\) en los autoestados de \(\op H\) (desconocidos, pero existen). Entonces \(\mel\phi{\op H}\phi=\sum_n|c_n|^2E_n\ge E_0\sum_n|c_n|^2=E_0\braket\phi\phi\), porque cada \(E_n\ge E_0\). Consecuencias prácticas:</p>
+<ul>
+<li>Se elige una función de prueba con parámetros y se minimiza \(E\) respecto de ellos: el mínimo es la mejor aproximación posible dentro de esa familia y siempre es una cota superior.</li>
+<li>Un error de primer orden en la función produce un error de segundo orden en la energía: la energía es mucho más precisa que la función de onda.</li>
+<li>Así se trató el helio en el capítulo 8 (\(\zeta=27/16\)) y así se tratará la DFT: Hohenberg y Kohn demostraron un principio variacional para la densidad.</li>
+</ul>
+<div class="box ex">
+<h4>Hidrógeno con una gaussiana</h4>
+<p>Use \(\phi=\ee^{-\alpha r^2}\) para el hidrógeno (en unidades atómicas). Halle la mejor energía.</p>
+<details><summary>Solución</summary>
+<p>Con las integrales gaussianas, \(E(\alpha)=\frac{3\alpha}{2}-2\sqrt{\frac{2\alpha}{\pi}}\). El mínimo está en \(\alpha=\frac{8}{9\pi}=0.283\) y vale \(E=-\frac{4}{3\pi}=-0.4244\) Ha, un 15 % por encima del exacto \(-0.5\) Ha. La gaussiana no tiene la «punta» del orbital 1s en el núcleo ni su cola exponencial.</p>
+</details>
+</div>
+</section>
+
+<section>
+<h2>Rayleigh–Ritz: el método de las bases</h2>
+<p>La forma más poderosa del principio variacional usa funciones de prueba <em>lineales</em> en los parámetros: una combinación de \(M\) funciones de base conocidas \(\chi_j\),</p>
+<div class="eq">\[\phi=\sum_{j=1}^{M}c_j\,\chi_j,\qquad H_{ij}=\mel{\chi_i}{\op H}{\chi_j},\qquad S_{ij}=\braket{\chi_i}{\chi_j}.\]</div>
+<p>Minimizar \(E=\vb c^\dagger\mathsf H\vb c/\vb c^\dagger\mathsf S\vb c\) respecto de los coeficientes lleva al <span class="term">problema de autovalores generalizado</span>:</p>
+<div class="eq key" data-name="Ecuaciones de Rayleigh–Ritz">\[\mathsf H\,\vb c=E\,\mathsf S\,\vb c\qquad\Longleftrightarrow\qquad \det\big(\mathsf H-E\,\mathsf S\big)=0 .\]</div>
+<p>\(\mathsf S\) es la <span class="term">matriz de solapamiento</span>; si la base es ortonormal, \(\mathsf S=\mathsf 1\) y es un problema de autovalores ordinario. Se obtienen \(M\) soluciones: la más baja aproxima el estado fundamental, y (teorema de Hylleraas–Undheim–MacDonald) la \(k\)-ésima es una cota superior del \(k\)-ésimo nivel exacto. Al ampliar la base, todas las energías bajan monótonamente hacia los valores exactos.</p>
+<div class="sim" data-sim="variacional-gaussianas" data-title="El hidrógeno con una y con muchas gaussianas"></div>
+<div class="sim-guide"><ul>
+<li>Con una gaussiana, mueva \(\alpha\): la curva \(E(\alpha)\) siempre queda por encima de \(-0.5\) Ha.</li>
+<li>Con varias gaussianas (exponentes en progresión geométrica), la energía converge a \(-0.5\): con 10 funciones el error baja de \(10^{-4}\) Ha.</li>
+<li>Si la razón de la progresión es muy pequeña, la matriz \(\mathsf S\) se vuelve casi singular: la base es casi linealmente dependiente.</li>
+</ul></div>
+<div class="sim" data-sim="ritz-base" data-title="Rayleigh–Ritz con la base de la caja: cotas superiores que convergen"></div>
+<div class="sim-guide"><ul>
+<li>Con pocas funciones solo el nivel fundamental es razonable; al añadir funciones, cada nivel baja y se estabiliza.</li>
+<li>Ninguna energía cruza nunca por debajo de su valor exacto: son cotas superiores.</li>
+</ul></div>
+<h3>Conjuntos de base en la práctica</h3>
+<p>La elección de la base es la decisión técnica más importante de un cálculo cuántico:</p>
+<ul>
+<li><strong>Orbitales de Slater</strong> (\(\ee^{-\zeta r}\)): la forma correcta, pero integrales difíciles.</li>
+<li><strong>Gaussianas</strong> (\(\ee^{-\alpha r^2}\)): integrales analíticas; se combinan varias para imitar un orbital (bases STO-3G, 6-31G…). Dominan la química molecular.</li>
+<li><strong>Ondas planas</strong> (\(\ee^{i\vb G\cdot\vb r}\)): naturales en cristales periódicos; se controlan con una sola energía de corte (capítulo 18).</li>
+<li><strong>Orbitales atómicos numéricos</strong>: funciones radiales tabuladas en una malla, estrictamente nulas más allá de un radio de corte. Es la base de SIESTA: <em>simple-zeta</em> (SZ, una función por orbital de valencia), <em>doble-zeta</em> (DZ, dos) y DZP (más funciones de polarización, como orbitales d en el N).</li>
+</ul>
+<div class="box hbn"><p>Las energías de SIESTA que se usaron para parametrizar hBN-MC dependen de la base elegida, y por eso las energías totales solo son comparables entre cálculos hechos con la misma base, los mismos pseudopotenciales y la misma configuración. Los parámetros \(\varepsilon_{\alpha\beta}\) heredan esa dependencia: mezclar energías calculadas con configuraciones distintas produce inconsistencias de escala como la que el informe científico de la aplicación identifica en \(\varepsilon_\text{NB}\) (defecto D3).</p></div>
+</section>
+
+<section>
+<h2>Teoría de perturbaciones</h2>
+<p>Si \(\op H=\op H_0+\lambda\op V\), con \(\op H_0\) resuelto exactamente (\(\op H_0\ket{n^{(0)}}=E_n^{(0)}\ket{n^{(0)}}\)) y \(\lambda\op V\) pequeño, se desarrollan energías y estados en potencias de \(\lambda\). Para un nivel no degenerado:</p>
+<div class="eq key" data-name="Perturbaciones a primer y segundo orden">\[E_n\approx E_n^{(0)}+\lambda\,V_{nn}+\lambda^2\sum_{m\ne n}\frac{|V_{mn}|^2}{E_n^{(0)}-E_m^{(0)}},\qquad V_{mn}=\mel{m^{(0)}}{\op V}{n^{(0)}}.\]</div>
+<ul>
+<li>A primer orden, la corrección es el valor medio de la perturbación en el estado sin perturbar.</li>
+<li>A segundo orden, cada estado se «mezcla» con los demás; los niveles se repelen (como en el sistema de dos niveles). Para el estado fundamental todos los denominadores son negativos: la corrección de segundo orden siempre lo baja.</li>
+<li>La serie funciona si \(|\lambda V_{mn}|\ll|E_n^{(0)}-E_m^{(0)}|\). Si hay niveles degenerados se diagonaliza primero \(\op V\) dentro del subespacio degenerado.</li>
+</ul>
+<div class="box ex">
+<h4>Oscilador anarmónico</h4>
+<p>Para \(V=\frac12x^2+\lambda x^4\) (\(\hbar=m=\omega=1\)), obtenga \(E_0\) a segundo orden.</p>
+<details><summary>Solución</summary>
+<p>\(\expval{x^4}_0=\frac34\) da el primer orden; los elementos \(\mel{2}{x^4}{0}=\frac{3\sqrt2}{2}\) y \(\mel{4}{x^4}{0}=\frac{\sqrt{6}}{2}\) dan el segundo: \(E_0\approx\frac12+\frac34\lambda-\frac{21}{8}\lambda^2\). Para \(\lambda=0.01\): 0.5072375, frente al valor numérico 0.5072562.</p>
+</details>
+</div>
+<div class="sim" data-sim="perturbaciones" data-title="Perturbaciones frente a la solución numérica exacta"></div>
+<div class="sim-guide"><ul>
+<li>Para \(\lambda\) pequeño las tres curvas coinciden. Al crecer \(\lambda\), el segundo orden se aleja cada vez más: la serie de perturbaciones del oscilador cuártico no converge para ningún \(\lambda\), aunque sus primeros términos son útiles.</li>
+<li>Con la perturbación cúbica \(\lambda x^3\), el primer orden es cero (por simetría) y todo el efecto viene del segundo orden.</li>
+</ul></div>
+<div class="box explain"><p>La teoría de perturbaciones es como ajustar el presupuesto familiar cuando sube un poco un precio: no se rehace todo desde cero, se corrige lo que ya se tenía. Funciona si el cambio es pequeño comparado con la «separación» entre las opciones disponibles; si el cambio es grande, hay que rehacer el cálculo completo.</p></div>
+<div class="box valid"><p>El apéndice B comprueba que una gaussiana da exactamente \(-4/(3\pi)\) Ha, que diez gaussianas en progresión geométrica bajan de \(-0.49996\) Ha (error menor que \(10^{-4}\)) y que la fórmula de segundo orden del oscilador cuártico con \(\lambda=0.01\) coincide con la diagonalización numérica con error menor que \(3\times10^{-5}\).</p></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Toda función de prueba da \(E[\phi]\ge E_0\): minimizar parámetros siempre mejora la aproximación sin pasarse.</li>
+<li>Con una base lineal, el problema es \(\mathsf H\vb c=E\mathsf S\vb c\); todas las raíces son cotas superiores que bajan al ampliar la base.</li>
+<li>La base (gaussianas, ondas planas, orbitales numéricos) es una elección técnica que afecta a las energías absolutas.</li>
+<li>Perturbaciones: \(E^{(1)}=V_{nn}\), \(E^{(2)}=\sum|V_{mn}|^2/(E_n-E_m)\); el segundo orden baja el fundamental.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Si una función de prueba da \(-0.48\) Ha para el hidrógeno, ¿puede la energía exacta ser \(-0.47\) Ha?
+<details><summary>Respuesta</summary><p>No: el principio variacional garantiza \(E_0\le-0.48\) Ha.</p></details></li>
+<li><span class="lvl">Intermedio</span>Para la caja \(0\lt x\lt1\) use \(\phi=x(1-x)\) y calcule \(E[\phi]\) (\(\hbar=m=1\)). Compare con \(\pi^2/2\).
+<details><summary>Respuesta</summary><p>\(E=\frac{\frac12\int\phi'^2}{\int\phi^2}=\frac{1/6}{1/30}=5\), frente a \(4.9348\): error 1.3 %.</p></details></li>
+<li><span class="lvl">Intermedio</span>Un campo eléctrico \(F\) actúa sobre el hidrógeno (\(V=Fz\)). ¿Por qué la corrección de primer orden al estado 1s es nula?
+<details><summary>Respuesta</summary><p>\(\mel{1s}{z}{1s}=0\) por paridad. El efecto empieza a segundo orden: \(E^{(2)}=-\frac12\alpha F^2\) con \(\alpha=4.5\,a_0^3\).</p></details></li>
+<li><span class="lvl">Avanzado</span>Demuestre que la corrección de segundo orden del estado fundamental es negativa.
+<details><summary>Respuesta</summary><p>Cada término es \(|V_{m0}|^2/(E_0-E_m)\) con numerador positivo y denominador negativo.</p></details></li>
+</ol>
+</section>
+</template>

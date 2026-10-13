@@ -1,0 +1,89 @@
+<template class="chapter-src" data-id="ising" data-num="23" data-title="Transiciones de fase y el modelo de Ising" data-part="Parte IV · Mecánica estadística" data-short="Orden cooperativo, modelo de Ising, gas de red y aleaciones binarias, campo medio, solución de Onsager, orden de corto alcance e histéresis">
+<p class="lead">Cuando las partículas interactúan con sus vecinas aparecen comportamientos colectivos: un imán que se magnetiza de golpe por debajo de cierta temperatura, una aleación que se ordena, un líquido que hierve. El modelo de Ising, con espines de dos valores en una red, es la versión mínima de todos ellos. Su versión con varias especies es, exactamente, el modelo de enlaces de hBN-MC.</p>
+
+<section>
+<h2>El modelo de Ising</h2>
+<p>En cada sitio \(i\) de una red hay una variable \(s_i=\pm1\) (un espín arriba o abajo, un átomo de tipo A o B). La energía es</p>
+<div class="eq key" data-name="Hamiltoniano de Ising">\[E=-J\sum_{\langle ij\rangle}s_is_j-h\sum_is_i ,\]</div>
+<p>donde \(\langle ij\rangle\) recorre los pares de primeros vecinos. Con \(J\gt0\) (ferromagnético) los vecinos prefieren alinearse; con \(J\lt0\) (antiferromagnético), alternarse; \(h\) es un campo externo. A temperatura baja domina la energía y el sistema se ordena; a temperatura alta domina la entropía y se desordena. El <span class="term">parámetro de orden</span> es la magnetización por sitio \(m=\frac1N\sum s_i\).</p>
+<p>Ising resolvió el caso de una cadena (1925) y encontró que no hay transición: en 1D una sola frontera entre dominios cuesta una energía finita \(2J\) pero gana una entropía \(\kB\ln N\), y siempre gana el desorden. En dos dimensiones una frontera cuesta energía proporcional a su longitud y sí hay una temperatura crítica \(T_c\) por debajo de la cual el sistema se magnetiza espontáneamente (argumento de Peierls, 1936).</p>
+</section>
+
+<section>
+<h2>Gas de red y aleaciones binarias</h2>
+<p>El mismo modelo describe una aleación de dos especies A y B en una red, o un gas de red (partícula o vacancia). Si las energías de enlace entre vecinos son \(\varepsilon_{AA}\), \(\varepsilon_{BB}\) y \(\varepsilon_{AB}\), y se asocia \(s=+1\) a A y \(s=-1\) a B, la energía total \(E=\sum\varepsilon_{\alpha\beta}n_{\alpha\beta}\) se reescribe como un Ising con</p>
+<div class="eq key" data-name="Equivalencia aleación–Ising">\[\varepsilon(s_i,s_j)=a+b\,(s_i+s_j)+c\,s_is_j\quad\Longrightarrow\quad J=-c=\frac{2\varepsilon_{AB}-\varepsilon_{AA}-\varepsilon_{BB}}{4},\]</div>
+<p>(los coeficientes salen de igualar los tres casos AA, BB y AB), más un campo efectivo proporcional a \(b=(\varepsilon_{AA}-\varepsilon_{BB})/4\) que, a composición fija, solo suma una constante. El signo de \(J\) decide la física:</p>
+<ul>
+<li>\(J\gt0\) (\(\varepsilon_{AB}\) mayor que el promedio de \(\varepsilon_{AA}\) y \(\varepsilon_{BB}\)): los enlaces mixtos son caros y la aleación tiende a <span class="term">segregarse</span> en dominios.</li>
+<li>\(J\lt0\) (enlaces mixtos baratos): la aleación tiende a <span class="term">ordenarse</span>, alternando A y B.</li>
+</ul>
+<p>En el h-BN el enlace B–N es muchísimo más favorable que B–B y N–N: \(2\varepsilon_\text{NB}-\varepsilon_\text{NN}-\varepsilon_\text{BB}=-3.12\) eV por enlace. Es un «antiferromagneto» extremadamente fuerte, y por eso el h-BN real está perfectamente ordenado (cada B rodeado de N). Para el sistema BN–C, la combinación relevante es la energía de mezcla</p>
+<div class="eq key" data-name="Energía de mezcla BN–C">\[\Delta E_\text{mix}=(\varepsilon_\text{CN}+\varepsilon_\text{CB})-(\varepsilon_\text{CC}+\varepsilon_\text{NB})=+0.45\ \text{eV}\ \ \text{(parámetros de la tesis)},\]</div>
+<p>el costo de cambiar un enlace C–C y uno B–N por un C–N y un C–B. Es positiva: las interfaces carbono/BN son caras y el carbono tiende a formar dominios (segregación), como se observa experimentalmente.</p>
+<div class="sim" data-sim="aleacion-mapeo" data-title="Del modelo de enlaces al Ising: ¿segregación u orden?"></div>
+<div class="sim-guide"><ul>
+<li>Con los parámetros del h-BN (B y N), \(J\) es negativo y enorme: orden perfecto alternado.</li>
+<li>Con el par «C frente a BN», la energía de mezcla positiva da \(J\gt0\): segregación. Compare la temperatura crítica estimada con las temperaturas de simulación de hBN-MC.</li>
+</ul></div>
+<div class="box hbn"><p>El hamiltoniano de hBN-MC, \(E=\sum\varepsilon_{\alpha\beta}n_{\alpha\beta}\) con cuatro especies (N, B, C y vacancia X), es un gas de red multicomponente en la red de panal: una generalización directa del Ising de este capítulo. Lo que el modelo predice sobre orden, segregación o fragmentación de poros es, en el fondo, la termodinámica de un modelo de Ising con varias especies y energías tomadas de la DFT.</p></div>
+</section>
+
+<section>
+<h2>Teoría de campo medio</h2>
+<p>La aproximación más simple sustituye los vecinos de cada espín por su valor medio: cada espín ve un campo efectivo \(h_\text{ef}=h+zJm\), con \(z\) el número de vecinos (4 en la red cuadrada, 3 en el panal). La magnetización debe ser consistente con ese campo:</p>
+<div class="eq key" data-name="Campo medio (Weiss, Bragg–Williams)">\[m=\tanh\!\Big(\frac{zJm+h}{\kB T}\Big),\qquad \kB T_c^\text{CM}=zJ .\]</div>
+<p>Para \(T\gt T_c\) y \(h=0\) la única solución es \(m=0\); para \(T\lt T_c\) aparecen dos soluciones \(\pm m_0\). Cerca de \(T_c\), \(m_0\propto(T_c-T)^{1/2}\). El campo medio captura la existencia de la transición, pero exagera \(T_c\) (ignora las fluctuaciones) y da exponentes críticos incorrectos en 2D.</p>
+<div class="sim" data-sim="campo-medio" data-title="Campo medio: solución gráfica y energía libre de Landau"></div>
+<div class="sim-guide"><ul>
+<li>Por debajo de \(T_c\) la recta \(m\) corta a la tangente hiperbólica en tres puntos; las soluciones estables son \(\pm m_0\).</li>
+<li>La energía libre de Landau pasa de un mínimo a dos al cruzar \(T_c\). Con \(h\ne0\) uno de los mínimos queda metaestable: es el origen de la histéresis.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>La solución exacta de Onsager</h2>
+<p>Lars Onsager resolvió en 1944 el Ising en la red cuadrada sin campo, uno de los grandes logros de la física teórica. Algunos resultados (con \(\kB=J=1\)):</p>
+<div class="eq key" data-name="Ising 2D exacto (red cuadrada)">\[T_c=\frac{2}{\ln(1+\sqrt2)}=2.2692,\qquad m(T)=\big[1-\senh^{-4}(2/T)\big]^{1/8},\qquad u(T_c)=-\sqrt2 .\]</div>
+<p>La temperatura crítica es casi la mitad de la de campo medio (4), la magnetización se anula con exponente \(1/8\) (no \(1/2\)) y la capacidad calorífica diverge logarítmicamente. En la red de panal, \(\tanh(J/\kB T_c)=1/\sqrt3\) da \(\kB T_c=1.5187\,J\), frente a 3 del campo medio. Estos exponentes son <span class="term">universales</span>: los comparten todos los sistemas 2D con la misma simetría, sea cual sea su detalle microscópico.</p>
+<div class="sim" data-sim="onsager" data-title="Onsager frente a campo medio: magnetización, energía y calor específico"></div>
+<div class="sim-guide"><ul>
+<li>La magnetización exacta cae mucho más abruptamente que la de campo medio cerca de \(T_c\).</li>
+<li>El calor específico exacto tiene un pico estrecho en \(T_c\); el de campo medio, un salto. El Monte Carlo del capítulo 25 reproduce el exacto.</li>
+</ul></div>
+<div class="box valid"><p>El apéndice B comprueba \(T_c=2.269185\) (cuadrada), \(T_c=1.518651\) (panal) y \(u(T_c)=-\sqrt2\) evaluando la integral elíptica de la solución de Onsager.</p></div>
+</section>
+
+<section>
+<h2>Orden de corto alcance e histéresis</h2>
+<p>Por encima de \(T_c\) no hay orden de largo alcance, pero los vecinos siguen correlacionados. El <span class="term">parámetro de Warren–Cowley</span> de primeros vecinos lo mide en una aleación:</p>
+<div class="eq key" data-name="Parámetro de Warren–Cowley">\[\alpha=1-\frac{P(B\,|\,A)}{x_B},\]</div>
+<p>donde \(P(B|A)\) es la probabilidad de que un vecino de un átomo A sea B y \(x_B\) la fracción global de B. Vale 0 para una distribución al azar, es positivo si los átomos iguales se agrupan (segregación) y negativo si se alternan (orden). hBN-MC lo calcula para el carbono (\(\alpha_\text{C}\)).</p>
+<p>En las transiciones de primer orden (y por debajo de \(T_c\) con campo), el sistema puede quedar atrapado en un estado <span class="term">metaestable</span>: un mínimo local de la energía libre separado del global por una barrera. Al variar el campo o la temperatura en un ciclo, el sistema sigue caminos distintos de ida y de vuelta: <span class="term">histéresis</span>. Su tamaño depende de la velocidad del ciclo, porque cruzar la barrera lleva tiempo.</p>
+<div class="box hbn"><p>El protocolo «ciclo» de hBN-MC (\(T_i\to T_f\to T_i\)) y su gráfica \(E(T)\), con la rama de calentamiento en rojo y la de enfriamiento en azul, buscan precisamente esta histéresis. Para interpretarla hay que repetir el ciclo con varias semillas y velocidades: una histéresis que cambia con la velocidad es en parte cinética, no termodinámica (capítulo 26).</p></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Ising: \(E=-J\sum s_is_j-h\sum s_i\); orden a baja \(T\), desorden a alta \(T\); transición en 2D, no en 1D.</li>
+<li>Una aleación con energías de enlace es un Ising con \(J=(2\varepsilon_{AB}-\varepsilon_{AA}-\varepsilon_{BB})/4\): \(J\gt0\) segrega, \(J\lt0\) ordena.</li>
+<li>h-BN: orden B/N extremadamente fuerte; BN–C: \(\Delta E_\text{mix}=+0.45\) eV, segregación del carbono.</li>
+<li>Campo medio: \(m=\tanh(\beta(zJm+h))\), \(\kB T_c=zJ\) (sobrestima).</li>
+<li>Onsager: \(T_c=2.269\,J/\kB\) (cuadrada), \(1.519\,J/\kB\) (panal); exponentes universales.</li>
+<li>Warren–Cowley mide el orden local; los estados metaestables producen histéresis.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Calcule \(2\varepsilon_\text{NB}-\varepsilon_\text{NN}-\varepsilon_\text{BB}\) con los parámetros de la tesis y el \(J\) equivalente.
+<details><summary>Respuesta</summary><p>\(2(-128.1626)+185.29+67.9148=-3.12\) eV; \(J=-0.78\) eV.</p></details></li>
+<li><span class="lvl">Básico</span>¿Cuál es la \(T_c\) de campo medio de un Ising en el panal con \(J=0.1\) eV?
+<details><summary>Respuesta</summary><p>\(\kB T_c=3J=0.3\) eV → 3480 K. La exacta es \(1.519J/\kB=1760\) K.</p></details></li>
+<li><span class="lvl">Intermedio</span>Compruebe que \(\Delta E_\text{mix}=+0.4526\) eV con los parámetros de la Tabla 5.8.
+<details><summary>Respuesta</summary><p>\(-147.02-88.01+107.32+128.1626=0.4526\) eV.</p></details></li>
+<li><span class="lvl">Intermedio</span>Si en una aleación con \(x_B=0.3\) cada A tiene en promedio un 15 % de vecinos B, ¿cuánto vale \(\alpha\)?
+<details><summary>Respuesta</summary><p>\(\alpha=1-0.15/0.3=0.5\): segregación.</p></details></li>
+<li><span class="lvl">Avanzado</span>Desarrolle la energía libre de campo medio cerca de \(T_c\) y obtenga \(m_0\propto(T_c-T)^{1/2}\).
+<details><summary>Respuesta</summary><p>\(f(m)=-\kB T\ln2+\frac{\kB(T-T_c)}{2}m^2+\frac{\kB T}{12}m^4+\dots\); minimizando, \(m_0^2=3(T_c-T)/T\).</p></details></li>
+</ol>
+</section>
+</template>

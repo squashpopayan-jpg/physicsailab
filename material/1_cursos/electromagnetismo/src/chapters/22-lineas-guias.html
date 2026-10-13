@@ -1,0 +1,110 @@
+<template class="chapter-src" data-id="lineas-guias" data-num="22" data-title="Líneas de transmisión y guías de onda" data-part="Parte VI · Ondas y radiación" data-short="Ecuaciones del telegrafista, impedancia característica, reflexiones, carta de Smith y modos de guía">
+<p class="lead">Cuando la longitud de un conductor es comparable con la longitud de onda, ya no basta con la teoría de circuitos: la tensión y la corriente viajan como ondas, se reflejan en los extremos y forman ondas estacionarias. Las líneas de transmisión (cables coaxiales, pares, pistas de circuito impreso) y las guías de onda huecas son los caminos por los que la energía electromagnética se conduce de un punto a otro.</p>
+
+<section>
+<h2>Modelo de parámetros distribuidos</h2>
+<p>Una línea formada por dos conductores se describe mediante cuatro parámetros por unidad de longitud: la resistencia \(R'\) (Ω/m) de los conductores, la inductancia \(L'\) (H/m), la conductancia \(G'\) (S/m) del dieléctrico y la capacitancia \(C'\) (F/m). Un tramo \(\dd z\) equivale a un pequeño circuito \(R'\dd z\), \(L'\dd z\) en serie y \(G'\dd z\), \(C'\dd z\) en paralelo. Aplicando las leyes de Kirchhoff al tramo y haciendo \(\dd z\to0\):</p>
+<div class="eq key" data-name="Ecuaciones del telegrafista">\[\pdv{v}{z}=-R'i-L'\pdv{i}{t},\qquad \pdv{i}{z}=-G'v-C'\pdv{v}{t}.\]</div>
+<p>Para una línea sin pérdidas (\(R'=G'=0\)), eliminando \(i\) se obtiene la ecuación de onda \(\partial^2v/\partial z^2=L'C'\,\partial^2v/\partial t^2\), cuya solución general es la superposición de dos ondas que viajan en sentidos opuestos:</p>
+<div class="eq key" data-name="Ondas en la línea sin pérdidas">\[v(z,t)=f\!\left(t-\frac zu\right)+g\!\left(t+\frac zu\right),\qquad u=\frac{1}{\sqrt{L'C'}},\qquad Z_0=\sqrt{\frac{L'}{C'}} .\]</div>
+<p>La <span class="term">impedancia característica</span> \(Z_0\) es el cociente entre tensión y corriente de <em>una</em> onda viajera: \(v^+/i^+=Z_0\) y \(v^-/i^-=-Z_0\). No es una resistencia que disipe energía: una línea infinita “parece” una resistencia \(Z_0\) porque la energía se aleja y nunca vuelve. En toda línea TEM con dieléctrico homogéneo, \(L'C'=\mu\varepsilon\), de modo que \(u=c/\sqrt{\varepsilon_r}\).</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Línea</th><th>\(L'\)</th><th>\(C'\)</th><th>\(Z_0\)</th></tr></thead>
+<tbody>
+<tr><td>Coaxial (radios \(a\lt b\))</td><td>\(\dfrac{\mu}{2\pi}\ln\dfrac ba\)</td><td>\(\dfrac{2\pi\varepsilon}{\ln(b/a)}\)</td><td>\(\dfrac{60\ \Omega}{\sqrt{\varepsilon_r}}\ln\dfrac ba\)</td></tr>
+<tr><td>Bifilar (diámetro \(d\), separación \(D\))</td><td>\(\dfrac{\mu}{\pi}\operatorname{arccosh}\dfrac Dd\)</td><td>\(\dfrac{\pi\varepsilon}{\operatorname{arccosh}(D/d)}\)</td><td>\(\dfrac{120\ \Omega}{\sqrt{\varepsilon_r}}\operatorname{arccosh}\dfrac Dd\)</td></tr>
+<tr><td>Placas paralelas (ancho \(w\), separación \(d\ll w\))</td><td>\(\dfrac{\mu d}{w}\)</td><td>\(\dfrac{\varepsilon w}{d}\)</td><td>\(\eta\,\dfrac dw\)</td></tr>
+</tbody>
+</table></div>
+<p>Los cables coaxiales comerciales tienen \(Z_0=50\ \Omega\) (radiofrecuencia e instrumentación) o \(75\ \Omega\) (vídeo y televisión); la línea bifilar plana de las antiguas antenas de televisión tiene unos \(300\ \Omega\).</p>
+<div class="box note"><p><b>Líneas con pérdidas.</b> Con \(R'\) y \(G'\) no nulos, las ondas son \(e^{-\gamma z}\) con \(\gamma=\alpha+j\beta=\sqrt{(R'+j\omega L')(G'+j\omega C')}\) y \(Z_0=\sqrt{(R'+j\omega L')/(G'+j\omega C')}\). Si \(R'/L'=G'/C'\) (condición de Heaviside), la atenuación y la velocidad no dependen de la frecuencia y los pulsos viajan sin deformarse: es la <em>línea sin distorsión</em>, que permitió la telefonía a larga distancia.</p></div>
+</section>
+
+<section>
+<h2>Transitorios: reflexiones y diagrama de rebotes</h2>
+<p>Cuando una onda que viaja por la línea llega a una carga \(R_L\), en ella deben cumplirse a la vez \(v=v^++v^-\), \(i=(v^+-v^-)/Z_0\) y \(v=R_Li\). De ahí sale el <span class="term">coeficiente de reflexión</span> de la carga:</p>
+<div class="eq key" data-name="Reflexión en la carga">\[\Gamma_L=\frac{v^-}{v^+}=\frac{R_L-Z_0}{R_L+Z_0},\qquad \Gamma_L=\begin{cases}+1 & \text{circuito abierto}\\ 0 & R_L=Z_0\ (\text{adaptada})\\ -1 & \text{cortocircuito}\end{cases}\]</div>
+<p>La onda reflejada vuelve hacia el generador, cuya resistencia interna \(R_g\) la refleja de nuevo con \(\Gamma_g=(R_g-Z_0)/(R_g+Z_0)\), y así sucesivamente. Al conectar un escalón \(V_g\), la primera onda que entra en la línea vale \(V_1^+=V_gZ_0/(R_g+Z_0)\) (la línea “parece” una resistencia \(Z_0\)). Las ondas sucesivas tienen amplitudes \(V_1^+,\ \Gamma_LV_1^+,\ \Gamma_g\Gamma_LV_1^+,\dots\) y el <span class="term">diagrama de rebotes</span> las organiza en el plano posición–tiempo. La suma de todas tiende al valor de corriente continua \(V_gR_L/(R_g+R_L)\).</p>
+<div class="sim" data-sim="bounce-diagram" data-title="Escalón en una línea: reflexiones sucesivas y diagrama de rebotes"></div>
+<div class="sim-guide"><ul>
+<li>Con \(R_g=R_L=Z_0\) la onda llega a la carga y no hay ninguna reflexión: la tensión final se alcanza en un solo tiempo de tránsito \(T\).</li>
+<li>Con la carga en circuito abierto la tensión de la carga salta a \(2V_1^+\); con un cortocircuito la onda reflejada anula la tensión.</li>
+<li>Si \(\Gamma_L\) y \(\Gamma_g\) tienen signos opuestos, la tensión oscila alrededor del valor final (“timbre”); si tienen el mismo signo, se acerca en escalones.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Régimen sinusoidal: ondas estacionarias e impedancia de entrada</h2>
+<p>Con excitación armónica se usan fasores. Midiendo la posición \(d\) desde la carga hacia el generador:</p>
+<div class="eq key" data-name="Tensión y corriente en la línea">\[V(d)=V_0^+e^{j\beta d}\left[1+\Gamma_Le^{-2j\beta d}\right],\qquad I(d)=\frac{V_0^+}{Z_0}e^{j\beta d}\left[1-\Gamma_Le^{-2j\beta d}\right],\qquad \Gamma_L=\frac{Z_L-Z_0}{Z_L+Z_0}.\]</div>
+<p>La amplitud \(\abs{V(d)}\) oscila entre \(V_{\max}=\abs{V_0^+}(1+\abs{\Gamma_L})\) y \(V_{\min}=\abs{V_0^+}(1-\abs{\Gamma_L})\), con máximos y mínimos alternados cada \(\lambda/4\). Donde la tensión es máxima, la corriente es mínima. La <span class="term">razón de onda estacionaria</span> y las pérdidas de retorno miden el desacoplo:</p>
+<div class="eq">\[\text{ROE}=\frac{V_{\max}}{V_{\min}}=\frac{1+\abs{\Gamma_L}}{1-\abs{\Gamma_L}},\qquad \text{PR}=-20\log_{10}\abs{\Gamma_L}\ \text{dB},\qquad \frac{P_L}{P_{\text{inc}}}=1-\abs{\Gamma_L}^2 .\]</div>
+<p>El cociente \(V(d)/I(d)\) es la impedancia que se ve mirando hacia la carga desde la posición \(d\):</p>
+<div class="eq key" data-name="Impedancia de entrada">\[Z_{\text{ent}}(d)=Z_0\,\frac{Z_L+jZ_0\tan\beta d}{Z_0+jZ_L\tan\beta d}.\]</div>
+<ul>
+<li><b>Línea en cortocircuito:</b> \(Z_{\text{ent}}=jZ_0\tan\beta d\), una reactancia pura que puede ser inductiva o capacitiva según la longitud. Así se fabrican inductores y capacitores en microondas.</li>
+<li><b>Línea abierta:</b> \(Z_{\text{ent}}=-jZ_0\cot\beta d\).</li>
+<li><b>Transformador de cuarto de onda</b> (\(d=\lambda/4\)): \(Z_{\text{ent}}=Z_0^2/Z_L\). Una sección de impedancia \(\sqrt{Z_1Z_L}\) adapta una carga resistiva \(Z_L\) a una línea \(Z_1\).</li>
+<li><b>Media onda</b> (\(d=\lambda/2\)): \(Z_{\text{ent}}=Z_L\); la línea “se repite” cada \(\lambda/2\).</li>
+</ul>
+<div class="sim" data-sim="tline-standing" data-title="Ondas estacionarias de tensión y corriente en una línea terminada"></div>
+<div class="sim-guide"><ul>
+<li>Con la carga adaptada (\(Z_L=Z_0\)) la envolvente es plana: sólo hay onda viajera.</li>
+<li>En cortocircuito hay un nodo de tensión en la carga y otros cada \(\lambda/2\); la corriente tiene allí sus máximos.</li>
+<li>Una carga resistiva mayor que \(Z_0\) produce un máximo de tensión en la carga; si es menor, un mínimo.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>La carta de Smith</h2>
+<p>Phillip Smith (1939) ideó una representación gráfica que evita los cálculos con tangentes complejas. Se dibuja el plano complejo de \(\Gamma\), cuyo círculo unidad contiene todas las cargas pasivas, y sobre él las curvas de la <em>impedancia normalizada</em> \(z=Z/Z_0=r+jx\):</p>
+<div class="eq key" data-name="Transformación de Smith">\[\Gamma=\frac{z-1}{z+1},\qquad z=\frac{1+\Gamma}{1-\Gamma},\qquad \Gamma(d)=\Gamma_Le^{-2j\beta d}.\]</div>
+<p>Las curvas de \(r\) constante son circunferencias tangentes en \(\Gamma=1\); las de \(x\) constante son arcos que también pasan por ese punto (arriba las inductivas, abajo las capacitivas). Alejarse de la carga en \(d\) sólo cambia la fase de \(\Gamma\): el punto gira en sentido horario, sobre una circunferencia de radio \(\abs{\Gamma_L}\) (el círculo de ROE), dando una vuelta completa cada \(\lambda/2\). La admitancia normalizada \(y=1/z\) está en el punto diametralmente opuesto.</p>
+<div class="sim" data-sim="smith-chart" data-title="Carta de Smith: de la impedancia de carga a la impedancia de entrada"></div>
+<div class="sim-guide"><ul>
+<li>Recorra \(d\) de 0 a \(0.5\lambda\): el punto da una vuelta completa sobre el círculo de ROE.</li>
+<li>El círculo de ROE corta el eje real en \(r=\text{ROE}\) (máximo de tensión) y en \(r=1/\text{ROE}\) (mínimo).</li>
+<li>Con \(d=\lambda/4\) el punto queda en el opuesto diametral: \(z_{\text{ent}}=1/z_L\), el transformador de cuarto de onda.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Guías de onda</h2>
+<p>A frecuencias de microondas, los coaxiales pierden mucha potencia y se usan tubos metálicos huecos. Una guía hueca no admite ondas TEM, que necesitarían un potencial electrostático no trivial dentro de un único conductor. Las ondas guiadas son de dos tipos: <span class="term">TE</span> (\(E_z=0\), con \(H_z\neq0\)) y <span class="term">TM</span> (\(H_z=0\), con \(E_z\neq0\)). En una guía rectangular de lados \(a\gt b\), las condiciones de campo eléctrico tangencial nulo en las paredes dan los modos</p>
+<div class="eq key" data-name="Modos de la guía rectangular">\[\text{TE}_{mn}:\ H_z=H_0\cos\frac{m\pi x}{a}\cos\frac{n\pi y}{b},\qquad \text{TM}_{mn}:\ E_z=E_0\sen\frac{m\pi x}{a}\sen\frac{n\pi y}{b},\]
+\[k_c^2=\left(\frac{m\pi}{a}\right)^2+\left(\frac{n\pi}{b}\right)^2,\qquad \beta=\sqrt{k^2-k_c^2},\qquad f_{c,mn}=\frac{u}{2}\sqrt{\left(\frac ma\right)^2+\left(\frac nb\right)^2}.\]</div>
+<p>Los modos TE admiten \(m\) o \(n\) nulo, pero no ambos; los TM necesitan \(m,n\geq1\). Por debajo de la <span class="term">frecuencia de corte</span> \(f_c\), \(\beta\) es imaginaria y el modo es evanescente: decae exponencialmente sin transportar potencia. El modo dominante es el TE<sub>10</sub>, con \(f_c=u/2a\) y campo \(E_y\propto\sen(\pi x/a)\). Una guía se diseña para que sólo el TE<sub>10</sub> se propague (entre \(f_{c,10}\) y el siguiente corte).</p>
+<div class="eq">\[\lambda_g=\frac{\lambda}{\sqrt{1-(f_c/f)^2}},\qquad v_p=\frac{u}{\sqrt{1-(f_c/f)^2}}\gt u,\qquad v_g=u\sqrt{1-(f_c/f)^2}\lt u,\qquad v_pv_g=u^2 .\]</div>
+<p>La velocidad de fase supera a \(c\) sin violar la relatividad: la energía y la información viajan con la velocidad de grupo. Una imagen útil: el modo TE<sub>10</sub> es la superposición de dos ondas planas que rebotan en zigzag entre las paredes \(x=0\) y \(x=a\) con ángulo \(\cos\theta=f_c/f\); en el corte rebotan perpendicularmente y no avanzan. Las impedancias de onda son \(Z_{TE}=\eta/\sqrt{1-(f_c/f)^2}\) y \(Z_{TM}=\eta\sqrt{1-(f_c/f)^2}\).</p>
+<div class="box ex"><p>La guía estándar WR-90 (banda X) mide \(a=22.86\) mm por \(b=10.16\) mm. Tiene \(f_{c,10}=6.56\) GHz, \(f_{c,20}=13.1\) GHz y \(f_{c,01}=14.8\) GHz, así que es monomodo entre 6.56 y 13.1 GHz (se usa entre 8.2 y 12.4 GHz). A 10 GHz, \(\lambda_g=3.97\) cm, frente a 3.00 cm en el espacio libre, y \(v_g=0.755c\).</p></div>
+<div class="sim" data-sim="waveguide-modes" data-title="Modos TE y TM de una guía rectangular"></div>
+<div class="sim-guide"><ul>
+<li>En el corte transversal, las líneas de \(\vb{E}\) de un modo TE siguen las curvas de nivel de \(H_z\); en un modo TM, las de \(\vb{H}\) siguen las de \(E_z\).</li>
+<li>Baje la frecuencia por debajo del corte: el campo deja de avanzar y decae exponencialmente a lo largo de la guía.</li>
+<li>En el diagrama de dispersión, cada modo empieza en su \(f_c\) y se acerca a la recta de la luz \(\beta=\omega/u\).</li>
+</ul></div>
+<div class="box note"><p><b>Resonadores y fibras.</b> Una guía cerrada en \(z=0\) y \(z=d\) es una <em>cavidad resonante</em> con frecuencias \(f_{mnp}=\frac u2\sqrt{(m/a)^2+(n/b)^2+(p/d)^2}\). Así funcionan los magnetrones y los filtros de microondas. Las <em>fibras ópticas</em> son guías dieléctricas: el confinamiento se debe a la reflexión total interna (capítulo 21) y también presentan modos y frecuencias de corte.</p></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un coaxial tiene \(a=0.40\) mm, \(b=1.45\) mm y polietileno (\(\varepsilon_r=2.25\)). Halle \(L'\), \(C'\), \(Z_0\) y la velocidad de propagación.
+<details><summary>Respuesta</summary><p>\(L'=0.258\ \mu\)H/m, \(C'=97.2\) pF/m, \(Z_0=51.5\ \Omega\), \(u=2.00\times10^8\) m/s.</p></details></li>
+<li><span class="lvl">Básico</span>Una línea de 50 Ω termina en una carga de 100 Ω. Halle \(\Gamma_L\), la ROE, la fracción de potencia reflejada y las pérdidas de retorno.
+<details><summary>Respuesta</summary><p>\(\Gamma_L=1/3\), ROE = 2, 11.1 % reflejada, PR = 9.54 dB.</p></details></li>
+<li><span class="lvl">Intermedio</span>Halle \(\Gamma_L\) y la ROE para \(Z_L=25+j25\ \Omega\) en una línea de 50 Ω.
+<details><summary>Respuesta</summary><p>\(\Gamma_L=0.447\angle116.6^\circ\); ROE = 2.62.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Qué impedancia debe tener un transformador de cuarto de onda para adaptar una antena de 100 Ω a un cable de 50 Ω? ¿Qué longitud física tiene a 300 MHz si \(u=0.66c\)?
+<details><summary>Respuesta</summary><p>\(70.7\ \Omega\); \(\lambda/4=16.5\) cm.</p></details></li>
+<li><span class="lvl">Intermedio</span>Una línea de 50 Ω en cortocircuito mide \(\lambda/8\) a 1 GHz. ¿Qué impedancia presenta y a qué inductancia equivale?
+<details><summary>Respuesta</summary><p>\(Z_{\text{ent}}=j50\ \Omega\); \(L=7.96\) nH.</p></details></li>
+<li><span class="lvl">Intermedio</span>Un escalón de 10 V con \(R_g=50\ \Omega\) se aplica a una línea de 50 Ω terminada en 150 Ω. Halle la tensión de la carga en función del tiempo.
+<details><summary>Respuesta</summary><p>\(V_1^+=5\) V, \(\Gamma_L=0.5\), \(\Gamma_g=0\): la carga está a 0 V hasta \(t=T\) y a 7.5 V después, que es el valor final \(10\cdot150/200\).</p></details></li>
+<li><span class="lvl">Avanzado</span>Para la guía WR-90 a 10 GHz, halle \(\lambda_g\), \(v_p\), \(v_g\) y \(Z_{TE}\) del modo TE<sub>10</sub>.
+<details><summary>Respuesta</summary><p>\(\lambda_g=3.97\) cm, \(v_p=3.97\times10^8\) m/s, \(v_g=2.26\times10^8\) m/s, \(Z_{TE}=499\ \Omega\).</p></details></li>
+<li><span class="lvl">Avanzado</span>Una cavidad rectangular de \(22.86\times10.16\times25.0\) mm resuena en el modo TE<sub>101</sub>. Halle su frecuencia.
+<details><summary>Respuesta</summary><p>\(f_{101}=\frac c2\sqrt{a^{-2}+d^{-2}}=8.89\) GHz.</p></details></li>
+</ol>
+</section>
+</template>

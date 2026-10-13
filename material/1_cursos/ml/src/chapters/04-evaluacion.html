@@ -1,0 +1,130 @@
+<template class="chapter-src" data-id="evaluacion" data-num="4" data-title="Evaluación honesta: validación cruzada y fuga de datos" data-part="Parte I · Fundamentos" data-short="Entrenamiento, validación y prueba; k pliegues, estratificación, grupos y series temporales; incertidumbre de las estimaciones; fuga de datos; pipelines; comparar modelos">
+<p class="lead">Un número de desempeño solo vale si se obtuvo con datos que el modelo, y usted, no usaron para tomar decisiones. Este capítulo explica cómo particionar los datos según su estructura, cuánta incertidumbre tiene cada estimación y cómo detectar la fuga de datos, el error que produce los modelos «excelentes» que fracasan en producción.</p>
+
+<section>
+<h2>Tres conjuntos con tres funciones</h2>
+<p>Cada decisión que se toma mirando un conjunto de datos lo «gasta» como medida imparcial. Por eso se separan tres papeles:</p>
+<ul>
+<li><b>Entrenamiento</b>: para ajustar los parámetros.</li>
+<li><b>Validación</b>: para elegir entre modelos y ajustar hiperparámetros. Se puede usar muchas veces, sabiendo que su estimación del mejor modelo queda algo optimista.</li>
+<li><b>Prueba</b>: para medir una sola vez, al final, el desempeño del modelo ya elegido. Si se usa para decidir, deja de ser prueba.</li>
+</ul>
+<p>Con muchos datos (cientos de miles de filas) basta una partición fija, por ejemplo 70/15/15. Con pocos, la partición fija desperdicia datos y su resultado depende demasiado de qué filas cayeron en cada lado; ahí entra la validación cruzada.</p>
+</section>
+
+<section>
+<h2>Validación cruzada de k pliegues</h2>
+<div class="box def"><p>En la <span class="term">validación cruzada de \(k\) pliegues</span> se divide el conjunto de entrenamiento en \(k\) partes iguales. Para cada parte \(j\), se entrena con las otras \(k-1\) y se evalúa en la parte \(j\). La estimación es el promedio de los \(k\) resultados, y su dispersión da una idea de la estabilidad:</p>
+<div class="eq key" data-name="Estimación por validación cruzada">\[\widehat{\text{CV}}_k=\frac1k\sum_{j=1}^k M\big(\hat f^{(-j)},\,D_j\big),\qquad \text{EE}\approx\frac{s_k}{\sqrt k}\ \ (\text{aproximado y optimista}).\]</div></div>
+<ul>
+<li>Cada dato se usa una vez para evaluar y \(k-1\) veces para entrenar. Con \(k=5\) o \(10\) el sesgo es pequeño y el costo moderado.</li>
+<li>El error estándar \(s_k/\sqrt k\) subestima la incertidumbre real, porque los modelos de los distintos pliegues comparten la mayor parte de sus datos de entrenamiento y sus errores están correlacionados. Bengio y Grandvalet (2004) demostraron que no existe un estimador insesgado de esa varianza. Úselo como orientación, no como verdad.</li>
+<li>En clasificación, la versión <span class="term">estratificada</span> mantiene la proporción de clases en cada pliegue; es imprescindible con clases desbalanceadas.</li>
+<li><span class="term">Dejar uno fuera</span> (LOOCV, \(k=n\)) tiene sesgo mínimo pero alta varianza y costo; útil con muy pocos datos o con modelos que tienen atajos analíticos.</li>
+</ul>
+<div class="sim" data-sim="pliegues" data-title="Cómo reparte cada estrategia los datos entre entrenamiento y evaluación"></div>
+<div class="sim-guide"><ul>
+<li>Cada columna es un dato y cada fila una iteración. Las celdas oscuras son de evaluación.</li>
+<li><b>Grupos</b>: los colores de la franja superior son pacientes. Con k pliegues normal, el mismo paciente aparece en entrenamiento y en evaluación; con grupos, nunca.</li>
+<li><b>Serie temporal</b>: siempre se entrena con el pasado y se evalúa con el bloque siguiente; nunca se usa el futuro para predecir el pasado.</li>
+</ul></div>
+<div class="sim" data-sim="holdout-vs-cv" data-title="¿Cuánto se equivoca cada método al estimar el desempeño?"></div>
+<div class="sim-guide"><ul>
+<li>Se repite 200 veces el experimento: se toma una muestra de \(n\) datos, se estima la exactitud de un k-NN con cada método y se compara con su exactitud verdadera, medida en 5 000 datos nuevos.</li>
+<li>El histograma de la partición 70/30 es el más ancho: con 100 datos, la estimación puede errar por más de 10 puntos. La validación cruzada de 10 pliegues reduce esa dispersión a la mitad aproximadamente.</li>
+<li>Aumente \(n\): todos los métodos mejoran, y la diferencia entre ellos se vuelve menos importante.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Datos con estructura: grupos y tiempo</h2>
+<p>La validación cruzada aleatoria supone que las filas son independientes. Cuando no lo son, mezcla información que en la realidad no estará disponible y la estimación sale optimista.</p>
+<ul>
+<li><b>Grupos</b>: varias imágenes del mismo paciente, varias transacciones del mismo cliente, varias mediciones del mismo sensor. Si el modelo se usará con pacientes nuevos, hay que validar con pacientes nuevos: <code>GroupKFold</code>.</li>
+<li><b>Tiempo</b>: precios, demanda, fraude. El modelo se usará para predecir el futuro con datos del pasado; la validación debe hacer lo mismo: <code>TimeSeriesSplit</code>. Barajar las filas permite al modelo «ver el futuro».</li>
+<li><b>Espacio</b>: datos geográficos cercanos se parecen; se valida por regiones (validación espacial en bloques).</li>
+</ul>
+<div class="box explain"><p>Si un profesor evalúa con preguntas tomadas del mismo cuaderno de ejercicios que dejó estudiar, las notas miden la memoria del cuaderno. Validar con el mismo paciente en entrenamiento y evaluación es lo mismo: el modelo reconoce al paciente, no la enfermedad.</p></div>
+</section>
+
+<section>
+<h2>Fuga de datos</h2>
+<div class="box def"><p>Hay <span class="term">fuga de datos</span> (<i>data leakage</i>) cuando información que no estará disponible en el momento de predecir entra, directa o indirectamente, en el entrenamiento o en la selección del modelo. El resultado es una evaluación optimista que no se reproduce en producción.</p></div>
+<div class="tablewrap"><table>
+<thead><tr><th>Tipo</th><th>Ejemplo</th><th>Cómo evitarla</th></tr></thead>
+<tbody>
+<tr><td>Fuga del objetivo</td><td>predecir reingreso hospitalario usando «días de la segunda hospitalización», que solo existe si hubo reingreso</td><td>preguntar para cada variable: ¿la conoceré en el momento de predecir?</td></tr>
+<tr><td>Preprocesamiento con todos los datos</td><td>estandarizar, imputar o seleccionar variables antes de separar entrenamiento y prueba</td><td>ajustar todo el preprocesamiento dentro de un <code>Pipeline</code></td></tr>
+<tr><td>Selección de variables fuera de la validación</td><td>elegir las 20 variables más correlacionadas con \(y\) usando todo el conjunto y luego validar</td><td>la selección es parte del modelo: va dentro de cada pliegue</td></tr>
+<tr><td>Temporal</td><td>usar el promedio de ventas del mes completo para predecir ventas a mitad de mes</td><td>construir cada variable con datos anteriores al instante de predicción</td></tr>
+<tr><td>Duplicados y grupos</td><td>la misma foto, o el mismo cliente, en entrenamiento y prueba</td><td>eliminar duplicados y validar por grupos</td></tr>
+</tbody></table></div>
+<div class="sim" data-sim="fuga-seleccion" data-title="Exactitud de 80 % con datos que son puro ruido"></div>
+<div class="sim-guide"><ul>
+<li>Las \(p\) variables y las etiquetas son aleatorias e independientes: ningún modelo puede superar en promedio el 50 %.</li>
+<li><b>Con fuga</b>: se eligen las \(k\) variables más correlacionadas con \(y\) usando los 60 datos, y luego se hace validación cruzada. La exactitud estimada sale muy por encima del azar.</li>
+<li><b>Sin fuga</b>: la selección se repite dentro de cada pliegue, solo con los datos de entrenamiento de ese pliegue. La exactitud vuelve al 50 %.</li>
+<li>Aumente \(p\): con más variables entre las que escoger, la fuga se agrava. Este error apareció en estudios publicados de expresión génica, con miles de genes y decenas de pacientes (Ambroise y McLachlan, 2002).</li>
+</ul></div>
+<div class="box warn"><p>Una exactitud demasiado buena para ser cierta suele no serlo. Antes de celebrar, busque la variable que «lo explica todo»: muchas veces es un identificador, una fecha o un efecto de la etiqueta.</p></div>
+</section>
+
+<section>
+<h2>Pipelines: la protección estructural</h2>
+<p>Un <code>Pipeline</code> de scikit-learn encadena el preprocesamiento y el modelo en un solo estimador. Cuando se le pasa a <code>cross_val_score</code> o a <code>GridSearchCV</code>, cada paso se ajusta solo con los datos de entrenamiento de cada pliegue y se aplica a los de evaluación, exactamente como ocurrirá en producción. Es la forma más simple de que la fuga por preprocesamiento sea imposible.</p>
+<div class="eq">\[\text{Pipeline}=\text{imputar}\ \to\ \text{escalar}\ \to\ \text{seleccionar}\ \to\ \text{modelo},\qquad \texttt{fit}\ \text{solo con el pliegue de entrenamiento.}\]</div>
+</section>
+
+<section>
+<h2>Comparar modelos con honestidad</h2>
+<p>Dos modelos evaluados con los mismos pliegues producen diferencias pareadas \(d_j=M_A^{(j)}-M_B^{(j)}\). Su media dice cuál es mejor en promedio y su dispersión, si la diferencia es consistente. Algunas reglas prácticas:</p>
+<ul>
+<li>Compare siempre con los mismos pliegues (misma semilla) para que las diferencias sean pareadas.</li>
+<li>Repita la validación cruzada con varias semillas (<code>RepeatedStratifiedKFold</code>) y mire la distribución de las diferencias, no solo su media.</li>
+<li>Si la diferencia es menor que la variación entre pliegues, prefiera el modelo más simple, más rápido o más interpretable.</li>
+<li>Incluya siempre una línea base (<code>DummyClassifier</code>, <code>DummyRegressor</code>): un modelo con 95 % de exactitud no impresiona si la clase mayoritaria es el 95 %.</li>
+</ul>
+</section>
+
+<section>
+<h2>Práctica: validación cruzada, grupos y fuga</h2>
+<div class="box py"><p>El programa compara la estimación por partición simple y por validación cruzada estratificada, usa <code>GroupKFold</code> cuando hay varias filas por paciente y reproduce la fuga por selección de variables con datos aleatorios.</p>
+<div class="py" data-py="04-validacion"></div></div>
+<div class="box read"><ul>
+<li><b>Partición simple</b>: con cinco semillas distintas, la exactitud de la misma regresión logística sobre el mismo conjunto va de 0.959 a 0.988. Un solo número de una sola partición es poco fiable.</li>
+<li><b>Validación cruzada</b>: 0.977 ± 0.019 con 10 pliegues; los pliegues individuales van de 0.947 a 1.000. La media es más estable y la dispersión muestra la incertidumbre.</li>
+<li><b>Grupos</b>: con pliegues normales el 1-NN obtiene 0.847, porque encuentra otra medición del mismo paciente; con <code>GroupKFold</code> cae a 0.502, el azar. La señal real era débil y todo el «acierto» venía de reconocer pacientes.</li>
+<li><b>Fuga</b>: con datos totalmente aleatorios, seleccionar las 20 variables con todos los datos produce una exactitud de 0.983; con la selección dentro del <code>Pipeline</code>, 0.533, el azar. Casi cincuenta puntos de ilusión.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Entrenamiento para ajustar, validación para elegir, prueba para medir una sola vez.</li>
+<li>La validación cruzada de 5 o 10 pliegues reduce la varianza de la estimación; su error estándar es solo orientativo.</li>
+<li>Respete la estructura de los datos: estratifique, agrupe y respete el orden temporal.</li>
+<li>Todo lo que se ajusta con datos (imputación, escalado, selección, codificación) va dentro de la validación: use pipelines.</li>
+<li>Compare modelos con los mismos pliegues e incluya una línea base.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Con 5 pliegues, ¿con qué fracción de los datos se entrena cada modelo y cuántos modelos se ajustan?
+<details><summary>Respuesta</summary><p>Con el 80 %, y se ajustan 5 modelos (más uno final con todos los datos, si se va a desplegar).</p></details></li>
+<li><span class="lvl">Básico</span>Un conjunto tiene 3 % de positivos. ¿Por qué estratificar?
+<details><summary>Respuesta</summary><p>Sin estratificar, algún pliegue puede quedar con muy pocos o ningún positivo, y métricas como el recall o el AUC se vuelven inestables o imposibles de calcular.</p></details></li>
+<li><span class="lvl">Intermedio</span>Se estandarizan los datos con la media y la desviación de todo el conjunto antes de la validación cruzada. ¿Hay fuga? ¿Es grave?
+<details><summary>Respuesta</summary><p>Sí, hay fuga: los datos de evaluación influyen en la media y la desviación usadas para entrenar. Suele ser pequeña con muchos datos, pero es un mal hábito; con imputación por objetivo o selección de variables el efecto es enorme. Use un Pipeline.</p></details></li>
+<li><span class="lvl">Intermedio</span>Las exactitudes de 10 pliegues son 0.81, 0.84, 0.79, 0.86, 0.82, 0.80, 0.83, 0.85, 0.78, 0.82. Dé la media y el error estándar aproximado.
+<details><summary>Respuesta</summary><p>Media 0.820, desviación 0.025, EE ≈ 0.025/√10 = 0.008. La incertidumbre real es mayor por la correlación entre pliegues.</p></details></li>
+<li><span class="lvl">Avanzado</span>Un modelo de demanda eléctrica obtiene MAPE 3 % con validación cruzada aleatoria y 9 % al usarlo el mes siguiente. Dé dos explicaciones.
+<details><summary>Respuesta</summary><p>(1) Fuga temporal: con pliegues aleatorios el modelo interpola entre días vecinos que conoce, algo imposible al predecir el futuro; debió usarse TimeSeriesSplit. (2) Deriva: el mes siguiente tiene condiciones (clima, festivos) distintas de las del entrenamiento.</p></details></li>
+</ol>
+<div class="box links"><ul>
+<li><a href="https://scikit-learn.org/stable/modules/cross_validation.html">scikit-learn — Cross-validation: evaluating estimator performance</a><small>Todas las estrategias de partición (KFold, StratifiedKFold, GroupKFold, TimeSeriesSplit) con diagramas.</small></li>
+<li><a href="https://scikit-learn.org/stable/common_pitfalls.html">scikit-learn — Common pitfalls and recommended practices</a><small>Fuga de datos y preprocesamiento inconsistente, con ejemplos de código.</small></li>
+<li><a href="https://www.jmlr.org/papers/v5/grandvalet04a.html">Bengio y Grandvalet (2004) — No unbiased estimator of the variance of K-fold cross-validation</a><small>Por qué el error estándar de la validación cruzada es optimista.</small></li>
+<li><a href="https://doi.org/10.1073/pnas.102102699">Ambroise y McLachlan (2002) — Selection bias in gene extraction on the basis of microarray gene-expression data</a><small>El caso clásico de fuga por selección de variables en la literatura científica.</small></li>
+<li><a href="https://www.kaggle.com/learn/intermediate-machine-learning">Kaggle Learn — Intermediate Machine Learning</a><small>Lecciones prácticas sobre pipelines, validación cruzada y fuga.</small></li>
+</ul></div>
+</section>
+</template>

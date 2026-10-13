@@ -1,0 +1,105 @@
+<template class="chapter-src" data-id="dft-practica" data-num="18" data-title="DFT en la práctica: SIESTA" data-part="Parte III · Teoría del funcional de la densidad" data-short="Superceldas y vacío, pseudopotenciales, ondas planas y orbitales atómicos numéricos, puntos k, mezcla, relajación y qué significa la energía total">
+<p class="lead">Entre las ecuaciones de Kohn–Sham y un número como «E(BN) = −386.72 eV» hay muchas decisiones técnicas: cómo tratar los electrones internos, qué funciones usar como base, cuántos puntos de la zona de Brillouin muestrear, cuándo dar por convergido un cálculo. Este capítulo explica esas decisiones tal como se toman en SIESTA, el código usado en la tesis, y qué significan las energías totales que produce.</p>
+
+<section>
+<h2>Superceldas, vacío y condiciones periódicas</h2>
+<p>Los códigos de DFT para materiales trabajan con condiciones periódicas en las tres direcciones: el sistema simulado es una <span class="term">supercelda</span> que se repite infinitamente. Para un cristal perfecto basta la celda primitiva. Para un defecto (una vacancia, un poro, un átomo de carbono) se usa una supercelda de varias celdas primitivas, lo bastante grande para que el defecto no interactúe con sus imágenes periódicas.</p>
+<p>Un material bidimensional como el h-BN se modela con una supercelda periódica en el plano y una capa de <span class="term">vacío</span> en la dirección perpendicular (típicamente 15–20 Å), suficiente para que las láminas imagen no se vean. Las moléculas de referencia (H₂, NH₃, BH₃) se calculan en una caja grande con vacío en todas las direcciones.</p>
+<div class="box hbn"><p>Las 20 estructuras BxCyNz de Mazzoni usadas en el ajuste son celdas de 8 átomos de una lámina con distintas distribuciones de B, C y N (12 enlaces por celda). Los poros triangulares y hexagonales de la tesis son superceldas de algo más de 200 átomos de B y N, con el poro en el centro y sus bordes saturados con H. hBN-MC usa la misma idea de supercelda periódica: su red \(N_x\times N_y\) con condiciones periódicas es una supercelda de un poro y sus imágenes.</p></div>
+</section>
+
+<section>
+<h2>Pseudopotenciales</h2>
+<p>Los electrones internos (el 1s del B, C y N) están muy ligados, casi no cambian al formar enlaces y obligan a describir oscilaciones muy rápidas de los orbitales de valencia cerca del núcleo (los 2s y 2p deben ser ortogonales al 1s, y eso les impone nodos). La solución es el <span class="term">pseudopotencial</span>: se sustituye el núcleo y los electrones internos por un potencial suave que actúa solo sobre los electrones de valencia y que, fuera de un <span class="term">radio de corte</span> \(r_c\), reproduce exactamente el potencial y los orbitales verdaderos.</p>
+<div class="box def"><p>Un pseudopotencial que <span class="term">conserva la norma</span> (Hamann, Schlüter y Chiang, 1979) cumple, para cada canal \(l\) de valencia:</p><ul>
+<li>el pseudoorbital no tiene nodos y coincide con el orbital todo-electrón para \(r\ge r_c\);</li>
+<li>los autovalores son iguales;</li>
+<li>la carga dentro de \(r_c\) es la misma: \(\int_0^{r_c}u_\text{ps}^2\,\dd r=\int_0^{r_c}u_\text{AE}^2\,\dd r\).</li>
+</ul></div>
+<p>La conservación de la norma garantiza que el pseudopotencial dispersa los electrones como el átomo verdadero en un intervalo de energías alrededor del autovalor de referencia (<span class="term">transferibilidad</span>): sirve para el átomo en moléculas y sólidos, no solo aislado. SIESTA usa pseudopotenciales de Troullier y Martins (1991), refinamiento de la construcción de Kerker (1980) que implementa la simulación: dentro de \(r_c\) se escribe \(u_\text{ps}=r^{l+1}\ee^{p(r)}\) con \(p\) un polinomio cuyos coeficientes se fijan con las condiciones de continuidad y de norma, y se invierte la ecuación radial para obtener el potencial.</p>
+<div class="eq key" data-name="Inversión del pseudopotencial">\[V_\text{ps}(r)=\varepsilon+\frac{1}{2}\Big[\frac{2(l+1)}{r}\,p'(r)+p'(r)^2+p''(r)\Big]\qquad (r\lt r_c).\]</div>
+<div class="sim" data-sim="pseudopotencial" data-title="Construcción de un pseudopotencial que conserva la norma (Kerker)"></div>
+<div class="sim-guide"><ul>
+<li>El orbital 2s todo-electrón tiene un nodo cerca del núcleo; el pseudoorbital es suave y sin nodos, e idéntico al verdadero más allá de \(r_c\).</li>
+<li>El pseudopotencial no tiene la singularidad \(-Z/r\): es finito en el origen, y para el canal s incluso repulsivo (representa la ortogonalidad al 1s que ya no está).</li>
+<li>Aumente \(r_c\): el pseudopotencial es más suave (necesita menos base) pero menos transferible.</li>
+</ul></div>
+<div class="box valid"><p>La simulación comprueba la conservación de la norma (diferencia menor que \(10^{-8}\)) y resuelve de nuevo la ecuación radial con el pseudopotencial: el autovalor del pseudoorbital sin nodos coincide con el todo-electrón con error de \(\sim10^{-5}\) Ha (apéndice B, nitrógeno 2p con \(r_c=1.5\,a_0\)).</p></div>
+</section>
+
+<section>
+<h2>Funciones de base: ondas planas y orbitales atómicos</h2>
+<p>Los orbitales de Kohn–Sham se expanden en una base (capítulo 9). Hay dos grandes familias:</p>
+<div class="tablewrap"><table>
+<tr><th></th><th>Ondas planas</th><th>Orbitales atómicos numéricos (SIESTA)</th></tr>
+<tr><td>Funciones</td><td>\(\ee^{i(\vb k+\vb G)\cdot\vb r}\) con \(\frac12|\vb k+\vb G|^2\le E_\text{cut}\)</td><td>funciones radiales tabuladas × armónicos esféricos, nulas más allá de un radio de confinamiento</td></tr>
+<tr><td>Convergencia</td><td>sistemática: un solo parámetro, \(E_\text{cut}\)</td><td>por niveles: SZ, DZ, DZP, TZP…</td></tr>
+<tr><td>Tamaño</td><td>miles de funciones por átomo; el vacío también cuesta</td><td>9–13 funciones por átomo (DZP); el vacío no cuesta</td></tr>
+<tr><td>Escalado</td><td>\(N^3\)</td><td>puede llegar a \(N\) (orden lineal) para sistemas grandes</td></tr>
+<tr><td>Códigos</td><td>Quantum ESPRESSO, VASP, ABINIT</td><td>SIESTA</td></tr>
+</table></div>
+<p>Con ondas planas, la convergencia con \(E_\text{cut}\) depende de lo bruscos que sean el potencial y los orbitales: un potencial con la singularidad del núcleo necesita ondas de longitud de onda muy corta. Esa es la otra razón de los pseudopotenciales: suavizan el potencial y reducen drásticamente la base necesaria.</p>
+<div class="sim" data-sim="ondas-planas" data-title="Convergencia con la energía de corte: potencial suave frente a abrupto"></div>
+<div class="sim-guide"><ul>
+<li>Con el pozo suave, la energía converge a 1 meV con unas pocas decenas de ondas planas. Con el pozo estrecho (como un núcleo sin pseudopotencial) hacen falta muchísimas más.</li>
+<li>La energía siempre baja al aumentar el corte: es un cálculo variacional (capítulo 9).</li>
+</ul></div>
+<p>En SIESTA los orbitales se confinan con el parámetro <code>PAO.EnergyShift</code> (la subida de energía que provoca el confinamiento, típicamente 0.01–0.02 Ry) y la densidad y los potenciales se representan en una malla real, cuya finura controla <code>MeshCutoff</code> (100–300 Ry), el equivalente a la energía de corte de las ondas planas para la densidad. Una base localizada introduce además el <span class="term">error de superposición de base</span>: un fragmento «toma prestadas» funciones de sus vecinos y parece más estable de lo que es; se corrige con la técnica de contrapeso (<i>counterpoise</i>).</p>
+</section>
+
+<section>
+<h2>Muestreo de la zona de Brillouin: puntos k</h2>
+<p>En un cristal, las magnitudes como la energía o la densidad son integrales sobre la zona de Brillouin de las contribuciones de los estados ocupados. En la práctica se sustituyen por sumas sobre una malla de puntos \(\vb k\), normalmente la de <span class="term">Monkhorst y Pack</span> (1976): una red uniforme de \(n_1\times n_2\times n_3\) puntos. En una lámina 2D basta una malla \(n\times n\times1\).</p>
+<ul>
+<li>En los <strong>aislantes</strong> las bandas ocupadas están llenas en toda la zona y varían suavemente: la suma converge exponencialmente rápido con \(n\).</li>
+<li>En los <strong>metales</strong> la superficie de Fermi corta las bandas: la integral tiene un borde abrupto y converge lentamente y con oscilaciones. Se usan mallas densas y un ensanchamiento (<i>smearing</i>) de la ocupación.</li>
+<li>Cuanto mayor es la supercelda en el espacio real, más pequeña es su zona de Brillouin y menos puntos \(\vb k\) necesita: superceldas de cientos de átomos pueden calcularse con pocos puntos o solo con \(\Gamma\).</li>
+</ul>
+<div class="sim" data-sim="puntos-k" data-title="Convergencia con la malla de puntos k: aislante, semimetal y metal"></div>
+<div class="sim-guide"><ul>
+<li>h-BN (aislante): con una malla de \(6\times6\) la energía de banda ya está convergida a menos de 1 meV por celda.</li>
+<li>Grafeno dopado (metal): el error oscila y baja lentamente; hace falta una malla mucho más densa.</li>
+<li>Observe la malla dibujada sobre la zona de Brillouin: puntos equiespaciados con pesos iguales.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Autoconsistencia, relajación y espín</h2>
+<p>Cada cálculo de energía es un ciclo autoconsistente (capítulos 15–16) que SIESTA acelera con la <span class="term">mezcla de Pulay</span>, que combina las densidades de varias iteraciones anteriores para estimar la solución. Se detiene cuando la matriz densidad cambia menos que una tolerancia (por ejemplo \(10^{-4}\)).</p>
+<p>Las posiciones atómicas se <span class="term">relajan</span> moviendo los átomos según las fuerzas hasta que todas son menores que un umbral; la tesis usa 0.05 eV/Å. Las fuerzas se obtienen sin derivar numéricamente gracias al <span class="term">teorema de Hellmann–Feynman</span>: si \(\Psi\) es autoestado exacto de \(\op H(\lambda)\), entonces \(\odv{E}{\lambda}=\mel{\Psi}{\partial_\lambda\op H}{\Psi}\). Con bases que se mueven con los átomos (como las de SIESTA) hay que añadir correcciones de Pulay a las fuerzas.</p>
+<p>Los cálculos pueden hacerse con o sin <span class="term">polarización de espín</span>. Los sistemas de capa cerrada (h-BN perfecto, poros con bordes saturados con H en número par de electrones) no la necesitan; los radicales, los bordes zigzag de grafeno o los átomos aislados de capa abierta sí.</p>
+</section>
+
+<section>
+<h2>¿Qué significa la energía total?</h2>
+<p>SIESTA imprime una energía total de, por ejemplo, −386.72 eV por unidad BN del h-BN. Ese número no es una energía de enlace: es la energía de Kohn–Sham de los electrones de valencia en el campo de los pseudopotenciales, con una referencia arbitraria fijada por la construcción de los pseudopotenciales. Solo las <strong>diferencias</strong> de energías totales calculadas con los mismos pseudopotenciales, base, funcional y parámetros numéricos tienen significado físico:</p>
+<div class="eq key" data-name="Energías con significado físico">\[E_\text{cohesión}=\sum_\text{átomos}E_\text{átomo}-E_\text{sólido},\qquad \Delta E_\text{reacción}=\sum E_\text{productos}-\sum E_\text{reactivos},\qquad E_\text{form}=E_\text{defecto}-\sum_in_i\mu_i .\]</div>
+<p>Por eso los parámetros de hBN-MC son números grandes y negativos: \(\varepsilon_\text{NB}=-128.16\) eV no es la energía de un enlace B–N (unos −4 eV respecto de átomos libres), sino un tercio de la energía total de un par BN, \(E(\text{BN})/3\approx-128.9\) eV. En el modelo \(E=\sum\varepsilon_{\alpha\beta}n_{\alpha\beta}\), las energías totales de los átomos quedan absorbidas en los \(\varepsilon\), y las diferencias entre configuraciones (lo que decide el Monte Carlo) salen del orden de eV.</p>
+<div class="box warn"><p>Las fuentes de error de un número de DFT son, por orden habitual de importancia: el funcional (decenas o cientos de meV en energías de reacción), la base y el pseudopotencial, la malla de puntos k y el <code>MeshCutoff</code>, el tamaño de la supercelda y del vacío, la tolerancia de las fuerzas y de la autoconsistencia, y la polarización de espín. Para que las energías de un ajuste sean comparables, todos esos parámetros deben ser idénticos en todas las estructuras: es la recomendación del informe científico de hBN-MC sobre las tablas de la tesis.</p></div>
+<div class="box explain"><p>La energía total de SIESTA es como la altura de una montaña medida desde un punto de referencia elegido por cada cartógrafo. Para saber cuánto hay que subir de un pueblo a otro, solo importa la diferencia de alturas, y solo si los dos mapas usan la misma referencia.</p></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Superceldas periódicas con vacío para láminas y moléculas; los defectos necesitan superceldas grandes.</li>
+<li>Pseudopotenciales que conservan la norma: valencia sola, potencial suave, orbitales sin nodos dentro de \(r_c\), idénticos fuera.</li>
+<li>Bases: ondas planas (\(E_\text{cut}\)) u orbitales atómicos numéricos (SZ, DZ, DZP) con malla real (<code>MeshCutoff</code>).</li>
+<li>Puntos k de Monkhorst–Pack: convergencia rápida en aislantes, lenta en metales.</li>
+<li>Autoconsistencia con mezcla de Pulay, relajación con fuerzas de Hellmann–Feynman (0.05 eV/Å en la tesis).</li>
+<li>Solo las diferencias de energías totales con la misma configuración tienen sentido; los \(\varepsilon_{\alpha\beta}\) absorben las energías absolutas.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Por qué el pseudoorbital 2s no tiene nodos y el verdadero sí?
+<details><summary>Respuesta</summary><p>El 2s verdadero debe ser ortogonal al 1s, lo que le impone un nodo. Al eliminar el 1s, esa condición desaparece y su efecto se incorpora al pseudopotencial (repulsivo cerca del núcleo).</p></details></li>
+<li><span class="lvl">Básico</span>Con \(\varepsilon_\text{NB}=-128.16\) eV, ¿cuánto vale la energía del modelo para una lámina perfecta de 288 pares BN?
+<details><summary>Respuesta</summary><p>\(3\times288\times(-128.16)=-110\,732\) eV.</p></details></li>
+<li><span class="lvl">Intermedio</span>Una supercelda de \(6\times6\) celdas primitivas de h-BN tiene una zona de Brillouin 36 veces menor. ¿Qué malla de puntos k equivale a una de \(12\times12\) en la celda primitiva?
+<details><summary>Respuesta</summary><p>\(2\times2\): el mismo espaciado en \(\vb k\).</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué en el ajuste de los \(\varepsilon_{\alpha\beta}\) es crítico que todas las estructuras se calculen con la misma configuración de SIESTA?
+<details><summary>Respuesta</summary><p>Porque las energías totales absolutas cambian con la base, el pseudopotencial o el corte de malla en cantidades mayores que las diferencias que se quieren ajustar; mezclar configuraciones introduce errores de escala (como el desfase de 0.74 eV por enlace en \(\varepsilon_\text{NB}\) señalado en el informe).</p></details></li>
+<li><span class="lvl">Avanzado</span>Demuestre el teorema de Hellmann–Feynman.
+<details><summary>Respuesta</summary><p>\(E=\mel{\Psi}{\op H}{\Psi}\) con \(\braket\Psi\Psi=1\). Derivando: \(E'=\mel{\Psi'}{\op H}{\Psi}+\mel{\Psi}{\op H}{\Psi'}+\mel\Psi{\op H'}\Psi=E(\braket{\Psi'}\Psi+\braket\Psi{\Psi'})+\mel\Psi{\op H'}\Psi\), y el paréntesis es la derivada de la norma, cero.</p></details></li>
+</ol>
+</section>
+</template>

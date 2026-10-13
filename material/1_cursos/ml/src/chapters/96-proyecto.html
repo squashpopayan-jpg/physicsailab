@@ -1,0 +1,105 @@
+<template class="chapter-src" data-id="proyecto" data-num="B" data-title="Proyecto completo: abandono de clientes" data-part="Apéndices" data-short="Un proyecto de principio a fin con resultados reales: exploración, detección de fugas, pipelines, validación cruzada, ajuste, prueba con intervalos, calibración, umbral por costos, interpretación, segmentos e informe">
+<p class="lead">Este apéndice junta todo el curso en un solo proyecto. Un operador de telefonía quiere ofrecer un beneficio de retención a los clientes que probablemente se van a ir. Ofrecerlo cuesta dinero, así que hay que decidir a quién contactar. El programa recorre cada etapa con datos simulados que tienen los defectos de los datos reales: faltantes, categorías, una variable con fuga y efectos no lineales. Cada número citado abajo sale de su ejecución.</p>
+
+<section>
+<h2>El problema</h2>
+<div class="tablewrap"><table class="cmp">
+<tbody>
+<tr><td>Decisión</td><td>a qué clientes ofrecer el beneficio de retención este mes</td></tr>
+<tr><td>Unidad</td><td>un cliente, con su historial de los últimos 3 meses</td></tr>
+<tr><td>Objetivo</td><td><code>abandona</code> = 1 si se va en los 60 días siguientes (18.5 % de los clientes)</td></tr>
+<tr><td>Costos</td><td>contactar cuesta 20 000 pesos; un cliente perdido son 300 000 pesos de margen; la oferta retiene al 30 % de los que se iban a ir</td></tr>
+<tr><td>Línea base</td><td>sin modelo: no contactar a nadie (ganancia 0) o contactar a todos</td></tr>
+<tr><td>Variables</td><td>plan, ciudad, antigüedad, cargo mensual, llamadas a soporte, datos usados, pago electrónico, edad, solicitud de portabilidad</td></tr>
+</tbody></table></div>
+<p>Antes de modelar conviene escribir la decisión en términos de costos, porque determina la métrica y el umbral (capítulo <a href="#calibracion">12</a>). Contactar a un cliente que sí se iba a ir deja \(0.3\times 300\,000-20\,000=70\,000\) pesos; contactar a uno que no se iba cuesta 20 000. Conviene contactar cuando</p>
+<div class="eq key" data-name="Umbral de la campaña">\[p\cdot 0.3\cdot 300\,000 \gt 20\,000\quad\Longleftrightarrow\quad p \gt \frac{20\,000}{90\,000}\approx 0.222,\]</div>
+<p>siempre que \(p\) sea una probabilidad calibrada. Por eso la métrica de selección es la precisión promedio (AP), que mide la calidad del ordenamiento en la clase rara, y se vigilan además la log loss y el Brier, que miden la calidad de las probabilidades.</p>
+</section>
+
+<section>
+<h2>El programa</h2>
+<div class="box py"><p>Corre en unos 60 segundos. Las etapas están numeradas en el código y en la salida; la guía de lectura sigue la misma numeración.</p>
+<div class="py" data-py="96-proyecto"></div></div>
+</section>
+
+<section>
+<h2>Lectura etapa por etapa</h2>
+<h3>1. Exploración y detección de fugas</h3>
+<ul>
+<li>Faltan datos en <code>datos_gb</code> (9.0 %) y <code>edad</code> (6.2 %). El faltante de datos no es al azar: 14.7 % en prepago frente a 4 % en los otros planes. Por eso el imputador agrega un indicador de faltante (capítulo <a href="#datos">5</a>).</li>
+<li>La tabla de AUC por variable sola es un detector barato de fugas. <code>solicito_portabilidad</code> da 0.917, muy por encima de la mejor variable legítima (antigüedad, 0.706): se registra cuando el cliente ya pidió irse, así que en el momento de decidir no existe. Se elimina. También el identificador, que no debe predecir nada (0.504) y que, si lo hiciera, revelaría un problema de orden en los datos.</li>
+<li>Las tasas de abandono por plan (hogar 0.233, prepago 0.180, pospago 0.173) mezclan efectos: el plan hogar acumula más llamadas a soporte y el prepago tiene cargos más bajos. Por eso, cuando el modelo ya conoce esas variables, el plan casi no aporta (etapa 9; véase la confusión en el capítulo <a href="#errores">31</a>).</li>
+</ul>
+<h3>2–4. Partición, pipelines y comparación de candidatos</h3>
+<ul>
+<li>La prueba (1 600 clientes) se separa primero, estratificada, y no se vuelve a mirar hasta la etapa 6. Todo el preprocesamiento (imputación, escalado, codificación) va dentro de cada <code>Pipeline</code>, así que se ajusta solo con los pliegues de entrenamiento (capítulo <a href="#evaluacion">4</a>).</li>
+<li>La línea base da AP = 0.185, que es la prevalencia: cualquier modelo útil debe superarla con claridad. Los tres modelos la duplican.</li>
+<li>Con hiperparámetros por defecto, la logística (AP 0.437) y el bosque (0.451) superan al gradient boosting (0.420), que sobreajusta con 6 400 filas. Las diferencias entre la logística y el bosque (0.014) son menores que la desviación entre pliegues (0.03): no hay un ganador claro.</li>
+</ul>
+<h3>5. Ajuste de hiperparámetros</h3>
+<ul>
+<li>La búsqueda aleatoria elige árboles muy pequeños (5 hojas), 75 casos mínimos por hoja y regularización L2 fuerte: con pocos datos y ruido alto, el boosting necesita ir despacio y con modelos simples (capítulo <a href="#boosting">18</a>).</li>
+<li>El mejor AP de validación (0.458) está sesgado hacia arriba porque es el máximo de 25 intentos (capítulo <a href="#hiperparametros">19</a>); la quinta mejor combinación da 0.447. La ganancia sobre el bosque sin ajustar (0.451) está dentro del ruido. En un proyecto real, la logística sería una alternativa defendible por su simplicidad.</li>
+</ul>
+<h3>6. Evaluación final</h3>
+<ul>
+<li>En la prueba: AUC 0.785 [0.753–0.813], AP 0.499 [0.436–0.559]. La prueba salió mejor que la validación cruzada (AUC 0.754). La diferencia cabe en la variabilidad de una muestra de 1 600 clientes, y por eso el informe debe citar el intervalo y no solo el punto. Lo que no se debe hacer es volver a ajustar después de ver la prueba.</li>
+<li>El intervalo de la AP va de 0.44 a 0.56: con 296 abandonos en la prueba, la segunda cifra decimal ya es incierta.</li>
+</ul>
+<h3>7. Calibración</h3>
+<ul>
+<li>En cada quintil la probabilidad predicha media coincide con la tasa observada (por ejemplo 0.471 frente a 0.487 en el quintil más alto). La mayor diferencia, 0.129 frente a 0.103, está en el tercero, con 320 clientes, es decir, dentro del error de muestreo. Las probabilidades se pueden usar como riesgos y aplicar el umbral teórico.</li>
+</ul>
+<h3>8. Decisión por costos</h3>
+<ul>
+<li>El umbral elegido con predicciones fuera de pliegue (0.22) coincide con el teórico (0.222) porque el modelo está calibrado. Si no lo estuviera, el validado sería el correcto.</li>
+<li>Contactar a todos pierde 3.35 millones por cada 1 000 clientes. El umbral 0.5, el que usa <code>predict</code> por defecto, gana 2.84 millones pero cubre solo el 26 % de los abandonos. El umbral de costos contacta al 28 % de los clientes, cubre el 63 % de los abandonos y gana alrededor de 5.0 millones, unas tres cuartas partes más que con 0.5. Elegir bien el umbral vale más que todo el ajuste de hiperparámetros.</li>
+</ul>
+<h3>9. Interpretación</h3>
+<ul>
+<li>La antigüedad domina (caída de AP 0.228), seguida de las llamadas a soporte (0.111). Plan y ciudad aportan casi nada una vez se conocen las otras variables, aunque el plan tenga tasas marginales distintas. Las variables correlacionadas se reparten la importancia (capítulo <a href="#interpretabilidad">29</a>).</li>
+<li>La dependencia parcial muestra un escalón: probabilidad media 0.48 con menos de 6 meses y 0.23 a los 6 meses. El modelo descubrió el corte que tenía el proceso que generó los datos. Para el negocio, los primeros seis meses son críticos. Pero es una asociación: no dice que retener a alguien un mes más baje su riesgo.</li>
+</ul>
+<h3>10. Segmentos</h3>
+<ul>
+<li>El AUC es similar por plan (0.77 a 0.80). En hogar el modelo predice 0.249 y se observa 0.204 (226 clientes; error estándar ≈ 0.027): una posible sobreestimación que conviene vigilar con más datos antes de calibrar por segmento. Con el umbral común se contacta al 42 % de los clientes de hogar frente al 25 % de pospago, una consecuencia de su mayor riesgo predicho, que debe quedar documentada.</li>
+</ul>
+</section>
+
+<section>
+<h2>El informe</h2>
+<div class="box note"><p><b>Ficha del modelo de abandono</b> (versión 1, datos de entrenamiento: 6 400 clientes).</p>
+<ul>
+<li><b>Uso previsto</b>: priorizar clientes para la oferta mensual de retención. <b>No previsto</b>: decisiones de crédito, precios o cancelación de servicios.</li>
+<li><b>Modelo</b>: gradient boosting (HGB, 111 árboles de 5 hojas) dentro de un pipeline con codificación de plan y ciudad; los faltantes se manejan de forma nativa.</li>
+<li><b>Desempeño</b> (prueba, 1 600 clientes): AUC 0.785 [0.753–0.813], AP 0.499 [0.436–0.559], Brier 0.121; calibrado por quintiles.</li>
+<li><b>Decisión</b>: contactar si \(p\ge 0.22\); ganancia estimada de 5 millones por cada 1 000 clientes frente a 2.8 con el umbral 0.5.</li>
+<li><b>Limitaciones</b>: no es causal; la ganancia supone un éxito de la oferta del 30 %, que debe medirse con un grupo de control aleatorio; posible sobreestimación en el plan hogar.</li>
+<li><b>Monitoreo</b>: PSI mensual de antigüedad, soporte y puntaje; calibración por plan cuando lleguen las etiquetas (60 días); reentrenar si el AP cae por debajo de 0.40 o el PSI del puntaje supera 0.25.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Para continuar</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Cambie el costo de contacto a 50 000 pesos. ¿Cuál es el nuevo umbral teórico y qué pasa con la proporción de contactados?
+<details><summary>Respuesta</summary><p>\(t=50\,000/90\,000\approx 0.56\). Se contacta a menos clientes que con el umbral 0.5, que ya marcaba solo al 7.8 %. La ganancia por cliente contactado es menor, así que solo conviene con los de riesgo alto.</p></details></li>
+<li><span class="lvl">Básico</span>Deje <code>solicito_portabilidad</code> en el modelo. ¿Qué AUC espera en validación y por qué es inútil?
+<details><summary>Respuesta</summary><p>Por encima de 0.92, porque la variable sola ya da 0.917. Es inútil porque cuando el cliente pide la portabilidad ya decidió irse: el modelo llegaría tarde a todas las decisiones.</p></details></li>
+<li><span class="lvl">Intermedio</span>Reemplace la búsqueda por una validación anidada (capítulo <a href="#hiperparametros">19</a>). ¿Qué espera respecto de 0.458?
+<details><summary>Respuesta</summary><p>Un AP algo menor, porque la anidada no reutiliza los mismos pliegues para elegir y para evaluar. Es la estimación honesta del procedimiento completo: búsqueda incluida.</p></details></li>
+<li><span class="lvl">Intermedio</span>Agregue una variable temporal (mes de alta) y simule que el abandono aumenta en los meses recientes. ¿Qué partición usaría y por qué?
+<details><summary>Respuesta</summary><p>Una partición temporal: entrenar con los meses antiguos y evaluar con los más recientes (<code>TimeSeriesSplit</code>, capítulo <a href="#evaluacion">4</a>). Reproduce el uso real, que siempre predice el futuro, y revela la deriva.</p></details></li>
+<li><span class="lvl">Avanzado</span>La ganancia supone que la oferta retiene al 30 %. Diseñe cómo medirlo.
+<details><summary>Respuesta</summary><p>Entre los clientes con \(p\ge t\), asignar la oferta al azar a una parte (por ejemplo 80 %) y dejar el resto como control. La diferencia en la tasa de abandono entre ambos grupos estima el efecto causal de la oferta. Con ese dato se recalcula el umbral. Si el efecto depende del cliente, los modelos de <i>uplift</i> estiman a quién le sirve más la oferta.</p></details></li>
+</ol>
+<div class="box links"><ul>
+<li><a href="https://scikit-learn.org/stable/modules/compose.html">scikit-learn — Pipelines y ColumnTransformer</a><small>La guía oficial para encadenar preprocesamiento y modelo sin fugas.</small></li>
+<li><a href="https://scikit-learn.org/stable/modules/classification_threshold.html">scikit-learn — Ajuste del umbral de decisión</a><small><code>TunedThresholdClassifierCV</code> y <code>FixedThresholdClassifier</code> para decidir con costos.</small></li>
+<li><a href="https://scikit-learn.org/stable/auto_examples/model_selection/plot_cost_sensitive_learning.html">scikit-learn — Post-tuning the decision threshold for cost-sensitive learning</a><small>Ejemplo completo con costos de negocio y comparación de umbrales.</small></li>
+<li><a href="https://www.kaggle.com/datasets/blastchar/telco-customer-churn">Kaggle — Telco Customer Churn</a><small>Un conjunto real de abandono de clientes para repetir este proyecto.</small></li>
+<li><a href="https://github.com/ageron/handson-ml3/blob/main/02_end_to_end_machine_learning_project.ipynb">Géron — End-to-end Machine Learning project (cuaderno)</a><small>El capítulo 2 de <i>Hands-On Machine Learning</i>, otro proyecto completo comentado.</small></li>
+</ul></div>
+</section>
+</template>

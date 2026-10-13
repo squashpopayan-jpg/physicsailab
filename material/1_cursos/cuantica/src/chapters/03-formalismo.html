@@ -1,0 +1,118 @@
+<template class="chapter-src" data-id="formalismo" data-num="3" data-title="Postulados y formalismo" data-part="Parte I · Fundamentos de la mecánica cuántica" data-short="Notación de Dirac, operadores hermíticos, medida, conmutadores, estados estacionarios y el sistema de dos niveles">
+<p class="lead">La función de onda es un caso particular de una idea más general: el estado cuántico es un vector y las magnitudes medibles son matrices. Con este lenguaje, que parece abstracto pero es pura álgebra lineal, se enuncian los postulados de la teoría y se resuelve el problema más importante del curso a pequeña escala: dos estados acoplados, que contienen ya la física del enlace químico.</p>
+
+<section>
+<h2>Estados como vectores</h2>
+<p>Un vector de tres dimensiones se escribe en una base ortonormal como \(\vb v=v_1\uv x+v_2\uv y+v_3\uv z\), con componentes \(v_i=\uv e_i\cdot\vb v\). En mecánica cuántica el estado se escribe igual, pero en un espacio vectorial complejo (el <span class="term">espacio de Hilbert</span>) que puede tener infinitas dimensiones. Dirac introdujo una notación compacta:</p>
+<div class="box def"><ul>
+<li>\(\ket{\psi}\) («ket») es el vector de estado.</li>
+<li>\(\bra{\phi}\) («bra») es su dual; el <span class="term">producto interno</span> es \(\braket{\phi}{\psi}=\int\phi^*(x)\psi(x)\,\dd x\), un número complejo con \(\braket{\phi}{\psi}=\braket{\psi}{\phi}^*\).</li>
+<li>La norma es \(\norm{\psi}^2=\braket{\psi}{\psi}\ge0\); un estado físico cumple \(\braket{\psi}{\psi}=1\).</li>
+<li>Una base \(\{\ket n\}\) es <span class="term">ortonormal</span> si \(\braket{m}{n}=\delta_{mn}\), y <span class="term">completa</span> si cualquier estado se puede desarrollar en ella.</li>
+</ul></div>
+<div class="eq key" data-name="Desarrollo en una base">\[\ket\psi=\sum_n c_n\ket n,\qquad c_n=\braket{n}{\psi},\qquad \sum_n|c_n|^2=1,\qquad \sum_n\ket n\bra n=\op 1 .\]</div>
+<p>La última igualdad, la <span class="term">relación de completitud</span>, dice que sumar las proyecciones sobre todos los vectores de la base devuelve el vector original. La función de onda \(\psi(x)=\braket{x}{\psi}\) no es más que la lista de «componentes» del estado en la base de posiciones.</p>
+<div class="box explain"><p>Un color en la pantalla es un vector con tres componentes (rojo, verde, azul). Un estado cuántico es un «color» con muchos canales, y cada canal lleva además una fase. Cambiar de base es como describir el mismo color en otro sistema (por ejemplo matiz, saturación y brillo): el color no cambia, cambian sus componentes.</p></div>
+</section>
+
+<section>
+<h2>Operadores y observables</h2>
+<p>Un <span class="term">operador lineal</span> \(\op A\) transforma kets en kets. En una base se representa por la matriz \(A_{mn}=\mel{m}{\op A}{n}\), y actuar con \(\op A\) sobre un estado es multiplicar la matriz por el vector de componentes. El <span class="term">adjunto</span> \(\op A^\dagger\) tiene matriz \((A^\dagger)_{mn}=A_{nm}^*\) (traspuesta conjugada).</p>
+<div class="box def"><p>Un operador es <span class="term">hermítico</span> si \(\op A^\dagger=\op A\), es decir, \(A_{mn}=A_{nm}^*\). Sus <span class="term">autovalores</span> \(a\) y <span class="term">autovectores</span> \(\ket a\) cumplen \(\op A\ket a=a\ket a\).</p></div>
+<p>Los operadores hermíticos tienen dos propiedades decisivas. Primera: sus autovalores son reales, porque \(a\braket aa=\mel a{\op A}a=\mel a{\op A^\dagger}a^*=a^*\braket aa\). Segunda: autovectores de autovalores distintos son ortogonales, porque \((a-a')\braket{a'}{a}=\mel{a'}{\op A}{a}-\mel{a'}{\op A}{a}=0\). Por eso las magnitudes físicas, cuyos valores medidos son números reales, se representan con operadores hermíticos (<span class="term">observables</span>), y sus autovectores forman bases naturales.</p>
+<div class="eq key" data-name="Descomposición espectral">\[\op A=\sum_a a\,\ket a\bra a,\qquad \expval{A}=\mel{\psi}{\op A}{\psi}=\sum_a a\,|\braket{a}{\psi}|^2 .\]</div>
+<p>Diagonalizar el hamiltoniano (hallar sus autovalores y autovectores) es, en la práctica, la tarea central de la química cuántica y de la física de sólidos: todos los programas de DFT, incluido SIESTA, pasan la mayor parte de su tiempo diagonalizando matrices hermíticas.</p>
+</section>
+
+<section>
+<h2>Los postulados de la mecánica cuántica</h2>
+<ol>
+<li><strong>Estado.</strong> El estado de un sistema aislado es un vector unitario \(\ket\psi\) del espacio de Hilbert (definido salvo una fase global).</li>
+<li><strong>Observables.</strong> Cada magnitud medible corresponde a un operador hermítico.</li>
+<li><strong>Medida.</strong> Los únicos resultados posibles de medir \(A\) son sus autovalores \(a\). La probabilidad de obtener \(a\) es \(P(a)=|\braket a\psi|^2\) (regla de Born).</li>
+<li><strong>Reducción.</strong> Inmediatamente después de obtener \(a\), el sistema queda en el autoestado \(\ket a\): una segunda medida inmediata da otra vez \(a\).</li>
+<li><strong>Evolución.</strong> Entre medidas, el estado evoluciona según \(i\hbar\,\odv{}{t}\ket{\psi(t)}=\op H\ket{\psi(t)}\).</li>
+</ol>
+<div class="box ex">
+<h4>Probabilidades en una superposición</h4>
+<p>Una partícula en una caja está en \(\ket\psi=\frac{1}{\sqrt3}\ket1+\sqrt{\tfrac23}\,\ee^{i\pi/4}\ket2\), con \(E_1=1\) eV y \(E_2=4\) eV. ¿Qué energías se pueden medir, con qué probabilidad, y cuál es la energía media?</p>
+<details><summary>Solución</summary>
+<p>Solo 1 eV (probabilidad \(1/3\)) o 4 eV (probabilidad \(2/3\)); nunca un valor intermedio. \(\expval E=\tfrac13\cdot1+\tfrac23\cdot4=3\) eV. La fase \(\ee^{i\pi/4}\) no afecta a estas probabilidades, pero sí a la evolución de \(\expval x\) en el tiempo.</p>
+</details>
+</div>
+</section>
+
+<section>
+<h2>Conmutadores e incertidumbre</h2>
+<p>El orden importa al multiplicar operadores. El <span class="term">conmutador</span> \([\op A,\op B]=\op A\op B-\op B\op A\) mide cuánto. Aplicado a una función cualquiera,</p>
+<div class="eq">\[[\op x,\op p]f=x(-i\hbar f')-(-i\hbar)(xf)'=i\hbar f\quad\Longrightarrow\quad [\op x,\op p]=i\hbar .\]</div>
+<p>Si dos observables conmutan, existe una base de autovectores comunes y ambos pueden tener valores definidos a la vez (son <span class="term">compatibles</span>). Si no conmutan, sus dispersiones están ligadas por la <span class="term">relación de Robertson</span>:</p>
+<div class="eq key" data-name="Relación de incertidumbre general">\[\sigma_A\,\sigma_B\ \ge\ \frac12\,\big|\expval{[\op A,\op B]}\big| ,\]</div>
+<p>que para \(x\) y \(p\) reproduce \(\sigma_x\sigma_p\ge\hbar/2\). Los tres componentes del momento angular no conmutan entre sí (capítulo 6), por eso nunca se conocen a la vez.</p>
+</section>
+
+<section>
+<h2>Estados estacionarios</h2>
+<p>Si el hamiltoniano no depende del tiempo, se buscan soluciones separables \(\psi(x,t)=\varphi(x)f(t)\). Sustituyendo en la ecuación de Schrödinger, \(f(t)=\ee^{-iEt/\hbar}\) y \(\varphi\) debe cumplir la <span class="term">ecuación de Schrödinger independiente del tiempo</span>, que es un problema de autovalores:</p>
+<div class="eq key" data-name="Ecuación de autovalores del hamiltoniano">\[\op H\varphi_n=E_n\varphi_n,\qquad \psi(x,t)=\sum_nc_n\,\varphi_n(x)\,\ee^{-iE_nt/\hbar},\quad c_n=\braket{\varphi_n}{\psi(0)} .\]</div>
+<p>Un autoestado aislado es <span class="term">estacionario</span>: su densidad \(|\varphi_n|^2\) no cambia, porque la fase \(\ee^{-iE_nt/\hbar}\) se cancela en el módulo. Una superposición de dos niveles, en cambio, oscila con la frecuencia de Bohr \(\omega_{21}=(E_2-E_1)/\hbar\): el término cruzado \(2\Rea[c_1^*c_2\varphi_1\varphi_2\ee^{-i\omega_{21}t}]\) hace «respirar» a la densidad. La energía se conserva, porque las probabilidades \(|c_n|^2\) no cambian.</p>
+</section>
+
+<section>
+<h2>El sistema de dos niveles: la semilla del enlace</h2>
+<p>El caso más sencillo no trivial tiene dos estados base, \(\ket A\) y \(\ket B\). Piense en un electrón que puede estar en el átomo A o en el átomo B, con energías de sitio \(\varepsilon_A\) y \(\varepsilon_B\), y con una amplitud \(t\) para saltar de uno a otro. El hamiltoniano es una matriz hermítica \(2\times2\):</p>
+<div class="eq key" data-name="Hamiltoniano de dos niveles">\[\op H=\begin{pmatrix}\varepsilon_A & -t\\ -t & \varepsilon_B\end{pmatrix},\qquad E_\pm=\bar\varepsilon\pm\sqrt{\left(\frac{\Delta}{2}\right)^2+t^2},\quad \bar\varepsilon=\frac{\varepsilon_A+\varepsilon_B}{2},\ \ \Delta=\varepsilon_A-\varepsilon_B .\]</div>
+<p>Los autovalores salen de \(\det(\op H-E\,\op 1)=0\). Tres lecciones que reaparecerán una y otra vez:</p>
+<ul>
+<li><strong>Repulsión de niveles.</strong> El acoplamiento separa los niveles: el inferior baja y el superior sube. Si \(\Delta=0\), la separación es \(2t\). Al variar \(\Delta\), los niveles nunca se cruzan (<span class="term">cruce evitado</span>).</li>
+<li><strong>Mezcla.</strong> Si \(\Delta=0\), los autoestados son \((\ket A\pm\ket B)/\sqrt2\): el estado de menor energía está repartido por igual en los dos sitios. Si \(|\Delta|\gg t\), cada autoestado se parece a un solo sitio y la energía apenas cambia: \(E_-\approx\varepsilon_B-t^2/\Delta\).</li>
+<li><strong>Oscilación.</strong> Un electrón preparado en \(\ket A\) no se queda allí: salta de un sitio a otro con frecuencia angular \(\Omega=(E_+-E_-)/\hbar\), y la fracción máxima que llega a B es \(t^2/[(\Delta/2)^2+t^2]\).</li>
+</ul>
+<div class="sim" data-sim="dos-niveles" data-title="Dos niveles acoplados: repulsión y mezcla"></div>
+<div class="sim-guide"><ul>
+<li>Mueva \(\Delta\) a través de cero: las energías forman una hipérbola; la mínima separación es \(2t\).</li>
+<li>Con \(\Delta\) grande, el estado de menor energía vive casi solo en el sitio de menor energía: el enlace se vuelve «iónico».</li>
+<li>Con \(t=0\) los niveles se cruzan sin repelerse y no hay mezcla.</li>
+</ul></div>
+<div class="sim" data-sim="dos-sitios" data-title="Un electrón que salta entre dos sitios"></div>
+<div class="sim-guide"><ul>
+<li>Con \(\Delta=0\) la transferencia es completa y periódica, con periodo \(\pi\hbar/t\).</li>
+<li>Aumente \(\Delta\): la oscilación se acelera pero la transferencia máxima disminuye.</li>
+<li>Prepare el estado enlazante: la población no cambia en el tiempo. Es un estado estacionario.</li>
+</ul></div>
+<h3>El espín ½ y la esfera de Bloch</h3>
+<p>Cualquier sistema de dos niveles puede escribirse como \(\ket\psi=\cos\frac\theta2\ket{0}+\ee^{i\phi}\sen\frac\theta2\ket{1}\), un punto sobre una esfera de radio unidad (la <span class="term">esfera de Bloch</span>). Los polos son los estados base; el ecuador, superposiciones con igual peso. El ejemplo físico más limpio es el espín de un electrón (capítulo 7), y hoy también los cúbits de un computador cuántico. Un hamiltoniano \(2\times2\) hace girar el punto alrededor de un eje, igual que un campo magnético hace precesar un imán.</p>
+<div class="sim" data-sim="bloch" data-title="Esfera de Bloch: estado, medida y precesión"></div>
+<div class="sim-guide"><ul>
+<li>Mida en el eje \(z\) muchas veces: la frecuencia de «arriba» tiende a \(\cos^2(\theta/2)\).</li>
+<li>Un estado en el ecuador da 50 % en \(z\), pero un resultado seguro si se mide en su propia dirección.</li>
+<li>Active la precesión: el estado gira alrededor del eje del campo sin cambiar su ángulo con él.</li>
+</ul></div>
+<div class="box hbn"><p>El sistema de dos niveles es el esqueleto del enlace químico (capítulo 10), del modelo de enlace fuerte de las bandas (capítulos 13 y 14) y de la brecha del h-BN: en el panal, cada celda tiene un sitio B y uno N con \(\varepsilon_B\ne\varepsilon_N\), y la brecha resultante es justamente la separación mínima de un sistema de dos niveles.</p></div>
+<div class="box valid"><p>Las simulaciones diagonalizan numéricamente (método de Jacobi) y comparan con la fórmula cerrada \(E_\pm\); el apéndice B incluye esta comparación y la de una matriz hermítica compleja \(3\times3\), cuyos autovalores reales deben sumar la traza.</p></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>El estado es un vector \(\ket\psi\); sus componentes en una base son \(c_n=\braket n\psi\), y \(|c_n|^2\) son probabilidades.</li>
+<li>Los observables son operadores hermíticos: autovalores reales, autovectores ortogonales.</li>
+<li>Medir \(A\) da un autovalor \(a\) con probabilidad \(|\braket a\psi|^2\) y deja el sistema en \(\ket a\).</li>
+<li>\([\op x,\op p]=i\hbar\); observables que no conmutan no pueden tener valores definidos a la vez.</li>
+<li>Los autoestados del hamiltoniano son estacionarios; las superposiciones oscilan con \((E_2-E_1)/\hbar\).</li>
+<li>Dos niveles acoplados se repelen, se mezclan y hacen oscilar al electrón: es la física mínima del enlace.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Compruebe que la matriz \(\begin{pmatrix}2&1-i\\1+i&3\end{pmatrix}\) es hermítica y halle sus autovalores.
+<details><summary>Respuesta</summary><p>\(E=\tfrac52\pm\sqrt{\tfrac14+2}=\tfrac52\pm\tfrac32\): 1 y 4.</p></details></li>
+<li><span class="lvl">Básico</span>Un estado es \(\ket\psi=(3\ket1+4i\ket2)/5\). ¿Probabilidad de medir el nivel 2?
+<details><summary>Respuesta</summary><p>\(|4i/5|^2=16/25=0.64\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Calcule \([\op x,\op p^2]\) y úselo para mostrar que \(\odv{}{t}\expval x=\expval p/m\).
+<details><summary>Respuesta</summary><p>\([\op x,\op p^2]=2i\hbar\op p\). De \(\odv{}{t}\expval x=\frac{i}{\hbar}\expval{[\op H,\op x]}\) sale \(\expval p/m\) (teorema de Ehrenfest).</p></details></li>
+<li><span class="lvl">Intermedio</span>En el sistema de dos niveles con \(\Delta=0\) y \(t=1\) eV, ¿cuánto tarda un electrón en pasar por completo de A a B?
+<details><summary>Respuesta</summary><p>Con \(\Delta=0\) la población de B en el instante \(\tau\) es \(\sen^2(t\tau/\hbar)\); vale 1 por primera vez en \(\tau=\pi\hbar/(2t)=1.03\) fs.</p></details></li>
+<li><span class="lvl">Avanzado</span>Demuestre que con \(|\Delta|\gg t\) el nivel inferior es \(E_-\approx\varepsilon_B-t^2/\Delta\) (tomando \(\varepsilon_A>\varepsilon_B\)). ¿Qué fracción del electrón está en A?
+<details><summary>Respuesta</summary><p>\(\sqrt{\Delta^2/4+t^2}\approx\frac{\Delta}{2}+\frac{t^2}{\Delta}\). El peso en A es \(\approx t^2/\Delta^2\): pequeño, el enlace es casi iónico.</p></details></li>
+</ol>
+</section>
+</template>

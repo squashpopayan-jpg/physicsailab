@@ -1,0 +1,103 @@
+<template class="chapter-src" data-id="muchos-cuerpos" data-num="15" data-title="El problema de muchos electrones" data-part="Parte III · Teoría del funcional de la densidad" data-short="El muro exponencial, campo medio de Hartree, Hartree–Fock e intercambio, ciclo autoconsistente y correlación electrónica">
+<p class="lead">La ecuación de Schrödinger de un sólido es conocida y exacta; el problema es que no se puede resolver. Este capítulo explica por qué (el muro exponencial), cómo se rodea con la idea de campo medio (Hartree y Hartree–Fock) y qué se pierde por el camino (la correlación). El método autoconsistente que aparece aquí es el mismo motor que hace funcionar la DFT y SIESTA.</p>
+
+<section>
+<h2>El muro exponencial</h2>
+<p>La función de onda de \(N\) electrones depende de \(3N\) coordenadas, \(\Psi(\vb r_1,\dots,\vb r_N)\). Para guardarla en un computador con \(p\) puntos por coordenada hacen falta \(p^{3N}\) números. Con un modesto \(p=10\):</p>
+<div class="tablewrap"><table>
+<tr><th>Sistema</th><th>Electrones</th><th>Números necesarios (\(p=10\))</th></tr>
+<tr><td>Hidrógeno</td><td class="c">1</td><td class="num">\(10^3\)</td></tr>
+<tr><td>Helio</td><td class="c">2</td><td class="num">\(10^6\)</td></tr>
+<tr><td>Nitrógeno</td><td class="c">7</td><td class="num">\(10^{21}\)</td></tr>
+<tr><td>Benceno (solo electrones π)</td><td class="c">6</td><td class="num">\(10^{18}\)</td></tr>
+<tr><td>Celda BxCyNz de Mazzoni (8 átomos, valencia)</td><td class="c">32</td><td class="num">\(10^{96}\)</td></tr>
+</table></div>
+<p>Hay unos \(10^{80}\) átomos en el universo observable. Walter Kohn llamó a esto el <span class="term">muro exponencial</span>: para más de unos pocos electrones, la función de onda completa no es un objeto que se pueda calcular ni guardar. Hace falta otra estrategia.</p>
+<div class="sim" data-sim="muro-exponencial" data-title="El costo de almacenar la función de onda de N electrones"></div>
+<div class="sim-guide"><ul>
+<li>Con la escala logarítmica, la memoria crece en línea recta con \(N\): es una exponencial.</li>
+<li>Compare con la densidad electrónica, que solo depende de 3 coordenadas para cualquier \(N\): \(p^3\) números siempre.</li>
+</ul></div>
+<div class="box explain"><p>Describir dónde está cada electrón de un sistema por separado es como tratar de anotar, a la vez, la posición de cada persona de una ciudad en todas sus combinaciones posibles. Describir la densidad es como anotar cuánta gente hay en cada cuadra: una tabla manejable que basta para muchísimas preguntas.</p></div>
+</section>
+
+<section>
+<h2>La aproximación de Hartree: campo medio</h2>
+<p>Douglas Hartree (1928) propuso que cada electrón se mueve en el campo del núcleo más el potencial electrostático promedio creado por la nube de todos los electrones:</p>
+<div class="eq key" data-name="Ecuaciones de Hartree">\[\Big[-\frac12\lap+v_\text{ext}(\vb r)+v_H(\vb r)\Big]\phi_i=\varepsilon_i\phi_i,\qquad v_H(\vb r)=\int\frac{n(\vb r')}{|\vb r-\vb r'|}\dd^3r',\qquad n=\sum_i|\phi_i|^2 .\]</div>
+<p>El <span class="term">potencial de Hartree</span> \(v_H\) es el potencial de Coulomb de la densidad, que se obtiene resolviendo la ecuación de Poisson \(\lap v_H=-4\pi n\). El problema es circular: \(v_H\) depende de los orbitales, que dependen de \(v_H\). Se resuelve por iteración hasta la <span class="term">autoconsistencia</span>.</p>
+<p>En la forma que hereda la DFT, con un mismo potencial para todos los electrones construido con la densidad total, aparece un defecto: cada electrón siente también su propia nube, porque \(n\) incluye su propio orbital. Este <span class="term">error de autointeracción</span> hace, por ejemplo, que el «átomo de hidrógeno» de este campo medio tenga energía incorrecta, aunque tiene un solo electrón. (Hartree, en su trabajo original, restaba a cada orbital su propia contribución, lo que exige un potencial distinto para cada electrón.)</p>
+</section>
+
+<section>
+<h2>Hartree–Fock: el intercambio</h2>
+<p>Fock y Slater (1930) mejoraron a Hartree usando un determinante de Slater (capítulo 7) y aplicando el principio variacional. El resultado añade un término de <span class="term">intercambio</span> que no tiene análogo clásico:</p>
+<div class="eq key" data-name="Energía de Hartree–Fock">\[E_\text{HF}=\sum_i\mel{\phi_i}{-\tfrac12\lap+v_\text{ext}}{\phi_i}+\frac12\iint\frac{n(\vb r)n(\vb r')}{|\vb r-\vb r'|}-\frac12\sum_{ij}^{\text{mismo espín}}\iint\frac{\phi_i^*(\vb r)\phi_j(\vb r)\phi_j^*(\vb r')\phi_i(\vb r')}{|\vb r-\vb r'|}.\]</div>
+<ul>
+<li>El término de intercambio cancela exactamente la autointeracción (el caso \(i=j\)): el hidrógeno de Hartree–Fock da \(-0.5\) Ha.</li>
+<li>Es <em>no local</em>: el potencial que siente un electrón en \(\vb r\) depende de los orbitales en todos los puntos \(\vb r'\). Esto hace HF más caro que Hartree.</li>
+<li>Para dos electrones en el mismo orbital espacial (helio), el intercambio es exactamente \(-\tfrac12\) de la energía de Hartree y el potencial de intercambio es \(-\tfrac12v_H\).</li>
+<li><span class="term">Teorema de Koopmans</span>: \(-\varepsilon_i\) aproxima la energía para arrancar el electrón \(i\). Para el helio, \(-\varepsilon_{1s}=0.918\) Ha \(=24.98\) eV frente a la ionización medida, 24.59 eV.</li>
+</ul>
+</section>
+
+<section>
+<h2>El ciclo autoconsistente</h2>
+<p>Hartree, Hartree–Fock y Kohn–Sham se resuelven igual. El esquema, que repetiremos en el capítulo 16, es:</p>
+<ol>
+<li>Proponer un potencial inicial \(V_\text{in}\) (por ejemplo, el de Thomas–Fermi o el de átomos superpuestos).</li>
+<li>Resolver las ecuaciones de un electrón con \(V_\text{in}\): orbitales \(\phi_i\) y energías \(\varepsilon_i\).</li>
+<li>Construir la densidad \(n_\text{out}=\sum_if_i|\phi_i|^2\).</li>
+<li>Calcular el nuevo potencial \(V_\text{out}=v_\text{ext}+v_H[n_\text{out}]+v_\text{x(c)}[n_\text{out}]\).</li>
+<li><span class="term">Mezclar</span>: \(V_\text{in}\leftarrow V_\text{in}+\alpha\,(V_\text{out}-V_\text{in})\), con \(0\lt\alpha\le1\).</li>
+<li>Repetir hasta que \(V_\text{out}\approx V_\text{in}\) y la energía no cambie.</li>
+</ol>
+<p>La mezcla es imprescindible: usar directamente \(V_\text{out}\) (\(\alpha=1\)) suele producir oscilaciones, porque un exceso de carga en una región crea un potencial repulsivo que la expulsa en la iteración siguiente, y así sucesivamente («chapoteo» de carga). Los códigos reales usan esquemas más listos (Pulay o Broyden) que aprovechan el historial de iteraciones; SIESTA usa por defecto la mezcla de Pulay.</p>
+<div class="sim" data-sim="scf-helio" data-title="El ciclo autoconsistente paso a paso: helio con Hartree y con Hartree–Fock"></div>
+<div class="sim-guide"><ul>
+<li>Avance iteración por iteración: la energía converge y la diferencia \(|V_\text{out}-V_\text{in}|\) cae exponencialmente.</li>
+<li>Con \(\alpha=1\) el helio converge, pero en átomos mayores aparecerían oscilaciones; con \(\alpha\) pequeño la convergencia es segura pero lenta.</li>
+<li>Compare Hartree (con autointeracción) y Hartree–Fock: el orbital de Hartree es demasiado difuso porque el electrón se repele a sí mismo.</li>
+</ul></div>
+<div class="box valid"><p>El helio de Hartree–Fock converge a \(E=-2.861680\) Ha y \(\varepsilon_{1s}=-0.917956\) Ha, los valores de referencia de Clementi y Roetti con error menor que \(10^{-6}\), y cumple el teorema del virial \(E=-T\) con error menor que \(10^{-7}\) (apéndice B).</p></div>
+</section>
+
+<section>
+<h2>La correlación electrónica</h2>
+<p>Hartree–Fock trata a cada electrón como si viera a los demás promediados. En realidad los electrones se evitan dinámicamente: cada uno tiene a su alrededor un <span class="term">hueco de Coulomb</span> que la función de un solo determinante no describe (salvo el hueco de intercambio entre espines iguales). La diferencia de energía es, por definición,</p>
+<div class="eq key" data-name="Energía de correlación">\[E_c=E_\text{exacta}-E_\text{HF}\lt0 .\]</div>
+<div class="tablewrap"><table>
+<tr><th>Átomo</th><th>\(E_\text{HF}\) (Ha)</th><th>\(E_\text{exacta}\) (Ha)</th><th>\(E_c\) (Ha)</th><th>\(E_c\) (eV)</th></tr>
+<tr><td>He</td><td class="num">−2.8617</td><td class="num">−2.9037</td><td class="num">−0.0420</td><td class="num">−1.14</td></tr>
+<tr><td>B</td><td class="num">−24.5291</td><td class="num">−24.6539</td><td class="num">−0.1248</td><td class="num">−3.40</td></tr>
+<tr><td>C</td><td class="num">−37.6886</td><td class="num">−37.8450</td><td class="num">−0.1564</td><td class="num">−4.26</td></tr>
+<tr><td>N</td><td class="num">−54.4009</td><td class="num">−54.5892</td><td class="num">−0.1883</td><td class="num">−5.12</td></tr>
+<tr><td>Ne</td><td class="num">−128.5471</td><td class="num">−128.9376</td><td class="num">−0.3905</td><td class="num">−10.6</td></tr>
+</table></div>
+<p>La correlación es menos del 1 % de la energía total, pero es del orden de las energías de enlace (varios eV): sin ella, las energías de atomización de moléculas salen muy mal. Los métodos que la incluyen sobre Hartree–Fock (interacción de configuraciones, teoría de perturbaciones de Møller–Plesset, coupled cluster) son muy precisos pero su costo crece como \(N^5\) a \(N^7\) o peor: impracticables para las superceldas de cientos de átomos que se necesitan en materiales. Ese es el hueco que llena la DFT.</p>
+<div class="box hbn"><p>Las energías de las 20 estructuras de Mazzoni, de los poros y de las moléculas de referencia (NH₃, BH₃, H₂) que parametrizan hBN-MC se calcularon con DFT (SIESTA, GGA-PBE), no con Hartree–Fock ni con métodos correlacionados: con decenas o centenas de átomos por celda, la DFT es la única opción práctica con precisión química razonable.</p></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>La función de onda de \(N\) electrones necesita \(\sim p^{3N}\) números: un muro exponencial.</li>
+<li>Hartree: cada electrón siente el potencial medio \(v_H\) de la densidad; incluye autointeracción.</li>
+<li>Hartree–Fock: el determinante de Slater añade el intercambio, que elimina la autointeracción; potencial no local.</li>
+<li>Se resuelve por autoconsistencia con mezcla del potencial o de la densidad.</li>
+<li>La correlación (\(E_\text{exacta}-E_\text{HF}\)) es pequeña frente a \(E\) pero del tamaño de las energías de enlace.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Cuántos números hacen falta para guardar la función de onda del carbono (6 electrones) con \(p=20\)?
+<details><summary>Respuesta</summary><p>\(20^{18}=2.6\times10^{23}\).</p></details></li>
+<li><span class="lvl">Básico</span>¿Qué fracción de la energía total del neón es correlación?
+<details><summary>Respuesta</summary><p>\(0.39/128.9=0.30\) %.</p></details></li>
+<li><span class="lvl">Intermedio</span>Explique por qué para el helio el potencial de intercambio de HF es \(-v_H/2\).
+<details><summary>Respuesta</summary><p>Los dos electrones ocupan el mismo orbital con espines opuestos; cada uno ve la nube del otro, que es la mitad de la densidad total. El intercambio (entre espines iguales) solo actúa del electrón consigo mismo y cancela su autorrepulsión: \(v_H-v_H/2=v_H/2\) es la repulsión del otro electrón.</p></details></li>
+<li><span class="lvl">Intermedio</span>Compare la predicción de Koopmans para el helio con la experimental y comente el error.
+<details><summary>Respuesta</summary><p>24.98 eV frente a 24.59 eV: 0.4 eV de exceso. Koopmans ignora la relajación del ion (que baja su energía) y la correlación (que actúa en sentido contrario); los errores se compensan parcialmente.</p></details></li>
+<li><span class="lvl">Avanzado</span>¿Por qué una mezcla con \(\alpha\) demasiado grande puede hacer divergir el ciclo autoconsistente?
+<details><summary>Respuesta</summary><p>El mapa \(V_\text{in}\to V_\text{out}\) amplifica algunas componentes del error con un factor negativo de módulo mayor que 1 (respuesta dieléctrica). La iteración amortiguada converge si \(|1-\alpha(1-\lambda)|\lt1\) para todos los autovalores \(\lambda\) de esa respuesta; con \(\alpha\) pequeño se cumple, a costa de más iteraciones.</p></details></li>
+</ol>
+</section>
+</template>

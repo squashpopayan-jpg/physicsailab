@@ -1,0 +1,94 @@
+<template class="chapter-src" data-id="corriente-alterna" data-num="18" data-title="Circuitos de corriente alterna" data-part="Parte V · Electrodinámica" data-short="Fasores, reactancia, impedancia, resonancia, potencia, transformadores y filtros">
+<p class="lead">La red eléctrica distribuye tensiones sinusoidales porque los generadores las producen de forma natural y los transformadores sólo funcionan con corrientes variables. En régimen sinusoidal, los condensadores y las bobinas se comportan como “resistencias” que dependen de la frecuencia y desfasan la corriente respecto de la tensión.</p>
+
+<section>
+<h2>Magnitudes sinusoidales y fasores</h2>
+<p>Una tensión alterna se escribe \(v(t)=V_0\sen(\omega t+\varphi)\), con amplitud \(V_0\), frecuencia angular \(\omega=2\pi f\) y fase \(\varphi\). Su <span class="term">valor eficaz</span> (rms) es el de la tensión continua que disiparía la misma potencia media en un resistor:</p>
+<div class="eq key" data-name="Valores eficaces">\[V_{\text{ef}}=\sqrt{\langle v^2\rangle}=\frac{V_0}{\sqrt2},\qquad I_{\text{ef}}=\frac{I_0}{\sqrt2}.\]</div>
+<p>Los 120 V o 220 V de un enchufe son valores eficaces: la amplitud es 170 V o 311 V. Todas las tensiones y corrientes de un circuito lineal alimentado a una frecuencia tienen esa misma frecuencia; sólo difieren en amplitud y fase. Se representan como <span class="term">fasores</span>: vectores (o números complejos \(\tilde V=V_0e^{j\varphi}\)) que giran con velocidad angular \(\omega\); el valor instantáneo es la proyección sobre el eje vertical. Sumar tensiones sinusoidales equivale a sumar sus fasores como vectores.</p>
+</section>
+
+<section>
+<h2>Resistor, bobina y condensador en CA</h2>
+<p>Con una corriente \(i=I_0\sen\omega t\):</p>
+<div class="tablewrap"><table>
+<tr><th>Elemento</th><th>Tensión</th><th>Amplitud</th><th>Fase de \(v\) respecto de \(i\)</th></tr>
+<tr><td>Resistor</td><td>\(v_R=RI_0\sen\omega t\)</td><td>\(V_R=RI_0\)</td><td>en fase</td></tr>
+<tr><td>Bobina</td><td>\(v_L=L\,\dd i/\dd t=\omega LI_0\cos\omega t\)</td><td>\(V_L=X_LI_0,\ \ X_L=\omega L\)</td><td>\(v\) adelanta \(90^\circ\)</td></tr>
+<tr><td>Condensador</td><td>\(v_C=q/C=-\dfrac{I_0}{\omega C}\cos\omega t\)</td><td>\(V_C=X_CI_0,\ \ X_C=\dfrac{1}{\omega C}\)</td><td>\(v\) atrasa \(90^\circ\)</td></tr>
+</table></div>
+<p>Las <span class="term">reactancias</span> \(X_L\) y \(X_C\) se miden en ohmios. Una bobina deja pasar fácilmente la continua y dificulta las altas frecuencias; un condensador hace lo contrario. En notación compleja: \(Z_R=R\), \(Z_L=j\omega L\), \(Z_C=1/(j\omega C)=-j/(\omega C)\).</p>
+</section>
+
+<section>
+<h2>Circuito RLC serie e impedancia</h2>
+<p>En serie, la corriente es común y las tensiones se suman como fasores: \(V_R\) sobre el eje de la corriente y \(V_L-V_C\) perpendicular. De ahí la <span class="term">impedancia</span>:</p>
+<div class="eq key" data-name="Impedancia RLC serie">\[Z=R+j(X_L-X_C),\qquad \abs{Z}=\sqrt{R^2+\left(\omega L-\frac{1}{\omega C}\right)^2},\qquad \tan\varphi=\frac{X_L-X_C}{R},\qquad I_0=\frac{V_0}{\abs Z}.\]</div>
+<p>Si \(X_L\gt X_C\) el circuito es inductivo (la tensión adelanta a la corriente); si \(X_L\lt X_C\), capacitivo. Las impedancias en serie y en paralelo se combinan como las resistencias, pero con aritmética compleja.</p>
+<div class="sim" data-sim="phasors-rlc" data-title="Diagrama de fasores de un circuito RLC serie"></div>
+<div class="sim-guide"><ul>
+<li>Observe que \(\tilde V_L\) y \(\tilde V_C\) están siempre en oposición; su suma puede ser menor que cada uno por separado.</li>
+<li>Ajuste la frecuencia hasta que \(\tilde V_L\) y \(\tilde V_C\) se cancelen: la tensión de la fuente queda en fase con la corriente (resonancia).</li>
+<li>La amplitud de \(v_L\) o \(v_C\) puede superar la de la fuente: no hay contradicción porque están desfasadas.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resonancia</h2>
+<p>La corriente es máxima cuando \(X_L=X_C\), es decir, a la <span class="term">frecuencia de resonancia</span></p>
+<div class="eq key" data-name="Resonancia serie">\[\omega_0=\frac{1}{\sqrt{LC}},\qquad I_{0,\max}=\frac{V_0}{R},\qquad Q=\frac{\omega_0L}{R}=\frac{\omega_0}{\Delta\omega},\qquad \Delta\omega=\frac RL .\]</div>
+<p>\(\Delta\omega\) es el ancho de banda: la separación entre las frecuencias en que la potencia cae a la mitad (corriente \(1/\sqrt2\) del máximo). Un circuito de \(Q\) alto es muy selectivo; así se sintoniza una emisora de radio. En resonancia, \(V_L=V_C=QV_0\).</p>
+<div class="sim" data-sim="resonance" data-title="Curva de resonancia y ancho de banda"></div>
+<div class="sim-guide"><ul>
+<li>Reduzca \(R\): el pico se hace más alto y estrecho (\(Q\) mayor), pero la frecuencia de resonancia no cambia.</li>
+<li>La fase pasa de \(-90^\circ\) (capacitivo) a \(+90^\circ\) (inductivo) y vale cero en resonancia.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Potencia en corriente alterna</h2>
+<p>La potencia instantánea \(p=vi\) oscila al doble de la frecuencia. Su valor medio depende del desfase:</p>
+<div class="eq key" data-name="Potencia media">\[P=V_{\text{ef}}I_{\text{ef}}\cos\varphi=I_{\text{ef}}^2R,\qquad \text{factor de potencia}=\cos\varphi=\frac{R}{\abs Z}.\]</div>
+<p>Las bobinas y los condensadores ideales no consumen energía en promedio: la toman durante un cuarto de ciclo y la devuelven en el siguiente. Se definen la potencia <em>aparente</em> \(S=V_{\text{ef}}I_{\text{ef}}\) [VA] y la <em>reactiva</em> \(Q_r=V_{\text{ef}}I_{\text{ef}}\sen\varphi\) [var], que forman con \(P\) el triángulo de potencias \(S^2=P^2+Q_r^2\). Las empresas eléctricas penalizan los factores de potencia bajos porque obligan a transportar corriente que no realiza trabajo; se corrigen con condensadores en paralelo con los motores.</p>
+<div class="sim" data-sim="ac-power" data-title="Potencia instantánea, potencia media y factor de potencia"></div>
+</section>
+
+<section>
+<h2>El transformador</h2>
+<p>Dos bobinados sobre un núcleo común de hierro comparten el mismo flujo. Por la ley de Faraday, la fem por espira es la misma en ambos:</p>
+<div class="eq key" data-name="Transformador ideal">\[\frac{V_2}{V_1}=\frac{N_2}{N_1},\qquad \frac{I_2}{I_1}=\frac{N_1}{N_2},\qquad Z_{\text{vista desde el primario}}=\left(\frac{N_1}{N_2}\right)^2Z_{\text{carga}} .\]</div>
+<p>En un transformador ideal la potencia se conserva: \(V_1I_1=V_2I_2\). Los reales tienen rendimientos del 95 al 99 %; las pérdidas se deben a la resistencia de los bobinados, a la histéresis y a las corrientes de Foucault del núcleo (que por eso se hace de láminas). Gracias al transformador la energía se transmite a cientos de kilovoltios y se distribuye a tensiones seguras.</p>
+<div class="sim" data-sim="transformer" data-title="Transformador ideal: tensiones, corrientes e impedancia reflejada"></div>
+</section>
+
+<section>
+<h2>Filtros y diagramas de Bode</h2>
+<p>Un divisor de tensión con elementos reactivos tiene una ganancia que depende de la frecuencia. El filtro RC pasa-bajos (salida en el condensador) tiene la función de transferencia</p>
+<div class="eq key" data-name="Filtro RC pasa-bajos">\[H(\omega)=\frac{\tilde V_{\text{sal}}}{\tilde V_{\text{ent}}}=\frac{1}{1+j\omega RC},\qquad \abs{H}=\frac{1}{\sqrt{1+(\omega/\omega_c)^2}},\qquad \omega_c=\frac{1}{RC}.\]</div>
+<p>En la frecuencia de corte, \(\abs H=1/\sqrt2\) (−3 dB) y la fase es \(-45^\circ\); por encima, la ganancia cae 20 dB por década. Con la salida en el resistor se obtiene un pasa-altos, \(H=j\omega RC/(1+j\omega RC)\). El <span class="term">diagrama de Bode</span> representa \(20\log_{10}\abs H\) y la fase frente a \(\log\omega\).</p>
+<div class="sim" data-sim="bode" data-title="Filtros pasivos: diagrama de Bode y señales"></div>
+<div class="sim-guide"><ul>
+<li>Pasa-bajos: por encima de \(f_c\) la pendiente es −20 dB/década; en \(f_c\) la ganancia es −3 dB y la fase −45°.</li>
+<li>Pasa-banda RLC: la ganancia es 0 dB en \(f_0\) y el ancho de banda a −3 dB es \(R/(2\pi L)\).</li>
+<li>Elija una frecuencia de la señal y compare la entrada con la salida en el osciloscopio inferior.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Halle la reactancia de una bobina de 50 mH y de un condensador de 10 µF a 60 Hz.
+<details><summary>Respuesta</summary><p>\(X_L=18.8\ \Omega\); \(X_C=265\ \Omega\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Un circuito serie con \(R=100\ \Omega\), \(L=0.5\) H y \(C=10\ \mu\)F se alimenta con 120 V eficaces a 60 Hz. Halle \(\abs Z\), \(I_{\text{ef}}\), el desfase y la potencia media.
+<details><summary>Respuesta</summary><p>\(X_L=188.5\), \(X_C=265.3\), \(\abs Z=126.1\ \Omega\); \(I=0.952\) A; \(\varphi=-37.5^\circ\) (capacitivo); \(P=90.6\) W.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Qué capacitancia sintoniza a 1 MHz una bobina de 100 µH? Si \(R=10\ \Omega\), halle \(Q\) y el ancho de banda.
+<details><summary>Respuesta</summary><p>\(C=253\) pF; \(Q=62.8\); \(\Delta f=15.9\) kHz.</p></details></li>
+<li><span class="lvl">Intermedio</span>Un transformador reduce 13.2 kV a 220 V. Si el primario tiene 3000 espiras, ¿cuántas tiene el secundario? Con una carga de 11 kW, ¿qué corriente circula por cada devanado?
+<details><summary>Respuesta</summary><p>\(N_2=50\); \(I_2=50\) A; \(I_1=0.833\) A.</p></details></li>
+<li><span class="lvl">Avanzado</span>Un motor consume 5 kW con factor de potencia 0.7 (inductivo) a 220 V y 60 Hz. ¿Qué condensador en paralelo eleva el factor de potencia a 1?
+<details><summary>Respuesta</summary><p>\(Q_r=P\tan\varphi=5.10\) kvar; \(C=Q_r/(\omega V^2)=280\ \mu\)F.</p></details></li>
+<li><span class="lvl">Avanzado</span>Demuestre que la potencia media en un circuito RLC serie es máxima en resonancia y que cae a la mitad en \(\omega\approx\omega_0\pm R/2L\) (para \(Q\gg1\)).
+<details><summary>Respuesta</summary><p>\(P\propto R/\abs Z^2\); la mitad ocurre cuando \(\abs{X_L-X_C}=R\), y cerca de \(\omega_0\), \(X_L-X_C\approx2L(\omega-\omega_0)\).</p></details></li>
+</ol>
+</section>
+</template>

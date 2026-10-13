@@ -1,0 +1,89 @@
+<template class="chapter-src" data-id="kohn-sham" data-num="16" data-title="Hohenberg–Kohn y Kohn–Sham" data-part="Parte III · Teoría del funcional de la densidad" data-short="La densidad como variable fundamental, Thomas–Fermi, teoremas de Hohenberg–Kohn, sistema de Kohn–Sham, ecuaciones y ciclo autoconsistente">
+<p class="lead">La teoría del funcional de la densidad (DFT) sustituye la función de onda de \(3N\) variables por la densidad electrónica, que solo tiene tres. Que eso sea posible sin perder información es el contenido de los teoremas de Hohenberg y Kohn (1964); que sea práctico es el mérito de Kohn y Sham (1965). Walter Kohn recibió el Nobel de Química en 1998 por esta idea, hoy la herramienta más usada de la física de materiales.</p>
+
+<section>
+<h2>La densidad electrónica</h2>
+<div class="box def"><p>La <span class="term">densidad electrónica</span> es el número de electrones por unidad de volumen en el punto \(\vb r\):</p>
+<div class="eq key" data-name="Densidad electrónica">\[n(\vb r)=N\int|\Psi(\vb r,\vb r_2,\dots,\vb r_N)|^2\,\dd^3r_2\cdots\dd^3r_N,\qquad \int n(\vb r)\,\dd^3r=N .\]</div></div>
+<p>Es una función de tres variables para cualquier número de electrones, es observable (la difracción de rayos X mide justamente la densidad de carga de un cristal) y contiene más información de lo que parece. Por ejemplo, cerca de cada núcleo la densidad tiene una «punta» cuya pendiente revela la carga del núcleo (condición de Kato: \(\partial_r\bar n=-2Z\bar n\) en el núcleo). Mirando solo la densidad se pueden encontrar los núcleos (máximos) y su carga (pendientes) y, con ellos, el hamiltoniano entero.</p>
+</section>
+
+<section>
+<h2>El primer funcional: Thomas–Fermi</h2>
+<p>Thomas y Fermi (1927) intentaron escribir la energía solo con la densidad. Tomaron la energía cinética del gas uniforme de electrones, \(t(n)=C_F\,n^{5/3}\), y la aplicaron punto a punto:</p>
+<div class="eq key" data-name="Funcional de Thomas–Fermi">\[E_\text{TF}[n]=C_F\!\int n^{5/3}\dd^3r+\int v_\text{ext}\,n\,\dd^3r+\frac12\iint\frac{n(\vb r)n(\vb r')}{|\vb r-\vb r'|},\qquad C_F=\frac{3}{10}(3\pi^2)^{2/3}=2.871 .\]</div>
+<p>Minimizando con \(\int n=N\) se obtiene una densidad sin capas, y para átomos neutros \(E_\text{TF}=-0.7687\,Z^{7/3}\) Ha. Es una idea profunda pero cuantitativamente pobre: sobrestima la energía de los átomos ligeros en un 30–50 %, no reproduce la estructura de capas y, según el teorema de Teller, no predice ningún enlace químico. La energía cinética es demasiado importante para aproximarla tan burdamente.</p>
+<div class="sim" data-sim="thomas-fermi" data-title="Energías atómicas: Thomas–Fermi, Hartree–Fock, LDA y exacta"></div>
+<div class="sim-guide"><ul>
+<li>El error relativo de Thomas–Fermi disminuye con \(Z\): es exacto en el límite de átomos muy pesados.</li>
+<li>LDA (Kohn–Sham) queda mucho más cerca de los valores exactos que Thomas–Fermi, con el mismo tipo de aproximación local para el intercambio y la correlación. La diferencia está en que la energía cinética se calcula con orbitales.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Los teoremas de Hohenberg–Kohn</h2>
+<div class="box law"><p><strong>Primer teorema.</strong> El potencial externo \(v_\text{ext}(\vb r)\) queda determinado, salvo una constante, por la densidad del estado fundamental \(n_0(\vb r)\). Como \(v_\text{ext}\) fija el hamiltoniano, la densidad determina todas las propiedades del sistema.</p>
+<p><strong>Segundo teorema.</strong> Existe un funcional universal \(F[n]=\expval{T+V_{ee}}\), el mismo para cualquier sistema de \(N\) electrones, tal que \(E_v[n]=F[n]+\int v_\text{ext}\,n\) alcanza su mínimo, igual a la energía del estado fundamental, en la densidad exacta.</p></div>
+<p>La demostración del primer teorema es por reducción al absurdo y cabe en cuatro líneas. Supongamos dos potenciales \(v\) y \(v'\) (que no difieren en una constante), con estados fundamentales \(\Psi\ne\Psi'\), que dan la misma densidad \(n\). Por el principio variacional, usando \(\Psi'\) como prueba para \(\op H\):</p>
+<div class="eq">\[E\lt\mel{\Psi'}{\op H}{\Psi'}=\mel{\Psi'}{\op H'}{\Psi'}+\int(v-v')\,n=E'+\int(v-v')\,n .\]</div>
+<p>Intercambiando los papeles, \(E'\lt E+\int(v'-v)\,n\). Sumando ambas desigualdades se obtiene \(E+E'\lt E+E'\): una contradicción. Por tanto dos potenciales distintos no pueden dar la misma densidad.</p>
+<div class="box explain"><p>Es como una huella dactilar: dos personas distintas nunca tienen la misma. Hohenberg y Kohn demostraron que la densidad es la «huella» del potencial: si conoces la densidad exacta, en principio conoces todo el sistema. El teorema no dice cómo leer la huella; para eso hace falta Kohn–Sham.</p></div>
+<p>En un caso sencillo la «lectura» es explícita: si todos los electrones ocupan un mismo orbital (dos electrones de espín opuesto en 1D, por ejemplo), \(\phi=\sqrt{n/2}\) y la ecuación de Schrödinger se puede invertir para obtener el potencial a partir de la densidad: \(v(x)=E+\frac{\phi''(x)}{2\phi(x)}\).</p>
+<div class="sim" data-sim="inversion-densidad" data-title="La densidad determina el potencial: inversión en una dimensión"></div>
+<div class="sim-guide"><ul>
+<li>Elija un potencial: se calcula la densidad del estado fundamental y, a partir de ella sola, se reconstruye el potencial. Coinciden salvo una constante.</li>
+<li>Potenciales parecidos dan densidades parecidas pero no idénticas: el teorema garantiza que nunca son iguales.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El sistema de Kohn–Sham</h2>
+<p>El problema de usar \(F[n]\) directamente es que no conocemos ni su parte cinética. Kohn y Sham propusieron un truco: inventar un sistema auxiliar de \(N\) electrones <em>que no interactúan</em>, moviéndose en un potencial efectivo \(v_s(\vb r)\) elegido para que su densidad sea exactamente la del sistema real. Para electrones independientes la energía cinética se calcula exactamente con sus orbitales:</p>
+<div class="eq">\[T_s[n]=\sum_i f_i\,\mel{\phi_i}{-\tfrac12\lap}{\phi_i},\qquad n(\vb r)=\sum_if_i|\phi_i(\vb r)|^2 .\]</div>
+<p>Se reescribe entonces la energía separando lo que sabemos calcular de lo que no:</p>
+<div class="eq key" data-name="Funcional de energía de Kohn–Sham">\[E[n]=T_s[n]+\int v_\text{ext}\,n\,\dd^3r+\underbrace{\frac12\iint\frac{n(\vb r)\,n(\vb r')}{|\vb r-\vb r'|}}_{E_H[n]}+E_\text{xc}[n].\]</div>
+<p>La <span class="term">energía de intercambio y correlación</span> \(E_\text{xc}=(T-T_s)+(V_{ee}-E_H)\) recoge todo lo difícil: el intercambio, la correlación y la corrección a la energía cinética. Es pequeña frente a los demás términos (unos pocos por ciento de la energía total) y relativamente fácil de aproximar. Minimizando \(E[n]\) respecto de los orbitales se obtienen las <span class="term">ecuaciones de Kohn–Sham</span>:</p>
+<div class="eq key" data-name="Ecuaciones de Kohn–Sham">\[\Big[-\frac12\lap+v_\text{ext}(\vb r)+v_H(\vb r)+v_\text{xc}(\vb r)\Big]\phi_i(\vb r)=\varepsilon_i\,\phi_i(\vb r),\qquad v_\text{xc}(\vb r)=\fdv{E_\text{xc}[n]}{n(\vb r)} .\]</div>
+<p>Son ecuaciones de un electrón, como las de Hartree, pero exactas en principio: si se conociera el \(E_\text{xc}\) verdadero, la densidad y la energía serían exactas. Toda la aproximación de la DFT práctica está en la elección de \(E_\text{xc}\) (capítulo 17).</p>
+<h3>La energía total y el doble conteo</h3>
+<p>Sumar las energías de los orbitales no da la energía total, porque \(\sum f_i\varepsilon_i\) cuenta dos veces la repulsión de Hartree e incluye \(\int v_\text{xc}n\) en lugar de \(E_\text{xc}\). La expresión correcta es</p>
+<div class="eq key" data-name="Energía total de Kohn–Sham">\[E=\sum_if_i\varepsilon_i-\frac12\int v_H\,n\,\dd^3r-\int v_\text{xc}\,n\,\dd^3r+E_\text{xc}[n] .\]</div>
+<p>Los autovalores \(\varepsilon_i\) son multiplicadores de Lagrange, no energías de excitación. La única excepción, con el funcional exacto, es el más alto ocupado: \(\varepsilon_\text{HOMO}=-I\) (energía de ionización). Con LDA o GGA ni siquiera eso se cumple bien, como se verá en el capítulo 17.</p>
+</section>
+
+<section>
+<h2>El ciclo de Kohn–Sham en un átomo real</h2>
+<p>El procedimiento es el ciclo autoconsistente del capítulo 15 con \(v_\text{xc}\) en lugar del intercambio de Hartree–Fock. La simulación lo ejecuta para átomos reales con la aproximación local (LDA, intercambio de Slater y correlación de Vosko–Wilk–Nusair): resuelve la ecuación radial de cada orbital con el método de Numerov en una malla logarítmica, construye la densidad, calcula \(v_H\) integrando la ecuación de Poisson y \(v_\text{xc}\) punto a punto, y mezcla.</p>
+<div class="sim" data-sim="ciclo-ks" data-title="El ciclo de Kohn–Sham paso a paso (LDA)"></div>
+<div class="sim-guide"><ul>
+<li>En la primera iteración los orbitales salen del potencial inicial; en pocas iteraciones la densidad deja de cambiar.</li>
+<li>Observe las tres piezas del potencial: \(v_\text{ext}=-Z/r\) atrae, \(v_H\) repele (apantallamiento) y \(v_\text{xc}\) es una corrección atractiva más pequeña.</li>
+<li>Cuando converge, compare la energía total y los autovalores con los valores de referencia del NIST: coinciden en seis decimales.</li>
+</ul></div>
+<div class="box valid"><p>Este resolvedor reproduce las energías totales LDA del NIST para H, He, Be, C, N y Ne con error menor que \(10^{-6}\) Ha, y sus autovalores (por ejemplo \(\varepsilon_{2p}(\text{N})=-0.266297\) Ha) con la misma precisión (apéndice B). Es, a escala de un átomo, el mismo cálculo que hace SIESTA para un sólido.</p></div>
+<div class="box hbn"><p>Cada energía total que la tesis tomó de SIESTA (las de la Tabla 5.1, las 20 estructuras BxCyNz y los poros) es el resultado convergido de un ciclo como este, con el funcional GGA-PBE, pseudopotenciales y una base de orbitales atómicos, en una supercelda periódica con decenas o cientos de átomos. hBN-MC no repite esos cálculos: los resume en diez números \(\varepsilon_{\alpha\beta}\).</p></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>La densidad \(n(\vb r)\) depende de 3 variables para cualquier \(N\) y es observable.</li>
+<li>Thomas–Fermi: primer funcional, pero sin capas ni enlaces; la energía cinética local es demasiado burda.</li>
+<li>Hohenberg–Kohn: la densidad determina el potencial y existe un funcional universal minimizado por la densidad exacta.</li>
+<li>Kohn–Sham: electrones ficticios no interactuantes con la misma densidad; \(T_s\) exacta con orbitales; todo lo difícil en \(E_\text{xc}\).</li>
+<li>Ecuaciones de un electrón con \(v_s=v_\text{ext}+v_H+v_\text{xc}\), resueltas por autoconsistencia; la energía total corrige el doble conteo.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Cuánto da Thomas–Fermi para el nitrógeno? Compare con la energía exacta.
+<details><summary>Respuesta</summary><p>\(-0.7687\cdot7^{7/3}=-72.1\) Ha frente a \(-54.59\) Ha: 32 % de exceso.</p></details></li>
+<li><span class="lvl">Básico</span>¿Por qué \(\sum_if_i\varepsilon_i\) no es la energía total?
+<details><summary>Respuesta</summary><p>Porque cuenta dos veces la repulsión electrón–electrón (cada par aparece en el potencial de los dos electrones) y usa \(v_\text{xc}\) en lugar de la energía \(E_\text{xc}\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Para un electrón en 1D con densidad \(n(x)=\frac{1}{\sqrt\pi}\ee^{-x^2}\), reconstruya el potencial.
+<details><summary>Respuesta</summary><p>\(\phi=\pi^{-1/4}\ee^{-x^2/2}\), \(\phi''/\phi=x^2-1\), \(v=E+\frac{x^2-1}{2}\): el oscilador \(\frac{x^2}{2}\) con \(E=\frac12\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Escriba la energía de intercambio del modelo LDA, \(E_x=-\frac34\big(\frac3\pi\big)^{1/3}\int n^{4/3}\), y compruebe que \(v_x=\frac43\varepsilon_x\).
+<details><summary>Respuesta</summary><p>\(\delta E_x/\delta n=-\frac34\big(\frac3\pi\big)^{1/3}\frac43n^{1/3}=\frac43\varepsilon_x(n)\).</p></details></li>
+<li><span class="lvl">Avanzado</span>Complete la demostración de Hohenberg–Kohn para el caso en que \(\Psi=\Psi'\).
+<details><summary>Respuesta</summary><p>Si \(\Psi\) fuera autoestado de \(\op H\) y \(\op H'\), restando las ecuaciones \((V-V')\Psi=(E-E')\Psi\): \(v-v'\) sería constante en todas partes donde \(\Psi\ne0\), contra la hipótesis.</p></details></li>
+</ol>
+</section>
+</template>

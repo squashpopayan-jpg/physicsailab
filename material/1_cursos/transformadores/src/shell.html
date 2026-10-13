@@ -1,0 +1,216 @@
+<header class="top">
+ <a href="#banco" class="brand" aria-label="Laboratorio de transformadores, ir al banco"><svg viewBox="0 0 40 40" width="34" height="34" aria-hidden="true"><rect width="40" height="40" rx="8" fill="#172638"/><path d="M13 9H27V31H13Z" fill="none" stroke="#c3ced8" stroke-width="3"/><path d="M8 14H17M8 18H17M8 22H17M8 26H17" stroke="#e79758" stroke-width="2.5"/><path d="M23 14H32M23 18H32M23 22H32M23 26H32" stroke="#7da9ed" stroke-width="2.5"/></svg><span>Transformadores<small>Laboratorio de electromagnetismo</small></span></a>
+ <nav class="nav" aria-label="Secciones">
+  <a href="#banco">Banco</a><a href="#guia">Guía</a><a href="#teoria">Teoría</a><a href="#cuaderno">Cuaderno</a><a href="#exposicion">Exposición</a>
+ </nav>
+ <div class="top-actions"><button class="btn small quiet" id="saveSession">Descargar sesión</button><button class="btn small quiet" id="loadSession">Abrir sesión</button><input type="file" accept=".json,application/json" id="sessionFile" hidden></div>
+</header>
+<main class="main">
+
+<!-- ============ BANCO ============ -->
+<section class="tab" id="banco">
+ <div class="intro"><div><p class="eyebrow">Banco de trabajo</p><h1>El banco de transformadores</h1><p>Arma el circuito con cables, elige la función de cada multímetro y lee los instrumentos como en el laboratorio. Los instrumentos tienen exactitud limitada, fusibles y deriva. Cada número de banco tiene su propio equipo, con tolerancias y una bobina sin rótulo.</p></div>
+  <ol class="steps-mini" aria-label="Rutina del banco"><li>Monta con la fuente apagada</li><li>Pide la revisión del montaje</li><li>Enciende con la perilla en 0</li><li>Ajusta V₁ con el multímetro</li><li>Anota las lecturas</li></ol></div>
+ <div class="bench-tools" id="benchTools">
+  <label class="tool">Banco N.º <select id="benchNo" aria-label="Número de banco"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option><option>13</option><option>14</option><option>15</option><option>16</option><option>17</option><option>18</option><option>19</option><option>20</option><option>21</option><option>22</option><option>23</option><option>24</option></select></label>
+  <label class="tool">Ensayo <select id="stageSel"><option value="R">R · Resistencia de devanados</option><option value="A">A · Relación de transformación</option><option value="B">B · Ensayo de vacío</option><option value="C">C · Ensayo de cortocircuito</option><option value="D">D · Ensayo con carga</option><option value="E">E · Polaridad</option><option value="L">Libre</option></select></label>
+  <span class="tool">Cable <span id="wireColors" class="chips"></span></span>
+  <button class="btn small" id="delWire" disabled>Quitar cable</button>
+  <button class="btn small quiet" id="delAll">Quitar todos los cables</button>
+  <span class="spacer"></span>
+  <button class="btn small quiet" id="btnDemo">Montaje de demostración</button>
+  <button class="btn small primary" id="btnReview">Revisión del montaje</button>
+ </div>
+ <p class="dmg" id="dmgNote" hidden><b>Equipo dañado:</b> <span id="dmgList"></span>. <button class="btn small" id="btnRepair">Pedir reposición al laboratorista</button></p>
+ <p class="bench-hint-m">Desliza el banco hacia los lados para verlo completo. En un computador o tableta se trabaja mejor.</p>
+ <div class="bench-wrap" id="benchWrap"><svg id="benchSvg" viewBox="0 0 1400 860" role="application" aria-label="Banco de laboratorio con fuente, transformador desmontable, carga, shunt, tres multímetros, analizador de potencia y osciloscopio"></svg><div class="bench-pop" id="benchPop" hidden></div></div>
+ <p class="hint" id="benchHint" role="status"></p>
+ <div class="review" id="reviewOut" hidden></div>
+ <div class="bench-grid">
+  <section class="panel" aria-labelledby="hRead">
+   <header class="panel-head"><h3 id="hRead">Lecturas de los instrumentos</h3><span class="small muted">se actualizan 4 veces por segundo</span></header>
+   <div class="table-wrap"><table class="read-table"><thead><tr><th>Instrumento</th><th>Función</th><th>Lectura</th><th>Exactitud</th><th>Registra</th></tr></thead><tbody id="readBody"></tbody></table></div>
+   <p class="small muted pad-x" id="readCfg"></p>
+   <div class="record">
+    <div><p class="small muted">Ensayo</p><p class="rec-stage" id="recStage"></p></div>
+    <label class="grow">Observación <input id="recNote" type="text" maxlength="300" placeholder="p. ej. réplica 2; V₁ ajustada con el DMM 1"></label>
+    <button class="btn copper" id="btnRecord">Anotar en el cuaderno</button>
+   </div>
+   <p class="small pad-x rec-last" id="recLast"></p>
+   <p class="small muted pad-x">Se anota lo que muestran los instrumentos, con su incertidumbre. Usa HOLD para congelar una lectura que fluctúa. Si un instrumento mide algo distinto de lo que propone «Auto», elige la magnitud a mano.</p>
+  </section>
+  <section class="panel" aria-labelledby="hScope">
+   <header class="panel-head"><h3 id="hScope">Osciloscopio</h3><span class="small muted">las tierras de ambos canales están unidas a la red</span></header>
+   <div class="scope-wrap"><canvas id="scopeCanvas" aria-label="Pantalla del osciloscopio"></canvas></div>
+   <div class="scope-ctl" id="scopeCtl"></div>
+  </section>
+ </div>
+ <details class="panel log-panel" open><summary><b>Bitácora del banco</b> <span class="small muted" id="logCount"></span></summary><ul class="log" id="benchLog"></ul><p class="small muted pad-x">La bitácora registra encendidos, cambios de conexión con tensión, fusibles fundidos y sobrecalentamientos. Aparece en el informe y en la exposición.</p></details>
+</section>
+
+<!-- ============ GUÍA ============ -->
+<section class="tab" id="guia" hidden>
+ <div class="intro"><div><p class="eyebrow">Guía de laboratorio</p><h1>Una predicción, una medición</h1><p>Práctica de transformadores monofásicos para Física II. Dos horas de banco, un preinforme antes de llegar y una exposición de diez minutos al final.</p></div><button class="btn only-file" id="printGuide">Imprimir guía</button></div>
+ <div class="two-col">
+  <div class="panel panel-pad"><h3>Objetivos</h3><ul><li>Relacionar V₂/V₁ con N₂/N₁ y hallar las espiras de una bobina sin rótulo.</li><li>Caracterizar la rama de excitación con el ensayo de vacío y la impedancia serie con el de cortocircuito.</li><li>Predecir con el circuito equivalente el comportamiento con carga y contrastarlo con la medición.</li><li>Trabajar como en un laboratorio real: conexiones, escalas, exactitud, fusibles y seguridad.</li></ul></div>
+  <div class="panel panel-pad"><h3>Roles del grupo</h3><ul><li><b>Montaje:</b> arma el circuito y pide la revisión antes de energizar.</li><li><b>Lectura:</b> ajusta la fuente y lee los instrumentos.</li><li><b>Registro:</b> anota cada dato con unidades e incertidumbre.</li><li><b>Seguridad:</b> enciende y apaga, vigila corrientes y temperaturas.</li></ul><p class="small muted">Roten los roles en cada ensayo. En la exposición, cada integrante presenta el ensayo cuyo montaje hizo.</p></div>
+ </div>
+
+ <section class="panel panel-pad" id="preinforme"><h2>Preinforme</h2><p>Respóndelo antes de llegar al laboratorio. El puntaje queda en el informe y en la exposición.</p><ol class="prelab" id="prelabList"></ol><div class="button-row"><button class="btn primary" id="checkPrelab">Revisar respuestas</button><span class="small" id="prelabScore"></span></div></section>
+
+ <section class="callout warning"><h3>Normas de seguridad</h3><ol>
+  <li>Arma y modifica el circuito con la fuente apagada. Enciende siempre con la perilla en 0 y sube despacio.</li>
+  <li>Pide la revisión del montaje antes de energizar. En el banco virtual es el botón «Revisión del montaje».</li>
+  <li>El amperímetro va en serie y el voltímetro en paralelo. Antes de tocar un cable del multímetro, mira el borne y el selector: con un cable en el borne mA o 10 A el multímetro es un cortocircuito.</li>
+  <li>No superes la corriente máxima de cada bobina ni los 10 W de las resistencias de carga.</li>
+  <li>Una relación elevadora puede dejar más de 50 V CA en el secundario: es tensión peligrosa.</li>
+  <li>Nunca alimentes con CC. No cortocircuites el secundario, salvo en el ensayo C y a tensión reducida.</li>
+  <li>Las dos pinzas de tierra del osciloscopio están unidas entre sí a través de la red: conéctalas al mismo punto del circuito.</li>
+  <li>Un fusible fundido se cambia con la fuente apagada y después de encontrar la causa.</li></ol>
+  <p class="small">El banco virtual registra cada falta en la bitácora. En el laboratorio real la consecuencia es un instrumento dañado o una quemadura.</p></section>
+
+ <section class="panel panel-pad"><h2>Reconocimiento del equipo</h2><p>Antes de conectar, identifica cada equipo y sus límites. Son los mismos en el banco virtual y en el kit del laboratorio de referencia; si tu laboratorio tiene otro equipo, anota sus datos de placa en el cuaderno.</p>
+  <div class="two-col"><div><h3>Bobinas del transformador desmontable</h3><div class="table-wrap"><table><thead><tr><th>Espiras</th><th>I máx.</th><th>R aprox.</th><th>L con yugo apretado</th></tr></thead><tbody id="coilTable"></tbody></table></div><p class="small muted">Núcleo laminado de 20 × 20 mm (A = 4,0 cm²), recorrido magnético medio de 24 cm. El yugo se puede apretar, aflojar o retirar.</p></div>
+  <div><h3>Instrumentos</h3><ul class="small"><li><b>Multímetros (3):</b> TRMS, 6000 cuentas, autorrango. V~: 6/60/600 V, ±(1,0 % + 3 d). mA~: 60/600 mA, ±(1,5 % + 3 d), fusible 630 mA, resistencia interna 1,2 Ω. A~: 6/10 A, ±(2,0 % + 5 d), fusible 10 A. Ω: ±(0,8 % + 3 d). Entrada de voltímetro: 10 MΩ.</li><li><b>Analizador de potencia:</b> U, I, P activa y FP. 300 V, 5 A, P ±(1,5 % + 3 d).</li><li><b>Fuente:</b> CA aislada 0–24 V, 3 A, 60 Hz, fusible 3,15 A lento. Su voltímetro de aguja es clase 2,5: solo orientativo.</li><li><b>Carga:</b> 4,7 Ω a 1 kΩ, 10 W, ±2 %, con interruptor. <b>Shunt:</b> 1,00 Ω, 5 W.</li><li><b>Osciloscopio:</b> 2 canales, 8 bits, entrada 1 MΩ, sonda ×1 o ×10.</li></ul></div></div></section>
+
+ <article class="panel lab-step"><div class="step-mark">R</div><div><h3>Resistencia de los devanados <span class="time">10 min · antes de energizar</span></h3>
+  <div data-schem="ohm"></div>
+  <ol><li>Coloca la bobina de 500 espiras a la izquierda y la de 250 a la derecha. Fuente apagada y desconectada de las bobinas.</li><li>Pon un multímetro en Ω y une con un cable sus bornes VΩ y COM: esa lectura (≈ 0,2 Ω) es la resistencia de los cables de prueba.</li><li>Mide cada bobina y anota con el ensayo R.</li></ol>
+  <p><b>Para el análisis:</b> resta la resistencia de los cables. Compara después con R<sub>eq</sub> del ensayo C.</p></div></article>
+
+ <article class="panel lab-step"><div class="step-mark">A</div><div><h3>Relación de transformación <span class="time">20 min</span></h3>
+  <div data-schem="vacio"></div>
+  <ol><li>Bobina de 500 espiras a la izquierda (primario) y de 250 a la derecha (secundario). Yugo apretado.</li><li>Primario: fuente → amperímetro (DMM 2 en mA~, borne mA) → borne 1 de la bobina; borne 2 → fuente. DMM 1 en V~ en paralelo con el primario. DMM 3 en V~ en los bornes del secundario, que queda abierto.</li><li>Revisión del montaje. Enciende con la perilla en 0 y sube hasta que el DMM 1 marque 12,00 V. Usa los botones finos − y + de la perilla.</li><li>Anota con el ensayo A. Repite dos veces más (réplicas).</li><li>Apaga, cambia la bobina derecha por la de 100, la de 1000 y la X, y repite. Con 1000 espiras el secundario llega a 24 V: no subas V₁ de 12 V.</li></ol>
+  <p><b>Para el análisis:</b> el cuaderno grafica V₂/V₁ frente a N₂/N₁ y ajusta una recta por el origen. Con la bobina X, N<sub>X</sub> = N₁·V₂/V₁.</p></div></article>
+
+ <article class="panel lab-step"><div class="step-mark">B</div><div><h3>Ensayo de vacío <span class="time">20 min</span></h3>
+  <p>Mismo montaje que en A, con el analizador de potencia en el primario: borne I± desde la fuente, borne I hacia el amperímetro; U± y U en los bornes de la bobina.</p>
+  <ol><li>Recorre V₁ = 2, 4, 6, 8, 10, 12, 16, 20 y 24 V. En cada punto anota I₀, P₀ y V₂ (ensayo B).</li><li>Con V₁ = 12 V toca el yugo para aflojarlo y anota. Baja a V₁ = 5 V antes de tocarlo otra vez para retirarlo: sin yugo la corriente se multiplica y a 12 V supera los 600 mA del borne mA. Anota, observa el zumbido y vuelve a dejarlo apretado.</li><li>Opcional, saturación: primario de 100 espiras. Sube de 2 en 2 V hasta 14 V mirando I₀. Intercala el shunt entre el borne 2 de la bobina y la fuente, pon las dos pinzas de tierra en el borne 2, CH1 en el borne 1 y CH2 en el otro extremo del shunt (1 V equivale a 1 A, invertido). No pases de 15 V: el fusible de la fuente es de 3,15 A.</li></ol>
+  <p><b>Para el análisis:</b> I₀ frente a V₁; R<sub>c</sub> = V₁²/P₀ y X<sub>m</sub> = V₁²/Q₀ a 12 V. ¿Por qué crece I₀ al abrir el circuito magnético?</p></div></article>
+
+ <article class="panel lab-step"><div class="step-mark">C</div><div><h3>Ensayo de cortocircuito <span class="time">20 min</span></h3>
+  <div data-schem="corto"></div>
+  <ol><li>Fuente apagada y perilla en 0. Primario de 500, secundario de 250, yugo apretado.</li><li>El secundario se cierra solo a través del DMM 3 en A~ (bornes 10 A y COM). En el primario, analizador y DMM 2 en A~ (borne 10 A).</li><li>Revisión del montaje. Enciende y sube muy despacio hasta I₂ = 1,0 A. Anota V₁cc, I₁cc, P₁cc e I₂ (ensayo C).</li><li>Repite con I₂ = 2,0, 3,0 y 4,0 A. Nunca superes los 4 A de la bobina de 250 espiras.</li><li>Baja la perilla a 0 y apaga antes de desarmar.</li></ol>
+  <p><b>Para el análisis:</b> Z<sub>eq</sub> = V₁/I₁, R<sub>eq</sub> = P₁/I₁², X<sub>eq</sub> = √(Z<sub>eq</sub>² − R<sub>eq</sub>²), todos referidos al primario. Verifica que I₁/I₂ ≈ N₂/N₁.</p></div></article>
+
+ <article class="panel lab-step"><div class="step-mark">D</div><div><h3>Ensayo con carga <span class="time">25 min</span></h3>
+  <div data-schem="carga"></div>
+  <ol><li>Primario con el analizador (U, I, P) y el DMM 1 en V~. Secundario: borne 1 → DMM 2 en mA~ → carga → borne 2. DMM 3 en V~ en los bornes de la bobina.</li><li>Con el interruptor de la carga en ABIERTA, ajusta V₁ = 12,00 V y anota (V₂₀, ensayo D).</li><li>Conecta la carga y recorre R<sub>L</sub> = 470, 220, 100, 68, 47, 33 y 22 Ω. En cada punto reajusta V₁ = 12,00 V, porque la fuente cae al cargarla, y anota.</li><li>Para R<sub>L</sub> = 10 Ω o menos la corriente supera 600 mA: apaga y pasa el cable del DMM 2 al borne 10 A.</li><li>Vigila la potencia de la resistencia con el termómetro IR.</li></ol>
+  <p><b>Para el análisis:</b> V₂ frente a I₂ con la predicción del circuito equivalente, η = P₂/P₁ y regulación = (V₂₀ − V₂)/V₂.</p></div></article>
+
+ <article class="panel lab-step"><div class="step-mark">E</div><div><h3>Polaridad <span class="time">10 min</span></h3>
+  <div data-schem="polaridad"></div>
+  <ol><li>Primario de 500 a 6 V. Une con un cable el borne 2 de la bobina izquierda con el borne 2 de la derecha.</li><li>Mide con el DMM 3 en V~ entre los dos bornes 1 y anota (ensayo E). «Auto» lo registrará como «otra».</li><li>Cambia el puente al borne 1 de la derecha, mide entre el borne 1 izquierdo y el borne 2 derecho, y anota.</li></ol>
+  <p><b>Para el análisis:</b> si la lectura es V₁(1 − k) la conexión es sustractiva; si es V₁(1 + k), aditiva. ¿Qué indican los puntos • de las bobinas?</p></div></article>
+
+ <section class="panel panel-pad"><h2>Entrega</h2><ul><li><b>Informe:</b> en el Cuaderno, descarga el informe en HTML; ábrelo en el navegador e imprímelo en PDF. Incluye datos con incertidumbre, gráficas, respuestas y la bitácora del banco.</li><li><b>Exposición:</b> diez minutos más cinco de preguntas. La pestaña Exposición arma las diapositivas con tus datos; revisa la rúbrica.</li><li><b>Sesión:</b> descarga la sesión (.json) para continuar en otro equipo o para que el docente revise los datos crudos.</li></ul></section>
+
+ <details class="panel panel-pad"><summary><b>Para el docente</b></summary>
+  <p>Cada número de banco (1 a 24) genera un equipo distinto: espiras de la bobina X, tolerancias de las bobinas, juntas del núcleo, calibración de multímetros y del analizador, error del dial y del voltímetro de panel. Asigne un banco por grupo para que los datos no se puedan copiar entre grupos.</p>
+  <p>El tiempo térmico está acelerado: una bobina sobrecargada se calienta en uno o dos minutos. El equipo del kit se puede cambiar en el objeto <code>KIT</code> al inicio del código para que coincida con el de su laboratorio.</p>
+  <div class="button-row"><label class="grow">Clave del docente <input type="password" id="tKey" autocomplete="off"></label><button class="btn" id="tBtn">Ver la tabla de bancos</button></div><div id="tOut"></div></details>
+</section>
+
+<!-- ============ TEORÍA ============ -->
+<section class="tab" id="teoria" hidden>
+ <div class="intro"><div><p class="eyebrow">Fundamento físico</p><h1>De la inducción a la transformación</h1><p>Las ideas y ecuaciones con las que vas a predecir, medir y explicar lo que ocurre en el banco.</p></div></div>
+ <div class="article">
+  <section class="panel panel-pad"><h2>1. El flujo enlaza los devanados</h2><p class="body-text">Una tensión alterna en el primario establece un flujo magnético variable en el núcleo. Ese flujo enlaza las espiras del secundario e induce una fuerza electromotriz. Los devanados están separados eléctricamente: la energía pasa por acoplamiento magnético.</p><div class="equation">ε = −N dΦ/dt<small>Ley de Faraday–Lenz. N es el número de espiras; Φ, el flujo por espira (Wb); ε, la fem inducida (V). El signo expresa la oposición al cambio de flujo.</small></div><p>Una fuente continua no mantiene la transformación en régimen permanente: el flujo deja de variar y la corriente solo la limita la resistencia del devanado. En un equipo real eso satura el núcleo y produce sobrecorriente.</p></section>
+  <section class="panel panel-pad"><h2>2. El modelo ideal</h2><p>Flujo común a los dos devanados, resistencia nula, núcleo de permeabilidad infinita y sin pérdidas. Usamos magnitudes eficaces (RMS) y tomamos las polaridades desde los bornes marcados con punto.</p><div class="equation">k = N₂/N₁ = V₂/V₁ &nbsp;·&nbsp; I₁ = k I₂<small>k &lt; 1: reductor · k = 1: relación 1:1 · k &gt; 1: elevador. No confundas k con el coeficiente de acoplamiento.</small></div><div class="equation">I₂ = V₂/R<sub>L</sub> &nbsp;·&nbsp; P₁ = P₂ = V₂I₂ &nbsp;·&nbsp; R′<sub>L</sub> = R<sub>L</sub>/k²</div><p>Con el secundario abierto, el modelo ideal da I₁ = 0: hay tensión en el secundario pero no se entrega potencia.</p><div class="callout"><b>Ejemplo para comprobar:</b> N₁ = 500, N₂ = 250, V₁ = 12 V y R<sub>L</sub> = 22 Ω. Entonces V₂ = 6 V, I₂ = 0,2727 A, I₁ = 0,1364 A y P₂ = 1,636 W.</div></section>
+  <section class="panel panel-pad"><h2>3. El transformador real</h2><p>Cada devanado tiene resistencia R y una parte del flujo que no enlaza al otro (dispersión, Lσ). El núcleo necesita una corriente para magnetizarse y pierde energía por histéresis y corrientes parásitas. El banco resuelve exactamente estas ecuaciones, con e = dΦ/dt los voltios por espira:</p>
+   <div class="equation">v<sub>i</sub> = R<sub>i</sub> i<sub>i</sub> + Lσ_i di<sub>i</sub>/dt + N<sub>i</sub> e &nbsp;·&nbsp; Σ N<sub>i</sub> i<sub>i</sub> = ℜ Φ + (pérdidas en el hierro)<small>La segunda ecuación es la ley de Ampère en el circuito magnético: la fuerza magnetomotriz neta es la que el núcleo necesita para llevar el flujo Φ. Con ℜ → 0 y sin pérdidas se recupera N₁I₁ = N₂I₂.</small></div>
+   <p>Referido al primario, esto equivale al circuito de la figura: una rama serie R<sub>eq</sub> + jX<sub>eq</sub> (cobre y dispersión) y una rama paralela R<sub>c</sub> ∥ jX<sub>m</sub> (pérdidas en el hierro y magnetización).</p>
+   <figure class="eq-fig"><svg viewBox="0 0 760 250" class="eqc" role="img" aria-label="Circuito equivalente aproximado referido al primario"><path d="M40 60H120M200 60H280M360 60H720M40 210H720M40 60V210M720 60V100M720 170V210M450 60V95M450 175V210M560 60V95M560 175V210" class="eq-w"/><rect x="120" y="48" width="80" height="24" class="eq-r"/><path d="M280 60c8-16 16-16 20 0c4-16 12-16 20 0c4-16 12-16 20 0c4-16 12-16 20 0" class="eq-l"/><rect x="438" y="95" width="24" height="80" class="eq-r"/><path d="M560 95c-16 8-16 16 0 20c-16 4-16 12 0 20c-16 4-16 12 0 20c-16 4-16 12 0 20" class="eq-l"/><rect x="708" y="100" width="24" height="70" class="eq-r"/><text x="160" y="36" text-anchor="middle" class="eq-t">R<tspan baseline-shift="sub" font-size="75%">eq</tspan> = R₁ + R₂/k²</text><text x="320" y="36" text-anchor="middle" class="eq-t">X<tspan baseline-shift="sub" font-size="75%">eq</tspan></text><text x="420" y="140" text-anchor="end" class="eq-t">R<tspan baseline-shift="sub" font-size="75%">c</tspan></text><text x="580" y="140" class="eq-t">X<tspan baseline-shift="sub" font-size="75%">m</tspan></text><text x="700" y="140" text-anchor="end" class="eq-t">R<tspan baseline-shift="sub" font-size="75%">L</tspan>/k²</text><text x="30" y="140" text-anchor="end" class="eq-t">V₁</text></svg></figure>
+   <div class="equation">P<sub>Cu</sub> = I₁²R₁ + I₂²R₂ &nbsp;·&nbsp; P₁ = P₂ + P<sub>Cu</sub> + P<sub>Fe</sub> &nbsp;·&nbsp; η = P₂/P₁</div></section>
+  <section class="panel panel-pad"><h2>4. Ensayos de vacío y cortocircuito</h2><p>Son los ensayos normalizados para obtener el circuito equivalente sin desarmar el transformador.</p>
+   <div class="two-col"><div><h3>Vacío (secundario abierto)</h3><p>La corriente I₀ es pequeña y la caída en la rama serie es despreciable, así que P₀ son casi solo pérdidas en el hierro.</p><div class="equation small-eq">cos φ₀ = P₀/(V₁I₀)<br>R<sub>c</sub> = V₁²/P₀ &nbsp;·&nbsp; X<sub>m</sub> = V₁²/Q₀<small>Q₀ = √((V₁I₀)² − P₀²).</small></div></div>
+   <div><h3>Cortocircuito (a tensión reducida)</h3><p>Con unos pocos voltios circula la corriente nominal; el flujo es tan bajo que la rama de excitación casi no toma corriente.</p><div class="equation small-eq">Z<sub>eq</sub> = V₁cc/I₁cc &nbsp;·&nbsp; R<sub>eq</sub> = P₁cc/I₁cc²<br>X<sub>eq</sub> = √(Z<sub>eq</sub>² − R<sub>eq</sub>²)</div></div></div>
+   <p><b>Regulación:</b> Reg = 100 (V₂₀ − V₂)/V₂, con V₂₀ medida en vacío a la misma V₁. Mide cuánto cae la tensión de salida al cargar el transformador.</p></section>
+  <section class="panel panel-pad"><h2>5. El núcleo real: saturación y entrehierro</h2><p>Para una tensión sinusoidal, el flujo pico lo fija la tensión, no la carga:</p><div class="equation">B̂ = √2 V₁ / (2π f N₁ A)<small>Con 12 V en 500 espiras, 60 Hz y A = 4,0 cm²: B̂ ≈ 0,225 T. El acero al silicio se satura por encima de ≈ 1,3 T.</small></div>
+   <p>Si B̂ se acerca a la saturación (por ejemplo, 14 V en la bobina de 100 espiras), la permeabilidad cae, la corriente de vacío crece mucho más rápido que la tensión y deja de ser sinusoidal: aparecen el tercer y quinto armónicos, visibles en el osciloscopio con el shunt.</p>
+   <div class="equation">ℜ = l/(μ₀μ<sub>r</sub> A) + g/(μ₀A) &nbsp;·&nbsp; L<sub>m</sub> = N²/ℜ<small>Un entrehierro g de unas décimas de milímetro domina la reluctancia. Por eso, al aflojar el yugo, X<sub>m</sub> cae y la corriente de vacío se multiplica; al retirarlo, además crece la dispersión y V₂/V₁ cae muy por debajo de N₂/N₁.</small></div></section>
+  <section class="panel panel-pad"><h2>6. Instrumentos reales</h2>
+   <ul><li><b>Exactitud ±(% de la lectura + dígitos).</b> Un multímetro de ±(1,0 % + 3 d) que lee 5,682 V en el rango de 6 V tiene un límite de error de 0,057 + 0,003 = 0,060 V. Con distribución rectangular, u = 0,060/√3 = 0,035 V.</li>
+   <li><b>Resolución y autorrango.</b> 6000 cuentas: el rango de 6 V muestra hasta 5,999 V; a partir de 6 V pasa al de 60 V y pierde un decimal.</li>
+   <li><b>TRMS.</b> Un multímetro de verdadero valor eficaz mide bien señales deformadas, como la corriente de vacío saturada. Uno de respuesta promedio se equivoca con ellas.</li>
+   <li><b>Carga del instrumento.</b> El borne mA tiene 1,2 Ω: en un secundario con 22 Ω de carga eso es un 5 % adicional. El voltímetro toma muy poca corriente (10 MΩ).</li>
+   <li><b>Fusibles.</b> Un cable en el borne mA mientras mides tensión convierte el multímetro en un cortocircuito y funde su fusible: desde ese momento el borne marca cero.</li>
+   <li><b>Vatímetro.</b> Mide P activa = ⟨v·i⟩. Si inviertes la bobina de corriente, marca potencia negativa. V₁I₁ es potencia aparente (VA), no P₁.</li>
+   <li><b>Osciloscopio.</b> Mide tensión respecto a tierra. Para ver una corriente se mide la tensión en un shunt de valor conocido. Las dos pinzas de tierra están unidas: si las pones en puntos distintos, cortocircuitas lo que haya entre ellos.</li></ul></section>
+  <section class="panel panel-pad"><h2>7. Incertidumbre y magnitudes para el informe</h2><p>Repite al menos tres veces un punto en vacío y uno con carga. Informa el promedio y la dispersión; no atribuyas toda diferencia con el ideal a un error de medición. Para cocientes de lecturas independientes:</p><div class="equation">u(k<sub>exp</sub>) = k<sub>exp</sub> √[(u(V₂)/V₂)² + (u(V₁)/V₁)²]</div>
+   <div class="table-wrap"><table><thead><tr><th>Magnitud</th><th>Cálculo</th><th>Cómo interpretarla</th></tr></thead><tbody>
+    <tr><td>Relación experimental</td><td class="mono">k<sub>exp</sub> = V₂/V₁</td><td>Compárala en vacío con N₂/N₁.</td></tr><tr><td>Desviación frente al ideal</td><td class="mono">δ = 100 (k<sub>exp</sub> − k)/k</td><td>No es incertidumbre instrumental; con carga incluye caídas internas.</td></tr><tr><td>Potencia de salida</td><td class="mono">P₂ = V₂ I₂</td><td>Válido con carga resistiva, midiendo V₂ e I₂ en la misma carga.</td></tr><tr><td>Potencia de entrada</td><td class="mono">P₁ = ⟨v₁ i₁⟩</td><td>Requiere vatímetro o analizador. V₁I₁ es potencia aparente.</td></tr><tr><td>Eficiencia</td><td class="mono">η = 100 P₂/P₁</td><td>Sin P₁ medida, no se calcula.</td></tr><tr><td>Regulación</td><td class="mono">Reg = 100 (V₂₀ − V₂)/V₂</td><td>V₂₀ en vacío, con igual V₁, f y devanados.</td></tr></tbody></table></div></section>
+  <section class="panel panel-pad" id="modelo"><h2>8. Predice antes de medir</h2><p>Calcula con el modelo ideal y con el modelo con pérdidas del kit. Úsalo para el preinforme y para saber qué esperar antes de energizar.</p>
+   <div class="model-grid"><div class="model-ctl">
+    <label>Primario<select id="mP"></select></label><label>Secundario<select id="mS"></select></label>
+    <label>Yugo<select id="mY"><option value="apretado">apretado</option><option value="flojo">flojo</option><option value="retirado">retirado</option></select></label>
+    <label>V₁ (V RMS)<input type="number" id="mV" min="0" max="24" step="0.5" value="12"></label>
+    <label>Estado del secundario<select id="mSec"><option value="vacío">en vacío</option><option value="carga" selected>con carga</option><option value="corto">en cortocircuito</option></select></label>
+    <label>R<sub>L</sub><select id="mRL"></select></label></div>
+    <div><div id="modelOut"></div><div class="button-row"><button class="btn small copper" id="mRecord">Anotar la predicción en el cuaderno</button><span class="small muted">Aparece como «Modelo» en las gráficas, junto a tus mediciones.</span></div></div><div id="phasor" class="phasor-box"></div></div></section>
+  <section class="references"><h3>Referencias</h3><p>Ling, S. J., Moebs, W. y Sanny, J. (2016). <em>University Physics, Volume 2</em>, §15.6 «Transformers». OpenStax. <a href="https://openstax.org/books/university-physics-volume-2/pages/15-6-transformers" target="_blank" rel="noopener">openstax.org</a>.</p><p>Chapman, S. J. (2012). <em>Máquinas eléctricas</em> (5.ª ed.), cap. 2: Transformadores. McGraw-Hill.</p><p>JCGM (2008). <em>Evaluación de datos de medición: Guía para la expresión de la incertidumbre de medida</em> (GUM, JCGM 100:2008).</p></section>
+ </div>
+</section>
+
+<!-- ============ CUADERNO ============ -->
+<section class="tab" id="cuaderno" hidden>
+ <div class="intro"><div><p class="eyebrow">Cuaderno de laboratorio</p><h1>De los datos a la evidencia</h1><p>Las lecturas del banco virtual, las mediciones del laboratorio real y las predicciones del modelo se guardan por separado y se analizan por ensayo.</p></div></div>
+ <section class="panel panel-pad"><h3>Datos de la práctica</h3><div class="form-grid">
+  <div class="wide2"><label for="student">Integrantes (separados por comas)</label><input id="student" type="text" maxlength="300" placeholder="Nombres y apellidos"></div>
+  <div><label for="group">Grupo / curso</label><input id="group" type="text" maxlength="100"></div>
+  <div><label for="date">Fecha</label><input id="date" type="date"></div>
+  <div><label for="teacher">Docente</label><input id="teacher" type="text" maxlength="120"></div>
+  <div class="wide2"><label for="equipment">Equipo / tomas</label><input id="equipment" type="text" maxlength="200" placeholder="Referencia del transformador o del banco"></div>
+  <div class="wide"><label for="instruments">Instrumentos y condiciones</label><textarea id="instruments" maxlength="5000" placeholder="Datos de placa, instrumentos, rangos, exactitud y observaciones del montaje."></textarea></div></div>
+  <p class="small muted" id="storageStatus"></p></section>
+
+ <details class="panel panel-pad" id="realEntry"><summary><b>+ Añadir una medición del laboratorio real</b></summary>
+  <p class="small muted">Tensiones y corrientes RMS. P₁ es potencia activa medida, no V₁I₁. Escribe la incertidumbre estándar si la calculaste a partir de la exactitud del instrumento.</p>
+  <form id="realForm" novalidate><div class="form-grid">
+   <div><label for="rStage">Ensayo</label><select id="rStage"><option value="R">R</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D" selected>D</option><option value="E">E</option><option value="L">Libre</option></select></div>
+   <div><label for="rSec">Secundario</label><select id="rSec"><option value="vacío">en vacío</option><option value="carga" selected>con carga</option><option value="corto">en cortocircuito</option></select></div>
+   <div><label for="rRef">Referencia</label><select id="rRef"><option value="turns">Espiras conocidas</option><option value="nominal">Relación nominal</option></select></div>
+   <div id="rNWrap" class="pair"><div><label for="rN1">N₁</label><input id="rN1" type="text" inputmode="numeric" value="500"></div><div><label for="rN2">N₂</label><input id="rN2" type="text" inputmode="numeric" value="250"></div></div>
+   <div id="rKWrap" hidden><label for="rK">k nominal = V₂ nom./V₁ nom.</label><input id="rK" type="text" inputmode="decimal" placeholder="0.5"></div>
+   <div id="rRLWrap"><label for="rRL">R<sub>L</sub> (Ω)</label><input id="rRL" type="text" inputmode="decimal"></div>
+   <div class="pair"><div><label for="rV1">V₁ (V)</label><input id="rV1" type="text" inputmode="decimal"></div><div><label for="rV1u">u(V₁)</label><input id="rV1u" type="text" inputmode="decimal"></div></div>
+   <div class="pair"><div><label for="rV2">V₂ (V)</label><input id="rV2" type="text" inputmode="decimal"></div><div><label for="rV2u">u(V₂)</label><input id="rV2u" type="text" inputmode="decimal"></div></div>
+   <div class="pair"><div><label for="rI1">I₁ (A)</label><input id="rI1" type="text" inputmode="decimal"></div><div><label for="rI1u">u(I₁)</label><input id="rI1u" type="text" inputmode="decimal"></div></div>
+   <div class="pair"><div><label for="rI2">I₂ (A)</label><input id="rI2" type="text" inputmode="decimal"></div><div><label for="rI2u">u(I₂)</label><input id="rI2u" type="text" inputmode="decimal"></div></div>
+   <div class="pair"><div><label for="rP1">P₁ (W)</label><input id="rP1" type="text" inputmode="decimal"></div><div><label for="rP1u">u(P₁)</label><input id="rP1u" type="text" inputmode="decimal"></div></div>
+   <div class="pair"><div><label for="rV20">V₂₀ (V)</label><input id="rV20" type="text" inputmode="decimal"></div><div><label for="rV20u">u(V₂₀)</label><input id="rV20u" type="text" inputmode="decimal"></div></div>
+   <div><label for="rR">R de devanado (Ω)</label><input id="rR" type="text" inputmode="decimal"></div>
+   <div class="wide"><label for="rNote">Observación</label><input id="rNote" type="text" maxlength="300" placeholder="p. ej. réplica 2; toma de 6 V"></div></div>
+   <p class="error-text" id="rErr" role="alert"></p><button class="btn primary" type="submit">Guardar medición real</button></form></details>
+
+ <div class="data-toolbar"><label for="fSource">Mostrar</label><select id="fSource"><option value="all">Todos los orígenes</option><option value="banco">Banco virtual</option><option value="real">Laboratorio real</option><option value="modelo">Modelo</option></select><select id="fStage" aria-label="Filtrar por ensayo"><option value="all">Todos los ensayos</option><option value="R">R</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="E">E</option><option value="L">Libre</option></select><span class="spacer"></span><button class="btn small" id="exportCsv">Exportar CSV</button><button class="btn small" id="exportReport">Descargar informe</button><button class="btn small danger" id="clearData">Borrar todos los datos</button></div>
+ <section class="panel"><header class="panel-head"><h3>Registro de datos</h3><span class="count" id="rowCount"></span></header>
+  <div class="table-wrap"><table id="dataTable"><thead><tr><th># / origen</th><th>Ensayo</th><th>Configuración</th><th>V₁ / V₂ (V)</th><th>I₁ / I₂ (A)</th><th>P₁ (W) · R</th><th>V₂/V₁</th><th>η (%)</th><th>Observación</th><th class="no-print"><span class="sr">Borrar</span></th></tr></thead><tbody id="rowsBody"></tbody></table><p class="empty" id="emptyData">Todavía no hay datos. Anota lecturas desde el banco o añade una medición real.</p></div></section>
+ <h2 class="sec-title">Análisis por ensayo</h2>
+ <div id="stageCards" class="stage-cards"></div>
+ <section class="panel panel-pad answers"><h3>Preguntas para el análisis</h3><div id="qList"></div><div class="field"><label for="conclusion">Conclusiones (una por línea; cada una con un número medido)</label><textarea id="conclusion" maxlength="10000"></textarea></div>
+  <div class="button-row"><button class="btn primary" id="saveSession2">Descargar sesión con respuestas</button><span class="small muted">Guarda una copia para continuar en otro equipo o entregarla.</span></div></section>
+</section>
+
+<!-- ============ EXPOSICIÓN ============ -->
+<section class="tab" id="exposicion" hidden>
+ <div class="intro"><div><p class="eyebrow">Exposición</p><h1>Cuenten lo que midieron</h1><p>Las diapositivas se arman con los datos de tu cuaderno: gráficas, circuito equivalente, bitácora de seguridad y conclusiones. Revísalas, completa lo que falte en el Cuaderno y descárgalas para proyectarlas en cualquier computador.</p></div></div>
+ <div class="slide-tools"><button class="btn small" id="prevSlide">← Anterior</button><span class="mono" id="slideNum"></span><button class="btn small" id="nextSlide">Siguiente →</button><span class="spacer"></span><button class="btn small quiet" id="notesBtn" aria-pressed="false">Notas del expositor</button><button class="btn small quiet" id="fullBtn">Pantalla completa</button><button class="btn small copper" id="exportSlides">Descargar presentación</button></div>
+ <div class="stage-box" id="stageBox"><div class="stage" id="stage"><div class="slide" id="slide"></div></div></div>
+ <p class="slide-notes" id="slideNotes" hidden></p>
+ <div class="two-col">
+  <section class="panel panel-pad"><h3>Estructura sugerida (10 min)</h3><ol><li>Pregunta y predicción (1 min).</li><li>Montaje y seguridad: cómo conectaron cada instrumento (2 min).</li><li>Resultados de los ensayos A a D con incertidumbre (4 min).</li><li>Circuito equivalente: predicción frente a medición (2 min).</li><li>Errores, incidentes y conclusiones (1 min).</li></ol><p class="small muted">Cada integrante presenta al menos un ensayo. Las flechas del teclado cambian de diapositiva.</p></section>
+  <section class="panel panel-pad"><h3>Rúbrica de la exposición</h3><div class="table-wrap"><table class="rubric"><thead><tr><th>Criterio</th><th>Peso</th><th>Nivel alto</th></tr></thead><tbody>
+   <tr><td>Dominio conceptual</td><td class="num">20 %</td><td>Explica Faraday, la relación de transformación y el origen de cada pérdida con sus palabras.</td></tr>
+   <tr><td>Montaje y seguridad</td><td class="num">20 %</td><td>Justifica la conexión de cada instrumento y analiza los incidentes de la bitácora.</td></tr>
+   <tr><td>Calidad de los datos</td><td class="num">20 %</td><td>Réplicas, unidades, cifras significativas e incertidumbre coherentes con los instrumentos.</td></tr>
+   <tr><td>Modelo frente a medición</td><td class="num">25 %</td><td>Obtiene el circuito equivalente de B y C, predice el ensayo D y explica las diferencias.</td></tr>
+   <tr><td>Comunicación</td><td class="num">15 %</td><td>Gráficas legibles, tiempo de 10 min y respuestas precisas a las preguntas.</td></tr></tbody></table></div></section>
+ </div>
+</section>
+
+<footer class="foot"><span>Transformadores · laboratorio virtual y guía de práctica · v2.0</span><span>Elaborado por Mg. Manuel Alejandro Obando · Departamento de Física, Universidad del Cauca</span></footer>
+</main>
+<div class="copy-box" id="copyBox" hidden role="dialog" aria-modal="true" aria-labelledby="copyName"><div class="copy-in panel panel-pad"><h3>Guarda este archivo: <span id="copyName"></span></h3><p class="small muted">Esta vista no permite descargas. Copia el texto y pégalo en un archivo nuevo con ese nombre.</p><textarea id="copyText" readonly></textarea><div class="button-row"><button class="btn primary" id="copyBtn">Copiar</button><button class="btn" id="copyClose">Cerrar</button></div></div></div>
+<div id="toast" class="toast" role="status" hidden></div>
+<noscript><p style="padding:30px">Activa JavaScript para usar el banco. La guía y la teoría están en este archivo.</p></noscript>

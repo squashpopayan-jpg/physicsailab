@@ -1,0 +1,105 @@
+<template class="chapter-src" data-id="xc" data-num="17" data-title="Intercambio y correlación: LDA y GGA" data-part="Parte III · Teoría del funcional de la densidad" data-short="Gas homogéneo de electrones, LDA, hueco de intercambio-correlación, GGA y PBE, escalera de Jacob, aciertos y errores de la DFT">
+<p class="lead">Toda la física difícil de la DFT está en un término, \(E_\text{xc}[n]\). Nadie conoce su forma exacta, pero hay aproximaciones sorprendentemente buenas. La más simple trata cada punto de un átomo o un sólido como si fuera un trozo de gas uniforme de electrones; la siguiente añade la información de cómo cambia la densidad. Con la segunda, el funcional PBE, se calcularon los parámetros de hBN-MC.</p>
+
+<section>
+<h2>El gas homogéneo de electrones</h2>
+<p>El sistema de referencia es un gas de electrones de densidad uniforme \(n\) sobre un fondo positivo que lo neutraliza (el «jellium»). Su densidad se caracteriza con el <span class="term">radio de Wigner–Seitz</span> \(r_s\), el radio de la esfera que contiene en promedio un electrón:</p>
+<div class="eq key" data-name="Radio de Wigner–Seitz">\[\frac43\pi r_s^3=\frac1n,\qquad k_F=(3\pi^2n)^{1/3}=\frac{1.919}{r_s}\quad\text{(unidades atómicas)}.\]</div>
+<p>En los metales simples \(r_s\) va de 2 (aluminio) a 6 (cesio); en las regiones de enlace de los sólidos covalentes es del orden de 1–2. Por electrón, el gas tiene:</p>
+<div class="eq key" data-name="Energías del gas homogéneo (Ha por electrón)">\[t_s=\frac35E_F=\frac{1.105}{r_s^2},\qquad \varepsilon_x=-\frac34\Big(\frac{3}{\pi}\Big)^{1/3}n^{1/3}=-\frac{0.4582}{r_s},\qquad \varepsilon_c(r_s)\ \text{(Ceperley–Alder, 1980)} .\]</div>
+<p>La energía de intercambio es exacta y analítica (Dirac, 1930). La de correlación no tiene fórmula cerrada: Ceperley y Alder la calcularon con Monte Carlo cuántico para varias densidades y otros la ajustaron con funciones suaves: Vosko–Wilk–Nusair (VWN, 1980), Perdew–Zunger (PZ, 1981) y Perdew–Wang (PW92). Las tres parametrizaciones difieren en menos de 1 mHa por electrón.</p>
+<div class="sim" data-sim="gas-electrones" data-title="Energías del gas homogéneo frente al radio de Wigner–Seitz"></div>
+<div class="sim-guide"><ul>
+<li>A alta densidad (\(r_s\) pequeño) domina la energía cinética; a baja densidad, el intercambio y la correlación (la competencia que lleva al cristal de Wigner).</li>
+<li>La correlación es mucho menor que el intercambio, y VWN y PZ son casi indistinguibles a la escala de la gráfica.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>La aproximación de densidad local (LDA)</h2>
+<p>Kohn y Sham propusieron tratar cada pequeño volumen de un sistema inhomogéneo como gas homogéneo con la densidad local:</p>
+<div class="eq key" data-name="LDA">\[E_\text{xc}^\text{LDA}[n]=\int n(\vb r)\,\varepsilon_\text{xc}\big(n(\vb r)\big)\,\dd^3r,\qquad v_\text{xc}^\text{LDA}(\vb r)=\varepsilon_\text{xc}(n)+n\,\odv{\varepsilon_\text{xc}}{n}\bigg|_{n(\vb r)} .\]</div>
+<p>Con espín (LSDA), \(\varepsilon_\text{xc}\) depende también de la polarización \(\zeta=(n_\uparrow-n_\downarrow)/n\). Parecería demasiado ingenuo para un átomo, donde la densidad varía muchísimo, pero funciona sorprendentemente bien:</p>
+<ul>
+<li>Geometrías: distancias de enlace con error típico del 1–2 % (demasiado cortas).</li>
+<li>Frecuencias de vibración y constantes elásticas: errores de pocos por ciento.</li>
+<li>Energías de atomización: demasiado grandes (sobreenlace de ~1 eV por enlace).</li>
+<li>Brechas de banda: subestimadas en 30–50 %.</li>
+</ul>
+<h3>Por qué funciona: el hueco de intercambio y correlación</h3>
+<p>\(E_\text{xc}\) puede escribirse como la interacción de cada electrón con su <span class="term">hueco de intercambio y correlación</span> \(n_\text{xc}(\vb r,\vb r')\), el déficit de densidad que crea a su alrededor:</p>
+<div class="eq">\[E_\text{xc}=\frac12\iint\frac{n(\vb r)\,n_\text{xc}(\vb r,\vb r')}{|\vb r-\vb r'|}\dd^3r\,\dd^3r',\qquad \int n_\text{xc}(\vb r,\vb r')\,\dd^3r'=-1 .\]</div>
+<p>El hueco contiene exactamente un electrón «faltante» (regla de suma) y la energía solo depende de su forma promediada esféricamente. LDA usa el hueco del gas uniforme, que cumple la regla de suma y tiene un promedio esférico razonable. Por eso sus errores se compensan: el intercambio LDA es ~10 % menos negativo que el exacto y la correlación LDA ~2–3 veces más negativa, pero su suma es bastante buena.</p>
+</section>
+
+<section>
+<h2>Aproximaciones de gradiente generalizado (GGA)</h2>
+<p>El paso siguiente es dejar que la energía por electrón dependa también del gradiente de la densidad, medido con la variable adimensional</p>
+<div class="eq key" data-name="Gradiente reducido">\[s=\frac{|\nabla n|}{2k_F\,n}=\frac{|\nabla n|}{2(3\pi^2)^{1/3}n^{4/3}} .\]</div>
+<p>En una GGA el intercambio se escribe como el de LDA multiplicado por un <span class="term">factor de realce</span> \(F_x(s)\ge1\). El funcional de Perdew, Burke y Ernzerhof (PBE, 1996), el más usado en física de materiales y el que usa la tesis (SIESTA, GGA-PBE), tiene</p>
+<div class="eq key" data-name="Intercambio PBE">\[E_x^\text{PBE}=\int n\,\varepsilon_x^\text{LDA}(n)\,F_x(s)\,\dd^3r,\qquad F_x(s)=1+\kappa-\frac{\kappa}{1+\mu s^2/\kappa},\quad \kappa=0.804,\ \mu=0.21951 .\]</div>
+<p>\(\mu\) se fija para recuperar la respuesta lineal del gas uniforme y \(\kappa\) para no violar el límite de Lieb–Oxford. PBE no tiene parámetros ajustados a datos: todos salen de condiciones exactas. Comparado con LDA, PBE corrige el sobreenlace (energías de atomización mucho mejores) y alarga un poco los enlaces (error típico +1 %).</p>
+<div class="sim" data-sim="factor-realce" data-title="Factor de realce de PBE y gradiente reducido en un átomo"></div>
+<div class="sim-guide"><ul>
+<li>Para \(s\to0\) todas las curvas tienden a 1 (LDA). En las colas de los átomos \(s\) es grande y la corrección es importante.</li>
+<li>En el átomo de nitrógeno, \(s\) es pequeño cerca del núcleo y en las capas, y crece mucho en la cola exterior y en la región entre capas.</li>
+</ul></div>
+<h3>La escalera de Jacob</h3>
+<p>John Perdew ordenó los funcionales en una «escalera» hacia la precisión química, en la que cada peldaño añade un ingrediente:</p>
+<ol>
+<li>LDA: solo \(n\).</li>
+<li>GGA (PBE, PW91, BLYP): \(n\) y \(\nabla n\).</li>
+<li>meta-GGA (TPSS, SCAN): además la densidad de energía cinética de los orbitales.</li>
+<li>Híbridos (B3LYP, PBE0, HSE): una fracción de intercambio exacto de Hartree–Fock.</li>
+<li>RPA y doble híbridos: orbitales desocupados.</li>
+</ol>
+<p>Cada peldaño es más caro. Para superceldas grandes y miles de cálculos, GGA sigue siendo el compromiso estándar.</p>
+</section>
+
+<section>
+<h2>Átomos con LDA: lo que sale bien y lo que sale mal</h2>
+<p>La simulación siguiente resuelve átomos completos con LDA y compara con los valores exactos y de Hartree–Fock. También calcula la energía de ionización de dos maneras: por diferencia de energías totales del átomo y el catión (ΔSCF) y con el autovalor del orbital más alto, \(-\varepsilon_\text{HOMO}\).</p>
+<div class="sim" data-sim="atomo-lda" data-title="Átomos con LDA: energías, componentes y ionización"></div>
+<div class="sim-guide"><ul>
+<li>La energía total LDA es demasiado alta (menos negativa): 0.07 Ha en el helio, 0.56 Ha en el nitrógeno, 0.70 Ha en el neón. El intercambio LDA es insuficiente.</li>
+<li>La correlación LDA es mucho mayor que la verdadera (He: −0.112 frente a −0.042 Ha): errores que se compensan parcialmente.</li>
+<li>\(-\varepsilon_\text{HOMO}\) es casi la mitad de la energía de ionización: el potencial LDA decae exponencialmente en lugar de como \(-1/r\) por el error de autointeracción. La ΔSCF es mucho mejor.</li>
+<li>El oxígeno sale mal porque este cálculo no polariza el espín: su catión O⁺ tiene tres electrones 2p desapareados. Los cálculos reales usan LSDA o GGA con espín cuando hace falta.</li>
+</ul></div>
+<div class="box valid"><p>Con este mismo código se reproducen las energías LDA del NIST para H, He, Be, C, N, O, Ne y Ar (error menor que \(2\times10^{-6}\) Ha) y la energía de correlación LDA del helio, −0.112 Ha (apéndice B).</p></div>
+</section>
+
+<section>
+<h2>Los límites de la DFT aproximada</h2>
+<ul>
+<li><strong>Brechas de banda.</strong> Los autovalores de Kohn–Sham no son energías de excitación. Con LDA/GGA la brecha del h-BN monocapa sale ~4.6 eV frente a ~6 eV medidos (y ~7 eV del método GW, que incluye la interacción del electrón con el hueco que deja). Para brechas se usan híbridos o GW.</li>
+<li><strong>Autointeracción.</strong> En LDA/GGA cada electrón sigue repeliéndose un poco a sí mismo: electrones demasiado deslocalizados, aniones mal ligados (el H⁻ no se liga en LDA) y barreras de reacción demasiado bajas.</li>
+<li><strong>Van der Waals.</strong> La dispersión de London es una correlación no local que LDA y GGA no capturan. La unión entre capas de h-BN o de grafito sale casi nula con PBE; se corrige con funcionales vdW-DF o correcciones empíricas (D2, D3).</li>
+<li><strong>Correlación fuerte.</strong> Óxidos de metales de transición, rotura de enlaces: requieren métodos más allá de la DFT estándar.</li>
+</ul>
+<div class="box hbn"><p>La tesis usa GGA-PBE, adecuada para lo que necesita el modelo de enlaces: energías totales de estructuras en el plano con la misma configuración de cálculo, cuyas <em>diferencias</em> se ajustan con \(\varepsilon_{\alpha\beta}\). Los errores sistemáticos de PBE (por ejemplo, en la energía de la molécula de H₂ respecto de un sólido) se trasladan a los potenciales químicos: el informe científico de la aplicación encuentra que, con las energías de la Tabla 5.1, la lámina h-BN resulta inestable frente a NH₃ + BH₃ para \(\Delta\mu_\text{H}=0\), y sugiere revisar la convergencia de la referencia de H₂ (capítulo 28).</p></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Gas homogéneo: \(\varepsilon_x=-0.458/r_s\) Ha exacto; \(\varepsilon_c\) de Monte Carlo cuántico (VWN, PZ, PW92).</li>
+<li>LDA: \(E_\text{xc}=\int n\,\varepsilon_\text{xc}(n)\); buenas geometrías, sobreenlace, brechas pequeñas.</li>
+<li>Funciona porque su hueco cumple la regla de suma; intercambio y correlación compensan errores.</li>
+<li>GGA (PBE): factor de realce \(F_x(s)\) con el gradiente reducido \(s\); mejores energías de enlace.</li>
+<li>Límites: brechas, autointeracción (\(-\varepsilon_\text{HOMO}\ll I\)), van der Waals, correlación fuerte.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Calcule \(r_s\) para una densidad de \(0.01\) electrones/bohr³ y su energía de intercambio por electrón.
+<details><summary>Respuesta</summary><p>\(r_s=(3/4\pi n)^{1/3}=2.88\); \(\varepsilon_x=-0.159\) Ha \(=-4.33\) eV.</p></details></li>
+<li><span class="lvl">Básico</span>¿Cuánto vale \(F_x^\text{PBE}\) en \(s=1\) y para \(s\to\infty\)?
+<details><summary>Respuesta</summary><p>\(F_x(1)=1+0.804-0.804/(1+0.273)=1.172\); \(F_x(\infty)=1.804\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Demuestre que \(v_x^\text{LDA}=\frac43\varepsilon_x\).
+<details><summary>Respuesta</summary><p>\(v_x=\frac{\dd(n\varepsilon_x)}{\dd n}\) con \(n\varepsilon_x\propto n^{4/3}\): \(v_x=\frac43\varepsilon_x\).</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué \(-\varepsilon_\text{HOMO}\) en LDA da casi la mitad de la ionización del helio?
+<details><summary>Respuesta</summary><p>Porque el potencial LDA cae exponencialmente lejos del átomo en lugar de como \(-1/r\): el electrón más externo está ligado demasiado débilmente. El funcional exacto cumpliría \(\varepsilon_\text{HOMO}=-I\).</p></details></li>
+<li><span class="lvl">Avanzado</span>Estime \(s\) en la cola de un átomo donde \(n\propto\ee^{-2\kappa r}\).
+<details><summary>Respuesta</summary><p>\(|\nabla n|/n=2\kappa\), así que \(s=\kappa/(3\pi^2n)^{1/3}\) crece sin límite cuando \(n\to0\): las colas son la región donde la GGA más se aparta de la LDA.</p></details></li>
+</ol>
+</section>
+</template>

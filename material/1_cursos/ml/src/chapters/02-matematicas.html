@@ -1,0 +1,117 @@
+<template class="chapter-src" data-id="matematicas" data-num="2" data-title="Las matemáticas que usa el ML" data-part="Parte I · Fundamentos" data-short="Vectores, distancias y producto punto; matrices y autovectores; gradiente y regla de la cadena; probabilidad y Bayes; máxima verosimilitud y su relación con las funciones de pérdida">
+<p class="lead">Casi todo el aprendizaje automático descansa sobre cuatro herramientas: el álgebra lineal (los datos son vectores y matrices), el cálculo (entrenar es bajar por una pendiente), la probabilidad (los datos tienen ruido y las predicciones, incertidumbre) y la estimación por máxima verosimilitud, que explica de dónde salen las funciones de pérdida. Este capítulo las repasa con el foco puesto en cómo se usan.</p>
+
+<section>
+<h2>Vectores, normas y distancias</h2>
+<p>Una instancia con \(p\) características es un vector \(\vb x=(x_1,\dots,x_p)\in\R^p\). Tres operaciones aparecen en todas partes:</p>
+<div class="eq key" data-name="Producto punto, normas y distancia">\[\vb w\cdot\vb x=\sum_{j=1}^p w_jx_j,\qquad \norm{\vb x}_2=\sqrt{\textstyle\sum_j x_j^2},\qquad \norm{\vb x}_1=\sum_j\abs{x_j},\qquad d(\vb a,\vb b)=\norm{\vb a-\vb b}_2 .\]</div>
+<ul>
+<li>El <span class="term">producto punto</span> es una suma ponderada. Un modelo lineal no es otra cosa: \(\hat y=\vb w\cdot\vb x+b\). Cada peso \(w_j\) dice cuánto cambia la predicción por unidad de \(x_j\).</li>
+<li>La <span class="term">norma</span> mide el tamaño de un vector. La norma \(L_2\) es la longitud euclidiana; la \(L_1\), la suma de valores absolutos. Penalizar una u otra produce Ridge o Lasso (capítulo 8).</li>
+<li>La <span class="term">distancia</span> entre instancias es la base de k vecinos, k-medias y SVM con núcleo RBF. Depende de las unidades: si una variable va de 0 a 100 000 y otra de 0 a 1, la primera domina la distancia. Por eso se escalan los datos (capítulo 5).</li>
+<li>La <span class="term">similitud coseno</span> \(\cos\theta=\vb a\cdot\vb b/(\norm{\vb a}\norm{\vb b})\) compara direcciones e ignora longitudes; es la medida habitual para textos y embeddings (capítulo 28).</li>
+</ul>
+<div class="box ex"><p>Dos clientes con (edad, ingreso en millones de pesos, visitas al mes) = (35, 4.2, 3) y (52, 4.0, 2). La distancia euclidiana es \(\sqrt{17^2+0.2^2+1^2}=17.03\): casi toda proviene de la edad. Si el ingreso estuviera en pesos (4 200 000 y 4 000 000), la distancia sería 200 000 y la edad no contaría nada. El algoritmo no sabe qué unidades son «razonables»; usted sí.</p></div>
+</section>
+
+<section>
+<h2>Matrices: datos, transformaciones y autovectores</h2>
+<p>La matriz de datos \(X\in\R^{n\times p}\) apila las instancias por filas. Con ella, las predicciones de un modelo lineal para todas las instancias a la vez son el producto \(\hat{\vb y}=X\vb w+b\). Una matriz cuadrada \(A\) también es una <span class="term">transformación</span>: lleva cada vector \(\vb v\) a \(A\vb v\), estirando, girando o reflejando el plano.</p>
+<div class="box def"><p>Un <span class="term">autovector</span> de \(A\) es una dirección que la transformación no gira, solo estira: \(A\vb v=\lambda\vb v\). El número \(\lambda\) es su <span class="term">autovalor</span>. Una matriz simétrica (como una covarianza) tiene autovectores reales y perpendiculares, y se descompone como \(A=V\Lambda V\T\).</p></div>
+<p>La <span class="term">matriz de covarianza</span> de los datos centrados, \(S=\frac{1}{n-1}X_c\T X_c\), resume cómo varían las variables y cómo varían juntas. Sus autovectores son las direcciones de máxima varianza; esa es exactamente la idea del análisis de componentes principales (capítulo 22). Y la inversa de \(X\T X\) aparece en la fórmula de mínimos cuadrados (capítulo 6): si dos columnas son casi iguales, esa inversa casi no existe y los coeficientes se vuelven inestables.</p>
+<div class="sim" data-sim="matriz-transformacion" data-title="Una matriz 2 × 2 como transformación del plano"></div>
+<div class="sim-guide"><ul>
+<li>La cuadrícula gris es el plano original y la de color, el plano transformado. El círculo unidad se convierte en una elipse.</li>
+<li>Con una matriz simétrica (\(b=c\)), los autovectores (flechas) son perpendiculares y apuntan a los ejes de la elipse; sus longitudes son los autovalores.</li>
+<li>Lleve el determinante a cero: el plano se aplasta sobre una recta y la matriz deja de tener inversa. Eso es la multicolinealidad perfecta.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Derivadas, gradiente y regla de la cadena</h2>
+<p>Entrenar un modelo es minimizar una pérdida \(L(\vb w)\) que depende de los parámetros. La herramienta es el <span class="term">gradiente</span>, el vector de derivadas parciales:</p>
+<div class="eq key" data-name="Gradiente">\[\grad L(\vb w)=\Big(\pdv{L}{w_1},\dots,\pdv{L}{w_p}\Big),\qquad L(\vb w+\vb h)\approx L(\vb w)+\grad L\cdot\vb h .\]</div>
+<p>El gradiente apunta en la dirección en que \(L\) crece más rápido y es perpendicular a las curvas de nivel. Moverse en la dirección contraria, \(-\grad L\), es la forma más rápida de bajar localmente: el descenso de gradiente del capítulo 7. Para el error cuadrático medio de un modelo lineal,</p>
+<div class="eq">\[L(\vb w)=\frac1n\sum_i\big(\vb w\cdot\vb x_i-y_i\big)^2\quad\Longrightarrow\quad\grad L=\frac2n\sum_i\big(\vb w\cdot\vb x_i-y_i\big)\,\vb x_i=\frac2n X\T(X\vb w-\vb y).\]</div>
+<p>Cada dato «empuja» los pesos en proporción a su error y a sus valores de entrada. La <span class="term">regla de la cadena</span>, \(\odv{}{x}f(g(x))=f'(g(x))\,g'(x)\), permite derivar composiciones de funciones; aplicada sistemáticamente a una red de capas es la retropropagación (capítulo 25).</p>
+<div class="sim" data-sim="gradiente-curvas" data-title="Curvas de nivel del error y la dirección del gradiente"></div>
+<div class="sim-guide"><ul>
+<li>El mapa muestra el error cuadrático medio de la recta \(\hat y=wx+b\) para cada par \((w,b)\). Haga clic en cualquier punto: la flecha es \(-\grad L\), siempre perpendicular a la curva de nivel.</li>
+<li>Pulse «Dar un paso» varias veces: el punto baja hacia el mínimo, que coincide con la solución de mínimos cuadrados (cruz).</li>
+<li>Suba la tasa \(\eta\) por encima de 1: los pasos se pasan del valle y el proceso diverge.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Probabilidad: el lenguaje de la incertidumbre</h2>
+<p>Los datos tienen ruido y los modelos se equivocan; la probabilidad es el lenguaje para hablar de ello con precisión. Una <span class="term">variable aleatoria</span> \(X\) tiene una distribución; su <span class="term">esperanza</span> \(\E[X]\) es el promedio a largo plazo y su <span class="term">varianza</span> \(\Var(X)=\E[(X-\E X)^2]\), la dispersión. Dos distribuciones bastan para empezar: la <span class="term">Bernoulli</span> (\(Y=1\) con probabilidad \(\pi\), \(Y=0\) si no), modelo de toda etiqueta binaria, y la <span class="term">normal</span> \(\mathcal N(\mu,\sigma^2)\), modelo habitual del ruido.</p>
+<p>La <span class="term">probabilidad condicional</span> \(P(A\mid B)=P(A\cap B)/P(B)\) es la probabilidad de \(A\) sabiendo que ocurrió \(B\). Un clasificador probabilístico estima precisamente \(P(y=1\mid\vb x)\). El <span class="term">teorema de Bayes</span> invierte el condicionamiento:</p>
+<div class="eq key" data-name="Teorema de Bayes">\[P(H\mid D)=\frac{P(D\mid H)\,P(H)}{P(D)},\qquad P(D)=P(D\mid H)P(H)+P(D\mid\neg H)P(\neg H).\]</div>
+<div class="sim" data-sim="bayes-prueba" data-title="Prueba diagnóstica: ¿qué significa un resultado positivo?"></div>
+<div class="sim-guide"><ul>
+<li>Cada cuadro es una persona de una población de 1 000. Con prevalencia del 1 %, sensibilidad del 95 % y especificidad del 95 %, solo uno de cada seis positivos está realmente enfermo.</li>
+<li>Suba la prevalencia al 20 %: la misma prueba ahora acierta en casi el 83 % de sus positivos. El valor de un positivo depende de la frecuencia de la condición, no solo de la calidad de la prueba.</li>
+<li>Esta es la razón por la que la precisión de un clasificador cae cuando la clase positiva es rara (capítulo 11).</li>
+</ul></div>
+<div class="box explain"><p>Si una enfermedad es rarísima, casi todas las personas que se hacen la prueba están sanas. Aunque la prueba se equivoque poco con cada una, al ser tantas, los falsos positivos terminan superando a los verdaderos. Es como buscar una aguja en un pajar con un detector que pita una vez de cada veinte con la paja.</p></div>
+</section>
+
+<section>
+<h2>Máxima verosimilitud: de dónde salen las pérdidas</h2>
+<p>Si un modelo con parámetros \(\boldsymbol\theta\) asigna probabilidad \(p(y_i\mid\vb x_i;\boldsymbol\theta)\) a cada dato observado, la <span class="term">verosimilitud</span> es el producto de esas probabilidades, y el <span class="term">estimador de máxima verosimilitud</span> (MLE) es el valor de \(\boldsymbol\theta\) que la hace máxima. Se trabaja con su logaritmo, que convierte productos en sumas:</p>
+<div class="eq key" data-name="Máxima verosimilitud">\[\hat{\boldsymbol\theta}=\argmax_{\boldsymbol\theta}\ \sum_{i=1}^n\log p(y_i\mid\vb x_i;\boldsymbol\theta)=\argmin_{\boldsymbol\theta}\ \Big[-\sum_{i=1}^n\log p(y_i\mid\vb x_i;\boldsymbol\theta)\Big].\]</div>
+<p>Minimizar el logaritmo negativo de la verosimilitud es elegir una función de pérdida. Dos casos lo explican casi todo:</p>
+<ul>
+<li>Si \(y=f(\vb x)+\varepsilon\) con ruido normal de varianza fija, \(-\log p\propto(y-f(\vb x))^2\): <b>el error cuadrático es la pérdida de máxima verosimilitud para ruido gaussiano</b>.</li>
+<li>Si \(y\in\{0,1\}\) es Bernoulli con \(P(y=1)=\hat p\), \(-\log p=-[y\log\hat p+(1-y)\log(1-\hat p)]\): <b>la entropía cruzada (log-loss) es la pérdida de máxima verosimilitud para etiquetas binarias</b> (capítulo 10).</li>
+</ul>
+<div class="sim" data-sim="verosimilitud" data-title="Ajustar una normal maximizando la verosimilitud"></div>
+<div class="sim-guide"><ul>
+<li>Mueva \(\mu\) y \(\sigma\): la curva se desplaza y la log-verosimilitud cambia. El máximo se alcanza exactamente en la media muestral y en la desviación con divisor \(n\).</li>
+<li>Con pocos datos la curva de log-verosimilitud es ancha (mucha incertidumbre sobre \(\mu\)); con muchos datos se vuelve estrecha.</li>
+</ul></div>
+<div class="box law"><p>Elegir una función de pérdida equivale a suponer un modelo de ruido. El error cuadrático supone ruido gaussiano y por eso es sensible a atípicos; el error absoluto corresponde a ruido de Laplace, de colas más pesadas, y es más robusto (capítulo 9).</p></div>
+</section>
+
+<section>
+<h2>Práctica: álgebra, gradientes y Bayes con NumPy</h2>
+<div class="box py"><p>El programa calcula distancias y similitudes, resuelve mínimos cuadrados con las ecuaciones normales, descompone una matriz de covarianza, comprueba un gradiente analítico con diferencias finitas y aplica el teorema de Bayes.</p>
+<div class="py" data-py="02-numpy"></div></div>
+<div class="box read"><ul>
+<li><b>Distancias</b>: en unidades originales la distancia entre los dos clientes la domina la edad; tras estandarizar, todas las variables cuentan.</li>
+<li><b>Ecuaciones normales</b>: los pesos recuperados quedan cerca de los verdaderos (2, −1, 0.5). No son idénticos porque los datos tienen ruido.</li>
+<li><b>Autovalores de la covarianza</b>: el primero es mucho mayor que el segundo; los datos se extienden sobre todo en una dirección, que es la del primer autovector.</li>
+<li><b>Gradiente</b>: el analítico y el numérico coinciden en muchas cifras. Esta prueba («gradient check») es la forma estándar de verificar que una derivada está bien programada.</li>
+<li><b>Bayes</b>: con prevalencia del 1 %, sensibilidad 0.95 y especificidad 0.95, \(P(\text{enfermo}\mid +)\approx0.16\).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Un modelo lineal es un producto punto \(\vb w\cdot\vb x+b\); las distancias dependen de las unidades, por eso se escala.</li>
+<li>Los autovectores de la covarianza son las direcciones de máxima varianza; una matriz casi singular vuelve inestables los coeficientes.</li>
+<li>\(-\grad L\) es la dirección de máximo descenso; la regla de la cadena es la base de la retropropagación.</li>
+<li>Bayes: el valor de una predicción positiva depende de la prevalencia.</li>
+<li>Minimizar una pérdida es maximizar una verosimilitud: cuadrado ↔ gaussiano, log-loss ↔ Bernoulli.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Calcule la similitud coseno entre \((1,2,0)\) y \((2,4,1)\).
+<details><summary>Respuesta</summary><p>\(\frac{2+8+0}{\sqrt5\sqrt{21}}=\frac{10}{10.247}=0.976\): casi la misma dirección.</p></details></li>
+<li><span class="lvl">Básico</span>¿Cuáles son los autovalores de \(\begin{pmatrix}3&0\\0&0.5\end{pmatrix}\) y qué le hace al círculo unidad?
+<details><summary>Respuesta</summary><p>3 y 0.5, con autovectores en los ejes: estira por 3 en \(x\) y comprime a la mitad en \(y\); el círculo se vuelve una elipse de semiejes 3 y 0.5.</p></details></li>
+<li><span class="lvl">Intermedio</span>Derive el gradiente de \(L(w)=\frac1n\sum(wx_i-y_i)^2\) e iguálelo a cero para obtener \(w\).
+<details><summary>Respuesta</summary><p>\(L'(w)=\frac2n\sum(wx_i-y_i)x_i=0\Rightarrow w=\sum x_iy_i/\sum x_i^2\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Una prueba tiene sensibilidad 0.99 y especificidad 0.98 para una condición con prevalencia 0.002. ¿Probabilidad de enfermedad dado un positivo?
+<details><summary>Respuesta</summary><p>\(\frac{0.99\cdot0.002}{0.99\cdot0.002+0.02\cdot0.998}=\frac{0.00198}{0.02194}=0.090\).</p></details></li>
+<li><span class="lvl">Avanzado</span>Muestre que, si \(y\mid\vb x\sim\text{Laplace}(f(\vb x),b)\), la pérdida de máxima verosimilitud es el error absoluto.
+<details><summary>Respuesta</summary><p>La densidad es \(\frac{1}{2b}\ee^{-\abs{y-f}/b}\); \(-\log p=\log 2b+\abs{y-f}/b\). Con \(b\) fijo, minimizar la suma equivale a minimizar \(\sum\abs{y_i-f(\vb x_i)}\).</p></details></li>
+</ol>
+<div class="box links"><ul>
+<li><a href="https://mml-book.github.io/">Deisenroth, Faisal y Ong — Mathematics for Machine Learning</a><small>Libro gratuito: álgebra lineal, cálculo vectorial, probabilidad y optimización con la mirada del ML.</small></li>
+<li><a href="https://www.3blue1brown.com/topics/linear-algebra">3Blue1Brown — Essence of linear algebra</a><small>La mejor intuición geométrica de matrices, determinantes y autovectores, en video.</small></li>
+<li><a href="https://seeing-theory.brown.edu/">Seeing Theory (Brown University)</a><small>Probabilidad y estadística con visualizaciones interactivas.</small></li>
+<li><a href="https://numpy.org/doc/stable/user/absolute_beginners.html">NumPy para principiantes</a><small>Arreglos, productos matriciales y álgebra lineal en la práctica.</small></li>
+</ul></div>
+</section>
+</template>

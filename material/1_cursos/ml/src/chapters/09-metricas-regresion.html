@@ -1,0 +1,103 @@
+<template class="chapter-src" data-id="metricas-regresion" data-num="9" data-title="Métricas de regresión y pérdidas robustas" data-part="Parte II · Regresión" data-short="MSE, RMSE, MAE, MedAE, MAPE y R²: qué mide cada una; elegir según el costo del error; atípicos, Huber y mediana; regresión cuantílica e intervalos de predicción">
+<p class="lead">«El modelo tiene un error de 18» no significa nada hasta decir de qué error se trata. Cada métrica resume los residuos de una forma distinta, castiga cosas distintas y favorece modelos distintos. Elegirla es decidir qué errores le importan al problema, y la pérdida con la que se entrena debería ser coherente con ella.</p>
+
+<section>
+<h2>Las métricas habituales</h2>
+<div class="eq key" data-name="Métricas de regresión">\[\text{MSE}=\frac1n\sum e_i^2,\quad \text{RMSE}=\sqrt{\text{MSE}},\quad \text{MAE}=\frac1n\sum\abs{e_i},\quad \text{MedAE}=\operatorname{mediana}\abs{e_i},\quad \text{MAPE}=\frac1n\sum\frac{\abs{e_i}}{\abs{y_i}},\qquad e_i=y_i-\hat y_i .\]</div>
+<div class="tablewrap"><table class="cmp">
+<thead><tr><th>Métrica</th><th>Unidades</th><th>Qué castiga</th><th>La minimiza</th><th>Úsela cuando…</th></tr></thead>
+<tbody>
+<tr><td>MSE / RMSE</td><td>\(y^2\) / \(y\)</td><td>los errores grandes, de forma cuadrática</td><td>la media condicional</td><td>los errores grandes son desproporcionadamente costosos; el ruido es aproximadamente normal</td></tr>
+<tr><td>MAE</td><td>\(y\)</td><td>todos los errores por igual</td><td>la mediana condicional</td><td>hay atípicos que no deben dominar; el costo es lineal en el error</td></tr>
+<tr><td>MedAE</td><td>\(y\)</td><td>el error típico, ignora la mitad peor</td><td>—</td><td>quiere describir el error «de un caso normal»; nunca como única métrica</td></tr>
+<tr><td>MAPE</td><td>%</td><td>errores relativos</td><td>sesgada hacia predecir de menos</td><td>\(y\) es siempre positivo y lejos de cero, y el negocio habla en porcentajes</td></tr>
+<tr><td>\(R^2\)</td><td>sin unidades</td><td>MSE relativo al de predecir \(\bar y\)</td><td>la media condicional</td><td>quiere comparar con la línea base de la media; acompáñelo de una métrica en unidades</td></tr>
+</tbody></table></div>
+<p>Dos relaciones ayudan a leer un informe: siempre \(\text{RMSE}\ge\text{MAE}\), y la razón RMSE/MAE crece cuando hay unos pocos errores muy grandes (para errores normales vale \(\sqrt{\pi/2}\approx1.25\)). Un RMSE de 18.7 con MAE de 7.8 (razón 2.4) delata colas pesadas.</p>
+<div class="sim" data-sim="metricas-sensibilidad" data-title="Cómo reacciona cada métrica a un solo error grande"></div>
+<div class="sim-guide"><ul>
+<li>Agrande el error \(\Delta\) de una sola de las 20 predicciones: el MAE sube como \(\Delta/20\), el RMSE como \(\Delta/\sqrt{20}\) (unas 4.5 veces más rápido) y la MedAE ni se entera.</li>
+<li>Active «un valor real cercano a cero»: el MAPE se dispara aunque el error absoluto sea pequeño. Por eso el MAPE no sirve para ventas que pueden ser cero o para temperaturas.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Línea base y escala</h2>
+<p>Ninguna métrica se interpreta sola. Compárela siempre con una <span class="term">línea base</span>: predecir la media (que da \(R^2=0\)), la mediana, el valor de ayer (en series temporales) o un modelo lineal simple. Exprésela en las unidades del problema («nos equivocamos en promedio 6 minutos sobre entregas de 40») y, si el negocio lo pide, en dinero. Y desagregue: un MAE global bueno puede esconder un segmento (zona rural, clientes nuevos) donde el modelo es inútil.</p>
+<div class="box warn"><p>El \(R^2\) en prueba puede ser negativo: significa que el modelo predice peor que la media. Es frecuente al aplicar un modelo a datos de otra época o de otra población, y es una alarma, no un error de cálculo.</p></div>
+</section>
+
+<section>
+<h2>Atípicos y pérdidas robustas</h2>
+<p>Como el error cuadrático crece con el cuadrado, un solo dato muy alejado puede arrastrar toda la recta de mínimos cuadrados. Las <span class="term">pérdidas robustas</span> crecen más despacio para errores grandes:</p>
+<div class="eq key" data-name="Pérdida de Huber">\[\ell_\delta(e)=\begin{cases}\tfrac12e^2,&\abs e\le\delta\\ \delta\big(\abs e-\tfrac12\delta\big),&\abs e>\delta\end{cases}\qquad\text{cuadrática cerca de cero, lineal en las colas.}\]</div>
+<ul>
+<li><b>Huber</b> se comporta como mínimos cuadrados con los datos normales y como la pérdida absoluta con los atípicos. \(\delta\) (en sklearn, <code>epsilon</code> sobre residuos escalados) fija dónde empieza la parte lineal; 1.35 da un 95 % de eficiencia si el ruido es normal.</li>
+<li><b>Pérdida absoluta</b> (regresión de mediana, LAD): totalmente lineal; su predicción es la mediana condicional.</li>
+<li>Ninguna corrige un error de datos: si el atípico es una equivocación, corríjala. Si es real, decida si el modelo debe predecir esos casos.</li>
+</ul>
+<div class="sim" data-sim="robusta-atipicos" data-title="Mínimos cuadrados, Huber y mediana ante atípicos"></div>
+<div class="sim-guide"><ul>
+<li>Sin atípicos las tres rectas casi coinciden con la verdadera.</li>
+<li>Agregue cinco atípicos altos: la recta de MCO sube y gira hacia ellos; Huber y la mediana casi no se mueven.</li>
+<li>Suba \(\delta\) de Huber: a medida que crece, la recta de Huber se acerca a la de MCO.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Regresión cuantílica e intervalos de predicción</h2>
+<p>Una predicción puntual no dice cuánto puede equivocarse el modelo en ese caso concreto. La <span class="term">regresión cuantílica</span> estima directamente el cuantil \(\tau\) de \(y\) dado \(\vb x\), minimizando la <span class="term">pérdida pinball</span>:</p>
+<div class="eq key" data-name="Pérdida pinball">\[\rho_\tau(e)=\begin{cases}\tau\,e,&e\ge0\\ (\tau-1)\,e,&e<0\end{cases}\qquad\Longrightarrow\qquad \hat q_\tau(\vb x)\ \text{con}\ P\big(y\le\hat q_\tau(\vb x)\mid\vb x\big)\approx\tau .\]</div>
+<p>Con \(\tau=0.5\) se recupera la mediana. Ajustando \(\tau=0.1\) y \(\tau=0.9\) se obtiene un intervalo de predicción del 80 % que se ensancha donde el ruido es mayor, algo que un intervalo de la forma \(\hat y\pm2\hat\sigma\) no hace. La pérdida pinball también existe en gradient boosting (<code>loss='quantile'</code>), lo que permite intervalos no lineales.</p>
+<div class="sim" data-sim="cuantilica" data-title="Rectas cuantílicas e intervalos que se ensanchan"></div>
+<div class="sim-guide"><ul>
+<li>Con datos heterocedásticos, las rectas de \(\tau=0.1\) y \(\tau=0.9\) se abren en abanico y el intervalo mantiene la cobertura en todo el rango de \(x\).</li>
+<li>El intervalo constante \(\hat y\pm z\hat\sigma\) cubre de más a la izquierda y de menos a la derecha, aunque su cobertura global sea correcta.</li>
+<li>La gráfica inferior muestra la pérdida pinball: con \(\tau=0.9\), quedarse corto cuesta nueve veces más que pasarse, y por eso la recta sube hasta dejar el 90 % de los puntos por debajo.</li>
+</ul></div>
+<div class="box note"><p>La <span class="term">predicción conforme</span> (<i>conformal prediction</i>) es una forma moderna de obtener intervalos con cobertura garantizada en muestras finitas, para cualquier modelo, usando los residuos de un conjunto de calibración. La biblioteca MAPIE la implementa sobre scikit-learn.</p></div>
+</section>
+
+<section>
+<h2>Práctica: cada modelo gana con su métrica</h2>
+<div class="box py"><p>El programa simula tiempos de entrega que crecen con la distancia, con ruido asimétrico y un 3 % de retrasos de una a dos horas. Compara dos líneas base, mínimos cuadrados, Huber y la regresión de mediana con cinco métricas; muestra cómo falla el MAPE y construye intervalos del 80 % con boosting cuantílico.</p>
+<div class="py" data-py="09-metricas-regresion"></div></div>
+<div class="box read"><ul>
+<li><b>Líneas base</b>: predecir la media da \(R^2\approx0\) (−0.002 en prueba) y MAE de 13.4 minutos. Todo modelo debe superar esos números.</li>
+<li><b>Cada modelo gana con su métrica</b>: MCO tiene el menor RMSE (18.74) porque minimiza el error cuadrático, pero Huber y la mediana tienen MAE de 6.3 frente a 7.8, MedAE de 2.7–2.9 frente a 5.3 y MAPE de 11 % frente a 16 %. MCO se dejó arrastrar por los retrasos y se equivoca más en las entregas normales. ¿Cuál es mejor? Depende de si al negocio le duele más el error medio o los retrasos grandes.</li>
+<li><b>RMSE/MAE</b> ≈ 18.7/7.8 = 2.4: muy por encima de 1.25, señal de colas pesadas.</li>
+<li><b>MAPE</b>: un solo valor real de 0.5 con predicción 5 lleva el MAPE de 8 % a 186 %.</li>
+<li><b>Intervalos</b>: cobertura global 80.8 % (objetivo 80 %), con un ancho que pasa de 1.9 a 9.6 a lo largo de \(x\), siguiendo el ruido. La cobertura por tramos (77–85 %) fluctúa por muestreo alrededor del 80 %.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>RMSE castiga los errores grandes y la minimiza la media; MAE trata todos igual y la minimiza la mediana.</li>
+<li>RMSE/MAE muy por encima de 1.25 indica colas pesadas o atípicos.</li>
+<li>MAPE solo con \(y\) positivo y lejos de cero; \(R^2\) siempre junto a una métrica en unidades.</li>
+<li>Compare con líneas base y desagregue por segmentos.</li>
+<li>Huber y la pérdida absoluta resisten atípicos; la pinball da cuantiles e intervalos que se adaptan al ruido.</li>
+<li>Entrene con una pérdida coherente con la métrica con la que se juzgará el modelo.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Residuos: 1, −2, 0, 3, −10. Calcule MAE, RMSE y MedAE.
+<details><summary>Respuesta</summary><p>MAE = 16/5 = 3.2; RMSE = \(\sqrt{114/5}=4.78\); MedAE = mediana de {1, 2, 0, 3, 10} = 2.</p></details></li>
+<li><span class="lvl">Básico</span>Un modelo tiene \(R^2=-0.15\) en prueba. ¿Qué significa?
+<details><summary>Respuesta</summary><p>Su MSE es un 15 % mayor que el de predecir siempre la media de \(y\): es peor que no tener modelo.</p></details></li>
+<li><span class="lvl">Intermedio</span>Muestre que la constante \(c\) que minimiza \(\sum\abs{y_i-c}\) es la mediana.
+<details><summary>Respuesta</summary><p>La derivada (subgradiente) es \(-\#\{y_i\gt c\}+\#\{y_i\lt c\}\); se anula cuando hay tantos datos por encima como por debajo de \(c\), es decir, en la mediana.</p></details></li>
+<li><span class="lvl">Intermedio</span>Para inventario, quedarse sin producto cuesta 4 veces más que sobrar. ¿Qué cuantil de la demanda conviene predecir?
+<details><summary>Respuesta</summary><p>Con costo 4 por faltante y 1 por sobrante, el óptimo es el cuantil \(\tau=4/(4+1)=0.8\) (el «problema del vendedor de periódicos»).</p></details></li>
+<li><span class="lvl">Avanzado</span>¿Por qué un modelo entrenado con MSE puede tener peor MAE que uno entrenado con pérdida absoluta, aunque tenga mejor RMSE?
+<details><summary>Respuesta</summary><p>Cada uno estima un funcional distinto de la distribución condicional: la media y la mediana. Con ruido asimétrico o atípicos difieren, y cada estimador es óptimo para su propia pérdida.</p></details></li>
+</ol>
+<div class="box links"><ul>
+<li><a href="https://scikit-learn.org/stable/modules/model_evaluation.html#regression-metrics">scikit-learn — Regression metrics</a><small>Definiciones exactas, incluida la pérdida pinball y las desviaciones de Tweedie.</small></li>
+<li><a href="https://scikit-learn.org/stable/auto_examples/ensemble/plot_gradient_boosting_quantile.html">scikit-learn — Prediction intervals for gradient boosting regression</a><small>Ejemplo completo de intervalos con boosting cuantílico y su calibración.</small></li>
+<li><a href="https://otexts.com/fpp3/accuracy.html">Hyndman y Athanasopoulos — Forecasting: Principles and Practice, «Evaluating point forecast accuracy»</a><small>Métricas de error escaladas (MASE) y por qué el MAPE es problemático.</small></li>
+<li><a href="https://mapie.readthedocs.io/">MAPIE — predicción conforme en Python</a><small>Intervalos con cobertura garantizada para cualquier modelo de scikit-learn.</small></li>
+</ul></div>
+</section>
+</template>

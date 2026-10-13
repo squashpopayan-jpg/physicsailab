@@ -1,0 +1,93 @@
+<template class="chapter-src" data-id="canonico" data-num="21" data-title="El ensamble canónico" data-part="Parte IV · Mecánica estadística" data-short="Distribución de Boltzmann, función de partición, energía libre, fluctuaciones, Schottky, Einstein y Debye, Arrhenius y las temperaturas de hBN-MC">
+<p class="lead">Casi ningún sistema real está aislado: intercambia energía con su entorno, que fija la temperatura. Para un sistema en contacto con un baño térmico, la probabilidad de cada estado sigue la distribución de Boltzmann, la fórmula más importante de la física estadística y la que usa el algoritmo de Metropolis de hBN-MC en cada uno de sus pasos.</p>
+
+<section>
+<h2>La distribución de Boltzmann</h2>
+<p>Sea un sistema pequeño S en contacto con un baño R muy grande, con energía total \(E_\text{tot}\) fija. La probabilidad de que S esté en un microestado \(i\) de energía \(E_i\) es proporcional al número de microestados del baño compatibles, \(\Omega_R(E_\text{tot}-E_i)\). Desarrollando la entropía del baño, \(\ln\Omega_R(E_\text{tot}-E_i)\approx\ln\Omega_R(E_\text{tot})-E_i/\kB T\), se obtiene:</p>
+<div class="box law"><div class="eq key" data-name="Distribución de Boltzmann">\[p_i=\frac{\ee^{-E_i/\kB T}}{Z},\qquad Z=\sum_i\ee^{-E_i/\kB T}\qquad(\beta=1/\kB T).\]</div>
+<p>\(Z\), la <span class="term">función de partición</span>, normaliza las probabilidades. Si hay \(g_i\) estados con la misma energía (degeneración), cada nivel pesa \(g_i\,\ee^{-\beta E_i}\).</p></div>
+<p>La razón de probabilidades entre dos estados depende solo de su diferencia de energía:</p>
+<div class="eq key" data-name="Factor de Boltzmann">\[\frac{p_j}{p_i}=\ee^{-(E_j-E_i)/\kB T}=\ee^{-\Delta E/\kB T}.\]</div>
+<p>Es exactamente la cantidad que usa el criterio de Metropolis (capítulo 24). A temperatura baja solo los estados más bajos están poblados; a temperatura alta, todos se igualan.</p>
+</section>
+
+<section>
+<h2>Termodinámica a partir de Z</h2>
+<p>De la función de partición se obtiene toda la termodinámica:</p>
+<div class="eq key" data-name="Relaciones canónicas">\[F=-\kB T\ln Z,\qquad U=\expval E=-\pdv{\ln Z}{\beta},\qquad S=\frac{U-F}{T}=-\kB\sum_ip_i\ln p_i,\qquad C=\pdv{U}{T}.\]</div>
+<p>La <span class="term">energía libre de Helmholtz</span> \(F=U-TS\) es la magnitud que se minimiza en equilibrio a temperatura fija: el sistema busca un compromiso entre energía baja y entropía alta. Además, la capacidad calorífica está ligada a las fluctuaciones de la energía:</p>
+<div class="eq key" data-name="Capacidad calorífica por fluctuaciones">\[C=\frac{\expval{E^2}-\expval{E}^2}{\kB T^2}=\frac{\Var(E)}{\kB T^2}.\]</div>
+<p>Esta relación permite medir \(C\) en una simulación Monte Carlo sin derivar: basta registrar la varianza de la energía a cada temperatura. Es lo que hace el barrido de temperatura de la pestaña INV de hBN-MC (\(C_v/\kB=\Var(E)/(\kB T)^2\)).</p>
+<div class="sim" data-sim="boltzmann-niveles" data-title="Poblaciones de Boltzmann y termodinámica de un sistema de niveles"></div>
+<div class="sim-guide"><ul>
+<li>Baje la temperatura: toda la población se concentra en el nivel fundamental y la entropía tiende a \(\kB\ln g_0\).</li>
+<li>Compare la capacidad calorífica por fluctuaciones con la derivada numérica \(\dd U/\dd T\): coinciden.</li>
+<li>Con el ejemplo de hBN-MC (intercambio B↔N, 6.24 eV) observe la población del estado excitado a 5000 K y a 20 000 K.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Dos niveles: la anomalía de Schottky</h2>
+<p>Para un sistema con dos niveles separados por \(\Delta\), \(Z=1+\ee^{-\beta\Delta}\) y</p>
+<div class="eq">\[U=\frac{\Delta}{\ee^{\Delta/\kB T}+1},\qquad \frac{C}{\kB}=\Big(\frac{\Delta}{\kB T}\Big)^2\frac{\ee^{\Delta/\kB T}}{\big(\ee^{\Delta/\kB T}+1\big)^2}.\]</div>
+<p>La capacidad calorífica es nula a baja \(T\) (no hay energía para excitar), máxima en \(\kB T\approx0.42\,\Delta\) y vuelve a cero a alta \(T\) (los dos niveles ya están igualmente poblados y no se puede absorber más energía). Este pico, la <span class="term">anomalía de Schottky</span>, es la firma de cualquier sistema con pocos niveles; los picos de \(C_v\) en un barrido de temperatura señalan dónde se activan nuevos grados de libertad.</p>
+<div class="sim" data-sim="schottky" data-title="Anomalía de Schottky: capacidad calorífica de dos niveles"></div>
+<div class="sim-guide"><ul>
+<li>El máximo está siempre en \(\kB T/\Delta=0.4168\), independiente de \(\Delta\).</li>
+<li>Los puntos son estimaciones Monte Carlo de \(\Var(E)/\kB T^2\) con un número finito de muestras: fluctúan alrededor de la curva exacta.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Osciladores y sólidos: equipartición y su fallo cuántico</h2>
+<p>En física clásica, cada término cuadrático de la energía contribuye \(\frac12\kB T\) a \(U\) (<span class="term">teorema de equipartición</span>): un oscilador tiene \(U=\kB T\) y un sólido de \(N\) átomos, \(C=3N\kB\) (ley de Dulong–Petit). Para un oscilador cuántico, \(Z=\sum_n\ee^{-\beta\hbar\omega(n+1/2)}\) y</p>
+<div class="eq key" data-name="Oscilador cuántico (Einstein)">\[U=\frac{\hbar\omega}{2}+\frac{\hbar\omega}{\ee^{\hbar\omega/\kB T}-1},\qquad \frac{C}{3N\kB}=\Big(\frac{\theta_E}{T}\Big)^2\frac{\ee^{\theta_E/T}}{(\ee^{\theta_E/T}-1)^2},\quad\theta_E=\frac{\hbar\omega}{\kB}.\]</div>
+<p>A baja temperatura los osciladores se «congelan» en su estado fundamental y la capacidad calorífica cae a cero (Einstein, 1907): fue una de las primeras confirmaciones de la cuantización fuera de la radiación. Debye (1912) mejoró el modelo con un espectro continuo de frecuencias hasta \(\omega_D\), que da la ley \(C\propto T^3\) observada a baja temperatura. Los materiales con enlaces muy rígidos y átomos ligeros, como el h-BN y el grafito, tienen temperaturas características altas y capacidades caloríficas bajas a temperatura ambiente.</p>
+<div class="sim" data-sim="einstein-debye" data-title="Capacidad calorífica de un sólido: Dulong–Petit, Einstein y Debye"></div>
+<div class="sim-guide"><ul>
+<li>A alta \(T\) todas las curvas tienden a \(3N\kB\); a baja \(T\) Einstein cae exponencialmente y Debye como \(T^3\).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El factor de Boltzmann en acción: Arrhenius y las temperaturas de hBN-MC</h2>
+<p>Muchos procesos requieren superar una barrera \(E_a\): la probabilidad de tener esa energía extra es \(\propto\ee^{-E_a/\kB T}\), y la velocidad sigue la <span class="term">ley de Arrhenius</span>, \(k=\nu\,\ee^{-E_a/\kB T}\). En una gráfica de \(\ln k\) frente a \(1/T\) da una recta de pendiente \(-E_a/\kB\). Del mismo modo, la concentración de equilibrio de un defecto con energía de formación \(E_f\) es \(n/N\approx\ee^{-E_f/\kB T}\) (más correcciones entrópicas).</p>
+<p>El factor exponencial es extremadamente sensible. En hBN-MC el movimiento más barato en h-BN perfecto, intercambiar un B y un N vecinos, cuesta \(\Delta E=2(\varepsilon_\text{NN}+\varepsilon_\text{BB})-4\varepsilon_\text{NB}=+6.24\) eV, y avanzar un borde de poro cuesta del orden de 18 eV:</p>
+<div class="tablewrap"><table>
+<tr><th>\(\Delta E\)</th><th>300 K</th><th>1000 K</th><th>5000 K</th><th>10 000 K</th><th>20 000 K</th></tr>
+<tr><td>0.5 eV</td><td class="num">4×10⁻⁹</td><td class="num">3×10⁻³</td><td class="num">0.31</td><td class="num">0.56</td><td class="num">0.75</td></tr>
+<tr><td>6.24 eV (B↔N)</td><td class="num">10⁻¹⁰⁵</td><td class="num">4×10⁻³²</td><td class="num">5.1×10⁻⁷</td><td class="num">7.2×10⁻⁴</td><td class="num">2.7×10⁻²</td></tr>
+<tr><td>18 eV (borde)</td><td class="num">10⁻³⁰²</td><td class="num">10⁻⁹¹</td><td class="num">7×10⁻¹⁹</td><td class="num">9×10⁻¹⁰</td><td class="num">3×10⁻⁵</td></tr>
+</table></div>
+<p>A temperaturas físicas (cientos de kelvin), ningún movimiento de este modelo se aceptaría jamás en una simulación: el sistema quedaría congelado. Por eso hBN-MC trabaja con temperaturas de 5000 a 20 000 K. Esas temperaturas son un <strong>parámetro de control del muestreo</strong>, no temperaturas físicas: el h-BN real se descompone muy por debajo. Las energías del modelo son energías de enlace completas, sin relajación de la red ni caminos de reacción de baja barrera, de modo que no hay una correspondencia directa entre la temperatura de simulación y la del experimento.</p>
+<div class="sim" data-sim="arrhenius" data-title="El factor de Boltzmann frente a la temperatura (gráfica de Arrhenius)"></div>
+<div class="sim-guide"><ul>
+<li>Sitúe \(\Delta E=6.24\) eV: la probabilidad de aceptación pasa de \(10^{-105}\) a 300 K a \(5\times10^{-7}\) a 5000 K.</li>
+<li>En la gráfica de Arrhenius (\(\log_{10}p\) frente a \(1/T\)) cada energía es una recta; su pendiente es \(-\Delta E/(\kB\ln10)\).</li>
+</ul></div>
+<div class="box valid"><p>El apéndice B comprueba el pico de Schottky en \(\kB T/\Delta=0.41678\), los límites de Dulong–Petit y de Debye \(T^3\), la igualdad entre la capacidad calorífica por fluctuaciones y la derivada \(\dd U/\dd T\) (error \(\sim10^{-11}\)), y los valores del informe científico de hBN-MC: aceptación \(5.1\times10^{-7}\) a 5000 K y \(2.7\times10^{-2}\) a 20 000 K para el intercambio B↔N.</p></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>En contacto con un baño, \(p_i=\ee^{-E_i/\kB T}/Z\); las razones dependen solo de \(\ee^{-\Delta E/\kB T}\).</li>
+<li>\(F=-\kB T\ln Z\) se minimiza en equilibrio; \(U\), \(S\) y \(C\) se derivan de \(Z\).</li>
+<li>\(C=\Var(E)/\kB T^2\): la capacidad calorífica se mide con las fluctuaciones.</li>
+<li>Dos niveles: pico de Schottky en \(\kB T=0.42\Delta\); osciladores cuánticos: congelación a baja \(T\).</li>
+<li>El factor exponencial explica por qué hBN-MC necesita temperaturas de miles de kelvin: son un parámetro de muestreo.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Dos estados separados por 0.1 eV a 300 K: ¿razón de poblaciones?
+<details><summary>Respuesta</summary><p>\(\ee^{-0.1/0.02585}=0.021\).</p></details></li>
+<li><span class="lvl">Básico</span>¿A qué temperatura la aceptación del intercambio B↔N (6.24 eV) es 1 %?
+<details><summary>Respuesta</summary><p>\(T=\Delta E/(\kB\ln100)=6.24/(8.617\times10^{-5}\cdot4.605)=15\,700\) K.</p></details></li>
+<li><span class="lvl">Intermedio</span>Demuestre que \(\Var(E)=\kB T^2C\) a partir de \(U=-\partial\ln Z/\partial\beta\).
+<details><summary>Respuesta</summary><p>\(\partial^2\ln Z/\partial\beta^2=\expval{E^2}-\expval{E}^2\), y \(-\partial U/\partial\beta=\kB T^2\,\partial U/\partial T\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Con \(E_f=5\) eV, ¿qué fracción de vacancias hay en equilibrio a 1500 K?
+<details><summary>Respuesta</summary><p>\(\ee^{-5/0.1293}\approx1.6\times10^{-17}\): prácticamente ninguna.</p></details></li>
+<li><span class="lvl">Avanzado</span>Halle la energía libre de \(N\) sistemas de dos niveles y obtenga de ella la entropía.
+<details><summary>Respuesta</summary><p>\(F=-N\kB T\ln(1+\ee^{-\Delta/\kB T})\); \(S=-\partial F/\partial T=N\kB\big[\ln(1+\ee^{-x})+\frac{x\ee^{-x}}{1+\ee^{-x}}\big]\) con \(x=\Delta/\kB T\).</p></details></li>
+</ol>
+</section>
+</template>

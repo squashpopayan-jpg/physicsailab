@@ -1,0 +1,107 @@
+<section class="page wrap" id="p-simulador" data-page="simulador">
+  <div class="sim-bar">
+    <label class="fld grow" style="max-width:420px"><span>Rutina</span><select id="rtSel" aria-label="Rutina"></select></label>
+    <div class="chips" id="rtChips"></div>
+    <span class="grow"></span>
+    <button class="btn" id="btnEditThis"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>Editar esta rutina</button>
+    <div class="menu" id="expMenu">
+      <button class="btn primary" id="btnExport" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></svg>Exportar</button>
+      <div class="pop" role="menu">
+        <button data-exp="json" role="menuitem"><b>Archivo de rutina (.json)</b><small>Para abrir en otro dispositivo con esta app</small></button>
+        <button data-exp="code" role="menuitem"><b>Código para compartir</b><small>Texto corto para pegar en un mensaje</small></button>
+        <hr>
+        <button data-exp="png" role="menuitem"><b>Ficha en imagen (.png)</b><small>Diagrama, pasos y músculos con el logo</small></button>
+        <button data-exp="pdf" role="menuitem"><b>Ficha en PDF</b><small>Documento imprimible de una página</small></button>
+        <button data-exp="video" role="menuitem"><b>Video de la simulación</b><small>Animación con el logo, lista para enviar</small></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="sim-grid">
+    <div class="stage">
+      <div class="views" id="views">
+        <div class="view tv">
+          <canvas id="cvTV" aria-label="Vista 3D de la cancha. Arrastre para girar la cámara."></canvas>
+          <div class="hud" id="hudTV"></div>
+          <div class="cam" id="camBtns"></div>
+        </div>
+        <div class="view top"><canvas id="cvTop" aria-label="Vista en planta de la cancha"></canvas></div>
+      </div>
+      <div class="transport">
+        <button class="iconbtn" id="btnPrev" title="Golpe anterior" aria-label="Golpe anterior"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zM9.5 12L18 18V6z"/></svg></button>
+        <button class="iconbtn big" id="btnPlay" title="Reproducir o pausar" aria-label="Reproducir"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+        <button class="iconbtn" id="btnNext" title="Golpe siguiente" aria-label="Golpe siguiente"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zM6 18l8.5-6L6 6z"/></svg></button>
+        <div class="seg" id="speedSeg" role="group" aria-label="Velocidad">
+          <button data-sp="0.25">¼×</button><button data-sp="0.5">½×</button><button data-sp="1" aria-pressed="true">1×</button><button data-sp="1.5">1½×</button>
+        </div>
+        <div class="scrub"><div class="ticks" id="ticks"></div><input type="range" id="scrub" min="0" max="1000" value="0" step="1" aria-label="Línea de tiempo"></div>
+        <span class="time" id="timeLbl">0,0 / 0,0 s</span>
+      </div>
+      <div class="toggles">
+        <span class="lbl">Ver</span>
+        <div class="chips" id="togChips">
+          <button class="chip" data-tog="huellas" aria-pressed="true">Huellas</button>
+          <button class="chip" data-tog="trayectoria" aria-pressed="true">Trayectoria</button>
+          <button class="chip" data-tog="prediccion" aria-pressed="false">Trayectoria completa</button>
+          <button class="chip" data-tog="recorridos" aria-pressed="false">Recorridos</button>
+          <button class="chip" data-tog="calor" aria-pressed="false">Mapa de calor</button>
+          <button class="chip" data-tog="zonas" aria-pressed="false">Zonas</button>
+          <button class="chip" data-tog="distancias" aria-pressed="false">Distancia a la T</button>
+          <button class="chip" data-tog="angulos" aria-pressed="true">Ángulo de rodilla</button>
+          <button class="chip" data-tog="musculos" aria-pressed="false">Músculos en la figura</button>
+        </div>
+        <div class="seg" id="viewSeg" role="group" aria-label="Vistas"><button data-v="both" aria-pressed="true">Ambas</button><button data-v="tv">3D</button><button data-v="top">Planta</button></div>
+      </div>
+    </div>
+
+    <aside class="panel">
+      <div class="card">
+        <div class="ptabs" id="pTabs" role="group" aria-label="Jugador observado"></div>
+        <div class="phase" style="margin-top:10px"><span class="ph" id="phName">Espera</span><span class="tag" id="phSide"></span></div>
+        <p class="small muted" id="phDesc" style="margin-top:4px;min-height:2.6em"></p>
+        <div class="kv" style="margin-top:8px">
+          <div><span>Velocidad</span><b id="kvV">0,0 m/s</b></div>
+          <div><span>A la T</span><b id="kvT">0,0 m</b></div>
+          <div><span>Recorrido</span><b id="kvD">0 m</b></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3 style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">Músculos activos <button class="btn ghost small" data-go="anatomia" style="padding:3px 8px">Anatomía</button></h3>
+        <div id="simBody"></div>
+        <div class="heat-legend" style="margin:6px 0 10px"><span>reposo</span><span class="g"></span><span>máxima</span></div>
+        <div class="actlist" id="actList"></div>
+        <p class="tiny muted" style="margin-top:8px">Estimación cualitativa por fase del movimiento, basada en patrones descritos para estocadas, cambios de dirección y golpes de raqueta. No es una medición electromiográfica.</p>
+      </div>
+    </aside>
+  </div>
+
+  <div class="sim-lower">
+    <div class="grid" style="align-content:start">
+      <div class="card" id="rtInfo"></div>
+      <div class="card">
+        <h3>Golpes de la secuencia</h3>
+        <div class="tbl-wrap"><table class="tbl" id="shotTbl"></table></div>
+        <div id="simWarn" style="margin-top:10px"></div>
+      </div>
+    </div>
+    <div class="grid" style="align-content:start">
+      <div class="card" id="matchCard" hidden></div>
+      <div class="card">
+        <h3>Ajustes de la simulación</h3>
+        <div class="settings">
+          <label class="fld"><span>Nivel de los jugadores</span><select id="setNivel"><option value="">Según la rutina</option><option value="principiante">Principiante</option><option value="intermedio">Intermedio</option><option value="avanzado">Avanzado</option><option value="elite">Élite</option></select></label>
+          <label class="fld"><span>Técnica</span><select id="setTec"><option value="">Correcta</option><option value="cambiada">Pierna cambiada</option><option value="encimado">Encimado a la bola</option></select></label>
+          <label class="fld"><span>Ritmo de bola</span><select id="setRitmo"><option value="">Según la rutina</option><option value="lento">Lento</option><option value="medio">Medio</option><option value="rapido">Rápido</option></select></label>
+          <label class="fld"><span>Repeticiones del ciclo</span><input type="number" id="setCiclos" min="1" max="20" placeholder="Auto"></label>
+          <label class="fld"><span class="row2">Temperatura de la bola <b id="tempLbl">40 °C</b></span><input type="range" id="setTemp" min="15" max="50" step="1" value="40"></label>
+          <label class="fld"><span class="row2">Altitud <b id="altLbl">1.760 m</b></span><input type="range" id="setAlt" min="0" max="3600" step="20" value="1760"></label>
+        </div>
+        <p class="tiny muted" style="margin-top:8px">La altitud por defecto es la de Popayán. A más altura el aire es menos denso y la bola frena menos. Una bola fría rebota menos: los puntos se acortan y las estocadas se vuelven más profundas.</p>
+      </div>
+      <div class="card">
+        <h3>Números del movimiento</h3>
+        <div id="statsBox"></div>
+      </div>
+    </div>
+  </div>
+</section>

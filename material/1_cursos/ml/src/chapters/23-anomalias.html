@@ -1,0 +1,97 @@
+<template class="chapter-src" data-id="anomalias" data-num="23" data-title="Detección de anomalías" data-part="Parte V · Aprendizaje no supervisado" data-short="Tipos de anomalías; puntaje y umbral; z, rango intercuartílico y Mahalanobis; bosque de aislamiento; LOF; SVM de una clase; evaluar con pocas etiquetas">
+<p class="lead">Fraudes, fallas de máquinas, intrusiones en una red, errores de captura: casos raros que importan mucho y de los que casi nunca hay suficientes ejemplos etiquetados. La detección de anomalías aprende cómo son los datos normales y avisa cuando algo no encaja. Cada método define «no encajar» de una forma distinta, y elegir mal significa no ver justo el tipo de anomalía que interesa.</p>
+
+<section>
+<h2>Qué es una anomalía y cómo se evalúa un detector</h2>
+<ul>
+<li><b>Puntual</b>: un caso raro por sí mismo (una transacción de 50 millones en una cuenta de estudiante).</li>
+<li><b>Contextual</b>: normal en general pero raro en su contexto (25 °C es normal en julio y anómalo en una cámara frigorífica).</li>
+<li><b>Colectiva</b>: un conjunto de casos que juntos son raros (muchas transacciones pequeñas seguidas).</li>
+</ul>
+<p>Casi todos los detectores producen un <span class="term">puntaje de anomalía</span>; la decisión requiere un umbral, que fija cuántas alertas se pueden revisar. Si existen algunas etiquetas, se evalúa como un clasificador muy desbalanceado: precisión promedio, precisión en los \(k\) primeros (<i>precision@k</i>) y exhaustividad a un número de alertas fijo. Las etiquetas también sirven para pasar, cuando hay suficientes, a un modelo supervisado, que casi siempre es mejor.</p>
+<div class="box explain"><p>Un buen vigilante no necesita haber visto todos los robos posibles: conoce tan bien la rutina del edificio que cualquier cosa fuera de lo común le llama la atención. Pero si solo mira la hora de llegada, nunca notará a alguien que llega a la hora habitual con una herramienta extraña.</p></div>
+</section>
+
+<section>
+<h2>Métodos estadísticos y la distancia de Mahalanobis</h2>
+<p>Con una sola variable, las reglas clásicas son el puntaje \(z=(x-\bar x)/s\) (anómalo si \(\abs z>3\)) y la regla del rango intercuartílico (fuera de \([Q_1-1.5\,\text{RIC},\ Q_3+1.5\,\text{RIC}]\), la de los diagramas de caja). Con varias variables, revisar cada una por separado no detecta los casos que <b>rompen la relación</b> entre variables. La <span class="term">distancia de Mahalanobis</span> lo hace:</p>
+<div class="eq key" data-name="Distancia de Mahalanobis">\[d_M(\vb x)=\sqrt{(\vb x-\boldsymbol\mu)\T\Sigma^{-1}(\vb x-\boldsymbol\mu)},\qquad d_M^2\sim\chi^2_p\ \ \text{si }\vb x\sim\mathcal N(\boldsymbol\mu,\Sigma).\]</div>
+<p>Mide la distancia en unidades de la dispersión de los datos en cada dirección: los contornos son elipses alineadas con la correlación. Con datos normales, \(d_M^2\) sigue una \(\chi^2\) con \(p\) grados de libertad, lo que da umbrales con probabilidad conocida. Como la media y la covarianza se dejan arrastrar por las propias anomalías, conviene estimarlas de forma robusta (<code>MinCovDet</code>).</p>
+<div class="sim" data-sim="mahalanobis" data-title="Un punto normal en cada variable y anómalo en conjunto"></div>
+<div class="sim-guide"><ul>
+<li>Coloque el punto rojo en (0.9, −0.9): cada coordenada es normal y la distancia euclidiana estandarizada es moderada, pero va contra la correlación y la de Mahalanobis es muy grande.</li>
+<li>Muévalo a lo largo de la diagonal hasta (1.3, 1.3): la euclidiana crece y la de Mahalanobis apenas.</li>
+<li>Con correlación cero, ambas distancias coinciden.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Bosque de aislamiento</h2>
+<p>El <span class="term">bosque de aislamiento</span> (Liu, Ting y Zhou, 2008) no modela la normalidad: mide qué tan fácil es aislar cada punto. Construye árboles con cortes aleatorios (variable al azar, umbral al azar entre el mínimo y el máximo) sobre submuestras de 256 casos. Un punto raro queda solo tras pocos cortes; uno del montón necesita muchos. El puntaje es</p>
+<div class="eq key" data-name="Puntaje de aislamiento">\[s(\vb x)=2^{-\E[h(\vb x)]/c(\psi)},\qquad c(\psi)=2H(\psi-1)-\frac{2(\psi-1)}{\psi},\]</div>
+<p>donde \(h\) es la profundidad a la que se aísla \(\vb x\), \(\psi\) el tamaño de la submuestra y \(c(\psi)\) la profundidad media esperada (con \(H\) el número armónico). \(s\) cerca de 1: anomalía; bastante menor que 0.5: normal. Es rápido, escala bien y funciona con muchas variables, pero sus cortes paralelos a los ejes detectan mal los casos que solo rompen una correlación.</p>
+</section>
+
+<section>
+<h2>LOF y SVM de una clase</h2>
+<p>El <span class="term">factor local de anomalía</span> (LOF, Breunig y colaboradores, 2000) compara la densidad local de cada punto con la de sus \(k\) vecinos. Un punto en una zona menos densa que la de sus vecinos tiene LOF bastante mayor que 1. Es local: detecta casos raros junto a grupos densos aunque haya otros grupos difusos. Su punto débil es el <b>enmascaramiento</b>: un grupo de anomalías parecidas entre sí se protege mutuamente si \(k\) es menor que su tamaño.</p>
+<p>La <span class="term">SVM de una clase</span> busca una frontera (con núcleo RBF) que encierre la mayor parte de los datos; \(\nu\) controla la fracción que se permite dejar fuera. Es sensible a la escala y a \(\gamma\), y difícil de ajustar sin etiquetas.</p>
+<div class="sim" data-sim="isoforest-lof" data-title="Tres detectores, tres tipos de anomalías"></div>
+<div class="sim-guide"><ul>
+<li>Hay tres tipos de anomalías: puntos sueltos lejos de todo, un pequeño grupo compacto alejado y puntos que rompen la correlación dentro del rango normal.</li>
+<li>El bosque de aislamiento encuentra los sueltos y el grupo, pero casi ninguno de los que rompen la forma.</li>
+<li>LOF con \(k\) pequeño no ve el grupo compacto (sus miembros son densos entre sí); súbalo por encima de 10 y aparece.</li>
+<li>Mahalanobis detecta los que rompen la correlación, porque modela la elipse de los datos normales.</li>
+</ul></div>
+<div class="box when"><ul>
+<li><b>Mahalanobis robusta</b>: datos aproximadamente elípticos, pocas variables, interés en la estructura de correlación.</li>
+<li><b>Bosque de aislamiento</b>: primer intento con muchos datos y variables; anomalías globales.</li>
+<li><b>LOF</b>: densidades variables, anomalías locales; ajuste \(k\) con cuidado.</li>
+<li><b>Autocodificadores</b> (redes que reconstruyen la entrada) para imágenes, audio y series: el error de reconstrucción es el puntaje.</li>
+<li>Siempre: combine con conocimiento del dominio y revise los casos marcados; las etiquetas que salgan de esa revisión valen oro.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Práctica: comparar detectores con anomalías conocidas</h2>
+<div class="box py"><p>El programa genera 1 000 casos normales con dos variables muy correlacionadas, 15 anomalías que invierten la correlación (con valores normales en cada variable) y 15 anomalías extremas agrupadas, y compara seis detectores.</p>
+<div class="py" data-py="23-anomalias"></div></div>
+<div class="box read"><ul>
+<li><b>|z| por variable</b> encuentra las 15 extremas y ninguna de las que rompen la correlación: mirar las variables por separado es ciego a la estructura conjunta.</li>
+<li><b>Mahalanobis</b> es el mejor aquí (AP 0.82, precisión@30 0.80): detecta todas las extremas y 9 de las 15 que rompen la correlación (las otras 6 caen cerca del centro, donde la elipse es ancha). Con covarianza robusta apenas cambia porque las anomalías son pocas.</li>
+<li><b>Bosque de aislamiento</b>: AUC alto (0.883) pero AP 0.456; aísla rápido las extremas y no ve ninguna de las que rompen la correlación, porque sus cortes son paralelos a los ejes y esos puntos tienen valores normales en cada eje.</li>
+<li><b>LOF</b>: el mayor AUC (0.941) y detecta 10 de las que rompen la correlación, pero solo 7 de las 15 extremas: las extremas forman un grupo compacto y, con \(k=20\), se enmascaran entre ellas.</li>
+<li><b>contamination</b>: no cambia el puntaje, solo el umbral. Con 1 % marca 11 (9 reales); con 10 % marca 103 y solo 21 son reales.</li>
+<li><b>Umbral χ²</b>: con Mahalanobis robusta y el cuantil 99.9 % de una χ² con 2 grados de libertad (13.82), marca 27 casos: 23 anomalías y 4 falsas alarmas. Un umbral con significado probabilístico.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Detectar anomalías es puntuar y fijar un umbral según la capacidad de revisión.</li>
+<li>Mirar cada variable por separado no detecta los casos que rompen relaciones; Mahalanobis sí.</li>
+<li>Bosque de aislamiento: rápido y global; ciego a anomalías que solo rompen correlaciones.</li>
+<li>LOF: local; cuidado con el enmascaramiento de grupos de anomalías.</li>
+<li>Evalúe con AP y precisión@k si hay etiquetas; con suficientes, pase a supervisado.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Con \(Q_1=20\) y \(Q_3=30\), ¿qué valores son atípicos por la regla del RIC?
+<details><summary>Respuesta</summary><p>RIC = 10: fuera de \([5,\ 45]\).</p></details></li>
+<li><span class="lvl">Básico</span>¿Qué valor de \(d_M^2\) corresponde al cuantil 0.99 en 2 dimensiones?
+<details><summary>Respuesta</summary><p>\(\chi^2_{2;0.99}=-2\ln0.01=9.21\) (\(d_M=3.03\)).</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué el bosque de aislamiento usa submuestras pequeñas (256) en lugar de todos los datos?
+<details><summary>Respuesta</summary><p>Con todos los datos, las anomalías quedan rodeadas de muchos puntos normales y cuesta más aislarlas (inundación), y los grupos de anomalías se enmascaran. Submuestras pequeñas hacen los árboles rápidos y las anomalías más fáciles de aislar.</p></details></li>
+<li><span class="lvl">Intermedio</span>Un detector marca 200 casos al día, pero el equipo puede revisar 40. ¿Qué métrica optimizaría?
+<details><summary>Respuesta</summary><p>Precisión en los 40 primeros (precision@40): fije el umbral para que se marquen 40 y elija el detector que maximiza los aciertos entre ellos.</p></details></li>
+<li><span class="lvl">Avanzado</span>Muestre que con \(\Sigma=\sigma^2I\) la distancia de Mahalanobis es la euclidiana dividida por \(\sigma\).
+<details><summary>Respuesta</summary><p>\(\Sigma^{-1}=I/\sigma^2\), así que \(d_M^2=\norm{\vb x-\boldsymbol\mu}^2/\sigma^2\).</p></details></li>
+</ol>
+<div class="box links"><ul>
+<li><a href="https://scikit-learn.org/stable/modules/outlier_detection.html">scikit-learn — Novelty and Outlier Detection</a><small>Bosque de aislamiento, LOF, SVM de una clase y envolvente elíptica, con comparación visual.</small></li>
+<li><a href="https://doi.org/10.1109/ICDM.2008.17">Liu, Ting y Zhou (2008) — Isolation Forest</a><small>El artículo original del bosque de aislamiento.</small></li>
+<li><a href="https://doi.org/10.1145/342009.335388">Breunig, Kriegel, Ng y Sander (2000) — LOF: Identifying Density-Based Local Outliers</a><small>El factor local de anomalía.</small></li>
+<li><a href="https://pyod.readthedocs.io/">PyOD</a><small>Biblioteca con decenas de detectores de anomalías y una interfaz común.</small></li>
+</ul></div>
+</section>
+</template>

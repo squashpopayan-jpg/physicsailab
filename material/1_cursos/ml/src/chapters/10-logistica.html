@@ -1,0 +1,111 @@
+<template class="chapter-src" data-id="logistica" data-num="10" data-title="Regresión logística" data-part="Parte III · Clasificación" data-short="De lo lineal a la probabilidad; la sigmoide y el logit; entropía cruzada; frontera de decisión; odds ratios; regularización y separación perfecta; softmax multiclase">
+<p class="lead">La regresión logística es el punto de partida de la clasificación: produce probabilidades, se entrena rápido, sus coeficientes tienen una lectura precisa y es la última capa de casi todas las redes neuronales. Entenderla bien es entender qué significa que un modelo diga «0.8».</p>
+
+<section>
+<h2>De lo lineal a la probabilidad</h2>
+<p>Una regresión lineal sobre etiquetas 0/1 puede predecir −0.3 o 1.4, que no son probabilidades. La logística conserva la parte lineal \(z=\beta_0+\vb w\cdot\vb x\) (el <span class="term">logit</span> o puntuación) y la comprime en \((0,1)\) con la función <span class="term">sigmoide</span>:</p>
+<div class="eq key" data-name="Modelo logístico">\[P(y=1\mid\vb x)=\sigma(z)=\frac{1}{1+\ee^{-z}},\qquad z=\beta_0+\vb w\cdot\vb x=\log\frac{p}{1-p} .\]</div>
+<p>La segunda igualdad es la clave de la interpretación: la logística es un modelo lineal para el <b>logaritmo de las chances</b> (<i>log-odds</i>). Las chances \(p/(1-p)\) son las de las apuestas: \(p=0.8\) equivale a 4 a 1.</p>
+<div class="sim" data-sim="logistica-1d" data-title="La curva sigmoide ajustada a datos 0/1"></div>
+<div class="sim-guide"><ul>
+<li>Mueva la pendiente y el intercepto a mano y observe la pérdida logarítmica; luego pulse «Ajustar» para ver los valores óptimos.</li>
+<li>La pendiente controla qué tan abrupta es la transición; el punto donde \(p=0.5\) está en \(x=-\beta_0/\beta_1\).</li>
+<li>Con las clases muy separadas, la pendiente óptima crece mucho: es la separación perfecta, que se discute más abajo.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>La pérdida: entropía cruzada</h2>
+<p>Como vimos en el capítulo 2, la máxima verosimilitud de etiquetas Bernoulli conduce a la <span class="term">pérdida logarítmica</span> o entropía cruzada binaria:</p>
+<div class="eq key" data-name="Log-loss">\[L(\boldsymbol\beta)=-\frac1n\sum_{i=1}^n\Big[y_i\log\hat p_i+(1-y_i)\log(1-\hat p_i)\Big],\qquad \grad L=\frac1n\sum_i(\hat p_i-y_i)\,\vb x_i .\]</div>
+<ul>
+<li>Castiga duramente la confianza equivocada: predecir \(\hat p=0.01\) para un positivo cuesta \(-\log0.01=4.6\); predecir 0.4 cuesta 0.92.</li>
+<li>Es convexa: tiene un único mínimo, que se encuentra con Newton o L-BFGS. No hay fórmula cerrada.</li>
+<li>Su gradiente tiene la misma forma que el de mínimos cuadrados: error (\(\hat p-y\)) por entrada.</li>
+<li>Una log-loss de \(\log2=0.693\) es la de predecir siempre 0.5; un modelo útil debe estar bastante por debajo (y por debajo de la entropía de la prevalencia, que es la de predecir siempre la proporción de positivos).</li>
+</ul>
+</section>
+
+<section>
+<h2>Frontera de decisión y rasgos no lineales</h2>
+<p>Para clasificar se compara la probabilidad con un umbral, por defecto 0.5, lo que equivale a \(z\ge0\). La frontera \(\beta_0+\vb w\cdot\vb x=0\) es un hiperplano: una recta en dos dimensiones. El vector \(\vb w\) es perpendicular a ella, y la probabilidad cambia más rápido cuanto mayor es \(\norm{\vb w}\). Para fronteras curvas se agregan rasgos polinómicos (capítulo 5); el modelo sigue siendo lineal en los parámetros.</p>
+<div class="sim" data-sim="logistica-2d" data-title="Entrenamiento paso a paso de una logística en el plano"></div>
+<div class="sim-guide"><ul>
+<li>La logística aprende por descenso de gradiente sobre la log-loss; el color es la probabilidad y la línea negra, la frontera \(p=0.5\).</li>
+<li>Con grado 1 en las lunas la frontera es una recta; con grado 3 se curva y sigue la forma de los datos.</li>
+<li>Baje \(C\) (más regularización): la transición de color se vuelve gradual y la frontera se simplifica. Suba \(C\) con grado 6: la frontera se retuerce para acomodar puntos aislados (sobreajuste).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Interpretar los coeficientes: odds ratios</h2>
+<p>Si \(x_j\) aumenta en una unidad con lo demás fijo, el logit aumenta en \(\beta_j\), y las chances se multiplican por \(\ee^{\beta_j}\), el <span class="term">odds ratio</span>:</p>
+<div class="eq key" data-name="Odds ratio">\[\frac{\text{chances}(x_j+1)}{\text{chances}(x_j)}=\ee^{\beta_j}\qquad(\text{por unidad; por desviación estándar si } x_j \text{ está estandarizada}).\]</div>
+<ul>
+<li>\(\ee^{\beta}=2\) duplica las chances; \(\ee^{\beta}=0.5\) las reduce a la mitad; \(\ee^{\beta}=1\) no las cambia.</li>
+<li>El efecto sobre la <b>probabilidad</b> no es constante: depende del punto de partida. Pasar de chances 1:99 a 2:98 es pasar de 1 % a 2 %; pasar de 1:1 a 2:1 es pasar de 50 % a 67 %.</li>
+<li>Con variables estandarizadas, los odds ratios por desviación estándar se pueden comparar entre variables; con las unidades originales son más fáciles de comunicar («cada año de edad multiplica las chances por 1.04»).</li>
+</ul>
+<div class="box ex"><p>Con \(\beta=0.04\) por año de edad, diez años multiplican las chances por \(\ee^{0.4}=1.49\). Si la probabilidad de un paciente de 50 años es 0.20 (chances 0.25), a los 60 sus chances serían \(0.25\cdot1.49=0.373\) y su probabilidad \(0.373/1.373=0.27\).</p></div>
+</section>
+
+<section>
+<h2>Regularización y separación perfecta</h2>
+<p>scikit-learn regulariza la logística por defecto: minimiza \(\frac12\norm{\vb w}^2+C\sum_i\ell_i\), con \(C=1\). Un \(C\) pequeño encoge los coeficientes y suaviza las probabilidades. Cuando las clases son <span class="term">perfectamente separables</span>, sin regularización no existe mínimo: alargar \(\vb w\) siempre reduce la pérdida, los coeficientes crecen sin límite y las probabilidades se vuelven 0 y 1 exactos. La regularización resuelve el problema y da probabilidades más sensatas. También se puede usar penalización \(L_1\) (<code>penalty='l1'</code>, solver <code>'liblinear'</code> o <code>'saga'</code>) para seleccionar variables, como el Lasso.</p>
+</section>
+
+<section>
+<h2>Más de dos clases: softmax</h2>
+<p>Con \(K\) clases hay dos estrategias. <span class="term">Uno contra el resto</span> entrena \(K\) logísticas binarias. La <span class="term">regresión multinomial</span> (softmax), la opción por defecto de scikit-learn, usa un vector de pesos por clase y normaliza:</p>
+<div class="eq key" data-name="Softmax">\[P(y=k\mid\vb x)=\frac{\ee^{z_k}}{\sum_{j=1}^K\ee^{z_j}},\qquad z_k=\beta_{0k}+\vb w_k\cdot\vb x,\qquad L=-\frac1n\sum_i\log P(y_i\mid\vb x_i).\]</div>
+<p>Las fronteras entre cada par de clases son rectas y las regiones son polígonos convexos. Sumar la misma constante a todos los \(z_k\) no cambia las probabilidades; solo importan las diferencias.</p>
+<div class="sim" data-sim="softmax-regiones" data-title="Regiones de una regresión softmax con tres clases"></div>
+<div class="sim-guide"><ul>
+<li>Cada región es el conjunto de puntos donde una clase tiene la mayor puntuación; la intensidad del color es la probabilidad máxima.</li>
+<li>Las fronteras son rectas que se encuentran en un punto triple, donde las tres probabilidades son 1/3.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Práctica: logística sobre tumores de mama</h2>
+<div class="box py"><p>El conjunto de Wisconsin (569 tumores, aquí 5 de sus 30 medidas) se usa para estimar la probabilidad de malignidad. El programa estandariza dentro de un <code>Pipeline</code>, interpreta los odds ratios, explora el efecto de \(C\), muestra la separación perfecta y aplica softmax a iris.</p>
+<div class="py" data-py="10-logistica"></div></div>
+<div class="box read"><ul>
+<li><b>Odds ratios por desviación estándar</b>: «worst area» (área máxima del núcleo) multiplica las chances de malignidad por 16.3 por cada desviación; las demás, por 3.9 a 6.1. Todas apuntan en la misma dirección: tumores más grandes, más irregulares y con más concavidades son más sospechosos.</li>
+<li><b>Intercepto</b> −0.443: un tumor con todas las medidas en la media tiene probabilidad 0.39. No es la prevalencia (0.37): es el punto de partida del modelo en el centro de los datos.</li>
+<li><b>Logits</b>: −5.8 da 0.003; +2.3 da 0.91; +14.9 da prácticamente 1. La sigmoide satura: más allá de \(|z|\approx5\) la probabilidad casi no cambia.</li>
+<li><b>Efecto de C</b>: con \(C=0.001\) el modelo apenas se aparta de la prevalencia (exactitud 0.72, log-loss 0.54); al subir \(C\) la log-loss de prueba mejora hasta 0.118 con \(C=1000\). Aquí, con 398 tumores de entrenamiento y 5 variables muy informativas, la regularización por defecto (\(C=1\)) es algo excesiva. No hay un \(C\) universal: se elige por validación cruzada.</li>
+<li><b>Separación perfecta</b>: la pendiente crece de 1.35 a 21.5 al subir \(C\), y seguiría creciendo sin límite. Si ve coeficientes enormes y errores estándar gigantes, sospeche separación.</li>
+<li><b>Softmax</b>: la flor 70 (una <i>versicolor</i>) recibe 0.44 para versicolor y 0.548 para virginica: está en la zona de solapamiento y el modelo la clasifica mal, pero su probabilidad dice honestamente que duda.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>La logística es lineal en el log-odds; la sigmoide convierte el logit en probabilidad.</li>
+<li>Se entrena minimizando la log-loss (máxima verosimilitud), convexa y sin fórmula cerrada.</li>
+<li>\(\ee^{\beta_j}\) es el factor que multiplica las chances por unidad de \(x_j\); el efecto en probabilidad depende del punto de partida.</li>
+<li>Regularización por defecto con \(C=1\); separación perfecta sin regularización ⇒ coeficientes infinitos.</li>
+<li>Softmax generaliza a \(K\) clases con fronteras lineales.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Calcule \(\sigma(0)\), \(\sigma(2)\) y \(\sigma(-3)\).
+<details><summary>Respuesta</summary><p>0.5, 0.881 y 0.047.</p></details></li>
+<li><span class="lvl">Básico</span>Un coeficiente vale \(\beta=-0.7\). ¿Odds ratio e interpretación?
+<details><summary>Respuesta</summary><p>\(\ee^{-0.7}=0.50\): cada unidad de \(x\) reduce las chances a la mitad.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Cuál es la log-loss de un modelo que siempre predice la prevalencia \(\pi=0.2\)?
+<details><summary>Respuesta</summary><p>\(-[0.2\log0.2+0.8\log0.8]=0.500\). Un modelo útil debe estar por debajo de 0.500, no solo de 0.693.</p></details></li>
+<li><span class="lvl">Intermedio</span>Con \(\beta_0=-3\) y \(\beta_1=0.5\), ¿para qué \(x\) la probabilidad es 0.5? ¿Y 0.9?
+<details><summary>Respuesta</summary><p>\(p=0.5\iff z=0\iff x=6\). \(p=0.9\iff z=\log9=2.197\iff x=10.39\).</p></details></li>
+<li><span class="lvl">Avanzado</span>Deduzca el gradiente de la log-loss usando \(\sigma'(z)=\sigma(z)(1-\sigma(z))\).
+<details><summary>Respuesta</summary><p>Para un dato, \(\ell=-y\log\sigma-(1-y)\log(1-\sigma)\). \(\partial\ell/\partial z=-y(1-\sigma)+(1-y)\sigma=\sigma-y\), y por la regla de la cadena \(\partial\ell/\partial\vb w=(\sigma-y)\vb x\).</p></details></li>
+</ol>
+<div class="box links"><ul>
+<li><a href="https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression">scikit-learn — Logistic regression</a><small>Objetivo exacto, solucionadores (lbfgs, liblinear, saga) y penalizaciones.</small></li>
+<li><a href="https://mlu-explain.github.io/logistic-regression/">MLU-Explain — Logistic Regression</a><small>La sigmoide, la log-loss y la frontera de decisión de forma visual.</small></li>
+<li><a href="https://www.statlearning.com/">ISLP — capítulo 4: Classification</a><small>Logística, odds ratios, multinomial y comparación con LDA y Bayes ingenuo.</small></li>
+<li><a href="https://cs229.stanford.edu/main_notes.pdf">Apuntes de CS229 (Stanford)</a><small>Deducción de la logística como modelo lineal generalizado y del método de Newton.</small></li>
+</ul></div>
+</section>
+</template>

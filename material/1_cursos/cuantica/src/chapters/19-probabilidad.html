@@ -1,0 +1,91 @@
+<template class="chapter-src" data-id="probabilidad" data-num="19" data-title="Probabilidad y estadística" data-part="Parte IV · Mecánica estadística" data-short="Distribuciones, límite central, caminatas aleatorias, estimación, intervalos de confianza con t de Student y datos correlacionados">
+<p class="lead">La mecánica estadística y el Monte Carlo hablan el lenguaje de la probabilidad. Antes de usarlo conviene dominar cuatro ideas: qué es una distribución, por qué las sumas de muchas variables se vuelven gaussianas, cómo se estima un error a partir de datos y por qué los datos de una simulación Monte Carlo no son independientes. Con ellas se interpretan correctamente las barras de error del modo LOTE de hBN-MC.</p>
+
+<section>
+<h2>Variables aleatorias y distribuciones</h2>
+<div class="box def"><p>Una <span class="term">variable aleatoria</span> \(X\) toma valores con ciertas probabilidades. Si es discreta, \(P(X=x_k)=p_k\) con \(\sum p_k=1\); si es continua, tiene una <span class="term">densidad de probabilidad</span> \(p(x)\) con \(P(a\lt X\lt b)=\int_a^bp(x)\,\dd x\). Su <span class="term">media</span> y su <span class="term">varianza</span> son</p>
+<div class="eq key" data-name="Media y varianza">\[\mu=\expval{X}=\int x\,p(x)\,\dd x,\qquad \sigma^2=\Var(X)=\expval{(X-\mu)^2}=\expval{X^2}-\expval{X}^2 .\]</div></div>
+<p>Tres distribuciones aparecen continuamente:</p>
+<ul>
+<li><strong>Binomial</strong>: número de éxitos en \(N\) ensayos independientes con probabilidad \(p\): \(P(k)=\binom Nk p^k(1-p)^{N-k}\), media \(Np\), varianza \(Np(1-p)\). Ejemplo: cuántos de \(N\) sitios de una red quedan vacantes si cada uno lo está con probabilidad \(p\).</li>
+<li><strong>Poisson</strong>: límite de la binomial con \(p\) pequeño y \(Np=\lambda\) fijo: \(P(k)=\lambda^k\ee^{-\lambda}/k!\), media y varianza \(\lambda\). Ejemplo: número de desintegraciones radiactivas por segundo.</li>
+<li><strong>Gaussiana (normal)</strong>: \(p(x)=\frac{1}{\sqrt{2\pi}\sigma}\ee^{-(x-\mu)^2/2\sigma^2}\). El 68.3 % de la probabilidad está a menos de \(1\sigma\) de la media, el 95.4 % a menos de \(2\sigma\) y el 95 % exacto a menos de \(1.96\sigma\).</li>
+</ul>
+</section>
+
+<section>
+<h2>Ley de los grandes números y teorema del límite central</h2>
+<p>Si \(X_1,\dots,X_N\) son independientes con media \(\mu\) y varianza \(\sigma^2\), su promedio \(\bar X=\frac1N\sum X_i\) cumple</p>
+<div class="eq key" data-name="Error del promedio">\[\expval{\bar X}=\mu,\qquad \sigma_{\bar X}=\frac{\sigma}{\sqrt N} .\]</div>
+<p>El promedio se acerca a la media verdadera (<span class="term">ley de los grandes números</span>) y su error disminuye como \(1/\sqrt N\): para ganar un decimal de precisión hacen falta cien veces más datos. Además, el <span class="term">teorema del límite central</span> afirma que, para \(N\) grande, \(\bar X\) se distribuye como una gaussiana, sea cual sea la distribución de las \(X_i\) (con varianza finita). Por eso los errores de medida suelen ser gaussianos: son la suma de muchas pequeñas perturbaciones.</p>
+<div class="sim" data-sim="limite-central" data-title="El teorema del límite central en acción"></div>
+<div class="sim-guide"><ul>
+<li>Con \(N=1\) el histograma reproduce la distribución original (uniforme, exponencial, dado…). Con \(N=10\) ya es casi gaussiano.</li>
+<li>La anchura del histograma de promedios disminuye como \(1/\sqrt N\): compare la lectura con \(\sigma/\sqrt N\).</li>
+</ul></div>
+<div class="box explain"><p>Un solo dado da cualquier número del 1 al 6 con igual probabilidad: nada de campana. Pero si se suman diez dados, es rarísimo obtener 10 (todos unos) o 60 (todos seises), y lo habitual es algo cerca de 35. Al sumar muchas cosas aleatorias, los extremos se cancelan y aparece la campana de Gauss.</p></div>
+</section>
+
+<section>
+<h2>Caminatas aleatorias y difusión</h2>
+<p>Un caminante que en cada paso avanza \(+a\) o \(-a\) al azar está, tras \(N\) pasos, en una posición \(x=\sum s_ia\) con media cero y</p>
+<div class="eq key" data-name="Caminata aleatoria">\[\expval{x^2}=Na^2\quad\Longrightarrow\quad x_\text{rms}=a\sqrt N,\qquad \expval{r^2}=2dDt\ \ \text{(difusión en } d\text{ dimensiones)} .\]</div>
+<p>El desplazamiento típico crece solo como la raíz del número de pasos. A escala macroscópica, una nube de caminantes obedece la <span class="term">ecuación de difusión</span> \(\partial_tn=D\lap n\), con \(D=a^2/2\tau\) en 1D (\(\tau\) el tiempo por paso). La difusión de átomos y vacancias en sólidos es exactamente esto: saltos aleatorios entre sitios vecinos, cada uno activado térmicamente.</p>
+<div class="sim" data-sim="caminata-aleatoria" data-title="Caminantes aleatorios en una red de panal"></div>
+<div class="sim-guide"><ul>
+<li>Cada caminante salta a uno de sus tres vecinos al azar. La nube se ensancha y \(\expval{r^2}\) crece linealmente con el número de pasos.</li>
+<li>Duplique el número de pasos: el radio típico solo crece un factor \(\sqrt2\).</li>
+</ul></div>
+<div class="box hbn"><p>En hBN-MC, un poro cambia de forma porque las vacancias intercambian posición con átomos vecinos (movimientos locales), una a una, como caminantes aleatorios sesgados por el criterio de Metropolis. Por eso la evolución de la morfología es lenta y «difusiva», y por eso la aplicación ofrece también intercambios globales entre sitios lejanos, que aceleran la exploración (capítulo 29).</p></div>
+</section>
+
+<section>
+<h2>Estimar a partir de datos: error estándar e intervalos de confianza</h2>
+<p>En la práctica no conocemos \(\mu\) ni \(\sigma\): solo tenemos \(n\) datos. Los estimadores son</p>
+<div class="eq key" data-name="Estimadores">\[\bar x=\frac1n\sum x_i,\qquad s^2=\frac{1}{n-1}\sum(x_i-\bar x)^2,\qquad \text{error estándar}\ \ \mathrm{EE}=\frac{s}{\sqrt n} .\]</div>
+<p>El divisor \(n-1\) (corrección de Bessel) compensa que \(\bar x\) se ajustó a los mismos datos. Un <span class="term">intervalo de confianza</span> del 95 % es un intervalo construido de modo que, si el experimento se repitiera muchas veces, contendría la media verdadera en el 95 % de los casos. Con pocos datos, usar \(\bar x\pm1.96\,s/\sqrt n\) es demasiado optimista, porque \(s\) también fluctúa. Gosset («Student», 1908) obtuvo la distribución correcta:</p>
+<div class="eq key" data-name="Intervalo de confianza con t de Student">\[\bar x\pm t_{0.975,\,n-1}\,\frac{s}{\sqrt n},\qquad t_{0.975,\,4}=2.776,\quad t_{0.975,\,9}=2.262,\quad t_{0.975,\,19}=2.093,\quad t_{0.975,\,\infty}=1.960 .\]</div>
+<div class="sim" data-sim="intervalos" data-title="Cien intervalos de confianza: ¿cuántos contienen la media verdadera?"></div>
+<div class="sim-guide"><ul>
+<li>Con \(n=5\) y el factor 1.96, solo unos 88 de cada 100 intervalos aciertan: la confianza real es menor que la anunciada.</li>
+<li>Con el factor de la t de Student, la cobertura vuelve al 95 % para cualquier \(n\).</li>
+</ul></div>
+<div class="box hbn"><p>El modo LOTE de hBN-MC repite la simulación con varias semillas independientes y presenta cada magnitud como media ± IC95 calculado con la t de Student, exactamente esta fórmula. Con 5 réplicas el factor es 2.78, no 1.96: un intervalo calculado con 1.96 sería un 30 % demasiado estrecho.</p></div>
+</section>
+
+<section>
+<h2>Datos correlacionados: el tiempo de autocorrelación</h2>
+<p>Los valores sucesivos de una simulación Monte Carlo no son independientes: cada configuración se obtiene modificando un poco la anterior. Si se trata una serie correlacionada como independiente, el error se subestima. La <span class="term">función de autocorrelación</span> y el <span class="term">tiempo integrado de autocorrelación</span> miden cuánto «recuerda» la serie:</p>
+<div class="eq key" data-name="Autocorrelación">\[\rho(k)=\frac{\expval{(x_i-\mu)(x_{i+k}-\mu)}}{\sigma^2},\qquad \tau_\text{int}=\frac12+\sum_{k\ge1}\rho(k),\qquad \mathrm{EE}=\sqrt{\frac{2\tau_\text{int}}{n}}\;s .\]</div>
+<p>Es como si solo hubiera \(n_\text{ef}=n/2\tau_\text{int}\) datos independientes. Una forma práctica de estimar el error sin calcular \(\rho\) es el <span class="term">método de bloques</span>: se agrupan los datos en bloques cada vez mayores, se promedia cada bloque y se calcula el error de los promedios. Cuando los bloques son más largos que la memoria de la serie, el error se estabiliza en una meseta: ese es el error correcto.</p>
+<div class="sim" data-sim="autocorrelacion" data-title="Error de la media con datos correlacionados: bloques y autocorrelación"></div>
+<div class="sim-guide"><ul>
+<li>Con \(\phi=0\) los datos son independientes y todos los métodos coinciden.</li>
+<li>Con \(\phi=0.95\) el error ingenuo es unas seis veces menor que el verdadero; la curva de bloques sube hasta la meseta correcta.</li>
+</ul></div>
+<div class="box valid"><p>El apéndice B comprueba los cuantiles de la t de Student (2.776445 con 4 grados de libertad y 2.093024 con 19), calculados invirtiendo numéricamente la función beta incompleta, y \(\Phi(1.96)=0.9750021\).</p></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Media y varianza resumen una distribución; binomial, Poisson y gaussiana son las básicas.</li>
+<li>El promedio de \(N\) datos independientes tiene error \(\sigma/\sqrt N\) y es gaussiano para \(N\) grande.</li>
+<li>Caminata aleatoria: \(x_\text{rms}\propto\sqrt N\); es la base microscópica de la difusión.</li>
+<li>Con pocos datos, IC95 = \(\bar x\pm t_{0.975,n-1}\,s/\sqrt n\) (t de Student).</li>
+<li>Datos correlacionados: el error real es \(\sqrt{2\tau_\text{int}}\) veces el ingenuo; el método de bloques lo estima.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>En una red de 576 sitios cada sitio es vacancia con probabilidad 0.05. ¿Media y desviación del número de vacancias?
+<details><summary>Respuesta</summary><p>\(\mu=28.8\), \(\sigma=\sqrt{576\cdot0.05\cdot0.95}=5.23\).</p></details></li>
+<li><span class="lvl">Básico</span>Cinco réplicas dan una energía media de −110 700.0 eV con \(s=4.0\) eV. Calcule el IC95.
+<details><summary>Respuesta</summary><p>\(\pm2.776\cdot4.0/\sqrt5=\pm4.97\) eV.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Cuántos pasos necesita un caminante en el panal (\(d=1.44\) Å) para alejarse en promedio 10 nm?
+<details><summary>Respuesta</summary><p>\(N\approx(r/d)^2=(100/1.44)^2\approx4800\) pasos.</p></details></li>
+<li><span class="lvl">Intermedio</span>Una serie de \(10^5\) energías tiene \(\tau_\text{int}=250\). ¿Cuántos datos independientes contiene?
+<details><summary>Respuesta</summary><p>\(n_\text{ef}=10^5/500=200\).</p></details></li>
+<li><span class="lvl">Avanzado</span>Para el proceso \(x_{i+1}=\phi x_i+\eta_i\) demuestre que \(\rho(k)=\phi^k\) y \(\tau_\text{int}=\frac12\frac{1+\phi}{1-\phi}\).
+<details><summary>Respuesta</summary><p>Multiplicando por \(x_i\) y promediando, \(\rho(1)=\phi\) y, por inducción, \(\rho(k)=\phi^k\). Entonces \(\tau=\frac12+\frac{\phi}{1-\phi}=\frac12\frac{1+\phi}{1-\phi}\).</p></details></li>
+</ol>
+</section>
+</template>

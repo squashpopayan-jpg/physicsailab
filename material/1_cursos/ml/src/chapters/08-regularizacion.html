@@ -1,0 +1,104 @@
+<template class="chapter-src" data-id="regularizacion" data-num="8" data-title="Regularización: Ridge, Lasso y Elastic Net" data-part="Parte II · Regresión" data-short="Penalizar la complejidad; Ridge (L2) y su contracción; Lasso (L1) y la selección de variables; geometría de las penalizaciones; Elastic Net; elegir λ por validación cruzada">
+<p class="lead">Regularizar es pedirle al modelo que, además de ajustar los datos, se mantenga sencillo. Una penalización sobre el tamaño de los coeficientes cambia un poco de sesgo por una gran reducción de varianza. Es la herramienta que hace utilizables los modelos con muchas variables, con variables correlacionadas o con pocos datos, y su idea reaparece en todo el curso: en la C de la regresión logística y de las SVM, en la profundidad de los árboles y en el <i>weight decay</i> de las redes.</p>
+
+<section>
+<h2>Penalizar la complejidad</h2>
+<p>En lugar de minimizar solo el error, se minimiza el error más un término que crece con el tamaño de los coeficientes:</p>
+<div class="eq key" data-name="Objetivo regularizado">\[\hat{\boldsymbol\beta}_\lambda=\argmin_{\boldsymbol\beta}\ \underbrace{\sum_{i=1}^n\big(y_i-\beta_0-\vb x_i\cdot\boldsymbol\beta\big)^2}_{\text{ajuste}}+\lambda\,\underbrace{P(\boldsymbol\beta)}_{\text{complejidad}},\qquad P=\norm{\boldsymbol\beta}_2^2\ (\text{Ridge}),\quad P=\norm{\boldsymbol\beta}_1\ (\text{Lasso}).\]</div>
+<ul>
+<li>\(\lambda=0\) es mínimos cuadrados; \(\lambda\to\infty\) fuerza todos los coeficientes a cero (el modelo predice \(\bar y\)). Entre ambos, \(\lambda\) recorre la curva sesgo–varianza.</li>
+<li>El intercepto no se penaliza: penalizarlo haría depender el modelo del origen de \(y\).</li>
+<li><b>Hay que estandarizar</b>: la penalización trata igual a todos los coeficientes, y el tamaño de un coeficiente depende de las unidades de su variable. Sin estandarizar, una variable en metros se penaliza mucho más que la misma en milímetros.</li>
+</ul>
+</section>
+
+<section>
+<h2>Ridge: contracción suave</h2>
+<p>Con penalización cuadrática la solución sigue siendo cerrada:</p>
+<div class="eq key" data-name="Ridge">\[\hat{\boldsymbol\beta}_\text{ridge}=(X\T X+\lambda I)^{-1}X\T\vb y .\]</div>
+<p>Sumar \(\lambda\) a la diagonal hace invertible \(X\T X\) aunque las columnas sean colineales o haya más variables que datos. En la base de los autovectores de \(X\T X\) (con autovalores \(d_j\)), Ridge multiplica cada componente de la solución por \(d_j/(d_j+\lambda)\): reduce poco las direcciones bien determinadas por los datos y mucho las mal determinadas, que son las que causan varianza. Ningún coeficiente llega exactamente a cero.</p>
+<p>Ridge tiene una lectura bayesiana: es la estimación más probable si se supone a priori que cada \(\beta_j\sim\mathcal N(0,\sigma^2/\lambda)\). La penalización expresa la creencia de que los efectos grandes son poco probables.</p>
+</section>
+
+<section>
+<h2>Lasso: ceros exactos y selección de variables</h2>
+<p>Con penalización \(L_1\), muchos coeficientes se vuelven <b>exactamente cero</b>: el Lasso (Tibshirani, 1996) ajusta y selecciona variables a la vez. No tiene fórmula cerrada; se resuelve por descenso por coordenadas, donde cada paso aplica el <span class="term">umbral suave</span>:</p>
+<div class="eq key" data-name="Umbral suave">\[\beta_j\leftarrow\frac{S(\rho_j,\,\lambda)}{\sum_ix_{ij}^2},\qquad S(\rho,\lambda)=\sgn(\rho)\,\max(\abs\rho-\lambda,\,0),\qquad \rho_j=\sum_i x_{ij}\,r_i^{(-j)}\]</div>
+<p>donde \(r^{(-j)}\) son los residuos sin la contribución de la variable \(j\). Si la correlación de una variable con lo que queda por explicar no supera \(\lambda\), su coeficiente se queda en cero. Al bajar \(\lambda\) desde \(\lambda_{\max}=\max_j\abs{\vb x_j\T\vb y}/n\), las variables van entrando una a una: el <span class="term">camino del Lasso</span>.</p>
+<div class="sim" data-sim="geometria-l1-l2" data-title="Por qué el Lasso produce ceros y Ridge no"></div>
+<div class="sim-guide"><ul>
+<li>Las elipses son curvas de nivel del error cuadrático; la región sombreada es el presupuesto \(\norm{\boldsymbol\beta}\le t\). La solución es el primer punto donde una elipse toca la región.</li>
+<li>El rombo de \(L_1\) tiene esquinas sobre los ejes: es muy probable que la elipse toque una esquina, donde una coordenada vale cero. El círculo de \(L_2\) no tiene esquinas.</li>
+<li>Reduzca el presupuesto: con \(L_1\) la solución salta al eje \(\beta_2=0\); con \(L_2\) ambas coordenadas se encogen juntas.</li>
+</ul></div>
+<div class="box explain"><p>Ridge es un impuesto proporcional al cuadrado de la riqueza: los ricos pagan mucho, los pobres casi nada, pero nadie queda en cero. Lasso es una cuota fija por cada peso: a quien tiene poco, la cuota se lo lleva todo. Por eso el Lasso elimina las variables débiles.</p></div>
+</section>
+
+<section>
+<h2>Elastic Net y variables correlacionadas</h2>
+<p>Con un grupo de variables muy correlacionadas, el Lasso tiende a quedarse con una sola, casi al azar, y la elegida puede cambiar de una muestra a otra. Ridge reparte el peso entre todas. <span class="term">Elastic Net</span> combina ambas penalizaciones:</p>
+<div class="eq">\[\min_{\boldsymbol\beta}\ \frac{1}{2n}\norm{\vb y-X\boldsymbol\beta}^2+\alpha\,\rho\,\norm{\boldsymbol\beta}_1+\frac{\alpha(1-\rho)}{2}\norm{\boldsymbol\beta}_2^2 ,\]</div>
+<p>que es exactamente el objetivo de <code>ElasticNet(alpha=α, l1_ratio=ρ)</code> en scikit-learn. Selecciona variables como el Lasso pero conserva grupos correlacionados como Ridge.</p>
+<div class="box warn"><h4>Convenciones distintas para el mismo λ</h4><p>Cada clase de scikit-learn escala la penalización a su manera: <code>Ridge(alpha)</code> usa \(\norm{\vb y-X\boldsymbol\beta}^2+\alpha\norm{\boldsymbol\beta}^2\); <code>Lasso(alpha)</code> divide el error por \(2n\); <code>LogisticRegression(C)</code> usa \(C=1/\lambda\), así que <b>un C pequeño es mucha regularización</b>. Los valores no se trasladan de una clase a otra.</p></div>
+</section>
+
+<section>
+<h2>Elegir λ por validación cruzada</h2>
+<p>\(\lambda\) es un hiperparámetro: se elige el que minimiza el error de validación cruzada sobre una rejilla logarítmica. Una variante prudente es la <span class="term">regla de una desviación estándar</span>: tomar el \(\lambda\) más grande (modelo más simple) cuyo error no supere el mínimo en más de un error estándar.</p>
+<div class="sim" data-sim="camino-coeficientes" data-title="Camino de coeficientes y error de validación"></div>
+<div class="sim-guide"><ul>
+<li>Los datos tienen 8 variables, pero solo 3 influyen de verdad (líneas gruesas); \(x_4\) es casi una copia de \(x_1\).</li>
+<li>En el camino del Lasso las tres variables verdaderas entran primero; las de ruido entran tarde y con coeficientes pequeños. La gemela \(x_4\) compite con \(x_1\).</li>
+<li>Con Ridge todas las curvas bajan suavemente hacia cero, sin anularse; \(x_1\) y \(x_4\) se reparten el efecto.</li>
+<li>La curva de abajo es el error de validación cruzada: la línea vertical marca su mínimo y la punteada, la regla de una desviación.</li>
+</ul></div>
+<div class="sim" data-sim="ridge-polinomio" data-title="Ridge domando un polinomio de grado 15"></div>
+<div class="sim-guide"><ul>
+<li>Sin penalización, el polinomio de grado 15 con 20 datos oscila violentamente. Una penalización pequeña ya lo suaviza; una grande lo aplana hacia la media.</li>
+<li>La norma de los coeficientes \(\norm{\vb w}\) cae varios órdenes de magnitud con muy poca pérdida de ajuste en entrenamiento.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Práctica: Ridge, Lasso y Elastic Net en diabetes</h2>
+<div class="box py"><p>El programa compara los cuatro modelos sobre el mismo conjunto de diabetes del capítulo 6, eligiendo \(\alpha\) con validación cruzada de 10 pliegues, recorre el camino del Lasso y aplica Ridge a un polinomio de grado 15.</p>
+<div class="py" data-py="08-regularizacion"></div></div>
+<div class="box read"><ul>
+<li><b>Desempeño</b>: los cuatro modelos quedan entre 0.356 y 0.364 de \(R^2\) de prueba. Con 331 pacientes y solo 10 variables, mínimos cuadrados ya tiene poca varianza y la regularización no tiene mucho que corregir. Regularizar ayuda sobre todo cuando \(p\) es grande frente a \(n\) o hay colinealidad fuerte.</li>
+<li><b>Coeficientes</b>: donde sí se nota es en la interpretación. En MCO, s1 (colesterol total) vale −26.5 y s2 (LDL) +12.4: dos efectos grandes y opuestos de variables casi colineales (VIF 54 y 35). Ridge los lleva a −4.1 y −4.7, valores pequeños y del mismo signo, mucho más creíbles.</li>
+<li><b>Lasso</b> anula exactamente edad, s2, s4 y s6 y conserva 6 variables con el mismo \(R^2\): un modelo más sencillo de explicar.</li>
+<li><b>Camino del Lasso</b>: con \(\alpha=40\) solo sobreviven IMC y s5; luego entran presión arterial y s3, después sexo. El orden de entrada es una medida aproximada de la importancia de cada variable en presencia de las demás.</li>
+<li><b>Polinomio de grado 15</b>: sin penalización práctica (\(\alpha=10^{-8}\)) el error de prueba es 22.7 con norma de coeficientes 905; con \(\alpha=10^{-5}\) baja a 0.18 y el mínimo de esta rejilla está en \(\alpha=0.1\) (0.161). Con \(\alpha=10\) el modelo ya subajusta (0.41). La irregularidad entre \(10^{-3}\) y \(10^{-1}\) es ruido de muestreo: con 20 datos las curvas de validación no son suaves.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Regularizar = ajuste + \(\lambda\cdot\)complejidad; cambia sesgo por varianza. Siempre con variables estandarizadas y sin penalizar el intercepto.</li>
+<li>Ridge (\(L_2\)): contracción suave, solución cerrada, estable con colinealidad, ningún cero.</li>
+<li>Lasso (\(L_1\)): ceros exactos, selección de variables, inestable entre variables correlacionadas.</li>
+<li>Elastic Net: lo mejor de ambos para grupos correlacionados.</li>
+<li>\(\lambda\) se elige por validación cruzada; la regla de una desviación da modelos más simples.</li>
+<li>Ojo con las convenciones: alpha en Ridge y Lasso, C = 1/λ en LogisticRegression y SVC.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Aplique el umbral suave \(S(\rho,\lambda)\) con \(\lambda=2\) a \(\rho=3.5\), \(\rho=-1.2\) y \(\rho=-5\).
+<details><summary>Respuesta</summary><p>1.5, 0 y −3.</p></details></li>
+<li><span class="lvl">Básico</span>En <code>LogisticRegression</code>, ¿qué modelo está más regularizado: C = 0.01 o C = 100?
+<details><summary>Respuesta</summary><p>C = 0.01 (C = 1/λ, así que λ = 100).</p></details></li>
+<li><span class="lvl">Intermedio</span>Muestre que, con una sola variable estandarizada (\(\sum x_i^2=n\)), Ridge da \(\hat\beta=\hat\beta_\text{MCO}\,n/(n+\lambda)\).
+<details><summary>Respuesta</summary><p>\(\hat\beta=\sum x_iy_i/(\sum x_i^2+\lambda)=\sum x_iy_i/(n+\lambda)\) y \(\hat\beta_\text{MCO}=\sum x_iy_i/n\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Tiene 50 pacientes y 20 000 genes. ¿Por qué no sirve MCO y qué usaría?
+<details><summary>Respuesta</summary><p>Con \(p>n\), \(X\T X\) es singular: hay infinitas soluciones que interpolan. Lasso o Elastic Net (selección de genes) con \(\lambda\) por validación cruzada, y la selección hecha dentro de cada pliegue (capítulo 4).</p></details></li>
+<li><span class="lvl">Avanzado</span>Deduzca \(\lambda_{\max}\) del Lasso: el menor \(\lambda\) para el que \(\hat{\boldsymbol\beta}=\vb 0\).
+<details><summary>Respuesta</summary><p>En \(\boldsymbol\beta=\vb 0\) los residuos son \(\vb y\) (centrado). La condición de optimalidad pide \(\abs{\vb x_j\T\vb y}/n\le\lambda\) para todo \(j\); por tanto \(\lambda_{\max}=\max_j\abs{\vb x_j\T\vb y}/n\) (con el objetivo dividido por \(2n\)).</p></details></li>
+</ol>
+<div class="box links"><ul>
+<li><a href="https://scikit-learn.org/stable/modules/linear_model.html#ridge-regression-and-classification">scikit-learn — Ridge, Lasso y Elastic Net</a><small>Objetivos exactos, estimadores con validación cruzada incorporada y caminos de regularización.</small></li>
+<li><a href="https://doi.org/10.1111/j.2517-6161.1996.tb02080.x">Tibshirani (1996) — Regression Shrinkage and Selection via the Lasso</a><small>El artículo original del Lasso.</small></li>
+<li><a href="https://hastie.su.domains/StatLearnSparsity/">Hastie, Tibshirani y Wainwright — Statistical Learning with Sparsity</a><small>Libro gratuito dedicado al Lasso y sus generalizaciones.</small></li>
+<li><a href="https://www.statlearning.com/">ISLP — capítulo 6: Linear Model Selection and Regularization</a><small>Ridge, Lasso, selección de λ y la regla de una desviación, con laboratorio en Python.</small></li>
+</ul></div>
+</section>
+</template>

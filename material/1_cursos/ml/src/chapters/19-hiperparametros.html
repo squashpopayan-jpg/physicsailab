@@ -1,0 +1,100 @@
+<template class="chapter-src" data-id="hiperparametros" data-num="19" data-title="Ajuste de hiperparámetros y selección de modelos" data-part="Parte IV · Ensambles y ajuste" data-short="Espacios de búsqueda y escalas; rejilla frente a búsqueda aleatoria; optimización bayesiana y halving; la maldición del ganador; validación cruzada anidada; un protocolo práctico">
+<p class="lead">Casi todos los algoritmos tienen perillas que no se aprenden de los datos: C y γ de una SVM, la profundidad de un árbol, la tasa de aprendizaje del boosting. Elegirlas bien puede valer más que cambiar de algoritmo; elegirlas mal, o medir mal el resultado de la elección, produce modelos que decepcionan al desplegarse.</p>
+
+<section>
+<h2>El espacio de búsqueda</h2>
+<p>Ajustar hiperparámetros es optimizar una función cara y ruidosa: el puntaje de validación cruzada en función de la configuración. Antes de buscar hay que definir bien dónde:</p>
+<ul>
+<li><b>Escalas logarítmicas</b> para hiperparámetros que actúan multiplicativamente: C, γ, α de regularización, tasa de aprendizaje. Probar 0.001, 0.01, 0.1, 1 es más informativo que 0.1, 0.2, …, 1.</li>
+<li><b>Rangos amplios al principio</b> y luego más finos alrededor de la mejor región. Si el mejor valor cae en el borde del rango, amplíelo.</li>
+<li><b>Pocos hiperparámetros importantes</b>: en la mayoría de los modelos uno o dos dominan (la tasa de aprendizaje y el número de árboles en boosting; C y γ en SVM; <code>max_features</code> en bosques). Los demás se dejan en valores razonables.</li>
+<li>Los hiperparámetros del <b>preprocesamiento</b> (número de componentes de PCA, estrategia de imputación) también se ajustan, dentro del mismo <code>Pipeline</code>.</li>
+</ul>
+</section>
+
+<section>
+<h2>Rejilla frente a búsqueda aleatoria</h2>
+<p>La <span class="term">búsqueda en rejilla</span> evalúa todas las combinaciones de unos valores fijados. La <span class="term">búsqueda aleatoria</span> sortea configuraciones de distribuciones dadas. Bergstra y Bengio (2012) mostraron por qué la aleatoria suele ganar con el mismo presupuesto: si solo un hiperparámetro importa, una rejilla de \(k\times k\) prueba solo \(k\) valores distintos de él, mientras que \(k^2\) sorteos aleatorios prueban \(k^2\).</p>
+<div class="sim" data-sim="grid-vs-random" data-title="Mismo presupuesto, rejilla o azar"></div>
+<div class="sim-guide"><ul>
+<li>El puntaje tiene un pico estrecho en el eje horizontal y casi no depende del vertical. La rejilla desperdicia evaluaciones repitiendo los mismos valores de log C.</li>
+<li>Con 16 evaluaciones, la rejilla prueba 4 valores de log C; la aleatoria, 16. El promedio sobre 300 repeticiones muestra la ventaja de la aleatoria.</li>
+</ul></div>
+<p>Dos familias mejoran sobre el azar puro:</p>
+<ul>
+<li><b>Optimización bayesiana</b> (Optuna, scikit-optimize, Hyperopt): un modelo sustituto (proceso gaussiano o TPE) predice qué configuraciones prometen y equilibra explorar y explotar. Útil cuando cada evaluación es cara.</li>
+<li><b>Halving y Hyperband</b> (<code>HalvingRandomSearchCV</code>): se evalúan muchas configuraciones con pocos recursos (pocos datos o pocas épocas), se descartan las peores y se da más presupuesto a las supervivientes.</li>
+</ul>
+</section>
+
+<section>
+<h2>La maldición del ganador</h2>
+<p>Al comparar muchas configuraciones con la misma validación, el ganador es el mejor en esa muestra de validación, que incluye su parte de suerte. Su puntaje es una estimación <b>sesgada hacia arriba</b> de su desempeño real; el sesgo crece con el número de configuraciones y con la variabilidad de la validación (pocos datos). Es el mismo fenómeno que la fuga de datos: la validación se usó para decidir y dejó de ser imparcial.</p>
+<div class="sim" data-sim="maldicion-ganador" data-title="El ganador de muchos parece mejor de lo que es"></div>
+<div class="sim-guide"><ul>
+<li>Todos los modelos tienen la misma exactitud real, 80 %. Con 50 modelos y 100 casos de validación, el ganador marca en promedio un 89 %: nueve puntos de puro azar.</li>
+<li>Aumente la validación a 3 000 casos: el optimismo cae a menos de dos puntos. Con un solo modelo no hay optimismo.</li>
+<li>Dé a los modelos diferencias reales: el ganador tiende a ser de los buenos, pero su puntaje sigue sobrestimado.</li>
+</ul></div>
+<div class="box def"><p>La <span class="term">validación cruzada anidada</span> estima honestamente el desempeño del <i>procedimiento completo</i> (buscar hiperparámetros y entrenar). Un bucle externo de pliegues reserva datos de prueba; dentro de cada pliegue externo, un bucle interno hace la búsqueda solo con los datos de entrenamiento de ese pliegue. El promedio externo no está contaminado por la selección.</p></div>
+<div class="sim" data-sim="curva-validacion" data-title="Curva de validación: un hiperparámetro a la vez"></div>
+<div class="sim-guide"><ul>
+<li>La curva de entrenamiento sube siempre con γ; la de validación sube, alcanza un máximo y baja: el mismo patrón sesgo–varianza del capítulo 3.</li>
+<li>La banda es la desviación entre pliegues. Si el máximo está dentro de una meseta de ancho comparable a la banda, cualquier γ de la meseta es igual de bueno: prefiera el más simple (γ menor).</li>
+<li>Cambie C y observe cómo se desplaza el mejor γ: los hiperparámetros interactúan.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Un protocolo práctico</h2>
+<ol>
+<li>Separe un conjunto de prueba al principio y no lo mire.</li>
+<li>Empiece con los valores por defecto y una línea base; mida con validación cruzada.</li>
+<li>Busque al azar (30–100 configuraciones) en rangos amplios y logarítmicos de los 2–4 hiperparámetros importantes. Para modelos caros, use halving u optimización bayesiana.</li>
+<li>Refine alrededor de la mejor región si vale la pena; mire la curva de validación de cada hiperparámetro para ver si hay meseta.</li>
+<li>Si necesita una estimación honesta del procedimiento, use validación anidada; si no, reporte el resultado del conjunto de prueba, evaluado una sola vez con el modelo final.</li>
+<li>Fije semillas, guarde las configuraciones probadas y sus puntajes. La reproducibilidad es parte del resultado.</li>
+</ol>
+<div class="box warn"><p>No ajuste hiperparámetros mirando el conjunto de prueba, ni siquiera «solo un poco». Y desconfíe de mejoras de décimas de punto tras cientos de configuraciones: es muy probable que sean ruido de la validación.</p></div>
+</section>
+
+<section>
+<h2>Práctica: buscar C y γ y medir honestamente</h2>
+<div class="box py"><p>El programa compara rejilla, búsqueda aleatoria y halving para una SVM sobre el cáncer de mama, estima el procedimiento con validación cruzada anidada y reproduce la maldición del ganador con una validación pequeña.</p>
+<div class="py" data-py="19-hiperparametros"></div></div>
+<div class="box read"><ul>
+<li><b>Rejilla frente a aleatoria</b>: con 30 evaluaciones cada una, la rejilla llega a 0.9807 y la aleatoria a 0.9824. La aleatoria encontró una combinación (C ≈ 7.1, γ ≈ 0.0057) que la rejilla no podía probar porque no está en sus valores. La diferencia, 0.17 puntos, es menor que el ruido de la validación: aquí ambas son igual de buenas.</li>
+<li><b>Halving</b>: evaluó 120 candidatos en 4 rondas (179 ajustes, muchos con pocos datos) en 2.7 s y logró 0.9777: algo menos, con muchas más configuraciones exploradas por segundo.</li>
+<li><b>Validación anidada</b>: 0.9754 ± 0.0161. Es la estimación honesta del procedimiento «buscar y entrenar»; queda algo por debajo de los mejores puntajes de búsqueda (0.98), que incluyen el optimismo de la selección.</li>
+<li><b>Maldición del ganador</b>: con 60 casos de validación y 40 configuraciones, el ganador marca en promedio 0.990 y en 200 casos nuevos obtiene 0.972. Varias veces la validación da un 100 % que no se repite.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Defina rangos amplios en escala logarítmica para los pocos hiperparámetros que importan.</li>
+<li>Búsqueda aleatoria antes que rejilla; bayesiana o halving si cada evaluación es cara.</li>
+<li>El puntaje del ganador es optimista; el sesgo crece con el número de candidatos y con validaciones pequeñas.</li>
+<li>Validación cruzada anidada para estimar el procedimiento completo; prueba final una sola vez.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Cuántos ajustes hace <code>GridSearchCV</code> con 5 valores de C, 4 de γ y 5 pliegues (sin contar el ajuste final)?
+<details><summary>Respuesta</summary><p>\(5\cdot4\cdot5=100\).</p></details></li>
+<li><span class="lvl">Básico</span>¿Por qué se busca C en {0.01, 0.1, 1, 10, 100} y no en {1, 2, 3, 4, 5}?
+<details><summary>Respuesta</summary><p>Su efecto es multiplicativo: pasar de 1 a 2 importa lo mismo que de 10 a 20. Una escala logarítmica cubre órdenes de magnitud con pocos puntos.</p></details></li>
+<li><span class="lvl">Intermedio</span>Con 20 modelos de exactitud real 0.85 y una validación de 200 casos, estime el error estándar de cada puntaje. ¿Cuánto esperaría que supere el ganador a 0.85?
+<details><summary>Respuesta</summary><p>\(\sqrt{0.85\cdot0.15/200}=0.025\). El máximo de 20 normales está en promedio unas 1.87 desviaciones por encima: unos 4.7 puntos de optimismo.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Qué estima la validación cruzada anidada: el desempeño del mejor modelo encontrado o el del procedimiento de búsqueda?
+<details><summary>Respuesta</summary><p>El del procedimiento: en cada pliegue externo la búsqueda puede elegir hiperparámetros distintos. Es la estimación de lo que obtendrá al aplicar todo el proceso a datos nuevos.</p></details></li>
+<li><span class="lvl">Avanzado</span>En una rejilla \(k\times k\) con un solo hiperparámetro importante, ¿cuál es la probabilidad de que ninguno de sus \(k\) valores caiga en una región buena que ocupa una fracción \(q\) de su eje? ¿Y con \(k^2\) sorteos aleatorios?
+<details><summary>Respuesta</summary><p>Para la rejilla, depende de la posición (si los \(k\) valores equiespaciados no tocan la región, nunca la encuentra): si \(q<1/k\), puede fallar con certeza. Para la aleatoria, \((1-q)^{k^2}\); con \(k=5\) y \(q=0.1\), \(0.9^{25}=0.072\).</p></details></li>
+</ol>
+<div class="box links"><ul>
+<li><a href="https://scikit-learn.org/stable/modules/grid_search.html">scikit-learn — Tuning the hyper-parameters of an estimator</a><small>GridSearchCV, RandomizedSearchCV, halving y buenas prácticas.</small></li>
+<li><a href="https://jmlr.org/papers/v13/bergstra12a.html">Bergstra y Bengio (2012) — Random Search for Hyper-Parameter Optimization</a><small>Por qué la búsqueda aleatoria supera a la rejilla.</small></li>
+<li><a href="https://jmlr.org/papers/v11/cawley10a.html">Cawley y Talbot (2010) — On Over-fitting in Model Selection and Subsequent Selection Bias in Performance Evaluation</a><small>El sobreajuste a la validación y la necesidad de la validación anidada.</small></li>
+<li><a href="https://optuna.org/">Optuna</a><small>Optimización bayesiana de hiperparámetros con poda de ensayos poco prometedores.</small></li>
+</ul></div>
+</section>
+</template>

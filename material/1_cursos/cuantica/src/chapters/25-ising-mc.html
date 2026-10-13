@@ -1,0 +1,101 @@
+<template class="chapter-src" data-id="ising-mc" data-num="25" data-title="Monte Carlo del modelo de Ising y de aleaciones" data-part="Parte V · Simulación Monte Carlo" data-short="Volteo de espines, barridos, termalización, fluctuaciones, tamaño finito, cumulante de Binder, lentitud crítica y dinámica de Kawasaki">
+<p class="lead">En este capítulo se juntan las dos partes anteriores: el modelo de Ising (capítulo 23) se simula con el algoritmo de Metropolis (capítulo 24) y el resultado se compara con la solución exacta de Onsager. Después se pasa a la dinámica de Kawasaki, que intercambia átomos en lugar de voltear espines: es exactamente la dinámica de hBN-MC.</p>
+
+<section>
+<h2>Metropolis para el modelo de Ising</h2>
+<p>El movimiento más simple es voltear un espín, \(s_k\to-s_k\). Solo cambian los enlaces de \(k\) con sus \(z\) vecinos, así que el cambio de energía se calcula localmente:</p>
+<div class="eq key" data-name="Cambio de energía al voltear un espín">\[\Delta E_k=2s_k\Big(J\sum_{j\in\text{vec}(k)}s_j+h\Big).\]</div>
+<p>En la red cuadrada sin campo, \(\sum_js_j\in\{-4,-2,0,2,4\}\) y \(\Delta E\) solo toma cinco valores (\(0,\pm4J,\pm8J\)): las exponenciales pueden calcularse una vez y guardarse en una tabla. Esta localidad hace que el costo de cada intento sea independiente del tamaño del sistema.</p>
+<div class="box def"><p>Un <span class="term">barrido</span> (o paso de Monte Carlo por sitio, MCS) son \(N\) intentos de movimiento, uno por sitio en promedio. Es la unidad natural de «tiempo» de la simulación: en un barrido cada espín tuvo, en promedio, una oportunidad de cambiar. hBN-MC, en cambio, cuenta <em>pasos</em> individuales (un intento de intercambio cada uno): en una red de 2000 sitios, \(10^6\) pasos son 500 barridos. Conviene hacer siempre esta conversión antes de juzgar si una corrida fue larga o corta.</p></div>
+<p>Una simulación tiene dos fases:</p>
+<ol>
+<li><span class="term">Termalización</span>: desde la configuración inicial (al azar o toda alineada) el sistema evoluciona hasta olvidarla. Esos barridos se descartan.</li>
+<li><span class="term">Medición</span>: se promedian los observables sobre muchos barridos, con el error calculado por bloques porque las medidas sucesivas están correlacionadas (capítulo 19).</li>
+</ol>
+<p>Además de las medias, las <em>fluctuaciones</em> dan las funciones respuesta, por el teorema de fluctuación–disipación (capítulo 21):</p>
+<div class="eq key" data-name="Respuestas a partir de fluctuaciones">\[c=\frac{N}{\kB T^2}\Big(\expval{e^2}-\expval{e}^2\Big),\qquad \chi=\frac{N}{\kB T}\Big(\expval{m^2}-\expval{|m|}^2\Big),\]</div>
+<p>con \(e=E/N\) y \(m=M/N\). En un sistema finito sin campo, la magnetización salta de vez en cuando entre \(+m\) y \(-m\), y su promedio es cero; por eso se mide \(\expval{|m|}\).</p>
+<div class="sim" data-sim="ising-2d" data-title="El modelo de Ising con el algoritmo de Metropolis"></div>
+<div class="sim-guide"><ul>
+<li>Empiece al azar con \(T=1.5\): aparecen dominios que crecen y se funden lentamente (<em>engrosamiento</em>). Puede quedar una franja que tarda muchísimo en desaparecer.</li>
+<li>Cerca de \(T_c=2.269\) los dominios tienen todos los tamaños: es la <em>invariancia de escala</em> del punto crítico.</li>
+<li>Por encima de \(T_c\) solo quedan pequeñas islas que aparecen y desaparecen; con \(h\ne0\) domina el espín favorecido.</li>
+<li>Compare \(\expval e\) y \(\expval{|m|}\) con las curvas exactas de Onsager: lejos de \(T_c\) coinciden muy bien incluso con redes pequeñas.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Validar contra lo exacto</h2>
+<p>Una simulación no se cree: se valida. El modelo de Ising tiene dos referencias exactas. Para una red \(4\times4\) con condiciones periódicas se pueden enumerar los \(2^{16}=65\,536\) estados y calcular todo exactamente; el Monte Carlo debe reproducirlos dentro del error estadístico. Para la red infinita está la solución de Onsager.</p>
+<div class="box valid"><p>El apéndice B simula la red \(4\times4\) a \(T=2\) con 120 000 barridos y compara la energía por espín con la enumeración exacta (diferencia menor que 0.4 %). Las curvas de Onsager se comprueban en \(T_c\): \(u(T_c)=-\sqrt2\).</p></div>
+</section>
+
+<section>
+<h2>Efectos de tamaño finito</h2>
+<p>Cerca de \(T_c\) la <span class="term">longitud de correlación</span> \(\xi\) (el tamaño típico de las regiones correlacionadas) diverge como \(\xi\propto|T-T_c|^{-\nu}\), con \(\nu=1\) en el Ising 2D. Una red de lado \(L\) no puede tener correlaciones mayores que \(L\): cuando \(\xi\sim L\) el sistema «nota» su tamaño. En consecuencia:</p>
+<ul>
+<li>el pico de \(c\) es finito y crece con \(L\) (en el Ising 2D, como \(\ln L\));</li>
+<li>la temperatura del pico se desplaza respecto a \(T_c\) en una cantidad \(\propto1/L\);</li>
+<li>\(\expval{|m|}\) no cae a cero de golpe, sino que tiene una cola suave por encima de \(T_c\).</li>
+</ul>
+<p>Para localizar \(T_c\) con redes pequeñas se usa el <span class="term">cumulante de Binder</span>:</p>
+<div class="eq key" data-name="Cumulante de Binder">\[U_4=1-\frac{\expval{m^4}}{3\expval{m^2}^2}\ \longrightarrow\ \begin{cases}2/3&T\lt T_c\ \ (m=\pm m_0),\\0&T\gt T_c\ \ (m\text{ gaussiana}).\end{cases}\]</div>
+<p>En \(T_c\), \(U_4\) toma un valor casi independiente de \(L\): las curvas de distintos tamaños se cruzan en \(T_c\). Es la forma estándar de medir temperaturas críticas por simulación.</p>
+<div class="sim" data-sim="ising-barrido" data-title="Barrido en temperatura: energía, magnetización, calor específico y cumulante de Binder"></div>
+<div class="sim-guide"><ul>
+<li>Calcule el barrido con \(L=8\) y después con \(L=16\) y \(L=32\): las curvas se acumulan para comparar.</li>
+<li>El pico del calor específico se hace más alto y se acerca a \(T_c\); las curvas de \(U_4\) se cruzan cerca de \(T_c=2.269\).</li>
+<li>Con pocos barridos por temperatura, los puntos cerca de \(T_c\) son ruidosos: es la lentitud crítica.</li>
+</ul></div>
+<div class="box explain"><p>Piense en una multitud que decide hacia dónde mirar. Lejos de la transición, cada persona solo copia a sus vecinos inmediatos y las «opiniones» se coordinan en grupitos pequeños. En la transición, los grupos tienen todos los tamaños, desde dos personas hasta toda la plaza. Si la plaza es pequeña, el grupo más grande queda limitado por los muros: por eso una simulación pequeña ve una transición «redondeada».</p></div>
+</section>
+
+<section>
+<h2>Lentitud crítica</h2>
+<p>Los dominios grandes cambian muy despacio con movimientos de un solo espín: el tiempo de autocorrelación crece como \(\tau\propto\xi^{z}\), con \(z\approx2.17\) para Metropolis. Cerca de \(T_c\) en una red \(L=64\), \(\tau\) puede ser de miles de barridos. Hay dos remedios:</p>
+<ul>
+<li><span class="term">algoritmos de racimos</span> (Swendsen–Wang, Wolff), que voltean de una vez un dominio entero construido con la probabilidad correcta y reducen \(z\) a ≈0.25;</li>
+<li><span class="term">movimientos no locales</span> y técnicas de temperatura extendida (intercambio de réplicas, capítulo 26).</li>
+</ul>
+<p>Por debajo de \(T_c\) hay un problema aún mayor: una vez formados, dos dominios grandes de signo opuesto separados por una pared recta pueden sobrevivir indefinidamente. El sistema no está en equilibrio aunque la energía parezca estable. Repetir con varias semillas y condiciones iniciales es la manera de detectarlo.</p>
+</section>
+
+<section>
+<h2>Dinámica de Kawasaki: composición conservada</h2>
+<p>En una aleación los átomos no cambian de especie: se mueven. El movimiento natural es <span class="term">intercambiar</span> dos átomos de especies distintas. Así se conserva el número de átomos de cada clase, es decir, la «magnetización» del Ising equivalente. Es la <span class="term">dinámica de Kawasaki</span> (1966), por oposición a la de volteo de Glauber.</p>
+<div class="box law"><p><strong>Intercambio de Kawasaki.</strong> Elegir un sitio \(k\) y otro \(m\) (un vecino, o cualquier sitio en un intercambio global). Si son de especies distintas, calcular \(\Delta E\) del intercambio (solo cambian los enlaces de \(k\) y de \(m\)) y aceptarlo con la regla de Metropolis. La propuesta es simétrica (elegir \(k\) y luego \(m\) es tan probable como elegir \(m\) y luego \(k\)), así que se cumple el balance detallado y el muestreo corresponde al ensamble canónico a composición fija.</p></div>
+<p>Con intercambios solo entre vecinos, el material evoluciona por difusión: los dominios crecen como \(R\propto t^{1/3}\) (ley de Lifshitz–Slyozov), mucho más lentamente que sin conservación (\(t^{1/2}\)). Los intercambios globales (entre sitios lejanos) no son físicos como trayectoria, pero son perfectamente válidos para muestrear el equilibrio y lo alcanzan mucho antes.</p>
+<div class="sim" data-sim="kawasaki-aleacion" data-title="Dinámica de Kawasaki en el panal: segregación del carbono en h-BN"></div>
+<div class="sim-guide"><ul>
+<li>Con la energía de mezcla de la tesis y \(T=1200\) K, el carbono forma dominios y \(\alpha\) crece hacia valores positivos. A 4000 K la mezcla es casi al azar (\(\alpha\approx0\)).</li>
+<li>Ponga la fracción de intercambios globales en 0 y luego en 0.5: con solo vecinos los dominios crecen mucho más despacio.</li>
+<li>Cambie el signo de la energía de mezcla: \(\alpha\) se vuelve negativo (orden alternado), como el de B y N en el h-BN.</li>
+</ul></div>
+<div class="box hbn"><p>hBN-MC usa exactamente la dinámica de Kawasaki: <code>attemptSwapPair</code> intercambia dos sitios de especies distintas (incluidas las vacancias X), que pueden ser vecinos o, con la probabilidad fijada por la opción de movimientos globales, dos sitios cualesquiera. Por eso el número de átomos de cada especie y de vacancias se conserva durante toda la corrida; lo que cambia es dónde están. Un poro «se mueve» porque las vacancias intercambian lugar con átomos, y el número de H de borde cambia porque cambia la forma del poro. El parámetro \(\alpha_\text{C}\) que reporta la aplicación es el de Warren–Cowley de esta sección.</p></div>
+<div class="box warn"><p>La estimación «pseudo-binaria» de esta simulación trata el BN como una sola especie con enlaces C–BN de energía media. Sirve para entender la tendencia a segregar y su orden de magnitud (\(T_c\approx2000\) K a \(x_\text{C}=0.5\)), pero no reemplaza la simulación con las cuatro especies del capítulo 29.</p></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Volteo de un espín: \(\Delta E=2s_k(J\sum s_j+h)\), local y barato. Un barrido son \(N\) intentos.</li>
+<li>Termalizar, luego medir; errores por bloques; respuestas (\(c\), \(\chi\)) a partir de fluctuaciones.</li>
+<li>Validar: enumeración exacta en redes pequeñas y Onsager en el límite infinito.</li>
+<li>Tamaño finito: picos redondeados y desplazados; el cumulante de Binder localiza \(T_c\).</li>
+<li>Lentitud crítica y dominios metaestables: repetir con varias semillas e inicios.</li>
+<li>Kawasaki: intercambios que conservan la composición; los globales aceleran el equilibrio. Es la dinámica de hBN-MC.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>En la red cuadrada con \(J=1\), \(h=0\) y \(T=2\), ¿con qué probabilidad se acepta voltear un espín rodeado de cuatro vecinos iguales a él?
+<details><summary>Respuesta</summary><p>\(\Delta E=8\): \(\ee^{-4}=0.018\).</p></details></li>
+<li><span class="lvl">Básico</span>¿Por qué se mide \(\expval{|m|}\) y no \(\expval m\) en una simulación sin campo?
+<details><summary>Respuesta</summary><p>Porque en un sistema finito la magnetización invierte su signo de vez en cuando; \(\expval m\) promedia a cero aunque haya orden.</p></details></li>
+<li><span class="lvl">Intermedio</span>Una red de \(64\times64\) se simula 10 000 barridos cerca de \(T_c\) con \(\tau\approx1000\) barridos. ¿Cuántas medidas independientes hay?
+<details><summary>Respuesta</summary><p>Aproximadamente \(10\,000/(2\tau)=5\): el error es enorme aunque haya 10 000 configuraciones.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué los intercambios globales de Kawasaki cumplen balance detallado aunque no sean «físicos»?
+<details><summary>Respuesta</summary><p>Porque la probabilidad de proponer el par \((k,m)\) es la misma que la de proponer \((m,k)\), y la aceptación es la de Metropolis. El balance detallado no exige que el movimiento sea una trayectoria real, solo que la propuesta sea simétrica.</p></details></li>
+<li><span class="lvl">Avanzado</span>Con \(\Delta E_\text{mix}=0.45\) eV, estime la temperatura crítica de segregación del carbono en el h-BN a \(x_\text{C}=0.5\) en la aproximación pseudo-binaria.
+<details><summary>Respuesta</summary><p>\(J=\Delta E_\text{mix}/4=0.1125\) eV; en el panal \(\kB T_c=1.519J=0.171\) eV, \(T_c\approx1980\) K.</p></details></li>
+</ol>
+</section>
+</template>

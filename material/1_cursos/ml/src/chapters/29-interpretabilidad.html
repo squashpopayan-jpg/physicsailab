@@ -1,0 +1,99 @@
+<template class="chapter-src" data-id="interpretabilidad" data-num="29" data-title="Interpretar modelos" data-part="Parte VII · Práctica profesional" data-short="Explicaciones globales y locales; coeficientes; importancia por permutación y sus trampas; dependencia parcial e ICE; valores de Shapley y SHAP; LIME y contrafácticos; qué explica (y qué no) una explicación">
+<p class="lead">Un modelo con 98 % de exactitud que nadie entiende es difícil de defender ante un médico, un juez, un regulador o un cliente, y difícil de depurar cuando falla. Las técnicas de interpretación responden dos preguntas distintas: qué variables usa el modelo en general (explicación global) y por qué hizo esta predicción concreta (explicación local). Ambas explican el modelo, no el mundo.</p>
+
+<section>
+<h2>Tipos de explicación</h2>
+<ul>
+<li><b>Intrínseca</b>: el modelo es legible por construcción (regresión lineal o logística con pocas variables, un árbol poco profundo, un modelo aditivo generalizado).</li>
+<li><b>Post hoc</b>: se aplica a cualquier modelo ya entrenado, tratándolo como caja negra (permutación, dependencia parcial, SHAP, LIME).</li>
+<li><b>Global</b>: el comportamiento promedio en toda la población. <b>Local</b>: el porqué de una predicción individual.</li>
+</ul>
+<div class="box warn"><p>Una explicación describe cómo el modelo usa las variables, no cómo funciona la realidad. Si el modelo de riesgo cardíaco usa mucho el código postal, puede ser porque el código postal está asociado al ingreso y al acceso a la salud, no porque mudarse reduzca el riesgo. Las afirmaciones causales requieren diseño causal, no solo interpretación.</p></div>
+</section>
+
+<section>
+<h2>Importancia por permutación</h2>
+<p>Se mide el desempeño del modelo en datos de prueba; luego se baraja una variable (rompiendo su relación con \(y\) y con las demás) y se vuelve a medir. La caída es la importancia de esa variable:</p>
+<div class="eq key" data-name="Importancia por permutación">\[I_j=M\big(\hat f,X,\vb y\big)-\frac1R\sum_{r=1}^R M\big(\hat f,X^{(j\leftarrow\pi_r)},\vb y\big).\]</div>
+<ul>
+<li>Funciona con cualquier modelo y cualquier métrica, y se calcula en datos no usados para entrenar (a diferencia de la MDI de los árboles, capítulo 17).</li>
+<li><b>Variables correlacionadas</b>: si dos variables llevan la misma información, barajar una no daña mucho porque el modelo usa la otra; ambas parecen poco importantes. Agrupe las variables correlacionadas y permútelas juntas, o elimine redundancias.</li>
+<li>Barajar crea combinaciones irreales (una persona de 20 años con 40 de antigüedad laboral); el modelo se evalúa fuera de la distribución de los datos.</li>
+<li>Mide la importancia <i>para este modelo</i>; otro modelo igual de bueno puede usar otras variables (el «efecto Rashomon»).</li>
+</ul>
+<div class="sim" data-sim="permutacion-correlacion" data-title="Una variable copiada reparte su importancia"></div>
+<div class="sim-guide"><ul>
+<li>\(x_3\) no entra en la fórmula de \(y\), pero con correlación alta con \(x_1\) recibe importancia, y \(x_1\) aparece menos importante de lo que es.</li>
+<li>Quite \(x_3\) del modelo: \(x_1\) recupera toda su importancia. Baje la correlación: \(x_3\) vuelve a cero.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Dependencia parcial e ICE</h2>
+<p>La <span class="term">dependencia parcial</span> (PDP) muestra cómo cambia en promedio la predicción al variar una variable, manteniendo las demás en sus valores observados:</p>
+<div class="eq key" data-name="Dependencia parcial">\[\text{PD}_j(v)=\frac1n\sum_{i=1}^n\hat f\big(x_{ij}=v,\ \vb x_{i,-j}\big).\]</div>
+<p>Las curvas <span class="term">ICE</span> (expectativa condicional individual) dibujan esa misma variación caso por caso, sin promediar. Si las curvas ICE son paralelas, la PDP resume bien; si se cruzan o se separan en grupos, hay <b>interacciones</b> que el promedio esconde. Ambas comparten la trampa de la permutación: con variables correlacionadas, evalúan combinaciones que no existen. Los gráficos de efectos locales acumulados (ALE) corrigen en parte ese problema.</p>
+<div class="sim" data-sim="pdp-ice" data-title="El promedio esconde dos comportamientos opuestos"></div>
+<div class="sim-guide"><ul>
+<li>La PDP (negra) muestra una U asimétrica suave.</li>
+<li>Las ICE coloreadas por \(x_2\) revelan la verdad: para \(x_2>0\) el efecto es una parábola; para \(x_2\le0\), una recta descendente.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Valores de Shapley y SHAP</h2>
+<p>La teoría de juegos cooperativos ofrece una forma única de repartir una «ganancia» entre jugadores que cumple propiedades deseables. Aplicada a una predicción, la ganancia es \(f(\vb x)-\E[f]\) y los jugadores son las variables. El <span class="term">valor de Shapley</span> de la variable \(j\) es su contribución marginal promediada sobre todos los órdenes en que las variables podrían «entrar»:</p>
+<div class="eq key" data-name="Valor de Shapley">\[\phi_j=\sum_{S\subseteq F\setminus\{j\}}\frac{\abs S!\,(p-\abs S-1)!}{p!}\Big[v(S\cup\{j\})-v(S)\Big],\qquad \sum_j\phi_j=f(\vb x)-\E[f(\vb X)],\]</div>
+<p>donde \(v(S)\) es la predicción esperada cuando solo se conocen las variables de \(S\) (las demás se promedian sobre un conjunto de fondo). Propiedades: <b>eficiencia</b> (las contribuciones suman la diferencia con la base), <b>simetría</b>, <b>nulidad</b> (una variable que no cambia nada recibe 0) y <b>aditividad</b>. El cálculo exacto exige \(2^p\) coaliciones; <b>SHAP</b> (Lundberg y Lee, 2017) lo aproxima eficientemente y, para árboles, lo calcula exacto en tiempo polinómico (TreeSHAP). Promediando \(\abs{\phi_j}\) sobre muchos casos se obtiene una importancia global.</p>
+<div class="sim" data-sim="shapley" data-title="Cascada de Shapley para un solicitante de crédito"></div>
+<div class="sim-guide"><ul>
+<li>La cascada parte del valor base (la probabilidad promedio) y suma la contribución de cada variable hasta llegar a la predicción del solicitante. Rojo sube el riesgo; azul lo baja.</li>
+<li>Las contribuciones se calculan exactamente, enumerando las 16 coaliciones de las 4 variables con 40 casos de fondo. Su suma es exactamente la diferencia entre la predicción y la base.</li>
+<li>Cambie de solicitante: la misma variable puede subir el riesgo de uno y bajar el de otro.</li>
+</ul></div>
+<div class="box note"><p><b>LIME</b> ajusta un modelo lineal sencillo alrededor del caso, con perturbaciones locales, y lee sus coeficientes. Los <b>contrafácticos</b> responden «¿qué tendría que cambiar para que la decisión fuera otra?» (por ejemplo, reducir la deuda en 3 millones), una explicación útil para quien recibe la decisión.</p></div>
+</section>
+
+<section>
+<h2>Práctica: comprobar las explicaciones con efectos conocidos</h2>
+<div class="box py"><p>El programa genera datos con efectos conocidos (U en la edad, logaritmo del ingreso, interacción zona × antigüedad), una variable de ruido y una copia casi exacta del ingreso. Entrena un gradient boosting y compara importancia por permutación, dependencia parcial y SHAP con la verdad.</p>
+<div class="py" data-py="29-interpretabilidad"></div></div>
+<div class="box read"><ul>
+<li><b>Permutación</b>: la edad domina (1.875 de caída de R²) porque su efecto en U es el de mayor varianza; zona y antigüedad (la interacción) y el ingreso siguen. El ruido da 0.000: correcto.</li>
+<li><b>La copia</b>: el ingreso aparece con solo 0.022 y su copia con 0.008, porque se reparten la información. Sin la copia, la importancia del ingreso sube a 0.050. Sin saber que había una copia, uno concluiría que el ingreso importa poco.</li>
+<li><b>Dependencia parcial</b>: 51.0 a los 22 años, 25.4–25.6 entre 40 y 49 y 49.5 a los 67: la U verdadera, con la diferencia correcta (\(0.05\cdot23^2\approx26\)). Se usó <code>method="brute"</code>: el método rápido por defecto para boosting omite la predicción inicial y da valores desplazados por una constante.</li>
+<li><b>SHAP global</b> ordena casi igual que la permutación; también le da algo a la copia (0.457).</li>
+<li><b>SHAP local</b>: para el caso 0, la predicción 27.14 queda 7.97 por debajo de la base (35.11), casi todo por la edad (41 años, cerca del mínimo de la U: −9.84). Las contribuciones suman exactamente la predicción (eficiencia).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Las explicaciones describen el modelo, no la causalidad del mundo.</li>
+<li>Permutación: simple y general; engaña con variables correlacionadas.</li>
+<li>PDP para el efecto promedio; ICE para ver interacciones y heterogeneidad.</li>
+<li>Shapley/SHAP: reparto único con eficiencia, simetría y nulidad; local y, promediado, global.</li>
+<li>Compruebe las explicaciones con datos sintéticos de efecto conocido antes de confiar en ellas.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un modelo tiene exactitud 0.90; al barajar una variable baja a 0.82. ¿Importancia por permutación?
+<details><summary>Respuesta</summary><p>0.08 (ocho puntos de exactitud).</p></details></li>
+<li><span class="lvl">Básico</span>Con base 0.20 y contribuciones de Shapley +0.15, −0.05 y +0.10, ¿cuál es la predicción?
+<details><summary>Respuesta</summary><p>\(0.20+0.15-0.05+0.10=0.40\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Para un modelo lineal \(f=\sum w_jx_j+b\) con variables independientes, ¿cuánto vale \(\phi_j\)?
+<details><summary>Respuesta</summary><p>\(\phi_j=w_j(x_j-\E[x_j])\): la contribución del coeficiente por la distancia a la media. (Es una de las pruebas del apéndice C.)</p></details></li>
+<li><span class="lvl">Intermedio</span>La importancia por permutación de una variable es negativa. ¿Qué significa?
+<details><summary>Respuesta</summary><p>Al barajarla el modelo mejora un poco: la variable no aporta y la diferencia es ruido (o el modelo la usa para sobreajustar). Trátela como cero.</p></details></li>
+<li><span class="lvl">Avanzado</span>¿Por qué el cálculo exacto de Shapley crece como \(2^p\) y cómo lo evita TreeSHAP?
+<details><summary>Respuesta</summary><p>Hay que evaluar el modelo en todas las coaliciones de variables. TreeSHAP recorre la estructura de los árboles y propaga los pesos de las coaliciones por los caminos, obteniendo el resultado exacto en tiempo polinómico en la profundidad y el número de hojas.</p></details></li>
+</ol>
+<div class="box links"><ul>
+<li><a href="https://christophm.github.io/interpretable-ml-book/">Molnar — Interpretable Machine Learning</a><small>El libro de referencia (gratuito): PDP, ICE, ALE, permutación, LIME, Shapley y SHAP.</small></li>
+<li><a href="https://scikit-learn.org/stable/modules/permutation_importance.html">scikit-learn — Permutation feature importance</a><small>Uso, interpretación y el problema de las variables correlacionadas.</small></li>
+<li><a href="https://scikit-learn.org/stable/modules/partial_dependence.html">scikit-learn — Partial Dependence and ICE plots</a><small>Dependencia parcial, curvas ICE y los métodos de cálculo.</small></li>
+<li><a href="https://shap.readthedocs.io/">SHAP — documentación</a><small>TreeExplainer, gráficos de cascada, de abejas y de dependencia.</small></li>
+<li><a href="https://arxiv.org/abs/1705.07874">Lundberg y Lee (2017) — A Unified Approach to Interpreting Model Predictions</a><small>El artículo de SHAP.</small></li>
+</ul></div>
+</section>
+</template>

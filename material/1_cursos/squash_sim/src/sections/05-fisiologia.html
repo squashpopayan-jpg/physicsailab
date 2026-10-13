@@ -1,0 +1,104 @@
+<section class="page wrap" id="p-fisiologia" data-page="fisiologia">
+  <div class="page-head">
+    <div>
+      <p class="eyebrow">Fisiología</p>
+      <h2>Lo que pasa dentro del cuerpo durante un partido</h2>
+      <p class="lead">El squash es un deporte aeróbico de muy alta intensidad con explosiones anaeróbicas. Las pausas entre puntos son tan cortas que el corazón no alcanza a recuperarse: en la práctica funciona como un esfuerzo continuo.</p>
+    </div>
+  </div>
+
+  <div class="grid cols-3">
+    <div class="stat"><b>92 %</b><span>de la frecuencia cardiaca máxima, en promedio, en jugadores de élite (Girard y col., 2007)</span></div>
+    <div class="stat"><b>19 ± 5 s</b><span>duración media de un punto en la élite, con 8 ± 2 s de pausa entre puntos</span></div>
+    <div class="stat"><b>80–85 %</b><span>de la frecuencia cardiaca máxima durante todo el partido en el jugador de club (manual de fundamentos)</span></div>
+    <div class="stat"><b>&gt; 8 mmol/L</b><span>lactato sanguíneo medio en partidos de élite; el 25 % del tiempo de juego supera el 90 % del VO₂máx</span></div>
+    <div class="stat"><b>90 s</b><span>de descanso entre juegos; un juego dura unos 8 min en la élite y alrededor de 15 min en el club</span></div>
+    <div class="stat"><b>381–803 ms</b><span>tiempo de respuesta para percibir, decidir y ordenar el movimiento (manual de fundamentos)</span></div>
+  </div>
+
+  <div class="simbox" style="margin-top:18px" id="phHR">
+    <div class="head"><h3>Simulador de un juego: frecuencia cardiaca, lactato y sistemas energéticos</h3><span class="tag">modelo simplificado</span></div>
+    <div class="body">
+      <div><canvas id="hrCanvas" style="aspect-ratio:16/8"></canvas><canvas id="enCanvas" style="aspect-ratio:16/4;margin-top:10px"></canvas>
+        <div class="chips small" style="margin-top:6px"><span class="tag"><span class="dot" style="background:#e8a33d"></span>Fosfágenos</span><span class="tag"><span class="dot" style="background:#d4442e"></span>Glucolítico</span><span class="tag"><span class="dot" style="background:#3d8fc9"></span>Oxidativo</span><span class="tiny muted">Reparto estimado de la energía en cada punto</span></div></div>
+      <div class="ctrls">
+        <div class="seg" id="hrPreset" role="group" aria-label="Perfil"><button data-p="club" aria-pressed="true">Club</button><button data-p="elite">Élite</button></div>
+        <label class="fld"><span class="row2">Edad <b id="hrAgeL">30 años</b></span><input type="range" id="hrAge" min="12" max="70" value="30"></label>
+        <label class="fld"><span class="row2">Duración del punto <b id="hrRallyL">14 s</b></span><input type="range" id="hrRally" min="4" max="45" value="14"></label>
+        <label class="fld"><span class="row2">Pausa entre puntos <b id="hrRestL">10 s</b></span><input type="range" id="hrRest" min="4" max="40" value="10"></label>
+        <label class="fld"><span class="row2">Intensidad del punto <b id="hrIntL">85 %</b></span><input type="range" id="hrInt" min="55" max="100" value="85"></label>
+        <label class="fld"><span class="row2">Puntos jugados <b id="hrNL">18</b></span><input type="range" id="hrN" min="6" max="40" value="18"></label>
+        <div class="readout" id="hrOut"></div>
+        <p class="verdict" id="hrVerdict"></p>
+      </div>
+    </div>
+    <p class="tiny muted" style="margin-top:10px">Modelo: la frecuencia cardiaca sube hacia su valor objetivo con una constante de tiempo de 12 s y baja en la pausa con 30 s; FC máx = 208 − 0,7 × edad (Tanaka). El lactato se produce cuando la intensidad supera el 70 % y se elimina con una constante de unos 150 s. Los porcentajes de energía son una estimación teórica para esfuerzos intermitentes.</p>
+  </div>
+
+  <div class="grid cols-2" style="margin-top:16px">
+    <div class="simbox" style="margin-top:0">
+      <div class="head"><h3>Prueba de reacción</h3><span class="tag">interactiva</span></div>
+      <p class="small muted" style="margin-bottom:10px">Toca la marca en cuanto aparezca. Con más opciones posibles, decides más lento: es la ley de Hick. En la cancha, leer antes al rival reduce las opciones y acorta la respuesta.</p>
+      <div class="seg" id="rxN" role="group" aria-label="Opciones"><button data-n="1" aria-pressed="true">1 zona</button><button data-n="2">2 zonas</button><button data-n="6">6 zonas</button></div>
+      <div class="reaction" id="rxPad" style="margin-top:10px" role="button" tabindex="0" aria-label="Zona de la prueba de reacción"><div class="msg" id="rxMsg">Toca aquí para empezar (10 intentos)</div></div>
+      <div class="readout" id="rxOut" style="margin-top:10px"></div>
+      <p class="tiny muted" style="margin-top:8px">El tiempo de reacción simple ronda los 200–250 ms en adultos jóvenes. El dato del manual (381–803 ms) incluye además la decisión y la orden de movimiento en situación de juego.</p>
+    </div>
+    <div class="simbox" style="margin-top:0">
+      <div class="head"><h3>El momento justo del split-step</h3><span class="tag">modelo</span></div>
+      <canvas id="spCanvas" style="aspect-ratio:16/10"></canvas>
+      <label class="fld" style="margin-top:10px"><span class="row2">Aterrizaje respecto del golpe del rival <b id="spL">0 ms</b></span><input type="range" id="spD" min="-400" max="300" value="0" step="10"></label>
+      <div class="readout" id="spOut" style="margin-top:8px"></div>
+      <p class="tiny muted" style="margin-top:8px">Si el split-step cae demasiado pronto, la energía elástica se disipa; si cae tarde, el jugador sigue en el aire cuando la bola ya salió. El modelo usa un tiempo de reacción de 220 ms, un recorrido de 2,8 m y una ganancia elástica de hasta 70 ms.</p>
+    </div>
+  </div>
+
+  <hr class="sep">
+  <div class="grid cols-2">
+    <div class="prose">
+      <p class="eyebrow">Sistemas energéticos</p>
+      <h3 style="margin:6px 0 8px">Tres motores que trabajan a la vez</h3>
+      <ul>
+        <li><b>Fosfágenos (ATP–fosfocreatina)</b>: energía inmediata para las arrancadas, frenadas y golpes. Se agotan en 6–10 s de esfuerzo máximo y se reponen a medias en las pausas cortas.</li>
+        <li><b>Glucolítico</b>: sostiene los puntos largos e intensos. Produce lactato e iones hidrógeno; cuando se acumulan, aparece la fatiga y bajan la precisión y la técnica.</li>
+        <li><b>Oxidativo (aeróbico)</b>: domina en un partido de 40–90 minutos y es el que recupera entre puntos y entre juegos. Una buena base aeróbica permite repetir esfuerzos y aclarar el lactato.</li>
+      </ul>
+      <p>Por eso el manual define el squash como «básicamente aeróbico con algunas explosiones anaeróbicas». El jugador menos fatigado presiona al rival: le quita tiempo de reacción anticipando la bola, no corriendo más ni golpeando más fuerte.</p>
+    </div>
+    <div class="prose">
+      <p class="eyebrow">Fibras musculares</p>
+      <h3 style="margin:6px 0 8px">Rápidas para arrancar, lentas para aguantar</h3>
+      <ul>
+        <li><b>Tipo I (lentas)</b>: muchas mitocondrias, resistentes a la fatiga. Predominan en el sóleo, los multífidos y los músculos posturales.</li>
+        <li><b>Tipo IIa (rápidas oxidativas)</b>: fuerza y velocidad con algo de resistencia. Muy entrenables con trabajo intermitente como el ghosting.</li>
+        <li><b>Tipo IIx (rápidas glucolíticas)</b>: la máxima potencia, pero se fatigan en segundos. Predominan en el gemelo y los isquiotibiales.</li>
+      </ul>
+      <p>El squash pide las tres. Los isquiotibiales y el gemelo, con muchas fibras rápidas, son de los que más se desgarran cuando el jugador está fatigado o frío.</p>
+    </div>
+  </div>
+  <hr class="sep">
+  <div class="grid cols-2">
+    <div class="prose">
+      <p class="eyebrow">Percepción y decisión</p>
+      <h3 style="margin:6px 0 8px">El movimiento empieza en los ojos</h3>
+      <p>El manual describe el movimiento como la cooperación de tres sistemas: el <b>perceptivo</b> (recibe estímulos y los analiza), el de <b>elaboración táctica</b> (elige una respuesta entre muchas) y el <b>efector neuromuscular</b> (la parte visible: fuerza, velocidad, resistencia y flexibilidad).</p>
+      <ul>
+        <li><b>Analizador propioceptivo</b>: receptores articulares, husos neuromusculares y órganos de Golgi informan la posición y la tensión de cada segmento.</li>
+        <li><b>Analizador vestibular</b>: el oído interno detecta aceleraciones y la posición de la cabeza; por eso la cabeza debe ir erguida y estable.</li>
+        <li><b>Analizadores visual, táctil y acústico</b>: la vista sigue la bola y al rival; el sonido del golpe rival también informa su potencia y efecto.</li>
+      </ul>
+      <p>Los seis músculos extrínsecos de cada ojo se entrenan como cualquier otro: ojos más rápidos encuentran antes la información relevante. Los atletas expertos miran zonas más informativas (en el penal, los arqueros expertos miran la cadera del pateador; los novatos, el pie).</p>
+    </div>
+    <div class="prose">
+      <p class="eyebrow">Fatiga, calor e hidratación</p>
+      <h3 style="margin:6px 0 8px">La fatiga es la principal causa de errores</h3>
+      <p>Con fatiga, el jugador llega tarde, se encima a la bola, cambia de pierna y abusa de la muñeca: aparecen los errores técnicos y tácticos, y con ellos las lesiones. La preparación física sirve, sobre todo, para retrasar ese momento.</p>
+      <ul>
+        <li>En una cancha cerrada se suda mucho: pesarse antes y después del partido indica cuánto líquido reponer (cada kilogramo perdido es cerca de un litro de sudor).</li>
+        <li>Beber en los 90 s entre juegos y reponer sodio en partidos largos o calurosos.</li>
+        <li>Vuelta a la calma de 5–10 minutos y estiramientos suaves después de jugar: los estiramientos de la tesis de Mar del Plata eran habituales, pero no siempre completos ni de duración suficiente.</li>
+      </ul>
+    </div>
+  </div>
+  <p class="cite" style="margin-top:14px">Fuentes: Girard O., Chevalier R., Habrard M., Sciberras P., Hot P., Millet G. P. (2007). <i>Game analysis and energy requirements of elite squash</i>. Journal of Strength and Conditioning Research, 21(3), 909–914. Manual <i>Fundamentos para un squash efectivo y saludable</i> (Gómez Ardila y Parma), capítulos 6–8. Tanaka H., Monahan K., Seals D. (2001), fórmula de frecuencia cardiaca máxima.</p>
+</section>

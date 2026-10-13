@@ -1,0 +1,97 @@
+<template class="chapter-src" data-id="calibracion" data-num="12" data-title="Calibración, umbrales y clases desbalanceadas" data-part="Parte III · Clasificación" data-short="¿Significa 0.8 un 80 %? Diagramas de fiabilidad, ECE, Platt e isotónica; decidir con costos; desbalance: pesos de clase, remuestreo y mover el umbral">
+<p class="lead">Ordenar bien los casos (un AUC alto) no basta si las probabilidades se usan para decidir: un modelo que dice 0.9 cuando la frecuencia real es 0.7 lleva a decisiones caras. Este capítulo enseña a comprobar si las probabilidades son creíbles, a corregirlas, a convertirlas en decisiones según los costos y a tratar las clases desbalanceadas sin romper nada de lo anterior.</p>
+
+<section>
+<h2>Qué significa estar calibrado</h2>
+<div class="box def"><p>Un clasificador está <span class="term">calibrado</span> si, entre todos los casos a los que asigna probabilidad \(p\), la fracción de positivos es \(p\): \(P(y=1\mid\hat p=p)=p\). De los pacientes con riesgo predicho de 20 %, uno de cada cinco debe enfermar.</p></div>
+<p>Se diagnostica con un <span class="term">diagrama de fiabilidad</span>: se agrupan las predicciones en intervalos (bins) y se grafica la frecuencia real de positivos frente a la probabilidad media predicha. Un modelo calibrado sigue la diagonal. El <span class="term">error de calibración esperado</span> resume la distancia:</p>
+<div class="eq key" data-name="ECE">\[\text{ECE}=\sum_{b}\frac{n_b}{n}\,\Big|\bar y_b-\bar p_b\Big| .\]</div>
+<ul>
+<li><b>Sobreconfiado</b>: probabilidades demasiado extremas. La curva queda por debajo de la diagonal en la parte alta (dice 0.9 y ocurre 0.7) y por encima en la parte baja (dice 0.1 y ocurre 0.25). Típico de Bayes ingenuo, de redes profundas y de árboles muy profundos.</li>
+<li><b>Subconfiado</b>: la forma de S contraria; las predicciones se amontonan hacia el centro y rara vez dicen 0 o 1. Típico de los bosques aleatorios, que promedian muchos árboles.</li>
+<li><b>Desplazado</b>: la curva entera por debajo (o por encima) de la diagonal; el modelo sobrestima (o subestima) el riesgo de todos. Ocurre al cambiar la prevalencia entre el entrenamiento y el uso, o al entrenar con pesos de clase.</li>
+<li>La regresión logística bien especificada suele estar bien calibrada, porque minimiza la log-loss, una regla propia.</li>
+<li>Las SVM y los márgenes de boosting no son probabilidades: hay que calibrarlos para usarlos como tales.</li>
+</ul>
+<div class="sim" data-sim="fiabilidad" data-title="Diagrama de fiabilidad y dos formas de corregirlo"></div>
+<div class="sim-guide"><ul>
+<li>Elija una distorsión: el modelo ordena igual de bien en todos los casos (el AUC no cambia), pero sus probabilidades se alejan de la diagonal.</li>
+<li>Active Platt (una logística sobre la puntuación) o la regresión isotónica (una función escalonada creciente), ajustadas con un conjunto de calibración aparte. Los puntos vuelven a la diagonal y el ECE y el Brier bajan.</li>
+<li>Platt corrige bien distorsiones en forma de S; la isotónica corrige cualquier distorsión monótona pero necesita más datos y puede sobreajustar con pocos.</li>
+</ul></div>
+<div class="box warn"><p>Calibre siempre con datos que no se usaron para entrenar el modelo (<code>CalibratedClassifierCV</code> lo hace con validación cruzada interna). Calibrar con los datos de entrenamiento reproduce la sobreconfianza que se quería corregir.</p></div>
+</section>
+
+<section>
+<h2>De la probabilidad a la decisión: costos</h2>
+<p>Si un falso positivo cuesta \(c_{FP}\) y un falso negativo \(c_{FN}\), conviene predecir positivo cuando el costo esperado de hacerlo es menor que el de no hacerlo: \((1-p)\,c_{FP}\lt p\,c_{FN}\). Con probabilidades calibradas, el umbral óptimo es</p>
+<div class="eq key" data-name="Umbral de mínimo costo">\[t^*=\frac{c_{FP}}{c_{FP}+c_{FN}} .\]</div>
+<p>Si perder un caso cuesta diez veces más que una falsa alarma, \(t^*=1/11=0.091\), no 0.5. El umbral 0.5 solo es óptimo cuando ambos errores cuestan lo mismo. Si las probabilidades no están calibradas, la fórmula falla y el umbral se busca directamente minimizando el costo en validación (<code>TunedThresholdClassifierCV</code>).</p>
+<div class="sim" data-sim="umbral-costos" data-title="Costo esperado en función del umbral"></div>
+<div class="sim-guide"><ul>
+<li>Con costos iguales el mínimo está cerca de 0.5. Suba el costo del falso negativo: el umbral óptimo baja y coincide con \(c_{FP}/(c_{FP}+c_{FN})\).</li>
+<li>Active «probabilidades sobreconfiadas»: la fórmula ya no da el mínimo; hay que buscarlo con datos.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Clases desbalanceadas</h2>
+<p>Con 1 % de positivos el problema no es el desbalance en sí, sino que hay pocos ejemplos de la clase de interés y que la exactitud y el umbral 0.5 dejan de tener sentido. En orden de preferencia:</p>
+<ol>
+<li><b>Usar las métricas correctas</b>: AP, exhaustividad a precisión fija, costo esperado (capítulo 11).</li>
+<li><b>Mover el umbral</b> según los costos. No altera el modelo ni sus probabilidades.</li>
+<li><b>Pesos de clase</b> (<code>class_weight='balanced'</code>): cada positivo cuenta \(n/(2n_+)\) veces en la pérdida. Equivale aproximadamente a mover el umbral, pero <b>descalibra</b> las probabilidades: el modelo cree que la prevalencia es 50 %.</li>
+<li><b>Remuestreo</b>: submuestrear la mayoritaria (pierde datos) o sobremuestrear la minoritaria (duplicados o SMOTE, que interpola entre vecinos). También descalibra y, si se hace antes de separar los pliegues, filtra información. Siempre dentro de la validación cruzada (biblioteca <code>imbalanced-learn</code>).</li>
+<li><b>Conseguir más positivos</b>: casi siempre lo que más ayuda.</li>
+</ol>
+<div class="sim" data-sim="desbalance-pesos" data-title="Tres formas de atender a la clase minoritaria"></div>
+<div class="sim-guide"><ul>
+<li>Sin ajustes, la frontera de la logística se aleja de la clase minoritaria y la exhaustividad es baja.</li>
+<li>Con pesos balanceados la frontera se desplaza hacia la mayoritaria: más exhaustividad, menos precisión, y la probabilidad media predicha sube muy por encima de la prevalencia real.</li>
+<li>Mover el umbral produce casi la misma frontera que los pesos pero conserva las probabilidades calibradas.</li>
+</ul></div>
+<div class="box explain"><p>Pesar más a los positivos es como pedirle a un jurado que «sea más severo»: condenará a más culpables y a más inocentes. Mover el umbral es lo mismo, pero sin falsear el informe de cuán probable era cada culpa.</p></div>
+</section>
+
+<section>
+<h2>Práctica: calibrar, decidir y equilibrar</h2>
+<div class="box py"><p>El programa compara la calibración de cinco modelos sobre 20 000 casos con 15 % de positivos, elige el umbral que minimiza un costo en el que perder un positivo cuesta 10 veces una falsa alarma, y mide el efecto de <code>class_weight='balanced'</code>.</p>
+<div class="py" data-py="12-calibracion"></div></div>
+<div class="box read"><ul>
+<li><b>Bayes ingenuo</b> ordena bien (AUC 0.941) pero está sobreconfiado: cuando dice 0.97, ocurre en el 73 % de los casos; cuando dice 0.70, en el 42 %. ECE 0.058. Con calibración isotónica el AUC no cambia (0.941) y el ECE baja a 0.0045: la calibración arregla las probabilidades sin tocar el orden.</li>
+<li><b>SVM lineal + Platt</b> queda prácticamente igual que la logística (Brier 0.0479 frente a 0.0480): Platt es justamente una logística sobre el margen de la SVM.</li>
+<li><b>Bosque aleatorio</b>: el mejor Brier y log-loss gracias a su AUC (0.982), con un ECE algo mayor (0.029) que la logística. Brier y log-loss premian a la vez ordenar bien y estar calibrado.</li>
+<li><b>Costos</b>: con umbral 0.5 el costo es 4 466; con el umbral teórico \(1/11=0.091\) baja a 1 937 (−57 %). La validación cruzada elige 0.121 con costo 1 915: casi lo mismo, porque la logística está bien calibrada.</li>
+<li><b>class_weight='balanced'</b>: la exhaustividad sube de 0.725 a 0.935 y la precisión baja de 0.825 a 0.630. Pero la probabilidad media predicha pasa de 0.153 (igual a la prevalencia real, 0.154) a 0.254, y el Brier empeora de 0.048 a 0.072: las probabilidades ya no se pueden leer como riesgos.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Calibrado: entre los casos con \(\hat p=p\), la fracción de positivos es \(p\). Se mira con un diagrama de fiabilidad y se resume con ECE o Brier.</li>
+<li>Platt (sigmoide) e isotónica corrigen la calibración sin cambiar el AUC; siempre con datos aparte.</li>
+<li>Umbral de mínimo costo con probabilidades calibradas: \(c_{FP}/(c_{FP}+c_{FN})\).</li>
+<li>Desbalance: métricas correctas y umbral primero; pesos y remuestreo descalibran; todo dentro de la validación.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>En un bin con 200 casos y probabilidad media 0.30 hubo 36 positivos. ¿Está bien calibrado ese bin?
+<details><summary>Respuesta</summary><p>Frecuencia 0.18 frente a 0.30: el modelo sobrestima el riesgo en ese rango (sobreconfiado hacia positivo). Diferencia 0.12.</p></details></li>
+<li><span class="lvl">Básico</span>Un falso negativo cuesta 50 y un falso positivo 5. ¿Umbral óptimo?
+<details><summary>Respuesta</summary><p>\(5/55=0.091\).</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué calibrar no cambia el AUC?
+<details><summary>Respuesta</summary><p>Platt y la isotónica son transformaciones monótonas (no decrecientes) de la puntuación: conservan el orden de los casos, y el AUC solo depende del orden. (La isotónica puede crear empates, que mueven el AUC muy poco.)</p></details></li>
+<li><span class="lvl">Intermedio</span>Un modelo entrenado con submuestreo hasta 50/50 predice 0.6 para un caso. La prevalencia real es 2 %. ¿Probabilidad corregida?
+<details><summary>Respuesta</summary><p>Se corrigen las chances por el cambio de prevalencia: chances del modelo 1.5; factor \((0.02/0.98)/(0.5/0.5)=0.0204\); chances corregidas 0.0306; probabilidad 0.030.</p></details></li>
+<li><span class="lvl">Avanzado</span>Demuestre el umbral óptimo \(t^*\) a partir del costo esperado de cada decisión.
+<details><summary>Respuesta</summary><p>Decidir positivo cuesta en promedio \((1-p)c_{FP}\); decidir negativo, \(p\,c_{FN}\). Conviene positivo si \((1-p)c_{FP}\lt p\,c_{FN}\iff p\gt c_{FP}/(c_{FP}+c_{FN})\).</p></details></li>
+</ol>
+<div class="box links"><ul>
+<li><a href="https://scikit-learn.org/stable/modules/calibration.html">scikit-learn — Probability calibration</a><small>Diagramas de fiabilidad, CalibratedClassifierCV y la calibración típica de cada modelo.</small></li>
+<li><a href="https://scikit-learn.org/stable/modules/classification_threshold.html">scikit-learn — Tuning the decision threshold</a><small>TunedThresholdClassifierCV y umbrales con costos de negocio.</small></li>
+<li><a href="https://doi.org/10.1145/1102351.1102430">Niculescu-Mizil y Caruana (2005) — Predicting good probabilities with supervised learning</a><small>El estudio clásico sobre la calibración de diez algoritmos.</small></li>
+<li><a href="https://arxiv.org/abs/1706.04599">Guo, Pleiss, Sun y Weinberger (2017) — On Calibration of Modern Neural Networks</a><small>Por qué las redes profundas son sobreconfiadas y el escalado por temperatura.</small></li>
+<li><a href="https://imbalanced-learn.org/stable/">imbalanced-learn</a><small>Submuestreo, sobremuestreo y SMOTE integrados en pipelines de scikit-learn.</small></li>
+</ul></div>
+</section>
+</template>

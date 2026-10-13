@@ -1,0 +1,98 @@
+<template class="chapter-src" data-id="enlace" data-num="10" data-title="El enlace químico" data-part="Parte II · Átomos, moléculas y sólidos" data-short="Born–Oppenheimer, ion H₂⁺ con LCAO, orbitales enlazantes y antienlazantes, diatómicas, polaridad e hibridación">
+<p class="lead">¿Por qué dos átomos se unen? La respuesta clásica no existe: dos átomos neutros no deberían atraerse. La respuesta cuántica es la interferencia: cuando las funciones de onda de dos átomos se suman en fase, el electrón se acumula entre los núcleos y la energía baja. Este capítulo construye esa idea desde el ion más sencillo, H₂⁺, hasta los enlaces sp² y polares que mantienen unido el h-BN.</p>
+
+<section>
+<h2>La aproximación de Born–Oppenheimer</h2>
+<p>Un protón pesa 1836 veces más que un electrón. Mientras los núcleos se mueven lentamente, los electrones se reacomodan casi al instante. Born y Oppenheimer (1927) aprovecharon esta separación de escalas: se resuelve primero el problema electrónico con los núcleos fijos en posiciones \(\vb R\), y la energía electrónica resultante, más la repulsión entre núcleos, actúa como potencial para el movimiento nuclear:</p>
+<div class="eq key" data-name="Superficie de energía potencial">\[\Big[-\sum_i\frac12\lap_i+V_{eN}(\vb r;\vb R)+V_{ee}(\vb r)\Big]\Psi_\text{el}=E_\text{el}(\vb R)\,\Psi_\text{el},\qquad U(\vb R)=E_\text{el}(\vb R)+\sum_{A\lt B}\frac{Z_AZ_B}{R_{AB}} .\]</div>
+<p>\(U(\vb R)\) es la <span class="term">superficie de energía potencial</span>. Su mínimo da la geometría de equilibrio; su profundidad, la energía de enlace; su curvatura, las frecuencias de vibración (capítulo 5); y su gradiente, las fuerzas sobre los átomos, \(\vb F_A=-\nabla_AU\).</p>
+<div class="box hbn"><p>Todas las energías de SIESTA usadas en la tesis son energías de Born–Oppenheimer: energías electrónicas con los núcleos quietos en geometrías relajadas (fuerzas menores que 0.05 eV/Å). hBN-MC hereda esta imagen: una configuración de la red tiene una energía bien definida, \(E=\sum\varepsilon_{\alpha\beta}n_{\alpha\beta}\), que es una aproximación a \(U(\vb R)\) para esa disposición de átomos.</p></div>
+</section>
+
+<section>
+<h2>El ion H₂⁺: el enlace más sencillo</h2>
+<p>Un electrón y dos protones separados una distancia \(R\). Cerca de cada núcleo, el electrón debe parecerse a un orbital 1s del hidrógeno, \(\phi_A\) o \(\phi_B\). La <span class="term">combinación lineal de orbitales atómicos</span> (LCAO) propone</p>
+<div class="eq">\[\psi_\pm=\frac{\phi_A\pm\phi_B}{\sqrt{2(1\pm S)}},\qquad S(R)=\braket{\phi_A}{\phi_B}=\ee^{-R}\Big(1+R+\frac{R^2}{3}\Big)\ \ \text{(unidades atómicas)} .\]</div>
+<p>Es un problema de dos niveles (capítulo 3) con solapamiento. Por simetría, \(H_{AA}=H_{BB}\) y los autovalores del problema \(\mathsf H\vb c=E\mathsf S\vb c\) son</p>
+<div class="eq key" data-name="H₂⁺ en LCAO">\[E_\pm(R)=\frac{H_{AA}\pm H_{AB}}{1\pm S}+\frac1R,\qquad H_{AA}=-\frac12-\frac1R+\ee^{-2R}\Big(1+\frac1R\Big),\qquad H_{AB}=-\frac S2-\ee^{-R}(1+R).\]</div>
+<ul>
+<li>\(\psi_+\) es <span class="term">enlazante</span>: las dos funciones se suman en la región entre núcleos, el electrón pasa tiempo donde siente la atracción de ambos protones, y la energía baja por debajo de la del átomo aislado.</li>
+<li>\(\psi_-\) es <span class="term">antienlazante</span>: tiene un plano nodal entre los núcleos; la energía sube y la curva es repulsiva a cualquier distancia.</li>
+<li>El mínimo de \(E_+\) con orbitales 1s puros está en \(R=2.49\,a_0\) (1.32 Å) con energía de enlace 1.76 eV. Si se deja variar el exponente del orbital (\(\ee^{-\zeta r}\)), el resultado mejora a \(R=2.00\,a_0\), \(\zeta=1.24\) y 2.35 eV, frente a los valores exactos \(R_e=2.00\,a_0\) (1.06 Å) y \(D_e=2.79\) eV.</li>
+</ul>
+<div class="sim" data-sim="h2plus" data-title="H₂⁺: curvas de energía enlazante y antienlazante"></div>
+<div class="sim-guide"><ul>
+<li>Recorra \(R\): a distancias grandes las dos curvas tienden a \(-0.5\) Ha (un átomo de H más un protón lejano); a distancias cortas domina la repulsión entre núcleos.</li>
+<li>Active «ζ óptimo»: el orbital se contrae cerca de los núcleos y el enlace se hace más corto y más fuerte.</li>
+<li>La densidad sobre el eje muestra la acumulación de carga entre núcleos (enlazante) o su vaciado (antienlazante).</li>
+</ul></div>
+<div class="box explain"><p>Dos ondas en un estanque que se encuentran en fase se refuerzan; en contrafase se anulan. En el enlace, el electrón «se refuerza» entre los dos núcleos, justo donde lo atraen los dos a la vez, y eso es lo que pega a los átomos. El orbital antienlazante es la versión en contrafase: deja un hueco entre los núcleos y los empuja a separarse.</p></div>
+<div class="box valid"><p>Las integrales de la simulación son las expresiones analíticas para orbitales de Slater de exponente \(\zeta\). El apéndice B comprueba el mínimo con \(\zeta=1\) (\(R=2.4928\,a_0\), \(E=-0.56483\) Ha) y con \(\zeta\) optimizado (\(E=-0.58651\) Ha, \(\zeta=1.238\)), los resultados clásicos de Pauling y de Finkelstein y Horowitz.</p></div>
+</section>
+
+<section>
+<h2>De H₂ a las moléculas diatómicas</h2>
+<p>En la molécula H₂ los dos electrones ocupan el orbital enlazante con espines opuestos: un <span class="term">enlace covalente</span> es un par de electrones compartido en un orbital enlazante. La energía experimental de disociación del H₂ es 4.75 eV (\(D_e\)) y su distancia, 0.74 Å. El <span class="term">orden de enlace</span> se define como</p>
+<div class="eq key" data-name="Orden de enlace">\[\text{orden}=\frac{(\text{electrones enlazantes})-(\text{electrones antienlazantes})}{2}.\]</div>
+<p>Para las moléculas del segundo periodo se combinan los orbitales 2s y 2p de cada átomo: los 2p\(_z\) a lo largo del eje forman orbitales \(\sigma\) (simétricos alrededor del eje) y los 2p\(_x\), 2p\(_y\) forman orbitales \(\pi\) (con un plano nodal que contiene al eje). Llenando el diagrama con los electrones de valencia se obtiene orden 1 para B₂, 2 para C₂, 3 para N₂ (el enlace triple más fuerte, 9.8 eV) y 2 para O₂, que además resulta paramagnético por sus dos electrones \(\pi^*\) desapareados: una predicción que la imagen de pares de Lewis no da.</p>
+<div class="sim" data-sim="diagrama-om" data-title="Diagramas de orbitales moleculares de diatómicas"></div>
+<div class="sim-guide"><ul>
+<li>Compare N₂ y la molécula BN: tienen distinto número de electrones de valencia (10 y 8). C₂ y BN son isoelectrónicas.</li>
+<li>En las heteronucleares (BN, CO) los niveles atómicos de partida están a distinta altura: el orbital enlazante se parece más al del átomo más electronegativo.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Enlaces polares: cuando los átomos son distintos</h2>
+<p>Si los dos átomos son distintos, las energías de sitio \(\varepsilon_A\) y \(\varepsilon_B\) difieren y el problema es el de dos niveles con \(\Delta\ne0\). El orbital enlazante \(\psi=c_A\phi_A+c_B\phi_B\) tiene más peso en el átomo de menor energía (el más electronegativo), y el antienlazante, en el otro:</p>
+<div class="eq key" data-name="Polaridad del enlace">\[E_\pm=\bar\varepsilon\pm\sqrt{\Big(\frac\Delta2\Big)^2+t^2},\qquad \text{ionicidad}\quad g=\frac{|\Delta|/2}{\sqrt{(\Delta/2)^2+t^2}}\in[0,1] .\]</div>
+<p>Con \(g=0\) el enlace es covalente puro (C–C); con \(g\to1\), iónico puro (Na–Cl). El enlace B–N está en medio: los electrones del enlace pasan más tiempo cerca del nitrógeno, que queda con carga parcial negativa, y el boro con carga parcial positiva. En el lenguaje de bandas (capítulo 14), la banda de valencia del h-BN vive sobre todo en los N y la de conducción en los B, separadas por una brecha que crece con \(\Delta\).</p>
+<div class="sim" data-sim="heteronuclear" data-title="Del enlace covalente al iónico"></div>
+<div class="sim-guide"><ul>
+<li>Con \(\Delta=0\) el orbital enlazante se reparte 50/50; al aumentar \(\Delta\) se desplaza hacia el átomo más electronegativo.</li>
+<li>Pruebe los pares predefinidos C–C, B–N y Li–F: la ionicidad crece en ese orden.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Hibridación: sp³, sp² y sp</h2>
+<p>El carbono del metano forma cuatro enlaces idénticos a 109.5°, aunque sus orbitales de valencia (un 2s y tres 2p) son distintos. La explicación de Pauling es la <span class="term">hibridación</span>: combinaciones lineales de s y p que apuntan en direcciones definidas. Un híbrido \(h=\frac{1}{\sqrt{1+\lambda^2}}\big(s+\lambda\,p_{\uv n}\big)\) apunta a lo largo de \(\uv n\); el ángulo entre dos híbridos equivalentes cumple \(\cos\theta=-1/\lambda^2\):</p>
+<div class="tablewrap"><table>
+<tr><th>Hibridación</th><th>\(\lambda^2\)</th><th>Ángulo</th><th>Geometría</th><th>Ejemplo</th></tr>
+<tr><td>sp³</td><td class="c">3</td><td class="c">109.47°</td><td>tetraédrica</td><td>diamante, metano, c-BN</td></tr>
+<tr><td>sp²</td><td class="c">2</td><td class="c">120°</td><td>trigonal plana</td><td>grafeno, h-BN, benceno, borazina</td></tr>
+<tr><td>sp</td><td class="c">1</td><td class="c">180°</td><td>lineal</td><td>acetileno</td></tr>
+</table></div>
+<p>En el grafeno y en el h-BN cada átomo usa tres híbridos sp² para formar tres enlaces \(\sigma\) a 120° en el plano: así nace la red de panal. El cuarto orbital, el \(p_z\) perpendicular al plano, queda libre y forma el sistema \(\pi\) deslocalizado. En el h-BN, el boro aporta su \(p_z\) vacío y el nitrógeno su \(p_z\) con dos electrones (un par solitario), de modo que el sistema \(\pi\) tiene dos electrones por par BN, igual que el grafeno.</p>
+<div class="sim" data-sim="hibridacion" data-title="Orbitales híbridos sp, sp² y sp³"></div>
+<div class="sim-guide"><ul>
+<li>Cambie entre sp³, sp² y sp: el ángulo entre lóbulos sigue \(\cos\theta=-1/\lambda^2\).</li>
+<li>Con \(\lambda\) continuo se ve cómo un orbital s esférico se convierte en un lóbulo dirigido a medida que aumenta la proporción de p.</li>
+</ul></div>
+<div class="box hbn"><p>En los bordes de los nanoporos, cada átomo pierde un vecino y le queda un híbrido sp² sin enlace (un «enlace colgante»). En el modelo de la tesis ese enlace se satura con un hidrógeno: un enlace N–H o B–H, con energías \(\varepsilon_{XN}\) y \(\varepsilon_{XB}\). hBN-MC no dibuja los H como sitios de la red, sino que los cuenta como enlaces «vacancia–átomo» (X–α): cada vez que un átomo tiene una vacancia vecina, se suma la energía de un enlace con H.</p></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Born–Oppenheimer: los electrones se resuelven con núcleos fijos; \(U(\vb R)\) da geometrías, energías de enlace, vibraciones y fuerzas.</li>
+<li>LCAO: la suma en fase de orbitales atómicos acumula carga entre núcleos (enlazante); la resta deja un nodo (antienlazante).</li>
+<li>H₂⁺: el modelo LCAO da el enlace cualitativamente; optimizar el exponente lo mejora mucho.</li>
+<li>Orden de enlace = (enlazantes − antienlazantes)/2; el diagrama de OM explica el paramagnetismo del O₂.</li>
+<li>Enlaces polares: el orbital enlazante se desplaza hacia el átomo más electronegativo; B–N es parcialmente iónico.</li>
+<li>sp² da la red plana de panal con un sistema \(\pi\) de orbitales \(p_z\).</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Cuál es el orden de enlace de N₂, O₂ y F₂?
+<details><summary>Respuesta</summary><p>3, 2 y 1.</p></details></li>
+<li><span class="lvl">Básico</span>Calcule el solapamiento \(S\) de dos orbitales 1s a \(R=2a_0\).
+<details><summary>Respuesta</summary><p>\(S=\ee^{-2}(1+2+4/3)=0.586\).</p></details></li>
+<li><span class="lvl">Intermedio</span>En el modelo de dos niveles con \(t=3\) eV, ¿qué \(\Delta\) da una ionicidad de 0.5?
+<details><summary>Respuesta</summary><p>\(g=0.5\Rightarrow(\Delta/2)^2=\frac13t^2\Rightarrow\Delta=2t/\sqrt3=3.46\) eV.</p></details></li>
+<li><span class="lvl">Intermedio</span>Demuestre que dos híbridos sp² equivalentes forman 120°.
+<details><summary>Respuesta</summary><p>La ortogonalidad \(\braket{h_1}{h_2}=0\) exige \(1+\lambda^2\cos\theta=0\); con \(\lambda^2=2\), \(\cos\theta=-\frac12\).</p></details></li>
+<li><span class="lvl">Avanzado</span>¿Por qué el orbital antienlazante de H₂⁺ sube más de lo que baja el enlazante?
+<details><summary>Respuesta</summary><p>Por el solapamiento: \(E_\pm\) tiene denominadores \(1\pm S\). Con \(S\gt0\), dividir por \(1-S\) amplifica la subida. Por eso He₂ (dos electrones en cada orbital) no se enlaza.</p></details></li>
+</ol>
+</section>
+</template>

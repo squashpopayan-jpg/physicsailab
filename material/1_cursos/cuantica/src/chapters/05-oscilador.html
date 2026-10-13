@@ -1,0 +1,99 @@
+<template class="chapter-src" data-id="oscilador" data-num="5" data-title="Oscilador armónico y métodos numéricos" data-part="Parte I · Fundamentos de la mecánica cuántica" data-short="Operadores escalera, energía de punto cero, estados coherentes, vibraciones de Morse, diferencias finitas y Numerov">
+<p class="lead">Cerca de cualquier mínimo de energía, todo potencial parece una parábola. Por eso el oscilador armónico describe las vibraciones de las moléculas, los fonones de los cristales y los modos de la luz. Su solución exacta es además el banco de pruebas perfecto para aprender a resolver la ecuación de Schrödinger en el computador, que es lo que hacen, a gran escala, todos los programas de estructura electrónica.</p>
+
+<section>
+<h2>Por qué el oscilador aparece en todas partes</h2>
+<p>Desarrollemos un potencial cualquiera alrededor de un mínimo \(x_0\): como \(V'(x_0)=0\),</p>
+<div class="eq">\[V(x)\approx V(x_0)+\tfrac12V''(x_0)\,(x-x_0)^2=V_0+\tfrac12k\,(x-x_0)^2,\qquad \omega=\sqrt{k/m}.\]</div>
+<p>Para pequeñas amplitudes, un átomo en una molécula o en un cristal oscila armónicamente. La frecuencia depende de la curvatura del pozo (la rigidez del enlace) y de la masa. Un ejemplo del propio h-BN: el modo de vibración en el plano en que los átomos B y N se mueven en sentidos opuestos (modo \(E_{2g}\)) tiene número de onda 1366 cm⁻¹, es decir \(\hbar\omega=0.169\) eV; es la «huella» con la que la espectroscopía Raman identifica el h-BN.</p>
+</section>
+
+<section>
+<h2>La solución exacta: operadores escalera</h2>
+<p>El hamiltoniano es \(\op H=\frac{\op p^2}{2m}+\frac12m\omega^2\op x^2\). Definimos el <span class="term">operador de destrucción</span> y su adjunto, el de <span class="term">creación</span>:</p>
+<div class="eq key" data-name="Operadores escalera">\[\op a=\sqrt{\frac{m\omega}{2\hbar}}\Big(\op x+\frac{i\op p}{m\omega}\Big),\qquad \op a^\dagger=\sqrt{\frac{m\omega}{2\hbar}}\Big(\op x-\frac{i\op p}{m\omega}\Big),\qquad [\op a,\op a^\dagger]=1 .\]</div>
+<p>Con \([\op x,\op p]=i\hbar\) se comprueba que \(\op H=\hbar\omega\big(\op a^\dagger\op a+\tfrac12\big)\). Además \([\op H,\op a^\dagger]=\hbar\omega\,\op a^\dagger\): si \(\ket\psi\) tiene energía \(E\), \(\op a^\dagger\ket\psi\) tiene energía \(E+\hbar\omega\). Los niveles forman una escalera de peldaños iguales. La escalera debe tener un último peldaño \(\ket0\) con \(\op a\ket0=0\); esa ecuación diferencial de primer orden da el estado fundamental gaussiano, y aplicando \(\op a^\dagger\) se obtienen todos los demás:</p>
+<div class="eq key" data-name="Oscilador armónico cuántico">\[E_n=\hbar\omega\Big(n+\frac12\Big),\qquad \psi_n(x)=\frac{1}{\sqrt{2^nn!}}\Big(\frac{m\omega}{\pi\hbar}\Big)^{1/4}H_n(\xi)\,\ee^{-\xi^2/2},\quad \xi=\sqrt{\frac{m\omega}{\hbar}}\,x ,\]</div>
+<p>donde \(H_n\) son los polinomios de Hermite (\(H_0=1\), \(H_1=2\xi\), \(H_2=4\xi^2-2\), …). Tres consecuencias:</p>
+<ul>
+<li><strong>Energía de punto cero.</strong> El estado fundamental tiene \(E_0=\hbar\omega/2\): un átomo nunca está quieto, ni siquiera a 0 K.</li>
+<li><strong>Penetración.</strong> En el estado fundamental hay un 15.7 % de probabilidad de encontrar la partícula más allá de los puntos de retorno clásicos \(\pm\sqrt{2E_0/k}\).</li>
+<li><strong>Correspondencia.</strong> Para \(n\) grande, \(|\psi_n|^2\) promediada sobre sus oscilaciones tiende a la distribución clásica \(P_\text{cl}(x)=1/\big(\pi\sqrt{A^2-x^2}\big)\): la partícula pasa más tiempo cerca de los extremos, donde va más lenta.</li>
+</ul>
+<div class="sim" data-sim="oscilador" data-title="Oscilador armónico: niveles, funciones y límite clásico"></div>
+<div class="sim-guide"><ul>
+<li>Todos los peldaños están separados por \(\hbar\omega\); el primero está a \(\hbar\omega/2\) del fondo.</li>
+<li>Suba \(n\) hasta 25 y active la distribución clásica: el promedio local de \(|\psi_n|^2\) la sigue.</li>
+<li>Observe la lectura de probabilidad fuera de los puntos de retorno: disminuye con \(n\), pero nunca es cero.</li>
+</ul></div>
+<div class="box explain"><p>Un columpio cuántico no puede estar completamente quieto: si lo estuviera, sabríamos a la vez dónde está (abajo) y su velocidad (cero), lo que prohíbe la incertidumbre. Siempre «tiembla» un poco, con la energía mínima \(\hbar\omega/2\). En un cristal, esas vibraciones de punto cero existen incluso en el cero absoluto.</p></div>
+</section>
+
+<section>
+<h2>Estados coherentes: el oscilador clásico recuperado</h2>
+<p>Los autoestados \(\ket n\) son estacionarios: nada se mueve en ellos. Un oscilador clásico, en cambio, va y viene. El puente es el <span class="term">estado coherente</span> \(\ket\alpha\), autoestado del operador de destrucción, \(\op a\ket\alpha=\alpha\ket\alpha\):</p>
+<div class="eq">\[\ket\alpha=\ee^{-|\alpha|^2/2}\sum_{n=0}^{\infty}\frac{\alpha^n}{\sqrt{n!}}\ket n,\qquad \expval{x}(t)=\sqrt{\frac{2\hbar}{m\omega}}\,|\alpha|\cos(\omega t-\varphi).\]</div>
+<p>Su densidad es una gaussiana con la misma anchura que el estado fundamental que oscila como una partícula clásica, sin ensancharse nunca. Las poblaciones \(|\braket n\alpha|^2\) siguen una distribución de Poisson de media \(|\alpha|^2\). La luz de un láser es un estado coherente del campo electromagnético.</p>
+<div class="sim" data-sim="coherente" data-title="Estado coherente y paquete que «respira»"></div>
+<div class="sim-guide"><ul>
+<li>El estado coherente sigue exactamente a la partícula clásica (punto) y conserva su forma.</li>
+<li>Elija un paquete más estrecho o más ancho que el fundamental: su centro sigue oscilando, pero la anchura late con frecuencia \(2\omega\).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Vibraciones moleculares y el potencial de Morse</h2>
+<p>Un enlace real no es una parábola: si se estira mucho, se rompe. Un modelo excelente es el <span class="term">potencial de Morse</span>, cuya ecuación de Schrödinger también tiene solución exacta:</p>
+<div class="eq key" data-name="Potencial de Morse">\[V(r)=D_e\big(1-\ee^{-a(r-r_e)}\big)^2,\qquad E_n=\hbar\omega\Big(n+\tfrac12\Big)-\frac{\big[\hbar\omega\,(n+\tfrac12)\big]^2}{4D_e},\qquad \omega=a\sqrt{\frac{2D_e}{\mu}} .\]</div>
+<p>\(D_e\) es la profundidad del pozo, \(r_e\) la distancia de equilibrio y \(\mu=m_1m_2/(m_1+m_2)\) la masa reducida. El segundo término, la <span class="term">anarmonicidad</span>, junta los niveles al subir y hace que haya un número finito de estados ligados. La energía que realmente cuesta romper la molécula desde su estado fundamental es la <span class="term">energía de disociación</span> \(D_0=D_e-E_0\), menor que la profundidad del pozo por la energía de punto cero. Para H₂: \(D_e=4.75\) eV, \(\hbar\omega=0.546\) eV y \(D_0=4.48\) eV.</p>
+<div class="sim" data-sim="morse" data-title="Niveles vibracionales de moléculas reales (Morse)"></div>
+<div class="sim-guide"><ul>
+<li>Compare H₂ con D₂: el mismo potencial (misma química) pero doble masa; la frecuencia baja en \(\sqrt2\) y la energía de punto cero también.</li>
+<li>La gráfica de separaciones \(E_{n+1}-E_n\) decrece linealmente (gráfica de Birge–Sponer): su extrapolación a cero da el número de niveles ligados.</li>
+</ul></div>
+<div class="box hbn"><p>El hidrógeno de referencia de hBN-MC, \(\mu_\text{H}=E(\text{H}_2)/2+\Delta\mu_\text{H}\), parte de la energía electrónica de la molécula en el fondo del pozo. La energía de punto cero del H₂ (\(\hbar\omega/2\approx0.27\) eV por molécula) y los efectos de temperatura y presión son parte de lo que resume \(\Delta\mu_\text{H}\) (capítulo 22). Por otro lado, el modelo de hBN-MC usa una red rígida: no incluye vibraciones ni relajación de los átomos, una de sus limitaciones declaradas.</p></div>
+</section>
+
+<section>
+<h2>Resolver la ecuación en el computador</h2>
+<p>Casi ningún potencial realista tiene solución exacta. La estrategia numérica más simple, que usaremos durante todo el curso, es sustituir la función continua por sus valores \(\psi_i=\psi(x_i)\) en una malla de paso \(h\) y la segunda derivada por diferencias finitas:</p>
+<div class="eq key" data-name="Diferencias finitas de segundo orden">\[\psi''(x_i)=\frac{\psi_{i+1}-2\psi_i+\psi_{i-1}}{h^2}-\frac{h^2}{12}\psi^{(4)}(x_i)+\dots\]</div>
+<p>La ecuación de Schrödinger se convierte en un problema de autovalores matricial, \(\mathsf H\vb\psi=E\vb\psi\), con una matriz <span class="term">tridiagonal</span>:</p>
+<div class="eq">\[\mathsf H_{ii}=\frac{\hbar^2}{mh^2}+V(x_i),\qquad \mathsf H_{i,i\pm1}=-\frac{\hbar^2}{2mh^2},\qquad \text{con }\psi_0=\psi_{N+1}=0 .\]</div>
+<p>El error de las energías disminuye como \(h^2\): duplicar el número de puntos reduce el error unas cuatro veces. El dominio debe ser lo bastante grande para que la función haya decaído en los bordes. Los potenciales con saltos convergen peor, a menos que la malla caiga justo sobre el salto.</p>
+<h3>Numerov y el método de disparo</h3>
+<p>Para ecuaciones del tipo \(\psi''=f(x)\,\psi\), el <span class="term">método de Numerov</span> es un integrador de cuarto orden:</p>
+<div class="eq key" data-name="Método de Numerov">\[\Big(1-\tfrac{h^2}{12}f_{i+1}\Big)\psi_{i+1}=2\Big(1+\tfrac{5h^2}{12}f_i\Big)\psi_i-\Big(1-\tfrac{h^2}{12}f_{i-1}\Big)\psi_{i-1}.\]</div>
+<p>El <span class="term">método de disparo</span> integra desde un extremo con una energía de prueba y ajusta \(E\) hasta que la solución también se anule en el otro extremo; el número de nodos indica qué estado se está buscando. Es exactamente la técnica que usa el átomo autoconsistente de los capítulos 15–17, en una malla logarítmica.</p>
+<div class="sim" data-sim="resolvedor-1d" data-title="Resolvedor numérico general y su convergencia"></div>
+<div class="sim-guide"><ul>
+<li>Elija el oscilador y aumente el número de puntos: la gráfica logarítmica del error tiene pendiente −2 (error \(\propto h^2\)).</li>
+<li>El doble pozo no tiene solución exacta: sus dos primeros niveles están casi degenerados. La pequeña separación es el <span class="term">desdoblamiento por efecto túnel</span>.</li>
+<li>Con el pozo finito, el error converge de forma irregular porque la malla no siempre cae sobre los bordes del pozo.</li>
+</ul></div>
+<div class="box valid"><p>Con 3000 puntos el apéndice B obtiene \(E_3=3.49997\,\hbar\omega\) para el oscilador (error relativo \(8\times10^{-6}\)), el nivel fundamental de Morse con error \(5\times10^{-6}\) y el primer excitado de Pöschl–Teller con error \(1.2\times10^{-5}\), todos por debajo de la tolerancia fijada.</p></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Cerca de un mínimo todo potencial es armónico: \(\omega=\sqrt{V''/m}\).</li>
+<li>\(E_n=\hbar\omega(n+\frac12)\): niveles equiespaciados y energía de punto cero \(\hbar\omega/2\).</li>
+<li>Los estados coherentes oscilan como partículas clásicas sin deformarse.</li>
+<li>Los enlaces reales son anarmónicos (Morse): niveles cada vez más juntos, número finito, \(D_0=D_e-E_0\).</li>
+<li>Numéricamente, la ecuación de Schrödinger es un problema de autovalores de una matriz tridiagonal; el error cae como \(h^2\) (Numerov: \(h^4\)).</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>El modo \(E_{2g}\) del h-BN está en 1366 cm⁻¹. Exprese \(\hbar\omega\) en eV y la temperatura \(\hbar\omega/\kB\).
+<details><summary>Respuesta</summary><p>\(\hbar\omega=hc\tilde\nu=0.1694\) eV; \(T=1966\) K.</p></details></li>
+<li><span class="lvl">Básico</span>Compruebe que \(\psi_0\propto\ee^{-m\omega x^2/2\hbar}\) cumple \(\op a\psi_0=0\).
+<details><summary>Respuesta</summary><p>\(\big(x+\frac{\hbar}{m\omega}\frac{\dd}{\dd x}\big)\ee^{-m\omega x^2/2\hbar}=\big(x-x\big)\ee^{\dots}=0\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Calcule \(\expval{x^2}\) en el estado \(n\) usando \(\op x=\sqrt{\hbar/2m\omega}(\op a+\op a^\dagger)\).
+<details><summary>Respuesta</summary><p>\(\expval{x^2}=\frac{\hbar}{2m\omega}\mel n{\op a\op a^\dagger+\op a^\dagger\op a}n=\frac{\hbar}{m\omega}\big(n+\frac12\big)\).</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Cuántos niveles ligados tiene el H₂ según el modelo de Morse (\(D_e=4.75\) eV, \(\hbar\omega=0.546\) eV)?
+<details><summary>Respuesta</summary><p>\(n_{\max}=\lfloor2D_e/\hbar\omega-\frac12\rfloor=\lfloor16.9\rfloor=16\): 17 niveles (\(n=0\) a 16); el valor experimental es 15.</p></details></li>
+<li><span class="lvl">Avanzado</span>Con diferencias finitas y \(h=0.1\) (\(\hbar=m=\omega=1\)), estime el error de \(E_0\) del oscilador.
+<details><summary>Respuesta</summary><p>Por teoría de perturbaciones, el término \(-\frac{h^2}{12}\psi^{(4)}\) da \(\delta E\approx-\frac{h^2}{24}\expval{p^4}=-\frac{h^2}{24}\cdot\frac34=-3.1\times10^{-4}\).</p></details></li>
+</ol>
+</section>
+</template>

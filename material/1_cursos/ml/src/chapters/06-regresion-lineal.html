@@ -1,0 +1,124 @@
+<template class="chapter-src" data-id="regresion-lineal" data-num="6" data-title="Regresión lineal" data-part="Parte II · Regresión" data-short="Mínimos cuadrados y su geometría; interpretar coeficientes; R²; supuestos y diagnóstico de residuos; errores estándar, valores p e intervalos; multicolinealidad y VIF">
+<p class="lead">La regresión lineal es el modelo más antiguo, más usado y más malinterpretado del aprendizaje automático. Es rápida, tiene solución exacta y sus coeficientes se leen directamente. Dominarla es dominar el lenguaje con el que se discuten todos los demás modelos: residuos, sobreajuste, colinealidad, incertidumbre de los parámetros.</p>
+
+<section>
+<h2>El modelo y los mínimos cuadrados</h2>
+<p>La regresión lineal supone que la respuesta es una combinación lineal de las variables más ruido:</p>
+<div class="eq key" data-name="Modelo lineal y mínimos cuadrados">\[y=\beta_0+\beta_1x_1+\dots+\beta_px_p+\varepsilon,\qquad \hat{\boldsymbol\beta}=\argmin_{\boldsymbol\beta}\ \sum_{i=1}^n\big(y_i-\hat y_i\big)^2=(X\T X)^{-1}X\T\vb y .\]</div>
+<p>La fórmula cerrada (las <span class="term">ecuaciones normales</span>) sale de igualar a cero el gradiente del error cuadrático, como en el capítulo 2. En la práctica no se invierte \(X\T X\): se usa una descomposición QR o SVD, numéricamente estable. «Lineal» se refiere a los parámetros, no a las variables: \(y=\beta_0+\beta_1x+\beta_2x^2\) también es un modelo lineal.</p>
+<p>La geometría es reveladora: \(\hat{\vb y}=X\hat{\boldsymbol\beta}\) es la <span class="term">proyección ortogonal</span> de \(\vb y\) sobre el espacio generado por las columnas de \(X\). Por eso los residuos \(\vb e=\vb y-\hat{\vb y}\) son perpendiculares a cada columna: suman cero (si hay intercepto) y no están correlacionados con ninguna variable ni con las predicciones.</p>
+<div class="sim" data-sim="mco-arrastrar" data-title="Mínimos cuadrados con puntos que usted mueve"></div>
+<div class="sim-guide"><ul>
+<li>Arrastre los puntos; haga clic en un lugar vacío para agregar uno. La recta es la que minimiza la suma de las áreas de los cuadrados de los residuos.</li>
+<li>Lleve un punto muy arriba en un extremo del eje \(x\): la recta gira hacia él. Un solo punto con \(x\) extremo (alta <span class="term">palanca</span>) puede dominar el ajuste.</li>
+<li>El mismo punto en el centro del rango de \(x\) apenas mueve la pendiente: solo sube el intercepto.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Interpretar los coeficientes</h2>
+<p>\(\beta_j\) es el cambio esperado en \(y\) cuando \(x_j\) aumenta en una unidad <b>manteniendo fijas las demás variables</b>. Esa cláusula lo cambia todo:</p>
+<ul>
+<li>Un coeficiente depende de qué otras variables están en el modelo. El efecto del IMC sobre la glucosa no es el mismo si el modelo incluye o no la circunferencia de cintura, porque ambas se mueven juntas.</li>
+<li>Las unidades importan: un coeficiente de 6.4 por unidad de IMC y uno de 0.4 por mg/dl de colesterol no se comparan directamente. Para comparar importancias se estandarizan las variables (coeficientes en «desviaciones de \(y\) por desviación de \(x\)»).</li>
+<li>Una variable binaria (indicadora) desplaza el intercepto: su coeficiente es la diferencia media entre los dos grupos, con lo demás fijo.</li>
+<li>Con \(\log y\) como respuesta, \(100\beta_j\) es aproximadamente el cambio porcentual de \(y\) por unidad de \(x_j\); con \(\log x_j\) y \(\log y\), \(\beta_j\) es una <span class="term">elasticidad</span>.</li>
+<li>Una interacción \(\beta_{12}x_1x_2\) hace que el efecto de \(x_1\) dependa del valor de \(x_2\).</li>
+</ul>
+<div class="box warn"><p>Un coeficiente es una asociación condicionada, no un efecto causal. Si las ventas de helado predicen ahogamientos, es porque ambas suben en verano. Afirmar causalidad requiere un diseño (experimento aleatorizado) o supuestos explícitos sobre las variables omitidas.</p></div>
+</section>
+
+<section>
+<h2>R² y lo que no dice</h2>
+<div class="eq key" data-name="Coeficiente de determinación">\[R^2=1-\frac{\sum(y_i-\hat y_i)^2}{\sum(y_i-\bar y)^2}=1-\frac{\text{SSE}}{\text{SST}},\qquad R^2_\text{aj}=1-\frac{(1-R^2)(n-1)}{n-p-1}.\]</div>
+<p>\(R^2\) es la fracción de la varianza de \(y\) que explica el modelo frente a predecir siempre la media. Un modelo que predice la media tiene \(R^2=0\); uno perfecto, 1; y en datos nuevos puede ser negativo, si predice peor que la media. Tres advertencias:</p>
+<ul>
+<li>En entrenamiento, \(R^2\) nunca baja al añadir variables, aunque sean ruido. El \(R^2\) ajustado penaliza el número de variables; mejor aún, mida \(R^2\) en validación.</li>
+<li>Un \(R^2\) bajo no significa que el modelo sea inútil (predecir rendimientos bursátiles con \(R^2=0.02\) puede ser valioso), y uno alto no garantiza que sea correcto (una relación curva puede tener \(R^2=0.9\) con una recta y residuos sistemáticos).</li>
+<li>\(R^2\) no tiene unidades; para saber cuánto se equivoca el modelo en la escala del problema use el RMSE o el MAE (capítulo 9).</li>
+</ul>
+</section>
+
+<section>
+<h2>Supuestos y diagnóstico de residuos</h2>
+<p>Para predecir bien basta que la relación sea aproximadamente lineal. Para que los errores estándar, los valores p y los intervalos sean correctos hacen falta más supuestos sobre el ruido:</p>
+<ol>
+<li><b>Linealidad</b>: \(\E[y\mid\vb x]\) es lineal en los parámetros. Se viola si hay curvatura.</li>
+<li><b>Independencia</b> de los errores. Se viola con series temporales o datos agrupados.</li>
+<li><b>Homocedasticidad</b>: varianza del error constante. Se viola cuando el error crece con el nivel (ingresos, precios).</li>
+<li><b>Normalidad</b> de los errores: importa para intervalos con muestras pequeñas; con muchas, el teorema central del límite la vuelve poco crítica.</li>
+</ol>
+<p>Las violaciones se ven en los residuos, no en los datos crudos. El gráfico más útil es <b>residuos frente a valores ajustados</b>: debe ser una nube sin forma. Una curva indica no linealidad; un embudo, heterocedasticidad. El <b>gráfico cuantil–cuantil</b> compara los residuos con una normal. La <span class="term">distancia de Cook</span> mide cuánto cambiaría todo el ajuste si se quitara un punto; valores mayores que \(4/n\) o cercanos a 1 merecen revisión.</p>
+<div class="sim" data-sim="diagnostico-residuos" data-title="Cuatro gráficos de diagnóstico para cinco situaciones"></div>
+<div class="sim-guide"><ul>
+<li><b>Correcto</b>: residuos sin estructura, cuantiles sobre la diagonal y ningún punto con distancia de Cook mayor que 0.5. Que unos pocos superen el umbral orientativo \(4/n\) (en naranja) es normal: es una alerta para mirar, no para borrar.</li>
+<li><b>No lineal</b>: los residuos dibujan una U. La recta está sesgada; agregue \(x^2\) o use otro modelo.</li>
+<li><b>Heterocedástico</b>: los residuos se abren en embudo. Los coeficientes siguen siendo insesgados, pero sus errores estándar son incorrectos (use errores robustos o transforme \(y\)).</li>
+<li><b>Atípico y palanca</b>: un punto con residuo enorme o con \(x\) extremo aparece arriba en la distancia de Cook y desplaza la pendiente estimada.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Inferencia: errores estándar, valores p e intervalos</h2>
+<p>Si los supuestos se cumplen, \(\hat{\boldsymbol\beta}\) es aproximadamente normal con covarianza \(\hat\sigma^2(X\T X)^{-1}\), donde \(\hat\sigma^2=\text{SSE}/(n-p-1)\). De ahí salen:</p>
+<div class="eq key" data-name="Inferencia sobre un coeficiente">\[\text{EE}(\hat\beta_j)=\sqrt{\hat\sigma^2\,[(X\T X)^{-1}]_{jj}},\qquad t_j=\frac{\hat\beta_j}{\text{EE}(\hat\beta_j)},\qquad \text{IC}_{95}=\hat\beta_j\pm t_{0.975,\,n-p-1}\,\text{EE}(\hat\beta_j).\]</div>
+<p>El <span class="term">valor p</span> de \(t_j\) es la probabilidad de observar un estadístico tan extremo si el verdadero \(\beta_j\) fuera cero. Un valor p pequeño indica que los datos son poco compatibles con un efecto nulo <i>en presencia de las demás variables</i>; no mide el tamaño ni la importancia del efecto, ni la probabilidad de que la hipótesis sea cierta. El intervalo de confianza es más informativo: da el rango de efectos compatibles con los datos.</p>
+<div class="box ex"><p>Con \(\hat\beta=6.40\), EE = 0.82 y 320 grados de libertad, \(t=7.8\) y el IC95 es \(6.40\pm1.97\cdot0.82=[4.79,\ 8.01]\). Interpretación: cada punto adicional de IMC se asocia con entre 4.8 y 8.0 puntos más de progresión de la enfermedad, manteniendo las otras nueve variables fijas.</p></div>
+</section>
+
+<section>
+<h2>Multicolinealidad</h2>
+<p>Cuando dos variables están muy correlacionadas, los datos casi no permiten separar sus efectos: muchas combinaciones de \(\beta_1,\beta_2\) explican igual de bien. La matriz \(X\T X\) se acerca a singular y la varianza de los coeficientes se dispara. Se mide con el <span class="term">factor de inflación de la varianza</span>:</p>
+<div class="eq key" data-name="VIF">\[\text{VIF}_j=\frac{1}{1-R_j^2},\qquad R_j^2=R^2\ \text{de la regresión de } x_j \text{ sobre las demás variables}.\]</div>
+<p>\(\sqrt{\text{VIF}_j}\) es el factor por el que se multiplica el error estándar de \(\hat\beta_j\) respecto del caso sin correlación. VIF por encima de 5 o 10 señala coeficientes poco fiables. Lo notable es que <b>las predicciones no empeoran</b>: la colinealidad daña la interpretación de los coeficientes individuales, no la capacidad predictiva (mientras la correlación se mantenga en los datos nuevos). Remedios: eliminar o combinar variables redundantes, PCA, o regularizar con Ridge (capítulo 8).</p>
+<div class="sim" data-sim="multicolinealidad" data-title="Doscientas muestras, doscientas estimaciones de (β₁, β₂)"></div>
+<div class="sim-guide"><ul>
+<li>Con \(\rho=0\) la nube de estimaciones es redonda y pequeña alrededor del valor verdadero (1, 1).</li>
+<li>Con \(\rho=0.95\) la nube se estira en una diagonal: si \(\hat\beta_1\) sale alto, \(\hat\beta_2\) sale bajo. Cada coeficiente es muy inestable y hasta cambia de signo, pero su suma está bien determinada.</li>
+<li>Compare el error de predicción en prueba: casi no cambia con \(\rho\).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Práctica: regresión lineal sobre diabetes</h2>
+<div class="box py"><p>El conjunto <code>load_diabetes</code> tiene 442 pacientes con 10 variables (edad, sexo, IMC, presión arterial y seis medidas sanguíneas, en unidades originales con <code>scaled=False</code>) y una medida de progresión de la enfermedad un año después. El programa ajusta la regresión, calcula la tabla de inferencia que imprimiría <code>statsmodels</code> y hace el diagnóstico.</p>
+<div class="py" data-py="06-ols"></div></div>
+<div class="box read"><ul>
+<li><b>Coeficientes significativos</b>: IMC (6.40 por unidad), presión arterial (1.04 por mmHg), s5 (64.1 por unidad del logaritmo de triglicéridos) y sexo (−19.9). Sus intervalos no contienen el cero.</li>
+<li><b>Coeficientes con p grande</b> (edad, s1, s2, s3, s4, s6): no hay evidencia de efecto <i>dadas las demás variables</i>. No significa que no importen: s1 y s2 tienen VIF de 53.6 y 34.7, porque el colesterol total, el LDL y el HDL están ligados. Sus errores estándar están inflados y los datos no pueden repartir el efecto entre ellas.</li>
+<li><b>R²</b>: 0.555 en entrenamiento y 0.542 ajustado, pero 0.359 en prueba. La caída es grande para un modelo de 11 parámetros con 331 filas: parte es sobreajuste y parte es la variabilidad de una prueba de solo 111 pacientes (repita con otra semilla y cambiará). El RMSE de prueba (56.4) es apenas un 27 % menor que la desviación de \(y\) (77.1).</li>
+<li><b>Diagnóstico</b>: la correlación residuo–ajustado es exactamente 0 (propiedad de la proyección). La de |residuo| con el ajustado es +0.185: el error crece algo con el nivel predicho, heterocedasticidad leve. Shapiro–Wilk (p = 0.74) no rechaza la normalidad. Ningún punto es influyente (Cook máxima 0.03).</li>
+</ul></div>
+<div class="box ex"><h4>Ejercicio</h4><p>Elimine s1 y s2 del modelo y compare la tabla: ¿cómo cambian el coeficiente y el error estándar de s4 y s5? ¿Cambia el R² de prueba? Después ajuste <code>np.log(y)</code> y compare el gráfico de |residuo| frente al ajustado.</p></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Mínimos cuadrados proyecta \(\vb y\) sobre las columnas de \(X\); los residuos son ortogonales a ellas.</li>
+<li>\(\beta_j\) es el efecto asociado de \(x_j\) con lo demás fijo; depende de las otras variables y no es causal por sí solo.</li>
+<li>\(R^2\) compara con predecir la media; mídalo en validación y acompáñelo de un error en unidades.</li>
+<li>Diagnostique con residuos frente a ajustados, cuantiles normales y distancia de Cook.</li>
+<li>Valores p e intervalos dependen de los supuestos; prefiera intervalos a valores p.</li>
+<li>La colinealidad infla los errores estándar (VIF), no el error de predicción.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un modelo de precios de vivienda tiene coeficiente 2.3 millones por metro cuadrado. Interprételo.
+<details><summary>Respuesta</summary><p>Entre dos viviendas iguales en las demás variables del modelo, la que tiene un metro cuadrado más cuesta en promedio 2.3 millones más.</p></details></li>
+<li><span class="lvl">Básico</span>SSE = 120 y SST = 400. Calcule \(R^2\). ¿Y el \(R^2\) ajustado con \(n=50\), \(p=4\)?
+<details><summary>Respuesta</summary><p>\(R^2=0.70\); \(R^2_\text{aj}=1-0.30\cdot49/45=0.673\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Una variable tiene \(R_j^2=0.96\) respecto de las demás. ¿VIF y por cuánto se multiplica su error estándar?
+<details><summary>Respuesta</summary><p>VIF = 1/0.04 = 25; el EE se multiplica por \(\sqrt{25}=5\).</p></details></li>
+<li><span class="lvl">Intermedio</span>El gráfico de residuos frente a ajustados tiene forma de embudo. ¿Qué supuesto falla, qué consecuencias tiene y qué haría?
+<details><summary>Respuesta</summary><p>Homocedasticidad. Los coeficientes siguen siendo insesgados pero los EE y valores p son incorrectos y los intervalos de predicción tienen ancho equivocado. Transformar \(y\) (logaritmo), usar errores robustos (HC3) o modelar la varianza.</p></details></li>
+<li><span class="lvl">Avanzado</span>Demuestre que, con intercepto, los residuos de mínimos cuadrados suman cero.
+<details><summary>Respuesta</summary><p>Las ecuaciones normales dicen \(X\T(\vb y-X\hat{\boldsymbol\beta})=\vb 0\). La primera columna de \(X\) es de unos, así que su ecuación es \(\vb 1\T\vb e=\sum e_i=0\).</p></details></li>
+</ol>
+<div class="box links"><ul>
+<li><a href="https://www.statlearning.com/">ISLP — capítulo 3: Linear Regression</a><small>Interpretación, inferencia, interacciones y diagnóstico con ejemplos en Python.</small></li>
+<li><a href="https://scikit-learn.org/stable/modules/linear_model.html">scikit-learn — Linear Models</a><small>LinearRegression y toda la familia lineal, con sus objetivos exactos.</small></li>
+<li><a href="https://www.statsmodels.org/stable/regression.html">statsmodels — Linear Regression</a><small>La biblioteca de referencia para inferencia: tablas de coeficientes, errores robustos y diagnósticos.</small></li>
+<li><a href="https://mlu-explain.github.io/linear-regression/">MLU-Explain — Linear Regression</a><small>Explicación visual de la recta de mínimos cuadrados y sus métricas.</small></li>
+</ul></div>
+</section>
+</template>

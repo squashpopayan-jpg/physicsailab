@@ -1,0 +1,140 @@
+<template class="chapter-src" data-id="aprender" data-num="1" data-title="¿Qué es aprender de datos?" data-part="Parte I · Fundamentos" data-short="Tarea, experiencia y desempeño; tipos de aprendizaje; vocabulario y notación; la meta real: generalizar; el flujo de un proyecto">
+<p class="lead">Un programa tradicional recibe reglas y datos y produce respuestas. Un algoritmo de aprendizaje recibe datos y respuestas y produce las reglas. Este capítulo fija el vocabulario que usará todo el curso y la idea que lo ordena: un modelo no vale por lo bien que reproduce los datos que ya vio, sino por lo bien que acierta con datos nuevos.</p>
+
+<section>
+<h2>Aprender: tarea, experiencia y desempeño</h2>
+<div class="box def"><p>Tom Mitchell (1997) dio la definición operativa más usada: un programa <span class="term">aprende</span> de la experiencia \(E\) con respecto a una tarea \(T\) y una medida de desempeño \(P\) si su desempeño en \(T\), medido por \(P\), mejora con la experiencia \(E\).</p></div>
+<p>La definición obliga a precisar tres cosas antes de escribir una línea de código. En un filtro de correo no deseado, la tarea es decidir si un mensaje es <i>spam</i>; la experiencia son miles de mensajes ya etiquetados por usuarios; la medida puede ser el porcentaje de mensajes bien clasificados, o mejor, cuántos mensajes legítimos se pierden por cada cien de spam que se detectan. Cambiar la medida cambia el modelo que conviene construir.</p>
+<p>La diferencia con la programación clásica es de dirección. Escribir a mano las reglas de un filtro («si el asunto contiene GRATIS y hay más de tres signos de exclamación…») es frágil: los remitentes cambian de táctica y las reglas no escalan. Un algoritmo de aprendizaje busca automáticamente, dentro de una familia de funciones, la que mejor relaciona las entradas con las salidas observadas.</p>
+<figure class="fig">
+<svg viewBox="0 0 720 170" role="img" aria-label="Programación tradicional frente a aprendizaje automático">
+  <g font-family="Archivo, sans-serif" font-size="13" text-anchor="middle">
+    <text x="180" y="18" font-weight="700" fill="var(--ink)">Programación tradicional</text>
+    <rect x="20" y="40" width="90" height="34" rx="5" fill="var(--surface-2)" stroke="var(--rule-strong)"/><text x="65" y="62" fill="var(--ink)">reglas</text>
+    <rect x="20" y="96" width="90" height="34" rx="5" fill="var(--surface-2)" stroke="var(--rule-strong)"/><text x="65" y="118" fill="var(--ink)">datos</text>
+    <rect x="150" y="62" width="100" height="46" rx="6" fill="var(--def-bg)" stroke="var(--def-ink)"/><text x="200" y="90" fill="var(--ink)" font-weight="650">programa</text>
+    <rect x="290" y="68" width="90" height="34" rx="5" fill="var(--ex-bg)" stroke="var(--ex-ink)"/><text x="335" y="90" fill="var(--ink)">respuestas</text>
+    <text x="540" y="18" font-weight="700" fill="var(--ink)">Aprendizaje automático</text>
+    <rect x="380" y="40" width="90" height="34" rx="5" fill="var(--surface-2)" stroke="var(--rule-strong)" transform="translate(0,0)"/><text x="425" y="62" fill="var(--ink)">datos</text>
+    <rect x="380" y="96" width="90" height="34" rx="5" fill="var(--ex-bg)" stroke="var(--ex-ink)"/><text x="425" y="118" fill="var(--ink)">respuestas</text>
+    <rect x="510" y="62" width="100" height="46" rx="6" fill="var(--def-bg)" stroke="var(--def-ink)"/><text x="560" y="84" fill="var(--ink)" font-weight="650">algoritmo de</text><text x="560" y="100" fill="var(--ink)" font-weight="650">aprendizaje</text>
+    <rect x="630" y="68" width="80" height="34" rx="5" fill="var(--accent)"/><text x="670" y="90" fill="var(--accent-ink)" font-weight="700">modelo</text>
+  </g>
+  <g stroke="var(--ink-3)" stroke-width="1.5" fill="none">
+    <path d="M110 57 L148 78"/><path d="M110 113 L148 92"/><path d="M250 85 H288"/>
+    <path d="M470 57 L508 78"/><path d="M470 113 L508 92"/><path d="M610 85 H628"/>
+  </g>
+</svg>
+<figcaption>En el aprendizaje automático las reglas son el resultado, no la entrada. El «modelo» es una función ajustada que después se aplica, como un programa más, a datos nuevos.</figcaption>
+</figure>
+</section>
+
+<section>
+<h2>Tipos de aprendizaje</h2>
+<p>La clasificación más útil depende de qué información trae la experiencia.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Tipo</th><th>Qué hay en los datos</th><th>Pregunta típica</th><th>Algoritmos del curso</th></tr></thead>
+<tbody>
+<tr><td><b>Supervisado: regresión</b></td><td>entradas \(\vb x\) y una salida numérica \(y\)</td><td>¿Cuánto costará esta casa?</td><td>lineal, Ridge/Lasso, árboles, boosting, redes</td></tr>
+<tr><td><b>Supervisado: clasificación</b></td><td>entradas \(\vb x\) y una clase \(y\)</td><td>¿Este tumor es maligno?</td><td>logística, k-NN, Bayes, SVM, árboles, bosques, redes</td></tr>
+<tr><td><b>No supervisado</b></td><td>solo entradas \(\vb x\)</td><td>¿Qué grupos de clientes hay? ¿Qué transacción es rara?</td><td>k-medias, jerárquico, DBSCAN, PCA, t-SNE, bosque de aislamiento</td></tr>
+<tr><td><b>Semisupervisado y autosupervisado</b></td><td>pocas etiquetas, muchos datos sin etiquetar; o etiquetas fabricadas a partir de los propios datos</td><td>predecir la palabra que falta en una frase</td><td>modelos de lenguaje (capítulo 28)</td></tr>
+<tr><td><b>Por refuerzo</b></td><td>un agente que actúa y recibe recompensas</td><td>¿Qué jugada maximiza la recompensa a largo plazo?</td><td>fuera del alcance de este curso</td></tr>
+</tbody></table></div>
+<p>Dentro del aprendizaje supervisado, la distinción entre regresión y clasificación es la que más decisiones condiciona: la función de pérdida, las métricas, la forma de la salida y la interpretación de los resultados cambian por completo.</p>
+<div class="box explain"><p>Supervisado es aprender con un profesor que corrige cada ejercicio: el estudiante ve la pregunta y la respuesta correcta. No supervisado es recibir una caja de fotos sin rótulos y ordenarlas en montones parecidos. Por refuerzo es aprender a montar en bicicleta: nadie le dice qué músculo mover, solo sabe si se cayó o no.</p></div>
+</section>
+
+<section>
+<h2>Vocabulario y notación</h2>
+<p>Los datos de la mayoría de los problemas se organizan en una tabla. Cada fila es una <span class="term">instancia</span> u observación (un paciente, una casa, un correo); cada columna, una <span class="term">característica</span> o variable de entrada (<i>feature</i>); y una columna especial guarda la <span class="term">etiqueta</span> o variable objetivo (<i>target</i>).</p>
+<div class="eq key" data-name="Notación del curso">\[X=\begin{pmatrix}x_{11}&\cdots&x_{1p}\\ \vdots&\ddots&\vdots\\ x_{n1}&\cdots&x_{np}\end{pmatrix}\in\R^{n\times p},\qquad \vb y=\begin{pmatrix}y_1\\ \vdots\\ y_n\end{pmatrix},\qquad \hat y=f(\vb x;\boldsymbol\theta).\]</div>
+<ul>
+<li>\(n\) es el número de instancias y \(p\) el de características; \(\vb x_i\) es la fila \(i\) (un vector de \(p\) números).</li>
+<li>El <span class="term">modelo</span> \(f\) produce una predicción \(\hat y\). Sus <span class="term">parámetros</span> \(\boldsymbol\theta\) (pesos, umbrales) los aprende el algoritmo a partir de los datos.</li>
+<li>Los <span class="term">hiperparámetros</span> los fija usted antes de entrenar: el grado de un polinomio, la profundidad de un árbol, la tasa de aprendizaje. Elegirlos bien es el tema del capítulo 19.</li>
+<li>La <span class="term">función de pérdida</span> \(\ell(y,\hat y)\) mide cuánto se equivoca una predicción; entrenar es buscar los parámetros que minimizan la pérdida promedio en los datos de entrenamiento.</li>
+<li><span class="term">Entrenar</span> (ajustar) es estimar \(\boldsymbol\theta\); <span class="term">inferir</span> (predecir) es aplicar \(f\) ya entrenado a datos nuevos.</li>
+</ul>
+<div class="box ex"><p>En un conjunto de 506 casas con 13 variables (habitaciones, edad, distancia al centro…), \(n=506\), \(p=13\) y \(y\) es el precio. Una regresión lineal tiene 14 parámetros (13 pesos y un intercepto) y ningún hiperparámetro; un bosque aleatorio tiene miles de umbrales aprendidos y varios hiperparámetros (número de árboles, profundidad, variables por división).</p></div>
+</section>
+
+<section>
+<h2>La meta real: generalizar</h2>
+<p>Memorizar los datos de entrenamiento es trivial: basta guardar la tabla y responder buscando la fila idéntica. Pero ante un caso nuevo esa «tabla de búsqueda» no sabe qué decir. Lo que importa es el <span class="term">error de generalización</span>: el error esperado sobre datos nuevos de la misma población. Como esos datos no están disponibles al entrenar, se simulan apartando una parte de los datos que el modelo no ve: el <span class="term">conjunto de prueba</span>.</p>
+<div class="sim" data-sim="aprender-a-mano" data-title="Trace usted la frontera y compárela con dos algoritmos"></div>
+<div class="sim-guide"><ul>
+<li>Arrastre los dos extremos de la recta para separar los puntos azules de los naranjas. La lectura muestra la exactitud sobre los datos de entrenamiento (puntos rellenos).</li>
+<li>Active «Mostrar datos de prueba»: aparecen puntos huecos que nadie usó para trazar la frontera. ¿Su recta acierta igual con ellos?</li>
+<li>Pulse «1 vecino más cercano»: acierta el 100 % de entrenamiento porque memoriza, pero su exactitud de prueba suele ser peor que la de la recta logística. Esa brecha es el sobreajuste, el tema del capítulo 3.</li>
+</ul></div>
+<p>Una segunda idea completa la primera: con más experiencia, un buen algoritmo generaliza mejor. La simulación siguiente entrena el mismo método con cada vez más datos y mide el error en un conjunto de prueba grande y fijo.</p>
+<div class="sim" data-sim="curva-experiencia" data-title="El mismo algoritmo con más experiencia"></div>
+<div class="sim-guide"><ul>
+<li>Con pocos datos el error de prueba es alto y varía mucho de una muestra a otra (la banda es ancha).</li>
+<li>Al crecer \(n\), el error de prueba baja y se acerca a un piso: el error irreducible que causa el ruido de los datos, que ningún modelo puede eliminar.</li>
+<li>Compare un modelo rígido (logístico lineal) con uno flexible (k-NN con \(k=5\)) en las lunas: el lineal se estanca pronto en un error alto; el flexible sigue mejorando.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El flujo de trabajo de un proyecto</h2>
+<p>Los algoritmos son una parte pequeña de un proyecto real. El orden de los pasos importa porque muchos errores graves (capítulo 31) consisten en hacerlos en el orden equivocado.</p>
+<ol>
+<li><b>Definir el problema</b>: qué se predice, para qué decisión, con qué costo de cada tipo de error y con qué métrica se juzgará el éxito.</li>
+<li><b>Obtener y entender los datos</b>: origen, unidades, valores faltantes, cómo se generó la etiqueta, si hay grupos o dependencia temporal.</li>
+<li><b>Separar un conjunto de prueba</b> antes de cualquier decisión basada en los datos, y guardarlo bajo llave.</li>
+<li><b>Explorar y preparar</b> solo con los datos de entrenamiento: limpieza, codificación, escalado, nuevas características (capítulo 5).</li>
+<li><b>Construir una línea base</b> sencilla (predecir la media o la clase más frecuente; un modelo lineal) para saber cuánto aporta lo demás.</li>
+<li><b>Entrenar y comparar modelos con validación cruzada</b>, y ajustar hiperparámetros (capítulos 4 y 19).</li>
+<li><b>Evaluar una sola vez en el conjunto de prueba</b> el modelo elegido.</li>
+<li><b>Interpretar y comunicar</b>: qué variables pesan, qué errores comete, con qué incertidumbre (capítulo 29).</li>
+<li><b>Desplegar y vigilar</b>: los datos cambian con el tiempo y el desempeño se degrada (capítulo 31).</li>
+</ol>
+<div class="box warn"><p>El error más costoso de un principiante es mirar el conjunto de prueba para tomar decisiones (elegir variables, ajustar hiperparámetros) y luego reportar ese mismo número como estimación del desempeño futuro. Ese número es optimista, a veces muchísimo.</p></div>
+</section>
+
+<section>
+<h2>Práctica: su primer modelo con scikit-learn</h2>
+<p>Toda la práctica del curso usa Python con <code>scikit-learn</code>, <code>numpy</code> y <code>pandas</code>, que ya vienen instalados en Google Colab. La biblioteca tiene una interfaz uniforme: se crea un estimador, se entrena con <code>fit(X, y)</code> y se predice con <code>predict(X)</code>. Aprender esa interfaz una vez sirve para todos los algoritmos.</p>
+<div class="box py"><p>El programa clasifica flores de iris (150 flores, 4 medidas, 3 especies) con un árbol de decisión y con k vecinos. Separa primero un 30 % de prueba, entrena con el resto y compara la exactitud en ambos conjuntos.</p>
+<div class="py" data-py="01-primer-modelo"></div></div>
+<div class="box read"><ul>
+<li><b>Tamaños</b>: 105 flores para entrenar y 45 para probar. <code>stratify=y</code> mantiene la proporción de especies (un tercio de cada una) en ambas partes.</li>
+<li><b>Árbol sin límite</b>: exactitud de entrenamiento 1.000, porque crece hasta aislar cada flor, y 0.978 en prueba (un error en 45). La diferencia entre ambas es la medida más simple de sobreajuste; aquí es pequeña porque iris es un problema fácil.</li>
+<li><b>k-NN</b>: la exactitud de entrenamiento ya no es perfecta (0.971: no memoriza), y la de prueba es la misma, 0.978. Memorizar no compró nada.</li>
+<li><b>Matriz de confusión</b>: las filas son la especie real y las columnas la predicha. El único error está fuera de la diagonal, en la fila 1 y columna 2: una <i>versicolor</i> clasificada como <i>virginica</i>, las dos especies que se solapan. <i>Setosa</i> nunca se confunde.</li>
+<li>Con solo 45 flores de prueba, cada error mueve la exactitud en 2.2 puntos: diferencias de uno o dos errores entre modelos no significan nada. El capítulo 4 enseña a medir esa incertidumbre.</li>
+</ul></div>
+<div class="box ex"><h4>Ejercicio</h4><p>Cambie <code>random_state=42</code> por otros valores (0, 1, 2…) en <code>train_test_split</code> y anote la exactitud de prueba de cada modelo. ¿Cuánto varía? ¿Sigue ganando siempre el mismo? Luego limite el árbol con <code>DecisionTreeClassifier(max_depth=2)</code> y compare.</p></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Aprender es mejorar en una tarea \(T\), medida por \(P\), con la experiencia \(E\). Sin una medida clara no hay forma de saber si se aprendió.</li>
+<li>Supervisado (regresión o clasificación) cuando hay etiquetas; no supervisado cuando solo hay entradas.</li>
+<li>Los parámetros los aprende el algoritmo; los hiperparámetros los elige usted.</li>
+<li>La meta es generalizar: el error que cuenta es el de datos nuevos, estimado con un conjunto de prueba que no se usó para nada más.</li>
+<li>Más datos reducen el error hasta un piso fijado por el ruido; un modelo demasiado rígido se estanca antes.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Para un sistema que predice la demanda diaria de energía de una ciudad, identifique \(T\), \(E\) y \(P\), y diga si es regresión o clasificación.
+<details><summary>Respuesta</summary><p>\(T\): predecir los kWh de mañana; \(E\): historial de consumo con clima, día de la semana y festivos; \(P\): error absoluto medio en kWh (o porcentual). Es regresión: la salida es un número continuo.</p></details></li>
+<li><span class="lvl">Básico</span>¿Es la profundidad máxima de un árbol un parámetro o un hiperparámetro? ¿Y el umbral de cada división?
+<details><summary>Respuesta</summary><p>La profundidad máxima es un hiperparámetro (se fija antes de entrenar). Los umbrales de las divisiones son parámetros: los elige el algoritmo a partir de los datos.</p></details></li>
+<li><span class="lvl">Intermedio</span>Un modelo tiene 99 % de exactitud de entrenamiento y 71 % de prueba; otro, 84 % y 82 %. ¿Cuál elegiría y por qué?
+<details><summary>Respuesta</summary><p>El segundo: su desempeño en datos nuevos es mayor (82 % frente a 71 %) y la brecha pequeña indica que no memoriza. La exactitud de entrenamiento no sirve para elegir.</p></details></li>
+<li><span class="lvl">Intermedio</span>Con 45 instancias de prueba, ¿cuál es el error estándar de una exactitud observada de 0.93? Use \(\sqrt{p(1-p)/n}\).
+<details><summary>Respuesta</summary><p>\(\sqrt{0.93\cdot0.07/45}\approx0.038\): un intervalo aproximado del 95 % es 0.93 ± 0.075. Dos modelos con 0.91 y 0.95 no se distinguen.</p></details></li>
+<li><span class="lvl">Avanzado</span>Un banco entrena un modelo de fraude con transacciones de 2023 y lo evalúa separando al azar un 20 % de esas mismas transacciones. ¿Qué riesgo corre al usarlo en 2025?
+<details><summary>Respuesta</summary><p>La prueba aleatoria mezcla pasado y futuro y no refleja el cambio de los patrones de fraude con el tiempo (deriva). La evaluación honesta separa por tiempo: entrenar con meses anteriores y probar con meses posteriores (capítulos 4 y 31).</p></details></li>
+</ol>
+<div class="box links"><ul>
+<li><a href="https://scikit-learn.org/stable/getting_started.html">scikit-learn: primeros pasos</a><small>La interfaz fit/predict, los estimadores y los pipelines en diez minutos.</small></li>
+<li><a href="https://www.statlearning.com/">James, Witten, Hastie y Tibshirani — An Introduction to Statistical Learning (ISLP)</a><small>El mejor libro introductorio, gratuito, con versión en Python. Capítulo 2 para este tema.</small></li>
+<li><a href="https://developers.google.com/machine-learning/crash-course">Google — Machine Learning Crash Course</a><small>Curso corto con ejercicios interactivos; buen complemento visual.</small></li>
+<li><a href="https://mlu-explain.github.io/">MLU-Explain (Amazon)</a><small>Ensayos visuales sobre sesgo y varianza, validación, árboles y más.</small></li>
+</ul></div>
+</section>
+</template>

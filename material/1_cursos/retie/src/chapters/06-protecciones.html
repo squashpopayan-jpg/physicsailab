@@ -1,0 +1,84 @@
+<template class="chapter-src" data-id="protecciones" data-num="6" data-title="Interruptores, diferenciales y DPS" data-part="Parte II · Electricidad para ingenieros civiles" data-short="Qué protege cada dispositivo, la curva tiempo-corriente del termomagnético, la regla Ib ≤ In ≤ Iz, la capacidad de interrupción, cómo detecta una fuga el diferencial y cuándo se necesita un DPS">
+<p class="lead">Cada protección del tablero vigila una cosa distinta. El interruptor termomagnético cuida el conductor; el diferencial cuida a las personas; el DPS cuida los equipos de las sobretensiones. Confundirlos produce los errores más peligrosos del diseño: creer que un interruptor de 20 A protege a alguien que toca una fase.</p>
+
+<section>
+<h2>Qué protege cada dispositivo</h2>
+<div class="tablewrap"><table>
+<thead><tr><th>Dispositivo</th><th>Vigila</th><th>Protege</th><th>Referencia</th></tr></thead>
+<tbody>
+<tr><td>Interruptor termomagnético</td><td>Corriente de fase: sobrecarga (parte térmica) y cortocircuito (parte magnética)</td><td>Conductores y equipos</td><td>Libro 3, 3.17.19 b; 3.27.3</td></tr>
+<tr><td>Diferencial (GFCI o RCD)</td><td>Diferencia entre la corriente que sale y la que regresa</td><td>Personas, ante contactos con fugas a tierra</td><td>3.27.2 e y h; 3.28.1 g y h</td></tr>
+<tr><td>DPS</td><td>Sobretensiones transitorias (rayos, maniobras)</td><td>Equipos e instalación</td><td>3.3.3.1; 3.17.14</td></tr>
+</tbody></table></div>
+<div class="box norma"><p>Las instalaciones de uso final domiciliarias o similares se deben proteger contra sobrecarga y contra cortocircuito; el interruptor termomagnético es el dispositivo automático para ese fin: la parte térmica actúa ante una sobrecarga y la parte magnética ante un cortocircuito (Libro 3, 3.17.19 b). No se deben reutilizar interruptores automáticos ya usados en otra instalación (3.17.19 c).</p></div>
+</section>
+
+<section>
+<h2>La curva tiempo-corriente</h2>
+<p>El interruptor no dispara en un valor exacto: tiene una <b>banda</b>. La parte térmica, de bimetal, responde lento a sobrecargas moderadas; la magnética, de bobina, responde en milisegundos cuando la corriente supera un múltiplo de la nominal. Las curvas B, C y D de la norma IEC 60898-1 se diferencian por ese múltiplo: de 3 a 5 veces, de 5 a 10 y de 10 a 20 veces la corriente nominal.</p>
+<div class="sim" data-sim="curva-disparo" data-title="Banda de disparo de un interruptor termomagnético"></div>
+<div class="sim-guide"><ul>
+<li>Mueva la corriente del circuito: a 1,13 veces la nominal el interruptor no debe disparar en una hora; a 1,45 veces debe disparar antes de una hora.</li>
+<li>La curva roja es el límite térmico del conductor en un cortocircuito (\(I^2t = k^2S^2\)). La banda del interruptor debe quedar a su izquierda: así corta antes de que el aislamiento se dañe.</li>
+<li>Cambie a una curva D en un circuito de tomas: la zona magnética se corre a la derecha y una falla lejana de corriente moderada podría no despejarse rápido.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>La regla de coordinación Ib ≤ In ≤ Iz</h2>
+<p>La corriente de diseño del circuito \(I_b\) debe ser menor o igual a la nominal del interruptor \(I_n\), y esta menor o igual a la capacidad de corriente del conductor \(I_z\), con los topes de la sección 240.4(D) para conductores pequeños. Para cargas continuas (tres horas o más) la corriente de diseño se toma al 125 %.</p>
+<div class="eq key" data-name="Coordinación">\[ I_b \le I_n \le I_z, \qquad I_b^{\text{continua}} = 1{,}25\,I_{\text{carga}} \]</div>
+<div class="box norma"><p>No se debe cambiar el interruptor automático por uno de mayor capacidad que supere la capacidad de corriente de los conductores del circuito a proteger. La corriente de disparo del interruptor nunca debe superar la corriente a la cual el aislamiento del conductor o los equipos asociados alcancen la temperatura máxima de operación permitida (Libro 3, 3.27.3 c).</p></div>
+<div class="sim" data-sim="coordinacion" data-title="¿Están coordinados el conductor y el interruptor?"></div>
+<div class="sim-guide"><ul>
+<li>Ducha de 3 500 W a 120 V: 29 A. Con 10 AWG y 30 A queda coordinado. Con 12 AWG y 30 A, no: el conductor solo admite 20 A.</li>
+<li>Marque la carga como continua y vea cómo sube la corriente de diseño.</li>
+</ul></div>
+<p>Además de la corriente nominal, el interruptor tiene una <b>capacidad de interrupción</b> en kA: la máxima corriente de cortocircuito que puede abrir sin destruirse. Para el interruptor principal, el diseñador debe conocer la máxima corriente de falla en ese punto, dato que entrega el operador de red (Libro 3, 3.8.1 e). En vivienda son usuales capacidades de 10 kA; en el proyecto se declara como supuesto.</p>
+</section>
+
+<section>
+<h2>El diferencial: sumar lo que va y lo que vuelve</h2>
+<p>La fase y el neutro atraviesan un núcleo toroidal. Si toda la corriente que sale por la fase regresa por el neutro, los campos se anulan. Si una parte se va a tierra (por una carcasa o por una persona), aparece una diferencia que induce una corriente en una bobina y dispara el mecanismo. Un GFCI de tomacorriente dispara entre 4 y 6 mA; un diferencial de tablero de alta sensibilidad, a 30 mA.</p>
+<div class="sim" data-sim="diferencial" data-title="Cómo detecta una fuga el diferencial"></div>
+<div class="sim-guide"><ul>
+<li>Con una fuga a tierra de 10 mA, la diferencia es 10 mA: el GFCI dispara; el de 30 mA no.</li>
+<li>Escoja <b>persona entre fase y neutro</b>: la corriente entra por la fase y sale por el neutro a través del cuerpo. No hay diferencia y el diferencial no dispara. Ningún dispositivo protege de ese contacto: solo el aislamiento, las tapas y la desenergización antes de trabajar.</li>
+<li>Note que la corriente de carga no importa: 1 A o 20 A, lo que mide es la diferencia.</li>
+</ul></div>
+<div class="box norma"><p>Los dispositivos de interrupción por fuga a tierra deben ir incorporados en los interruptores automáticos o al lado del mismo, formando un conjunto dentro del tablero (3.27.3 e). Los tomacorrientes GFCI de zonas húmedas se pueden reemplazar por un interruptor con protección diferencial en el tablero (3.28.1 h).</p></div>
+</section>
+
+<section>
+<h2>¿Necesita la casa un DPS?</h2>
+<p>El DPS (dispositivo de protección contra sobretensiones) deriva a tierra los picos de tensión de rayos y maniobras. El RETIE exige DPS en toda subestación y en las transiciones de línea aérea a cable de media o alta tensión. En redes de baja tensión o de uso final, la necesidad depende de una evaluación técnica objetiva del riesgo por sobretensiones que hace el responsable del diseño, considerando el uso de la instalación, la densidad de rayos, la topografía y la resistividad del terreno, las personas expuestas y los equipos que se protegen (3.3.3.1).</p>
+<div class="box norma"><ul>
+<li>Cuando se requieran DPS, se prefiere instalarlos en el origen de la red interna, inaccesibles para personas no competentes (3.17.14 d).</li>
+<li>En el tablero principal se instalan en modo común; la distancia de conexión no debe ser mayor de 50 cm y el conductor lo más corto posible (3.17.14 b).</li>
+<li>En baja tensión, los conductores de conexión del DPS no deben ser de calibre inferior a 14 AWG en cobre (3.17.14 g).</li>
+</ul></div>
+<div class="box crit"><p>En el proyecto académico basta con declarar el criterio: por ejemplo, «se prevé espacio y conexión para un DPS tipo 2 en el tablero general; su instalación queda sujeta a la evaluación de riesgo por sobretensiones del diseñador responsable». Esa frase es una decisión de diseño con su fuente, y va a la matriz normativa.</p></div>
+</section>
+
+<section>
+<h2>Interruptores manuales y automáticos: requisitos de instalación</h2>
+<ul>
+<li>Los interruptores manuales se instalan en serie con la fase; nunca en el neutro (3.17.20 a y b). La caja metálica del interruptor se conecta sólidamente a tierra (3.17.20 d).</li>
+<li>Los automáticos no deben desconectar el conductor puesto a tierra del circuito (3.17.19 d) y se montan en tableros con tapa (3.17.19 e).</li>
+<li>No se instalan dentro de espacios para bañeras o duchas (3.17.19 f).</li>
+<li>El centro de agarre de la palanca más alta no debe quedar a más de 2,0 m del piso (3.17.19 g).</li>
+<li>El alimentador llega al terminal de línea y la salida va a los terminales de carga (3.17.19 h).</li>
+</ul>
+</section>
+
+<section>
+<h2>Resumen</h2>
+<div class="box keys"><ul>
+<li>Termomagnético para conductores, diferencial para personas, DPS para sobretensiones.</li>
+<li>Curvas B, C, D: disparo magnético de 3–5, 5–10 y 10–20 veces la nominal; la banda debe quedar a la izquierda del daño del conductor.</li>
+<li>\(I_b \le I_n \le I_z\) y nunca subir el interruptor por encima de lo que aguanta el conductor (3.27.3 c).</li>
+<li>El diferencial no protege de un contacto entre fase y neutro.</li>
+<li>El DPS en vivienda se decide con una evaluación de riesgo del diseñador (3.3.3.1).</li>
+</ul></div>
+</section>
+</template>

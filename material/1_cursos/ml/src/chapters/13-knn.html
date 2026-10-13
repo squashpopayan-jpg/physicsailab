@@ -1,0 +1,105 @@
+<template class="chapter-src" data-id="knn" data-num="13" data-title="k vecinos más cercanos" data-part="Parte III · Clasificación" data-short="Clasificar por parecido; distancias; el papel de k en el sesgo y la varianza; ponderar por distancia; escalado; la maldición de la dimensionalidad; regresión k-NN; costo de predicción">
+<p class="lead">k vecinos más cercanos (k-NN) es el algoritmo más intuitivo: para clasificar un caso nuevo, se buscan los k casos de entrenamiento más parecidos y se vota. No aprende parámetros; guarda los datos. Esa sencillez lo vuelve una línea base excelente y un laboratorio perfecto para ver en acción el sesgo, la varianza, el escalado y la maldición de la dimensionalidad.</p>
+
+<section>
+<h2>El algoritmo</h2>
+<div class="box def"><p>Dado un punto \(\vb x\), sean \(N_k(\vb x)\) los índices de sus \(k\) vecinos más cercanos en el conjunto de entrenamiento según una distancia \(d\). k-NN estima</p>
+<div class="eq key" data-name="k-NN">\[\hat P(y=c\mid\vb x)=\frac1k\sum_{i\in N_k(\vb x)}\ind{y_i=c},\qquad \hat y(\vb x)=\frac1k\sum_{i\in N_k(\vb x)}y_i\ \ (\text{regresión}).\]</div></div>
+<ul>
+<li><b>Entrenar</b> es guardar los datos (y, como mucho, construir un índice para buscar rápido). <b>Predecir</b> es lo costoso: hay que calcular distancias a muchos puntos.</li>
+<li>La <b>distancia</b> define qué es «parecido»: euclidiana (por defecto), Manhattan (suma de diferencias absolutas, más robusta a una variable con diferencias grandes), coseno (para textos y embeddings), Hamming (para variables binarias).</li>
+<li>Con <b>ponderación por distancia</b> (<code>weights='distance'</code>), cada vecino vota con peso \(1/d\): los más cercanos pesan más.</li>
+<li>Es un método <span class="term">no paramétrico</span>: no supone ninguna forma para la frontera, que puede ser tan compleja como los datos lo permitan.</li>
+</ul>
+</section>
+
+<section>
+<h2>k controla el sesgo y la varianza</h2>
+<p>Con \(k=1\) cada punto de entrenamiento manda en su vecindad: la frontera rodea cada punto aislado, la exactitud de entrenamiento es perfecta y la varianza máxima. Al subir \(k\) la frontera se suaviza; con \(k=n\) el modelo predice siempre la clase mayoritaria (sesgo máximo). El número efectivo de parámetros de k-NN es aproximadamente \(n/k\).</p>
+<div class="sim" data-sim="knn-mapa" data-title="Frontera de k-NN según el número de vecinos"></div>
+<div class="sim-guide"><ul>
+<li>Con \(k=1\) aparecen «islas» alrededor de los puntos ruidosos; la exactitud de entrenamiento es 100 % y la de prueba, menor.</li>
+<li>Con \(k\) entre 10 y 30 la frontera sigue la forma de las lunas sin perseguir el ruido.</li>
+<li>Con \(k\) muy grande la frontera se aplana y empieza a cortar las lunas: subajuste.</li>
+<li>Haga clic en el mapa para colocar un punto de consulta: se dibujan sus \(k\) vecinos y el voto.</li>
+</ul></div>
+<div class="box explain"><p>k-NN es preguntar a los vecinos. Si solo pregunta al de al lado, su respuesta depende de quién le tocó por vecino. Si pregunta a todo el barrio, la respuesta es estable pero ya no describe su calle. El valor de k es el tamaño del barrio que conviene consultar.</p></div>
+</section>
+
+<section>
+<h2>Escalado y variables irrelevantes</h2>
+<p>Como todo depende de la distancia, una variable con rango grande domina a las demás (capítulo 5): en el conjunto de vinos del programa de práctica, la prolina va de 278 a 1 680 y el tono de 0.5 a 1.7, y sin escalar el 5-NN pasa de 96 % a 66 % de exactitud. Por la misma razón, las variables irrelevantes son dañinas: cada una suma ruido a la distancia y diluye la señal de las útiles. k-NN no tiene ningún mecanismo para ignorarlas; los árboles y los modelos regularizados sí.</p>
+</section>
+
+<section>
+<h2>La maldición de la dimensionalidad</h2>
+<p>En muchas dimensiones la intuición geométrica falla. Con puntos uniformes en un cubo de dimensión \(d\):</p>
+<ul>
+<li>Para capturar el 1 % de los datos con un cubo pequeño, su lado debe ser \(0.01^{1/d}\): 0.1 en 2D, pero 0.63 en 10D y 0.95 en 100D. El «vecindario» ya no es local.</li>
+<li>Las distancias se <b>concentran</b>: la razón entre la distancia al vecino más cercano y al más lejano tiende a 1. Si todos los puntos están casi a la misma distancia, «el más cercano» deja de significar algo.</li>
+<li>Para mantener la densidad de datos, \(n\) debería crecer exponencialmente con \(d\).</li>
+</ul>
+<div class="sim" data-sim="maldicion-dimension" data-title="Las distancias se concentran al aumentar la dimensión"></div>
+<div class="sim-guide"><ul>
+<li>El histograma muestra las distancias desde un punto a 1 000 puntos uniformes, divididas por la máxima. En 2D hay vecinos muy cercanos y muy lejanos; en 500D todas las distancias se amontonan cerca de la máxima.</li>
+<li>La curva de la derecha es la razón mínima/máxima en función de \(d\).</li>
+</ul></div>
+<div class="box note"><p>Los datos reales suelen escapar en parte de la maldición: aunque tengan cientos de columnas, viven cerca de una superficie de dimensión mucho menor (la hipótesis de la variedad). Por eso k-NN funciona sobre <i>embeddings</i> aprendidos (capítulo 28) y tras reducir la dimensión con PCA (capítulo 22).</p></div>
+</section>
+
+<section>
+<h2>Regresión k-NN y costo computacional</h2>
+<p>Para regresión, k-NN promedia los \(y\) de los vecinos: produce una función escalonada que se suaviza al crecer \(k\). Cerca de los bordes del rango de \(x\) los vecinos quedan todos de un lado y la predicción se sesga; fuera del rango no extrapola (repite el valor del borde).</p>
+<div class="sim" data-sim="knn-regresion" data-title="Regresión por vecinos: de escalones a una media móvil"></div>
+<div class="sim-guide"><ul>
+<li>\(k=1\) pasa por todos los puntos y reproduce el ruido. Con \(k\) moderado sigue bien la curva; con \(k\) grande la aplana.</li>
+<li>Fíjese en los bordes: la predicción se aplana porque todos los vecinos están hacia dentro.</li>
+</ul></div>
+<p>Predecir exige comparar con los \(n\) puntos: \(O(np)\) por consulta. Los árboles KD y de bolas (<code>algorithm='kd_tree'</code>, <code>'ball_tree'</code>) aceleran la búsqueda en dimensión baja; en dimensión alta se usan métodos aproximados (FAISS, HNSW), base de los buscadores semánticos modernos.</p>
+<div class="box when"><ul>
+<li><b>Úselo</b> como línea base rápida; con pocas variables relevantes y bien escaladas; cuando la frontera es muy irregular y hay bastantes datos; para búsqueda por similitud y recomendación sobre embeddings.</li>
+<li><b>Evítelo</b> con muchas variables irrelevantes o sin escalar; con mezcla de variables categóricas y numéricas sin una distancia adecuada; cuando la latencia de predicción importa y \(n\) es grande; si necesita extrapolar.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Práctica: k-NN sobre vinos</h2>
+<div class="box py"><p>El conjunto de vinos tiene 178 muestras de tres cultivares con 13 medidas químicas en escalas muy distintas. El programa compara el escalado, busca \(k\) y la ponderación con <code>GridSearchCV</code>, agrega variables de ruido y mide la concentración de las distancias.</p>
+<div class="py" data-py="13-knn"></div></div>
+<div class="box read"><ul>
+<li><b>Rangos</b>: la prolina (última columna) varía 1 402 unidades; los fenoles no flavonoides, 0.5. Sin escalar, la distancia es prácticamente la diferencia de prolina.</li>
+<li><b>Escalado</b>: el mismo 5-NN pasa de 0.663 a 0.961. Es la diferencia más grande de todo el programa, y no cambia el algoritmo.</li>
+<li><b>Elección de k</b>: todos los valores entre 1 y 61 dan entre 0.955 y 0.983; el mejor es \(k=25\) con 0.983. Con 5 pliegues de unos 36 vinos, cada error vale casi 3 puntos: las diferencias entre \(k\) vecinos son del tamaño del ruido de la validación. La ponderación por distancia apenas cambia algo.</li>
+<li><b>Variables de ruido</b>: con 5 o 20 añadidas la exactitud baja a 0.944; con 50, a 0.910; con 200, a 0.691. Las 13 variables útiles quedan ahogadas en la distancia.</li>
+<li><b>Concentración</b>: la razón distancia mínima/máxima pasa de 0.005 en 2D a 0.25 en 10D, 0.67 en 100D y 0.90 en 1 000D.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>k-NN vota entre los k casos más parecidos; no entrena, guarda los datos; predecir es lo costoso.</li>
+<li>k pequeño: varianza alta; k grande: sesgo alto. Se elige por validación cruzada.</li>
+<li>Escalar es obligatorio; las variables irrelevantes lo degradan.</li>
+<li>En dimensión alta las distancias se concentran: reduzca la dimensión o use representaciones aprendidas.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Los 5 vecinos de un punto tienen clases A, A, B, A, B. ¿Predicción y probabilidad de A?
+<details><summary>Respuesta</summary><p>A, con probabilidad 3/5 = 0.6.</p></details></li>
+<li><span class="lvl">Básico</span>¿Cuál es la exactitud de entrenamiento de 1-NN si no hay puntos repetidos con etiquetas distintas? ¿Por qué no sirve para elegir k?
+<details><summary>Respuesta</summary><p>100 %: cada punto es su propio vecino. La exactitud de entrenamiento siempre favorece \(k=1\); hay que usar validación.</p></details></li>
+<li><span class="lvl">Intermedio</span>En dimensión \(d=20\), ¿qué lado debe tener un subcubo para contener el 10 % de un cubo unidad?
+<details><summary>Respuesta</summary><p>\(0.1^{1/20}=0.891\): casi el cubo entero, así que el «vecindario» no es local.</p></details></li>
+<li><span class="lvl">Intermedio</span>Con distancia ponderada \(1/d\), ¿qué ocurre si el punto de consulta coincide con un punto de entrenamiento?
+<details><summary>Respuesta</summary><p>Su peso es infinito: la predicción es la etiqueta de ese punto (scikit-learn lo trata así).</p></details></li>
+<li><span class="lvl">Avanzado</span>Con infinitos datos, ¿qué error tiene 1-NN comparado con el error de Bayes \(e^*\) en clasificación binaria?
+<details><summary>Respuesta</summary><p>Cover y Hart (1967): tiende a \(2e^*(1-e^*)\le 2e^*\). 1-NN nunca es más del doble de malo que el óptimo, con infinitos datos.</p></details></li>
+</ol>
+<div class="box links"><ul>
+<li><a href="https://scikit-learn.org/stable/modules/neighbors.html">scikit-learn — Nearest Neighbors</a><small>Clasificación y regresión por vecinos, árboles KD y de bolas, métricas de distancia.</small></li>
+<li><a href="https://doi.org/10.1109/TIT.1967.1053964">Cover y Hart (1967) — Nearest neighbor pattern classification</a><small>El resultado clásico sobre el error de 1-NN.</small></li>
+<li><a href="https://github.com/facebookresearch/faiss">FAISS</a><small>Biblioteca de búsqueda aproximada de vecinos en millones de vectores.</small></li>
+<li><a href="https://www.statlearning.com/">ISLP — capítulos 2 y 4</a><small>k-NN, el compromiso sesgo–varianza y la comparación con métodos paramétricos.</small></li>
+</ul></div>
+</section>
+</template>

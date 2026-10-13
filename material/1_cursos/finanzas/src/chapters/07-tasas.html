@@ -1,0 +1,114 @@
+<template class="chapter-src" data-id="tasas" data-num="7" data-title="Tasas de interés: efectiva, nominal y real" data-part="Parte II · Las matemáticas del dinero" data-short="Tasa periódica y efectiva anual; nominales (M.V., T.V., anticipadas) y sus conversiones; tasa real y ecuación de Fisher; costo efectivo de un crédito; usura e interés bancario corriente">
+<p class="lead">«1,8 % mensual», «24 % nominal anual mes vencido», «23,9 % efectivo anual», «tasa preferencial»: la misma deuda puede anunciarse de muchas maneras, y no por casualidad. Quien domina las conversiones entre tasas puede comparar créditos e inversiones en una sola unidad y detectar cuándo la cifra llamativa esconde un costo mayor. Este capítulo enseña ese idioma, que en Colombia tiene siglas propias.</p>
+
+<section>
+<h2>Tasa periódica y tasa efectiva anual</h2>
+<p>Una <span class="term">tasa periódica</span> es la que se aplica en cada periodo de capitalización: 1,5 % mensual, 4 % trimestral. La <span class="term">tasa efectiva anual</span> (E.A.) es la que produce el mismo resultado en un año con capitalización compuesta. Es la unidad común para comparar, porque incluye el efecto del compuesto.</p>
+<div class="eq key" data-name="Equivalencia de tasas">\[(1+i_{\text{EA}})=(1+i_p)^{m}\quad\Longleftrightarrow\quad i_p=(1+i_{\text{EA}})^{1/m}-1 ,\]</div>
+<p>donde \(m\) es el número de periodos en un año: 12 para mensual, 4 para trimestral, 2 para semestral, 365 para diario.</p>
+<div class="box ex"><p>Una tarjeta cobra 2 % mensual. Su tasa efectiva anual es \(1{,}02^{12}-1\approx26{,}82\,\%\), no 24 %. Al revés: la tasa de usura de octubre de 2026, 28,59 % E.A., equivale a \(1{,}2859^{1/12}-1\approx2{,}118\,\%\) mensual.</p></div>
+</section>
+
+<section>
+<h2>Tasas nominales</h2>
+<p>Una <span class="term">tasa nominal</span> es una tasa periódica multiplicada por el número de periodos del año. No sirve para calcular directamente, solo para anunciar. En Colombia se escribe con siglas que dicen cada cuánto se capitaliza y si el interés se cobra al final (vencido) o al inicio (anticipado) del periodo:</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Sigla</th><th>Significado</th><th>Tasa periódica</th></tr></thead>
+<tbody>
+<tr><td><b>E.A.</b></td><td>Efectiva anual</td><td>—</td></tr>
+<tr><td><b>N.M.V.</b> o M.V.</td><td>Nominal anual, capitalizable mes vencido</td><td>\(j/12\) cada mes, al final</td></tr>
+<tr><td><b>N.T.V.</b> o T.V.</td><td>Nominal anual, trimestre vencido</td><td>\(j/4\) cada trimestre, al final</td></tr>
+<tr><td><b>N.S.V.</b></td><td>Nominal anual, semestre vencido</td><td>\(j/2\) cada semestre</td></tr>
+<tr><td><b>N.M.A.</b>, N.T.A.</td><td>Nominal anual, mes o trimestre anticipado</td><td>\(j/m\) cobrada al inicio del periodo</td></tr>
+</tbody></table></div>
+<div class="eq key" data-name="Nominal vencida y efectiva">\[i_{\text{EA}}=\Big(1+\frac{j}{m}\Big)^{m}-1\qquad\Longleftrightarrow\qquad j=m\big[(1+i_{\text{EA}})^{1/m}-1\big] .\]</div>
+<p>Para una misma tasa efectiva, cuanto más frecuente es la capitalización, menor es la nominal que se anuncia. Por eso a quien vende un crédito le conviene anunciar la nominal, y a quien vende una inversión, la efectiva.</p>
+<div class="sim" data-sim="conversor-tasas" data-title="Conversor de tasas: la misma tasa en todos los idiomas"></div>
+<div class="sim-guide"><ul>
+<li>Escoja el tipo de tasa que le anunciaron y su valor. La tabla muestra todas sus equivalentes.</li>
+<li>Las barras muestran la nominal que corresponde a la misma efectiva anual con distintas capitalizaciones. La anticipada siempre es la más baja: el interés se cobra antes.</li>
+<li>Pruebe 18 % E.A.: equivale a 16,67 % N.M.V. y a 16,21 % N.T.A. Las tres son la misma tasa.</li>
+</ul></div>
+<h3>Tasas anticipadas</h3>
+<p>Si el interés se cobra al <b>inicio</b> del periodo, el deudor recibe menos dinero del que debe: con 2 % mes anticipado, de un préstamo de $1.000.000 recibe $980.000 y al final del mes paga $1.000.000. La tasa vencida equivalente es mayor:</p>
+<div class="eq">\[i_v=\frac{i_a}{1-i_a},\qquad i_a=\frac{i_v}{1+i_v};\qquad \text{con } i_a=2\,\%:\ i_v=\frac{0{,}02}{0{,}98}\approx2{,}041\,\% .\]</div>
+<div class="box xl"><p>Excel trae <code class="f">=INT.EFECTIVO(nominal; m)</code> y <code class="f">=TASA.NOMINAL(efectiva; m)</code>. En inglés son <code class="f">EFFECT</code> y <code class="f">NOMINAL</code>. Para pasar de efectiva anual a mensual no hay función específica; se usa <code class="f">=(1+B1)^(1/12)-1</code>.</p>
+<div class="sheetwrap"><table class="sheet">
+<thead><tr><th></th><th>A</th><th>B</th><th>C</th></tr></thead>
+<tbody>
+<tr><th>1</th><td class="h">Efectiva anual</td><td class="r">28,59%</td><td></td></tr>
+<tr><th>2</th><td class="h">Mensual vencida</td><td class="f">=(1+B1)^(1/12)-1</td><td class="r">2,118%</td></tr>
+<tr><th>3</th><td class="h">Nominal M.V.</td><td class="f">=TASA.NOMINAL(B1;12)</td><td class="r">25,41%</td></tr>
+<tr><th>4</th><td class="h">De vuelta a E.A.</td><td class="f">=INT.EFECTIVO(B3;12)</td><td class="r">28,59%</td></tr>
+</tbody></table></div></div>
+</section>
+
+<section>
+<h2>La tasa real y la ecuación de Fisher</h2>
+<p>La tasa que paga un CDT o un fondo es <span class="term">nominal</span> en otro sentido: está en pesos corrientes. Lo que importa es cuánto crece el <b>poder de compra</b>. Si los precios suben a la tasa \(\pi\), la tasa real \(r\) cumple</p>
+<div class="eq key" data-name="Ecuación de Fisher">\[1+r=\frac{1+i}{1+\pi}\qquad\Longrightarrow\qquad r=\frac{i-\pi}{1+\pi}\approx i-\pi .\]</div>
+<div class="box ex"><p>Un CDT paga 9 % E.A. y la inflación del año es 5,1 %. La tasa real es \(1{,}09/1{,}051-1\approx3{,}71\,\%\) antes de impuestos. La aproximación \(9-5{,}1=3{,}9\,\%\) exagera un poco, y el error crece cuando la inflación es alta.</p></div>
+<div class="sim" data-sim="tasa-real" data-title="Tasa nominal, inflación e impuestos: lo que de verdad gana el ahorro"></div>
+<div class="sim-guide"><ul>
+<li>La curva muestra la tasa real para cada inflación posible, con la tasa nominal elegida. Donde cruza el cero, el ahorro empieza a perder poder de compra.</li>
+<li>Los impuestos se cobran sobre el interés nominal, no sobre el real. Con inflación alta, se pueden pagar impuestos sobre una «ganancia» que en realidad es pérdida.</li>
+<li>Compare una cuenta de ahorros que paga 1 % E.A. con la inflación de 2025 (5,1 %): la tasa real es cercana a −4 % al año.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El costo efectivo de un crédito</h2>
+<p>La tasa anunciada no siempre es lo que cuesta un crédito. Comisiones de estudio o de desembolso, seguros obligatorios sobre el saldo, cuotas de manejo y otros cobros aumentan el costo. El método profesional es escribir los flujos reales del deudor (lo que recibe y todo lo que paga) y calcular su tasa interna de retorno (capítulo 9). Esa es la tasa que realmente paga.</p>
+<div class="sim" data-sim="costo-total" data-title="Lo que anuncian frente a lo que cuesta: tasa efectiva con todos los cobros"></div>
+<div class="sim-guide"><ul>
+<li>El ejemplo: $10 millones a 36 meses al 1,8 % mensual (23,9 % E.A. anunciada), con 2 % de comisión inicial, un seguro de 0,1 % mensual sobre el saldo y $15.000 de cuota de manejo. El costo efectivo sube a cerca de 30,9 % E.A.</li>
+<li>Quite los cobros uno por uno y mire cuál pesa más. Con montos pequeños, los cobros fijos pesan mucho más.</li>
+<li>Compare con la tasa de usura: el costo efectivo con seguros puede superarla sin que el crédito sea ilegal, porque los seguros tienen una contraprestación propia. Aun así, es lo que usted paga.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Usura e interés bancario corriente</h2>
+<div class="box co"><p>Cada mes la Superintendencia Financiera certifica el <b>interés bancario corriente</b> (IBC), que resume las tasas cobradas por los bancos en cada modalidad. La <b>tasa de usura</b> es 1,5 veces el IBC, y cobrar por encima de ella es delito (artículo 305 del Código Penal). Para octubre de 2026, en crédito de consumo y ordinario: IBC de 19,06 % E.A. y usura de 28,59 % E.A., la más baja del año. El microcrédito y el consumo de bajo monto tienen límites propios, mucho más altos. Según el artículo 68 de la Ley 45 de 1990, las sumas que el acreedor cobre sin una contraprestación distinta al crédito se consideran intereses para efectos de la usura. Verifique el valor vigente en el sitio de la Superintendencia, porque cambia cada mes.</p></div>
+<p>Un préstamo «gota a gota» que cobra 20 % al mes equivale a \(1{,}2^{12}-1\approx792\,\%\) E.A., unas 28 veces la usura. Y si se paga en cuotas diarias, el costo efectivo es todavía mayor (capítulo 14).</p>
+<div class="box myth">
+<p class="m"><b>Mito</b>«El crédito al 1,5 % mensual es más barato que el del 19 % anual».</p>
+<p class="r"><b>Realidad</b>1,5 % mensual es \(1{,}015^{12}-1\approx19{,}56\,\%\) E.A. Si el 19 % es efectivo anual, el segundo es un poco más barato; si es nominal mes vencido, equivale a 20,75 % E.A. y el primero es más barato. Sin la sigla, la cifra no dice nada. Pida siempre la tasa efectiva anual y el costo total.</p>
+</div>
+<div class="box teach"><p><b>Ejercicio con publicidad real.</b> Pida al grupo que traiga anuncios de créditos, tarjetas, CDT o compras a cuotas (fotos del celular sirven). En parejas, conviertan todas las tasas a E.A., identifiquen los cobros adicionales y ordenen las ofertas de la más barata a la más cara. Suele sorprender cuántos anuncios no dicen la tasa efectiva o la esconden en letra pequeña.</p></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Para comparar tasas hay que llevarlas a efectiva anual: \(1+i_{\text{EA}}=(1+i_p)^m\).</li>
+<li>La nominal es la periódica por \(m\); se anuncia, no se usa para calcular. M.V., T.V., S.V. y las anticipadas tienen conversiones distintas.</li>
+<li>Anticipada a vencida: \(i_v=i_a/(1-i_a)\).</li>
+<li>Tasa real: \((1+i)/(1+\pi)-1\). Los impuestos se pagan sobre la nominal.</li>
+<li>El costo efectivo de un crédito es la TIR de todos los flujos, incluidos seguros y comisiones.</li>
+<li>La usura es 1,5 veces el interés bancario corriente certificado cada mes; en octubre de 2026 fue 28,59 % E.A. para consumo y ordinario.</li>
+</ul></div>
+<div class="box do"><ul>
+<li>Busque en su extracto la tasa de su tarjeta o crédito y conviértala a E.A. con la simulación 7.1.</li>
+<li>Pregunte en su banco el costo total de su crédito, con seguros incluidos.</li>
+<li>Calcule la tasa real de su cuenta de ahorros con la inflación del último año.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Convierta 30 % N.M.V. a efectiva anual.
+<details><summary>Respuesta</summary><p>\((1+0{,}30/12)^{12}-1=1{,}025^{12}-1\approx34{,}49\,\%\) E.A.</p></details></li>
+<li><span class="lvl">Básico</span>¿Qué tasa mensual corresponde a 12 % E.A.?
+<details><summary>Respuesta</summary><p>\(1{,}12^{1/12}-1\approx0{,}949\,\%\) mensual, no 1 %.</p></details></li>
+<li><span class="lvl">Intermedio</span>Un crédito cobra 3 % trimestre anticipado. ¿Cuál es su tasa efectiva anual?
+<details><summary>Respuesta</summary><p>Vencida trimestral: \(0{,}03/0{,}97\approx3{,}093\,\%\). Efectiva: \(1{,}03093^{4}-1\approx12{,}96\,\%\) E.A.</p></details></li>
+<li><span class="lvl">Intermedio</span>Con inflación de 13,12 % (la de 2022), ¿qué tasa nominal necesitaba un ahorro para mantener su poder de compra? ¿Y para ganar 3 % real?
+<details><summary>Respuesta</summary><p>Mantenerlo: 13,12 %. Ganar 3 % real: \(1{,}1312\times1{,}03-1\approx16{,}51\,\%\), no 16,12 %.</p></details></li>
+<li><span class="lvl">Avanzado</span>Muestre que cuando \(m\to\infty\), \((1+j/m)^m\to\ee^{j}\), y calcule la efectiva de 12 % nominal con capitalización continua.
+<details><summary>Respuesta</summary><p>\(\ln(1+j/m)^m=m\ln(1+j/m)=m\big(j/m-j^2/2m^2+\dots\big)\to j\). Con \(j=0{,}12\): \(\ee^{0{,}12}-1\approx12{,}75\,\%\), frente a 12,68 % mensual y 12,55 % trimestral.</p></details></li>
+</ol>
+<div class="box links"><ul>
+<li><a href="https://www.superfinanciera.gov.co/">Superintendencia Financiera de Colombia</a><small>Certificación mensual del interés bancario corriente y la usura; entidades vigiladas.</small></li>
+<li><a href="https://www.banrep.gov.co/es/estadisticas/tasas-captacion-semanales-y-mensuales">Banco de la República — Tasas de captación</a><small>Series de DTF, CDT y otras tasas.</small></li>
+<li><a href="https://support.microsoft.com/es-es/office/int-efectivo-funci%C3%B3n-int-efectivo-910d4e4c-79e2-4009-95e6-507e04f11bc4">Microsoft — Función INT.EFECTIVO</a><small>Conversión de nominal a efectiva en Excel.</small></li>
+</ul></div>
+</section>
+</template>

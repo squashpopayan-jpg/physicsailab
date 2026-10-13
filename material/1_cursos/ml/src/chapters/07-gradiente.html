@@ -1,0 +1,110 @@
+<template class="chapter-src" data-id="gradiente" data-num="7" data-title="Descenso de gradiente y optimización" data-part="Parte II · Regresión" data-short="La tasa de aprendizaje; lotes completos, estocástico y mini-lotes; condicionamiento y escalado; momento, RMSProp y Adam; convexidad, mínimos locales y puntos de silla">
+<p class="lead">La regresión lineal tiene fórmula cerrada, pero casi ningún otro modelo la tiene: la regresión logística, las redes neuronales y el boosting se entrenan bajando paso a paso por la superficie de la pérdida. Entender cómo se comporta ese descenso, y por qué a veces no converge, es indispensable para interpretar curvas de entrenamiento y elegir hiperparámetros.</p>
+
+<section>
+<h2>La idea y la tasa de aprendizaje</h2>
+<p>El <span class="term">descenso de gradiente</span> repite un paso en la dirección de máximo descenso:</p>
+<div class="eq key" data-name="Descenso de gradiente">\[\vb w_{t+1}=\vb w_t-\eta\,\grad L(\vb w_t).\]</div>
+<p>La <span class="term">tasa de aprendizaje</span> \(\eta\) es el hiperparámetro más importante del entrenamiento. En una dimensión, con \(L(w)=\frac a2(w-w^*)^2\), cada paso multiplica la distancia al mínimo por \(1-\eta a\):</p>
+<div class="eq">\[w_{t+1}-w^*=(1-\eta a)\,(w_t-w^*)\quad\Longrightarrow\quad\begin{cases}0<\eta<1/a:&\text{converge sin oscilar}\\ 1/a<\eta<2/a:&\text{converge oscilando}\\ \eta>2/a:&\text{diverge}\end{cases}\]</div>
+<p>La curvatura \(a\) es la segunda derivada. En varias dimensiones, el papel de \(a\) lo hacen los autovalores del hessiano \(\nabla^2L\): la tasa máxima estable es \(2/\lambda_{\max}\) y la velocidad la limita la dirección más plana, \(\lambda_{\min}\).</p>
+<div class="sim" data-sim="tasa-aprendizaje" data-title="Los cuatro regímenes de la tasa de aprendizaje"></div>
+<div class="sim-guide"><ul>
+<li>Con \(\eta a=0.2\) el descenso es lento y monótono; con \(\eta a=1\) llega en un paso; entre 1 y 2 oscila pero converge; por encima de 2 cada paso empeora.</li>
+<li>La gráfica de la derecha (escala logarítmica) es lo que verá en una curva de entrenamiento: una recta descendente cuando converge, una que sube cuando diverge.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Lotes completos, estocástico y mini-lotes</h2>
+<p>Cuando la pérdida es un promedio sobre \(n\) datos, calcular el gradiente exacto cuesta \(n\) operaciones por paso. El <span class="term">descenso estocástico</span> (SGD) usa un solo dato al azar, y los <span class="term">mini-lotes</span> usan \(B\) datos:</p>
+<div class="eq key" data-name="Gradiente estocástico">\[\vb g_t=\frac1B\sum_{i\in\mathcal B_t}\grad\ell_i(\vb w_t),\qquad \E[\vb g_t]=\grad L(\vb w_t),\qquad \Var(\vb g_t)\propto\frac1B .\]</div>
+<ul>
+<li>El gradiente de un mini-lote es una estimación insesgada pero ruidosa del gradiente completo. Su ruido baja como \(1/B\).</li>
+<li>Una <span class="term">época</span> es una pasada completa por los datos: con lotes de tamaño \(B\), son \(n/B\) actualizaciones. Por eso, con el mismo número de épocas, los lotes pequeños avanzan mucho más.</li>
+<li>Con tasa fija, SGD no converge exactamente: termina rebotando en una zona alrededor del mínimo cuyo tamaño depende de \(\eta\) y \(B\). Se reduce \(\eta\) con el tiempo (programas de tasa, capítulo 26).</li>
+<li>En redes neuronales, ese ruido incluso ayuda a escapar de puntos de silla y a encontrar mínimos más planos, que generalizan mejor.</li>
+</ul>
+<div class="sim" data-sim="sgd-lotes" data-title="Trayectorias con lotes de distinto tamaño"></div>
+<div class="sim-guide"><ul>
+<li>Con el lote completo el camino es suave y perpendicular a las curvas de nivel. Con \(B=1\) es errático, pero en cada época da 200 pasos en lugar de uno.</li>
+<li>Al final, SGD con tasa fija queda vibrando alrededor del mínimo; active «tasa decreciente» para que se asiente.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Condicionamiento: por qué escalar acelera</h2>
+<p>Si una variable está en metros cuadrados (40–200) y otra en habitaciones (1–5), la pérdida es un valle muy alargado: la curvatura en una dirección es miles de veces la de la otra. La tasa debe ser pequeña para no divergir en la dirección empinada, y entonces el avance en la dirección plana es lentísimo. La razón \(\kappa=\lambda_{\max}/\lambda_{\min}\) (el <span class="term">número de condición</span>) mide ese problema; el número de iteraciones necesarias crece aproximadamente como \(\kappa\). Estandarizar las variables acerca \(\kappa\) a 1: las curvas de nivel se vuelven casi circulares.</p>
+<div class="box explain"><p>Es como bajar por un cañón estrecho y largo con los ojos vendados, guiándose solo por la inclinación del suelo: la pendiente lo empuja contra las paredes, rebota de un lado al otro y apenas avanza hacia la salida. Si el terreno fuera un embudo redondo, bajaría directo.</p></div>
+</section>
+
+<section>
+<h2>Momento, RMSProp y Adam</h2>
+<p>Los optimizadores modernos modifican el paso para avanzar rápido en direcciones planas y con cuidado en las empinadas:</p>
+<div class="eq key" data-name="Optimizadores">\[\begin{aligned}
+&\textbf{Momento:} && \vb v_t=\beta\vb v_{t-1}+\eta\,\vb g_t,\qquad \vb w_{t+1}=\vb w_t-\vb v_t\\
+&\textbf{RMSProp:} && \vb s_t=\rho\,\vb s_{t-1}+(1-\rho)\,\vb g_t^2,\qquad \vb w_{t+1}=\vb w_t-\eta\,\vb g_t/(\sqrt{\vb s_t}+\epsilon)\\
+&\textbf{Adam:} && \vb m_t=\beta_1\vb m_{t-1}+(1-\beta_1)\vb g_t,\quad \vb s_t=\beta_2\vb s_{t-1}+(1-\beta_2)\vb g_t^2,\\
+& && \vb w_{t+1}=\vb w_t-\eta\,\frac{\vb m_t/(1-\beta_1^t)}{\sqrt{\vb s_t/(1-\beta_2^t)}+\epsilon}
+\end{aligned}\]</div>
+<ul>
+<li>El <b>momento</b> acumula una «velocidad»: las componentes que oscilan se cancelan y las que apuntan siempre igual se suman. Acelera en valles alargados. Nesterov evalúa el gradiente en el punto adonde lo llevaría la velocidad, y corrige antes.</li>
+<li><b>RMSProp</b> divide cada componente por su magnitud típica reciente: cada parámetro recibe su propia tasa efectiva. Compensa en parte el mal condicionamiento.</li>
+<li><b>Adam</b> combina ambos y corrige el sesgo inicial de los promedios. Sus valores por defecto (\(\eta=10^{-3}\), \(\beta_1=0.9\), \(\beta_2=0.999\)) funcionan razonablemente en muchísimos problemas, por eso es la opción inicial habitual en redes neuronales. AdamW aplica la penalización de pesos por separado (capítulo 26).</li>
+</ul>
+<div class="sim" data-sim="carrera-optimizadores" data-title="Carrera de optimizadores sobre cinco superficies"></div>
+<div class="sim-guide"><ul>
+<li>En el cuenco alargado, el descenso simple zigzaguea; el momento avanza más rápido; RMSProp y Adam toman un camino más directo porque igualan las escalas.</li>
+<li>En el valle de Rosenbrock (curvo y plano en el fondo) todos sufren; observe cuánto tarda cada uno en recorrer el fondo del valle.</li>
+<li>En el punto de silla, el descenso simple que arranca casi sobre la cresta tarda mucho en escapar; el momento y Adam escapan antes.</li>
+<li>Con varios mínimos locales, el punto de partida decide adónde llega cada método: no hay garantía de llegar al mínimo global.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Convexidad, mínimos locales y puntos de silla</h2>
+<p>Una función es <span class="term">convexa</span> si el segmento entre dos puntos de su gráfica queda por encima de ella. Para pérdidas convexas (mínimos cuadrados, regresión logística, SVM, Lasso) todo mínimo local es global y el descenso, con tasa adecuada, siempre llega. Las redes neuronales no son convexas: tienen muchos mínimos y, sobre todo, muchísimos <span class="term">puntos de silla</span> (mínimo en unas direcciones, máximo en otras), donde el gradiente es casi cero sin que haya un mínimo. En alta dimensión casi todos los puntos críticos son sillas, y el ruido del SGD y el momento ayudan a dejarlos atrás.</p>
+<div class="box note"><p>Los métodos de segundo orden (Newton, L-BFGS) usan la curvatura y convergen en muchas menos iteraciones; son los que usan scikit-learn para la regresión logística (<code>solver='lbfgs'</code>) y las simulaciones de este curso para ajustarla exactamente. Para millones de parámetros, guardar o aproximar el hessiano es demasiado caro, y por eso las redes se entrenan con métodos de primer orden.</p></div>
+</section>
+
+<section>
+<h2>Práctica: descenso de gradiente programado a mano</h2>
+<div class="box py"><p>El programa implementa el descenso de gradiente para una regresión de precios de vivienda (área en m² y número de habitaciones), primero con las variables en sus unidades y luego estandarizadas, y compara mini-lotes de distinto tamaño.</p>
+<div class="py" data-py="07-gradiente"></div></div>
+<div class="box read"><ul>
+<li><b>Sin escalar</b>: con \(\eta=10^{-4}\) diverge (los pesos llegan a \(10^{302}\)); con tasas menores no diverge, pero tras 20 000 iteraciones el intercepto va en 3 a 7 cuando debe ser 50. El valle es tan alargado que el avance en la dirección del intercepto es casi nulo.</li>
+<li><b>Estandarizadas</b>: con \(\eta=0.5\) converge en 4 iteraciones. Los autovalores del hessiano son todos ≈ 2 (variables incorrelacionadas y de varianza 1), así que \(\eta=0.5=1/\lambda\) es exactamente el paso de Newton. La tasa máxima estable es \(2/\lambda_{\max}=0.997\): por eso \(\eta=1.2\) diverge.</li>
+<li><b>Mini-lotes</b> (5 épocas, \(\eta=0.01\)): con \(B=1\) el MSE llega al nivel del ruido (\(\sigma^2=400\)) desde la primera época, porque da 500 pasos por época, y luego fluctúa alrededor de él; con \(B=16\) baja más lento; con el lote completo (\(B=500\)) solo da 5 pasos y el error sigue en 100 000.</li>
+<li><code>SGDRegressor</code> alcanza el mismo \(R^2\) que la solución exacta (0.9584) cuando se le pasan datos estandarizados.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>\(\vb w\leftarrow\vb w-\eta\grad L\); la tasa máxima estable es \(2/\lambda_{\max}\) del hessiano.</li>
+<li>Mini-lotes: gradiente insesgado y ruidoso; más pasos por época; con tasa fija rebotan cerca del mínimo.</li>
+<li>El mal condicionamiento (escalas distintas) hace lento el descenso; estandarizar lo corrige.</li>
+<li>Momento acelera en valles; RMSProp y Adam adaptan la tasa por parámetro; Adam es el punto de partida habitual en redes.</li>
+<li>Pérdidas convexas: el mínimo es único. Redes: mínimos locales y, sobre todo, puntos de silla.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Para \(L(w)=3w^2\), ¿cuál es la tasa máxima estable y cuál llega al mínimo en un paso?
+<details><summary>Respuesta</summary><p>\(L''=6\): diverge si \(\eta>2/6=0.333\); con \(\eta=1/6\) llega en un paso.</p></details></li>
+<li><span class="lvl">Básico</span>Con \(n=10\,000\) y lotes de 64, ¿cuántas actualizaciones hay por época?
+<details><summary>Respuesta</summary><p>\(\lceil 10\,000/64\rceil=157\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Los autovalores del hessiano son 50 y 0.5. ¿Número de condición? Con la tasa máxima estable, ¿cuánto se reduce el error en la dirección plana por paso?
+<details><summary>Respuesta</summary><p>\(\kappa=100\). Con \(\eta\approx2/50=0.04\), el factor en la dirección plana es \(1-0.04\cdot0.5=0.98\): un 2 % por paso, unos 115 pasos para reducirlo 10 veces.</p></details></li>
+<li><span class="lvl">Intermedio</span>La pérdida de entrenamiento sube y llega a NaN tras unas épocas. ¿Primera sospecha y qué prueba?
+<details><summary>Respuesta</summary><p>Tasa de aprendizaje demasiado alta (o datos sin escalar). Reducir \(\eta\) por 10, verificar el escalado y, en redes, recortar el gradiente.</p></details></li>
+<li><span class="lvl">Avanzado</span>Muestre que con momento \(\beta\) y gradiente constante \(g\), la velocidad tiende a \(\eta g/(1-\beta)\). ¿Qué significa con \(\beta=0.9\)?
+<details><summary>Respuesta</summary><p>\(v_t=\beta v_{t-1}+\eta g\) tiene punto fijo \(v=\eta g/(1-\beta)\). Con \(\beta=0.9\), en una pendiente constante el paso efectivo es 10 veces \(\eta g\).</p></details></li>
+</ol>
+<div class="box links"><ul>
+<li><a href="https://distill.pub/2017/momentum/">Goh (2017) — Why Momentum Really Works (Distill)</a><small>Análisis interactivo y riguroso del momento y el condicionamiento.</small></li>
+<li><a href="https://arxiv.org/abs/1412.6980">Kingma y Ba (2014) — Adam: A Method for Stochastic Optimization</a><small>El artículo original de Adam.</small></li>
+<li><a href="https://arxiv.org/abs/1609.04747">Ruder (2016) — An overview of gradient descent optimization algorithms</a><small>Repaso claro de SGD, momento, Nesterov, AdaGrad, RMSProp y Adam.</small></li>
+<li><a href="https://www.deeplearningbook.org/contents/optimization.html">Goodfellow, Bengio y Courville — Deep Learning, capítulo 8</a><small>Optimización para entrenar modelos profundos: sillas, mesetas y métodos adaptativos.</small></li>
+</ul></div>
+</section>
+</template>

@@ -1,0 +1,88 @@
+<template class="chapter-src" data-id="modelo3d" data-num="18" data-title="El modelo 3D del espacio" data-part="Parte IV · El proyecto paso a paso" data-short="Etapa 3: para qué sirve el 3D, el modelo de la casa ejemplo con escenas y cortes, el orden de modelado, las tres vistas exigidas y el entregable M3D">
+<p class="lead">El modelo 3D no es un render para impresionar: es la prueba de que el plano eléctrico cabe en la casa. Muestra si una caja queda en una columna, si una bajante atraviesa una viga y si el recorrido de una tubería tiene sentido. La guía pide tres vistas guardadas: una general, una con los puntos eléctricos visibles y una de coordinación de un recorrido de canalización.</p>
+
+<section>
+<h2>Qué debe contener el modelo</h2>
+<ul>
+<li><b>Medidas reales</b> en metros o milímetros, tomadas del plano base calibrado (capítulo 17).</li>
+<li><b>Muros con sus vanos</b>: puertas a 2,10 m, ventanas con su alféizar. Los muros bajo vigas terminan en el fondo de la viga; los demás, en el fondo de la losa.</li>
+<li><b>Elementos estructurales relevantes para la coordinación</b>: columnas, vigas aéreas, losa y, si el recorrido va por el piso, las vigas de cimentación.</li>
+<li><b>Tablero y puntos eléctricos</b> con los mismos códigos de las plantas E01 a E03 (LS1, S1, TS4, TG…). Si el código del 3D no coincide con el del plano, la correspondencia entre archivos falla y eso se evalúa.</li>
+<li><b>Al menos un recorrido de canalización</b> modelado como tubo, desde el tablero hasta un punto, que cruce o bordee un elemento estructural.</li>
+</ul>
+<p>No se requiere un render fotorrealista. Basta con colores planos y etiquetas legibles.</p>
+</section>
+
+<section>
+<h2>La casa ejemplo en 3D</h2>
+<p>El modelo siguiente se construye desde el mismo objeto de datos que dibuja las plantas, de modo que todo punto del 3D está exactamente donde dice el plano. Use las escenas como lo haría en SketchUp y el plano de corte para mirar dentro sin quitar la losa.</p>
+<div class="sim" data-sim="casa-3d" data-title="Modelo 3D de la casa ejemplo"></div>
+<div class="sim-guide"><ul>
+<li><b>Arrastre</b> para girar; <b>Mayús + arrastre</b> o botón derecho para desplazar; <kbd>Ctrl</kbd> + rueda o los botones para acercar.</li>
+<li>La escena <b>Puntos eléctricos</b> baja el corte a 2,40 m: se ven las luminarias en el techo, los interruptores a 1,20 m y las tomas a 0,30 m o 1,10 m.</li>
+<li>La escena <b>Coordinación</b> enfoca el hall y el baño con la losa transparente: se ve cómo las tuberías de la losa cruzan la viga del eje 2 y cómo baja la tubería de la ducha por el muro del eje C.</li>
+<li>Active las <b>interferencias</b>: las esferas ámbar son cruces y bajantes que necesitan aprobación estructural; las rojas, conflictos que obligan a mover un punto.</li>
+<li>Compare las cantidades de concreto con las que calcularía para el presupuesto: el modelo también sirve para eso.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El orden de modelado</h2>
+<p>Modelar en el orden correcto ahorra trabajo y evita errores de correspondencia. La secuencia siguiente es la que se detalla, botón por botón, en el taller de SketchUp (capítulo 28).</p>
+<div class="sim" data-sim="fases-modelo" data-title="De la planta al volumen, fase por fase"></div>
+<div class="sim-guide"><ul>
+<li>Recorra las fases con el deslizador. Cada una indica la herramienta de SketchUp que se usa y la etiqueta (capa) en la que debe quedar el resultado.</li>
+<li>Observe que los puntos eléctricos se insertan después de la estructura: así se ven de inmediato los que caen en una columna o bajo una viga.</li>
+</ul></div>
+<div class="box soft"><ol>
+<li>Configurar unidades en <b>Información del modelo ▸ Unidades</b> (metros, dos decimales) antes de dibujar.</li>
+<li>Importar el plano como imagen PNG o JPG, escalarlo con la <b>Cinta métrica</b> (<kbd>T</kbd>) sobre la cota más larga y comprobar otra cota.</li>
+<li>Dibujar el contorno interior de cada muro con <b>Línea</b> (<kbd>L</kbd>) y <b>Rectángulo</b> (<kbd>R</kbd>), y levantarlo con <b>Empujar/Tirar</b> (<kbd>P</kbd>) a la altura que corresponda.</li>
+<li>Abrir los vanos con <b>Empujar/Tirar</b> sobre rectángulos dibujados en la cara del muro.</li>
+<li>Modelar columnas, vigas y losa como <b>grupos</b> separados en la etiqueta S-ESTRUCTURA.</li>
+<li>Crear un <b>componente</b> por tipo de punto (toma, interruptor, luminaria), insertarlo en cada ubicación y rotularlo con su código.</li>
+<li>Dibujar el recorrido de canalización con <b>Sígueme</b> (<em>Follow Me</em>) a lo largo de una ruta trazada con líneas.</li>
+<li>Guardar las tres <b>escenas</b>: general, puntos eléctricos y coordinación.</li>
+</ol></div>
+</section>
+
+<section>
+<h2>Etiquetas (capas) y códigos</h2>
+<p>Para que el modelo y las plantas se correspondan, use el mismo sistema de nombres en todos los programas del equipo. La propuesta de la guía sigue la costumbre de prefijar con la disciplina: A para arquitectura, S para estructura, E para electricidad.</p>
+<div class="tablewrap narrow"><table>
+<thead><tr><th>Etiqueta o capa</th><th>Contenido</th><th>Visible en la escena</th></tr></thead>
+<tbody>
+<tr><td><code>A-MUROS</code></td><td>Muros, vanos, puertas, ventanas</td><td>General, puntos, coordinación</td></tr>
+<tr><td><code>A-MOBILIARIO</code></td><td>Mesones, aparatos sanitarios, camas</td><td>General, puntos</td></tr>
+<tr><td><code>S-ESTRUCTURA</code></td><td>Columnas, vigas, losa, vigas de cimentación</td><td>General, coordinación</td></tr>
+<tr><td><code>E-PUNTOS</code></td><td>Tablero, luminarias, interruptores, tomas, salidas especiales</td><td>Puntos, coordinación</td></tr>
+<tr><td><code>E-CANAL</code></td><td>Tuberías modeladas</td><td>Coordinación</td></tr>
+<tr><td><code>E-TEXTO</code></td><td>Códigos de los puntos</td><td>Puntos</td></tr>
+</tbody></table></div>
+<div class="box err"><ul>
+<li>Modelar la estructura en el mismo grupo que los muros. Después no se puede ocultar para ver las tuberías.</li>
+<li>Copiar puntos sueltos en lugar de componentes: cambiar la altura de 30 tomas se vuelve 30 trabajos.</li>
+<li>Rotular el 3D con códigos distintos a los del plano (T1 en el modelo, TS1 en la planta).</li>
+<li>Dibujar muros de 0,10 m porque «así se ve mejor»: el espesor real define dónde cabe la caja y a qué distancia queda de la columna.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Qué se entrega con el modelo</h2>
+<div class="box entrega"><ul>
+<li><b>M3D</b>: archivo SKP (o RVT en la ruta BIM) con las etiquetas de la tabla y tres escenas guardadas: <b>general</b>, <b>puntos eléctricos</b> y <b>coordinación</b> del recorrido de canalización.</li>
+<li>Imágenes exportadas de las tres escenas, para la memoria y las láminas.</li>
+<li>En la semana 3, junto con el modelo, la <b>lista de puntos y cargas por ambiente</b> (capítulo 19).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen</h2>
+<div class="box keys"><ul>
+<li>El 3D demuestra que el diseño eléctrico cabe en la casa: muros, estructura y puntos en su lugar real.</li>
+<li>Se modela en orden: unidades, imagen escalada, muros, vanos, estructura, puntos como componentes, canalización, escenas.</li>
+<li>Los códigos de los puntos son los mismos en el modelo y en las plantas.</li>
+<li>Las tres escenas exigidas son general, puntos eléctricos y coordinación.</li>
+</ul></div>
+</section>
+</template>

@@ -1,0 +1,96 @@
+<template class="chapter-src" data-id="bayes-discriminante" data-num="14" data-title="Bayes ingenuo y análisis discriminante" data-part="Parte III · Clasificación" data-short="Modelos generativos frente a discriminativos; Bayes ingenuo gaussiano y multinomial; suavizado de Laplace; LDA y QDA; LDA como reducción de dimensión; clasificar texto">
+<p class="lead">La regresión logística modela directamente \(P(y\mid\vb x)\). Los modelos generativos dan un rodeo: aprenden cómo se distribuyen los datos de cada clase, \(p(\vb x\mid y)\), y luego aplican el teorema de Bayes. Ese rodeo los hace rapidísimos, útiles con pocos datos y capaces de manejar miles de variables, como las palabras de un texto.</p>
+
+<section>
+<h2>Generativo frente a discriminativo</h2>
+<div class="eq key" data-name="Clasificación por Bayes">\[P(y=k\mid\vb x)=\frac{p(\vb x\mid y=k)\,\pi_k}{\sum_j p(\vb x\mid y=j)\,\pi_j},\qquad \hat y=\argmax_k\ \big[\log p(\vb x\mid y=k)+\log\pi_k\big].\]</div>
+<ul>
+<li>Un modelo <span class="term">generativo</span> estima las <span class="term">verosimilitudes de clase</span> \(p(\vb x\mid y)\) y las <span class="term">probabilidades a priori</span> \(\pi_k\) (la frecuencia de cada clase). Podría incluso generar datos nuevos de cada clase.</li>
+<li>Un modelo <span class="term">discriminativo</span> (logística, SVM, árboles) estima solo la frontera o \(P(y\mid\vb x)\).</li>
+<li>Ng y Jordan (2001) mostraron el compromiso típico: el generativo converge más rápido (gana con pocos datos) pero a un error asintótico peor si sus supuestos son falsos; el discriminativo necesita más datos pero llega más lejos.</li>
+<li>Como el prior entra de forma explícita, cambiar la prevalencia es trivial: se reemplaza \(\pi_k\) sin reentrenar.</li>
+</ul>
+</section>
+
+<section>
+<h2>Bayes ingenuo</h2>
+<p>Estimar \(p(\vb x\mid y)\) en muchas dimensiones es difícil. Bayes ingenuo hace una suposición drástica: las variables son <b>independientes dentro de cada clase</b>,</p>
+<div class="eq key" data-name="Bayes ingenuo">\[p(\vb x\mid y=k)=\prod_{j=1}^p p(x_j\mid y=k),\qquad \log P(y=k\mid\vb x)=\log\pi_k+\sum_j\log p(x_j\mid y=k)+\text{cte}.\]</div>
+<ul>
+<li><b>Gaussiano</b>: cada \(p(x_j\mid y=k)\) es una normal con media y varianza propias. Las fronteras son cuadráticas, con elipses alineadas a los ejes.</li>
+<li><b>Multinomial</b>: para conteos (palabras de un documento). \(p(\text{palabra}\mid k)\) es la frecuencia de la palabra en los textos de la clase \(k\).</li>
+<li><b>Bernoulli</b>: para variables binarias (aparece o no la palabra).</li>
+<li><b>Suavizado de Laplace</b>: si una palabra nunca apareció en los spam, su probabilidad estimada sería 0 y un solo uso anularía todo el producto. Se suma \(\alpha\) a cada conteo: \(\hat p(w\mid k)=(n_{wk}+\alpha)/(n_k+\alpha V)\), con \(V\) el tamaño del vocabulario.</li>
+</ul>
+<p>La independencia casi nunca es cierta, pero el clasificador funciona sorprendentemente bien: para decidir la clase basta con que el orden de las probabilidades sea correcto, aunque sus valores no lo sean. El precio es la calibración: al sumar como independientes evidencias correlacionadas, Bayes ingenuo cuenta varias veces lo mismo y produce probabilidades extremas (capítulo 12).</p>
+<div class="sim" data-sim="spam-bayes" data-title="Un filtro de spam con Bayes ingenuo multinomial"></div>
+<div class="sim-guide"><ul>
+<li>Escriba un mensaje. Cada barra es la contribución de una palabra al logaritmo de las chances de spam: \(\log\frac{P(w\mid\text{spam})}{P(w\mid\text{normal})}\).</li>
+<li>La decisión es la suma de las barras más el logaritmo de las chances a priori. Palabras desconocidas no aportan nada.</li>
+<li>Baje \(\alpha\) casi a cero: las palabras que solo aparecieron en una clase pasan a tener contribuciones enormes y el modelo se vuelve frágil.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Análisis discriminante lineal y cuadrático</h2>
+<p>Si cada clase es una normal multivariante \(\mathcal N(\boldsymbol\mu_k,\Sigma_k)\), sin suponer independencia, se obtienen dos modelos clásicos:</p>
+<ul>
+<li><b>QDA</b> (cuadrático): cada clase tiene su propia covarianza \(\Sigma_k\). La frontera \(\log p_1(\vb x)\pi_1=\log p_2(\vb x)\pi_2\) es una cuádrica: elipse, parábola o hipérbola. Necesita estimar \(K\,p(p+1)/2\) covarianzas; con pocos datos se regulariza.</li>
+<li><b>LDA</b> (lineal): todas las clases comparten la misma covarianza \(\Sigma\). Los términos cuadráticos se cancelan y la frontera es lineal:</li>
+</ul>
+<div class="eq key" data-name="Función discriminante lineal">\[\delta_k(\vb x)=\vb x\T\Sigma^{-1}\boldsymbol\mu_k-\tfrac12\boldsymbol\mu_k\T\Sigma^{-1}\boldsymbol\mu_k+\log\pi_k,\qquad \hat y=\argmax_k\delta_k(\vb x).\]</div>
+<p>LDA y la regresión logística producen fronteras de la misma forma; LDA las estima con más supuestos (normalidad, covarianza común) y por eso es más eficiente cuando se cumplen y menos robusta cuando no.</p>
+<div class="sim" data-sim="generativos-fronteras" data-title="Fronteras de Bayes ingenuo, LDA y QDA"></div>
+<div class="sim-guide"><ul>
+<li>Con dos nubes redondas del mismo tamaño, los tres modelos dan casi la misma frontera.</li>
+<li>Inclínelas (correlación): Bayes ingenuo ignora la inclinación y sus elipses quedan alineadas a los ejes; LDA y QDA la capturan.</li>
+<li>Haga una clase mucho más dispersa que la otra: la frontera de QDA se curva y rodea a la clase compacta; LDA sigue siendo una recta y pierde exactitud.</li>
+</ul></div>
+<p>LDA tiene además un uso como <b>reducción de dimensión supervisada</b>: proyecta los datos en a lo sumo \(K-1\) ejes que maximizan la separación entre las medias de clase relativa a la dispersión dentro de cada clase (el criterio de Fisher). Con tres clases, cualquier número de variables se reduce a un plano donde las clases quedan lo más separadas posible.</p>
+<div class="box when"><ul>
+<li><b>Bayes ingenuo</b>: texto y conteos de alta dimensión, entrenamiento instantáneo, líneas base, datos que llegan en flujo (se actualiza sumando conteos). No confíe en sus probabilidades sin calibrar.</li>
+<li><b>LDA</b>: pocos datos por clase, clases aproximadamente normales con forma parecida, visualización supervisada de muchas clases.</li>
+<li><b>QDA</b>: clases con formas o dispersiones muy distintas y datos suficientes (o regularizada).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Práctica: vinos y mensajes</h2>
+<div class="box py"><p>El programa compara los tres modelos generativos con la regresión logística en el conjunto de vinos, usa LDA para proyectar las 13 variables en 2 ejes, y entrena un Bayes multinomial con 16 mensajes cortos en español.</p>
+<div class="py" data-py="14-bayes-discriminante"></div></div>
+<div class="box read"><ul>
+<li><b>Vinos</b>: LDA logra 0.994 de exactitud y la mejor log-loss (0.027), por encima de la logística (0.983 y 0.063). Con 178 muestras y clases aproximadamente normales con covarianzas parecidas, los supuestos de LDA se cumplen y su eficiencia se nota. Bayes ingenuo, que ignora las correlaciones fuertes entre variables químicas, tiene la peor log-loss (0.101).</li>
+<li><b>Ejes discriminantes</b>: el primero concentra el 68.7 % de la separación entre clases y ordena los tres cultivares (medias −3.42, −0.08 y 4.32); el segundo aporta el 31.3 % restante. Dos ejes bastan para ver las tres clases separadas.</li>
+<li><b>Spam</b>: las palabras más indicativas de spam son «gratis», «oferta», «ya», «dinero»; las más indicativas de mensaje normal son artículos y preposiciones («la», «del», «el»). Con un corpus diminuto, el estilo (frases completas frente a telegramas comerciales) pesa tanto como el tema. En la práctica se eliminan o se ponderan las palabras vacías (TF-IDF).</li>
+<li>«oferta de laboratorio gratis» recibe 0.847: dos palabras de spam pesan más que una académica. El modelo suma evidencias sin entender el sentido.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Generativo: \(p(\vb x\mid y)\) y \(\pi_k\), luego Bayes. Discriminativo: directamente \(P(y\mid\vb x)\).</li>
+<li>Bayes ingenuo supone independencia condicional; clasifica bien, calibra mal; ideal para texto.</li>
+<li>Suavizado de Laplace evita probabilidades cero.</li>
+<li>LDA: covarianza común, frontera lineal, reducción a \(K-1\) ejes. QDA: covarianzas propias, frontera cuadrática.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Con \(\pi_\text{spam}=0.3\), \(P(\text{«gratis»}\mid\text{spam})=0.05\) y \(P(\text{«gratis»}\mid\text{normal})=0.002\), ¿probabilidad de spam de un mensaje que solo contiene «gratis»?
+<details><summary>Respuesta</summary><p>\(\frac{0.05\cdot0.3}{0.05\cdot0.3+0.002\cdot0.7}=\frac{0.015}{0.0164}=0.915\).</p></details></li>
+<li><span class="lvl">Básico</span>Con vocabulario de 1 000 palabras, una palabra que aparece 0 veces en 5 000 palabras de spam, ¿qué probabilidad recibe con \(\alpha=1\)?
+<details><summary>Respuesta</summary><p>\((0+1)/(5000+1000)=1.67\times10^{-4}\), en lugar de 0.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Cuántos parámetros de covarianza estiman LDA y QDA con \(p=20\) variables y \(K=4\) clases?
+<details><summary>Respuesta</summary><p>Una matriz simétrica de 20×20 tiene 210 parámetros. LDA: 210; QDA: 840.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué la frontera de LDA es lineal?
+<details><summary>Respuesta</summary><p>Al restar \(\log p(\vb x\mid1)-\log p(\vb x\mid2)\) con la misma \(\Sigma\), el término \(-\frac12\vb x\T\Sigma^{-1}\vb x\) se cancela; queda una función lineal de \(\vb x\).</p></details></li>
+<li><span class="lvl">Avanzado</span>Muestre que, en Bayes ingenuo, duplicar una variable (añadir una copia exacta) duplica su contribución al log-odds. ¿Qué dice esto de su calibración?
+<details><summary>Respuesta</summary><p>La copia aporta el mismo término \(\log\frac{p(x_j\mid1)}{p(x_j\mid2)}\) otra vez, porque el modelo la cree independiente. La evidencia se cuenta dos veces y las probabilidades se vuelven más extremas: sobreconfianza.</p></details></li>
+</ol>
+<div class="box links"><ul>
+<li><a href="https://scikit-learn.org/stable/modules/naive_bayes.html">scikit-learn — Naive Bayes</a><small>Variantes gaussiana, multinomial, complementaria, Bernoulli y categórica.</small></li>
+<li><a href="https://scikit-learn.org/stable/modules/lda_qda.html">scikit-learn — Linear and Quadratic Discriminant Analysis</a><small>Formulación matemática, contracción (shrinkage) y uso para reducir dimensión.</small></li>
+<li><a href="https://proceedings.neurips.cc/paper/2001/hash/7b7a53e239400a13bd6be6c91c4f6c4e-Abstract.html">Ng y Jordan (2001) — On Discriminative vs. Generative Classifiers</a><small>La comparación clásica entre Bayes ingenuo y la regresión logística.</small></li>
+<li><a href="https://nlp.stanford.edu/IR-book/html/htmledition/naive-bayes-text-classification-1.html">Manning, Raghavan y Schütze — Introduction to Information Retrieval, capítulo 13</a><small>Bayes ingenuo para texto, con suavizado y selección de vocabulario.</small></li>
+</ul></div>
+</section>
+</template>

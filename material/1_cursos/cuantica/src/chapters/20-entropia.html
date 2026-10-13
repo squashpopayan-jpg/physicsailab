@@ -1,0 +1,85 @@
+<template class="chapter-src" data-id="entropia" data-num="20" data-title="Microestados y entropía" data-part="Parte IV · Mecánica estadística" data-short="Macroestados y microestados, multiplicidad, entropía de Boltzmann, sólidos de Einstein, temperatura, dos niveles y entropía configuracional">
+<p class="lead">¿Por qué el calor fluye de lo caliente a lo frío y nunca al revés? ¿Por qué un poro compacto puede romperse en muchos pedazos al calentar? La respuesta de Boltzmann es pura combinatoria: el sistema evoluciona hacia los macroestados que se pueden realizar de más maneras. La entropía cuenta esas maneras, y la temperatura mide cuánto crece la entropía al añadir energía.</p>
+
+<section>
+<h2>Macroestados y microestados</h2>
+<div class="box def"><p>Un <span class="term">microestado</span> es una especificación completa del sistema (qué átomo hay en cada sitio, qué energía tiene cada oscilador). Un <span class="term">macroestado</span> es lo que se observa a gran escala (la energía total, el número de vacancias, la forma aproximada de un poro). La <span class="term">multiplicidad</span> \(\Omega\) de un macroestado es el número de microestados compatibles con él.</p></div>
+<p>El postulado fundamental de la mecánica estadística, la <span class="term">equiprobabilidad a priori</span>, dice que un sistema aislado en equilibrio pasa por igual por todos sus microestados accesibles. Entonces la probabilidad de un macroestado es proporcional a su multiplicidad.</p>
+<div class="box ex">
+<h4>Cuatro monedas</h4>
+<p>Se lanzan 4 monedas. ¿Cuál es la probabilidad de 2 caras?</p>
+<details><summary>Solución</summary>
+<p>Hay \(2^4=16\) microestados. El macroestado «2 caras» tiene \(\Omega=\binom42=6\): probabilidad \(6/16=0.375\). «4 caras» solo tiene \(\Omega=1\). Con \(10^{23}\) monedas, la distribución es tan estrecha que en la práctica siempre se observa la mitad de caras.</p>
+</details>
+</div>
+</section>
+
+<section>
+<h2>La entropía de Boltzmann</h2>
+<div class="eq key" data-name="Entropía de Boltzmann">\[S=\kB\ln\Omega .\]</div>
+<p>El logaritmo hace que la entropía sea aditiva: si dos sistemas independientes tienen multiplicidades \(\Omega_1\) y \(\Omega_2\), el conjunto tiene \(\Omega_1\Omega_2\) y entropía \(S_1+S_2\). Para números grandes se usa la <span class="term">aproximación de Stirling</span>, \(\ln N!\approx N\ln N-N\) (con la corrección \(+\frac12\ln2\pi N\) para más precisión).</p>
+<h3>Entropía configuracional</h3>
+<p>Si en una red de \(N\) sitios se colocan \(n\) vacancias (o átomos de carbono), hay \(\Omega=\binom Nn\) maneras. Con Stirling y \(x=n/N\):</p>
+<div class="eq key" data-name="Entropía de mezcla">\[S_\text{conf}=\kB\ln\binom{N}{n}\approx-N\kB\big[x\ln x+(1-x)\ln(1-x)\big].\]</div>
+<p>Es máxima para \(x=\frac12\) (\(\kB\ln2\) por sitio) y crece muy rápido para \(x\) pequeño: la primera vacancia en una red grande «gana» mucha entropía, \(\kB\ln N\). Este es el origen de que siempre haya defectos en equilibrio a cualquier temperatura (capítulo 21).</p>
+<div class="sim" data-sim="entropia-mezcla" data-title="Entropía configuracional: contar maneras de colocar vacancias"></div>
+<div class="sim-guide"><ul>
+<li>Compare \(\ln\binom Nn\) exacto con la fórmula de Stirling: para \(N=1000\) la diferencia es de pocas unidades frente a cientos.</li>
+<li>Un poro compacto de \(n\) vacancias se puede colocar de unas \(N\) maneras (una por posición); \(n\) vacancias dispersas, de \(\binom Nn\): esa es la «fuerza» entrópica que rompe los poros a alta temperatura.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Equilibrio térmico y temperatura</h2>
+<p>Un <span class="term">sólido de Einstein</span> es un conjunto de \(N\) osciladores con \(q\) cuantos de energía repartidos entre ellos; su multiplicidad es \(\Omega(N,q)=\binom{q+N-1}{q}\). Pongamos en contacto dos sólidos, A y B, con \(q_A+q_B=q\) fijo. La probabilidad de cada reparto es proporcional a \(\Omega_A(q_A)\,\Omega_B(q-q_A)\), y su máximo cumple</p>
+<div class="eq">\[\pdv{}{q_A}\big[\ln\Omega_A+\ln\Omega_B\big]=0\quad\Longrightarrow\quad\pdv{S_A}{E_A}=\pdv{S_B}{E_B}.\]</div>
+<p>Esa magnitud que se iguala en equilibrio es la que llamamos inversa de la temperatura:</p>
+<div class="eq key" data-name="Definición estadística de la temperatura">\[\frac{1}{T}=\pdv{S}{E}\bigg|_{N,V} .\]</div>
+<p>El calor fluye del sistema con menor \(\partial S/\partial E\) (más caliente) al de mayor (más frío), porque así la entropía total crece. Para sistemas macroscópicos, el pico de \(\Omega_A\Omega_B\) es tan estrecho que una desviación apreciable del equilibrio es prácticamente imposible: la segunda ley es una ley estadística, pero con probabilidades abrumadoras.</p>
+<div class="sim" data-sim="solidos-einstein" data-title="Dos sólidos de Einstein que intercambian energía"></div>
+<div class="sim-guide"><ul>
+<li>Empiece con toda la energía en A: el intercambio aleatorio de cuantos lleva el sistema al reparto de máxima multiplicidad y allí se queda, fluctuando.</li>
+<li>Aumente el número de osciladores: la distribución \(\Omega_A\Omega_B\) se estrecha relativamente como \(1/\sqrt N\).</li>
+</ul></div>
+<div class="box explain"><p>Si mezcla una baraja ordenada, casi seguro queda desordenada; si mezcla una desordenada, casi nunca queda ordenada. No hay ninguna fuerza que prefiera el desorden: simplemente hay muchísimas más ordenaciones «desordenadas» que «ordenadas». La entropía es contar barajas.</p></div>
+</section>
+
+<section>
+<h2>Un sistema de dos niveles y las temperaturas negativas</h2>
+<p>Consideremos \(N\) partículas con dos niveles, 0 y \(\varepsilon\), y \(n\) de ellas excitadas: \(E=n\varepsilon\) y \(S=\kB\ln\binom Nn\). La entropía crece hasta \(n=N/2\) y luego decrece. Con \(1/T=\partial S/\partial E\):</p>
+<div class="eq">\[\frac{1}{\kB T}=\frac1\varepsilon\ln\frac{N-n}{n}\quad\Longrightarrow\quad\frac nN=\frac{1}{\ee^{\varepsilon/\kB T}+1}.\]</div>
+<p>Para \(n\lt N/2\) la temperatura es positiva; para \(n\gt N/2\) (más partículas arriba que abajo, una <span class="term">inversión de población</span>) es <em>negativa</em>. Una temperatura negativa no es «más fría que el cero absoluto»: es más caliente que cualquier temperatura positiva, y solo es posible en sistemas con energía acotada, como los espines nucleares o el medio activo de un láser.</p>
+<div class="sim" data-sim="dos-niveles-entropia" data-title="Entropía y temperatura de N sistemas de dos niveles"></div>
+<div class="sim-guide"><ul>
+<li>La pendiente de \(S(E)\) es \(1/T\): se anula en el máximo (\(T=\pm\infty\)) y se hace negativa a la derecha.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>La entropía en hBN-MC</h2>
+<div class="box hbn"><p>hBN-MC no calcula la entropía explícitamente: el Monte Carlo genera configuraciones con la probabilidad de Boltzmann, y la entropía actúa sola a través de cuántas configuraciones de cada tipo existen. A temperatura baja domina la energía (poros compactos si la energía de borde es positiva); a temperatura alta domina la entropía, porque hay muchísimas más maneras de tener vacancias dispersas o bordes irregulares. La competencia entre energía y entropía se resume en la energía libre \(F=E-TS\) del capítulo 21, y explica por qué la morfología de los poros cambia con la temperatura.</p></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Equiprobabilidad: la probabilidad de un macroestado es proporcional a su multiplicidad \(\Omega\).</li>
+<li>\(S=\kB\ln\Omega\), aditiva; Stirling: \(\ln N!\approx N\ln N-N\).</li>
+<li>Entropía configuracional: \(-N\kB[x\ln x+(1-x)\ln(1-x)]\).</li>
+<li>\(1/T=\partial S/\partial E\); el equilibrio iguala temperaturas y maximiza la entropía total.</li>
+<li>En sistemas de energía acotada existen temperaturas negativas (inversión de población).</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Calcule \(\ln\binom{100}{50}\) con Stirling simple y con la corrección. El valor exacto es 66.78.
+<details><summary>Respuesta</summary><p>Simple: \(100\ln2=69.31\). Con corrección: \(69.31-\frac12\ln(2\pi\cdot100\cdot\frac14)=69.31-2.53=66.78\).</p></details></li>
+<li><span class="lvl">Básico</span>¿Cuál es la entropía configuracional por sitio de una red con 10 % de vacancias, en unidades de \(\kB\)?
+<details><summary>Respuesta</summary><p>\(-0.1\ln0.1-0.9\ln0.9=0.325\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Demuestre que \(\Omega(N,q)=\binom{q+N-1}{q}\) para un sólido de Einstein.
+<details><summary>Respuesta</summary><p>Es el número de maneras de ordenar \(q\) puntos (cuantos) y \(N-1\) separadores (fronteras entre osciladores) en una fila de \(q+N-1\) posiciones.</p></details></li>
+<li><span class="lvl">Intermedio</span>En una red de \(10^4\) sitios, compare la entropía de 25 vacancias dispersas con la de un poro compacto de 25 vacancias que puede estar en cualquier posición.
+<details><summary>Respuesta</summary><p>Dispersas: \(\ln\binom{10^4}{25}\approx172\,\kB\). Compacto: \(\ln10^4\approx9.2\,\kB\) (más unas pocas orientaciones). La diferencia, ~163 \(\kB\), multiplicada por \(T\) es lo que la energía de borde debe compensar para mantener el poro unido.</p></details></li>
+<li><span class="lvl">Avanzado</span>Para el sistema de dos niveles, demuestre que \(T\lt0\) cuando \(n\gt N/2\).
+<details><summary>Respuesta</summary><p>\(\partial S/\partial n=\kB\ln\frac{N-n}{n}\lt0\) si \(n\gt N/2\), y \(1/T=\frac1\varepsilon\partial S/\partial n\).</p></details></li>
+</ol>
+</section>
+</template>

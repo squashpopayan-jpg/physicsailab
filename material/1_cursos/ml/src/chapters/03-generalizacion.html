@@ -1,0 +1,113 @@
+<template class="chapter-src" data-id="generalizacion" data-num="3" data-title="Generalización: sobreajuste, sesgo y varianza" data-part="Parte I · Fundamentos" data-short="Error de entrenamiento y de generalización; subajuste y sobreajuste; descomposición sesgo–varianza; curvas de aprendizaje; doble descenso">
+<p class="lead">Un modelo que acierta todo en los datos de entrenamiento puede fracasar con datos nuevos, y uno demasiado simple fracasa en ambos. Entre esos extremos está el modelo útil. Este capítulo da las herramientas para reconocer en qué lado está un modelo y qué hacer en cada caso: la descomposición del error en sesgo, varianza y ruido, y las curvas que permiten diagnosticarlo.</p>
+
+<section>
+<h2>Error de entrenamiento y error de generalización</h2>
+<p>Suponga que los datos provienen de una relación \(y=f(x)+\varepsilon\), con \(f\) desconocida y ruido \(\varepsilon\) de media cero y varianza \(\sigma^2\). Un algoritmo ve una muestra \(D\) de \(n\) pares y produce una estimación \(\hat f_D\). Hay dos errores distintos:</p>
+<div class="eq key" data-name="Riesgo empírico y riesgo esperado">\[\underbrace{\hat R(\hat f)=\frac1n\sum_{i=1}^n\ell\big(y_i,\hat f(x_i)\big)}_{\text{error de entrenamiento}}\qquad\text{frente a}\qquad \underbrace{R(\hat f)=\E_{(x,y)}\Big[\ell\big(y,\hat f(x)\big)\Big]}_{\text{error de generalización}} .\]</div>
+<p>El algoritmo minimiza el primero porque es el único que puede calcular, pero lo que importa es el segundo, el promedio sobre toda la población. El error de entrenamiento casi siempre es optimista: los parámetros se eligieron justamente para que esos datos quedaran bien. La diferencia \(R-\hat R\) es la <span class="term">brecha de generalización</span>, y crece con la flexibilidad del modelo y decrece con el número de datos.</p>
+</section>
+
+<section>
+<h2>Subajuste y sobreajuste</h2>
+<p>La <span class="term">capacidad</span> de un modelo es la variedad de funciones que puede representar: una recta tiene poca; un polinomio de grado 15, mucha. Con poca capacidad el modelo no logra seguir la forma de los datos (<span class="term">subajuste</span>: ambos errores altos). Con demasiada, sigue también el ruido (<span class="term">sobreajuste</span>: error de entrenamiento bajísimo, error de prueba alto).</p>
+<div class="sim" data-sim="polinomio-grado" data-title="Ajustar polinomios de grado creciente"></div>
+<div class="sim-guide"><ul>
+<li>Grado 0 o 1: la curva no sigue la onda; ambos errores altos (subajuste).</li>
+<li>Grados 3 a 6: el error de prueba es mínimo y la curva se parece a la función verdadera (punteada).</li>
+<li>Grado 15 con 15 datos: la curva pasa por todos los puntos (error de entrenamiento casi cero) y oscila salvajemente entre ellos; el error de prueba se dispara. Suba \(n\) a 100: el mismo grado se comporta mucho mejor.</li>
+</ul></div>
+<div class="box explain"><p>Sobreajustar es como estudiar para un examen memorizando las respuestas de los exámenes anteriores, con erratas incluidas. Si el examen nuevo trae las mismas preguntas, la nota es perfecta; si trae preguntas nuevas, el estudiante no sabe nada. Subajustar es estudiar solo el título del libro.</p></div>
+</section>
+
+<section>
+<h2>La descomposición sesgo–varianza</h2>
+<p>Imagine repetir el experimento muchas veces: cada vez se toma una muestra nueva \(D\) y se entrena un modelo nuevo \(\hat f_D\). En un punto fijo \(x\), el error cuadrático esperado (promediado sobre las muestras y sobre el ruido) se descompone exactamente en tres términos:</p>
+<div class="eq key" data-name="Sesgo–varianza">\[\E\Big[\big(y-\hat f_D(x)\big)^2\Big]=\underbrace{\big(\E_D[\hat f_D(x)]-f(x)\big)^2}_{\text{sesgo}^2}+\underbrace{\E_D\Big[\big(\hat f_D(x)-\E_D[\hat f_D(x)]\big)^2\Big]}_{\text{varianza}}+\underbrace{\sigma^2}_{\text{ruido irreducible}} .\]</div>
+<ul>
+<li>El <span class="term">sesgo</span> mide cuánto se aleja el modelo promedio de la verdad: es el error sistemático por usar una familia de funciones demasiado rígida.</li>
+<li>La <span class="term">varianza</span> mide cuánto cambia el modelo de una muestra a otra: es la inestabilidad por depender demasiado de los datos concretos.</li>
+<li>El <span class="term">ruido</span> \(\sigma^2\) no depende del modelo: ni la función verdadera lo eliminaría.</li>
+</ul>
+<p>Aumentar la capacidad suele bajar el sesgo y subir la varianza. Regularizar (capítulo 8), promediar modelos (capítulo 17) o conseguir más datos bajan la varianza; usar modelos más flexibles o mejores características bajan el sesgo.</p>
+<div class="sim" data-sim="sesgo-varianza" data-title="Cuarenta muestras, cuarenta modelos: sesgo y varianza a la vista"></div>
+<div class="sim-guide"><ul>
+<li>Cada curva fina es un polinomio ajustado a una muestra distinta de 25 puntos; la gruesa es su promedio.</li>
+<li>Grado 1: todas las curvas se parecen entre sí (varianza baja) pero su promedio no es la onda (sesgo alto).</li>
+<li>Grado 12: el promedio sigue bien la onda (sesgo bajo) pero las curvas individuales se dispersan enormemente (varianza alta).</li>
+<li>La gráfica de la derecha suma los tres términos: el error total tiene forma de U y su mínimo marca la complejidad adecuada.</li>
+</ul></div>
+<div class="box ex"><p>Con \(\sigma=0.3\), el ruido aporta \(0.09\) al error cuadrático esperado. Si un modelo tiene error de prueba 0.11, solo 0.02 es atribuible a sesgo y varianza: queda poco por ganar cambiando de algoritmo. Si tiene 0.45, hay 0.36 por recuperar.</p></div>
+</section>
+
+<section>
+<h2>Curvas de aprendizaje: diagnosticar con datos</h2>
+<p>En un problema real no se conoce \(f\) y no se puede repetir el muestreo. Se diagnostica con la <span class="term">curva de aprendizaje</span>: el error de entrenamiento y el de validación en función del número de datos de entrenamiento.</p>
+<div class="sim" data-sim="curvas-aprendizaje" data-title="Curvas de aprendizaje de un modelo rígido, uno adecuado y uno flexible"></div>
+<div class="sim-guide"><ul>
+<li><b>Sesgo alto</b> (grado 1): las dos curvas convergen pronto a un error alto, muy por encima del ruido. Más datos no ayudan; hace falta un modelo más flexible o mejores variables.</li>
+<li><b>Varianza alta</b> (grado 12): el error de entrenamiento es bajo y el de validación alto, con una brecha grande que se cierra lentamente al crecer \(n\). Más datos o más regularización ayudan.</li>
+<li><b>Adecuado</b> (grado 5): ambas curvas se acercan al nivel del ruido.</li>
+</ul></div>
+<div class="tablewrap"><table>
+<thead><tr><th>Síntoma</th><th>Diagnóstico</th><th>Qué hacer</th><th>Qué no ayuda</th></tr></thead>
+<tbody>
+<tr><td>Entrenamiento alto y validación alta, curvas juntas</td><td>sesgo alto (subajuste)</td><td>modelo más flexible, nuevas características, menos regularización</td><td>conseguir más datos</td></tr>
+<tr><td>Entrenamiento bajo y validación alta, brecha grande</td><td>varianza alta (sobreajuste)</td><td>más datos, regularización, modelo más simple, ensambles, parada temprana</td><td>un modelo más flexible</td></tr>
+<tr><td>Ambos bajos y cerca del ruido estimado</td><td>bien</td><td>evaluar en prueba y parar</td><td>seguir ajustando</td></tr>
+</tbody></table></div>
+</section>
+
+<section>
+<h2>Más allá de la U: el doble descenso</h2>
+<p>La curva en U es la historia clásica, pero los modelos modernos muy grandes (redes con millones de parámetros, más que datos) generalizan bien aunque interpolen los datos de entrenamiento. Belkin y colaboradores (2019) describieron el <span class="term">doble descenso</span>: el error de prueba sube al acercarse el número de parámetros al número de datos (el punto de interpolación, donde el ajuste es forzado y muy inestable) y vuelve a bajar cuando los parámetros lo superan con creces, porque entre las infinitas soluciones que interpolan, el algoritmo elige una de norma pequeña, que es suave.</p>
+<div class="sim" data-sim="doble-descenso" data-title="Doble descenso con rasgos aleatorios y solución de norma mínima"></div>
+<div class="sim-guide"><ul>
+<li>El modelo es una combinación lineal de \(p\) funciones ReLU con pendientes y cortes al azar, ajustada a \(n=20\) puntos por mínimos cuadrados de norma mínima.</li>
+<li>El error de prueba sube bruscamente cerca de \(p=n=20\) y vuelve a bajar para \(p\gg n\). Añada un poco de regularización: el pico desaparece.</li>
+</ul></div>
+<div class="box warn"><p>El doble descenso no anula la idea de sobreajuste: muestra que la «capacidad» no se mide solo contando parámetros. Lo que controla la varianza es la complejidad efectiva de la función elegida (su norma, su suavidad), que depende también del algoritmo y de la regularización implícita.</p></div>
+</section>
+
+<section>
+<h2>Práctica: curvas de validación y de aprendizaje</h2>
+<div class="box py"><p>scikit-learn calcula ambas curvas con validación cruzada: <code>validation_curve</code> varía un hiperparámetro y <code>learning_curve</code> varía el tamaño de entrenamiento. El programa usa un polinomio dentro de un <code>Pipeline</code> sobre datos sintéticos \(y=\sen(2.2x)+\varepsilon\), con \(\sigma=0.3\) (ruido irreducible \(\sigma^2=0.09\)).</p>
+<div class="py" data-py="03-sobreajuste"></div></div>
+<div class="box read"><ul>
+<li><b>Curva de validación</b>: el MSE de entrenamiento baja siempre al subir el grado; el de validación baja hasta grado 3–7 y luego sube. El grado elegido es el de menor error de validación, no el de menor error de entrenamiento.</li>
+<li>El mejor error de validación queda cerca de 0.09, el piso del ruido: con ese grado ya no hay mucho que ganar.</li>
+<li><b>Curvas de aprendizaje</b>: con grado 1 los dos errores convergen a un valor alto (≈ 0.33) que más datos no reducen: sesgo. Con grado 15 la brecha es descomunal con pocos datos (con 20 datos el error de validación supera el millón: el polinomio explota entre los puntos y en los bordes) y se reduce al crecer \(n\), aunque con 96 datos el error de validación (0.92) sigue siendo doce veces el de entrenamiento: varianza.</li>
+<li>Fíjese en la desviación entre pliegues del grado 15 (± 1.6, mayor que la media): un modelo de varianza alta no solo se equivoca más, también es impredecible de un pliegue a otro.</li>
+<li>scikit-learn devuelve puntuaciones donde «más alto es mejor», por eso el error aparece como <code>neg_mean_squared_error</code> y el programa le cambia el signo.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>El error de entrenamiento es optimista; el que cuenta es el de generalización, estimado con datos no vistos.</li>
+<li>Error esperado = sesgo² + varianza + ruido. Más capacidad baja el sesgo y sube la varianza.</li>
+<li>Curvas juntas y altas: sesgo. Brecha grande: varianza. Más datos solo curan la varianza.</li>
+<li>El ruido \(\sigma^2\) es un piso: compárelo con su error antes de seguir optimizando.</li>
+<li>En modelos sobreparametrizados la complejidad efectiva depende de la norma de la solución, no del número de parámetros (doble descenso).</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un modelo tiene MSE de entrenamiento 0.02 y de validación 0.40; el ruido estimado es 0.05. ¿Diagnóstico y dos acciones?
+<details><summary>Respuesta</summary><p>Varianza alta (brecha de 0.38). Acciones: regularizar o simplificar el modelo, conseguir más datos, usar un ensamble o parada temprana.</p></details></li>
+<li><span class="lvl">Básico</span>¿Por qué un polinomio de grado \(n-1\) tiene error de entrenamiento cero con \(n\) puntos de \(x\) distintos?
+<details><summary>Respuesta</summary><p>Tiene \(n\) coeficientes y hay exactamente un polinomio de grado \(n-1\) que pasa por \(n\) puntos (interpolación de Lagrange): reproduce los datos y también su ruido.</p></details></li>
+<li><span class="lvl">Intermedio</span>Para el estimador constante \(\hat f=\bar y\) con \(y\sim\mathcal N(\mu,\sigma^2)\) y \(n\) datos, calcule sesgo y varianza.
+<details><summary>Respuesta</summary><p>Sesgo 0 (\(\E\bar y=\mu\)) y varianza \(\sigma^2/n\). El error esperado sobre una nueva observación es \(\sigma^2+\sigma^2/n\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Las curvas de aprendizaje de un modelo convergen ambas a MSE 0.30 y el ruido estimado es 0.09. Su jefe propone conseguir el triple de datos. ¿Qué responde?
+<details><summary>Respuesta</summary><p>Las curvas ya se juntaron: el problema es sesgo y más datos no lo bajan. Conviene un modelo más flexible o mejores características; queda 0.21 de error recuperable.</p></details></li>
+<li><span class="lvl">Avanzado</span>Deduzca la descomposición sesgo–varianza sumando y restando \(\bar f(x)=\E_D[\hat f_D(x)]\) y usando la independencia del ruido.
+<details><summary>Respuesta</summary><p>\(y-\hat f=(f-\bar f)+(\bar f-\hat f)+\varepsilon\). Al elevar al cuadrado y promediar, los términos cruzados se anulan: \(\E[\bar f-\hat f]=0\) y \(\varepsilon\) es independiente de \(D\) con media 0. Quedan \((f-\bar f)^2+\E(\hat f-\bar f)^2+\sigma^2\).</p></details></li>
+</ol>
+<div class="box links"><ul>
+<li><a href="https://mlu-explain.github.io/bias-variance/">MLU-Explain — The Bias–Variance Tradeoff</a><small>Ensayo visual interactivo, complemento directo de la sección 3.3.</small></li>
+<li><a href="https://scikit-learn.org/stable/modules/learning_curve.html">scikit-learn — Validation curves: plotting scores to evaluate models</a><small>Documentación de validation_curve y learning_curve con ejemplos.</small></li>
+<li><a href="https://arxiv.org/abs/1812.11118">Belkin, Hsu, Ma y Mandal (2019) — Reconciling modern machine learning practice and the bias–variance trade-off</a><small>El artículo que popularizó el doble descenso.</small></li>
+<li><a href="https://hastie.su.domains/ElemStatLearn/">Hastie, Tibshirani y Friedman — The Elements of Statistical Learning</a><small>Capítulo 7: evaluación y selección de modelos, con la teoría completa. Libro gratuito.</small></li>
+</ul></div>
+</section>
+</template>

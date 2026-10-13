@@ -1,0 +1,336 @@
+<template class="chapter-src" data-id="coordenadas" data-num="2" data-title="Sistemas de coordenadas" data-part="Parte I · Herramientas matemáticas" data-short="Cartesianas, cilíndricas y esféricas: bases, transformaciones, elementos diferenciales y operadores">
+<p class="lead">Elegir bien el sistema de coordenadas convierte una integral imposible en una de una línea. Una carga puntual pide coordenadas esféricas; un cable, cilíndricas; un plano, cartesianas. Este capítulo construye los tres sistemas con cuidado: sus coordenadas, sus vectores unitarios, cómo pasar de uno a otro y cómo medir longitudes, áreas y volúmenes en cada uno.</p>
+
+<section>
+<h2>Qué define un sistema de coordenadas</h2>
+<p>Un sistema de coordenadas en el espacio asigna a cada punto \(P\) una terna ordenada de números \((u_1,u_2,u_3)\). Tres ideas geométricas lo describen por completo:</p>
+<ul>
+<li><strong>Superficies coordenadas.</strong> Al fijar una coordenada, \(u_i=\text{cte}\), se obtiene una superficie. Todo punto es la intersección de tres superficies coordenadas, una de cada familia.</li>
+<li><strong>Curvas coordenadas.</strong> Al fijar dos coordenadas y dejar variar la tercera se obtiene una curva. Por \(P\) pasan tres curvas coordenadas.</li>
+<li><strong>Vectores unitarios base.</strong> En cada punto, \(\uv{u}_i\) es el unitario tangente a la curva coordenada \(u_i\), en el sentido en que \(u_i\) crece.</li>
+</ul>
+<p>Los tres sistemas de este curso son <span class="term">ortogonales</span>: en cada punto \(\uv{u}_1\cdot\uv{u}_2=\uv{u}_2\cdot\uv{u}_3=\uv{u}_3\cdot\uv{u}_1=0\), es decir, las superficies coordenadas se cortan en ángulo recto. También son <span class="term">dextrógiros</span>: con el orden en que se listan las coordenadas se cumple</p>
+<div class="eq key" data-name="Terna dextrógira">\[\uv{u}_1\times\uv{u}_2=\uv{u}_3,\qquad \uv{u}_2\times\uv{u}_3=\uv{u}_1,\qquad \uv{u}_3\times\uv{u}_1=\uv{u}_2 .\]</div>
+<p>Por eso el orden importa: se escribe \((x,y,z)\), \((\rho,\phi,z)\) y \((r,\theta,\phi)\), nunca en otro orden, si se van a calcular productos vectoriales.</p>
+<p>La diferencia esencial entre el sistema cartesiano y los otros dos es que en cilíndricas y esféricas los vectores base <strong>cambian de dirección de un punto a otro</strong>. En cartesianas, \(\uv{x},\uv{y},\uv{z}\) son los mismos en todo el espacio. Casi todos los errores al trabajar con coordenadas curvilíneas nacen de olvidar esto.</p>
+<h3>Factores de escala</h3>
+<p>Una variación \(\dd u_i\) de una coordenada produce un desplazamiento de longitud \(h_i\,\dd u_i\) a lo largo de \(\uv{u}_i\). El número \(h_i\) es el <span class="term">factor de escala</span> (o coeficiente métrico). Si \(u_i\) es una longitud, \(h_i=1\); si es un ángulo, \(h_i\) es el radio del arco que se recorre. Con ellos:</p>
+<div class="eq key" data-name="Elemento de longitud general">\[\dd\vb{l}=h_1\,\dd u_1\,\uv{u}_1+h_2\,\dd u_2\,\uv{u}_2+h_3\,\dd u_3\,\uv{u}_3,\qquad \dd V=h_1h_2h_3\,\dd u_1\,\dd u_2\,\dd u_3 .\]</div>
+<div class="tablewrap"><table>
+<tr><th>Sistema</th><th>Coordenadas \((u_1,u_2,u_3)\)</th><th>Rangos</th><th>\(h_1\)</th><th>\(h_2\)</th><th>\(h_3\)</th></tr>
+<tr><td>Cartesianas</td><td>\((x,\,y,\,z)\)</td><td>\(-\infty\lt x,y,z\lt\infty\)</td><td class="c">\(1\)</td><td class="c">\(1\)</td><td class="c">\(1\)</td></tr>
+<tr><td>Cilíndricas</td><td>\((\rho,\,\phi,\,z)\)</td><td>\(\rho\ge0,\ 0\le\phi\lt2\pi,\ -\infty\lt z\lt\infty\)</td><td class="c">\(1\)</td><td class="c">\(\rho\)</td><td class="c">\(1\)</td></tr>
+<tr><td>Esféricas</td><td>\((r,\,\theta,\,\phi)\)</td><td>\(r\ge0,\ 0\le\theta\le\pi,\ 0\le\phi\lt2\pi\)</td><td class="c">\(1\)</td><td class="c">\(r\)</td><td class="c">\(r\sen\theta\)</td></tr>
+</table></div>
+<div class="sim" data-sim="coord-explorer" data-title="Explorador de coordenadas: punto, superficies coordenadas y base local"></div>
+<div class="sim-guide"><ul>
+<li>En <strong>cilíndricas</strong>, active las superficies coordenadas: el punto es la intersección del cilindro \(\rho=\text{cte}\), el semiplano \(\phi=\text{cte}\) y el plano \(z=\text{cte}\).</li>
+<li>Mueva \(\phi\) y observe que \(\uv{\rho}\) y \(\uv{\phi}\) giran con el punto, mientras \(\uv{z}\) no cambia.</li>
+<li>En <strong>esféricas</strong>, la superficie \(\theta=\text{cte}\) es un cono con vértice en el origen. Lleve \(\theta\) a \(90^\circ\): el cono se aplana y se convierte en el plano \(xy\).</li>
+<li>Compare las lecturas: el mismo punto tiene coordenadas distintas en cada sistema, pero \(\sqrt{x^2+y^2+z^2}=r\) y \(\sqrt{x^2+y^2}=\rho=r\sen\theta\) siempre.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Coordenadas cartesianas</h2>
+<p>Un punto se identifica por sus distancias con signo \((x,y,z)\) a los planos coordenados. Las superficies coordenadas son planos perpendiculares a los ejes: \(x=\text{cte}\), \(y=\text{cte}\), \(z=\text{cte}\). Las curvas coordenadas son rectas paralelas a los ejes y los vectores base \(\uv{x},\uv{y},\uv{z}\) son constantes.</p>
+<div class="eq">\[\vb{r}=x\,\uv{x}+y\,\uv{y}+z\,\uv{z},\qquad \vb{A}=A_x\uv{x}+A_y\uv{y}+A_z\uv{z}.\]</div>
+<p>Como los unitarios no dependen de la posición, las componentes de vectores definidos en puntos distintos sí pueden sumarse directamente, y la derivada o integral de un vector se hace componente a componente. Los elementos diferenciales son:</p>
+<div class="eq">\[\dd\vb{l}=\dd x\,\uv{x}+\dd y\,\uv{y}+\dd z\,\uv{z},\qquad \dd V=\dd x\,\dd y\,\dd z,\]
+\[\dd\vb{S}_x=\dd y\,\dd z\;\uv{x},\qquad \dd\vb{S}_y=\dd x\,\dd z\;\uv{y},\qquad \dd\vb{S}_z=\dd x\,\dd y\;\uv{z}.\]</div>
+<p>Las coordenadas cartesianas son la elección natural cuando las fronteras del problema son planos: placas paralelas, cajas rectangulares, guías de onda rectangulares, láminas de carga.</p>
+</section>
+
+<section>
+<h2>Coordenadas cilíndricas</h2>
+<p>Un punto \(P\) se describe por:</p>
+<ul>
+<li>\(\rho\): distancia de \(P\) al eje \(z\) (radio del cilindro que pasa por \(P\)), \(\rho\ge0\).</li>
+<li>\(\phi\): ángulo azimutal, medido en el plano \(xy\) desde el eje \(+x\) hasta la proyección de \(P\), en sentido antihorario visto desde \(+z\); \(0\le\phi\lt2\pi\).</li>
+<li>\(z\): la misma altura que en cartesianas.</li>
+</ul>
+<div class="eq key" data-name="Cilíndricas ↔ cartesianas">\[x=\rho\cos\phi,\qquad y=\rho\sen\phi,\qquad z=z;\qquad\qquad \rho=\sqrt{x^2+y^2},\qquad \phi=\operatorname{atan2}(y,x),\qquad z=z .\]</div>
+<p>Aquí \(\operatorname{atan2}(y,x)\) es el arco tangente <em>de dos argumentos</em>, que devuelve el ángulo en el cuadrante correcto según los signos de \(x\) y \(y\) (si da un valor negativo se le suma \(2\pi\)). La fórmula \(\phi=\arctan(y/x)\) sólo es correcta en el primer y cuarto cuadrantes: para \(x\lt0\) hay que sumar \(\pi\).</p>
+<h3>Superficies y curvas coordenadas</h3>
+<div class="tablewrap narrow"><table>
+<tr><th>Se fija</th><th>Superficie</th><th>Curva al variar la coordenada</th></tr>
+<tr><td>\(\rho=\rho_0\)</td><td>Cilindro circular de radio \(\rho_0\) con eje \(z\)</td><td>\(\rho\): semirrecta que sale perpendicular al eje \(z\)</td></tr>
+<tr><td>\(\phi=\phi_0\)</td><td>Semiplano limitado por el eje \(z\)</td><td>\(\phi\): circunferencia horizontal de radio \(\rho\) centrada en el eje</td></tr>
+<tr><td>\(z=z_0\)</td><td>Plano horizontal</td><td>\(z\): recta vertical</td></tr>
+</table></div>
+<h3>Vectores unitarios</h3>
+<p>\(\uv{\rho}\) apunta alejándose del eje \(z\) (perpendicular a él), \(\uv{\phi}\) es tangente a la circunferencia horizontal en el sentido de \(\phi\) creciente y \(\uv{z}\) es el unitario cartesiano. Expresados en la base cartesiana:</p>
+<div class="eq key" data-name="Base cilíndrica">\[\uv{\rho}=\cos\phi\,\uv{x}+\sen\phi\,\uv{y},\qquad \uv{\phi}=-\sen\phi\,\uv{x}+\cos\phi\,\uv{y},\qquad \uv{z}=\uv{z};\]
+\[\uv{x}=\cos\phi\,\uv{\rho}-\sen\phi\,\uv{\phi},\qquad \uv{y}=\sen\phi\,\uv{\rho}+\cos\phi\,\uv{\phi}.\]</div>
+<p>Se cumple \(\uv{\rho}\times\uv{\phi}=\uv{z}\), \(\uv{\phi}\times\uv{z}=\uv{\rho}\), \(\uv{z}\times\uv{\rho}=\uv{\phi}\). Los unitarios \(\uv{\rho}\) y \(\uv{\phi}\) dependen de \(\phi\) (no de \(\rho\) ni de \(z\)).</p>
+<div class="box warn"><h4>El vector de posición no tiene componente \(\phi\)</h4><p>En cilíndricas \(\vb{r}=\rho\,\uv{\rho}+z\,\uv{z}\). La información del ángulo está escondida dentro de \(\uv{\rho}\), que depende de \(\phi\). Escribir \(\vb{r}=\rho\uv{\rho}+\phi\uv{\phi}+z\uv{z}\) es un error frecuente (además, \(\phi\) no tiene unidades de longitud).</p></div>
+<h3>Elementos diferenciales</h3>
+<p>Al variar \(\phi\) en \(\dd\phi\) el punto recorre un arco de longitud \(\rho\,\dd\phi\); por eso \(h_\phi=\rho\):</p>
+<div class="eq key" data-name="Elementos en cilíndricas">\[\dd\vb{l}=\dd\rho\,\uv{\rho}+\rho\,\dd\phi\,\uv{\phi}+\dd z\,\uv{z},\qquad \dd V=\rho\,\dd\rho\,\dd\phi\,\dd z,\]
+\[\dd\vb{S}_\rho=\rho\,\dd\phi\,\dd z\;\uv{\rho},\qquad \dd\vb{S}_\phi=\dd\rho\,\dd z\;\uv{\phi},\qquad \dd\vb{S}_z=\rho\,\dd\rho\,\dd\phi\;\uv{z}.\]</div>
+<div class="sim" data-sim="polar-basis" data-title="La base polar cambia de un punto a otro"></div>
+<div class="sim-guide"><ul>
+<li>Arrastre el punto \(P\) alrededor del origen: \(\uv{x}\) y \(\uv{y}\) no cambian, pero \(\uv{\rho}\) y \(\uv{\phi}\) giran con \(\phi\).</li>
+<li>Lleve \(P\) al segundo o tercer cuadrante y compare \(\arctan(y/x)\) con \(\operatorname{atan2}(y,x)\): la primera da un ángulo equivocado en \(180^\circ\).</li>
+<li>Elija el campo \(\vb{A}=\uv{\phi}\): sus componentes cilíndricas son constantes \((0,1,0)\), pero el campo <em>no</em> es uniforme; sus componentes cartesianas \((-\sen\phi,\cos\phi)\) cambian de punto a punto.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Coordenadas esféricas</h2>
+<p>Un punto \(P\) se describe por:</p>
+<ul>
+<li>\(r\): distancia de \(P\) al origen, \(r\ge0\).</li>
+<li>\(\theta\): ángulo polar, entre el eje \(+z\) y el vector de posición, \(0\le\theta\le\pi\). (\(\theta=0\) es el polo norte, \(\theta=\pi/2\) el plano \(xy\), \(\theta=\pi\) el polo sur.)</li>
+<li>\(\phi\): el mismo ángulo azimutal de las cilíndricas, \(0\le\phi\lt2\pi\).</li>
+</ul>
+<div class="eq key" data-name="Esféricas ↔ cartesianas">\[x=r\sen\theta\cos\phi,\qquad y=r\sen\theta\sen\phi,\qquad z=r\cos\theta;\]
+\[r=\sqrt{x^2+y^2+z^2},\qquad \theta=\arccos\frac{z}{r}=\operatorname{atan2}\!\left(\sqrt{x^2+y^2},\,z\right),\qquad \phi=\operatorname{atan2}(y,x).\]</div>
+<p>Como \(\theta\in[0,\pi]\), la función \(\arccos\) lo determina sin ambigüedad. La relación con las cilíndricas es especialmente simple: \(\rho=r\sen\theta\), \(z=r\cos\theta\), y \(\phi\) es el mismo en ambos sistemas.</p>
+<div class="box note"><h4>Convención de física frente a convención de matemáticas</h4><p>Aquí se usa la convención de la norma ISO 80000-2 y de los textos de física e ingeniería: \(\theta\) es el ángulo <em>polar</em> y \(\phi\) el <em>azimutal</em>. Muchos textos de cálculo intercambian los nombres (\(\theta\) azimutal, \(\phi\) polar). Antes de copiar una fórmula de otra fuente, verifique qué convención usa.</p></div>
+<h3>Superficies y curvas coordenadas</h3>
+<div class="tablewrap narrow"><table>
+<tr><th>Se fija</th><th>Superficie</th><th>Curva al variar la coordenada</th></tr>
+<tr><td>\(r=r_0\)</td><td>Esfera de radio \(r_0\) centrada en el origen</td><td>\(r\): semirrecta radial desde el origen</td></tr>
+<tr><td>\(\theta=\theta_0\)</td><td>Cono circular con vértice en el origen y eje \(z\) (para \(\theta_0=\pi/2\), el plano \(xy\))</td><td>\(\theta\): meridiano (semicircunferencia de polo a polo)</td></tr>
+<tr><td>\(\phi=\phi_0\)</td><td>Semiplano limitado por el eje \(z\)</td><td>\(\phi\): paralelo (circunferencia horizontal de radio \(r\sen\theta\))</td></tr>
+</table></div>
+<h3>Vectores unitarios</h3>
+<p>\(\uv{r}\) apunta radialmente hacia afuera desde el origen; \(\uv{\theta}\) es tangente al meridiano, apuntando hacia \(\theta\) creciente (hacia el “sur”); \(\uv{\phi}\) es tangente al paralelo, hacia el “este”.</p>
+<div class="eq key" data-name="Base esférica">\[\begin{aligned}
+\uv{r}&=\sen\theta\cos\phi\,\uv{x}+\sen\theta\sen\phi\,\uv{y}+\cos\theta\,\uv{z},\\
+\uv{\theta}&=\cos\theta\cos\phi\,\uv{x}+\cos\theta\sen\phi\,\uv{y}-\sen\theta\,\uv{z},\\
+\uv{\phi}&=-\sen\phi\,\uv{x}+\cos\phi\,\uv{y}.
+\end{aligned}\]</div>
+<p>Con \(\uv{r}\times\uv{\theta}=\uv{\phi}\), \(\uv{\theta}\times\uv{\phi}=\uv{r}\), \(\uv{\phi}\times\uv{r}=\uv{\theta}\). En función de la base cilíndrica: \(\uv{r}=\sen\theta\,\uv{\rho}+\cos\theta\,\uv{z}\) y \(\uv{\theta}=\cos\theta\,\uv{\rho}-\sen\theta\,\uv{z}\). El vector de posición es simplemente \(\vb{r}=r\,\uv{r}\).</p>
+<h3>Elementos diferenciales</h3>
+<p>Una variación \(\dd\theta\) recorre un arco de meridiano de radio \(r\): longitud \(r\,\dd\theta\). Una variación \(\dd\phi\) recorre un arco de paralelo, cuyo radio es la distancia al eje, \(r\sen\theta\): longitud \(r\sen\theta\,\dd\phi\).</p>
+<div class="eq key" data-name="Elementos en esféricas">\[\dd\vb{l}=\dd r\,\uv{r}+r\,\dd\theta\,\uv{\theta}+r\sen\theta\,\dd\phi\,\uv{\phi},\qquad \dd V=r^2\sen\theta\,\dd r\,\dd\theta\,\dd\phi,\]
+\[\dd\vb{S}_r=r^2\sen\theta\,\dd\theta\,\dd\phi\;\uv{r},\qquad \dd\vb{S}_\theta=r\sen\theta\,\dd r\,\dd\phi\;\uv{\theta},\qquad \dd\vb{S}_\phi=r\,\dd r\,\dd\theta\;\uv{\phi}.\]</div>
+<p>La combinación \(\dd\Omega=\sen\theta\,\dd\theta\,\dd\phi\) es el <span class="term">ángulo sólido</span> subtendido por \(\dd\vb{S}_r\): \(\dd S_r=r^2\,\dd\Omega\). El ángulo sólido total alrededor de un punto es \(\int_0^{2\pi}\!\int_0^\pi\sen\theta\,\dd\theta\,\dd\phi=4\pi\) estereorradianes, número que reaparece en la ley de Gauss.</p>
+<div class="box ex">
+<h4>Conversión de un punto</h4>
+<p>Exprese \(P(-2,\,2,\,3)\) en coordenadas cilíndricas y esféricas.</p>
+<details><summary>Solución</summary>
+<p>\(\rho=\sqrt{4+4}=2\sqrt2\approx2.828\). Como \(x\lt0\) y \(y\gt0\), \(P\) está en el segundo cuadrante: \(\phi=\operatorname{atan2}(2,-2)=135^\circ=3\pi/4\). (La fórmula ingenua \(\arctan(y/x)=\arctan(-1)=-45^\circ\) es incorrecta.) Así, \(P=(2.828,\ 135^\circ,\ 3)\) en cilíndricas.</p>
+<p>\(r=\sqrt{4+4+9}=\sqrt{17}\approx4.123\), \(\theta=\arccos(3/\sqrt{17})\approx43.31^\circ\), \(\phi=135^\circ\). Verificación: \(r\sen\theta=4.123\times0.6860=2.828=\rho\). ✔</p>
+</details>
+</div>
+<div class="box ex">
+<h4>De esféricas a cartesianas</h4>
+<p>Un punto tiene \(r=5\), \(\theta=120^\circ\), \(\phi=240^\circ\). Halle \((x,y,z)\).</p>
+<details><summary>Solución</summary>
+<p>\(\sen120^\circ=0.8660\), \(\cos120^\circ=-0.5\), \(\cos240^\circ=-0.5\), \(\sen240^\circ=-0.8660\). Entonces \(x=5(0.8660)(-0.5)=-2.165\), \(y=5(0.8660)(-0.8660)=-3.750\), \(z=5(-0.5)=-2.5\). El punto está debajo del plano \(xy\) (\(\theta\gt90^\circ\)) y en el tercer cuadrante (\(180^\circ\lt\phi\lt270^\circ\)).</p>
+</details>
+</div>
+</section>
+
+<section>
+<h2>Conversión de puntos: resumen y casos especiales</h2>
+<div class="tablewrap"><table>
+<tr><th>De \ a</th><th>Cartesianas \((x,y,z)\)</th><th>Cilíndricas \((\rho,\phi,z)\)</th><th>Esféricas \((r,\theta,\phi)\)</th></tr>
+<tr><th>Cartesianas</th><td>—</td><td>\(\rho=\sqrt{x^2+y^2}\)<br>\(\phi=\operatorname{atan2}(y,x)\)<br>\(z=z\)</td><td>\(r=\sqrt{x^2+y^2+z^2}\)<br>\(\theta=\arccos(z/r)\)<br>\(\phi=\operatorname{atan2}(y,x)\)</td></tr>
+<tr><th>Cilíndricas</th><td>\(x=\rho\cos\phi\)<br>\(y=\rho\sen\phi\)<br>\(z=z\)</td><td>—</td><td>\(r=\sqrt{\rho^2+z^2}\)<br>\(\theta=\operatorname{atan2}(\rho,z)\)<br>\(\phi=\phi\)</td></tr>
+<tr><th>Esféricas</th><td>\(x=r\sen\theta\cos\phi\)<br>\(y=r\sen\theta\sen\phi\)<br>\(z=r\cos\theta\)</td><td>\(\rho=r\sen\theta\)<br>\(\phi=\phi\)<br>\(z=r\cos\theta\)</td><td>—</td></tr>
+</table></div>
+<h3>Puntos singulares</h3>
+<ul>
+<li>Sobre el eje \(z\) (\(\rho=0\), o \(\theta=0\) o \(\pi\)) el ángulo \(\phi\) no está definido y tampoco \(\uv{\rho}\), \(\uv{\phi}\), \(\uv{\theta}\). En el origen tampoco \(\theta\) está definido.</li>
+<li>En esos puntos algún factor de escala se anula (\(h_\phi=\rho=0\) o \(h_\phi=r\sen\theta=0\)): la correspondencia entre coordenadas y puntos deja de ser uno a uno. Las fórmulas que dividen por \(\rho\) o por \(r\sen\theta\) deben tratarse allí con un límite.</li>
+<li>El rango de \(\phi\) puede tomarse como \([0,2\pi)\) o \((-\pi,\pi]\); ambos son válidos si se usan con coherencia.</li>
+</ul>
+<h3>Distancia entre dos puntos</h3>
+<p>No se pueden restar coordenadas curvilíneas componente a componente. La distancia se obtiene a partir de \(\abs{\vb{r}_1-\vb{r}_2}^2=r_1^2+r_2^2-2\,\vb{r}_1\cdot\vb{r}_2\):</p>
+<div class="eq">\[\text{cilíndricas: }\ d^2=\rho_1^2+\rho_2^2-2\rho_1\rho_2\cos(\phi_1-\phi_2)+(z_1-z_2)^2,\]
+\[\text{esféricas: }\ d^2=r_1^2+r_2^2-2r_1r_2\left[\sen\theta_1\sen\theta_2\cos(\phi_1-\phi_2)+\cos\theta_1\cos\theta_2\right].\]</div>
+<p>El corchete de la segunda fórmula es el coseno del ángulo \(\gamma\) entre \(\vb{r}_1\) y \(\vb{r}_2\), resultado que se usa en el desarrollo multipolar del potencial.</p>
+</section>
+
+<section>
+<h2>Transformación de vectores entre sistemas</h2>
+<p>Un vector es un objeto geométrico; lo que cambia al cambiar de sistema son sus <em>componentes</em>, porque cambian los unitarios sobre los que se proyecta. Como las bases son ortonormales, cada componente es un producto escalar:</p>
+<div class="eq">\[A_\rho=\vb{A}\cdot\uv{\rho}=A_x(\uv{x}\cdot\uv{\rho})+A_y(\uv{y}\cdot\uv{\rho})+A_z(\uv{z}\cdot\uv{\rho})=A_x\cos\phi+A_y\sen\phi .\]</div>
+<p>Las tablas de productos escalares entre unitarios contienen toda la información:</p>
+<div class="tablewrap narrow"><table>
+<tr><th class="c">\(\cdot\)</th><th class="c">\(\uv{\rho}\)</th><th class="c">\(\uv{\phi}\)</th><th class="c">\(\uv{z}\)</th><th style="border:0;background:none"></th><th class="c">\(\cdot\)</th><th class="c">\(\uv{r}\)</th><th class="c">\(\uv{\theta}\)</th><th class="c">\(\uv{\phi}\)</th></tr>
+<tr><th class="c">\(\uv{x}\)</th><td class="c">\(\cos\phi\)</td><td class="c">\(-\sen\phi\)</td><td class="c">\(0\)</td><td style="border:0"></td><th class="c">\(\uv{x}\)</th><td class="c">\(\sen\theta\cos\phi\)</td><td class="c">\(\cos\theta\cos\phi\)</td><td class="c">\(-\sen\phi\)</td></tr>
+<tr><th class="c">\(\uv{y}\)</th><td class="c">\(\sen\phi\)</td><td class="c">\(\cos\phi\)</td><td class="c">\(0\)</td><td style="border:0"></td><th class="c">\(\uv{y}\)</th><td class="c">\(\sen\theta\sen\phi\)</td><td class="c">\(\cos\theta\sen\phi\)</td><td class="c">\(\cos\phi\)</td></tr>
+<tr><th class="c">\(\uv{z}\)</th><td class="c">\(0\)</td><td class="c">\(0\)</td><td class="c">\(1\)</td><td style="border:0"></td><th class="c">\(\uv{z}\)</th><td class="c">\(\cos\theta\)</td><td class="c">\(-\sen\theta\)</td><td class="c">\(0\)</td></tr>
+</table></div>
+<p>En forma matricial:</p>
+<div class="eq key" data-name="Cartesianas → cilíndricas">\[\begin{pmatrix}A_\rho\\A_\phi\\A_z\end{pmatrix}=\begin{pmatrix}\cos\phi&\sen\phi&0\\-\sen\phi&\cos\phi&0\\0&0&1\end{pmatrix}\begin{pmatrix}A_x\\A_y\\A_z\end{pmatrix}\]</div>
+<div class="eq key" data-name="Cartesianas → esféricas">\[\begin{pmatrix}A_r\\A_\theta\\A_\phi\end{pmatrix}=\begin{pmatrix}\sen\theta\cos\phi&\sen\theta\sen\phi&\cos\theta\\\cos\theta\cos\phi&\cos\theta\sen\phi&-\sen\theta\\-\sen\phi&\cos\phi&0\end{pmatrix}\begin{pmatrix}A_x\\A_y\\A_z\end{pmatrix}\]</div>
+<div class="eq key" data-name="Cilíndricas → esféricas">\[\begin{pmatrix}A_r\\A_\theta\\A_\phi\end{pmatrix}=\begin{pmatrix}\sen\theta&0&\cos\theta\\\cos\theta&0&-\sen\theta\\0&1&0\end{pmatrix}\begin{pmatrix}A_\rho\\A_\phi\\A_z\end{pmatrix}\]</div>
+<p>Las tres matrices son <span class="term">ortogonales</span> (sus filas son vectores unitarios mutuamente perpendiculares), de modo que la transformación inversa se obtiene con la <strong>transpuesta</strong>. Por ejemplo, \(A_x=A_\rho\cos\phi-A_\phi\sen\phi\) y \(A_y=A_\rho\sen\phi+A_\phi\cos\phi\). Una consecuencia importante: la magnitud es invariante, \(A_x^2+A_y^2+A_z^2=A_\rho^2+A_\phi^2+A_z^2=A_r^2+A_\theta^2+A_\phi^2\).</p>
+<div class="box law"><h4>Procedimiento para transformar un campo vectorial</h4>
+<ol>
+<li>Calcule las nuevas componentes con la matriz adecuada (productos escalares con los nuevos unitarios).</li>
+<li>Exprese las viejas coordenadas que aparezcan en las componentes (\(x,y,z\), etc.) en función de las nuevas.</li>
+<li>Simplifique y escriba el resultado en la nueva base. Si se pide en un punto concreto, evalúe ángulos y coordenadas de <em>ese</em> punto.</li>
+</ol></div>
+<div class="box ex">
+<h4>Un campo de rotación en cilíndricas y esféricas</h4>
+<p>Exprese \(\vb{B}=y\,\uv{x}-x\,\uv{y}+z\,\uv{z}\) en coordenadas cilíndricas y esféricas.</p>
+<details><summary>Solución</summary>
+<p><strong>Cilíndricas.</strong> \(B_\rho=y\cos\phi-x\sen\phi=\rho\sen\phi\cos\phi-\rho\cos\phi\sen\phi=0\); \(B_\phi=-y\sen\phi-x\cos\phi=-\rho(\sen^2\phi+\cos^2\phi)=-\rho\); \(B_z=z\). Resultado: \(\vb{B}=-\rho\,\uv{\phi}+z\,\uv{z}\). La parte horizontal es una rotación en sentido horario con rapidez proporcional a la distancia al eje.</p>
+<p><strong>Esféricas.</strong> Con \(x=r\sen\theta\cos\phi\), \(y=r\sen\theta\sen\phi\), \(z=r\cos\theta\):</p>
+<p>\(B_r=y\sen\theta\cos\phi-x\sen\theta\sen\phi+z\cos\theta=r\cos^2\theta\),</p>
+<p>\(B_\theta=y\cos\theta\cos\phi-x\cos\theta\sen\phi-z\sen\theta=-r\sen\theta\cos\theta\),</p>
+<p>\(B_\phi=-y\sen\phi-x\cos\phi=-r\sen\theta\).</p>
+<p>Así \(\vb{B}=r\cos^2\theta\,\uv{r}-r\sen\theta\cos\theta\,\uv{\theta}-r\sen\theta\,\uv{\phi}\). Verificación de la magnitud: \(B^2=r^2\cos^4\theta+r^2\sen^2\theta\cos^2\theta+r^2\sen^2\theta=r^2\), igual que \(x^2+y^2+z^2\). ✔</p>
+</details>
+</div>
+<div class="box ex">
+<h4>Componentes en un punto concreto</h4>
+<p>Halle las componentes cilíndricas de \(\vb{A}=3\uv{x}-2\uv{y}+\uv{z}\) en el punto \(P(1,\sqrt3,2)\).</p>
+<details><summary>Solución</summary>
+<p>En \(P\): \(\rho=2\), \(\phi=60^\circ\). Entonces \(A_\rho=3\cos60^\circ-2\sen60^\circ=1.5-1.732=-0.232\), \(A_\phi=-3\sen60^\circ-2\cos60^\circ=-3.598\), \(A_z=1\). Comprobación: \(0.232^2+3.598^2+1^2=14.0=3^2+2^2+1^2\). ✔ Observe que el mismo vector constante \(\vb{A}\) tiene componentes cilíndricas distintas en otro punto.</p>
+</details>
+</div>
+<div class="sim" data-sim="vec-transform" data-title="Transformación de las componentes de un vector"></div>
+<div class="sim-guide"><ul>
+<li>Deje fijo \(\vb{A}\) y mueva el punto \(P\) en \(\phi\): las componentes cartesianas no cambian, pero \(A_\rho\) y \(A_\phi\) sí.</li>
+<li>Verifique que la magnitud \(\abs{\vb{A}}\) calculada en los tres sistemas es siempre la misma.</li>
+<li>Busque un punto donde \(A_\phi=0\): allí \(\vb{A}\) está en el plano que contiene al eje \(z\) y a \(P\).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Elementos diferenciales de longitud, superficie y volumen</h2>
+<p>Las integrales de línea, de superficie y de volumen del electromagnetismo (carga total, flujo, circulación, energía) se construyen con estos elementos. La idea es siempre la misma: el volumen elemental es una “caja” curvilínea cuyas aristas miden \(h_1\dd u_1\), \(h_2\dd u_2\) y \(h_3\dd u_3\).</p>
+<div class="tablewrap"><table>
+<tr><th></th><th>Cartesianas</th><th>Cilíndricas</th><th>Esféricas</th></tr>
+<tr><th>\(\dd\vb{l}\)</th><td>\(\dd x\,\uv{x}+\dd y\,\uv{y}+\dd z\,\uv{z}\)</td><td>\(\dd\rho\,\uv{\rho}+\rho\,\dd\phi\,\uv{\phi}+\dd z\,\uv{z}\)</td><td>\(\dd r\,\uv{r}+r\,\dd\theta\,\uv{\theta}+r\sen\theta\,\dd\phi\,\uv{\phi}\)</td></tr>
+<tr><th>\(\dd\vb{S}\) normal a \(u_1\)</th><td>\(\dd y\,\dd z\;\uv{x}\)</td><td>\(\rho\,\dd\phi\,\dd z\;\uv{\rho}\)</td><td>\(r^2\sen\theta\,\dd\theta\,\dd\phi\;\uv{r}\)</td></tr>
+<tr><th>\(\dd\vb{S}\) normal a \(u_2\)</th><td>\(\dd x\,\dd z\;\uv{y}\)</td><td>\(\dd\rho\,\dd z\;\uv{\phi}\)</td><td>\(r\sen\theta\,\dd r\,\dd\phi\;\uv{\theta}\)</td></tr>
+<tr><th>\(\dd\vb{S}\) normal a \(u_3\)</th><td>\(\dd x\,\dd y\;\uv{z}\)</td><td>\(\rho\,\dd\rho\,\dd\phi\;\uv{z}\)</td><td>\(r\,\dd r\,\dd\theta\;\uv{\phi}\)</td></tr>
+<tr><th>\(\dd V\)</th><td>\(\dd x\,\dd y\,\dd z\)</td><td>\(\rho\,\dd\rho\,\dd\phi\,\dd z\)</td><td>\(r^2\sen\theta\,\dd r\,\dd\theta\,\dd\phi\)</td></tr>
+</table></div>
+<p>El factor \(h_1h_2h_3\) es el valor absoluto del jacobiano \(\partial(x,y,z)/\partial(u_1,u_2,u_3)\) de la transformación. Por ejemplo, para esféricas el determinante de las derivadas de \((x,y,z)\) respecto a \((r,\theta,\phi)\) vale \(r^2\sen\theta\).</p>
+<div class="sim" data-sim="diff-element" data-title="El elemento de volumen curvilíneo"></div>
+<div class="sim-guide"><ul>
+<li>Aumente \(\rho\) (o \(r\)) sin cambiar \(\dd\phi\): la arista \(\rho\,\dd\phi\) crece aunque el ángulo sea el mismo.</li>
+<li>En esféricas lleve \(\theta\) cerca de \(0^\circ\): la arista \(r\sen\theta\,\dd\phi\) se encoge y el elemento se vuelve una cuña muy delgada cerca del polo.</li>
+<li>Compare el volumen exacto de la caja curva con el producto \(h_1h_2h_3\,\dd u_1\dd u_2\dd u_3\): el error relativo tiende a cero al reducir los incrementos.</li>
+</ul></div>
+<div class="box ex">
+<h4>Área y volumen de la esfera</h4>
+<p>Obtenga el área de una esfera de radio \(a\), el volumen que encierra y el área de un casquete \(0\le\theta\le\alpha\).</p>
+<details><summary>Solución</summary>
+<p>\(S=\int_0^{2\pi}\!\int_0^{\pi}a^2\sen\theta\,\dd\theta\,\dd\phi=a^2\,(2\pi)\,[-\cos\theta]_0^\pi=4\pi a^2\).</p>
+<p>\(V=\int_0^{2\pi}\!\int_0^\pi\!\int_0^a r^2\sen\theta\,\dd r\,\dd\theta\,\dd\phi=\frac{a^3}{3}\cdot2\cdot2\pi=\frac43\pi a^3\).</p>
+<p>Casquete: \(S_c=2\pi a^2\int_0^\alpha\sen\theta\,\dd\theta=2\pi a^2(1-\cos\alpha)\). Para \(\alpha=\pi/2\) da el hemisferio, \(2\pi a^2\).</p>
+</details>
+</div>
+<div class="box ex">
+<h4>Carga de un disco con densidad variable</h4>
+<p>Un disco de radio \(a\) en el plano \(z=0\) tiene densidad superficial \(\sigma=\sigma_0\,\rho/a\). Halle la carga total.</p>
+<details><summary>Solución</summary>
+<p>Sobre el plano \(z=0\), \(\dd S=\rho\,\dd\rho\,\dd\phi\): \(Q=\int_0^{2\pi}\!\int_0^a\sigma_0\frac{\rho}{a}\,\rho\,\dd\rho\,\dd\phi=\frac{2\pi\sigma_0}{a}\cdot\frac{a^3}{3}=\frac{2\pi\sigma_0a^2}{3}\). Si se olvida el factor \(\rho\) de \(\dd S\) se obtiene \(\pi\sigma_0a\), que ni siquiera tiene unidades de carga.</p>
+</details>
+</div>
+<div class="sim" data-sim="integration-grid" data-title="Integrar en la geometría adecuada: área de un disco"></div>
+<div class="sim-guide"><ul>
+<li>Con la cuadrícula cartesiana, el borde circular queda escalonado y la suma converge lentamente al aumentar \(N\).</li>
+<li>Con elementos polares \(\rho\,\Delta\rho\,\Delta\phi\) (evaluando \(\rho\) en el centro de cada anillo) la suma es exacta para cualquier \(N\).</li>
+<li>Active “olvidar el factor \(\rho\)”: la suma da \(2\pi a\) en lugar de \(\pi a^2\). El factor de escala no es opcional.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Operadores diferenciales en coordenadas curvilíneas</h2>
+<p>El gradiente, la divergencia, el rotacional y el laplaciano se estudian a fondo en el capítulo 3. Aquí se reúnen sus expresiones en cada sistema, que se deducen de la definición geométrica de cada operador usando los factores de escala. En coordenadas ortogonales generales \((u_1,u_2,u_3)\):</p>
+<div class="eq key" data-name="Fórmulas generales">\[\nabla f=\frac{1}{h_1}\pdv{f}{u_1}\uv{u}_1+\frac{1}{h_2}\pdv{f}{u_2}\uv{u}_2+\frac{1}{h_3}\pdv{f}{u_3}\uv{u}_3\]
+\[\divg\vb{A}=\frac{1}{h_1h_2h_3}\left[\pdv{}{u_1}(h_2h_3A_1)+\pdv{}{u_2}(h_3h_1A_2)+\pdv{}{u_3}(h_1h_2A_3)\right]\]
+\[\curl\vb{A}=\frac{1}{h_1h_2h_3}\begin{vmatrix}h_1\uv{u}_1&h_2\uv{u}_2&h_3\uv{u}_3\\ \partial/\partial u_1&\partial/\partial u_2&\partial/\partial u_3\\ h_1A_1&h_2A_2&h_3A_3\end{vmatrix}\]
+\[\lap f=\frac{1}{h_1h_2h_3}\left[\pdv{}{u_1}\!\left(\frac{h_2h_3}{h_1}\pdv{f}{u_1}\right)+\pdv{}{u_2}\!\left(\frac{h_3h_1}{h_2}\pdv{f}{u_2}\right)+\pdv{}{u_3}\!\left(\frac{h_1h_2}{h_3}\pdv{f}{u_3}\right)\right]\]</div>
+<h3>Coordenadas cilíndricas \((h_\rho,h_\phi,h_z)=(1,\rho,1)\)</h3>
+<div class="eq">\[\nabla f=\pdv{f}{\rho}\uv{\rho}+\frac1\rho\pdv{f}{\phi}\uv{\phi}+\pdv{f}{z}\uv{z}\]
+\[\divg\vb{A}=\frac1\rho\pdv{}{\rho}(\rho A_\rho)+\frac1\rho\pdv{A_\phi}{\phi}+\pdv{A_z}{z}\]
+\[\curl\vb{A}=\left(\frac1\rho\pdv{A_z}{\phi}-\pdv{A_\phi}{z}\right)\uv{\rho}+\left(\pdv{A_\rho}{z}-\pdv{A_z}{\rho}\right)\uv{\phi}+\frac1\rho\left(\pdv{}{\rho}(\rho A_\phi)-\pdv{A_\rho}{\phi}\right)\uv{z}\]
+\[\lap f=\frac1\rho\pdv{}{\rho}\!\left(\rho\pdv{f}{\rho}\right)+\frac{1}{\rho^2}\frac{\partial^2f}{\partial\phi^2}+\frac{\partial^2f}{\partial z^2}\]</div>
+<h3>Coordenadas esféricas \((h_r,h_\theta,h_\phi)=(1,r,r\sen\theta)\)</h3>
+<div class="eq">\[\nabla f=\pdv{f}{r}\uv{r}+\frac1r\pdv{f}{\theta}\uv{\theta}+\frac{1}{r\sen\theta}\pdv{f}{\phi}\uv{\phi}\]
+\[\divg\vb{A}=\frac{1}{r^2}\pdv{}{r}(r^2A_r)+\frac{1}{r\sen\theta}\pdv{}{\theta}(\sen\theta\,A_\theta)+\frac{1}{r\sen\theta}\pdv{A_\phi}{\phi}\]
+\[\begin{aligned}\curl\vb{A}=&\ \frac{1}{r\sen\theta}\left[\pdv{}{\theta}(\sen\theta\,A_\phi)-\pdv{A_\theta}{\phi}\right]\uv{r}+\frac1r\left[\frac{1}{\sen\theta}\pdv{A_r}{\phi}-\pdv{}{r}(rA_\phi)\right]\uv{\theta}\\&+\frac1r\left[\pdv{}{r}(rA_\theta)-\pdv{A_r}{\theta}\right]\uv{\phi}\end{aligned}\]
+\[\lap f=\frac{1}{r^2}\pdv{}{r}\!\left(r^2\pdv{f}{r}\right)+\frac{1}{r^2\sen\theta}\pdv{}{\theta}\!\left(\sen\theta\pdv{f}{\theta}\right)+\frac{1}{r^2\sen^2\theta}\frac{\partial^2f}{\partial\phi^2}\]</div>
+<div class="box warn"><h4>El laplaciano de un vector</h4><p>Sólo en cartesianas se cumple \(\lap\vb{A}=(\lap A_x)\uv{x}+(\lap A_y)\uv{y}+(\lap A_z)\uv{z}\). En coordenadas curvilíneas los unitarios varían y aparecen términos adicionales; la definición general es \(\lap\vb{A}=\nabla(\divg\vb{A})-\curl(\curl\vb{A})\). Por ejemplo, en cilíndricas \((\lap\vb{A})_\rho=\lap A_\rho-\dfrac{A_\rho}{\rho^2}-\dfrac{2}{\rho^2}\pdv{A_\phi}{\phi}\).</p></div>
+<div class="box ex">
+<h4>Divergencia de un campo radial</h4>
+<p>Calcule \(\divg\vb{A}\) para \(\vb{A}=\uv{r}/r^2\) (campo de una carga puntual) y para \(\vb{A}=\uv{\rho}/\rho\) (campo de una línea de carga), fuera del origen o del eje.</p>
+<details><summary>Solución</summary>
+<p>Esféricas: \(\divg\vb{A}=\frac{1}{r^2}\pdv{}{r}\!\left(r^2\cdot\frac1{r^2}\right)=0\) para \(r\neq0\). Cilíndricas: \(\divg\vb{A}=\frac1\rho\pdv{}{\rho}\!\left(\rho\cdot\frac1\rho\right)=0\) para \(\rho\neq0\). En ambos casos toda la “fuente” está concentrada en la singularidad: la divergencia es una delta de Dirac (capítulo 3).</p>
+</details>
+</div>
+</section>
+
+<section>
+<h2>Derivadas de los vectores unitarios y cinemática</h2>
+<p>Como \(\uv{\rho}\), \(\uv{\phi}\), \(\uv{r}\), \(\uv{\theta}\) dependen de la posición, sus derivadas no son nulas. Derivando las expresiones cartesianas:</p>
+<div class="eq key" data-name="Derivadas de la base">\[\text{cilíndricas: }\ \pdv{\uv{\rho}}{\phi}=\uv{\phi},\qquad \pdv{\uv{\phi}}{\phi}=-\uv{\rho}\qquad(\text{las demás derivadas son nulas});\]
+\[\text{esféricas: }\ \pdv{\uv{r}}{\theta}=\uv{\theta},\quad \pdv{\uv{r}}{\phi}=\sen\theta\,\uv{\phi},\quad \pdv{\uv{\theta}}{\theta}=-\uv{r},\quad \pdv{\uv{\theta}}{\phi}=\cos\theta\,\uv{\phi},\quad \pdv{\uv{\phi}}{\phi}=-\sen\theta\,\uv{r}-\cos\theta\,\uv{\theta}.\]</div>
+<p>Para una partícula que se mueve, derivando \(\vb{r}=\rho\uv{\rho}+z\uv{z}\) con la regla de la cadena (\(\dd\uv{\rho}/\dd t=\dot\phi\,\uv{\phi}\)):</p>
+<div class="eq">\[\vb{v}=\dot\rho\,\uv{\rho}+\rho\dot\phi\,\uv{\phi}+\dot z\,\uv{z},\qquad
+\vb{a}=\left(\ddot\rho-\rho\dot\phi^2\right)\uv{\rho}+\left(\rho\ddot\phi+2\dot\rho\dot\phi\right)\uv{\phi}+\ddot z\,\uv{z}.\]</div>
+<p>El término \(-\rho\dot\phi^2\) es la aceleración centrípeta y \(2\dot\rho\dot\phi\) el término de Coriolis. En esféricas, \(\vb{v}=\dot r\,\uv{r}+r\dot\theta\,\uv{\theta}+r\sen\theta\,\dot\phi\,\uv{\phi}\). Estas expresiones se usan para describir el movimiento de cargas en campos magnéticos (capítulo 13).</p>
+<div class="sim" data-sim="polar-kinematics" data-title="Velocidad y aceleración en coordenadas polares"></div>
+<div class="sim-guide"><ul>
+<li>Con \(\dot\rho=0\) (movimiento circular uniforme) la aceleración es puramente radial y hacia el centro: \(a_\rho=-\rho\dot\phi^2\).</li>
+<li>Active \(\dot\rho\ne0\) (espiral): aparece la componente \(a_\phi=2\dot\rho\dot\phi\) aunque \(\dot\phi\) sea constante.</li>
+</ul></div>
+<h3>Integrar vectores unitarios variables</h3>
+<p>Un unitario variable no puede sacarse de una integral. Por ejemplo, alrededor de una circunferencia</p>
+<div class="eq">\[\int_0^{2\pi}\uv{\rho}\,\dd\phi=\int_0^{2\pi}(\cos\phi\,\uv{x}+\sen\phi\,\uv{y})\,\dd\phi=\vb{0},\qquad\text{no }\ 2\pi\,\uv{\rho}.\]</div>
+<p>Este es exactamente el mecanismo por el que, en el eje de un anillo cargado, las componentes radiales del campo se cancelan y sólo sobrevive la componente \(z\). La regla práctica es: <strong>antes de integrar un vector, escriba los unitarios variables en la base cartesiana</strong>.</p>
+</section>
+
+<section>
+<h2>Errores frecuentes</h2>
+<div class="tablewrap"><table>
+<tr><th>Error</th><th>Forma correcta</th></tr>
+<tr><td>\(\phi=\arctan(y/x)\) para cualquier punto</td><td>\(\phi=\operatorname{atan2}(y,x)\); si \(x\lt0\), \(\arctan(y/x)+\pi\)</td></tr>
+<tr><td>\(\vb{r}=\rho\uv{\rho}+\phi\uv{\phi}+z\uv{z}\)</td><td>\(\vb{r}=\rho\uv{\rho}+z\uv{z}\) (cilíndricas); \(\vb{r}=r\uv{r}\) (esféricas)</td></tr>
+<tr><td>\(\dd V=\dd\rho\,\dd\phi\,\dd z\) o \(\dd V=\dd r\,\dd\theta\,\dd\phi\)</td><td>\(\dd V=\rho\,\dd\rho\,\dd\phi\,\dd z\); \(\dd V=r^2\sen\theta\,\dd r\,\dd\theta\,\dd\phi\)</td></tr>
+<tr><td>Sumar componentes cilíndricas de vectores de puntos distintos</td><td>Pasar a cartesianas, sumar y volver</td></tr>
+<tr><td>\(\int\uv{\rho}\,\dd\phi=\uv{\rho}\int\dd\phi\)</td><td>Escribir \(\uv{\rho}=\cos\phi\,\uv{x}+\sen\phi\,\uv{y}\) antes de integrar</td></tr>
+<tr><td>Confundir \(\rho\) cilíndrica (distancia al eje) con \(r\) esférica (distancia al origen)</td><td>\(\rho=r\sen\theta\); sólo coinciden en el plano \(z=0\)</td></tr>
+<tr><td>Intercambiar \(\theta\) y \(\phi\) con la convención de matemáticas</td><td>Aquí \(\theta\) es polar (\(0\) a \(\pi\)) y \(\phi\) azimutal (\(0\) a \(2\pi\))</td></tr>
+<tr><td>Usar grados en longitudes de arco \(\rho\,\dd\phi\)</td><td>Los ángulos deben ir en radianes en toda fórmula diferencial o integral</td></tr>
+<tr><td>\(\lap\vb{A}\) componente a componente en curvilíneas</td><td>\(\lap\vb{A}=\nabla(\divg\vb{A})-\curl\curl\vb{A}\)</td></tr>
+<tr><td>Cambiar el orden de la terna al hacer \(\times\)</td><td>\(\uv{\rho}\times\uv{\phi}=\uv{z}\), \(\uv{r}\times\uv{\theta}=\uv{\phi}\); \(\uv{\phi}\times\uv{\rho}=-\uv{z}\)</td></tr>
+</table></div>
+<h3>Cómo elegir el sistema</h3>
+<ul>
+<li><strong>Cartesianas</strong>: planos infinitos, placas paralelas, cajas, guías rectangulares, ondas planas.</li>
+<li><strong>Cilíndricas</strong>: hilos, cables coaxiales, solenoides, cilindros cargados, espiras vistas desde su eje, toroides.</li>
+<li><strong>Esféricas</strong>: cargas puntuales, esferas y cascarones, dipolos, radiación de antenas, campo lejano.</li>
+</ul>
+<p>Lo importante no es sólo la forma de los objetos, sino la <em>simetría del campo</em>: si el campo depende de una sola coordenada de un sistema, ese es el sistema adecuado.</p>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Convierta \(P(3,-4,5)\) a cilíndricas y esféricas.
+<details><summary>Respuesta</summary><p>\(\rho=5\), \(\phi=\operatorname{atan2}(-4,3)=306.87^\circ\), \(z=5\). \(r=5\sqrt2\approx7.071\), \(\theta=45^\circ\), \(\phi=306.87^\circ\).</p></details></li>
+<li><span class="lvl">Básico</span>Un punto tiene coordenadas cilíndricas \((\rho,\phi,z)=(4,\ 210^\circ,\ -3)\). Halle sus coordenadas cartesianas y esféricas.
+<details><summary>Respuesta</summary><p>\(x=4\cos210^\circ=-3.464\), \(y=4\sen210^\circ=-2\), \(z=-3\). \(r=5\), \(\theta=\operatorname{atan2}(4,-3)=126.87^\circ\), \(\phi=210^\circ\).</p></details></li>
+<li><span class="lvl">Básico</span>Verifique con productos vectoriales que \(\uv{\theta}\times\uv{\phi}=\uv{r}\) usando las expresiones cartesianas de la base esférica.
+<details><summary>Respuesta</summary><p>El determinante da \((\cos\theta\sen\phi\cdot0+\sen\theta\cos\phi)\uv{x}+(\sen\theta\sen\phi)\uv{y}+(\cos\theta\cos^2\phi+\cos\theta\sen^2\phi)\uv{z}=\uv{r}\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Exprese \(\vb{E}=\dfrac{x\,\uv{x}+y\,\uv{y}}{x^2+y^2}\) en cilíndricas.
+<details><summary>Respuesta</summary><p>\(E_\rho=\frac{x\cos\phi+y\sen\phi}{\rho^2}=\frac{\rho}{\rho^2}=\frac1\rho\), \(E_\phi=\frac{-x\sen\phi+y\cos\phi}{\rho^2}=0\): \(\vb{E}=\uv{\rho}/\rho\) (campo de una línea de carga).</p></details></li>
+<li><span class="lvl">Intermedio</span>Exprese \(\vb{A}=\uv{z}\) en esféricas y \(\vb{B}=\uv{r}\) en cartesianas.
+<details><summary>Respuesta</summary><p>\(\uv{z}=\cos\theta\,\uv{r}-\sen\theta\,\uv{\theta}\). \(\uv{r}=\dfrac{x\uv{x}+y\uv{y}+z\uv{z}}{\sqrt{x^2+y^2+z^2}}\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Calcule el volumen de la región \(1\le r\le2\), \(0\le\theta\le\pi/3\), \(0\le\phi\le\pi/2\) y el área de su cara exterior (\(r=2\)).
+<details><summary>Respuesta</summary><p>\(V=\frac{8-1}{3}(1-\cos60^\circ)\frac\pi2=\frac{7\pi}{12}\approx1.833\). \(S=4\,(1-\cos60^\circ)\frac\pi2=\pi\approx3.142\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Halle la longitud de una vuelta de la hélice \(\rho=a\), \(z=b\phi\).
+<details><summary>Respuesta</summary><p>\(\dd\vb{l}=a\,\dd\phi\,\uv{\phi}+b\,\dd\phi\,\uv{z}\), \(\abs{\dd\vb{l}}=\sqrt{a^2+b^2}\,\dd\phi\); \(L=2\pi\sqrt{a^2+b^2}\).</p></details></li>
+<li><span class="lvl">Avanzado</span>Calcule \(\divg\vb{A}\) y \(\curl\vb{A}\) para \(\vb{A}=\rho\,\uv{\phi}\) (rotación rígida) y para \(\vb{A}=\uv{\phi}/\rho\) (vórtice).
+<details><summary>Respuesta</summary><p>Rotación rígida: \(\divg\vb{A}=0\), \(\curl\vb{A}=\frac1\rho\pdv{}{\rho}(\rho^2)\uv{z}=2\uv{z}\). Vórtice: \(\divg\vb{A}=0\), \(\curl\vb{A}=\frac1\rho\pdv{}{\rho}(1)\uv{z}=\vb{0}\) para \(\rho\ne0\).</p></details></li>
+<li><span class="lvl">Avanzado</span>Demuestre que el jacobiano de la transformación esférica es \(r^2\sen\theta\).
+<details><summary>Respuesta</summary><p>\(\det\begin{pmatrix}\sen\theta\cos\phi&r\cos\theta\cos\phi&-r\sen\theta\sen\phi\\\sen\theta\sen\phi&r\cos\theta\sen\phi&r\sen\theta\cos\phi\\\cos\theta&-r\sen\theta&0\end{pmatrix}=r^2\sen\theta\).</p></details></li>
+<li><span class="lvl">Avanzado</span>Calcule la distancia entre los puntos esféricos \((2,\ 30^\circ,\ 0^\circ)\) y \((3,\ 90^\circ,\ 90^\circ)\).
+<details><summary>Respuesta</summary><p>\(\cos\gamma=\sen30^\circ\sen90^\circ\cos(-90^\circ)+\cos30^\circ\cos90^\circ=0\): los vectores de posición son perpendiculares y \(d=\sqrt{4+9}=\sqrt{13}\approx3.606\).</p></details></li>
+</ol>
+</section>
+</template>
