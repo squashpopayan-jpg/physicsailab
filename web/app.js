@@ -32,9 +32,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="student-banner" style="border-color:var(--accent-emerald); background:rgba(16, 185, 129, 0.1);">
                     <div>
                         <span class="unlocked-tag">🎓 Modo Estudiante Activo</span>
-                        <h4 style="margin:0.25rem 0; color:#fff;">¡Acceso Gratuito de Semestre Desbloqueado!</h4>
+                        <h4 style="margin:0.25rem 0; color:#fff;">¡Acceso Completo Desbloqueado!</h4>
                         <p style="font-size:0.85rem; color:var(--text-muted); margin:0;">
-                            Tienes acceso libre a todos los laboratorios y cuadernos de la Universidad del Cauca.
+                            Tienes acceso libre a todos los capítulos, simuladores y laboratorios de la Universidad del Cauca.
                         </p>
                     </div>
                     <div>
@@ -48,15 +48,15 @@ document.addEventListener('DOMContentLoaded', () => {
             bannerContainer.innerHTML = `
                 <div class="student-banner">
                     <div>
-                        <span class="card-tag interactive" style="margin-bottom:0.25rem;">🎓 Estudiantes de la Universidad</span>
+                        <span class="card-tag interactive" style="margin-bottom:0.25rem;">🎓 Control de Acceso Académico</span>
                         <h4 style="margin:0.25rem 0; color:#fff;">¿Eres estudiante del profesor este semestre?</h4>
                         <p style="font-size:0.85rem; color:var(--text-muted); margin:0;">
-                            Ingresa el código que dio el profesor en clase para liberar todos los cursos gratis.
+                            Los cursos cuentan con <strong>Vista Previa Gratuita</strong>. Ingresa el código que dio el profesor en clase para liberar todos los capítulos completos sin costo.
                         </p>
                     </div>
                     <div class="code-input-group">
                         <input type="text" id="student-code-input" class="code-input" placeholder="Ingresa la clave de clase..." />
-                        <button class="btn btn-primary" onclick="canjearCodigoEstudiante()">Desbloquear 🔓</button>
+                        <button class="btn btn-primary" onclick="canjearCodigoEstudiante()">Desbloquear Todo 🔓</button>
                     </div>
                 </div>
             `;
@@ -71,6 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (data.codigosEstudiantilesValidos.includes(code)) {
             isStudentUnlocked = true;
             localStorage.setItem('estudiante_desbloqueado', 'true');
+            localStorage.setItem('physicsailab_unlocked_all', 'true');
             alert(`🎉 ¡Código ${code} válido!\n\nBienvenido(a). Todos los cursos y laboratorios han sido desbloqueados para ti sin costo durante este periodo académico.`);
             updateStudentBannerState();
             renderCourses();
@@ -82,6 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.bloquearModoEstudiante = function() {
         isStudentUnlocked = false;
         localStorage.removeItem('estudiante_desbloqueado');
+        localStorage.removeItem('physicsailab_unlocked_all');
         updateStudentBannerState();
         renderCourses();
     };
@@ -93,16 +95,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
         coursesGrid.innerHTML = data.cursos.map(c => {
             const isLab = c.id === 'transformadores' || c.esLaboratorio;
-            const openBtnText = isLab ? 'Abrir Laboratorio 🚀' : 'Abrir Curso 🚀';
+            const isSquashFree = c.id === 'squash_sim';
+            const openBtnText = isStudentUnlocked || isSquashFree
+                ? (isLab ? 'Abrir Laboratorio 🚀' : 'Abrir Curso Completo 🎓')
+                : (isLab ? 'Vista Previa del Banco 👁️' : 'Vista Previa Gratuita 👁️');
             const buyBtnText = isLab ? 'Adquirir Lab 🛒' : 'Comprar Curso 🛒';
             const detailsBtnText = isLab ? 'Ficha Técnica 🔬' : 'Temario 📋';
             const tagClass = isLab ? 'lab-tag' : (c.destacado ? 'interactive' : '');
+            const lockStatusBadge = (isStudentUnlocked || isSquashFree)
+                ? '<span class="unlocked-tag">🎓 Libre Estudiante</span>' 
+                : `<span class="badge" style="font-size:0.65rem; padding:0.2rem 0.5rem; background:rgba(245,158,11,0.12); color:var(--accent-amber); border-color:rgba(245,158,11,0.25);">👁️ Vista Previa</span>`;
+            
             return `
             <div class="card ${isLab ? 'card-lab-featured' : ''}">
                 <div>
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
                         <span class="card-tag ${tagClass}">${c.categoria}</span>
-                        ${isStudentUnlocked ? '<span class="unlocked-tag">🎓 Libre Estudiante</span>' : `<span style="font-size:0.75rem; color:var(--accent-blue); font-weight:600;">${c.tipo}</span>`}
+                        ${lockStatusBadge}
                     </div>
                     <h3>${c.titulo}</h3>
                     <p>${c.descripcion}</p>
@@ -120,6 +129,9 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <span style="font-weight:700; color:var(--text-main); font-size:0.95rem;">${isStudentUnlocked ? 'Gratis (Semestre Académico)' : c.precioEstimado}</span>
                             </div>
                             ${!isStudentUnlocked && c.descuentoTag ? `<span class="badge" style="font-size:0.65rem; padding:0.2rem 0.5rem; background:rgba(245,158,11,0.15); color:var(--accent-amber); border-color:rgba(245,158,11,0.3);">${c.descuentoTag}</span>` : '<span style="color:var(--accent-emerald);">● Activo</span>'}
+                        </div>
+                        <div style="font-size:0.75rem; color:var(--text-muted);">
+                            ${isStudentUnlocked ? 'Acceso 100% completo activado' : (isSquashFree ? 'Acceso libre como demostración' : 'Cap. 0 y 1 abiertos en demo · Resto con clave o compra')}
                         </div>
                     </div>
                     <div class="card-actions">
