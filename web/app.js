@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </p>
                     </div>
                     <div class="code-input-group">
-                        <input type="text" id="student-code-input" class="code-input" placeholder="Ej: UNICAUCA2026" />
+                        <input type="text" id="student-code-input" class="code-input" placeholder="Ingresa la clave de clase..." />
                         <button class="btn btn-primary" onclick="canjearCodigoEstudiante()">Desbloquear 🔓</button>
                     </div>
                 </div>
@@ -117,7 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     </div>
                     <div class="card-actions">
-                        ${c.demoPath ? `<a href="${c.demoPath}" target="_blank" class="btn btn-primary">Abrir Simulador 🚀</a>` : ''}
+                        ${c.demoPath ? `<a href="${c.demoPath}" target="_blank" class="btn btn-primary">Abrir Curso 🚀</a>` : ''}
                         ${!isStudentUnlocked && c.enlaceCompra ? `<a href="${c.enlaceCompra}" target="_blank" class="btn btn-secondary" style="border-color:var(--accent-amber); color:var(--accent-amber);">Comprar Curso 🛒</a>` : ''}
                         <button class="btn btn-secondary" onclick="openCourseDetails('${c.id}')">Temario 📋</button>
                     </div>

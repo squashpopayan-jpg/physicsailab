@@ -12,14 +12,13 @@ window.PLATFORM_DATA = {
         mision: "Transformar la enseñanza de la física a través de laboratorios virtuales matemáticamente rigurosos, cuadernos computacionales interactivos y divulgación científica abierta creada por los propios estudiantes."
     },
     
-    // Códigos que el docente puede dar a sus alumnos en el aula para desbloquear los cursos gratis
+    // Claves privadas que el docente entrega a sus alumnos en el aula para desbloquear los cursos
+    // (Puedes modificar, agregar o cambiar estas claves cuando comience un nuevo semestre)
     codigosEstudiantilesValidos: [
-        "UNICAUCA2026",
-        "FISICA1-2026",
-        "ELECTRO2026",
-        "OBANDO2026",
-        "FIET2026",
-        "AMBIENTAL2026"
+        "UNICAUCA-FISICA-2026",
+        "OBANDO-AULA-2026",
+        "ELECTRO-FIET-2026",
+        "AMBIENTAL-UNICA-26"
     ],
 
     cursos: [
