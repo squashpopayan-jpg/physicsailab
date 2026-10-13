@@ -44,6 +44,16 @@ function incrementVisits() {
     return stats;
 }
 
+function incrementDownloads() {
+    const stats = getStats();
+    stats.downloads = (stats.downloads || 0) + 1;
+    stats.lastUpdated = new Date().toISOString();
+    try {
+        fs.writeFileSync(STATS_FILE, JSON.stringify(stats, null, 2), 'utf8');
+    } catch (e) {}
+    return stats;
+}
+
 function normalizeStr(s) {
     return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9.]/g, '');
 }
@@ -83,6 +93,13 @@ const server = http.createServer((req, res) => {
     // API de Contador de Visitas
     if (decodedUrl === '/api/visit') {
         const updated = incrementVisits();
+        res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+        return res.end(JSON.stringify(updated));
+    }
+
+    // API de Contador de Descargas
+    if (decodedUrl === '/api/download') {
+        const updated = incrementDownloads();
         res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
         return res.end(JSON.stringify(updated));
     }

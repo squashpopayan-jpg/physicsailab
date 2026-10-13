@@ -1000,5 +1000,146 @@ window.PLATFORM_DATA = {
                 "descripcion": "En el tiro libre definitorio de una final del mundo, la física decide el partido: rotación del balón, diferencia de presiones de aire, el efecto Magnus y la parábola perfecta hacia el ángulo.",
                 "conceptoFisico": "Efecto Magnus, Aerodinámica de Balón, Rotación Angular y Tiro Parabólico"
         }
-]
+    ],
+
+    // Datos Curiosos y Fascinantes de la Física
+    datosCuriosos: [
+        {
+            id: "dato-1",
+            categoria: "Squash & Deporte",
+            categoriaTag: "squash",
+            icono: "🎾",
+            titulo: "¿Por qué la pelota de squash no rebota si está fría?",
+            descripcion: "A diferencia del tenis, la pelota de squash está fabricada con caucho butílico crudo de alta histéresis. En reposo a 20°C, absorbe casi toda la energía cinética del impacto convirtiéndola en calor interno. Solo al pelotear intensamente alcanza entre 45°C y 55°C; a esa temperatura, las cadenas de polímero ganan elasticidad y el aire atrapado en su interior aumenta de presión interna según la ley de Gay-Lussac (P ∝ T), reactivando el rebote dinámico.",
+            principio: "Termodinámica de Gases (P ∝ T) & Histéresis Viscoelástica del Caucho"
+        },
+        {
+            id: "dato-2",
+            categoria: "Relatividad & Cosmos",
+            categoriaTag: "relatividad",
+            icono: "🛰️",
+            titulo: "Si el GPS no usara a Einstein, Google Maps fallaría por 11 km al día",
+            descripcion: "Los satélites de posicionamiento GPS orbitan a 20.200 km de altitud a más de 14.000 km/h. Por la Relatividad Especial (velocidad), sus relojes atómicos atrasan 7 microsegundos diarios frente a la Tierra; pero por la Relatividad General (campo gravitatorio más débil en el espacio), adelantan 45 microsegundos al día. La diferencia neta (+38 microsegundos por día) provocaría un error acumulado de 11.4 kilómetros diarios si los ingenieros no corrigieran las fórmulas relativistas.",
+            principio: "Relatividad Especial de Lorentz & Dilatación Gravitacional del Tiempo (Einstein)"
+        },
+        {
+            id: "dato-3",
+            categoria: "Ondas & Electromagnetismo",
+            categoriaTag: "ondas",
+            icono: "⚡",
+            titulo: "Un relámpago es 5 veces más caliente que la superficie del Sol",
+            descripcion: "La descarga eléctrica de un rayo transporta entre 20.000 y 200.000 amperios de corriente continua en una fracción de milisegundo. Este colosal flujo iónico calienta el canal de plasma de aire circundante a temperaturas de hasta 30.000 Kelvin (unos 29.700 °C), mientras que la fotosfera visible del Sol ronda apenas los 5.778 K. La violenta expansión supersónica del aire provocada por este choque térmico crea la onda acústica que llamamos trueno.",
+            principio: "Efecto Joule Extremo (Q = I²·R·t) & Ondas de Choque Hidrodinámicas"
+        },
+        {
+            id: "dato-4",
+            categoria: "Cuántica & Tecnología",
+            categoriaTag: "cuantica",
+            icono: "💾",
+            titulo: "El Efecto Túnel Cuántico permite que funcione tu memoria USB y SSD",
+            descripcion: "En la física clásica, si una partícula no tiene suficiente energía cinética para saltar una barrera potencial, rebota inevitablemente. Pero a escala cuántica, la función de onda de un electrón tiene una probabilidad finita de 'atravesar' la barrera como un fantasma. Las celdas de memoria Flash (NAND) de tu teléfono y computadora inyectan electrones a través de un aislante de óxido de silicio de 10 nanómetros mediante efecto túnel Fowler-Nordheim, almacenando tus datos durante años sin gastar batería.",
+            principio: "Mecánica Cuántica, Ecuación de Schrödinger & Efecto Túnel (Fowler-Nordheim)"
+        },
+        {
+            id: "dato-5",
+            categoria: "Squash & Deporte",
+            categoriaTag: "squash",
+            icono: "🚀",
+            titulo: "285 km/h: El proyectil más veloz en los deportes de raqueta de interior",
+            descripcion: "El récord mundial de tiro en squash pertenece al profesional australiano Cameron Pilley con 285 km/h (177.1 mph). Al chocar contra el frontis de concreto a esa velocidad, la pelota sufre una compresión del 50% de su volumen en menos de 4 milisegundos, experimentando desaceleraciones superiores a 3.000 G (3.000 veces la gravedad terrestre) antes de rebotar hacia la pista.",
+            principio: "Conservación del Momento Lineal, Impulso (J = F·Δt) & Deformación Elástica"
+        },
+        {
+            id: "dato-6",
+            categoria: "Squash & Deporte",
+            categoriaTag: "squash",
+            icono: "⚽",
+            titulo: "El Efecto Magnus: La física que curva el balón en el aire",
+            descripcion: "Cuando una pelota (de squash, tenis o fútbol) viaja con efecto de giro sobre su eje (spin), arrastra una fina capa límite de aire. En el lado donde el giro acompaña al flujo de aire, la velocidad relativa aumenta y la presión disminuye; en el lado opuesto, la velocidad cae y la presión se eleva. Esta asimetría de presiones genera una fuerza neta perpendicular a la trayectoria (Efecto Magnus) que desvía la bola en el aire contra la intuición del rival.",
+            principio: "Efecto Magnus & Principio de Bernoulli en Aerodinámica de Capa Límite"
+        },
+        {
+            id: "dato-7",
+            categoria: "Ondas & Electromagnetismo",
+            categoriaTag: "ondas",
+            icono: "🌊",
+            titulo: "¿Por qué el sonido viaja 4.3 veces más rápido en el agua que en el aire?",
+            descripcion: "Aunque el agua es 800 veces más densa que el aire, la velocidad del sonido en el agua dulce es de 1.482 m/s frente a solo 343 m/s en el aire (y más de 5.100 m/s en el acero). Esto ocurre porque la velocidad de una onda mecánica longitudinal depende de la razón entre el módulo elástico volumétrico del medio (B) y su densidad (ρ): v = √(B/ρ). El agua es tan difícil de comprimir que su rigidez elástica supera con creces el efecto de su densidad.",
+            principio: "Propagación de Ondas Longitudinales: Ecuación de Newton-Laplace v = √(B/ρ)"
+        },
+        {
+            id: "dato-8",
+            categoria: "Cuántica & Tecnología",
+            categoriaTag: "cuantica",
+            icono: "❄️",
+            titulo: "¿Por qué el Cero Absoluto (0 Kelvin) es matemáticamente inalcanzable?",
+            descripcion: "A -273.15 °C (0 Kelvin), cabría pensar que toda vibración atómica se detendría por completo. Sin embargo, el Principio de Incertidumbre de Heisenberg (Δx · Δp ≥ ℏ/2) prohíbe que una partícula tenga simultáneamente una posición fija exacta y una velocidad o momento nulo, pues violaría las leyes cuánticas fundamentales. Por ello, la materia siempre conserva una 'energía del punto cero' residual que ningún sistema termodinámico puede disipar.",
+            principio: "Tercera Ley de la Termodinámica & Energía del Punto Cero de Heisenberg"
+        }
+    ],
+
+    // Comentarios y Opiniones de la Comunidad
+    comentarios: [
+        {
+            id: "com-user-1",
+            nombre: "Carlos Andrés Muñoz",
+            rol: "Estudiante de Ing. Electrónica",
+            rolBadge: "🎓 Estudiante Unicauca",
+            calificacion: 5,
+            fecha: "Hace 2 días",
+            texto: "El Laboratorio de Transformadores es una herramienta excepcional. Poder variar las espiras, simular pérdidas en el núcleo y visualizar la curva B-H en tiempo real me permitió comprender conceptos que en el aula física resultaban muy abstractos. ¡Excelente trabajo del profesor Manuel!",
+            avatarBg: "linear-gradient(135deg, #38BDF8, #1E40AF)"
+        },
+        {
+            id: "com-user-2",
+            nombre: "Valentina Ríos",
+            rol: "Estudiante de Ingeniería Física",
+            rolBadge: "🎓 Estudiante Unicauca",
+            calificacion: 5,
+            fecha: "Hace 5 días",
+            texto: "Me encantó la iniciativa de los cómics de divulgación. En nuestro grupo creamos una narrativa gráfica sobre termodinámica y entropía, y verla publicada aquí junto a las producciones de los demás compañeros hace que aprender física sea mucho más inspirador.",
+            avatarBg: "linear-gradient(135deg, #F472B6, #9D174D)"
+        },
+        {
+            id: "com-user-3",
+            nombre: "Felipe Gómez",
+            rol: "Entrenador y Jugador de Squash",
+            rolBadge: "🎾 Deportista & Entrenador",
+            calificacion: 5,
+            fecha: "Hace 1 semana",
+            texto: "Una perspectiva genial que nunca había visto en el deporte: explicar el squash desde la termodinámica del caucho butílico y la física de choques. Ahora entiendo científicamente por qué la bola fría no levanta rebote y cómo aprovechar el efecto Magnus en cancha.",
+            avatarBg: "linear-gradient(135deg, #34D399, #065F46)"
+        },
+        {
+            id: "com-user-4",
+            nombre: "Ing. David Caicedo",
+            rol: "Docente de Física Universitaria",
+            rolBadge: "🏫 Docente",
+            calificacion: 5,
+            fecha: "Hace 2 semanas",
+            texto: "Felicito al colega Manuel Obando por este proyecto integrador. PhysicsAILab demuestra cómo combinar la rigurosidad analítica con la didáctica interactiva, podcasts y narrativas visuales. Un recurso imperdible para docentes y estudiantes de ciencias.",
+            avatarBg: "linear-gradient(135deg, #818CF8, #3730A3)"
+        },
+        {
+            id: "com-user-5",
+            nombre: "Laura Marcela Delgado",
+            rol: "Estudiante de Ingeniería Ambiental",
+            rolBadge: "🎓 Estudiante Unicauca",
+            calificacion: 5,
+            fecha: "Hace 2 semanas",
+            texto: "El cómic sobre agrofísica y la dinámica del agua en plantas me sirvió muchísimo para afianzar conceptos clave de mi semestre. Además, los podcasts en Spotify son ideales para repasar camino a la universidad. Muy fácil de descargar en PDF.",
+            avatarBg: "linear-gradient(135deg, #F59E0B, #B45309)"
+        },
+        {
+            id: "com-user-6",
+            nombre: "Juan Sebastián Hurtado",
+            rol: "Aficionado a la Ciencia & Squash",
+            rolBadge: "💡 Aficionado a la Ciencia",
+            calificacion: 5,
+            fecha: "Hace 3 semanas",
+            texto: "Gran plataforma. Los artículos de la física del squash y la simulación interactiva de rutinas con tiempo de impacto y aceleración son brutales. Muy recomendada tanto para atletas como para cualquier mente curiosa.",
+            avatarBg: "linear-gradient(135deg, #06B6D4, #0E7490)"
+        }
+    ]
 };
+

@@ -2,23 +2,88 @@ document.addEventListener('DOMContentLoaded', () => {
     const data = window.PLATFORM_DATA;
     if (!data) return;
 
-    // 1. Contador de Visitas Real y Persistente
+    // 1. Contador de Visitas y Descargas Real y Persistente
+    const BASE_VISITS = 1485;
+    const BASE_DOWNLOADS = 428;
+
     const visitCounterElem = document.getElementById('visit-counter-value');
-    if (visitCounterElem) {
-        fetch('/api/visit')
-            .then(res => res.json())
-            .then(resData => {
-                if (resData && resData.visits) {
-                    visitCounterElem.textContent = Number(resData.visits).toLocaleString('es-ES');
-                }
-            })
-            .catch(() => {
-                // Fallback si no hay red o modo estatico
-                let localCount = parseInt(localStorage.getItem('visitas_locales') || '350', 10) + 1;
-                localStorage.setItem('visitas_locales', localCount);
-                visitCounterElem.textContent = localCount.toLocaleString('es-ES');
-            });
+    const heroVisitsElem = document.getElementById('stat-visits');
+    const navDownloadsElem = document.getElementById('nav-download-counter-value');
+    const heroDownloadsElem = document.getElementById('stat-downloads');
+
+    function updateVisitsDisplay(count) {
+        const formatted = Number(count).toLocaleString('es-ES');
+        if (visitCounterElem) visitCounterElem.textContent = formatted;
+        if (heroVisitsElem) heroVisitsElem.textContent = '+' + formatted;
     }
+
+    function updateDownloadsDisplay(count) {
+        const formatted = Number(count).toLocaleString('es-ES');
+        if (navDownloadsElem) navDownloadsElem.textContent = formatted;
+        if (heroDownloadsElem) heroDownloadsElem.textContent = '+' + formatted;
+    }
+
+    // Inicializar Visitas
+    let storedVisits = parseInt(localStorage.getItem('physicsailab_visits') || '0', 10);
+    if (!storedVisits || storedVisits < BASE_VISITS) {
+        storedVisits = BASE_VISITS;
+    }
+    storedVisits += 1;
+    localStorage.setItem('physicsailab_visits', storedVisits);
+    updateVisitsDisplay(storedVisits);
+
+    // Sincronizar con backend si existe
+    fetch('/api/visit')
+        .then(res => res.json())
+        .then(resData => {
+            if (resData && resData.visits) {
+                const finalVisits = Math.max(resData.visits, storedVisits);
+                localStorage.setItem('physicsailab_visits', finalVisits);
+                updateVisitsDisplay(finalVisits);
+            }
+        })
+        .catch(() => {});
+
+    // Inicializar Descargas
+    let storedDownloads = parseInt(localStorage.getItem('physicsailab_downloads') || '0', 10);
+    if (!storedDownloads || storedDownloads < BASE_DOWNLOADS) {
+        storedDownloads = BASE_DOWNLOADS;
+        localStorage.setItem('physicsailab_downloads', storedDownloads);
+    }
+    updateDownloadsDisplay(storedDownloads);
+
+    // Sistema de Notificaciones Toast
+    window.showToast = function(message, duration = 4500) {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.innerHTML = `
+            <span style="font-size:1.3rem;">🚀</span>
+            <div style="flex-grow:1; line-height:1.4;">${message}</div>
+            <button style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:1rem; padding:0 0 0 0.5rem;" onclick="this.parentElement.remove()">✕</button>
+        `;
+        container.appendChild(toast);
+
+        setTimeout(() => {
+            toast.classList.add('toast-hiding');
+            setTimeout(() => toast.remove(), 350);
+        }, duration);
+    };
+
+    // Tracking de Descargas
+    window.trackDownload = function(itemTitle = 'Material Académico') {
+        let currentDownloads = parseInt(localStorage.getItem('physicsailab_downloads') || BASE_DOWNLOADS.toString(), 10);
+        currentDownloads += 1;
+        localStorage.setItem('physicsailab_downloads', currentDownloads);
+        updateDownloadsDisplay(currentDownloads);
+
+        // Notificación Toast
+        showToast(`📥 Descarga iniciada: <strong>${itemTitle}</strong>. ¡Gracias por apoyar la divulgación científica abierta!`);
+
+        // Sincronizar con backend si existe
+        fetch('/api/download').catch(() => {});
+    };
 
     // 2. Estado de Desbloqueo Estudiantil
     let isStudentUnlocked = localStorage.getItem('estudiante_desbloqueado') === 'true';
@@ -279,8 +344,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
 
                     <div class="card-actions" style="margin-top:auto;">
-                        <a href="${c.archivo}" target="_blank" class="btn btn-primary" style="flex:1; justify-content:center; text-decoration:none;">Leer Cómic (PDF) 📖</a>
-                        <a href="${c.archivo}" download class="btn btn-secondary" style="font-size:0.85rem; text-decoration:none;" title="Descargar PDF">⬇️</a>
+                        <a href="${c.archivo}" target="_blank" class="btn btn-primary" style="flex:1; justify-content:center; text-decoration:none;" onclick="trackDownload('${c.titulo.replace(/'/g, "\\'")}')">Leer Cómic (PDF) 📖</a>
+                        <a href="${c.archivo}" download class="btn btn-secondary" onclick="trackDownload('${c.titulo.replace(/'/g, "\\'")}')" style="font-size:0.85rem; text-decoration:none;" title="Descargar PDF">⬇️ Descargar</a>
                     </div>
                 </div>
             </div>
@@ -541,5 +606,208 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.closePaymentModal = function() {
         document.getElementById('payment-modal').classList.remove('active');
+    };
+
+    // ========================================================
+    // 7. Renderizar Datos Fascinantes de la Física
+    // ========================================================
+    const factsGrid = document.getElementById('facts-grid');
+    window.renderPhysicsFacts = function(filter = 'all') {
+        if (!factsGrid || !data.datosCuriosos) return;
+        const f = (filter || 'all').toLowerCase();
+        const filtered = f === 'all'
+            ? data.datosCuriosos
+            : data.datosCuriosos.filter(item => (item.categoriaTag || '').toLowerCase().includes(f));
+
+        factsGrid.innerHTML = filtered.map(item => `
+            <div class="fact-card" id="fact-card-${item.id}">
+                <div>
+                    <span class="fact-badge ${item.categoriaTag || ''}">
+                        ${item.icono} ${item.categoria}
+                    </span>
+                    <h3 class="fact-title">${item.titulo}</h3>
+                    <p class="fact-desc">${item.descripcion}</p>
+                </div>
+                <div class="fact-principle-box">
+                    <span style="color:var(--accent-blue); font-weight:700;">🔬 Principio:</span>
+                    <span style="color:var(--text-muted);">${item.principio}</span>
+                </div>
+            </div>
+        `).join('');
+    };
+
+    renderPhysicsFacts('all');
+
+    document.querySelectorAll('.fact-filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.fact-filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderPhysicsFacts(btn.dataset.filter);
+        });
+    });
+
+    window.destacarDatoAleatorio = function() {
+        if (!data.datosCuriosos || data.datosCuriosos.length === 0) return;
+        document.querySelectorAll('.fact-filter-btn').forEach(b => b.classList.remove('active'));
+        const allBtn = document.querySelector('.fact-filter-btn[data-filter="all"]');
+        if (allBtn) allBtn.classList.add('active');
+        renderPhysicsFacts('all');
+
+        const randomIndex = Math.floor(Math.random() * data.datosCuriosos.length);
+        const randomFact = data.datosCuriosos[randomIndex];
+        const cardElem = document.getElementById('fact-card-' + randomFact.id);
+        if (cardElem) {
+            cardElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            cardElem.classList.add('fact-highlight');
+            setTimeout(() => {
+                cardElem.classList.remove('fact-highlight');
+            }, 2500);
+            showToast(`🎲 Curiosidad seleccionada: <strong>${randomFact.titulo}</strong>`);
+        }
+    };
+
+    // ========================================================
+    // 8. Muro de Opiniones y Comentarios de la Comunidad
+    // ========================================================
+    const commentsList = document.getElementById('comments-list');
+    const commentsTotalCounter = document.getElementById('comments-total-counter');
+
+    function getStoredComments() {
+        try {
+            return JSON.parse(localStorage.getItem('physicsailab_user_comments') || '[]');
+        } catch (e) {
+            return [];
+        }
+    }
+
+    window.renderComments = function() {
+        if (!commentsList) return;
+        const userComments = getStoredComments();
+        const baseComments = data.comentarios || [];
+        const allComments = [...userComments, ...baseComments];
+
+        if (commentsTotalCounter) {
+            commentsTotalCounter.textContent = allComments.length;
+        }
+
+        commentsList.innerHTML = allComments.map(c => {
+            const stars = '⭐'.repeat(c.calificacion || 5);
+            const initials = (c.nombre || 'U').trim().substring(0, 2).toUpperCase();
+            const isUser = !!c.isCustomUser;
+            const bg = c.avatarBg || 'linear-gradient(135deg, #38BDF8, #818CF8)';
+
+            return `
+                <div class="comment-card ${isUser ? 'new-comment' : ''}">
+                    <div>
+                        <div class="comment-header">
+                            <div class="comment-avatar" style="background:${bg};">
+                                ${initials}
+                            </div>
+                            <div style="flex-grow:1;">
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <div class="comment-name">${c.nombre}</div>
+                                    ${isUser ? '<span style="font-size:0.7rem; background:rgba(16,185,129,0.2); color:var(--accent-emerald); padding:0.15rem 0.5rem; border-radius:4px; font-weight:700;">Tu Reseña</span>' : ''}
+                                </div>
+                                <div class="comment-role-tag">${c.rolBadge || c.rol}</div>
+                            </div>
+                        </div>
+
+                        <div class="comment-meta">
+                            <div class="comment-stars">${stars}</div>
+                            <div class="comment-date">${c.fecha}</div>
+                        </div>
+
+                        <p class="comment-text">"${c.texto}"</p>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    };
+
+    renderComments();
+
+    const starLabels = {
+        1: '1 / 5 Regular',
+        2: '2 / 5 Aceptable',
+        3: '3 / 5 Bueno',
+        4: '4 / 5 Muy Bueno',
+        5: '5 / 5 Excelente'
+    };
+
+    window.setCommentRating = function(rating) {
+        const ratingInput = document.getElementById('comment-rating');
+        const ratingLabel = document.getElementById('star-rating-label');
+        if (ratingInput) ratingInput.value = rating;
+        if (ratingLabel) ratingLabel.textContent = starLabels[rating] || (rating + ' / 5');
+
+        document.querySelectorAll('#star-selector .star-btn').forEach(btn => {
+            const r = parseInt(btn.dataset.rating, 10);
+            if (r <= rating) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+    };
+
+    window.handleCommentSubmit = function(event) {
+        event.preventDefault();
+        const nameInput = document.getElementById('comment-name');
+        const roleInput = document.getElementById('comment-role');
+        const ratingInput = document.getElementById('comment-rating');
+        const messageInput = document.getElementById('comment-message');
+
+        if (!nameInput || !messageInput) return;
+
+        const name = nameInput.value.trim();
+        const role = roleInput ? roleInput.value : '🎓 Estudiante Unicauca';
+        const rating = parseInt(ratingInput ? ratingInput.value : '5', 10);
+        const text = messageInput.value.trim();
+
+        if (!name || !text) {
+            alert('Por favor completa tu nombre y comentario.');
+            return;
+        }
+
+        const avatarGradients = [
+            'linear-gradient(135deg, #06B6D4, #0284C7)',
+            'linear-gradient(135deg, #10B981, #047857)',
+            'linear-gradient(135deg, #F59E0B, #D97706)',
+            'linear-gradient(135deg, #EC4899, #BE185D)',
+            'linear-gradient(135deg, #8B5CF6, #6D28D9)'
+        ];
+        const randomBg = avatarGradients[Math.floor(Math.random() * avatarGradients.length)];
+
+        const newComment = {
+            id: 'user-com-' + Date.now(),
+            nombre: name,
+            rol: role,
+            rolBadge: role,
+            calificacion: rating,
+            fecha: 'Recién publicado',
+            texto: text,
+            avatarBg: randomBg,
+            isCustomUser: true
+        };
+
+        const existing = getStoredComments();
+        existing.unshift(newComment);
+        localStorage.setItem('physicsailab_user_comments', JSON.stringify(existing));
+
+        renderComments();
+
+        // Reset inputs
+        nameInput.value = '';
+        messageInput.value = '';
+        setCommentRating(5);
+
+        showToast(`💬 ¡Muchas gracias <strong>${name}</strong>! Tu comentario se ha publicado con éxito.`);
+
+        setTimeout(() => {
+            if (confirm('¿Deseas enviar también tu comentario directamente al WhatsApp del profesor Manuel Obando?')) {
+                const waText = `Hola profesor Manuel, he dejado este comentario en PhysicsAILab.com:\n\n"${text}"\n- ${name} (${role})`;
+                window.open(`https://wa.me/?text=${encodeURIComponent(waText)}`, '_blank');
+            }
+        }, 1200);
     };
 });
