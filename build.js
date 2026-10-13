@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const distDir = path.join(__dirname, 'dist');
+const outputDir = path.join(__dirname, 'public');
 const webDir = path.join(__dirname, 'web');
 const materialDir = path.join(__dirname, 'material');
 
@@ -20,16 +20,16 @@ function copyRecursive(src, dest) {
     }
 }
 
-console.log('📦 Empaquetando PhysicsAILab para producción...');
-if (fs.existsSync(distDir)) {
-    fs.rmSync(distDir, { recursive: true, force: true });
+console.log('📦 Empaquetando PhysicsAILab para producción en public/...');
+if (fs.existsSync(outputDir)) {
+    fs.rmSync(outputDir, { recursive: true, force: true });
 }
-fs.mkdirSync(distDir, { recursive: true });
+fs.mkdirSync(outputDir, { recursive: true });
 
-console.log('👉 Copiando interfaz web a dist/...');
-copyRecursive(webDir, distDir);
+console.log('👉 Copiando interfaz web a public/...');
+copyRecursive(webDir, outputDir);
 
-console.log('👉 Copiando material didáctico a dist/material/...');
-copyRecursive(materialDir, path.join(distDir, 'material'));
+console.log('👉 Copiando material didáctico a public/material/...');
+copyRecursive(materialDir, path.join(outputDir, 'material'));
 
-console.log('✅ ¡Compilación completada con éxito en la carpeta dist/!');
+console.log('✅ ¡Compilación completada con éxito en la carpeta public/!');
