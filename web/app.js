@@ -218,7 +218,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 const cTit = (c.titulo || '').toLowerCase();
                 const cCon = (c.conceptoFisico || '').toLowerCase();
                 if (cat === 'moderna' || cat === 'cuantico' || cat === 'cuantica') {
-                    return cCat.includes('moderna') || cCat.includes('cuánt') || cTit.includes('cuánt') || cCon.includes('cuánt');
+                    return cCat.includes('moderna') || cCat.includes('cuánt') || cTit.includes('cuánt') || cCon.includes('cuánt') || cCat.includes('relatividad') || cTit.includes('tiempo');
+                }
+                if (cat === 'agro' || cat === 'agrofisica') {
+                    return cCat.includes('agro') || cTit.includes('agro') || cCon.includes('suelo') || cCon.includes('riego') || cCon.includes('planta') || cCon.includes('bosque');
+                }
+                if (cat === 'fluidos' || cat === 'deporte') {
+                    return cCat.includes('fluid') || cCat.includes('deporte') || cCon.includes('fluid') || cTit.includes('balón') || cTit.includes('final del mundo') || cTit.includes('submarino') || cTit.includes('parque') || cTit.includes('flot');
+                }
+                if (cat === 'mecanica') {
+                    return cCat.includes('mecánica') || cCat.includes('mecanica');
+                }
+                if (cat === 'electromagnetismo' || cat === 'electro') {
+                    return cCat.includes('electr');
+                }
+                if (cat === 'historia') {
+                    return cCat.includes('historia');
                 }
                 return cCat.includes(cat) || cTit.includes(cat) || cCon.includes(cat);
             });
@@ -227,34 +242,45 @@ document.addEventListener('DOMContentLoaded', () => {
             comicsGrid.innerHTML = `
                 <div style="grid-column: 1 / -1; text-align:center; padding:3rem; background:rgba(255,255,255,0.02); border-radius:16px; border:1px solid var(--border-color);">
                     <p style="color:var(--text-muted); font-size:1.05rem; margin-bottom:1rem;">No se encontraron cómics en esta categoría.</p>
-                    <button class="btn btn-secondary" onclick="renderComics('all')">Ver todos los cómics</button>
+                    <button class="btn btn-secondary" onclick="renderComics('all')">Ver todos los cómics (${data.comics.length})</button>
                 </div>
             `;
             return;
         }
 
         comicsGrid.innerHTML = filtered.map(c => `
-            <div class="card">
-                <div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
-                        <span class="card-tag" style="background:rgba(245, 158, 11, 0.15); color:var(--accent-amber); border-color:rgba(245, 158, 11, 0.3);">🎨 ${c.categoria}</span>
-                        <span style="font-size:0.75rem; color:var(--text-muted);">PDF Libre</span>
-                    </div>
-                    <h3>${c.titulo}</h3>
-                    <p>${c.descripcion}</p>
-                    <div style="margin-bottom:1rem; font-size:0.85rem; background:rgba(255,255,255,0.02); padding:0.75rem; border-radius:8px; border:1px solid var(--border-color);">
-                        <div style="color:var(--accent-amber); font-weight:600; margin-bottom:0.25rem;">
-                            🔬 Concepto: ${c.conceptoFisico}
-                        </div>
-                        <div style="color:var(--text-muted); font-size:0.8rem;">
-                            🎓 Créditos: ${c.creditos}
-                        </div>
-                    </div>
+            <div class="comic-card">
+                <div class="comic-cover-wrap">
+                    <img src="${c.portada}" alt="${c.titulo}" loading="lazy" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'300\\' height=\\'400\\' viewBox=\\'0 0 300 400\\'><rect width=\\'300\\' height=\\'400\\' fill=\\'%23111827\\'/><text x=\\'50%\\' y=\\'50%\\' fill=\\'%23F59E0B\\' font-family=\\'sans-serif\\' font-size=\\'48\\' text-anchor=\\'middle\\' dy=\\'.3em\\'>🎨</text></svg>';" />
+                    <span class="comic-cover-badge">🎨 ${c.categoria}</span>
                 </div>
-                <div>
-                    <div class="card-actions">
-                        <a href="${c.archivo}" target="_blank" class="btn btn-primary" style="flex:1; justify-content:center;">Leer Cómic (PDF) 📖</a>
-                        <a href="${c.archivo}" download class="btn btn-secondary" style="font-size:0.85rem;">Descargar ⬇️</a>
+                <div class="comic-body">
+                    <div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                            <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">📖 Divulgación Estudiantil</span>
+                            <span style="font-size:0.75rem; color:var(--accent-emerald); font-weight:700;">PDF Libre</span>
+                        </div>
+                        <h3 class="comic-title">${c.titulo}</h3>
+                        
+                        <div class="comic-authors-box">
+                            <span class="comic-authors-icon">✍️</span>
+                            <div>
+                                <span class="comic-authors-label">Autores:</span>
+                                <span class="comic-authors-names">${c.autores}</span>
+                            </div>
+                        </div>
+
+                        <p class="comic-desc">${c.descripcion}</p>
+                        
+                        <div class="comic-concept-box">
+                            <span style="color:var(--accent-blue); font-weight:600;">🔬 Concepto:</span>
+                            <span style="color:var(--text-muted);">${c.conceptoFisico}</span>
+                        </div>
+                    </div>
+
+                    <div class="card-actions" style="margin-top:auto;">
+                        <a href="${c.archivo}" target="_blank" class="btn btn-primary" style="flex:1; justify-content:center; text-decoration:none;">Leer Cómic (PDF) 📖</a>
+                        <a href="${c.archivo}" download class="btn btn-secondary" style="font-size:0.85rem; text-decoration:none;" title="Descargar PDF">⬇️</a>
                     </div>
                 </div>
             </div>

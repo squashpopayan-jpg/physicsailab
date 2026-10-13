@@ -412,94 +412,564 @@ window.PLATFORM_DATA = {
 
     comics: [
         {
-            id: "com-1",
-            titulo: "El Reactor de Corriente Alterna",
-            categoria: "Electromagnetismo",
-            archivo: "/material/3_comics/elReactorDeCorrienteAlterna.pdf",
-            descripcion: "La batalla de los voltajes y la invención del transformador que electrificó al mundo moderno.",
-            conceptoFisico: "Inducción Electromagnética y Flujo Magnético",
-            creditos: "Estudiantes de Ingeniería y Física"
+                "id": "com-1",
+                "titulo": "El Impulso Fantasma: Termodinámica y Trabajo",
+                "categoria": "Mecánica",
+                "portada": "/assets/comics/cover_01.jpg",
+                "archivo": "/material/3_comics/4_Viñetas_de_Cómic_En_Blanco[1].pdf",
+                "autores": "Juan David Mondragón Chois (Ing. Electrónica y Telecomunicaciones)",
+                "descripcion": "¿Qué sucede cuando un experimento de física mecánica parece violar la conservación de energía? Una entretenida investigación sobre el trabajo mecánico, el calor disipado y la Primera Ley de la Termodinámica.",
+                "conceptoFisico": "Primera Ley de la Termodinámica, Trabajo Mecánico y Conservación de Energía"
         },
         {
-            id: "com-2",
-            titulo: "Gravedad Cero: Más Allá de la Tierra",
-            categoria: "Mecánica",
-            archivo: "/material/3_comics/GRAVEDAD 0.pdf",
-            descripcion: "Una aventura en caída libre continua para desmentir los mitos comunes sobre el peso en el espacio.",
-            conceptoFisico: "Fuerza Gravitacional y Órbitas Satelitales",
-            creditos: "Estudiantes de Mecánica Clásica"
+                "id": "com-2",
+                "titulo": "La Bobina Maldita",
+                "categoria": "Electromagnetismo",
+                "portada": "/assets/comics/cover_02.jpg",
+                "archivo": "/material/3_comics/BOBINA MALDITA.pdf",
+                "autores": "Daniel Cuellar Ruiz, Samantha Durán Muñoz, Alejandro Rodríguez Luligo",
+                "descripcion": "Un misterio electrizante en el laboratorio donde fenómenos anómalos de voltaje solo pueden resolverse calculando la autoinductancia, la ley de Lenz y la fuerza contraelectromotriz.",
+                "conceptoFisico": "Autoinductancia, Fuerza Contraelectromotriz y Ley de Lenz"
         },
         {
-            id: "com-3",
-            titulo: "El Magnetizador Urbano",
-            categoria: "Electromagnetismo",
-            archivo: "/material/3_comics/EL MAGNETIZADOR URBANO.pdf",
-            descripcion: "¿Qué pasaría si pudieras manipular la polaridad magnética de los objetos de una ciudad?",
-            conceptoFisico: "Leyes de Ampère, Biot-Savart y Fuerzas de Lorentz",
-            creditos: "Estudiantes de Electromagnetismo"
+                "id": "com-3",
+                "titulo": "Más Allá de la Gravedad: La Velocidad de Escape",
+                "categoria": "Mecánica",
+                "portada": "/assets/comics/cover_03.jpg",
+                "archivo": "/material/3_comics/COMIC (2).pdf",
+                "autores": "Ángela Fernanda Perafán López, Jaider Hurtado Riascos",
+                "descripcion": "Una apasionante odisea espacial que explora la física para vencer el pozo gravitacional de un planeta mediante el principio de conservación de la energía mecánica.",
+                "conceptoFisico": "Velocidad de Escape, Gravitación Universal y Energía Mecánica Orbital"
         },
         {
-            id: "com-4",
-            titulo: "La Carrera del Siglo (Cinemática Relativa)",
-            categoria: "Mecánica",
-            archivo: "/material/3_comics/La Carrera Del Siglo.pdf",
-            descripcion: "Un enfrentamiento de alta velocidad donde ganar depende de comprender la aceleración y los sistemas de referencia.",
-            conceptoFisico: "Velocidad Relativa y Dinámica de Partículas",
-            creditos: "Estudiantes de Mecánica"
+                "id": "com-4",
+                "titulo": "Los Guardianes de la Carga",
+                "categoria": "Electromagnetismo",
+                "portada": "/assets/comics/cover_04.jpg",
+                "archivo": "/material/3_comics/COMIC (3).pdf",
+                "autores": "Estudiantes del Curso de Electromagnetismo · Univ. del Cauca",
+                "descripcion": "En un microcosmos de partículas atómicas, los guardianes deben preservar el equilibrio de atracción y repulsión electrostática para evitar el colapso del sistema.",
+                "conceptoFisico": "Carga Eléctrica, Campo Electrostático y Ley de Coulomb"
         },
         {
-            id: "com-5",
-            titulo: "La Vida de Nikola Tesla",
-            categoria: "Historia de la Física",
-            archivo: "/material/3_comics/ComicNikolaTesla.pdf",
-            descripcion: "Biografía ilustrada del visionario serbio y su obsesión con las altas frecuencias y la resonancia magnética.",
-            conceptoFisico: "Campos Magnéticos Rotativos y Corriente Alterna",
-            creditos: "Estudiantes de Física"
+                "id": "com-5",
+                "titulo": "El Laberinto Magnético (Villa Faraday)",
+                "categoria": "Electromagnetismo",
+                "portada": "/assets/comics/cover_05.jpg",
+                "archivo": "/material/3_comics/COMIC (4).pdf",
+                "autores": "Estudiantes de Ingeniería y Física · Univ. del Cauca",
+                "descripcion": "Una noche de tormenta en Villa Faraday desata fenómenos magnéticos inesperados: guiarse a través del laberinto exige calcular la fuerza magnética de Lorentz sobre cargas en movimiento.",
+                "conceptoFisico": "Fuerza Magnética de Lorentz, Líneas de Campo y Ley de Faraday"
         },
         {
-            id: "com-6",
-            titulo: "Agrofísica: Presión Máxima en los Cultivos",
-            categoria: "Agrofísica & Fluidos",
-            archivo: "/material/3_comics/Comic agrofisica a presion maxima.pdf",
-            descripcion: "Cómo la tensión superficial y el potencial hídrico permiten a los árboles gigantes llevar agua a 100 metros de altura.",
-            conceptoFisico: "Capilaridad, Presión Hidrostática y Cohesión",
-            creditos: "Estudiantes de Física Aplicada"
+                "id": "com-6",
+                "titulo": "Gravedad Sayayin: Fuerzas y Aceleración Extrema",
+                "categoria": "Mecánica",
+                "portada": "/assets/comics/cover_06.jpg",
+                "archivo": "/material/3_comics/COMIC 2025 MECANICA. Isabel Garcés, Nicolas Pungo, Ruben Quirá.pdf.pdf",
+                "autores": "Isabel Garcés, Nicolás Pungo, Rubén Quirá",
+                "descripcion": "Inspirado en el mundo del anime, los guerreros entrenan bajo 300G en una cámara de gravedad aumentada, analizando la Segunda Ley de Newton, la masa inercial y el peso aparente.",
+                "conceptoFisico": "Segunda Ley de Newton, Aceleración Gravitatoria Extrema y Peso Aparente"
         },
         {
-            id: "com-7",
-            titulo: "El Último Campo (Líneas de Fuerza)",
-            categoria: "Electromagnetismo",
-            archivo: "/material/3_comics/El último campo.pdf",
-            descripcion: "Descubriendo la geometría oculta de los campos electrostáticos y el potencial eléctrico.",
-            conceptoFisico: "Ley de Gauss y Superficies Equipotenciales",
-            creditos: "Estudiantes de Electromagnetismo"
+                "id": "com-7",
+                "titulo": "El Pulso del Tiempo: Oscilaciones y Péndulos",
+                "categoria": "Mecánica",
+                "portada": "/assets/comics/cover_07.jpg",
+                "archivo": "/material/3_comics/COMIC JORGE ACHURY Y JUAN REYES.pdf",
+                "autores": "Jorge Achury, Juan Carlos Reyes",
+                "descripcion": "¿Por qué tantos relojes sonando al mismo tiempo? Ana y su tío descubren la precisión matemática del Movimiento Armónico Simple, la longitud del péndulo y la frecuencia de resonancia.",
+                "conceptoFisico": "Movimiento Armónico Simple (MAS), Periodo de Péndulo y Resonancia"
         },
         {
-            id: "com-8",
-            titulo: "Cuentos de Energía y Transformación",
-            categoria: "Mecánica",
-            archivo: "/material/3_comics/Comic energias.pdf",
-            descripcion: "La energía no se crea ni se destruye, solo se transforma... ¡a veces con consecuencias explosivas!",
-            conceptoFisico: "Conservación de la Energía y Fuerzas Disipativas",
-            creditos: "Estudiantes de Mecánica"
+                "id": "com-8",
+                "titulo": "La Carrera que Nadie Pudo Ganar",
+                "categoria": "Mecánica",
+                "portada": "/assets/comics/cover_08.jpg",
+                "archivo": "/material/3_comics/COMIC LA CARRERA QUE NADIE PUEDE GANAR.pdf",
+                "autores": "Lina María Granja",
+                "descripcion": "En una pista donde la fricción dicta el destino de cada vehículo, Lina comprende que la máxima aceleración en curva no depende de la potencia del motor, sino del agarre del neumático.",
+                "conceptoFisico": "Fricción Estática vs. Cinética, Fuerza Centrípeta y Dinámica de Curvas"
         },
         {
-            id: "com-9",
-            titulo: "La Bobina Maldita",
-            categoria: "Electromagnetismo",
-            archivo: "/material/3_comics/BOBINA MALDITA.pdf",
-            descripcion: "Un misterio en el laboratorio que solo puede resolverse calculando la autoinductancia y la ley de Lenz.",
-            conceptoFisico: "Inductancia, Fuerza Contraelectromotriz y Ley de Lenz",
-            creditos: "Estudiantes de Física"
+                "id": "com-9",
+                "titulo": "Giro Sin Control: Dinámica Rotacional",
+                "categoria": "Mecánica",
+                "portada": "/assets/comics/cover_09.jpg",
+                "archivo": "/material/3_comics/COMIC PAUVA.pdf",
+                "autores": "Estudiantes del Curso de Mecánica · Univ. del Cauca",
+                "descripcion": "Cuando un rotor mecánico gira fuera de control, comprender la relación entre torque, momento de inercia y distribución radial de masa es la única salvación para la maquinaria.",
+                "conceptoFisico": "Torque, Momento de Inercia y Dinámica Rotacional"
         },
         {
-            id: "com-10",
-            titulo: "Balance Cuántico",
-            categoria: "Física Moderna",
-            archivo: "/material/3_comics/cmicBALANCNCUNTICO.pdf",
-            descripcion: "Cuando las partículas desafían el sentido común clásico y existen en múltiples estados a la vez.",
-            conceptoFisico: "Principio de Incertidumbre y Superposición",
-            creditos: "Estudiantes de Física Moderna"
+                "id": "com-10",
+                "titulo": "La Revelación de la Inducción",
+                "categoria": "Electromagnetismo",
+                "portada": "/assets/comics/cover_12.jpg",
+                "archivo": "/material/3_comics/COMICFINAL.pdf",
+                "autores": "Carlos Eduardo Dorado Joaqui, Laura Isabel Rodríguez Tróchez, Jors Eduar Solarte Castillo, Darío Alexander Cárdenas Guerrero",
+                "descripcion": "Un viaje narrativo visual al corazón del descubrimiento de Michael Faraday: cómo un campo magnético variable en el tiempo es capaz de engendrar corriente eléctrica en una espira.",
+                "conceptoFisico": "Ley de Faraday, Flujo Magnético y Fuerza Electromotriz Inducida"
+        },
+        {
+                "id": "com-11",
+                "titulo": "La Antena: Transmitiendo a Frecuencias Prohibidas",
+                "categoria": "Electromagnetismo",
+                "portada": "/assets/comics/cover_11.jpg",
+                "archivo": "/material/3_comics/COMICF.pdf",
+                "autores": "Estudiantes del Departamento de Física · Univ. del Cauca",
+                "descripcion": "Una misteriosa señal clandestina cruza el espectro de radio, guiando a los personajes a través de las frecuencias del espectro electromagnético y la física de radiación de dipolos.",
+                "conceptoFisico": "Ondas Electromagnéticas, Espectro Radioeléctrico y Radiación de Antenas"
+        },
+        {
+                "id": "com-12",
+                "titulo": "El Rescate de la Nave a la Deriva",
+                "categoria": "Mecánica",
+                "portada": "/assets/comics/cover_13.jpg",
+                "archivo": "/material/3_comics/COMICTOTAL.pdf",
+                "autores": "María José Rivera Girón, Fabián Felipe Velazco Mera, Javier Maelo Caicedo Caicedo",
+                "descripcion": "A bordo de la dañada NAVE-47K en el vacío profundo, la tripulación debe realizar maniobras de emergencia aplicando con rigor la Tercera Ley de Newton y el principio de conservación de momento.",
+                "conceptoFisico": "Tercera Ley de Newton, Conservación del Momento Lineal e Impulso"
+        },
+        {
+                "id": "com-13",
+                "titulo": "Las Piedras del Infinitum: Colisiones y Choques",
+                "categoria": "Mecánica",
+                "portada": "/assets/comics/cover_14.jpg",
+                "archivo": "/material/3_comics/Comic (1) (1).pdf",
+                "autores": "Camilo Gordillo, Tatiana Rojas, Alejandra López, Camilo Montenegro",
+                "descripcion": "Gamora investiga reliquias de alta energía en la Academia Nacional de Ciencias Antiguas, desentrañando la física de las colisiones elásticas e inelásticas en el espacio.",
+                "conceptoFisico": "Colisiones Elásticas, Momento Lineal y Conservación de la Energía"
+        },
+        {
+                "id": "com-14",
+                "titulo": "Desafiando las Leyes del Movimiento",
+                "categoria": "Mecánica",
+                "portada": "/assets/comics/cover_15.jpg",
+                "archivo": "/material/3_comics/Comic (1).pdf",
+                "autores": "Estudiantes de Mecánica Newtoniana · Univ. del Cauca",
+                "descripcion": "Un recorrido humorístico por situaciones donde los personajes intentan saltarse las leyes físicas elementales, demostrando que la inercia y el centro de masa son ineludibles.",
+                "conceptoFisico": "Centro de Masa, Equilibrio de Fuerzas e Inercia Mecánica"
+        },
+        {
+                "id": "com-15",
+                "titulo": "Ionix: La Ciudad de las Descargas",
+                "categoria": "Electromagnetismo",
+                "portada": "/assets/comics/cover_16.jpg",
+                "archivo": "/material/3_comics/Comic Electro.pdf",
+                "autores": "Nicolás Rocha Gutiérrez, Ángela Marcela Méndez Astudillo",
+                "descripcion": "Voltaria, la ciudad que nunca dormía, colapsa ante una tormenta de sobrevoltaje. Comprender la ruptura dieléctrica del aire y la capacitancia de la red es la clave para restaurar el fluido.",
+                "conceptoFisico": "Ruptura Dieléctrica, Descargas Eléctricas y Redes de Potencia"
+        },
+        {
+                "id": "com-16",
+                "titulo": "La Torre Inestable: Equilibrio y Estática",
+                "categoria": "Mecánica",
+                "portada": "/assets/comics/cover_17.jpg",
+                "archivo": "/material/3_comics/Comic Fisica 03 dic 25 · 06·51·28.pdf",
+                "autores": "Andrés Andrés, Juan Andrés Guachavez, Juan David Urrutia",
+                "descripcion": "Una enorme estructura inclinada amenaza con desplomarse. Los protagonistas deben calcular el centro de gravedad y las condiciones de equilibrio estático antes de que el torque la derrumbe.",
+                "conceptoFisico": "Condiciones de Equilibrio Estático, Torque y Centro de Gravedad"
+        },
+        {
+                "id": "com-17",
+                "titulo": "Ladrón Electromagnético: La Fuga de Carga",
+                "categoria": "Electromagnetismo",
+                "portada": "/assets/comics/cover_18.jpg",
+                "archivo": "/material/3_comics/Comic Ladron FULL EDITION.pdf",
+                "autores": "Estudiantes del Curso de Electromagnetismo · Univ. del Cauca",
+                "descripcion": "En una galaxia tecnológica, un villano drena las cargas eléctricas de las ciudades e interactúa con los pulsos bioeléctricos de los sistemas neuronales vivos.",
+                "conceptoFisico": "Campos Electromagnéticos, Corrientes Iónicas y Bioelectricidad"
+        },
+        {
+                "id": "com-18",
+                "titulo": "Presión Máxima: El Riego que Salvó la Cosecha",
+                "categoria": "Agrofísica",
+                "portada": "/assets/comics/cover_19.jpg",
+                "archivo": "/material/3_comics/Comic agrofisica a presion maxima.pdf",
+                "autores": "Estudiantes del Curso de Agrofísica · Univ. del Cauca",
+                "descripcion": "Una severa sequía pone en jaque al valle agrícola. Aplicando hidrostática y la ecuación de continuidad en los canales, los agrónomos logran optimizar el riego a presión máxima.",
+                "conceptoFisico": "Presión Hidrostática, Caudal, Ecuación de Continuidad y Bernoulli"
+        },
+        {
+                "id": "com-19",
+                "titulo": "Las Fuerzas que No Puedes Ver (Popayán)",
+                "categoria": "Mecánica",
+                "portada": "/assets/comics/cover_20.jpg",
+                "archivo": "/material/3_comics/Comic completo.pdf",
+                "autores": "Estudiantes de Física I · Universidad del Cauca (Popayán)",
+                "descripcion": "En el centro histórico de Popayán, un grupo de universitarios investiga extrañas oscilaciones de objetos, identificando las fuerzas de campo y contacto que gobiernan la ciudad.",
+                "conceptoFisico": "Fuerzas a Distancia vs. Contacto, Gravedad y Fricción"
+        },
+        {
+                "id": "com-20",
+                "titulo": "Confinamiento: El Caso de la Antimateria",
+                "categoria": "Física Moderna",
+                "portada": "/assets/comics/cover_21.jpg",
+                "archivo": "/material/3_comics/Comic electromagnetismo.pdf",
+                "autores": "Estudiantes de Física y Electromagnetismo · Univ. del Cauca",
+                "descripcion": "¿Cómo retener partículas de antimateria sin que se aniquilen al tocar la materia común? Una historia sobre trampas de Penning y confinamiento magnético dipolar.",
+                "conceptoFisico": "Confinamiento Magnético, Trampas de Penning y Antimateria"
+        },
+        {
+                "id": "com-21",
+                "titulo": "Potencial vs. Cinética: La Guerra de las Energías",
+                "categoria": "Mecánica",
+                "portada": "/assets/comics/cover_22.jpg",
+                "archivo": "/material/3_comics/Comic energias.pdf",
+                "autores": "Estudiantes del Curso de Mecánica · Univ. del Cauca",
+                "descripcion": "En un conflicto épico intergaláctico, dos imperios combaten por controlar la transformación continua de la energía potencial en energía cinética devastadora.",
+                "conceptoFisico": "Conservación de la Energía Mecánica, Trabajo y Fuerzas Conservativas"
+        },
+        {
+                "id": "com-22",
+                "titulo": "Las Leyes de Arón: Universo del Caos",
+                "categoria": "Mecánica",
+                "portada": "/assets/comics/cover_23.jpg",
+                "archivo": "/material/3_comics/Comic mecánica .pdf",
+                "autores": "Estudiantes de Mecánica Clásica · Univ. del Cauca",
+                "descripcion": "Arón queda transportado a un mundo donde las leyes mecánicas actúan en cámara lenta, permitiéndole analizar cada vector de fuerza y choque con precisión didáctica.",
+                "conceptoFisico": "Leyes de Newton, Dinámica Vectorial y Cantidad de Movimiento"
+        },
+        {
+                "id": "com-23",
+                "titulo": "Epsilon: Atrapados en el Campo",
+                "categoria": "Electromagnetismo",
+                "portada": "/assets/comics/cover_24.jpg",
+                "archivo": "/material/3_comics/Comic--Britney Benitez-Jonnathan Benavidez-MiguelVillanueva.pdf",
+                "autores": "Britney Benitez, Jonnathan Benavidez, Miguel Villanueva",
+                "descripcion": "La conmovedora historia de una partícula atrapada entre las placas cargadas de un condensador gigante: cómo la trayectoria parabólica depende del potencial electrostático.",
+                "conceptoFisico": "Campo Eléctrico Uniforme, Diferencia de Potencial y Trayectoria Parabólica"
+        },
+        {
+                "id": "com-24",
+                "titulo": "La Montaña Invisible: Energía en Pendientes",
+                "categoria": "Mecánica",
+                "portada": "/assets/comics/cover_25.jpg",
+                "archivo": "/material/3_comics/ComicCompleto.pdf",
+                "autores": "Dubán Muñoz González, Hugo J. González",
+                "descripcion": "Escalando una montaña con zonas de hielo y roca áspera, los aventureros calculan el ángulo crítico del plano inclinado para evitar deslizamientos involuntarios.",
+                "conceptoFisico": "Plano Inclinado, Coeficiente de Fricción y Ángulo Crítico de Deslizamiento"
+        },
+        {
+                "id": "com-25",
+                "titulo": "El Parque de Atracciones Flotante: Principio de Arquímedes",
+                "categoria": "Mecánica de Fluidos",
+                "portada": "/assets/comics/cover_26.jpg",
+                "archivo": "/material/3_comics/ComicDOC-20251202-WA0014..pdf",
+                "autores": "Jhon & Compañeros de Física Aplicada · Univ. del Cauca",
+                "descripcion": "Jhon visita una megaestructura flotante sobre un lago y descubre cómo el empuje hidrostático de Arquímedes equilibra el peso de montañas rusas y miles de visitantes.",
+                "conceptoFisico": "Principio de Arquímedes, Empuje Hidrostático y Flotabilidad"
+        },
+        {
+                "id": "com-26",
+                "titulo": "Nikola Tesla: El Genio de la Electricidad",
+                "categoria": "Historia de la Física",
+                "portada": "/assets/comics/cover_27.jpg",
+                "archivo": "/material/3_comics/ComicNikolaTesla.pdf",
+                "autores": "Santiago Andrés Caicedo, Santiago Benavides, José Manuel Guampe, Sergio Rosadol",
+                "descripcion": "Una rigurosa y amena biografía ilustrada sobre Nikola Tesla, su invención de la corriente alterna polifásica y sus experimentos pioneros con campos magnéticos rotativos.",
+                "conceptoFisico": "Corriente Alterna, Campos Magnéticos Rotativos y Resonancia LC"
+        },
+        {
+                "id": "com-27",
+                "titulo": "El Faro de las Ondas Perdidas",
+                "categoria": "Electromagnetismo",
+                "portada": "/assets/comics/cover_28.jpg",
+                "archivo": "/material/3_comics/Comic_Electro.pdf",
+                "autores": "Estudiantes del Departamento de Física · Univ. del Cauca",
+                "descripcion": "Un viejo faro que parecía inactivo revela transmitir en longitudes de onda no visibles. Nico y sus compañeros usan antenas receptoras para rastrear su haz electromagnético.",
+                "conceptoFisico": "Espectro Óptico y Electromagnético, Frecuencia y Ondas de Radio"
+        },
+        {
+                "id": "com-28",
+                "titulo": "Misión Newton: Aceleración al Infinito",
+                "categoria": "Mecánica",
+                "portada": "/assets/comics/cover_29.jpg",
+                "archivo": "/material/3_comics/Cómic.pdf",
+                "autores": "El Club de los Coheteros · Universidad del Cauca",
+                "descripcion": "En el club escolar de ciencias espaciales, los estudiantes diseñan su primer cohete propulsado y deben optimizar la relación masa-combustible mediante la ecuación del cohete.",
+                "conceptoFisico": "Propulsión a Reacción, Ecuación de Tsiolkovski y Cinemática de Despegue"
+        },
+        {
+                "id": "com-29",
+                "titulo": "Carrera de Obstáculos en Gravedad Cero",
+                "categoria": "Mecánica",
+                "portada": "/assets/comics/cover_30.jpg",
+                "archivo": "/material/3_comics/Cómic[1].pdf",
+                "autores": "María José Astaiza, Stiven Gómez, Harol Suárez",
+                "descripcion": "En el circuito de entrenamiento orbital, los cadetes descubren que en ingravidez cualquier movimiento produce una reacción opuesta instantánea según la Tercera Ley de Newton.",
+                "conceptoFisico": "Conservación del Momento Lineal y Tercera Ley en Microgravedad"
+        },
+        {
+                "id": "com-30",
+                "titulo": "Desafío Estelar por Gravedad Cero",
+                "categoria": "Mecánica",
+                "portada": "/assets/comics/cover_31.jpg",
+                "archivo": "/material/3_comics/Cómic 4 Viñetas  en Blanco Rectángulos (1).pdf",
+                "autores": "Estudiantes de Ingeniería · Universidad del Cauca",
+                "descripcion": "Ziro y Anya compiten en el Gran Premio Orbital aprendiendo que el exceso de impulso inicial sin cálculo de vector resultante arroja la nave fuera del trazado seguro.",
+                "conceptoFisico": "Impulso Mecánico, Momento Lineal y Vectores de Fuerza"
+        },
+        {
+                "id": "com-31",
+                "titulo": "Mientras me Mueva: Movimiento Restringido",
+                "categoria": "Mecánica",
+                "portada": "/assets/comics/cover_32.jpg",
+                "archivo": "/material/3_comics/Cómic-mecánica.pdf",
+                "autores": "Estudiantes del Curso de Mecánica · Univ. del Cauca",
+                "descripcion": "En una fábrica automatizada de alta seguridad, un dron debe navegar a través de sistemas de poleas y guías respetando las ecuaciones de ligadura cinemática.",
+                "conceptoFisico": "Movimiento Ligado, Poleas Ideales y Grados de Libertad"
+        },
+        {
+                "id": "com-32",
+                "titulo": "Proyecto Alfa Nova: Momento Angular",
+                "categoria": "Mecánica",
+                "portada": "/assets/comics/cover_33.jpg",
+                "archivo": "/material/3_comics/DOC-20251204-WA0041_pdf.pdf",
+                "autores": "Karol Cajas, Sara Castillo, Erwin Guasaco",
+                "descripcion": "Una estación espacial pierde estabilidad de rotación. Los tripulantes aplican la conservación del momento angular retrayendo y extendiendo sus módulos para controlar el giro.",
+                "conceptoFisico": "Conservación del Momento Angular y Rotación de Cuerpos Rígidos"
+        },
+        {
+                "id": "com-33",
+                "titulo": "El Espectro Secreto del Radio",
+                "categoria": "Electromagnetismo",
+                "portada": "/assets/comics/cover_34.jpg",
+                "archivo": "/material/3_comics/Diseño sin título.pdf",
+                "autores": "Esteban Arcos Velandia, Isabella González Morales, Sebastián Camilo Soto Fajardo",
+                "descripcion": "Tres jóvenes interceptan frecuencias misteriosas y exploran cómo viajan las ondas electromagnéticas portadoras a través de la atmósfera y el espacio.",
+                "conceptoFisico": "Propagación de Ondas Electromagnéticas y Modulación de Señal"
+        },
+        {
+                "id": "com-34",
+                "titulo": "El Magnetizador Urbano",
+                "categoria": "Electromagnetismo",
+                "portada": "/assets/comics/cover_35.jpg",
+                "archivo": "/material/3_comics/EL MAGNETIZADOR URBANO.pdf",
+                "autores": "José Chávez, Jancer Chamorro, Isabela Hernández, Sebastián Meneses",
+                "descripcion": "Un misterioso dispositivo altera los campos magnéticos de una metrópoli de acero: la física de atracción, repulsión y corrientes inducidas puesta a prueba.",
+                "conceptoFisico": "Leyes de Ampère, Biot-Savart y Ferromagnetismo"
+        },
+        {
+                "id": "com-35",
+                "titulo": "Rayden: El Escudo Electrostático",
+                "categoria": "Electromagnetismo",
+                "portada": "/assets/comics/cover_36.jpg",
+                "archivo": "/material/3_comics/El mundo cambio el dia que ellos nacieron._20251201_133131_0000.pdf",
+                "autores": "José David Gómez, Luis Miguel Solis, Luis Fernando Becerra, David Santiago Hurtado",
+                "descripcion": "El mundo cambió con la llegada de entidades con campos eléctricos descontrolados. Para salvar a su ciudad, Rayden diseña una jaula de Faraday perfecta para blindar a la población.",
+                "conceptoFisico": "Jaula de Faraday, Apantallamiento Electrostático y Potencial Eléctrico"
+        },
+        {
+                "id": "com-36",
+                "titulo": "La Caída Inesperada de la Luna",
+                "categoria": "Mecánica",
+                "portada": "/assets/comics/cover_37.jpg",
+                "archivo": "/material/3_comics/El texto del párrafo (1).pdf",
+                "autores": "Laia Guasco Osorio, Isabella Cajas Ojeda, Julieth Vanessa Mamián González",
+                "descripcion": "La luna aparece más cercana e imponente en el cielo nocturno: una alteración en su energía orbital amenaza con precipitarla si no se restaura la velocidad tangencial precisa.",
+                "conceptoFisico": "Ley de Gravitación Universal, Energía Orbital y Velocidad Orbital"
+        },
+        {
+                "id": "com-37",
+                "titulo": "El Último Campo: Batalla de Luz y Oscuridad",
+                "categoria": "Electromagnetismo",
+                "portada": "/assets/comics/cover_38.jpg",
+                "archivo": "/material/3_comics/El último campo.pdf",
+                "autores": "Estudiantes del Departamento de Física · Univ. del Cauca",
+                "descripcion": "En el génesis cósmico, antes de la materia condensada, los campos eléctrico y magnético se entrelazan armónicamente para dar nacimiento a la luz y a las ondas electromagnéticas.",
+                "conceptoFisico": "Ecuaciones de Maxwell, Ondas Electromagnéticas y Dualidad Campo-Radiación"
+        },
+        {
+                "id": "com-38",
+                "titulo": "Gravedad Cero: Atrapadas en el Espacio",
+                "categoria": "Mecánica",
+                "portada": "/assets/comics/cover_39.jpg",
+                "archivo": "/material/3_comics/GRAVEDAD 0.pdf",
+                "autores": "Kerlin Valeria Campo, Katherin Daniela Molina (Geotecnología)",
+                "descripcion": "Dos tripulantes en órbita desmienten los mitos comunes sobre la gravedad cero, demostrando que la ingravidez es en realidad una caída libre continua alrededor de la Tierra.",
+                "conceptoFisico": "Caída Libre en Órbita, Aceleración Centrípeta y Peso Aparente"
+        },
+        {
+                "id": "com-39",
+                "titulo": "Flotón: El Misterio de la Materia Flotante",
+                "categoria": "Mecánica de Fluidos",
+                "portada": "/assets/comics/cover_40.jpg",
+                "archivo": "/material/3_comics/Image_to_PDF_20251202_025649.pdf",
+                "autores": "Estudiantes de Ciencias Físicas · Popayán (Univ. del Cauca)",
+                "descripcion": "Popayán amanece con estructuras flotando sobre sus tejados: una aventura de ciencia ficción basada en la manipulación controlada de la densidad y la presión hidrostática del aire.",
+                "conceptoFisico": "Densidad de Fluidos, Empuje Hidrostático y Equilibrio Flotante"
+        },
+        {
+                "id": "com-40",
+                "titulo": "La Carrera del Siglo: Cinemática Relativa",
+                "categoria": "Mecánica",
+                "portada": "/assets/comics/cover_41.jpg",
+                "archivo": "/material/3_comics/La Carrera Del Siglo.pdf",
+                "autores": "Joed David Gaviria Chaves, Eddier Andrés Jurado España",
+                "descripcion": "Cinco naves compiten en una nebulosa agonizante durante una ventana crítica de 22 minutos. La victoria exige dominar la aceleración y los sistemas de referencia en movimiento relativo.",
+                "conceptoFisico": "Cinemática Relativa, Sistemas de Referencia y Velocidad Vectorial"
+        },
+        {
+                "id": "com-41",
+                "titulo": "Voltage Comics: Tres Distritos sin Luz",
+                "categoria": "Electromagnetismo",
+                "portada": "/assets/comics/cover_42.jpg",
+                "archivo": "/material/3_comics/MAS RECINETE.pdf",
+                "autores": "Estudiantes de Ingeniería Eléctrica y Electrónica · Univ. del Cauca",
+                "descripcion": "El gran banco de condensadores de 230 kV cede ante la fatiga dieléctrica, dejando tres distritos en tinieblas. Los técnicos aplican leyes de circuitos y capacitancia para aislar la falla.",
+                "conceptoFisico": "Capacitores en Alta Tensión, Rigidez Dieléctrica y Energía Almacenada"
+        },
+        {
+                "id": "com-42",
+                "titulo": "Submarino Averiado: Hidrostática y Presión",
+                "categoria": "Mecánica de Fluidos",
+                "portada": "/assets/comics/cover_43.jpg",
+                "archivo": "/material/3_comics/MECANICA - COMIC.pdf",
+                "autores": "Estudiantes del Curso de Mecánica · Univ. del Cauca",
+                "descripcion": "Una nave sumergible queda atascada en una fosa oceánica profunda. Para expulsar agua de los tanques de lastre, los tripulantes deben vencer la inmensa presión hidrostática ejercida por la columna de agua.",
+                "conceptoFisico": "Presión Hidrostática, Principio de Pascal y Fuerza de Empuje"
+        },
+        {
+                "id": "com-43",
+                "titulo": "Los Imitadores: Motores que No lo Son",
+                "categoria": "Termodinámica",
+                "portada": "/assets/comics/cover_44.jpg",
+                "archivo": "/material/3_comics/cap 7.pdf",
+                "autores": "Estudiantes de Termodinámica y Física · Univ. del Cauca",
+                "descripcion": "Un falso inventor clama haber creado el motor con 100% de rendimiento. Con las leyes de Carnot y el concepto de entropía, los estudiantes desenmascaran el mito del movimiento perpetuo.",
+                "conceptoFisico": "Segunda Ley de la Termodinámica, Rendimiento de Carnot y Entropía"
+        },
+        {
+                "id": "com-44",
+                "titulo": "Balancín Cuántico: Dualidad Onda-Partícula",
+                "categoria": "Física Moderna",
+                "portada": "/assets/comics/cover_45.jpg",
+                "archivo": "/material/3_comics/cmicBALANCNCUNTICO.pdf",
+                "autores": "Estudiantes del Curso de Física Moderna · Univ. del Cauca",
+                "descripcion": "Un parque infantil en la escala atómica donde los columpios operan según la superposición de estados y el Principio de Incertidumbre de Heisenberg.",
+                "conceptoFisico": "Principio de Incertidumbre de Heisenberg y Superposición Cuántica"
+        },
+        {
+                "id": "com-45",
+                "titulo": "El Choque Cósmico: Estación Momentum Prime",
+                "categoria": "Mecánica",
+                "portada": "/assets/comics/cover_46.jpg",
+                "archivo": "/material/3_comics/comic (1)-1.pptx_20251203_222150_0000.pdf",
+                "autores": "Estudiantes de Física I · Universidad del Cauca",
+                "descripcion": "En un cinturón de asteroides inestable, la estación espacial calcula la trayectoria de desviación de un bólido rocoso mediante conservación del momento en colisiones.",
+                "conceptoFisico": "Conservación del Momento Lineal en Choques y Aceleración Centrífuga"
+        },
+        {
+                "id": "com-46",
+                "titulo": "Misión Newton: El Lanzamiento de Newton-K1",
+                "categoria": "Mecánica",
+                "portada": "/assets/comics/cover_47.jpg",
+                "archivo": "/material/3_comics/comic (5).pdf",
+                "autores": "El Club de los Coheteros (Capítulo II) · Univ. del Cauca",
+                "descripcion": "La emocionante secuela del club de cohetería: la prueba del prototipo Newton-K1 midiendo la aceleración real frente a la resistencia del aire y el apogeo.",
+                "conceptoFisico": "Arrastre Aerodinámico, Aceleración Instantánea y Leyes de Newton"
+        },
+        {
+                "id": "com-47",
+                "titulo": "Montaña Rusa Descontrolada: Energía Mecánica",
+                "categoria": "Mecánica",
+                "portada": "/assets/comics/cover_48.jpg",
+                "archivo": "/material/3_comics/comic (6).pdf",
+                "autores": "Helen Molina, Miguel Delgado, Valentina Idrobo",
+                "descripcion": "Fallo crítico en los frenos de una gigantesca montaña rusa: calcular la altura mínima inicial para no desprenderse en el punto superior del rizo invertido salva a todos los ocupantes.",
+                "conceptoFisico": "Conservación de la Energía Mecánica, Bucles Verticales y Fuerza Normal Mínima"
+        },
+        {
+                "id": "com-48",
+                "titulo": "La Liga de la Justicia: Batalla Centrípeta",
+                "categoria": "Mecánica",
+                "portada": "/assets/comics/cover_49.jpg",
+                "archivo": "/material/3_comics/comic Fernanda C Isabella M Jhon C_251205_124509.pdf",
+                "autores": "Fernanda C., Isabella M., Jhon C.",
+                "descripcion": "Los héroes deben desviar una nave enemiga atrapada en un peligroso vórtice circular calculando la aceleración centrípeta y el radio de giro para evitar que se desintegre.",
+                "conceptoFisico": "Fuerza Centrípeta, Inercia en Movimiento Circular y Dinámica Radial"
+        },
+        {
+                "id": "com-49",
+                "titulo": "La Máquina del Tiempo Incompleta",
+                "categoria": "Física Moderna",
+                "portada": "/assets/comics/cover_50.jpg",
+                "archivo": "/material/3_comics/comic final mecanica impresión.pdf",
+                "autores": "Estudiantes del Departamento de Física · Univ. del Cauca",
+                "descripcion": "Año 3000: En una Tierra futurista, investigadores intentan activar un motor cronológico descubriendo que la dilatación temporal de la Relatividad Especial exige velocidades cercanas a c.",
+                "conceptoFisico": "Dilatación Temporal, Relatividad Especial de Einstein y Cinemática Relativista"
+        },
+        {
+                "id": "com-50",
+                "titulo": "Infiltración: El Viaje hacia las Raíces",
+                "categoria": "Agrofísica",
+                "portada": "/assets/comics/cover_51.jpg",
+                "archivo": "/material/3_comics/comic.pdf",
+                "autores": "Estudiantes del Curso de Agrofísica · Univ. del Cauca",
+                "descripcion": "Dos gotas de agua viajan desde la nube hasta el subsuelo, explicando cómo la tensión superficial, el potencial mátrico y los capilares del suelo nutren a las raíces.",
+                "conceptoFisico": "Tensión Superficial, Capilaridad y Física del Agua en el Suelo"
+        },
+        {
+                "id": "com-51",
+                "titulo": "Agrofísica: Dinámica de Fluidos en la Planta",
+                "categoria": "Agrofísica",
+                "portada": "/assets/comics/cover_52.jpg",
+                "archivo": "/material/3_comics/comic_agrosfisica_final_2.0.pdf",
+                "autores": "Estudiantes de Ingeniería Forestal y Agroforestal · Univ. del Cauca",
+                "descripcion": "¿Cómo asciende el agua hasta 80 metros de altura en un eucalipto? Un viaje didáctico por la cohesión-tensión, el potencial hídrico y la transpiración vegetal.",
+                "conceptoFisico": "Potencial Hídrico, Cohesión-Tensión y Presión Osmótica en Plantas"
+        },
+        {
+                "id": "com-52",
+                "titulo": "Semillas del Futuro: AgroFísica y Bosques",
+                "categoria": "Agrofísica",
+                "portada": "/assets/comics/cover_53.jpg",
+                "archivo": "/material/3_comics/cómic-AgroFísica.pdf",
+                "autores": "Estudiantes de Ingeniería Forestal · Univ. del Cauca",
+                "descripcion": "En un pueblo rodeado de montañas, los jóvenes aprenden cómo la radiación solar, la temperatura del suelo y la humedad relativa interactúan físicamente para la germinación forestal.",
+                "conceptoFisico": "Física de Radiación Térmica, Humedad Relativa y Microclimas Forestales"
+        },
+        {
+                "id": "com-53",
+                "titulo": "El Reactor de Corriente Alterna",
+                "categoria": "Electromagnetismo",
+                "portada": "/assets/comics/cover_54.jpg",
+                "archivo": "/material/3_comics/elReactorDeCorrienteAlterna.pdf",
+                "autores": "Leo (Ingeniero) & Dra. Elena · Estudiantes de la Univ. del Cauca",
+                "descripcion": "En la planta generadora E-Sigma, Leo y Elena deben sincronizar el transformador de potencia y evitar la sobretensión calculando la relación de espiras y el flujo alterno.",
+                "conceptoFisico": "Inducción Electromagnética, Relación de Transformación y Flujo Magnético"
+        },
+        {
+                "id": "com-54",
+                "titulo": "Kiro: El Desafío del Ascenso",
+                "categoria": "Mecánica",
+                "portada": "/assets/comics/cover_55.jpg",
+                "archivo": "/material/3_comics/historieta fin.pdf",
+                "autores": "Cristina Ruiz, Allan Ortega",
+                "descripcion": "Kiro y Kai compiten en la final de escalada deportiva. Cada cambio de presa y apoyo exige dominar el balance del centro de masa, el torque articular y el coeficiente de fricción de la suela.",
+                "conceptoFisico": "Biomecánica de la Escalada, Torque de Articulaciones y Fricción Estática"
+        },
+        {
+                "id": "com-55",
+                "titulo": "El Enigma del Campo Magnético",
+                "categoria": "Electromagnetismo",
+                "portada": "/assets/comics/cover_56.jpg",
+                "archivo": "/material/3_comics/NOTE.pdf",
+                "autores": "Estudiantes del Laboratorio de Electromagnetismo · Univ. del Cauca",
+                "descripcion": "Una entretenida historieta gráfica sobre cómo las corrientes circulares en solenoides generan campos magnéticos uniformes capaces de desviar partículas cargadas.",
+                "conceptoFisico": "Campo Magnético en Solenoides, Ley de Ampère y Fuerzas Magnéticas"
+        },
+        {
+                "id": "com-56",
+                "titulo": "La Física en una Final del Mundo",
+                "categoria": "Mecánica & Fluidos",
+                "portada": "/assets/comics/cover_57.jpg",
+                "archivo": "/material/3_comics/la_fisica_en_una_final_del_mundo.pdf",
+                "autores": "Royher Alejandro Bolaños, Yesly Michelly Ortega, Andrés Felipe Fernández",
+                "descripcion": "En el tiro libre definitorio de una final del mundo, la física decide el partido: rotación del balón, diferencia de presiones de aire, el efecto Magnus y la parábola perfecta hacia el ángulo.",
+                "conceptoFisico": "Efecto Magnus, Aerodinámica de Balón, Rotación Angular y Tiro Parabólico"
         }
-    ]
+]
 };
