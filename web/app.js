@@ -91,17 +91,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const coursesGrid = document.getElementById('courses-grid');
         if (!coursesGrid) return;
 
-        coursesGrid.innerHTML = data.cursos.map(c => `
-            <div class="card">
+        coursesGrid.innerHTML = data.cursos.map(c => {
+            const isLab = c.id === 'transformadores' || c.esLaboratorio;
+            const openBtnText = isLab ? 'Abrir Laboratorio 🚀' : 'Abrir Curso 🚀';
+            const buyBtnText = isLab ? 'Adquirir Lab 🛒' : 'Comprar Curso 🛒';
+            const detailsBtnText = isLab ? 'Ficha Técnica 🔬' : 'Temario 📋';
+            const tagClass = isLab ? 'lab-tag' : (c.destacado ? 'interactive' : '');
+            return `
+            <div class="card ${isLab ? 'card-lab-featured' : ''}">
                 <div>
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span class="card-tag ${c.destacado ? 'interactive' : ''}">${c.categoria}</span>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                        <span class="card-tag ${tagClass}">${c.categoria}</span>
                         ${isStudentUnlocked ? '<span class="unlocked-tag">🎓 Libre Estudiante</span>' : `<span style="font-size:0.75rem; color:var(--accent-blue); font-weight:600;">${c.tipo}</span>`}
                     </div>
                     <h3>${c.titulo}</h3>
                     <p>${c.descripcion}</p>
                     <div style="background:rgba(255,255,255,0.03); border-radius:8px; padding:0.75rem; margin-bottom:1rem; font-size:0.85rem;">
-                        <strong style="color:var(--text-main);">Estructura:</strong> <span style="color:var(--accent-indigo);">${c.modulos}</span>
+                        <strong style="color:var(--text-main);">${isLab ? 'Equipamiento:' : 'Estructura:'}</strong> <span style="color:var(--accent-indigo);">${c.modulos}</span>
                         <br>
                         <strong style="color:var(--text-main);">Nivel:</strong> ${c.nivel}
                     </div>
@@ -117,13 +123,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     </div>
                     <div class="card-actions">
-                        ${c.demoPath ? `<a href="${c.demoPath}" target="_blank" class="btn btn-primary">Abrir Curso 🚀</a>` : ''}
-                        ${!isStudentUnlocked && c.enlaceCompra ? `<button class="btn btn-secondary" onclick="openPaymentModal('${c.id}')" style="border-color:var(--accent-amber); color:var(--accent-amber);">Comprar Curso 🛒</button>` : ''}
-                        <button class="btn btn-secondary" onclick="openCourseDetails('${c.id}')">Temario 📋</button>
+                        ${c.demoPath ? `<a href="${c.demoPath}" target="_blank" class="btn btn-primary">${openBtnText}</a>` : ''}
+                        ${!isStudentUnlocked && c.enlaceCompra ? `<button class="btn btn-secondary" onclick="openPaymentModal('${c.id}')" style="border-color:var(--accent-amber); color:var(--accent-amber);">${buyBtnText}</button>` : ''}
+                        <button class="btn btn-secondary" onclick="openCourseDetails('${c.id}')">${detailsBtnText}</button>
                     </div>
                 </div>
             </div>
-        `).join('');
+            `;
+        }).join('');
     }
 
     updateStudentBannerState();
@@ -191,17 +198,39 @@ document.addEventListener('DOMContentLoaded', () => {
     const comicsGrid = document.getElementById('comics-grid');
     window.renderComics = function(category = 'all') {
         if (!comicsGrid) return;
-        const filtered = category === 'all' 
+        const cat = (category || 'all').toLowerCase().trim();
+        const filtered = cat === 'all' 
             ? data.comics 
-            : data.comics.filter(c => c.categoria.toLowerCase().includes(category.toLowerCase()));
+            : data.comics.filter(c => {
+                const cCat = (c.categoria || '').toLowerCase();
+                const cTit = (c.titulo || '').toLowerCase();
+                const cCon = (c.conceptoFisico || '').toLowerCase();
+                if (cat === 'moderna' || cat === 'cuantico' || cat === 'cuantica') {
+                    return cCat.includes('moderna') || cCat.includes('cuánt') || cTit.includes('cuánt') || cCon.includes('cuánt');
+                }
+                return cCat.includes(cat) || cTit.includes(cat) || cCon.includes(cat);
+            });
         
+        if (filtered.length === 0) {
+            comicsGrid.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align:center; padding:3rem; background:rgba(255,255,255,0.02); border-radius:16px; border:1px solid var(--border-color);">
+                    <p style="color:var(--text-muted); font-size:1.05rem; margin-bottom:1rem;">No se encontraron cómics en esta categoría.</p>
+                    <button class="btn btn-secondary" onclick="renderComics('all')">Ver todos los cómics</button>
+                </div>
+            `;
+            return;
+        }
+
         comicsGrid.innerHTML = filtered.map(c => `
             <div class="card">
                 <div>
-                    <span class="card-tag">${c.categoria}</span>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                        <span class="card-tag" style="background:rgba(245, 158, 11, 0.15); color:var(--accent-amber); border-color:rgba(245, 158, 11, 0.3);">🎨 ${c.categoria}</span>
+                        <span style="font-size:0.75rem; color:var(--text-muted);">PDF Libre</span>
+                    </div>
                     <h3>${c.titulo}</h3>
                     <p>${c.descripcion}</p>
-                    <div style="margin-bottom:1rem; font-size:0.85rem;">
+                    <div style="margin-bottom:1rem; font-size:0.85rem; background:rgba(255,255,255,0.02); padding:0.75rem; border-radius:8px; border:1px solid var(--border-color);">
                         <div style="color:var(--accent-amber); font-weight:600; margin-bottom:0.25rem;">
                             🔬 Concepto: ${c.conceptoFisico}
                         </div>
@@ -212,8 +241,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div>
                     <div class="card-actions">
-                        <a href="${c.archivo}" target="_blank" class="btn btn-primary">Leer Cómic (PDF) 📖</a>
-                        <a href="${c.archivo}" download class="btn btn-secondary">Descargar ⬇️</a>
+                        <a href="${c.archivo}" target="_blank" class="btn btn-primary" style="flex:1; justify-content:center;">Leer Cómic (PDF) 📖</a>
+                        <a href="${c.archivo}" download class="btn btn-secondary" style="font-size:0.85rem;">Descargar ⬇️</a>
                     </div>
                 </div>
             </div>
@@ -276,13 +305,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const course = data.cursos.find(c => c.id === courseId);
         if (!course) return;
 
+        const isLab = course.id === 'transformadores' || course.esLaboratorio;
+        const entityWord = isLab ? 'Laboratorio' : 'Curso';
         const modal = document.getElementById('course-modal');
         const modalBody = document.getElementById('modal-course-body');
         modalBody.innerHTML = `
+            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">
+                <span class="badge">${isLab ? '🔬 Laboratorio Virtual Autónomo' : '📚 Cuaderno Computacional'}</span>
+            </div>
             <h2 style="font-size:1.85rem; margin-bottom:0.5rem; color:var(--accent-blue);">${course.titulo}</h2>
             <p style="color:var(--text-muted); margin-bottom:1.5rem;">${course.descripcion}</p>
             <div style="background:rgba(255,255,255,0.03); border-radius:12px; padding:1.25rem; margin-bottom:1.5rem; border:1px solid var(--border-color);">
-                <h4 style="margin-bottom:0.75rem; color:var(--text-main);">Temario y Contenidos de la Suite:</h4>
+                <h4 style="margin-bottom:0.75rem; color:var(--text-main);">${isLab ? 'Prácticas y Ensayos del Laboratorio:' : 'Temario y Contenidos de la Suite:'}</h4>
                 <ul style="display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:0.6rem; list-style:none;">
                     ${course.temas.map(t => `<li style="font-size:0.9rem; color:var(--text-muted);"><span style="color:var(--accent-emerald);">✓</span> ${t}</li>`).join('')}
                 </ul>
@@ -290,9 +324,9 @@ document.addEventListener('DOMContentLoaded', () => {
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
                 <div>
                     <span style="font-size:0.85rem; color:var(--text-muted);">Modalidad:</span>
-                    <strong style="color:var(--text-main); font-size:1rem; display:block;">100% Interactivo con simulación matemática</strong>
+                    <strong style="color:var(--text-main); font-size:1rem; display:block;">${isLab ? 'Laboratorio Autónomo de Alta Precisión' : '100% Interactivo con simulación matemática'}</strong>
                 </div>
-                ${course.demoPath ? `<a href="${course.demoPath}" target="_blank" class="btn btn-primary">Abrir Entorno de Laboratorio 🚀</a>` : ''}
+                ${course.demoPath ? `<a href="${course.demoPath}" target="_blank" class="btn btn-primary">Abrir ${entityWord} 🚀</a>` : ''}
             </div>
         `;
         modal.classList.add('active');
@@ -375,6 +409,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const course = data.cursos.find(c => c.id === courseId);
         if (!course) return;
 
+        const isLab = course.id === 'transformadores' || course.esLaboratorio;
+        const entityWord = isLab ? 'Laboratorio' : 'Curso';
         const modal = document.getElementById('payment-modal');
         const modalBody = document.getElementById('modal-payment-body');
         
@@ -404,14 +440,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             <div style="display:flex; flex-direction:column; gap:0.85rem;">
                 <a href="https://hotmart.com" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="justify-content:center; padding:0.85rem; font-size:1rem; background:linear-gradient(135deg, #f97316, #ea580c); border:none; box-shadow:0 8px 25px rgba(234,88,12,0.35);">
-                    Comprar vía Hotmart (Tarjeta / PayPal / PSE) 💳
+                    Adquirir en Hotmart (Tarjeta / PayPal / PSE) 💳
                 </a>
                 
-                <a href="https://wa.me/?text=${encodeURIComponent('Hola Mg. Manuel Obando, me interesa adquirir el curso: ' + course.titulo + ' en PhysicsAILab.com. ¿Cuáles son los datos para transferencia / Nequi?')}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="justify-content:center; padding:0.75rem; font-size:0.9rem; border-color:rgba(16,185,129,0.4); color:#34d399;">
-                    💬 Pago por Transferencia / Nequi / Bancolombia
+                <a href="https://wa.me/?text=${encodeURIComponent('Hola Mg. Manuel Obando, me interesa adquirir: ' + course.titulo + ' en PhysicsAILab.com. ¿Cuáles son los datos para transferencia / Nequi?')}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="justify-content:center; padding:0.75rem; font-size:0.9rem; border-color:rgba(16,185,129,0.4); color:#34d399;">
+                    💬 Pago Directo (Transferencia / Nequi / Bancolombia)
                 </a>
 
-                <a href="mailto:manuelobando@unicauca.edu.co?subject=${encodeURIComponent('Interés en curso: ' + course.titulo)}&body=${encodeURIComponent('Cordial saludo profesor Manuel,\n\nEstoy interesado en adquirir el curso ' + course.titulo + ' en PhysicsAILab.com.\n\nPor favor indíqueme el método de pago.')}" class="btn btn-secondary" style="justify-content:center; padding:0.75rem; font-size:0.9rem;">
+                <a href="mailto:manuelobando@unicauca.edu.co?subject=${encodeURIComponent('Interés en: ' + course.titulo)}&body=${encodeURIComponent('Cordial saludo profesor Manuel,\n\nEstoy interesado en adquirir ' + course.titulo + ' en PhysicsAILab.com.\n\nPor favor indíqueme el método de pago.')}" class="btn btn-secondary" style="justify-content:center; padding:0.75rem; font-size:0.9rem;">
                     ✉️ Consultar al Docente por Correo
                 </a>
             </div>

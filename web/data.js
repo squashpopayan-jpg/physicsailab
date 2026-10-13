@@ -8,7 +8,7 @@ window.PLATFORM_DATA = {
         maestria: "Maestría en Ciencias (Énfasis en Física de Materiales) — Universidad Federal de Ouro Preto (UFOP, Brasil)",
         especializacion: "Especialización en Inteligencia Artificial — Universidad Internacional de La Rioja (UNIR)",
         cargo: "Docente del Departamento de Física — Universidad del Cauca",
-        bio: "Ingeniero Físico graduado de la Universidad del Cauca, con maestría en Ciencias con énfasis en Física de Materiales por la Universidad Federal de Ouro Preto (Brasil) y actualmente cursando la especialización en Inteligencia Artificial en la UNIR. Apasionado por la divulgación científica y por desarrollar nuevas herramientas tecnológicas e interactivas para enseñar y democratizar la física. Además, soy un apasionado jugador y entrenador de Squash; en esta plataforma he diseñado un espacio dedicado especialmente para los amantes de este deporte, donde exploramos la ciencia, la biomecánica articular y las leyes físicas que rigen cada golpe y movimiento en la cancha.",
+        bio: "Ingeniero Físico graduado de la Universidad del Cauca, con maestría en Ciencias con énfasis en Física de Materiales por la Universidad Federal de Ouro Preto (Brasil) y actualmente cursando la especialización en Inteligencia Artificial en la UNIR. Apasionado por la divulgación científica y por desarrollar nuevas herramientas tecnológicas e interactivas para enseñar y democratizar la física. Además, soy jugador y entrenador de squash; en esta plataforma he integrado un espacio dedicado para los amantes de este deporte, donde exploramos la ciencia, la biomecánica articular y las leyes físicas que rigen cada movimiento en la cancha.",
         mision: "Transformar la enseñanza de la física a través de laboratorios virtuales matemáticamente rigurosos, cuadernos computacionales interactivos, ciencia del deporte y divulgación científica abierta creada por los propios estudiantes.",
         redes: {
             instagram: "https://www.instagram.com/manu_squash/",
@@ -55,11 +55,11 @@ window.PLATFORM_DATA = {
         },
         {
             id: "transformadores",
-            titulo: "Laboratorio Virtual de Transformadores (v2)",
+            titulo: "Laboratorio de Transformadores",
             nivel: "Ingeniería / Tecnología Eléctrica",
             modulos: "Banco Libre con 24 Kits Calibrados",
-            categoria: "Ingeniería & Electromagnetismo",
-            descripcion: "Simulador industrial con banco de conexiones reales. Modela saturación del núcleo (Steinmetz), armónicos, cálculo de reluctancia, osciloscopio, multímetros de 6000 cuentas y preinformes autocalificados.",
+            categoria: "Laboratorio Virtual",
+            descripcion: "Entorno de laboratorio virtual de alta precisión con cableado libre y equipos de medición reales. Modela saturación del núcleo (Steinmetz), armónicos, cálculo de reluctancia, osciloscopio digital, multímetros de 6000 cuentas y preinformes autocalificados.",
             temas: [
                 "Ensayos de resistencia de devanados (R)", "Ensayos de vacío (A y B)",
                 "Ensayos de cortocircuito (C)", "Pruebas con carga inductiva/resistiva (D)",
@@ -67,7 +67,8 @@ window.PLATFORM_DATA = {
                 "Generación automática de diapositivas y bitácora de laboratorio"
             ],
             destacado: true,
-            tipo: "Simulador de Laboratorio Autónomo",
+            tipo: "Laboratorio Virtual de Ingeniería",
+            esLaboratorio: true,
             demoPath: "/material/1_cursos/transformadores/dist/Transformadores_Laboratorio.html",
             precioEstimado: "$39 USD (~$155.000 COP)",
             valorReal: "$89 USD",
