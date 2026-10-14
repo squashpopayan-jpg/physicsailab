@@ -1,0 +1,80 @@
+<template class="chapter-src" data-id="medir" data-num="18" data-title="Medir el progreso sin engañarse" data-part="Parte IV · Hábitos: reprogramar la conducta" data-short="Por qué medir funciona; señal y ruido en el peso diario; media móvil, filtro de Kalman y regresión; cuántos días hacen falta para ver un cambio real; cintura y otras medidas; la ley de Goodhart y las rachas">
+<p class="lead">Medir el progreso es una de las técnicas de cambio de conducta mejor respaldadas. Pero medir mal es peor que no medir: una báscula leída día a día puede convencerlo de que su plan no sirve justo cuando está funcionando. Este capítulo explica cómo separar la señal del ruido con las mismas herramientas que usan los ingenieros para seguir un satélite, y cómo las usa su medidor de progreso.</p>
+
+<section>
+<h2>Por qué medir funciona</h2>
+<p>En un metaanálisis de 138 experimentos con casi 20.000 participantes, las intervenciones que hicieron que las personas registraran su avance mejoraron el logro de sus metas con d = 0,40, y el efecto fue mayor cuando el registro quedaba anotado y cuando se compartía con otros (Harkin y otros, 2016). En pérdida de peso, un ensayo aleatorizado de seis meses con pesaje diario y gráficas de la tendencia logró una pérdida media de 6,55 % del peso, frente a 0,35 % del grupo de control (Steinberg y otros, 2013), y una revisión sistemática encontró que pesarse con regularidad se asocia con más pérdida de peso y mejor mantenimiento (Zheng y otros, 2015).</p>
+<div class="box evid"><p><span class="nivel n4">sólida</span>Registrar el progreso mejora el logro de metas. <span class="nivel n3">moderada</span>El pesaje frecuente como parte de un programa de control de peso, en adultos sin trastornos de la conducta alimentaria.</p></div>
+</section>
+
+<section>
+<h2>Señal y ruido en el peso diario</h2>
+<p>El peso de un día mezcla la tendencia real de grasa y músculo con mucho ruido: el agua que se retiene con la sal o con el glucógeno (cada gramo de glucógeno se guarda con unos 2,7 gramos de agua), la comida y la bebida que todavía están en el tubo digestivo, la hora, la ropa, la báscula y, en las mujeres, el ciclo menstrual. Esos componentes suben y bajan uno o dos kilos de un día a otro, mientras que una pérdida de grasa sostenible es de algunas centenas de gramos por semana. Mirar el número de un día es como juzgar el clima por un solo minuto.</p>
+<div class="sim" data-sim="ruidopeso" data-title="Lo que marca la báscula frente a lo que de verdad está pasando"></div>
+<div class="sim-guide"><ul>
+<li>La línea verde es el peso real, que baja todos los días al ritmo elegido. Los puntos son los pesajes: real más agua más errores. La línea violeta es la estimación del filtro de Kalman; la azul punteada, una media móvil exponencial.</li>
+<li>Cuente cuántos días la báscula subió aunque la persona estaba perdiendo grasa todos los días. Con 0,5 kg por semana, son muchos.</li>
+<li>Suba la fluctuación del agua o agregue el ciclo menstrual: el ruido diario tapa la tendencia por más tiempo. El filtro sigue encontrándola.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Tres maneras de ver la tendencia</h2>
+<ul>
+<li><b>Media móvil exponencial.</b> Cada día, la tendencia se mueve una fracción \(\alpha\) (por ejemplo, 10 %) hacia el pesaje nuevo: \(m_t=m_{t-1}+\alpha\,(y_t-m_{t-1})\). Es simple y suaviza bien, pero se retrasa: refleja con días de atraso un cambio real.</li>
+<li><b>Regresión lineal.</b> Ajusta una recta a los pesajes de las últimas semanas. Da la pendiente (kg por semana) con un intervalo de confianza: si el intervalo no incluye el cero, el cambio es real con alta probabilidad.</li>
+<li><b>Filtro de Kalman.</b> Es la herramienta que usa su tablero. Supone que existe un peso «verdadero» con un nivel y una pendiente que cambian lentamente, y que cada pesaje es ese nivel más ruido. Combina en cada paso lo que predice el modelo con lo que mide la báscula, ponderando cada uno por su incertidumbre, como en la integración bayesiana del capítulo 8. Rudolf Kálmán lo publicó en 1960 y desde entonces guía naves espaciales y teléfonos celulares.</li>
+</ul>
+<div class="eq key" data-name="Filtro de Kalman de nivel y pendiente">\[\begin{pmatrix}\ell_{t+1}\\ b_{t+1}\end{pmatrix}=\begin{pmatrix}1&1\\0&1\end{pmatrix}\begin{pmatrix}\ell_t\\ b_t\end{pmatrix}+w_t,\qquad y_t=\ell_t+v_t,\qquad \hat x\leftarrow\hat x+K\,(y_t-\hat\ell_t).\]</div>
+<div class="py" data-py="18-tendencia-peso"></div>
+<div class="box read"><p>La persona simulada pierde 0,50 kg por semana todos los días, sin excepción. Aun así, en 28 de 74 comparaciones entre pesajes consecutivos la báscula subió: más de un tercio de los días daban «malas noticias» falsas. A las dos semanas, el filtro de Kalman todavía no podía decir si había pérdida (+0,11 ± 0,54 kg por semana); a las cuatro, ya estimaba −0,46 ± 0,26, y de la sexta semana en adelante se estabilizó en −0,50 a −0,55, muy cerca del valor real. La media móvil, en cambio, iba entre medio kilo y un kilo por encima del peso real, por su retraso. La regresión sobre lo acumulado detectó la bajada con seguridad desde el día 22.</p></div>
+</section>
+
+<section>
+<h2>¿Cuántos días hacen falta para ver un cambio real?</h2>
+<p>La respuesta depende de tres cosas: qué tan rápido cambia de verdad el peso, cuánto ruido tiene la medición y con qué frecuencia se pesa. La siguiente simulación lo calcula repitiendo el experimento muchas veces.</p>
+<div class="sim" data-sim="deteccion" data-title="Días necesarios para detectar una tendencia según el ritmo y el ruido"></div>
+<div class="sim-guide"><ul>
+<li>Cada curva muestra en qué fracción de personas simuladas la regresión ya detectó la bajada (intervalo del 95 % por debajo de cero) a medida que pasan los días.</li>
+<li>A 0,25 kg por semana, hacen falta del orden de un mes o más. A 1 kg por semana, un par de semanas. Pesarse tres veces por semana en lugar de a diario retrasa la detección.</li>
+<li>Conclusión práctica: evalúe un plan después de 3 a 4 semanas de datos, no después de 3 días.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Más allá del peso</h2>
+<ul>
+<li><b>Cintura.</b> La circunferencia de la cintura refleja mejor la grasa abdominal, la más relacionada con el riesgo cardiometabólico. Una referencia práctica es que la cintura sea menor que la mitad de la estatura. Si entrena fuerza, la cintura puede bajar aunque el peso no cambie, porque gana músculo.</li>
+<li><b>Desempeño.</b> Tiempos, cargas, repeticiones, distancia: el progreso deportivo también es progreso.</li>
+<li><b>Básculas de bioimpedancia.</b> Estiman la grasa con errores grandes que dependen de la hidratación; úselas, si acaso, solo para tendencias de largo plazo.</li>
+<li><b>Hábitos.</b> El registro diario de lo que hizo, la automaticidad semanal (SRBAI) y las rachas miden el proceso, que es lo que usted controla.</li>
+</ul>
+<div class="box warn"><p><b>Ley de Goodhart:</b> cuando una medida se convierte en el objetivo, deja de ser una buena medida. Una racha puede volverse más importante que la conducta (hacer la versión ridícula del hábito solo para no romperla) o generar ansiedad. Use los números para aprender, no para castigarse. Y si el pesaje frecuente le produce angustia, o tiene antecedentes de trastornos de la conducta alimentaria, mida otras cosas y consulte a un profesional.</p></div>
+</section>
+
+<section>
+<h2>Resumen, problemas y autoevaluación</h2>
+<div class="box keys"><ul>
+<li>Registrar el progreso mejora el logro de metas (d ≈ 0,40), más si se anota y se comparte.</li>
+<li>El peso diario tiene ruido de uno o dos kilos; la tendencia real de grasa es de centenas de gramos por semana.</li>
+<li>La media móvil suaviza pero se retrasa; la regresión da la pendiente con su incertidumbre; el filtro de Kalman estima nivel y pendiente combinando modelo y medición.</li>
+<li>Para ver un cambio real hacen falta semanas; evalúe un plan con 3 a 4 semanas de datos.</li>
+<li>Complete el peso con la cintura, el desempeño y el registro de hábitos; cuidado con convertir la medida en el objetivo.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Usted pesaba 80,0 kg el lunes y hoy, jueves, 80,8 kg, aunque lleva tres semanas cumpliendo su plan. ¿Qué concluye?
+<details><summary>Respuesta</summary><p>Nada todavía: 0,8 kg en tres días está dentro del ruido normal (agua, sal, glucógeno, contenido intestinal). Mire la tendencia de las últimas 3 a 4 semanas.</p></details></li>
+<li><span class="lvl">Intermedio</span>Con una media móvil de \(\alpha=0{,}1\), ¿cuántos días tarda la tendencia en recorrer la mitad de un salto repentino del peso?
+<details><summary>Respuesta</summary><p>La fracción que falta tras \(n\) días es \(0{,}9^n\); \(0{,}9^n=0{,}5\Rightarrow n=\ln0{,}5/\ln0{,}9\approx6{,}6\) días.</p></details></li>
+<li><span class="lvl">Avanzado</span>¿Por qué el filtro de Kalman puede seguir funcionando los días en que no se pesa?
+<details><summary>Respuesta</summary><p>Porque solo hace el paso de predicción (avanza el nivel con la pendiente y aumenta la incertidumbre) y omite la corrección; cuando llega un pesaje, lo pondera más porque la incertidumbre del modelo creció.</p></details></li>
+</ol>
+<div class="sim" data-sim="quiz-medir" data-title="Autoevaluación del capítulo 18"></div>
+<div class="box links"><ul>
+<li><a href="https://doi.org/10.1037/bul0000025">Harkin y otros (2016) — Does monitoring goal progress promote goal attainment? A meta-analysis</a><small>Psychological Bulletin.</small></li>
+<li><a href="https://doi.org/10.1002/oby.20396">Steinberg y otros (2013) — The efficacy of a daily self-weighing weight loss intervention using smart scales and e-mail</a><small>Obesity.</small></li>
+<li><a href="https://doi.org/10.1002/oby.20946">Zheng y otros (2015) — Self-weighing in weight management: a systematic literature review</a><small>Obesity.</small></li>
+<li><a href="https://doi.org/10.1115/1.3662552">Kalman (1960) — A new approach to linear filtering and prediction problems</a><small>Journal of Basic Engineering. El filtro original.</small></li>
+</ul></div>
+</section>
+</template>

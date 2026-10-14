@@ -792,6 +792,19 @@
     // Inicialización al cargar el DOM
     function init() {
         updateGuardState();
+        setTimeout(updateGuardState, 150);
+        setTimeout(updateGuardState, 500);
+        setTimeout(updateGuardState, 1200);
+
+        // Observar cambios dinámicos en la tabla de contenidos si se construye asíncronamente
+        const tocEl = document.querySelector('#toc, .toc');
+        if (tocEl && window.MutationObserver) {
+            const obs = new MutationObserver(() => {
+                updateGuardState();
+            });
+            obs.observe(tocEl, { childList: true, subtree: true });
+        }
+
         window.addEventListener('hashchange', () => {
             setTimeout(updateGuardState, 100);
         });

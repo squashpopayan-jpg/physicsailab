@@ -1,0 +1,125 @@
+<template class="chapter-src" data-id="difusion" data-num="7" data-title="Difusión" data-part="Parte II · Estructura" data-short="Mecanismos atómicos, caminata aleatoria, primera ley de Fick y estado estacionario, segunda ley y la solución con la función error, carburización, dependencia de Arrhenius y difusión por caminos rápidos">
+<p class="lead">La difusión es el transporte de materia por el movimiento de los átomos. Gobierna el endurecimiento superficial de los engranajes, el dopado de los chips de silicio, la homogeneización de las coladas, la sinterización de los cerámicos, la fluencia a alta temperatura y la cinética de casi todas las transformaciones de fase. Este capítulo la describe a dos escalas: la del salto atómico y la del continuo.</p>
+
+<section>
+<h2>Mecanismos atómicos</h2>
+<p>Los átomos de un sólido vibran alrededor de sus sitios con frecuencias del orden de \(\nu\approx10^{13}\) Hz. De vez en cuando, uno acumula energía suficiente para saltar a un sitio vecino. Dos mecanismos dominan:</p>
+<ul>
+<li><b>Por vacancias</b>: un átomo salta a una vacancia vecina, que a su vez queda en el sitio que él dejó. Es el mecanismo de la autodifusión y de la interdifusión de solutos sustitucionales. Su velocidad depende de la concentración de vacancias (capítulo 6) y de la barrera de migración, y la energía de activación total es la suma de ambas.</li>
+<li><b>Intersticial</b>: un átomo pequeño (H, C, N, O) salta de un hueco intersticial a otro. Como siempre hay huecos vecinos libres y la barrera es menor, la difusión intersticial es mucho más rápida: a 1000 °C, el carbono difunde en la austenita unas cien mil veces más rápido que el propio hierro.</li>
+</ul>
+<p>La frecuencia de saltos exitosos sigue la estadística de Boltzmann, \(\Gamma=z\nu\exp(-\Delta G_m/k_BT)\) (con \(z\) vecinos), y de ahí la forma exponencial de todo lo que sigue.</p>
+</section>
+
+<section>
+<h2>La caminata aleatoria</h2>
+<p>Un átomo que salta al azar una distancia \(\lambda\) con frecuencia \(\Gamma\) no avanza en promedio, pero se aleja de su origen: tras \(n=\Gamma t\) saltos independientes, el desplazamiento cuadrático medio es \(\langle r^2\rangle=n\lambda^2\). Definiendo el coeficiente de difusión por la relación de Einstein,</p>
+<div class="eq key" data-name="Relación de Einstein">\[\langle x^2\rangle=2Dt\ \ (\text{1D}),\qquad \langle r^2\rangle=6Dt\ \ (\text{3D}),\qquad D=\tfrac16\Gamma\lambda^2\ \ (\text{red cúbica}).\]</div>
+<p>La distancia típica recorrida crece con la raíz del tiempo, \(\sqrt{Dt}\), no linealmente: para llegar el doble de lejos hay que esperar cuatro veces más. Esta escala, la <span class="term">longitud de difusión</span>, es la herramienta de estimación más útil del capítulo.</p>
+<div class="sim" data-sim="random-walk" data-title="Caminata aleatoria de muchos átomos y la ley de la raíz del tiempo"></div>
+<div class="sim-guide"><ul>
+<li>Observe cómo la nube se ensancha y el histograma tiende a una gaussiana de varianza \(2Dt\).</li>
+<li>La gráfica de \(\langle x^2\rangle\) contra \(t\) es una recta: su pendiente es \(2D\). Duplique la frecuencia de saltos y la pendiente se duplica.</li>
+</ul></div>
+<div class="box ex"><h4>Cuántos saltos da un átomo de carbono</h4>
+<p>A 1000 °C, \(D\) del carbono en la austenita es \(1.9\times10^{-11}\) m²/s, y la distancia de salto es \(a/\sqrt2\approx0.258\) nm. ¿Cuántos saltos por segundo da cada átomo, y qué distancia cuadrática media recorre en una hora?</p>
+<details><summary>Solución</summary><p>\(\Gamma=6D/\lambda^2=6(1.9\times10^{-11})/(2.58\times10^{-10})^2\approx1.8\times10^9\) saltos por segundo. En una hora: \(\sqrt{6Dt}=\sqrt{6(1.9\times10^{-11})(3600)}=0.64\) mm. ¡Tras más de \(6\times10^{12}\) saltos, apenas medio milímetro!</p></details>
+</div>
+</section>
+
+<section>
+<h2>Primera ley de Fick y estado estacionario</h2>
+<p>Cuando hay un gradiente de concentración, la caminata aleatoria produce un flujo neto desde las zonas más concentradas: hay más átomos que saltan hacia abajo del gradiente que hacia arriba. El flujo de difusión \(J\) (kg/m²·s o átomos/m²·s) es proporcional al gradiente:</p>
+<div class="eq key" data-name="Primera ley de Fick">\[J=-D\,\odv{C}{x}.\]</div>
+<p>En el <span class="term">estado estacionario</span> el flujo no cambia con el tiempo y, en una placa, el perfil es lineal. Es el caso de la purificación de hidrógeno a través de membranas de paladio o de la permeación de gases a través de envases poliméricos.</p>
+<div class="box ex"><h4>Flujo de carbono a través de una placa de hierro</h4>
+<p>Una placa de hierro a 700 °C se expone a una atmósfera carburante por un lado y descarburante por el otro. En estado estacionario, la concentración de carbono es 1.2 kg/m³ a 5 mm de la cara carburante y 0.8 kg/m³ a 10 mm. Con \(D=3\times10^{-11}\) m²/s, calcule el flujo (Callister, ej. 5.1).</p>
+<details><summary>Solución</summary><p>\(J=-D\,\Delta C/\Delta x=-(3\times10^{-11})\dfrac{0.8-1.2}{0.010-0.005}=2.4\times10^{-9}\) kg/m²·s.</p></details>
+</div>
+</section>
+
+<section>
+<h2>Segunda ley de Fick</h2>
+<p>Si el flujo cambia con la posición, la materia se acumula o se agota. La conservación de la masa, \(\partial C/\partial t=-\partial J/\partial x\), combinada con la primera ley (y \(D\) constante) da la ecuación de difusión:</p>
+<div class="eq key" data-name="Segunda ley de Fick">\[\pdv{C}{t}=D\,\pddv{C}{x}.\]</div>
+<p>Es la misma ecuación del calor. Dos soluciones cubren la mayoría de los casos prácticos:</p>
+<ul>
+<li><b>Fuente constante en la superficie</b> de un sólido semiinfinito con concentración inicial \(C_0\) y superficie mantenida en \(C_s\):
+<div class="eq key" data-name="Solución con la función error">\[\frac{C_x-C_0}{C_s-C_0}=1-\operatorname{erf}\!\left(\frac{x}{2\sqrt{Dt}}\right),\qquad \operatorname{erf}(z)=\frac2{\sqrt\pi}\int_0^z\ee^{-y^2}\dd y.\]</div></li>
+<li><b>Fuente delgada</b> con una cantidad fija \(Q\) por unidad de área (implantación iónica seguida de recocido, en semiconductores):
+<div class="eq">\[C(x,t)=\frac{Q}{\sqrt{\pi Dt}}\exp\!\left(-\frac{x^2}{4Dt}\right).\]</div></li>
+</ul>
+<p>En ambas, la posición depende de \(x\) y \(t\) solo a través de \(x/\sqrt{Dt}\): para alcanzar una concentración dada a una profundidad dada se necesita un valor fijo de \(Dt\). Si \(D\) se duplica, el tiempo se reduce a la mitad.</p>
+<div class="sim" data-sim="carburizing" data-title="Carburización de un acero: perfil de la función error"></div>
+<div class="sim-guide"><ul>
+<li>Con los valores de Callister (acero de 0.25 % C, superficie a 1.20 %, 950 °C, \(D=1.6\times10^{-11}\) m²/s), compruebe que la concentración de 0.80 % llega a 0.5 mm en unas 7.1 horas.</li>
+<li>Suba la temperatura de 900 a 1000 °C: \(D\) se triplica y el tiempo cae a un tercio. Por eso la carburización se hace en austenita y lo más caliente que permite el crecimiento de grano.</li>
+<li>La curva punteada es la solución numérica por diferencias finitas de la misma ecuación: coincide con la función error.</li>
+</ul></div>
+<div class="box ex"><h4>Tiempo de carburización</h4>
+<p>Un acero de 0.25 % C se carburiza a 950 °C con la superficie a 1.20 % C. ¿Cuánto tarda la concentración en llegar a 0.80 % a 0.5 mm de profundidad? \(D=1.6\times10^{-11}\) m²/s (Callister, ej. 5.2).</p>
+<details><summary>Solución</summary><p>\(\dfrac{0.80-0.25}{1.20-0.25}=1-\operatorname{erf}(z)\Rightarrow\operatorname{erf}(z)=0.4211\Rightarrow z=0.392\). Con \(z=x/(2\sqrt{Dt})\): \(t=\dfrac{x^2}{4z^2D}=\dfrac{(5\times10^{-4})^2}{4(0.392)^2(1.6\times10^{-11})}=2.54\times10^4\) s \(=7.1\) h.</p></details>
+</div>
+<div class="sim" data-sim="fick-numeric" data-title="La ecuación de difusión resuelta paso a paso"></div>
+<div class="sim-guide"><ul>
+<li>Par de difusión: dos bloques de Cu y Ni en contacto. El perfil se suaviza y la interfaz original queda a la mitad de la concentración.</li>
+<li>Fuente delgada: una capa de soluto se extiende como gaussiana; el área bajo la curva (la cantidad total) se conserva.</li>
+<li>Membrana: con concentraciones fijas en ambas caras, el perfil tiende a una recta y el flujo se vuelve uniforme (estado estacionario).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Factores que controlan la difusión</h2>
+<p>El coeficiente de difusión depende fuertemente de la temperatura a través de una ley de Arrhenius:</p>
+<div class="eq key" data-name="Dependencia con la temperatura">\[D=D_0\exp\!\left(-\frac{Q_d}{RT}\right)\quad\Longleftrightarrow\quad\ln D=\ln D_0-\frac{Q_d}{R}\,\frac1T,\]</div>
+<p>donde \(Q_d\) es la energía de activación (J/mol) y \(R=8.314\) J/mol·K. En una gráfica de \(\log D\) contra \(1/T\), cada sistema es una recta de pendiente \(-Q_d/(2.3R)\).</p>
+<div class="tablewrap"><table>
+<tr><th>Especie</th><th>Solvente</th><th class="c">\(D_0\) (m²/s)</th><th class="c">\(Q_d\) (kJ/mol)</th><th class="c">\(D\) a 500 °C</th><th class="c">\(D\) a 900 °C</th></tr>
+<tr><td>Fe</td><td>Fe-α (BCC)</td><td class="c">\(2.8\times10^{-4}\)</td><td class="c">251</td><td class="c">\(3.1\times10^{-21}\)</td><td class="c">\(1.9\times10^{-15}\)</td></tr>
+<tr><td>Fe</td><td>Fe-γ (FCC)</td><td class="c">\(5.0\times10^{-5}\)</td><td class="c">284</td><td class="c">\(3.2\times10^{-24}\)</td><td class="c">\(1.1\times10^{-17}\)</td></tr>
+<tr><td>C</td><td>Fe-α</td><td class="c">\(1.1\times10^{-6}\)</td><td class="c">87.4</td><td class="c">\(1.4\times10^{-12}\)</td><td class="c">\(1.4\times10^{-10}\)</td></tr>
+<tr><td>C</td><td>Fe-γ</td><td class="c">\(2.3\times10^{-5}\)</td><td class="c">148</td><td class="c">\(2.3\times10^{-15}\)</td><td class="c">\(5.9\times10^{-12}\)</td></tr>
+<tr><td>Cu</td><td>Cu</td><td class="c">\(7.8\times10^{-5}\)</td><td class="c">211</td><td class="c">\(4.3\times10^{-19}\)</td><td class="c">\(3.1\times10^{-14}\)</td></tr>
+<tr><td>Zn</td><td>Cu</td><td class="c">\(2.4\times10^{-5}\)</td><td class="c">189</td><td class="c">\(4.1\times10^{-18}\)</td><td class="c">\(9.2\times10^{-14}\)</td></tr>
+<tr><td>Al</td><td>Al</td><td class="c">\(2.3\times10^{-4}\)</td><td class="c">144</td><td class="c">\(4.3\times10^{-14}\)</td><td class="c">—</td></tr>
+<tr><td>Cu</td><td>Al</td><td class="c">\(6.5\times10^{-5}\)</td><td class="c">136</td><td class="c">\(4.2\times10^{-14}\)</td><td class="c">—</td></tr>
+<tr><td>Cu</td><td>Ni</td><td class="c">\(2.7\times10^{-5}\)</td><td class="c">256</td><td class="c">\(1.4\times10^{-22}\)</td><td class="c">\(1.1\times10^{-16}\)</td></tr>
+</table></div>
+<p class="ctrl-note">Parámetros de Callister y Rethwisch (2018), tabla 5.2; las columnas de \(D\) se calcularon con ellos (las de 900 °C para Fe-α y C en Fe-α son extrapolaciones, porque a esa temperatura el hierro ya es austenítico). Los guiones marcan temperaturas por encima de la fusión del aluminio.</p>
+<div class="sim" data-sim="arrhenius-d" data-title="Gráfica de Arrhenius de los coeficientes de difusión"></div>
+<div class="sim-guide"><ul>
+<li>Compare C en Fe-α y C en Fe-γ: la ferrita, menos compacta, tiene barrera más baja. Aun así se carburiza en austenita porque allí cabe cien veces más carbono.</li>
+<li>Elija «dos puntos» y mueva las temperaturas: el programa recupera \(Q_d\) a partir de la pendiente, como en un experimento real.</li>
+</ul></div>
+<p>Otros factores importan además de la temperatura:</p>
+<ul>
+<li><b>Especie difusora</b>: los intersticiales difunden mucho más rápido que los sustitucionales.</li>
+<li><b>Estructura</b>: las redes menos compactas (BCC) favorecen la difusión frente a las compactas (FCC); ver Fe en Fe-α frente a Fe-γ.</li>
+<li><b>Caminos rápidos</b>: los bordes de grano, las dislocaciones y las superficies tienen menos coordinación y energías de activación menores (típicamente la mitad que la de volumen). A baja temperatura dominan el transporte, lo que explica el crecimiento de óxidos y la sinterización a temperaturas modestas.</li>
+<li><b>Otros materiales</b>: en los cerámicos iónicos, los iones difunden por vacancias con la restricción de la neutralidad; en los polímeros, las moléculas pequeñas (gases, agua, solventes) difunden entre las cadenas, más rápido en las regiones amorfas y por encima de \(T_g\).</li>
+</ul>
+<div class="box ex"><h4>Mismo tratamiento, otra temperatura</h4>
+<p>Un tratamiento de difusión de Cu en Al dura 10 h a 600 °C. ¿Cuánto debería durar a 500 °C para obtener el mismo perfil?</p>
+<details><summary>Solución</summary><p>Se necesita el mismo \(Dt\). Con \(D_{500}=4.2\times10^{-14}\) y \(D_{600}=4.7\times10^{-13}\) m²/s, \(t_{500}=10\times4.7\times10^{-13}/4.2\times10^{-14}=113\) h.</p></details>
+</div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Calcule \(D\) del Cu en Al a 500 °C con los datos de la tabla.
+<details><summary>Respuesta</summary><p>\(D=6.5\times10^{-5}\exp[-136000/(8.314\times773)]=4.2\times10^{-14}\) m²/s.</p></details></li>
+<li><span class="lvl">Básico</span>¿Qué longitud de difusión \(\sqrt{Dt}\) alcanza el carbono en la austenita en una hora a 1000 °C (\(D=1.9\times10^{-11}\) m²/s)?
+<details><summary>Respuesta</summary><p>\(\sqrt{1.9\times10^{-11}\times3600}=2.6\times10^{-4}\) m \(\approx0.26\) mm.</p></details></li>
+<li><span class="lvl">Intermedio</span>Un acero de 0.20 % C se carburiza 10 h a 1000 °C con la superficie a 1.00 % C. ¿A qué profundidad la concentración es 0.45 %?
+<details><summary>Respuesta</summary><p>\(\operatorname{erf}(z)=1-(0.45-0.20)/(1.00-0.20)=0.6875\Rightarrow z=0.714\). Con \(D=1.95\times10^{-11}\) m²/s y \(t=36000\) s, \(x=2z\sqrt{Dt}=1.2\) mm.</p></details></li>
+<li><span class="lvl">Intermedio</span>El Zn en Cu tiene \(D=1.5\times10^{-14}\) m²/s a 800 °C y \(4.2\times10^{-13}\) m²/s a 1000 °C. Calcule \(Q_d\).
+<details><summary>Respuesta</summary><p>\(Q_d=-R\ln(D_1/D_2)/(1/T_1-1/T_2)=8.314\ln(28.0)/(1/1073-1/1273)=189\) kJ/mol.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué el perfil de la fuente delgada conserva su área y el de la fuente constante no?
+<details><summary>Respuesta</summary><p>En la fuente delgada la cantidad total \(Q\) es fija: el soluto solo se redistribuye. En la fuente constante, la superficie sigue aportando soluto mientras haya gradiente, y la cantidad incorporada crece como \(2(C_s-C_0)\sqrt{Dt/\pi}\).</p></details></li>
+<li><span class="lvl">Avanzado</span>Demuestre que \(C=Q/\sqrt{\pi Dt}\,\exp(-x^2/4Dt)\) satisface la segunda ley de Fick y que \(\int_0^\infty C\,\dd x\) no depende del tiempo.
+<details><summary>Respuesta</summary><p>Derivando: \(\partial C/\partial t=C\,[-1/(2t)+x^2/(4Dt^2)]\) y \(\partial^2C/\partial x^2=C\,[-1/(2Dt)+x^2/(4D^2t^2)]\), así que \(\partial_tC=D\,\partial_x^2C\). La integral de la gaussiana es \(\tfrac12\sqrt{4\pi Dt}\), y \(Q/\sqrt{\pi Dt}\times\sqrt{\pi Dt}=Q\).</p></details></li>
+</ol>
+<div class="box note"><h4>Para profundizar</h4><p>Callister y Rethwisch (2018), cap. 5. P. G. Shewmon, <em>Diffusion in Solids</em>, 2.ª ed., TMS/Springer, 1989/2016. J. Crank, <em>The Mathematics of Diffusion</em>, 2.ª ed., Oxford University Press, 1975. H. Mehrer, <em>Diffusion in Solids</em>, Springer, 2007.</p></div>
+</section>
+</template>

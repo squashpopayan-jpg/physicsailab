@@ -1,0 +1,96 @@
+<template class="chapter-src" data-id="dopamina" data-num="7" data-title="Recompensa, dopamina y aprendizaje por refuerzo" data-part="Parte II · La máquina neuronal" data-short="Condicionamiento clásico y Rescorla-Wagner; recompensas intermitentes y persistencia; la dopamina como error de predicción (diferencias temporales); querer no es gustar; adicción y pantallas">
+<p class="lead">Ningún hábito se forma sin consecuencias. Este capítulo explica cómo aprende el cerebro qué conductas valen la pena: con un error de predicción, la diferencia entre lo que esperaba y lo que obtuvo. Es una de las historias más bonitas de la ciencia: una ecuación propuesta por psicólogos para explicar a los perros de Pavlov resultó describir con precisión la actividad de las neuronas de dopamina.</p>
+
+<section>
+<h2>Aprender por sorpresa: Rescorla y Wagner</h2>
+<p>Iván Pávlov descubrió que si una campana sonaba repetidamente antes de la comida, los perros acababan salivando con la campana sola: un estímulo neutro (la señal) adquiere el valor del estímulo que predice. Durante décadas se pensó que bastaba con que señal y recompensa coincidieran. En 1969, Leon Kamin mostró que no: si un animal ya aprendió que una luz predice comida, y luego se presentan juntos la luz y un sonido seguidos de comida, el sonido casi no se aprende. Kamin lo llamó <span class="term">bloqueo</span>. El sonido coincide con la comida, pero no aporta información: la comida ya no sorprende.</p>
+<p>Robert Rescorla y Allan Wagner (1972) resumieron la idea en una ecuación: el aprendizaje es proporcional al error de predicción.</p>
+<div class="eq key" data-name="Regla de Rescorla-Wagner">\[\Delta V_i=\alpha_i\,\beta\,\Big(\lambda-\sum_{j\in\text{presentes}}V_j\Big).\]</div>
+<p>\(V_i\) es la fuerza asociativa de la señal \(i\), \(\lambda\) el valor de la consecuencia (1 si hay comida, 0 si no) y \(\alpha_i\beta\) la tasa de aprendizaje. Si la consecuencia ya está predicha, el paréntesis vale cero y nada se aprende.</p>
+<div class="sim" data-sim="rw" data-title="Adquisición, extinción y bloqueo con la regla de Rescorla-Wagner"></div>
+<div class="sim-guide"><ul>
+<li>Fase 1: la señal A va seguida de recompensa. Fase 2: A y B juntas, seguidas de recompensa. Fase 3 (opcional): A sola, sin recompensa.</li>
+<li>Observe el bloqueo: B casi no adquiere valor porque A ya predecía la recompensa. Acorte la fase 1 a pocos ensayos: el bloqueo se debilita, porque todavía hay sorpresa que repartir.</li>
+<li>Active la extinción: el valor de A cae al dejar de recompensarla. En animales y personas lo extinguido puede volver (recuperación espontánea), algo que este modelo simple no captura y que se retoma en el capítulo 12.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Recompensas intermitentes y conductas persistentes</h2>
+<p>Edward Thorndike (1898) formuló la «ley del efecto»: las conductas seguidas de consecuencias satisfactorias se repiten. B. F. Skinner estudió después cómo influye el calendario de las recompensas. Uno de los resultados más robustos es el <span class="term">efecto de reforzamiento parcial</span>: una conducta recompensada solo a veces persiste mucho más cuando las recompensas desaparecen que una recompensada siempre. La máquina tragamonedas, que paga a intervalos impredecibles, es el ejemplo clásico.</p>
+<p>Una forma de entenderlo es pensar como un detective (Gallistel y Gibbon, 2000): ¿cuántos fracasos seguidos hacen falta para concluir que las reglas cambiaron? Si siempre hubo recompensa, un solo fracaso basta. Si la recompensa llegaba una de cada diez veces, diez fracasos seguidos son perfectamente normales.</p>
+<div class="sim" data-sim="persistencia" data-title="Cuántos intentos sin premio hacen falta para rendirse"></div>
+<div class="sim-guide"><ul>
+<li>El agente aprendió que la recompensa llega con la probabilidad elegida. Luego la recompensa desaparece. Calcula, con la regla de Bayes, la probabilidad de que las reglas hayan cambiado, y deja de intentar cuando supera 95 %.</li>
+<li>Con recompensa siempre (100 %), se rinde tras uno o dos intentos. Con 10 %, sigue más de cincuenta.</li>
+<li>Para un hábito saludable esto es una ventaja: una vez establecido, no necesita premio cada vez. Para un hábito dañino que se premia de vez en cuando (revisar el celular), es una trampa.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>La dopamina como error de predicción</h2>
+<p>En los años noventa, Wolfram Schultz registró neuronas de dopamina en monos que aprendían que una luz anunciaba un poco de jugo. Al principio, las neuronas disparaban con el jugo. Con el entrenamiento dejaron de responder al jugo y empezaron a responder a la luz. Y si después de la luz el jugo no llegaba, la actividad caía por debajo de su nivel de base justo en el momento en que se esperaba el jugo. Peter Dayan y Read Montague reconocieron que eso era exactamente el error de un algoritmo de aprendizaje de la inteligencia artificial, el de <span class="term">diferencias temporales</span> (Schultz, Dayan y Montague, 1997):</p>
+<div class="eq key" data-name="Error de predicción por diferencias temporales">\[\delta_t=r_t+\gamma\,V(s_{t+1})-V(s_t),\qquad V(s_t)\leftarrow V(s_t)+\alpha\,\delta_t .\]</div>
+<p>La dopamina no dice «esto es placentero», dice «esto es mejor (o peor) de lo que esperaba», y esa señal enseña al resto del cerebro qué predice las cosas buenas.</p>
+<div class="sim" data-sim="td" data-title="La respuesta de la dopamina se mueve de la recompensa a la señal"></div>
+<div class="sim-guide"><ul>
+<li>El mapa de calor muestra el error de predicción en cada momento (horizontal) de cada ensayo (vertical). Abajo, tres ensayos: el primero, el último y uno en que la recompensa se omite.</li>
+<li>En los primeros ensayos la respuesta está en la recompensa; con el aprendizaje migra a la señal. Es el registro de Schultz.</li>
+<li>Baje la probabilidad de recompensa: la respuesta a la señal se hace proporcional a esa probabilidad y la respuesta a la recompensa, cuando llega, crece. Fiorillo, Tobler y Schultz (2003) lo observaron así en monos.</li>
+</ul></div>
+<div class="py" data-py="07-td-dopamina"></div>
+<div class="box read"><p>En el primer ensayo todo el error está en la recompensa (+1,000). Hacia el ensayo 25 la recompensa ya no sorprende (+0,005) y el error empieza a aparecer en la señal; en el ensayo 100 vale +0,796 y se estabiliza en +0,801. El valor aprendido en el momento de la señal, 0,8171, coincide con el teórico \(\gamma^{t_r-t_c}=0{,}98^{10}\). Si se omite la recompensa, el error cae a −1,000 en el momento esperado: la «decepción» del modelo, que es la pausa de las neuronas de dopamina.</p></div>
+<div class="box evid"><p><span class="nivel n4">sólida</span>La correspondencia entre la actividad fásica de las neuronas de dopamina y el error de predicción de recompensa se ha replicado en monos, roedores y humanos. Además hay evidencia causal: estimular neuronas de dopamina con luz (optogenética) en el momento de la recompensa evita el bloqueo, como si se hubiera creado un error de predicción artificial (Steinberg y otros, 2013). El panorama completo es más rico: la dopamina también participa en el movimiento, en el vigor y en señales de novedad.</p></div>
+</section>
+
+<section>
+<h2>Querer no es gustar: adicción y pantallas</h2>
+<p>Como se vio en el capítulo 3, la dopamina se relaciona más con «querer» que con «gustar». La teoría de la sensibilización del incentivo (Robinson y Berridge, 1993) propone que en la adicción el «querer» se dispara mientras el «gustar» se mantiene o disminuye: la persona desea intensamente algo que ya no disfruta tanto. Las señales asociadas (un lugar, un olor, una hora del día) adquieren un poder de atracción enorme.</p>
+<p>Las drogas como la cocaína aumentan la dopamina directamente, sin pasar por la sorpresa: en términos del modelo, producen un error de predicción positivo que nunca se cancela, por mucho que se aprenda (Redish, 2004). Eso explicaría por qué su valor sigue creciendo.</p>
+<div class="box myth">
+<p class="m"><b>Mito</b>«Las redes sociales son tan adictivas como la cocaína porque liberan dopamina».</p>
+<p class="r"><b>Realidad</b>Comer, conversar o ganar un partido también liberan dopamina; eso no hace adictivo a algo. Las aplicaciones sí usan recompensas intermitentes y señales (notificaciones) que favorecen la revisión compulsiva. Pero cuando se miden con cuidado, las asociaciones entre el tiempo de pantalla y el bienestar de los adolescentes son negativas y pequeñas: en un análisis de más de 350.000 adolescentes, el uso de tecnología digital explicó como máximo 0,4 % de la variación en su bienestar (Orben y Przybylski, 2019). Hay personas con un uso problemático que merece atención, pero la comparación con la cocaína exagera.</p>
+</div>
+</section>
+
+<section>
+<h2>Qué hacer con esto</h2>
+<ul>
+<li><b>Haga que la conducta que quiere se recompense pronto.</b> El aprendizaje por refuerzo depende del momento: una recompensa inmediata y pequeña enseña más que una grande y lejana. El beneficio de hacer ejercicio para la salud llega en meses; el disfrute de una buena compañía o de una música llega hoy (capítulo 16).</li>
+<li><b>Controle las señales.</b> Las señales que predicen una tentación disparan el «querer». Es más fácil quitar la señal (el celular fuera de la habitación, los dulces fuera de la vista) que resistir el deseo que ya despertó.</li>
+<li><b>Un hábito establecido resiste la falta de premio.</b> Al comienzo, premie con frecuencia; cuando la conducta ya es automática, puede espaciar los premios sin perderla.</li>
+<li><b>Los antojos se extinguen si no se cumplen.</b> Cada vez que una señal aparece y no sigue la recompensa, su valor baja un poco. Al principio es incómodo; con las repeticiones, el deseo disminuye.</li>
+</ul>
+</section>
+
+<section>
+<h2>Resumen, problemas y autoevaluación</h2>
+<div class="box keys"><ul>
+<li>Se aprende por sorpresa: el cambio es proporcional al error de predicción (Rescorla-Wagner); por eso existe el bloqueo.</li>
+<li>Las recompensas intermitentes producen conductas muy persistentes: hacen falta muchos fracasos para concluir que algo cambió.</li>
+<li>La actividad fásica de la dopamina corresponde al error de predicción de las diferencias temporales: se mueve de la recompensa a la señal que la anuncia.</li>
+<li>La dopamina se relaciona con querer y aprender, no con el placer; en la adicción el querer se desacopla del gustar.</li>
+<li>Aplicado a los hábitos: recompensas inmediatas al principio, control de señales y extinción de los antojos.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Con la regla de Rescorla-Wagner y \(\alpha\beta=0{,}3\), ¿cuánto vale \(V\) tras 10 ensayos recompensados partiendo de cero?
+<details><summary>Respuesta</summary><p>\(V_{10}=1-0{,}7^{10}\approx0{,}972\).</p></details></li>
+<li><span class="lvl">Intermedio</span>En el modelo de diferencias temporales con \(\gamma=0{,}98\) y la recompensa 10 pasos después de la señal, ¿cuánto vale el error de predicción en la señal tras el aprendizaje?
+<details><summary>Respuesta</summary><p>\(\delta=\gamma V(t_c)=0{,}98\times0{,}98^{10}=0{,}98^{11}\approx0{,}801\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Si una conducta se recompensó 30 % de las veces, ¿cuántos fracasos seguidos hacen falta para que la probabilidad de un cambio supere 95 %, con probabilidad previa de cambio de 5 %?
+<details><summary>Respuesta</summary><p>Se necesita \(0{,}7^{k}\lt \frac{0{,}05}{0{,}95\times19}\approx0{,}00277\), es decir \(k>\ln0{,}00277/\ln0{,}7\approx16{,}5\): 17 fracasos.</p></details></li>
+<li><span class="lvl">Avanzado</span>¿Por qué en el modelo la omisión de la recompensa produce un error negativo justo en el momento esperado y no antes?
+<details><summary>Respuesta</summary><p>Porque el valor de cada instante después de la señal aprende a predecir la recompensa descontada; en el paso anterior a la recompensa, \(V(t_r)\approx1\) y \(\gamma V(t_r+1)=0\), así que si \(r=0\) el error es \(-V(t_r)\approx-1\) exactamente en \(t_r\).</p></details></li>
+</ol>
+<div class="sim" data-sim="quiz-dopamina" data-title="Autoevaluación del capítulo 7"></div>
+<div class="box links"><ul>
+<li><a href="https://doi.org/10.1126/science.275.5306.1593">Schultz, Dayan y Montague (1997) — A neural substrate of prediction and reward</a><small>Science.</small></li>
+<li><a href="https://doi.org/10.1126/science.1077349">Fiorillo, Tobler y Schultz (2003) — Discrete coding of reward probability and uncertainty by dopamine neurons</a><small>Science.</small></li>
+<li><a href="https://doi.org/10.1038/nn.3413">Steinberg y otros (2013) — A causal link between prediction errors, dopamine neurons and learning</a><small>Nature Neuroscience.</small></li>
+<li><a href="https://doi.org/10.1037/0033-295X.107.2.289">Gallistel y Gibbon (2000) — Time, rate, and conditioning</a><small>Psychological Review.</small></li>
+<li><a href="https://doi.org/10.1016/0165-0173(93)90013-P">Robinson y Berridge (1993) — The neural basis of drug craving: an incentive-sensitization theory of addiction</a><small>Brain Research Reviews.</small></li>
+<li><a href="https://doi.org/10.1126/science.1102384">Redish (2004) — Addiction as a computational process gone awry</a><small>Science.</small></li>
+<li><a href="https://doi.org/10.1038/s41562-018-0506-1">Orben y Przybylski (2019) — The association between adolescent well-being and digital technology use</a><small>Nature Human Behaviour.</small></li>
+</ul></div>
+</section>
+</template>

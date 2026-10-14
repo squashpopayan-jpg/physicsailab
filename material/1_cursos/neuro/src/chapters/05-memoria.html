@@ -1,0 +1,116 @@
+<template class="chapter-src" data-id="memoria" data-num="5" data-title="Memoria: guardar, olvidar y recordar" data-part="Parte II · La máquina neuronal" data-short="Sistemas de memoria y el caso H. M.; recuerdos como atractores (red de Hopfield); consolidación, sueño y reconsolidación; curva del olvido, espaciado y práctica de evocación; memorias falsas">
+<p class="lead">Si la plasticidad sináptica es el mecanismo, la memoria es su resultado. Este capítulo explica que no hay una memoria sino varias, que un recuerdo es un patrón de actividad que la red puede reconstruir a partir de una pista, por qué olvidamos y cómo estudiar para olvidar menos. También explica por qué un recuerdo vívido puede ser falso, algo que importa mucho al evaluar técnicas que prometen «sanar el pasado».</p>
+
+<section>
+<h2>Muchas memorias, no una</h2>
+<p>En 1953, el neurocirujano William Scoville extirpó buena parte de ambos hipocampos a Henry Molaison, conocido durante décadas como H. M., para controlar una epilepsia grave. La epilepsia mejoró, pero H. M. quedó incapaz de formar recuerdos nuevos de hechos y experiencias: olvidaba a las personas que acababa de conocer (Scoville y Milner, 1957). Sin embargo, la psicóloga Brenda Milner descubrió que sí podía aprender habilidades: en días sucesivos mejoró en una tarea de dibujar mirando en un espejo, aunque cada vez juraba no haberla hecho nunca.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Sistema</th><th>Qué guarda</th><th>Estructuras clave</th><th>Ejemplo</th></tr></thead>
+<tbody>
+<tr><td>Declarativa episódica</td><td>experiencias con fecha y lugar</td><td>hipocampo y corteza</td><td>su último cumpleaños</td></tr>
+<tr><td>Declarativa semántica</td><td>hechos y conceptos</td><td>corteza temporal</td><td>la capital de Francia</td></tr>
+<tr><td>Procedimental</td><td>habilidades y hábitos</td><td>ganglios basales, cerebelo, corteza motora</td><td>montar en bicicleta, un saque de squash</td></tr>
+<tr><td>Condicionamiento</td><td>asociaciones entre señales y consecuencias</td><td>amígdala, cerebelo</td><td>sobresaltarse con un sonido asociado a algo malo</td></tr>
+<tr><td>De trabajo</td><td>lo que se mantiene «en mente» unos segundos</td><td>corteza prefrontal y parietal</td><td>un número de teléfono mientras se marca</td></tr>
+</tbody></table></div>
+<p>La memoria de trabajo es pequeña: se estima que retiene unos cuatro elementos significativos a la vez (Cowan, 2001), no los «siete más o menos dos» que se repiten desde los años cincuenta. Esta separación de sistemas explica algo que se verá en los capítulos 15 y 19: saber cómo se hace algo (declarativo) no es lo mismo que saber hacerlo (procedimental).</p>
+</section>
+
+<section>
+<h2>Un recuerdo es un patrón que la red completa</h2>
+<p>¿Cómo puede una red de neuronas guardar un recuerdo y recuperarlo a partir de un fragmento, como cuando un olor le devuelve una escena entera? En 1982 el físico John Hopfield propuso un modelo que lo explica. La red guarda patrones fortaleciendo, con la regla de Hebb, las sinapsis entre neuronas que estaban activas juntas. Después, si se le presenta una versión incompleta o ruidosa, la dinámica de la red «cae» hacia el patrón guardado más parecido, como una bola que rueda hasta el fondo de un valle. Cada recuerdo es un <span class="term">atractor</span>.</p>
+<div class="eq key" data-name="Red de Hopfield">\[w_{ij}=\frac1N\sum_{\mu=1}^{P}\xi_i^{\mu}\xi_j^{\mu},\qquad s_i\leftarrow\operatorname{signo}\Big(\sum_j w_{ij}s_j\Big),\qquad E=-\tfrac12\sum_{i,j}w_{ij}s_is_j .\]</div>
+<p>Cada actualización baja o mantiene la «energía» \(E\), así que la red siempre termina en un estado estable. Hopfield recibió el Premio Nobel de Física en 2024, junto con Geoffrey Hinton, por estos trabajos sobre redes neuronales.</p>
+<div class="sim" data-sim="hopfield" data-title="Una red de 100 neuronas que guarda letras y las recuerda a partir de una pista"></div>
+<div class="sim-guide"><ul>
+<li>Elija cuántas letras guardar y cuál recordar. La pista es la letra con una fracción de píxeles cambiados al azar. Pulse reproducir para ver cómo la red reconstruye el patrón.</li>
+<li>Con dos o tres letras la recuperación es casi perfecta aun con 30 % de ruido. Con cinco o seis, las letras se parecen entre sí y la red se confunde: aparecen mezclas, «recuerdos» que nadie guardó.</li>
+<li>Esas mezclas son una analogía útil de cómo se distorsionan los recuerdos parecidos entre sí.</li>
+</ul></div>
+<p>¿Cuántos recuerdos caben? Para patrones al azar, la teoría (Amit, Gutfreund y Sompolinsky, 1985) muestra que una red de \(N\) neuronas recuerda bien hasta unos \(0{,}138\,N\) patrones. Pasado ese límite, la interferencia entre recuerdos crece de golpe y la red deja de recordar casi todo.</p>
+<div class="sim" data-sim="capacidad" data-title="Capacidad de la red de Hopfield: teoría y simulación"></div>
+<div class="sim-guide"><ul>
+<li>La curva es la probabilidad teórica de que un bit guardado sea inestable, \(\tfrac12[1-\operatorname{erf}(\sqrt{N/2P})]\); los puntos son mediciones en redes simuladas.</li>
+<li>Note cómo el error es prácticamente nulo con pocos patrones y se dispara cerca de \(P/N\approx0{,}14\). El apéndice E compara esta simulación con la fórmula calculada en SciPy.</li>
+</ul></div>
+<div class="py" data-py="05-hopfield"></div>
+<div class="box read"><p>Con 200 neuronas y pistas con 20 % de bits cambiados, la red recupera todos los recuerdos con 5 y 10 patrones, la mayoría con 20 a 30 y ninguno con 40 o 60: el colapso ocurre entre \(P/N=0{,}15\) y \(0{,}20\), cerca del 0,138 de la teoría para redes infinitas. La fracción de bits inestables medida (0,0031 con 27 patrones, 0,0297 con 60) sigue de cerca la fórmula (0,0032 y 0,0339).</p></div>
+<div class="box warn"><p>El modelo de Hopfield es una herramienta para pensar, no una descripción literal del hipocampo. Pero sus dos lecciones sí tienen apoyo experimental: recordar es reconstruir a partir de pistas, y los recuerdos parecidos interfieren entre sí.</p></div>
+</section>
+
+<section>
+<h2>Consolidación, sueño y reconsolidación</h2>
+<p>Un recuerdo recién formado es frágil. Con el tiempo se <span class="term">consolida</span> en dos sentidos: en horas, las sinapsis pasan de la fase temprana a la tardía de la LTP (capítulo 4); en semanas a años, la información depende cada vez menos del hipocampo y más de la corteza. Durante el sueño profundo, el hipocampo «repite» patrones de actividad del día, y la evidencia de que el sueño después de aprender mejora el recuerdo declarativo es amplia (Rasch y Born, 2013). Para habilidades motoras la evidencia es más discutida (capítulo 19).</p>
+<div class="box evid"><p><span class="nivel n3">moderada</span>Dormir bien después de estudiar ayuda a retener hechos y conceptos. Lo que no tiene respaldo es aprender cosas nuevas mientras se duerme escuchando grabaciones: el cerebro dormido apenas codifica información nueva compleja.</p></div>
+<p>En 2000, Karim Nader y sus colegas descubrieron algo inesperado en ratas: un recuerdo de miedo ya consolidado, al ser evocado, vuelve a quedar frágil por un tiempo y necesita «reconsolidarse», fabricando proteínas de nuevo. Si en esa ventana se bloquea la síntesis de proteínas, el recuerdo se debilita. Este hallazgo sugirió que recordar es una oportunidad para modificar un recuerdo.</p>
+<div class="box evid"><p><span class="nivel n2">preliminar</span>En humanos, los intentos de borrar o debilitar recuerdos emocionales aprovechando la reconsolidación han dado resultados mixtos y difíciles de replicar. Muchas técnicas comerciales, incluidas varias derivadas de la PNL, invocan la reconsolidación como explicación, pero que exista el fenómeno en ratas no prueba que una técnica concreta funcione en personas. Eso se revisa en el capítulo 12.</p></div>
+</section>
+
+<section>
+<h2>Olvidar, espaciar y evocar</h2>
+<p>Hermann Ebbinghaus fue su propio sujeto experimental. En 1885 publicó cuánto tardaba en volver a aprender listas de sílabas sin sentido después de distintos intervalos. El «ahorro» de tiempo al reaprender mide cuánto quedó en la memoria. Su curva, replicada en 2015 por Murre y Dros, cae rápido al principio y luego muy despacio.</p>
+<div class="sim" data-sim="olvido" data-title="La curva del olvido de Ebbinghaus (1885) y dos modelos matemáticos"></div>
+<div class="sim-guide"><ul>
+<li>Los puntos son los datos originales de Ebbinghaus. Las curvas son un ajuste exponencial y uno potencial, hechos por mínimos cuadrados en su navegador.</li>
+<li>La ley potencial describe mucho mejor el olvido: lo que sobrevive a los primeros días tiende a durar. Cambie a escala logarítmica de tiempo para verlo.</li>
+</ul></div>
+<p>Dos hallazgos de la psicología del aprendizaje están entre los más sólidos de toda la disciplina:</p>
+<ul>
+<li><b>El efecto de espaciado.</b> Repartir el estudio en sesiones separadas produce mucho mejor recuerdo a largo plazo que concentrarlo, aunque el tiempo total sea el mismo. La revisión de Cepeda y otros (2006) reunió 839 comparaciones de 317 experimentos, y encontró además que el intervalo óptimo entre repasos crece cuanto más tiempo se quiere recordar.</li>
+<li><b>La práctica de evocación.</b> Intentar recordar (hacerse preguntas, resolver problemas sin mirar) fortalece más la memoria que releer (Roediger y Karpicke, 2006).</li>
+</ul>
+<div class="sim" data-sim="espaciado" data-title="Cuatro repasos juntos o espaciados: cuánto queda días después"></div>
+<div class="sim-guide"><ul>
+<li>Usa la forma del modelo de activación de Pavlik y Anderson (2005), en el que cada repaso decae más rápido cuanto más fresca está la memoria. Los parámetros son ilustrativos: el patrón es el que importa.</li>
+<li>Con repasos seguidos el recuerdo es excelente a los diez minutos y malo a la semana. Con repasos espaciados ocurre lo contrario. Por eso estudiar la noche antes «funciona» para el examen y falla para la vida.</li>
+<li>Cambie el intervalo entre repasos espaciados: hay un óptimo que depende de cuándo quiere recordar.</li>
+</ul></div>
+<div class="box evid"><p><span class="nivel n4">sólida</span>En la revisión de Dunlosky y otros (2013) sobre diez técnicas de estudio, solo la práctica de evocación y la práctica distribuida recibieron la calificación de «alta utilidad». Subrayar, releer y resumir quedaron como de baja utilidad, aunque son las más usadas.</p></div>
+</section>
+
+<section>
+<h2>Memorias falsas</h2>
+<p>Recordar no es reproducir una grabación: es reconstruir, y en la reconstrucción entran sugerencias. En el clásico de Loftus y Palmer (1974), quienes vieron el video de un choque y luego oyeron la pregunta «¿a qué velocidad iban cuando los carros <i>se estrellaron</i>?» estimaron velocidades mayores que quienes oyeron «<i>se tocaron</i>»; y en un segundo experimento, una semana después, «recordaban» vidrios rotos que no existían con más del doble de frecuencia que quienes oyeron «<i>chocaron</i>». En estudios de implantación, a personas adultas se les sugiere con insistencia un episodio de la infancia que nunca ocurrió. Un análisis conjunto de ocho de esos estudios, con 423 participantes, clasificó como memorias falsas cerca de 30 % de los casos (Scoboria y otros, 2017).</p>
+<div class="box safe"><p>Las técnicas que buscan «recuerdos reprimidos» mediante sugestión, hipnosis, visualización guiada o «regresiones», presentes en algunas escuelas de PNL y terapias alternativas, pueden crear recuerdos falsos vívidos y causar daño real a las personas y a sus familias. Un recuerdo recuperado así no es una prueba de que algo ocurrió.</p></div>
+</section>
+
+<section>
+<h2>Resumen, problemas y autoevaluación</h2>
+<div class="box keys"><ul>
+<li>Hay varios sistemas de memoria: declarativa (hipocampo), procedimental (ganglios basales, cerebelo), condicionamiento y memoria de trabajo, que retiene unos cuatro elementos.</li>
+<li>Un recuerdo puede verse como un atractor de una red: la red completa el patrón a partir de una pista. La capacidad es limitada y los recuerdos parecidos interfieren.</li>
+<li>Los recuerdos se consolidan con el tiempo y con el sueño; al evocarlos pueden volverse modificables (reconsolidación), aunque en humanos la evidencia aplicada es preliminar.</li>
+<li>El olvido sigue aproximadamente una ley potencial. Espaciar el estudio y practicar la evocación son las dos técnicas con mejor respaldo.</li>
+<li>La memoria es reconstructiva: la sugestión puede crear recuerdos falsos vívidos.</li>
+</ul></div>
+<div class="box do"><ul>
+<li>Para lo que estudie en este curso: al terminar cada capítulo haga la autoevaluación, y repítala a los dos días y a la semana, sin mirar antes el texto.</li>
+<li>Duerma su horario normal la noche después de aprender algo importante.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>H. M. mejoró en el dibujo en espejo sin recordar haberlo practicado. ¿Qué muestra eso?
+<details><summary>Respuesta</summary><p>Que la memoria procedimental no depende del hipocampo, a diferencia de la declarativa: son sistemas separables.</p></details></li>
+<li><span class="lvl">Básico</span>¿Cuántos patrones al azar puede recordar bien una red de Hopfield de 500 neuronas?
+<details><summary>Respuesta</summary><p>Unos \(0{,}138\times500\approx69\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Usted tiene un examen en 30 días y puede repasar 4 veces. ¿Es mejor repasar los días 1, 2, 3 y 4 o los días 1, 8, 15 y 22?
+<details><summary>Respuesta</summary><p>Los días 1, 8, 15 y 22: para una retención de un mes, el intervalo óptimo entre repasos es de días, no de horas (Cepeda y otros, 2006; véase la simulación).</p></details></li>
+<li><span class="lvl">Avanzado</span>Muestre que una actualización asíncrona de la red de Hopfield nunca aumenta la energía \(E\).
+<details><summary>Respuesta</summary><p>Si cambia solo \(s_k\) a \(s_k'\), con \(w\) simétrica y \(w_{kk}=0\): \(\Delta E=-(s_k'-s_k)h_k\), donde \(h_k=\sum_j w_{kj}s_j\). La regla elige \(s_k'=\operatorname{signo}(h_k)\), así que \((s_k'-s_k)h_k\ge0\) y \(\Delta E\le0\).</p></details></li>
+</ol>
+<div class="sim" data-sim="quiz-memoria" data-title="Autoevaluación del capítulo 5"></div>
+<div class="box links"><ul>
+<li><a href="https://doi.org/10.1136/jnnp.20.1.11">Scoville y Milner (1957) — Loss of recent memory after bilateral hippocampal lesions</a><small>Journal of Neurology, Neurosurgery and Psychiatry. El caso H. M.</small></li>
+<li><a href="https://doi.org/10.1017/S0140525X01003922">Cowan (2001) — The magical number 4 in short-term memory</a><small>Behavioral and Brain Sciences.</small></li>
+<li><a href="https://doi.org/10.1073/pnas.79.8.2554">Hopfield (1982) — Neural networks and physical systems with emergent collective computational abilities</a><small>PNAS.</small></li>
+<li><a href="https://doi.org/10.1103/PhysRevLett.55.1530">Amit, Gutfreund y Sompolinsky (1985) — Storing infinite numbers of patterns in a spin-glass model of neural networks</a><small>Physical Review Letters. El límite 0,138 N.</small></li>
+<li><a href="https://doi.org/10.1152/physrev.00032.2012">Rasch y Born (2013) — About sleep's role in memory</a><small>Physiological Reviews.</small></li>
+<li><a href="https://doi.org/10.1038/35021052">Nader, Schafe y LeDoux (2000) — Fear memories require protein synthesis in the amygdala for reconsolidation after retrieval</a><small>Nature.</small></li>
+<li><a href="https://doi.org/10.1371/journal.pone.0120644">Murre y Dros (2015) — Replication and analysis of Ebbinghaus' forgetting curve</a><small>PLoS ONE.</small></li>
+<li><a href="https://doi.org/10.1037/0033-2909.132.3.354">Cepeda y otros (2006) — Distributed practice in verbal recall tasks: a review and quantitative synthesis</a><small>Psychological Bulletin.</small></li>
+<li><a href="https://doi.org/10.1111/j.1467-9280.2006.01693.x">Roediger y Karpicke (2006) — Test-enhanced learning</a><small>Psychological Science.</small></li>
+<li><a href="https://doi.org/10.1177/1529100612453266">Dunlosky y otros (2013) — Improving students' learning with effective learning techniques</a><small>Psychological Science in the Public Interest.</small></li>
+<li><a href="https://doi.org/10.1016/S0022-5371(74)80011-3">Loftus y Palmer (1974) — Reconstruction of automobile destruction</a><small>Journal of Verbal Learning and Verbal Behavior.</small></li>
+<li><a href="https://doi.org/10.1080/09658211.2016.1260747">Scoboria y otros (2017) — A mega-analysis of memory reports from eight peer-reviewed false memory implantation studies</a><small>Memory.</small></li>
+</ul></div>
+</section>
+</template>

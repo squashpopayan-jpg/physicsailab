@@ -1,0 +1,130 @@
+<template class="chapter-src" data-id="carga" data-num="21" data-title="Carga, fatiga y recuperación" data-part="Parte V · Deporte: cerebro y rendimiento" data-short="Medir la carga con el esfuerzo percibido; monotonía y tensión; el modelo de Banister y la puesta a punto; por qué el cociente agudo:crónico engaña; sobreentrenamiento; energía disponible baja (REDs); sueño y recuperación">
+<p class="lead">El cuerpo no mejora durante el entrenamiento: mejora después, mientras se recupera. Entrenar es dosificar un estímulo y dejar que el organismo responda. Este capítulo trata de cómo medir esa dosis, de los modelos matemáticos que intentan predecir la respuesta, de lo que se sabe sobre el exceso (sobreentrenamiento, energía insuficiente) y de qué ayuda de verdad a recuperarse.</p>
+
+<section>
+<h2>Medir la carga con el esfuerzo percibido</h2>
+<p>La carga <span class="term">externa</span> es lo que se hizo: kilómetros, kilos, minutos. La carga <span class="term">interna</span> es lo que le costó al organismo, y es la que importa para la adaptación y para la fatiga. Carl Foster propuso una forma sencilla de estimarla: 30 minutos después de terminar, la persona califica el esfuerzo de toda la sesión en una escala de 0 a 10 (el <span class="term">RPE de sesión</span>), y ese número se multiplica por los minutos (Foster y otros, 2001).</p>
+<div class="box law"><p>\[ \text{carga de la sesión (UA)} = \text{RPE de sesión } (0\text{–}10) \times \text{minutos} \]</p>
+<p>Una hora de partido de squash con esfuerzo 7 suma 420 unidades arbitrarias (UA); 40 minutos de trote suave con esfuerzo 3 suman 120.</p></div>
+<p>Este método se correlaciona razonablemente con medidas basadas en la frecuencia cardiaca en deportes de resistencia y de equipo, no necesita aparatos y sirve para cualquier actividad, incluido el entrenamiento de fuerza. Su punto débil es que depende de la honestidad y la constancia de quien califica.</p>
+<p>Foster agregó dos índices semanales. La <span class="term">monotonía</span> es la carga media diaria dividida por su desviación estándar: alta cuando todos los días se parecen. La <span class="term">tensión</span> es la carga semanal multiplicada por la monotonía. En un seguimiento de 25 deportistas, buena parte de los episodios de enfermedad menor (resfriados, por ejemplo) coincidió con momentos en que cada deportista superaba un umbral personal de carga, sobre todo de tensión (Foster, 1998).</p>
+<div class="sim" data-sim="srpe" data-title="Planificador semanal: carga, monotonía y tensión"></div>
+<div class="sim-guide"><ul>
+<li>Arrastre cada barra para cambiar la carga de ese día, o use los botones para cargar semanas típicas.</li>
+<li>Compare «variada» y «monótona»: con una carga total parecida, la semana monótona tiene el doble o el triple de tensión.</li>
+<li>La línea punteada marca monotonía 2, el valor a partir del cual Foster sugirió revisar el plan. Es una guía práctica, no un umbral validado para cada persona.</li>
+</ul></div>
+<div class="box evid"><p><span class="nivel n3">moderada</span>El RPE de sesión es un método válido y útil para estimar la carga interna. La relación de la monotonía y la tensión con las enfermedades viene de estudios observacionales pequeños.</p></div>
+</section>
+
+<section>
+<h2>El modelo de Banister: estado físico menos fatiga</h2>
+<p>En 1975, Eric Banister y su grupo propusieron describir el rendimiento como un sistema que recibe cargas y responde con dos efectos: cada sesión aumenta un poco el <span class="term">estado físico</span> (adaptación que dura semanas) y también la <span class="term">fatiga</span> (que dura días). El rendimiento del día es la diferencia:</p>
+<div class="box law"><p>\[ p(t) = p_0 + k_1 \sum_{s&lt;t} w(s)\, \ee^{-(t-s)/\tau_1} \; - \; k_2 \sum_{s&lt;t} w(s)\, \ee^{-(t-s)/\tau_2} \]</p>
+<p>\(w(s)\) es la carga del día \(s\); \(\tau_1\) (unos 40 días) y \(\tau_2\) (unos 7 a 15 días) son los tiempos con que se pierden el estado físico y la fatiga; \(k_2 &gt; k_1\) porque la fatiga pesa más en el corto plazo. Cada término es una suma de respuestas exponenciales, la misma matemática de la corriente sináptica del capítulo 3.</p></div>
+<p>La consecuencia práctica es la <span class="term">puesta a punto</span> (en inglés, <i>taper</i>): reducir la carga antes de competir. Como la fatiga se disipa más rápido que el estado físico, unos días de entrenamiento reducido dejan ver el estado físico acumulado.</p>
+<div class="sim" data-sim="banister" data-title="Modelo de Banister: plan de 12 semanas y puesta a punto"></div>
+<div class="sim-guide"><ul>
+<li>Las barras grises son la carga diaria. La curva verde es el estado físico, la naranja la fatiga (multiplicada por \(k_2\)) y la morada la forma, que es su diferencia.</li>
+<li>Sin puesta a punto (0 días), la forma del día de competencia queda deprimida por la fatiga de la última semana. La línea punteada muestra esa forma; el punto, la forma con su puesta a punto.</li>
+<li>Con \(\tau_2 = 7\) días, el modelo prefiere puestas a punto cortas (unos 5 días). Suba \(\tau_2\) a 12 o 15 días: cuando la fatiga tarda más en irse, la mejor puesta a punto se alarga y la ganancia crece. Esos parámetros cambian de una persona a otra y de una temporada a otra.</li>
+<li>Active la descarga cada 4 semanas y compare la forma a lo largo del plan.</li>
+</ul></div>
+<p>El programa en Python recorre muchas combinaciones de duración y volumen de la puesta a punto con el mismo modelo:</p>
+<div class="py" data-py="21-banister"></div>
+<p>El resultado muestra un límite del modelo. Con parámetros fijos, su mejor puesta a punto siempre es el descanso total: el modelo lineal no sabe que dejar de entrenar intensamente hace perder adaptaciones específicas en pocos días. La evidencia experimental dice otra cosa. Un metaanálisis de 27 estudios encontró que la estrategia más eficaz era una puesta a punto de unas dos semanas en la que se reduce el volumen entre 41 y 60 %, manteniendo la intensidad y la frecuencia de las sesiones (Bosquet y otros, 2007). Versiones no lineales del modelo, en las que la fatiga de cada sesión crece con la carga reciente, se ajustaron a nadadores de élite y predijeron puestas a punto óptimas más largas después de un bloque de sobrecarga que después del entrenamiento habitual (Thomas y otros, 2008), con ganancias de alrededor de 1 % sobre la mejor marca personal, que en competencia es mucho.</p>
+<div class="box evid"><p><span class="nivel n5">modelo</span>El modelo de Banister es una descripción útil de por qué funciona la puesta a punto. Sus parámetros se ajustan persona por persona con datos de rendimiento frecuentes, varían con el tiempo y predicen mal fuera de los datos usados para ajustarlos. <span class="nivel n4">sólida</span>Reducir el volumen manteniendo la intensidad unas dos semanas antes de competir mejora el rendimiento.</p></div>
+</section>
+
+<section>
+<h2>El cociente agudo:crónico y por qué engaña</h2>
+<p>Hace una década se popularizó en el deporte profesional el <span class="term">cociente agudo:crónico</span> (ACWR): la carga de la última semana dividida por la carga media semanal de las últimas cuatro. La idea era que los aumentos bruscos (cociente mayor de 1,5) predicen lesiones y que la «zona segura» está entre 0,8 y 1,3. Se volvió una regla repetida en clubes y aplicaciones.</p>
+<p>Luego aparecieron problemas serios. En la forma habitual, la semana aguda forma parte del promedio crónico: el numerador y el denominador comparten datos, y eso crea correlaciones que no tienen nada de fisiológico (<span class="term">acoplamiento matemático</span>; Lolli y otros, 2019). Además, dividir por la carga crónica no ajusta lo que se cree que ajusta, los puntos de corte se eligieron a partir de los mismos datos y los estudios originales tenían diseños débiles (Impellizzeri y otros, 2020).</p>
+<div class="sim" data-sim="acoplamiento" data-title="Acoplamiento matemático en el cociente agudo:crónico"></div>
+<div class="sim-guide"><ul>
+<li>Cada punto es un deportista simulado cuyas cargas semanales fluctúan al azar, sin relación entre una semana y la siguiente.</li>
+<li>Con el cálculo acoplado, la carga aguda y la crónica aparecen correlacionadas (\(r \approx 0{,}5 = 1/\sqrt{4}\)) solo porque la última semana está en las dos. Con el cálculo desacoplado, la correlación desaparece.</li>
+<li>Suba la variación entre deportistas: ahora hay correlación real en ambos cálculos, porque quien entrena mucho una semana suele entrenar mucho siempre. Mezclar datos de varias personas en una sola correlación confunde estas dos fuentes.</li>
+</ul></div>
+<div class="box evid"><p><span class="nivel n0">no respaldado</span>El cociente agudo:crónico no tiene validez demostrada para predecir lesiones ni para fijar una «zona segura». <span class="nivel n3">moderada</span>Lo que sí parece razonable es aumentar la carga de forma gradual y evitar saltos grandes de una semana a otra, una recomendación antigua que no necesita el cociente.</p></div>
+</section>
+
+<section>
+<h2>Sobrecarga funcional, no funcional y sobreentrenamiento</h2>
+<p>El consenso europeo y estadounidense sobre el tema (Meeusen y otros, 2013) describe un continuo:</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Estado</th><th>Qué ocurre</th><th>Recuperación</th></tr></thead>
+<tbody>
+<tr><td><b>Sobrecarga funcional</b></td><td>Baja el rendimiento por unos días tras un bloque duro, sin síntomas psicológicos importantes; después del descanso el rendimiento supera el inicial</td><td>Días a dos semanas</td></tr>
+<tr><td><b>Sobrecarga no funcional</b></td><td>El rendimiento baja por más tiempo, con síntomas como cansancio persistente, mal sueño o mal humor; no hay mejora después de recuperarse</td><td>Semanas a meses</td></tr>
+<tr><td><b>Síndrome de sobreentrenamiento</b></td><td>Rendimiento disminuido por más de dos meses, síntomas más intensos y alteraciones de varios sistemas de regulación</td><td>Meses o más</td></tr>
+</tbody></table></div>
+<p>El diagnóstico es de exclusión: antes hay que descartar enfermedades, infecciones, anemia o déficit de hierro, problemas de tiroides y una ingesta insuficiente de energía o de carbohidratos. No existe un marcador (hormona, análisis de sangre o prueba psicológica) que lo diagnostique por sí solo. El síndrome completo parece raro; la sobrecarga no funcional es más frecuente, sobre todo cuando al entrenamiento se suman otras fuentes de estrés: exámenes, trabajo, poco sueño, dietas restrictivas.</p>
+<div class="box do"><ul>
+<li>Lleve un registro diario de su carga (minutos × RPE), sueño y estado de ánimo en <a href="#progreso">Mi progreso</a>. Un descenso del rendimiento con cansancio y mal humor que no mejora con una semana de entrenamiento suave merece consulta médica.</li>
+<li>Programe una semana de descarga (volumen reducido a un 50–70 %) cada 3 a 6 semanas de entrenamiento exigente.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Energía disponible baja (REDs)</h2>
+<p>Este punto conecta el deporte con la pérdida de grasa de la Parte VI. La <span class="term">energía disponible</span> es lo que queda de la energía ingerida después de pagar el ejercicio, expresada por kilogramo de masa libre de grasa (MLG):</p>
+<div class="box law"><p>\[ \text{energía disponible} = \frac{\text{energía ingerida} - \text{energía gastada en el ejercicio}}{\text{masa libre de grasa (kg)}} \quad [\text{kcal/kg MLG/día}] \]</p></div>
+<p>Cuando la energía disponible es baja durante semanas, el organismo ahorra: bajan las hormonas sexuales y tiroideas, se resienten el hueso, la inmunidad, el ánimo y el rendimiento. El consenso del Comité Olímpico Internacional llama a este cuadro <span class="term">deficiencia relativa de energía en el deporte</span> (REDs) y advierte que afecta a mujeres y a hombres (Mountjoy y otros, 2023). En estudios de laboratorio con mujeres, unos 45 kcal/kg MLG/día se asocian con balance energético, y por debajo de unos 30 aparecen alteraciones hormonales; el consenso de 2023 aclara que no hay un umbral único para todas las personas y que el riesgo aumenta de forma gradual.</p>
+<div class="sim" data-sim="energia-disp" data-title="Calculadora de energía disponible"></div>
+<div class="sim-guide"><ul>
+<li>Ingrese su peso, su porcentaje de grasa estimado, lo que come y lo que gasta en el ejercicio (no el gasto total del día).</li>
+<li>Si quiere perder grasa entrenando fuerte, la combinación de un déficit grande con mucho ejercicio puede dejarlo en la zona de riesgo. Un déficit moderado y sostenido es más seguro (capítulo 23).</li>
+<li>Las franjas son orientativas: la estimación de la grasa corporal y del gasto del ejercicio tiene errores de 10 % o más.</li>
+</ul></div>
+<div class="box safe"><p>Pérdida de la menstruación, fracturas por estrés, cansancio persistente, lesiones repetidas o una obsesión creciente con la comida y el peso son razones para consultar a un médico del deporte. No se manejan solo con un cambio de plan.</p></div>
+</section>
+
+<section>
+<h2>Sueño y recuperación</h2>
+<p>El sueño es la intervención de recuperación con mejor fundamento biológico: en él se consolida el aprendizaje motor (capítulo 5) y se regulan hormonas del apetito y del crecimiento. Los datos en deportistas son más modestos de lo que se suele decir:</p>
+<ul>
+<li>En el estudio más citado, 11 jugadores universitarios de baloncesto extendieron su sueño durante varias semanas (unos 110 minutos más por noche) y mejoraron su velocidad en carrera y su puntería en tiros libres y triples (Mah y otros, 2011). No hubo grupo de control: parte de la mejora puede deberse a la práctica o a la expectativa.</li>
+<li>En 112 deportistas adolescentes de un colegio, quienes dormían menos de 8 horas tenían cerca de 1,7 veces más probabilidad de haberse lesionado (Milewski y otros, 2014). Es una asociación de un estudio pequeño, con un intervalo de confianza amplio.</li>
+<li>La privación de sueño afecta más al ejercicio submáximo prolongado y a las tareas de habilidad y decisión que a los esfuerzos máximos breves (revisión de Fullagar y otros, 2015).</li>
+</ul>
+<p>Sobre las técnicas de recuperación pasiva, una revisión sistemática con metaanálisis encontró que el masaje era la técnica más eficaz para reducir el dolor muscular tardío y la sensación de fatiga; otras, como la ropa de compresión y la inmersión en agua fría, también mostraron efectos, en general menores (Dupuy y otros, 2018). Hay un matiz importante: la inmersión en agua fría después de entrenar fuerza redujo las ganancias de masa y fuerza muscular a lo largo de 12 semanas en un ensayo (Roberts y otros, 2015). Si el objetivo es adaptarse, no conviene usarla de rutina después de cada sesión de fuerza.</p>
+<div class="box evid"><p><span class="nivel n3">moderada</span>Dormir lo suficiente favorece el rendimiento y la recuperación; los ensayos en deportistas son pequeños. <span class="nivel n3">moderada</span>El masaje reduce el dolor y la sensación de fatiga. <span class="nivel n2">preliminar</span>El agua fría después de la fuerza puede frenar la hipertrofia.</p></div>
+</section>
+
+<section>
+<h2>Resumen, problemas y autoevaluación</h2>
+<div class="box keys"><ul>
+<li>La carga interna se estima bien con el RPE de sesión por los minutos. Variar la carga entre días reduce la monotonía y la tensión.</li>
+<li>El modelo de Banister explica la puesta a punto como el tiempo que tarda la fatiga en irse antes que el estado físico. En la práctica: unas dos semanas con 40–60 % menos volumen y la misma intensidad.</li>
+<li>El cociente agudo:crónico tiene un defecto matemático (acoplamiento) y no predice lesiones de forma fiable; basta con aumentar la carga gradualmente.</li>
+<li>El sobreentrenamiento es un continuo; se diagnostica descartando otras causas y casi siempre involucra otros estresores además del entrenamiento.</li>
+<li>La energía disponible baja (REDs) es el riesgo de combinar mucho ejercicio con un déficit grande.</li>
+<li>Dormir lo suficiente es la base de la recuperación.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Una semana: lunes 60 min con RPE 7, martes 45 min con RPE 4, miércoles descanso, jueves 60 min con RPE 8, viernes 30 min con RPE 3, sábado 90 min con RPE 6, domingo descanso. Calcule la carga total y la monotonía.
+<details><summary>Respuesta</summary><p>Cargas: 420, 180, 0, 480, 90, 540, 0. Total 1 710 UA; media 244,3; desviación estándar (poblacional) ≈ 214,2; monotonía ≈ 1,14; tensión ≈ 1 950.</p></details></li>
+<li><span class="lvl">Intermedio</span>Con \(\tau_1 = 42\) y \(\tau_2 = 7\) días, ¿qué fracción del estado físico y de la fatiga queda tras 10 días sin entrenar?
+<details><summary>Respuesta</summary><p>Estado físico: \(\ee^{-10/42} \approx 0{,}79\). Fatiga: \(\ee^{-10/7} \approx 0{,}24\). Por eso unos días de descanso revelan la forma; si el descanso es largo, el estado físico también se va.</p></details></li>
+<li><span class="lvl">Avanzado</span>Si las cargas semanales de un deportista son independientes con la misma varianza, demuestre que la correlación entre la carga de la última semana y el promedio de las últimas cuatro es \(1/2\).
+<details><summary>Respuesta</summary><p>\(\operatorname{Cov}(W_4, \bar W) = \sigma^2/4\) y \(\operatorname{Var}(\bar W) = \sigma^2/4\). Entonces \(r = (\sigma^2/4) / (\sigma \cdot \sigma/2) = 1/2\).</p></details></li>
+</ol>
+<div class="sim" data-sim="quiz-carga" data-title="Autoevaluación del capítulo 21"></div>
+<div class="box links"><ul>
+<li><a href="https://doi.org/10.1519/00124278-200102000-00019">Foster y otros (2001) — A new approach to monitoring exercise training</a><small>Journal of Strength and Conditioning Research.</small></li>
+<li><a href="https://pubmed.ncbi.nlm.nih.gov/9662690/">Foster (1998) — Monitoring training in athletes with reference to overtraining syndrome</a><small>Medicine &amp; Science in Sports &amp; Exercise.</small></li>
+<li><a href="https://doi.org/10.1249/mss.0b013e31806010e0">Bosquet y otros (2007) — Effects of tapering on performance: a meta-analysis</a><small>Medicine &amp; Science in Sports &amp; Exercise.</small></li>
+<li><a href="https://doi.org/10.1080/02640410701716782">Thomas, Mujika y Busso (2008) — A model study of optimal training reduction during pre-event taper in elite swimmers</a><small>Journal of Sports Sciences.</small></li>
+<li><a href="https://doi.org/10.1136/bjsports-2017-098110">Lolli y otros (2019) — Mathematical coupling causes spurious correlation within the conventional acute-to-chronic workload ratio calculations</a><small>British Journal of Sports Medicine.</small></li>
+<li><a href="https://doi.org/10.1123/ijspp.2019-0864">Impellizzeri y otros (2020) — Acute:chronic workload ratio: conceptual issues and fundamental pitfalls</a><small>International Journal of Sports Physiology and Performance.</small></li>
+<li><a href="https://doi.org/10.1249/MSS.0b013e318279a10a">Meeusen y otros (2013) — Prevention, diagnosis, and treatment of the overtraining syndrome</a><small>Consenso ECSS y ACSM.</small></li>
+<li><a href="https://doi.org/10.1136/bjsports-2023-106994">Mountjoy y otros (2023) — Consenso del COI sobre la deficiencia relativa de energía en el deporte (REDs)</a><small>British Journal of Sports Medicine.</small></li>
+<li><a href="https://doi.org/10.5665/SLEEP.1132">Mah y otros (2011) — The effects of sleep extension on the athletic performance of collegiate basketball players</a><small>Sleep.</small></li>
+<li><a href="https://doi.org/10.1097/BPO.0000000000000151">Milewski y otros (2014) — Chronic lack of sleep is associated with increased sports injuries in adolescent athletes</a><small>Journal of Pediatric Orthopaedics.</small></li>
+<li><a href="https://doi.org/10.1007/s40279-014-0260-0">Fullagar y otros (2015) — Sleep and athletic performance</a><small>Sports Medicine.</small></li>
+<li><a href="https://doi.org/10.3389/fphys.2018.00403">Dupuy y otros (2018) — Recovery techniques after exercise: systematic review with meta-analysis</a><small>Frontiers in Physiology.</small></li>
+<li><a href="https://doi.org/10.1113/JP270570">Roberts y otros (2015) — Post-exercise cold water immersion attenuates long-term adaptations to strength training</a><small>Journal of Physiology.</small></li>
+</ul></div>
+</section>
+</template>

@@ -1,0 +1,87 @@
+<template class="chapter-src" data-id="programar" data-num="8" data-title="Programar neuronas: del modelo al código" data-part="Parte II · La máquina neuronal" data-short="McCulloch y Pitts; el perceptrón y su límite (XOR); redes multicapa y retropropagación; el cerebro como estadístico (integración bayesiana); cerebro frente a inteligencia artificial; qué significa «programar» un cerebro">
+<p class="lead">La palabra «programación» aparece en la PNL como metáfora: el cerebro sería un computador al que se le cargan programas nuevos con palabras. Este capítulo toma la palabra en serio. Muestra cómo se programan de verdad modelos de neuronas, qué pueden aprender, en qué se parecen al cerebro y en qué no. Al final queda claro por qué el cerebro no se «programa» como un computador, sino que aprende de la experiencia con reglas locales como las del capítulo 4.</p>
+
+<section>
+<h2>Una neurona que calcula</h2>
+<p>En 1943, el neurofisiólogo Warren McCulloch y el lógico Walter Pitts propusieron un modelo mínimo: una neurona suma sus entradas, cada una multiplicada por un peso, y dispara si la suma supera un umbral. Mostraron que redes de estas unidades pueden calcular cualquier función lógica. En 1958, Frank Rosenblatt agregó lo esencial: una regla para que la neurona <i>aprenda</i> los pesos a partir de ejemplos. La llamó <span class="term">perceptrón</span>.</p>
+<div class="eq key" data-name="Perceptrón de Rosenblatt">\[y=\begin{cases}1 & \text{si } \mathbf w\cdot\mathbf x+b>0\\ 0 & \text{si no}\end{cases}\qquad \Delta\mathbf w=\eta\,(t-y)\,\mathbf x,\quad \Delta b=\eta\,(t-y).\]</div>
+<p>La regla solo corrige cuando la neurona se equivoca. Si existe una recta (en general, un hiperplano) que separa las dos clases, el perceptrón la encuentra en un número finito de pasos: es el teorema de convergencia.</p>
+<div class="sim" data-sim="perceptron" data-title="Un perceptrón que aprende a separar dos clases"></div>
+<div class="sim-guide"><ul>
+<li>Con la función AND o una nube de puntos separable, la recta de decisión gira y se desplaza hasta separar las clases, y se detiene cuando ya no hay errores.</li>
+<li>Elija XOR: ninguna recta puede separar las esquinas opuestas y el perceptrón da vueltas para siempre. Marvin Minsky y Seymour Papert (1969) publicaron este límite, y el entusiasmo por las redes neuronales se enfrió durante más de una década.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Varias capas y retropropagación</h2>
+<p>La solución era conocida: agregar una capa intermedia de neuronas. El problema era cómo enseñarles, porque el error solo se ve en la salida. En 1986, David Rumelhart, Geoffrey Hinton y Ronald Williams popularizaron la <span class="term">retropropagación</span>: con la regla de la cadena del cálculo, el error de la salida se reparte hacia atrás, capa por capa, y cada peso se ajusta según cuánto contribuyó al error.</p>
+<div class="eq">\[\frac{\partial E}{\partial w^{(1)}_{ij}}=\underbrace{\frac{\partial E}{\partial y}\frac{\partial y}{\partial h_j}}_{\text{error que llega a la neurona oculta}}\;\frac{\partial h_j}{\partial w^{(1)}_{ij}},\qquad w\leftarrow w-\eta\,\frac{\partial E}{\partial w}.\]</div>
+<div class="sim" data-sim="mlp" data-title="Una red de dos capas aprende XOR por retropropagación"></div>
+<div class="sim-guide"><ul>
+<li>El fondo muestra la salida de la red para cada punto del plano: los colores dibujan la frontera que aprende. Abajo, el error a lo largo del entrenamiento.</li>
+<li>Con dos o más neuronas ocultas, la red dobla la frontera y resuelve XOR. Con una sola neurona oculta no puede: es un perceptrón disfrazado.</li>
+<li>A veces el entrenamiento se atasca en un mínimo local; pruebe otra inicialización al azar.</li>
+</ul></div>
+<div class="py" data-py="08-perceptron"></div>
+<div class="box read"><p>El perceptrón aprende AND en 6 épocas y OR en 4, pero no converge con XOR en 100 épocas. La red con tres neuronas ocultas baja el error cuadrático medio de 0,265 a 0,0003 en 5.000 épocas y produce 0,014, 0,984, 0,984 y 0,020 para las cuatro entradas: XOR resuelto.</p></div>
+<div class="box evid"><p><span class="nivel n2">abierta</span>¿Usa el cerebro algo parecido a la retropropagación? Nadie lo sabe. Requiere que cada sinapsis reciba información precisa sobre errores calculados lejos de ella, lo que choca con la regla local de Hebb. Hay propuestas de cómo podría aproximarse con mecanismos biológicos (Lillicrap y otros, 2020), pero ninguna demostrada. Lo cierto es que las redes artificiales modernas descienden de estos modelos y que, al revés, han servido para generar hipótesis sobre la corteza visual.</p></div>
+</section>
+
+<section>
+<h2>El cerebro como estadístico</h2>
+<p>Una idea con buena evidencia es que el cerebro combina la información de forma casi óptima, en el sentido de la estadística bayesiana. Marc Ernst y Martin Banks (2002) pidieron a personas que estimaran la altura de una barra que podían ver y tocar a la vez. Agregando ruido a la imagen, controlaron qué tan confiable era la vista. Si el cerebro pondera cada sentido por su confiabilidad, el estimado combinado debe ser:</p>
+<div class="eq key" data-name="Integración óptima de señales">\[\hat s=w_V\hat s_V+w_H\hat s_H,\quad w_V=\frac{1/\sigma_V^2}{1/\sigma_V^2+1/\sigma_H^2},\qquad \sigma_{VH}^2=\frac{\sigma_V^2\sigma_H^2}{\sigma_V^2+\sigma_H^2}.\]</div>
+<p>Los resultados coincidieron con la predicción: con la vista nítida, las personas se guiaban por lo que veían; con la vista borrosa, por el tacto; y la precisión combinada fue mejor que la de cada sentido por separado, como predice la fórmula.</p>
+<div class="sim" data-sim="bayes" data-title="Vista y tacto: el cerebro pondera cada sentido según su confiabilidad"></div>
+<div class="sim-guide"><ul>
+<li>Las campanas muestran lo que dice cada sentido sobre la altura de la barra y con qué incertidumbre. La vista y el tacto discrepan un poco a propósito, como en el experimento.</li>
+<li>Agregue ruido a la imagen: la campana de la vista se ensancha, su peso cae y el estimado combinado se desplaza hacia el tacto.</li>
+<li>La campana combinada siempre es más angosta que las dos originales: dos fuentes imperfectas valen más que la mejor de ellas.</li>
+</ul></div>
+<p>A partir de ideas como esta se han propuesto teorías amplias, como la <span class="term">codificación predictiva</span>, según la cual el cerebro genera continuamente predicciones y solo propaga hacia arriba los errores de predicción (Rao y Ballard, 1999). Es un marco teórico influyente y elegante, con evidencia parcial; no está demostrado como descripción general del cerebro. Conviene desconfiar de quien lo presenta como un hecho y, más aún, de quien lo usa para vender técnicas de «reprogramación».</p>
+</section>
+
+<section>
+<h2>Cerebro frente a computador</h2>
+<div class="tablewrap"><table>
+<thead><tr><th></th><th>Cerebro humano</th><th>Redes neuronales artificiales</th></tr></thead>
+<tbody>
+<tr><td>Unidades</td><td>unos 86.000 millones de neuronas con miles de sinapsis cada una</td><td>millones a billones de parámetros</td></tr>
+<tr><td>Señales</td><td>espigas discretas, lentas (milisegundos), ruidosas</td><td>números continuos, rápidos (nanosegundos), exactos</td></tr>
+<tr><td>Aprendizaje</td><td>reglas locales (Hebb, STDP), modulación por dopamina, toda la vida</td><td>retropropagación global, sobre todo en una fase de entrenamiento</td></tr>
+<tr><td>Datos necesarios</td><td>a menudo pocos ejemplos</td><td>en general enormes cantidades</td></tr>
+<tr><td>Energía</td><td>unos 20 vatios en total</td><td>centros de datos de megavatios para entrenar los modelos grandes</td></tr>
+<tr><td>Programación</td><td>no hay un programa separado del sustrato: el «programa» son las sinapsis, y cambian con lo que se hace</td><td>arquitectura programada por personas; pesos aprendidos</td></tr>
+</tbody></table></div>
+<div class="box explain"><p>Cuando un curso promete «instalar un programa nuevo» en su mente con unas frases, usa una metáfora de computador que no corresponde a cómo aprende el cerebro. Las palabras sí influyen: cambian la atención, las expectativas y lo que uno decide hacer, y eso puede iniciar un cambio (parte III). Pero el cambio estable lo producen la repetición, el error de predicción y el tiempo, porque así es como se modifican las sinapsis.</p></div>
+</section>
+
+<section>
+<h2>Resumen, problemas y autoevaluación</h2>
+<div class="box keys"><ul>
+<li>McCulloch y Pitts mostraron que neuronas simples calculan funciones lógicas; Rosenblatt agregó una regla para aprender los pesos.</li>
+<li>Un perceptrón solo separa clases con una recta; XOR requiere una capa oculta y un método para entrenarla, como la retropropagación.</li>
+<li>No se sabe si el cerebro usa retropropagación; sus reglas conocidas son locales.</li>
+<li>El cerebro combina señales sensoriales de forma casi óptima, ponderándolas por su confiabilidad (Ernst y Banks, 2002).</li>
+<li>El cerebro no se «programa» con palabras: aprende con la experiencia, y el programa son las propias sinapsis.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Encuentre pesos y sesgo para que un perceptrón calcule OR.
+<details><summary>Respuesta</summary><p>Por ejemplo \(w=(1;1)\), \(b=-0{,}5\): da 0 solo para (0, 0).</p></details></li>
+<li><span class="lvl">Intermedio</span>Si \(\sigma_V=2\) y \(\sigma_H=1\), ¿qué peso recibe la vista y cuál es la desviación combinada?
+<details><summary>Respuesta</summary><p>\(w_V=\frac{1/4}{1/4+1}=0{,}2\); \(\sigma_{VH}=\sqrt{4\cdot1/5}\approx0{,}894\).</p></details></li>
+<li><span class="lvl">Avanzado</span>Demuestre que XOR no es linealmente separable.
+<details><summary>Respuesta</summary><p>Se necesitaría \(b\le0\) (para (0,0)), \(w_1+b>0\), \(w_2+b>0\) y \(w_1+w_2+b\le0\). Sumando las dos del medio: \(w_1+w_2+2b>0\), es decir \(w_1+w_2+b>-b\ge0\), lo que contradice la última.</p></details></li>
+</ol>
+<div class="sim" data-sim="quiz-programar" data-title="Autoevaluación del capítulo 8"></div>
+<div class="box links"><ul>
+<li><a href="https://doi.org/10.1007/BF02478259">McCulloch y Pitts (1943) — A logical calculus of the ideas immanent in nervous activity</a><small>Bulletin of Mathematical Biophysics.</small></li>
+<li><a href="https://doi.org/10.1037/h0042519">Rosenblatt (1958) — The perceptron: a probabilistic model for information storage and organization in the brain</a><small>Psychological Review.</small></li>
+<li><a href="https://doi.org/10.1038/323533a0">Rumelhart, Hinton y Williams (1986) — Learning representations by back-propagating errors</a><small>Nature.</small></li>
+<li><a href="https://doi.org/10.1038/s41583-020-0277-3">Lillicrap y otros (2020) — Backpropagation and the brain</a><small>Nature Reviews Neuroscience.</small></li>
+<li><a href="https://doi.org/10.1038/415429a">Ernst y Banks (2002) — Humans integrate visual and haptic information in a statistically optimal fashion</a><small>Nature.</small></li>
+<li><a href="https://doi.org/10.1038/4580">Rao y Ballard (1999) — Predictive coding in the visual cortex</a><small>Nature Neuroscience.</small></li>
+</ul></div>
+</section>
+</template>

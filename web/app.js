@@ -231,25 +231,33 @@ document.addEventListener('DOMContentLoaded', () => {
         renderCourses();
     };
 
-    // 3. Renderizar Cursos (con modo compacto en móvil)
+    // 3. Renderizar Cursos (con modo compacto en móvil y filtros de categoría)
+    let currentCourseFilter = 'all';
     let coursesExpanded = false;
+
     window.toggleCoursesExpansion = function() {
         coursesExpanded = !coursesExpanded;
-        renderCourses();
+        renderCourses(currentCourseFilter);
         if (!coursesExpanded) {
             const el = document.getElementById('cursos');
             if (el) el.scrollIntoView({ behavior: 'smooth' });
         }
     };
 
-    function renderCourses() {
+    function renderCourses(filter = 'all') {
+        currentCourseFilter = filter;
         const coursesGrid = document.getElementById('courses-grid');
         const toggleContainer = document.getElementById('courses-toggle-controls');
-        if (!coursesGrid) return;
+        if (!coursesGrid || !data.cursos) return;
+
+        const f = (filter || 'all').toLowerCase();
+        const filtered = f === 'all'
+            ? data.cursos
+            : data.cursos.filter(c => (c.categoriaFiltro || '').toLowerCase() === f || (c.categoria || '').toLowerCase().includes(f));
 
         const isMobile = window.innerWidth <= 768;
-        const total = data.cursos.length;
-        const coursesToRender = (isMobile && !coursesExpanded) ? data.cursos.slice(0, 3) : data.cursos;
+        const total = filtered.length;
+        const coursesToRender = (isMobile && !coursesExpanded) ? filtered.slice(0, 3) : filtered;
 
         coursesGrid.innerHTML = coursesToRender.map(c => {
             const isLab = c.id === 'transformadores' || c.esLaboratorio;
@@ -313,8 +321,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Configurar botones de filtro de cursos
+    document.querySelectorAll('.course-filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.course-filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            coursesExpanded = true; // Al filtrar, mostrar todos los resultados de la categoría elegida
+            renderCourses(btn.dataset.filter);
+        });
+    });
+
     updateStudentBannerState();
-    renderCourses();
+    renderCourses('all');
 
     // 4. Renderizar Canales Oficiales en Spotify (Visual Nativo y Carga Compacta Móvil)
     let spotifyExpanded = false;
@@ -787,8 +805,74 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // ========================================================
-    // 7. Renderizar Datos Fascinantes de la Física (con modo compacto en móvil)
+    // 7. Renderizar Datos Fascinantes de la Física (Rotación Diaria Dinámica)
     // ========================================================
+    const now = new Date();
+    const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+    const diaNombre = diasSemana[now.getDay()];
+    const diaMes = now.getDate();
+    const mesNombre = meses[now.getMonth()];
+    const anio = now.getFullYear();
+    const fechaHoyTexto = `${diaNombre}, ${diaMes} de ${mesNombre} de ${anio}`;
+
+    // Cálculo del día del año (1..366) para rotación determinista diaria
+    const startOfYear = new Date(now.getFullYear(), 0, 0);
+    const diff = (now - startOfYear) + ((startOfYear.getTimezoneOffset() - now.getTimezoneOffset()) * 60 * 1000);
+    const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+    // Dato del día determinista para hoy (cambia cada 24 horas a medianoche)
+    const totalFactsCount = (data.datosCuriosos && data.datosCuriosos.length) ? data.datosCuriosos.length : 31;
+    const dailyFactIndex = dayOfYear % totalFactsCount;
+    const todayFact = data.datosCuriosos[dailyFactIndex];
+
+    function renderDailyFactBanner() {
+        const container = document.getElementById('daily-fact-container');
+        if (!container || !todayFact) return;
+
+        container.innerHTML = `
+            <div class="daily-fact-banner">
+                <div class="daily-fact-header">
+                    <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+                        <span class="daily-pulse-tag">✨ DATO CURIOSO DEL DÍA</span>
+                        <span class="daily-date-badge">📅 ${fechaHoyTexto}</span>
+                    </div>
+                    <span class="daily-refresh-indicator">🔄 Rotación Diaria Automática</span>
+                </div>
+                
+                <div class="daily-fact-body">
+                    <div class="daily-fact-icon-col">
+                        <div class="daily-fact-icon">${todayFact.icono}</div>
+                    </div>
+                    <div class="daily-fact-content-col">
+                        <div style="display:flex; gap:0.5rem; align-items:center; margin-bottom:0.5rem; flex-wrap:wrap;">
+                            <span class="fact-badge ${todayFact.categoriaTag || ''}">${todayFact.categoria}</span>
+                            <span style="font-size:0.75rem; color:var(--text-muted);">Curiosidad del día #${todayFact.id.replace('dato-', '')} de ${totalFactsCount}</span>
+                        </div>
+                        <h3 class="daily-fact-title">${todayFact.titulo}</h3>
+                        <p class="daily-fact-desc">${todayFact.descripcion}</p>
+                        
+                        <div class="daily-fact-principle">
+                            <span style="color:var(--accent-blue); font-weight:700;">🔬 Principio Científico:</span>
+                            <span style="color:var(--text-main);">${todayFact.principio}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    renderDailyFactBanner();
+
+    // Rotación del listado general según el día del año para dinamizar la página
+    function getDailyOrderedFacts() {
+        if (!data.datosCuriosos) return [];
+        const list = [...data.datosCuriosos];
+        // Desplazamiento rotativo que refresca la portada cada día
+        const offset = (dayOfYear * 5) % totalFactsCount;
+        return list.slice(offset).concat(list.slice(0, offset));
+    }
+
     let factsExpanded = false;
     window.toggleFactsExpansion = function() {
         factsExpanded = !factsExpanded;
@@ -807,9 +891,12 @@ document.addEventListener('DOMContentLoaded', () => {
         currentFactFilter = filter;
         if (!factsGrid || !data.datosCuriosos) return;
         const f = (filter || 'all').toLowerCase();
+        
+        // Si el filtro es 'all', usamos el orden dinámico del día; si es específico, filtramos el catálogo
+        const baseList = f === 'all' ? getDailyOrderedFacts() : data.datosCuriosos;
         const filtered = f === 'all'
-            ? data.datosCuriosos
-            : data.datosCuriosos.filter(item => (item.categoriaTag || '').toLowerCase().includes(f));
+            ? baseList
+            : baseList.filter(item => (item.categoriaTag || '').toLowerCase().includes(f));
 
         const isMobile = window.innerWidth <= 768;
         const factsToRender = (isMobile && !factsExpanded) ? filtered.slice(0, 4) : filtered;
@@ -847,6 +934,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.fact-filter-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
+            factsExpanded = true; // Al seleccionar categoría, mostrar todos
             renderPhysicsFacts(btn.dataset.filter);
         });
     });

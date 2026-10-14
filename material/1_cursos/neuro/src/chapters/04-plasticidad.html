@@ -1,0 +1,122 @@
+<template class="chapter-src" data-id="plasticidad" data-num="4" data-title="Plasticidad sináptica: cómo se graba la experiencia" data-part="Parte II · La máquina neuronal" data-short="De Cajal y Hebb a la potenciación de largo plazo; el receptor NMDA y el calcio; plasticidad por tiempo de espiga (STDP); reglas de Hebb, Oja y BCM; homeostasis y sueño">
+<p class="lead">Cuando se dice que alguien «reprogramó su cerebro», lo único concreto que puede significar es esto: cambió la fuerza de algunas de sus sinapsis. Este capítulo explica cómo ocurre ese cambio, qué lo dispara y qué lo limita. Es el mecanismo más estudiado de la neurociencia, y el que da sentido a todo lo que sigue: memoria, hábitos, destreza deportiva y rehabilitación.</p>
+
+<section>
+<h2>De Cajal a Hebb: aprender es cambiar conexiones</h2>
+<p>En 1894, Santiago Ramón y Cajal propuso ante la Real Sociedad de Londres que el aprendizaje no crea neuronas nuevas, sino que fortalece y multiplica las conexiones entre las existentes. Medio siglo después, en 1949, el psicólogo canadiense Donald Hebb formuló la idea en forma de regla: cuando el axón de una célula A excita repetidamente a una célula B y contribuye a hacerla disparar, algún proceso de crecimiento hace que A sea más eficaz para activar a B. Se resume en la frase, que no es de Hebb sino de Carla Shatz, «neuronas que disparan juntas se conectan».</p>
+<div class="eq key" data-name="Regla de Hebb">\[\Delta w_{ij}=\eta\;x_i\;y_j\]</div>
+<p>Aquí \(x_i\) es la actividad de la neurona presináptica, \(y_j\) la de la postsináptica, \(w_{ij}\) la fuerza de su sinapsis y \(\eta\) una tasa de aprendizaje. Es una regla <span class="term">local</span>: la sinapsis solo necesita saber lo que pasa a sus dos lados. Esa localidad es la gran diferencia con el aprendizaje de las redes neuronales artificiales (capítulo 8).</p>
+</section>
+
+<section>
+<h2>La potenciación de largo plazo y el receptor NMDA</h2>
+<p>La regla de Hebb fue una hipótesis durante 24 años. En 1973, Tim Bliss y Terje Lømo estimularon con trenes de alta frecuencia una vía que llega al hipocampo de conejos anestesiados y vieron que la respuesta sináptica quedaba aumentada durante horas. La llamaron <span class="term">potenciación de largo plazo</span> (LTP, por sus siglas en inglés). Con estímulos de baja frecuencia ocurre lo contrario, la <span class="term">depresión de largo plazo</span> (LTD).</p>
+<p>La pieza clave es el <span class="term">receptor NMDA</span> de glutamato, un detector de coincidencias. En reposo, un ion de magnesio tapa su canal. Para que deje pasar calcio se necesitan dos cosas a la vez: glutamato liberado por la neurona presináptica y despolarización de la postsináptica, que expulsa el magnesio. Es la regla de Hebb hecha molécula. Lo que decide el signo del cambio es cuánto calcio entra:</p>
+<ul>
+<li>Poco calcio: nada cambia.</li>
+<li>Calcio moderado y sostenido: se activan fosfatasas, se retiran receptores AMPA de la sinapsis y esta se debilita (LTD).</li>
+<li>Mucho calcio en poco tiempo: se activan quinasas como la CaMKII, se insertan más receptores AMPA y la sinapsis se fortalece (LTP).</li>
+</ul>
+<div class="sim" data-sim="calcio" data-title="Frecuencia de estimulación, calcio y dirección del cambio sináptico"></div>
+<div class="sim-guide"><ul>
+<li>Este es un modelo didáctico basado en la hipótesis del control por calcio (Shouval, Bear y Cooper, 2002). La curva de la derecha reproduce la forma que midieron Dudek y Bear (1992) con 900 pulsos en el hipocampo: depresión entre 1 y 5 Hz, casi nada cerca de 10 Hz, potenciación por encima.</li>
+<li>Bloquee los receptores NMDA (es lo que hace el fármaco AP5): el calcio no sube y no hay ni LTP ni LTD.</li>
+<li>Reduzca el número de pulsos: el cambio es menor. La plasticidad necesita repetición.</li>
+</ul></div>
+<p>La LTP tiene fases. La temprana dura minutos a horas y modifica proteínas que ya existen. La tardía, que puede durar días o semanas, requiere fabricar proteínas nuevas y cambia la estructura física: las espinas dendríticas donde ocurren las sinapsis crecen (Matsuzaki y otros, 2004). Y la LTP importa para la conducta: ratas tratadas con AP5, que bloquea la LTP en el hipocampo, no aprenden a encontrar una plataforma escondida en una piscina (Morris y otros, 1986).</p>
+<div class="box evid"><p><span class="nivel n4">sólida</span>La potenciación y la depresión de largo plazo dependientes del receptor NMDA están entre los fenómenos más replicados de la neurociencia, en muchas especies y regiones. Lo que sigue en investigación es cuánto de cada recuerdo concreto depende de ellas y qué otros mecanismos participan.</p></div>
+</section>
+
+<section>
+<h2>El orden importa: plasticidad por tiempo de espiga</h2>
+<p>A finales de los años noventa, Henry Markram (1997) y Guo-qiang Bi y Mu-ming Poo (1998) midieron qué pasa cuando una neurona presináptica y una postsináptica disparan con milisegundos de diferencia. Si la presináptica dispara justo <i>antes</i> que la postsináptica (y por lo tanto pudo causar su disparo), la sinapsis se fortalece. Si dispara justo <i>después</i>, se debilita. El efecto decae en unas decenas de milisegundos. Se llama <span class="term">plasticidad dependiente del tiempo de espiga</span> (STDP):</p>
+<div class="eq">\[\Delta w(\Delta t)=\begin{cases}A_+\,\ee^{-\Delta t/\tau_+}, & \Delta t>0\ \text{(pre antes que post)}\\ -A_-\,\ee^{\Delta t/\tau_-}, & \Delta t\lt 0\ \text{(pre después de post)}\end{cases}\qquad \Delta t=t_{\text{post}}-t_{\text{pre}}.\]</div>
+<div class="sim" data-sim="stdp" data-title="La ventana de STDP y un protocolo de 60 emparejamientos"></div>
+<div class="sim-guide"><ul>
+<li>A la izquierda, la ventana: cambio por par según el desfase. A la derecha, cómo evoluciona el peso al repetir 60 pares, como en los experimentos de Bi y Poo.</li>
+<li>Mueva el desfase de −40 a +40 ms y fíjese en el cambio de signo en cero: la sinapsis «premia» a quien predice y castiga a quien llega tarde.</li>
+<li>Los parámetros son del orden de los publicados (constantes de unos 17 y 34 ms); el detalle varía mucho entre tipos de sinapsis.</li>
+</ul></div>
+<p>La STDP tiene una consecuencia elegante: una neurona que recibe entradas en secuencia fortalece las que llegan primero, de modo que con la práctica empieza a responder antes. Es una forma de aprender a predecir, la misma idea que reaparece con la dopamina en el capítulo 7.</p>
+</section>
+
+<section>
+<h2>Reglas que no explotan: Oja y BCM</h2>
+<p>La regla de Hebb pura tiene un defecto grave: es una retroalimentación positiva sin freno. Una sinapsis fuerte hace disparar más a la neurona, lo que la fortalece más, y los pesos crecen sin límite. Los modelos matemáticos agregan un freno. El de Erkki Oja (1982) resta un término proporcional al peso:</p>
+<div class="eq key" data-name="Regla de Oja">\[\Delta\mathbf w=\eta\,y\,(\mathbf x-y\,\mathbf w),\qquad y=\mathbf w\cdot\mathbf x .\]</div>
+<p>Con ese freno, el vector de pesos converge a longitud uno y apunta en la dirección en que las entradas varían más: la primera componente principal. Una sola neurona con una regla local descubre la estructura estadística de lo que recibe. Es el mismo resultado que el análisis de componentes principales que se enseña en estadística.</p>
+<div class="sim" data-sim="oja" data-title="Hebb frente a Oja: una neurona que aprende la dirección principal de sus entradas"></div>
+<div class="sim-guide"><ul>
+<li>Los puntos son patrones de actividad de dos neuronas presinápticas correlacionadas. La flecha es el vector de pesos sinápticos.</li>
+<li>Con la regla de Oja, la flecha gira hasta alinearse con el eje mayor de la nube y su longitud se estabiliza en 1. Con Hebb puro apunta bien, pero crece sin control.</li>
+<li>Cambie la correlación: la dirección aprendida cambia con ella. Con correlación negativa la neurona aprende otra dirección.</li>
+</ul></div>
+<p>La regla BCM (Bienenstock, Cooper y Munro, 1982) agrega otra idea: el umbral que separa potenciación de depresión <i>se desliza</i> según la actividad reciente de la neurona. Si la neurona ha estado muy activa, cuesta más potenciarla; si ha estado callada, se potencia con facilidad. Eso estabiliza la red y hace que cada neurona se vuelva selectiva a un patrón.</p>
+<div class="eq">\[\Delta w_i=\eta\,x_i\,y\,(y-\theta),\qquad \tau_\theta\,\frac{\dd\theta}{\dd t}=y^{2}-\theta .\]</div>
+<div class="sim" data-sim="bcm" data-title="Regla BCM: una neurona que se especializa en uno de dos patrones"></div>
+<div class="sim-guide"><ul>
+<li>La neurona recibe al azar el patrón A o el B. Al principio responde parecido a ambos; con el tiempo responde fuerte a uno y casi nada al otro.</li>
+<li>El umbral deslizante (línea punteada) sigue el promedio del cuadrado de la respuesta y evita que todo se potencie.</li>
+<li>Con patrones igual de frecuentes, una diferencia mínima al azar en los pesos iniciales decide a cuál se especializa: pulse «Otro orden al azar» varias veces. Haga que A sea mucho más frecuente que B y vea qué pasa.</li>
+</ul></div>
+<div class="py" data-py="04-plasticidad"></div>
+<div class="box read"><p>Con 20.000 patrones, la regla de Oja llevó el peso a \((0{,}9405;\ 0{,}3401)\), de longitud 1, con coseno 0,99995 respecto del vector propio principal que calcula NumPy, \((0{,}9436;\ 0{,}331)\). La regla de Hebb pura también apuntó en esa dirección (coseno 1), pero su longitud superó el millón: aprendió bien hacia dónde, pero no supo cuánto. En la STDP, 60 pares con +5 ms potenciaron la sinapsis 70 % y con −5 ms la deprimieron 20 %; a ±40 ms el efecto casi desaparece.</p></div>
+</section>
+
+<section>
+<h2>Estabilidad: escalamiento sináptico y sueño</h2>
+<p>Si todas las sinapsis usadas se fortalecieran sin compensación, el cerebro acabaría saturado. Gina Turrigiano y sus colegas (1998) mostraron que las neuronas en cultivo ajustan todas sus sinapsis en proporción para mantener su actividad media en un rango: si se las silencia, las suben; si se las sobreexcita, las bajan. Este <span class="term">escalamiento sináptico</span> conserva las diferencias relativas, que es donde está la información.</p>
+<div class="box evid"><p><span class="nivel n3">moderada</span>La hipótesis de la homeostasis sináptica propone que durante la vigilia las sinapsis se fortalecen en conjunto y durante el sueño se reducen, lo que ahorra energía y mejora la relación señal-ruido. En ratones, la superficie de contacto de las sinapsis de la corteza fue en promedio cerca de 18 % menor después de dormir que después de estar despiertos (de Vivo y otros, 2017). Es una pieza de evidencia importante, pero la hipótesis completa sigue en discusión, y en humanos la evidencia directa es limitada.</p></div>
+</section>
+
+<section>
+<h2>Qué significa para usted</h2>
+<p>Lo que se sabe de la plasticidad sináptica traduce en principios bastante concretos, que el resto del curso aplica a los hábitos, el deporte y la rehabilitación:</p>
+<ul>
+<li><b>Lo que se repite se fortalece.</b> La plasticidad necesita activación repetida. Pensar una vez en algo no lo graba; practicarlo muchas veces sí.</li>
+<li><b>La actividad tiene que ser la correcta.</b> Las sinapsis que se fortalecen son las que participan. Practicar mal también se aprende.</li>
+<li><b>La atención y la recompensa abren la puerta.</b> Neuromoduladores como la dopamina y la acetilcolina facilitan la plasticidad cuando algo es relevante o sorprendente (capítulo 7).</li>
+<li><b>El cerebro se estabiliza.</b> Mecanismos homeostáticos y el sueño impiden que todo cambie a la vez. Por eso el cambio duradero es gradual.</li>
+<li><b>La plasticidad no es buena ni mala.</b> El dolor crónico, las adicciones y los tics también son aprendizaje sináptico.</li>
+</ul>
+<div class="box myth">
+<p class="m"><b>Mito</b>«Con esta técnica reprogramará su cerebro en 21 días».</p>
+<p class="r"><b>Realidad</b>No existe un número mágico. La plasticidad sináptica ocurre en minutos, pero los cambios de conducta estables tardan semanas o meses y varían muchísimo entre personas (capítulo 15). Y ninguna técnica cambia las sinapsis «desde fuera»: las cambia lo que usted hace, una y otra vez.</p>
+</div>
+</section>
+
+<section>
+<h2>Resumen, problemas y autoevaluación</h2>
+<div class="box keys"><ul>
+<li>Aprender es, en buena medida, cambiar la fuerza de las sinapsis (Cajal, Hebb).</li>
+<li>El receptor NMDA detecta la coincidencia entre actividad pre y postsináptica; la cantidad de calcio decide entre potenciación (LTP) y depresión (LTD).</li>
+<li>En la STDP, el orden de las espigas decide el signo: pre antes que post fortalece.</li>
+<li>La regla de Hebb pura es inestable; Oja la estabiliza y aprende la componente principal; BCM usa un umbral deslizante y produce selectividad.</li>
+<li>El escalamiento sináptico y, probablemente, el sueño mantienen la estabilidad.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Por qué se dice que el receptor NMDA es un «detector de coincidencias»?
+<details><summary>Respuesta</summary><p>Porque solo deja pasar calcio si coinciden dos condiciones: glutamato presináptico unido al receptor y despolarización postsináptica que expulse el magnesio del canal.</p></details></li>
+<li><span class="lvl">Básico</span>Con la ventana de STDP del capítulo, ¿qué es mejor para fortalecer una sinapsis: Δt = +5 ms o Δt = +30 ms?
+<details><summary>Respuesta</summary><p>+5 ms: el cambio por par es \(0{,}8\,\ee^{-5/17}\approx0{,}60\) frente a \(0{,}8\,\ee^{-30/17}\approx0{,}14\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Demuestre que si la regla de Oja converge, el vector de pesos tiene norma 1. (Pista: tome el valor esperado de \(\Delta\mathbf w\) y multiplique por \(\mathbf w\).)
+<details><summary>Respuesta</summary><p>En equilibrio \(\E[y\mathbf x]=\E[y^2]\mathbf w\), es decir \(C\mathbf w=(\mathbf w^{\!\top}C\mathbf w)\,\mathbf w\). Así \(\mathbf w\) es vector propio con valor propio \(\lambda=\mathbf w^{\!\top}C\mathbf w=\lambda\,\|\mathbf w\|^2\), luego \(\|\mathbf w\|=1\).</p></details></li>
+<li><span class="lvl">Avanzado</span>¿Por qué la regla de Hebb pura apunta en la dirección correcta aunque diverja?
+<details><summary>Respuesta</summary><p>En promedio \(\Delta\mathbf w=\eta C\mathbf w\): es la iteración de potencias, que amplifica más la componente del vector propio con mayor valor propio. La dirección converge a ese vector, pero la norma crece como \((1+\eta\lambda_1)^n\).</p></details></li>
+</ol>
+<div class="sim" data-sim="quiz-plasticidad" data-title="Autoevaluación del capítulo 4"></div>
+<div class="box links"><ul>
+<li><a href="https://doi.org/10.1113/jphysiol.1973.sp010273">Bliss y Lømo (1973) — Long-lasting potentiation of synaptic transmission in the dentate area of the anaesthetized rabbit</a><small>Journal of Physiology. El descubrimiento de la LTP.</small></li>
+<li><a href="https://doi.org/10.1038/319774a0">Morris y otros (1986) — Selective impairment of learning and blockade of LTP by an NMDA receptor antagonist, AP5</a><small>Nature.</small></li>
+<li><a href="https://doi.org/10.1073/pnas.89.10.4363">Dudek y Bear (1992) — Homosynaptic long-term depression in area CA1 of hippocampus</a><small>PNAS. La curva de frecuencia.</small></li>
+<li><a href="https://doi.org/10.1073/pnas.152343099">Shouval, Bear y Cooper (2002) — A unified model of NMDA receptor-dependent bidirectional synaptic plasticity</a><small>PNAS. La hipótesis del control por calcio.</small></li>
+<li><a href="https://doi.org/10.1126/science.275.5297.213">Markram y otros (1997) — Regulation of synaptic efficacy by coincidence of postsynaptic APs and EPSPs</a><small>Science.</small></li>
+<li><a href="https://doi.org/10.1523/JNEUROSCI.18-24-10464.1998">Bi y Poo (1998) — Synaptic modifications in cultured hippocampal neurons</a><small>Journal of Neuroscience. La ventana de STDP.</small></li>
+<li><a href="https://doi.org/10.1007/BF00275687">Oja (1982) — Simplified neuron model as a principal component analyzer</a><small>Journal of Mathematical Biology.</small></li>
+<li><a href="https://doi.org/10.1523/JNEUROSCI.02-01-00032.1982">Bienenstock, Cooper y Munro (1982) — Theory for the development of neuron selectivity</a><small>Journal of Neuroscience. La regla BCM.</small></li>
+<li><a href="https://doi.org/10.1038/nature02617">Matsuzaki y otros (2004) — Structural basis of long-term potentiation in single dendritic spines</a><small>Nature.</small></li>
+<li><a href="https://doi.org/10.1038/36103">Turrigiano y otros (1998) — Activity-dependent scaling of quantal amplitude in neocortical neurons</a><small>Nature. El escalamiento sináptico.</small></li>
+<li><a href="https://doi.org/10.1126/science.aah5982">de Vivo y otros (2017) — Ultrastructural evidence for synaptic scaling across the wake/sleep cycle</a><small>Science.</small></li>
+</ul></div>
+</section>
+</template>

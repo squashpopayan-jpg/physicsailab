@@ -36,6 +36,7 @@ window.PLATFORM_DATA = {
             nivel: "Universitario / Preuniversitario",
             modulos: "18 Capítulos Interactivos + Formulario",
             categoria: "Física Fundamental",
+            categoriaFiltro: "fundamental",
             descripcion: "Suite computacional completa que cubre desde medición y cálculo vectorial hasta fluidos, ondas y sonido. Incluye motores de física en tiempo real para experimentar con cada ecuación.",
             temas: [
                 "01. Medición y Conversiones", "02. Vectores y Álgebra", "03. Movimiento en 1D",
@@ -51,7 +52,53 @@ window.PLATFORM_DATA = {
             precioEstimado: "$29 USD (~$115.000 COP)",
             valorReal: "$49 USD",
             descuentoTag: "40% OFF Lanzamiento",
-            enlaceCompra: "https://hotmart.com" // Placeholder para el link de Hotmart
+            enlaceCompra: "https://hotmart.com"
+        },
+        {
+            id: "materiales",
+            titulo: "Ciencia de los Materiales: del Enlace al Diseño",
+            nivel: "Universitario / Maestría / Ingeniería",
+            modulos: "27 Capítulos Interactivos + Formulario + Validación SciPy",
+            categoria: "Ciencia de Materiales & Sólidos",
+            categoriaFiltro: "materiales",
+            descripcion: "Obra insignia de maestría del autor: desde el enlace químico, defectos cristalinos y difusión hasta diagramas de fases (Fe-C), tratamientos térmicos, fractura, fatiga, cerámicos, polímeros, propiedades magnéticas, corrosión y mapas de selección de Ashby.",
+            temas: [
+                "01. Introducción y Familias de Materiales",
+                "02. Enlace Químico y Potenciales Interatómicos",
+                "03. Estructuras Cristalinas y Redes de Bravais",
+                "04. Cristalografía, Índices de Miller y Planos",
+                "05. Difracción de Rayos X (Ley de Bragg)",
+                "06. Defectos Cristalinos y Vacancias",
+                "07. Difusión en Sólidos (Leyes de Fick)",
+                "08. Ensayos de Tracción y Propiedades Mecánicas",
+                "09. Deformación Plástica y Dislocaciones",
+                "10. Mecánica de la Fractura (Criterio de Griffith)",
+                "11. Fatiga de Materiales y Curvas S-N",
+                "12. Diagramas de Fases Binarios",
+                "13. Diagrama Hierro-Carbono (Fe-C) y Aceros",
+                "14. Transformaciones de Fase y Curvas TTT",
+                "15. Tratamientos Térmicos Industriales",
+                "16. Metales y Aleaciones de Ingeniería",
+                "17. Materiales Cerámicos y Vidrios",
+                "18. Polímeros y Estructura Molecular",
+                "19. Materiales Compuestos (Composites)",
+                "20. Propiedades Eléctricas y Semiconductores",
+                "21. Propiedades Dieléctricas y Piezoeléctricos",
+                "22. Propiedades Térmicas y Capacidad Calorífica",
+                "23. Propiedades Magnéticas y Dominios",
+                "24. Propiedades Ópticas y Fotónica",
+                "25. Corrosión y Degradación Electroquímica",
+                "26. Selección de Materiales y Mapas de Ashby",
+                "27. Nanomateriales y Nanotecnología",
+                "98. Formulario & Validación Numérica SciPy"
+            ],
+            destacado: true,
+            tipo: "Cuaderno Interactivo HTML5/JS",
+            demoPath: "/material/1_cursos/materiales/dist/index.html",
+            precioEstimado: "$35 USD (~$140.000 COP)",
+            valorReal: "$69 USD",
+            descuentoTag: "Especialidad Maestría UFOP",
+            enlaceCompra: "https://hotmart.com"
         },
         {
             id: "transformadores",
@@ -59,6 +106,7 @@ window.PLATFORM_DATA = {
             nivel: "Ingeniería / Tecnología Eléctrica",
             modulos: "Banco Libre con 24 Kits Calibrados",
             categoria: "Laboratorio Virtual",
+            categoriaFiltro: "materiales",
             descripcion: "Entorno de laboratorio virtual de alta precisión con cableado libre y equipos de medición reales. Modela saturación del núcleo (Steinmetz), armónicos, cálculo de reluctancia, osciloscopio digital, multímetros de 6000 cuentas y preinformes autocalificados.",
             temas: [
                 "Ensayos de resistencia de devanados (R)", "Ensayos de vacío (A y B)",
@@ -76,31 +124,12 @@ window.PLATFORM_DATA = {
             enlaceCompra: "https://hotmart.com"
         },
         {
-            id: "electromagnetismo",
-            titulo: "Atlas Interactivo de Electromagnetismo",
-            nivel: "Universitario / Ingeniería",
-            modulos: "Campos, Flujo y Leyes de Maxwell",
-            categoria: "Electromagnetismo",
-            descripcion: "Entorno interactivo para la visualización de líneas de fuerza, potencial eléctrico, inducción de Faraday y ondas electromagnéticas.",
-            temas: [
-                "Ley de Coulomb y Campo Eléctrico", "Ley de Gauss y Superficies",
-                "Potencial Eléctrico y Gradiente", "Leyes de Biot-Savart y Ampère",
-                "Inducción de Faraday y Lenz", "Ecuaciones de Maxwell"
-            ],
-            destacado: true,
-            tipo: "Atlas Interactivo Computacional",
-            demoPath: "/material/1_cursos/electromagnetismo/dist/index.html",
-            precioEstimado: "$29 USD (~$115.000 COP)",
-            valorReal: "$49 USD",
-            descuentoTag: "40% OFF Lanzamiento",
-            enlaceCompra: "https://hotmart.com"
-        },
-        {
             id: "ondas",
             titulo: "Cuaderno Interactivo de Vibraciones y Ondas",
             nivel: "Universitario / Ingeniería",
             modulos: "24 Capítulos Interactivos + Simuladores Numéricos",
             categoria: "Oscilaciones, Acústica & Óptica",
+            categoriaFiltro: "fundamental",
             descripcion: "Tratado interactivo exhaustivo que cubre desde osciladores armónicos, péndulos caóticos y sistemas acoplados, hasta la ecuación de onda 1D/2D, series de Fourier, efecto Doppler, acústica arquitectónica, interferencia, difracción y óptica electromagnética.",
             temas: [
                 "01. Movimiento Armónico Simple & Péndulos",
@@ -121,11 +150,98 @@ window.PLATFORM_DATA = {
             enlaceCompra: "https://hotmart.com"
         },
         {
+            id: "neuro",
+            titulo: "Recablear: Neurociencia, Plasticidad y Aprendizaje Motor",
+            nivel: "Universitario / Multidisciplinar / Ciencias del Deporte",
+            modulos: "31 Capítulos Interactivos + Test de Hábitos + Medidor Personal",
+            categoria: "Neurociencia & Biomecánica Motora",
+            categoriaFiltro: "ia",
+            descripcion: "Tratado exhaustivo de neuroplasticidad, sinapsis y aprendizaje motor con evidencia científica contrastada. Desmonta neuromitos, modela la regla de Hebb y circuitos de dopamina, optimiza la formación de hábitos, control del movimiento atlético y recuperación cognitiva.",
+            temas: [
+                "01. La Neurona, Canales Iónicos y Potencial de Acción",
+                "02. Sinapsis, Neurotransmisores y Transmisión Química",
+                "03. Neuroplasticidad, Regla de Hebb y Potenciación a Largo Plazo",
+                "04. Consolidación de la Memoria y Engramas",
+                "05. Mapas Corticales y Reorganización Cerebral",
+                "06. El Sistema de Recompensa y Vía Mesolímbica de Dopamina",
+                "07. Modelado Computacional del Aprendizaje",
+                "08. Análisis Crítico de la PNL frente a la Neurociencia",
+                "09. Sistemas Complejos y Redes Neuronales Biológicas",
+                "10. Psicología del Cambio Conductual y Hábitos (B.J. Fogg & Clear)",
+                "11. Control Motor, Propiocepción y Aprendizaje en el Deporte",
+                "12. Foco Atencional, Fatiga Mental y Corteza Prefrontal",
+                "13. Ejercicio Físico, Neurobiogénesis y BDNF",
+                "14. Bioenergética Mitocondrial y Metabolismo Cerebral",
+                "15. Regulación Neuroendocrina del Sueño y Recuperación",
+                "16. Neurorrehabilitación y Terapias Neurales con Evidencia",
+                "17. Plan Integral de Recableado y Rendimiento Deportivo"
+            ],
+            destacado: true,
+            tipo: "Cuaderno Interactivo HTML5/JS",
+            demoPath: "/material/1_cursos/neuro/dist/index.html",
+            precioEstimado: "$35 USD (~$140.000 COP)",
+            valorReal: "$59 USD",
+            descuentoTag: "Neurociencia Aplicada",
+            enlaceCompra: "https://hotmart.com"
+        },
+        {
+            id: "electromagnetismo",
+            titulo: "Atlas Interactivo de Electromagnetismo",
+            nivel: "Universitario / Ingeniería",
+            modulos: "Campos, Flujo y Leyes de Maxwell",
+            categoria: "Electromagnetismo",
+            categoriaFiltro: "fundamental",
+            descripcion: "Entorno interactivo para la visualización de líneas de fuerza, potencial eléctrico, inducción de Faraday y ondas electromagnéticas.",
+            temas: [
+                "Ley de Coulomb y Campo Eléctrico", "Ley de Gauss y Superficies",
+                "Potencial Eléctrico y Gradiente", "Leyes de Biot-Savart y Ampère",
+                "Inducción de Faraday y Lenz", "Ecuaciones de Maxwell"
+            ],
+            destacado: false,
+            tipo: "Atlas Interactivo Computacional",
+            demoPath: "/material/1_cursos/electromagnetismo/dist/index.html",
+            precioEstimado: "$29 USD (~$115.000 COP)",
+            valorReal: "$49 USD",
+            descuentoTag: "40% OFF Lanzamiento",
+            enlaceCompra: "https://hotmart.com"
+        },
+        {
+            id: "ml",
+            titulo: "Aprender de los Datos: Machine Learning y Redes Neuronales",
+            nivel: "Universitario / Profesional / IA Aplicada",
+            modulos: "12 Módulos Interactivos + Prácticas Validadas con scikit-learn",
+            categoria: "Inteligencia Artificial & Ciencia de Datos",
+            categoriaFiltro: "ia",
+            descripcion: "Fundamento matemático y computacional del aprendizaje automático moderno: regresión, descenso de gradiente estocástico, clasificación logística, árboles de decisión, Random Forest, K-Means, PCA, redes neuronales profundas (MLP) y diagnóstico de overfitting.",
+            temas: [
+                "01. Fundamentos y Taxonomía del Aprendizaje Automático",
+                "02. Regresión Lineal, Función de Costo y Regularización Ridge/Lasso",
+                "03. Descenso de Gradiente (Batch, Mini-Batch y Estocástico)",
+                "04. Clasificación Logística, Matrices de Confusión y Curvas ROC",
+                "05. Árboles de Decisión y Ganancia de Información (Gini / Entropía)",
+                "06. Métodos de Ensamble: Random Forest y Gradient Boosting",
+                "07. Aprendizaje No Supervisado: K-Means Clustering y Reducción PCA",
+                "08. Redes Neuronales Artificiales y Perceptrón Multicapa (MLP)",
+                "09. Retropropagación (Backpropagation) y Derivadas de Pérdida",
+                "10. Diagnóstico de Sesgo vs. Varianza (Underfitting vs Overfitting)",
+                "11. Validación Cruzada, Pipeline de Datos e Hiperparámetros",
+                "12. Casos de Estudio en Python y Validación Numérica"
+            ],
+            destacado: false,
+            tipo: "Laboratorio Computacional de IA",
+            demoPath: "/material/1_cursos/ml/dist/index.html",
+            precioEstimado: "$39 USD (~$155.000 COP)",
+            valorReal: "$79 USD",
+            descuentoTag: "Especialidad IA UNIR",
+            enlaceCompra: "https://hotmart.com"
+        },
+        {
             id: "cuantica",
             titulo: "Exploraciones en Física Cuántica Interactiva",
             nivel: "Avanzado / Universitario",
             modulos: "Simulaciones Cuánticas Numéricas",
-            categoria: "Física Moderna",
+            categoria: "Física Cuántica Moderna",
+            categoriaFiltro: "fundamental",
             descripcion: "Visualización de funciones de onda, dualidad onda-partícula, pozos de potencial y el principio de incertidumbre a través de modelos numéricos interactivos.",
             temas: [
                 "Ecuación de Schrödinger 1D", "Barreras y Efecto Túnel",
@@ -145,7 +261,8 @@ window.PLATFORM_DATA = {
             titulo: "Especialización Práctica en Normativa RETIE",
             nivel: "Ingenieros y Técnicos Electricistas",
             modulos: "Auditoría, Diseño e Instalaciones",
-            categoria: "Ingeniería Aplicada",
+            categoria: "Ingeniería Eléctrica Aplicada",
+            categoriaFiltro: "materiales",
             descripcion: "Guía técnica e interactiva para la aplicación del Reglamento Técnico de Instalaciones Eléctricas en Colombia. Cálculos de apantallamiento, puesta a tierra, protecciones y certificación.",
             temas: [
                 "Fundamentos legales y campo de aplicación del RETIE", "Diseño de sistemas de puesta a tierra (SPT)",
@@ -166,6 +283,7 @@ window.PLATFORM_DATA = {
             nivel: "Deportistas, Entrenadores & Física Aplicada",
             modulos: "Rutinas Pre-generadas + Editor Táctico y Biomecánico",
             categoria: "Física del Deporte & Simulación 3D",
+            categoriaFiltro: "aplicada",
             descripcion: "Entorno interactivo de cinemática y biomecánica en cancha. La vista previa incluye reproducción de rutinas tácticas pre-generadas; adquiere o desbloquea la licencia para personalizar trayectorias, manipular controles en tiempo real, exportar datos y acceder al análisis muscular.",
             temas: [
                 "01. Cinemática de Desplazamiento y Cobertura desde la T",
@@ -181,6 +299,34 @@ window.PLATFORM_DATA = {
             precioEstimado: "$25 USD (~$99.000 COP)",
             valorReal: "$45 USD",
             descuentoTag: "Acceso Premium / Demo de Rutinas",
+            enlaceCompra: "https://hotmart.com"
+        },
+        {
+            id: "finanzas",
+            titulo: "Cuentas Claras: Psicología del Dinero y Matemática Financiera",
+            nivel: "Universitario / General / Planificación Financiera",
+            modulos: "10 Módulos Interactivos + Calculadoras de Interés Real e Inflación",
+            categoria: "Finanzas Cuantitativas & Psicología",
+            categoriaFiltro: "aplicada",
+            descripcion: "Modelos cuantitativos para la toma de decisiones económicas: sesgos cognitivos del inversor, matemática del interés compuesto, amortización de créditos, fondos de emergencia, inversión pasiva indexada y planificación para la independencia financiera.",
+            temas: [
+                "01. Psicología Financiera: Creencias, Impulsividad y Sesgos",
+                "02. Matemática del Interés Simple y Compuesto en Tiempo Real",
+                "03. Inflación, Tasa Real y Preservación del Poder Adquisitivo",
+                "04. Presupuesto Base Cero y Gestión de Flujo de Caja",
+                "05. Estrategias de Desendeudamiento: Método Avalancha vs. Bola de Nieve",
+                "06. Fondos de Emergencia, Seguros y Gestión de Riesgo Patrimonial",
+                "07. Inversión Indexada a Largo Plazo y Diversificación Global",
+                "08. Matemática del Retiro e Independencia Financiera (Regla del 4%)",
+                "09. Detección Matemática de Esquemas Piramidales y Fraudes",
+                "10. Hoja de Ruta de Finanzas Personales 2026"
+            ],
+            destacado: false,
+            tipo: "Cuaderno Interactivo HTML5/JS",
+            demoPath: "/material/1_cursos/finanzas/dist/index.html",
+            precioEstimado: "$25 USD (~$99.000 COP)",
+            valorReal: "$49 USD",
+            descuentoTag: "Finanzas Personales",
             enlaceCompra: "https://hotmart.com"
         }
     ],
@@ -1002,7 +1148,7 @@ window.PLATFORM_DATA = {
         }
     ],
 
-    // Datos Curiosos y Fascinantes de la Física
+    // Datos Curiosos y Fascinantes de la Física (Rotación Diaria Dinámica de 31 hechos científicos)
     datosCuriosos: [
         {
             id: "dato-1",
@@ -1060,7 +1206,7 @@ window.PLATFORM_DATA = {
         },
         {
             id: "dato-7",
-            categoria: "Ondas & Electromagnetismo",
+            categoria: "Ondas & Acústica",
             categoriaTag: "ondas",
             icono: "🌊",
             titulo: "¿Por qué el sonido viaja 4.3 veces más rápido en el agua que en el aire?",
@@ -1069,12 +1215,219 @@ window.PLATFORM_DATA = {
         },
         {
             id: "dato-8",
-            categoria: "Cuántica & Tecnología",
+            categoria: "Cuántica & Termodinámica",
             categoriaTag: "cuantica",
             icono: "❄️",
             titulo: "¿Por qué el Cero Absoluto (0 Kelvin) es matemáticamente inalcanzable?",
             descripcion: "A -273.15 °C (0 Kelvin), cabría pensar que toda vibración atómica se detendría por completo. Sin embargo, el Principio de Incertidumbre de Heisenberg (Δx · Δp ≥ ℏ/2) prohíbe que una partícula tenga simultáneamente una posición fija exacta y una velocidad o momento nulo, pues violaría las leyes cuánticas fundamentales. Por ello, la materia siempre conserva una 'energía del punto cero' residual que ningún sistema termodinámico puede disipar.",
             principio: "Tercera Ley de la Termodinámica & Energía del Punto Cero de Heisenberg"
+        },
+        {
+            id: "dato-9",
+            categoria: "Ciencia de Materiales",
+            categoriaTag: "materiales",
+            icono: "🔬",
+            titulo: "Grafeno: Una sola capa de átomos 200 veces más resistente que el acero",
+            descripcion: "El grafeno está formado por una lámina bidimensional de átomos de carbono dispuestos en una red hexagonal tipo panal. Gracias a la hibridación electrónica sp² con enlaces covalentes sigma extremadamente cortos y fuertes, posee una resistencia a la tracción intrínseca de 130 GPa (frente a ~0.4 GPa del acero estructural) y conduce el calor mejor que el diamante.",
+            principio: "Hibridación Orbital sp², Enlace Covalente Carbono-Carbono & Dispersión de Dirac"
+        },
+        {
+            id: "dato-10",
+            categoria: "Ciencia de Materiales",
+            categoriaTag: "materiales",
+            icono: "🪄",
+            titulo: "Nitinol: El metal inteligente que recuerda su forma al calentarse",
+            descripcion: "El Nitinol (aleación equiatómica de Níquel y Titanio) posee memoria de forma: puedes deformarlo o arrugarlo en frío y, al sumergirlo en agua caliente, recupera instantáneamente su geometría original. Esto ocurre por una transformación de fase reversible en estado sólido entre la fase martensítica (fácilmente deformable) y la austenítica de alta simetría sin desplazamiento difusivo atómico.",
+            principio: "Transformación Martensítica Termoelástica Adifusional en Aleaciones SMA"
+        },
+        {
+            id: "dato-11",
+            categoria: "Termodinámica & Fluidos",
+            categoriaTag: "termodinamica",
+            icono: "☕",
+            titulo: "El Efecto Mpemba: ¿Puede el agua caliente congelarse antes que la fría?",
+            descripcion: "Descrito desde Aristóteles y comprobado en 1969 por el estudiante tanzano Erasto Mpemba: bajo ciertas condiciones geométricas y de convección, un recipiente con agua tibia puede alcanzar el punto de congelación antes que uno con agua fría. Se debe a una combinación de rápida evaporación (que reduce la masa térmica total), convección turbulenta acelerada y relajación de enlaces de hidrógeno covalentes.",
+            principio: "Convección Térmica de Rayleigh-Bénard & Dinámica de Enlaces de Hidrógeno O-H···O"
+        },
+        {
+            id: "dato-12",
+            categoria: "Ondas & Acústica",
+            categoriaTag: "ondas",
+            icono: "🚂",
+            titulo: "El silbido del tren y las galaxias: La omnipresencia del Efecto Doppler",
+            descripcion: "Cuando una ambulancia se acerca, la frecuencia percibida de la sirena aumenta (sonido más agudo) porque cada frente de onda sucesivo se emite más cerca del oyente; al alejarse, la frecuencia decae (sonido más grave). Este mismo fenómeno ondulatorio permitió a Edwin Hubble en 1929 descubrir que las galaxias lejanas presentan un 'corrimiento al rojo' Doppler en su espectro luminoso, demostrando que el universo entero se está expandiendo.",
+            principio: "Efecto Doppler Ondulatorio (f' = f · (v ± v_r)/(v ∓ v_f)) & Expansión de Hubble"
+        },
+        {
+            id: "dato-13",
+            categoria: "Relatividad & Cosmos",
+            categoriaTag: "relatividad",
+            icono: "⏳",
+            titulo: "En el centro de la Tierra eres un microsegundo más joven que en la superficie",
+            descripcion: "La Relatividad General de Einstein postula que la masa curva el espaciotiempo: cuanto más intenso es el potencial gravitatorio en el que te encuentras, más lento transcurre el tiempo relativo frente a un observador exterior lejano. Si pasaras toda tu vida en el núcleo de la Tierra, envejecerías aproximadamente 2.5 años menos cada mil millones de años respecto a alguien viviendo en el espacio exterior.",
+            principio: "Dilatación Gravitacional del Tiempo (Ecuaciones de Campo de Einstein: g_00)"
+        },
+        {
+            id: "dato-14",
+            categoria: "Relatividad & Cosmos",
+            categoriaTag: "relatividad",
+            icono: "🌌",
+            titulo: "Una cucharadita de estrella de neutrones pesaría 6.000 millones de toneladas",
+            descripcion: "Cuando una estrella gigante colapsa en una supernova, la tremenda gravedad supera la repulsión electrónica y fuerza a los electrones a fundirse con los protones, creando una bola de neutrones puros de apenas 20 km de diámetro. Su densidad es tan gigantesca (~10¹⁷ kg/m³) que un solo centímetro cúbico de su materia sobre la superficie terrestre equivaldría al peso combinado de toda la humanidad multiplicada por diez.",
+            principio: "Presión de Degeneración Cuántica Fermiónica (Principio de Exclusión de Pauli)"
+        },
+        {
+            id: "dato-15",
+            categoria: "Cuántica & Tecnología",
+            categoriaTag: "cuantica",
+            icono: "🔗",
+            titulo: "Entrelazamiento Cuántico: La 'acción fantasmal a distancia' de Einstein",
+            descripcion: "Cuando dos partículas cuánticas se generan juntas en un estado entrelazado, sus propiedades físicas (como el espín) quedan unidas inseparablemente sin importar si se separan por un milímetro o por galaxias opuestas. Al medir el espín de una partícula y colapsar su estado en 'arriba', la otra instantáneamente asume el espín 'abajo' con correlación perfecta y sin señales electromagnéticas viajando entre ellas.",
+            principio: "No-Localidad Cuántica, Teorema de Bell & Estado de Bell (|Ψ⁺⟩)"
+        },
+        {
+            id: "dato-16",
+            categoria: "Biofísica & Neurociencia",
+            categoriaTag: "biofisica",
+            icono: "🧠",
+            titulo: "El cerebro humano opera como una supercomputadora de 20 vatios de potencia",
+            descripcion: "Con aproximadamente 86.000 millones de neuronas y más de 100 billones de conexiones sinápticas que procesan información en paralelo a velocidades de hasta 120 m/s, el cerebro humano consume apenas ~20 vatios de potencia metabólica continua (menos que una bombilla incandescente común). Genera esta asombrosa computación mediante diminutos gradientes electroquímicos de iones sodio (Na⁺) y potasio (K⁺).",
+            principio: "Bioelectroquímica: Ecuación de Nernst-Planck & Potenciales de Acción de Hodgkin-Huxley"
+        },
+        {
+            id: "dato-17",
+            categoria: "Squash & Deporte",
+            categoriaTag: "squash",
+            icono: "👟",
+            titulo: "Biomecánica de la 'T': El squash como un péndulo invertido dinámico",
+            descripcion: "En la cancha de squash, un jugador de élite cubre hasta 5 kilómetros en un partido realizando más de 800 cambios violentos de dirección. El secreto biomecánico radica en descender el centro de masa (COM) en cada aproximación a la bola, almacenando energía elástica en los tendones de Aquiles y el cuádriceps (ciclo de estiramiento-acortamiento) para rebotar hacia la 'T' con máxima eficiencia biomecánica.",
+            principio: "Mecánica de Péndulo Invertido, Centro de Masa & Ciclo Estiramiento-Acortamiento (SSC)"
+        },
+        {
+            id: "dato-18",
+            categoria: "Ondas & Óptica",
+            categoriaTag: "ondas",
+            icono: "🌈",
+            titulo: "¿Por qué el cielo es azul y los atardeceres son intensamente rojos?",
+            descripcion: "Las moléculas de nitrógeno y oxígeno en la atmósfera terrestre son mucho más pequeñas que la longitud de onda de la luz visible. Por la Dispersión de Rayleigh, la intensidad de la luz dispersada es inversamente proporcional a la cuarta potencia de su longitud de onda (I ∝ 1/λ⁴). Como la luz azul tiene una longitud de onda corta (~450 nm), se dispersa 10 veces más que la roja (~700 nm); al atardecer, la luz debe atravesar mucho más espesor atmosférico, filtrando todo el azul y dejando pasar los tonos rojos cálidos.",
+            principio: "Dispersión Elástica de Rayleigh (I ∝ λ⁻⁴) & Óptica Electromagnética"
+        },
+        {
+            id: "dato-19",
+            categoria: "Electromagnetismo & Materiales",
+            categoriaTag: "materiales",
+            icono: "🧲",
+            titulo: "Efecto Meissner: La levitación magnética perfecta en superconductores",
+            descripcion: "Al enfriar un material superconductor por debajo de su temperatura crítica (Tc), no solo pierde toda resistencia eléctrica a cero ohmios, sino que expulsa activamente cualquier campo magnético de su interior. Este fenómeno, descubierto por Meissner y Ochsenfeld en 1933, crea corrientes superficiales apantalladoras que generan un campo magnético idéntico y opuesto, permitiendo la levitación estable de imanes (utilizada en los trenes Maglev).",
+            principio: "Superconductividad Cuántica, Pares de Cooper & Efecto Meissner-Ochsenfeld"
+        },
+        {
+            id: "dato-20",
+            categoria: "Termodinámica & Caos",
+            categoriaTag: "termodinamica",
+            icono: "⏳",
+            titulo: "La Entropía: La única ley física que le enseña al universo hacia dónde va el futuro",
+            descripcion: "Casi todas las ecuaciones fundamentales de la física (Newton, Maxwell, Schrödinger, relatividad) son simétricas en el tiempo: funcionan matemáticamente igual si el tiempo corre hacia adelante o hacia atrás. La única ley que distingue el pasado del futuro es la Segunda Ley de la Termodinámica: la entropía (desorden microscópico) de un sistema aislado nunca decrece (ΔS ≥ 0). Por eso los huevos se rompen pero nunca se reconstruyen espontáneamente.",
+            principio: "Segunda Ley de la Termodinámica & Fórmula de Entropía Estadística de Boltzmann (S = k·ln Ω)"
+        },
+        {
+            id: "dato-21",
+            categoria: "Termodinámica & Fluidos",
+            categoriaTag: "termodinamica",
+            icono: "🛢️",
+            titulo: "La Paradoja de Pascal: El barril que reventó con un fino tubo de agua",
+            descripcion: "En 1648, Blaise Pascal demostró que la presión ejercida por un fluido en reposo depende únicamente de la altura de la columna líquida y no del volumen total ni de la forma del recipiente (P = ρ·g·h). Insertó un tubo delgado de 10 metros de altura en un robusto barril de roble lleno de agua; al verter apenas dos vasos más de agua por el tubo largo, la colosal presión hidrostática generada en la base reventó las tablas del barril.",
+            principio: "Ecuación Fundamental de la Hidrostática (ΔP = ρ·g·Δh) & Principio de Pascal"
+        },
+        {
+            id: "dato-22",
+            categoria: "Ciencia de Materiales",
+            categoriaTag: "materiales",
+            icono: "🧪",
+            titulo: "Vidrios Metálicos: Aleaciones con estructura de líquido congelado",
+            descripcion: "La mayoría de los metales se solidifican formando redes cristalinas periódicas repletas de bordes de grano y dislocaciones microscópicas. Si se enfría una aleación líquida a velocidades extremas de un millón de grados Celsius por segundo (10⁶ K/s), los átomos no tienen tiempo de ordenarse en cristales y quedan atrapados en un estado vítreo amorfo. Estos vidrios metálicos duplican la resistencia del titanio y tienen una resiliencia elástica sin precedentes.",
+            principio: "Cinética de Cristalización, Transición Vítrea (Tg) & Redes Metálicas Amorfas"
+        },
+        {
+            id: "dato-23",
+            categoria: "Ondas & Acústica",
+            categoriaTag: "ondas",
+            icono: "🌉",
+            titulo: "Resonancia Mecánica: Cuando una pequeña fuerza derriba un puente gigante",
+            descripcion: "Todo objeto físico (un puente, una copa de cristal o una cuerda de violín) tiene frecuencias naturales de vibración. Si una fuerza periódica externa coincide con una de esas frecuencias, la amplitud de oscilación crece exponencialmente acumulando energía elástica. En 1940, los vórtices de von Kármán generados por el viento en el puente de Tacoma Narrows acoplaron su frecuencia con el modo torsional de la estructura, provocando su célebre colapso.",
+            principio: "Resonancia Mecánica Forzada, Factor de Calidad (Q) & Flotamiento Aeroelástico"
+        },
+        {
+            id: "dato-24",
+            categoria: "Relatividad & Cosmos",
+            categoriaTag: "relatividad",
+            icono: "💥",
+            titulo: "E = mc²: La colosal energía encerrada en la masa de un clip de papel",
+            descripcion: "La famosa ecuación de equivalencia entre masa y energía de Einstein demuestra que la materia es energía concentrada. La constante c² (la velocidad de la luz al cuadrado, ~9 × 10¹⁶ m²/s²) es un multiplicador descomunal: si pudieras aniquilar por completo un clip de papel de 1 gramo convirtiéndolo en fotones puros, liberarías 90 terajulios (9 × 10¹³ Joules), energía equivalente a la detonación de 21 kilotones de TNT.",
+            principio: "Equivalencia Masa-Energía de Einstein (E = m·c²) & Física Nuclear"
+        },
+        {
+            id: "dato-25",
+            categoria: "Cuántica & Tecnología",
+            categoriaTag: "cuantica",
+            icono: "☀️",
+            titulo: "El Efecto Fotoeléctrico: Por qué la luz está hecha de paquetes llamados fotones",
+            descripcion: "A finales del siglo XIX, la física clásica no podía explicar por qué la luz roja, por intensa que fuera, no lograba arrancar electrones de una placa de metal, mientras que una luz ultravioleta muy tenue sí lo hacía al instante. En 1905, Albert Einstein propuso que la radiación electromagnética viaja cuantizada en paquetes indivisibles de energía (E = h·f). Si el fotón individual no supera la función de trabajo del metal, ningún electrón puede liberarse.",
+            principio: "Efecto Fotoeléctrico (E_k = h·f - Φ) & Cuantización de Planck (Premio Nobel 1921)"
+        },
+        {
+            id: "dato-26",
+            categoria: "Biofísica & Neurociencia",
+            categoriaTag: "biofisica",
+            icono: "👁️",
+            titulo: "La física del ojo: Dos lentes biológicos que refractan la luz en dioptrías",
+            descripcion: "El ojo humano funciona como un sistema óptico compuesto de dos lentes: la córnea (una lente fija de menisco divergente-convergente que aporta ~43 dioptrías de potencia óptica por el cambio de índice de refracción aire-agua de 1.000 a 1.376) y el cristalino (una lente biconvexa flexible que añade entre 15 y 20 dioptrías adicionales mediante la tensión de los músculos ciliares para enfocar objetos cercanos o distantes).",
+            principio: "Refracción de Snell-Descartes, Ecuación del Fabricante de Lentes & Acomodación Óptica"
+        },
+        {
+            id: "dato-27",
+            categoria: "Electromagnetismo & Cosmos",
+            categoriaTag: "ondas",
+            icono: "🌌",
+            titulo: "Auroras Boreales: El escudo magnético de la Tierra colisionando con el viento solar",
+            descripcion: "El Sol emite constantemente una corriente supersónica de protones y electrones cargados a más de 400 km/s (viento solar). El campo magnético terrestre (la magnetosfera) desvía estas partículas mediante la fuerza de Lorentz (F = q·v × B), canalizándolas en espiral hacia las regiones polares. Al colisionar con átomos de oxígeno a 100 km de altitud, los excitan a estados cuánticos superiores; al decaer, emiten la mágica luz verde-esmeralda (557.7 nm) de las auroras.",
+            principio: "Fuerza de Lorentz (F = q(E + v × B)) & Emisión Espectral por Desexcitación Atómica"
+        },
+        {
+            id: "dato-28",
+            categoria: "Relatividad & Cosmos",
+            categoriaTag: "relatividad",
+            icono: "🎵",
+            titulo: "El sonido de un agujero negro: Una nota en Si bemol a 57 octavas bajo el Do central",
+            descripcion: "Aunque suele decirse que el espacio exterior es un vacío mudo, en el cúmulo de galaxias de Perseo existe abundante gas caliente ionizado. En 2003, el telescopio espacial de rayos X Chandra detectó ondas de presión acústica concéntricas propagándose desde el agujero negro supermasivo central. Es la nota musical más grave jamás registrada en el cosmos: un Si bemol con un periodo de oscilación de 9.6 millones de años (57 octavas por debajo de las capacidades del oído humano).",
+            principio: "Propagación de Ondas Acústicas en Plasma Intergaláctico & Astrofísica de Altas Energías"
+        },
+        {
+            id: "dato-29",
+            categoria: "Termodinámica & Caos",
+            categoriaTag: "termodinamica",
+            icono: "🦋",
+            titulo: "El Efecto Mariposa: Determinismo sin predictibilidad en sistemas no lineales",
+            descripcion: "En 1961, el meteorólogo y físico Edward Lorenz descubrió que en sistemas de ecuaciones diferenciales no lineales, una variación infinitesimal en las condiciones iniciales (como redondear 0.506127 a 0.506) conduce a comportamientos completamente divergentes con el tiempo. Esto demostró que un sistema puede ser 100% determinista (sin azar cuántico) y, sin embargo, ser intrínsecamente imposible de predecir a largo plazo.",
+            principio: "Dinámica No Lineal, Atractores Extraños de Lorenz & Exponentes de Lyapunov"
+        },
+        {
+            id: "dato-30",
+            categoria: "Squash & Deporte",
+            categoriaTag: "squash",
+            icono: "🎾",
+            titulo: "Física de Raquetas: ¿Por qué menor tensión en las cuerdas genera más potencia?",
+            descripcion: "Contra la intuición común, encordar una raqueta de squash o tenis con menor tensión (ej. 24 lbs en vez de 30 lbs) genera mayor velocidad de salida en la pelota. Una cuerda menos tensa se deforma más durante los 4 a 6 milisegundos que dura el impacto (Efecto Trampolín), almacenando energía de deformación con menores pérdidas viscoelásticas internas que la pelota, devolviendo más energía cinética al tiro.",
+            principio: "Efecto Trampolín Elástico, Coeficiente de Restitución (COR) & Tiempos de Contacto"
+        },
+        {
+            id: "dato-31",
+            categoria: "Ciencia de Materiales",
+            categoriaTag: "materiales",
+            icono: "☁️",
+            titulo: "Aerogel de Sílice: El 'humo congelado' compuesto por un 99.8% de aire",
+            descripcion: "El aerogel es el material sólido más ligero del mundo: posee una densidad de apenas 1 a 3 mg/cm³ (casi tan ligero como el aire ambiental). Se sintetiza secando supercríticamente un gel de sílice sin colapsar su nanoestructura porosa. Es tan aislante que una flor colocada sobre un bloque de aerogel de 5 milímetros no se marchita ni quema incluso si colocas un soplete encendido a 1.200 °C directamente debajo.",
+            principio: "Estructura Mesoporosa Nanométrica, Efecto Knudsen & Conducción Térmica Cuasi-Nula"
         }
     ],
 

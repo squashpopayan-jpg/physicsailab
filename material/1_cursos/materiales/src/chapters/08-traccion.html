@@ -1,0 +1,148 @@
+<template class="chapter-src" data-id="traccion" data-num="8" data-title="Elasticidad y ensayo de tracción" data-part="Parte III · Comportamiento mecánico" data-short="Esfuerzo y deformación, ley de Hooke, coeficiente de Poisson y constantes elásticas, anelasticidad, la curva de tracción con fluencia, resistencia, ductilidad, resiliencia y tenacidad, esfuerzo verdadero, endurecimiento por deformación, dureza y factores de seguridad">
+<p class="lead">El ensayo de tracción es el experimento más importante de la ingeniería de materiales: en unos minutos entrega la rigidez, la resistencia, la ductilidad y la tenacidad de un metal. Este capítulo enseña a obtener esas cantidades de la curva, a interpretarlas con los mecanismos del capítulo 2 y del 9, y a usarlas en un diseño con margen de seguridad.</p>
+
+<section>
+<h2>Esfuerzo y deformación</h2>
+<p>Una probeta de sección inicial \(A_0\) y longitud calibrada \(l_0\) se estira con una fuerza \(F\). Para comparar materiales sin que importe el tamaño de la probeta se usan</p>
+<div class="eq key" data-name="Esfuerzo y deformación de ingeniería">\[\sigma=\frac{F}{A_0},\qquad \varepsilon=\frac{l_i-l_0}{l_0}=\frac{\Delta l}{l_0}.\]</div>
+<p>El esfuerzo se mide en pascales (en la práctica MPa = N/mm²) y la deformación es adimensional. Bajo cizalla, una fuerza \(F\) paralela a una cara de área \(A_0\) produce un esfuerzo cortante \(\tau=F/A_0\) y una deformación angular \(\gamma=\tan\theta\). Los ensayos de compresión y de torsión completan el cuadro; los de compresión importan para los materiales frágiles, que en tracción fallan sin dar información.</p>
+</section>
+
+<section>
+<h2>Deformación elástica</h2>
+<p>Para deformaciones pequeñas, la mayoría de los materiales responden de forma lineal y reversible: es la <span class="term">ley de Hooke</span>,</p>
+<div class="eq key" data-name="Ley de Hooke">\[\sigma=E\,\varepsilon,\qquad \tau=G\,\gamma,\]</div>
+<p>donde \(E\) es el módulo de Young y \(G\) el módulo de cizalla. Como vimos en el capítulo 2, el módulo refleja la curvatura del pozo de potencial: \(E\) es una propiedad de los enlaces, casi insensible a la microestructura. Un acero recocido y uno templado tienen el mismo \(E\) aunque su resistencia difiera en un factor de cinco. El módulo disminuye con la temperatura, porque el pozo se vuelve más ancho al aumentar la amplitud de vibración.</p>
+<p>Al estirarse en \(z\), la probeta se contrae en \(x\) e \(y\). El <span class="term">coeficiente de Poisson</span> es</p>
+<div class="eq">\[\nu=-\frac{\varepsilon_x}{\varepsilon_z}=-\frac{\varepsilon_y}{\varepsilon_z}.\]</div>
+<p>En un material isótropo solo hay dos constantes elásticas independientes, ligadas por</p>
+<div class="eq key" data-name="Constantes elásticas isótropas">\[E=2G(1+\nu)=3K(1-2\nu),\]</div>
+<p>con \(K\) el módulo volumétrico. Como \(K\) debe ser positivo, \(\nu\le\tfrac12\); el límite \(\nu=\tfrac12\) corresponde a un material incompresible, como el caucho. Los metales tienen \(\nu\approx0.3\).</p>
+<div class="tablewrap"><table>
+<tr><th>Metal</th><th class="c">\(E\) (GPa)</th><th class="c">\(G\) (GPa)</th><th class="c">\(\nu\)</th></tr>
+<tr><td>Aluminio</td><td class="c">69</td><td class="c">25</td><td class="c">0.33</td></tr>
+<tr><td>Latón</td><td class="c">97</td><td class="c">37</td><td class="c">0.34</td></tr>
+<tr><td>Cobre</td><td class="c">110</td><td class="c">46</td><td class="c">0.34</td></tr>
+<tr><td>Magnesio</td><td class="c">45</td><td class="c">17</td><td class="c">0.29</td></tr>
+<tr><td>Níquel</td><td class="c">207</td><td class="c">76</td><td class="c">0.31</td></tr>
+<tr><td>Acero</td><td class="c">207</td><td class="c">83</td><td class="c">0.30</td></tr>
+<tr><td>Titanio</td><td class="c">107</td><td class="c">45</td><td class="c">0.34</td></tr>
+<tr><td>Tungsteno</td><td class="c">407</td><td class="c">160</td><td class="c">0.28</td></tr>
+</table></div>
+<p class="ctrl-note">Callister y Rethwisch (2018), tabla 6.1. Los valores medidos de \(G\) se apartan algo de \(E/2(1+\nu)\) porque los policristales reales no son perfectamente isótropos.</p>
+<div class="sim" data-sim="elastic-constants" data-title="Contracción lateral, coeficiente de Poisson y cambio de volumen"></div>
+<div class="sim-guide"><ul>
+<li>Con \(\nu=0.5\) el volumen no cambia; con \(\nu=0\) (corcho, aproximadamente) la sección no se contrae.</li>
+<li>Pruebe \(\nu\) negativo: los materiales <span class="term">auxéticos</span> (algunas espumas reentrantes) se ensanchan al estirarlos.</li>
+</ul></div>
+<div class="box ex"><h4>Alargamiento elástico</h4>
+<p>Una barra de cobre de 305 mm se somete a 276 MPa. Si la deformación es elástica, ¿cuánto se alarga? (Callister, ej. 6.1.)</p>
+<details><summary>Solución</summary><p>\(\Delta l=\sigma l_0/E=(276)(305)/110000=0.77\) mm.</p></details>
+</div>
+<div class="box ex"><h4>Carga a partir de la contracción lateral</h4>
+<p>Un cilindro de latón de 10 mm de diámetro se tracciona a lo largo de su eje. ¿Qué carga reduce su diámetro en \(2.5\times10^{-3}\) mm, si la deformación es elástica? (\(\nu=0.34\), \(E=97\) GPa; Callister, ej. 6.2.)</p>
+<details><summary>Solución</summary><p>\(\varepsilon_x=-2.5\times10^{-4}\); \(\varepsilon_z=-\varepsilon_x/\nu=7.35\times10^{-4}\); \(\sigma=E\varepsilon_z=71.3\) MPa; \(F=\sigma\pi d_0^2/4=5600\) N.</p></details>
+</div>
+<p>Algunos materiales tardan en alcanzar la deformación elástica: la deformación depende del tiempo además del esfuerzo. Es la <span class="term">anelasticidad</span>, despreciable en la mayoría de los metales pero importante en los polímeros, donde se llama viscoelasticidad (capítulo 18), y en el amortiguamiento interno de vibraciones.</p>
+</section>
+
+<section>
+<h2>La curva de tracción</h2>
+<p>Más allá de una deformación de alrededor de 0.005 en los metales, la deformación deja de ser recuperable: comienza la <span class="term">deformación plástica</span>, causada por el movimiento de dislocaciones (capítulo 9). La curva completa se lee así:</p>
+<ul>
+<li><b>Límite elástico (de fluencia)</b> \(\sigma_y\): como la transición suele ser gradual, se define con el criterio de la <span class="term">deformación permanente de 0.2 %</span>: se traza una recta paralela al tramo elástico desde \(\varepsilon=0.002\) y se toma su intersección con la curva. Algunos aceros muestran un <span class="term">punto de fluencia</span> superior e inferior seguido de una meseta (bandas de Lüders).</li>
+<li><b>Resistencia a la tracción</b> \(\sigma_u\) (TS): el máximo de la curva de ingeniería. Hasta ese punto la deformación es uniforme; después se concentra en una <span class="term">estricción</span> o cuello, y la carga cae hasta la fractura.</li>
+<li><b>Ductilidad</b>: el alargamiento porcentual a la fractura, \(\%EL=100(l_f-l_0)/l_0\), o la reducción de área, \(\%RA=100(A_0-A_f)/A_0\).</li>
+<li><b>Resiliencia</b> \(U_r\): la energía elástica almacenada por unidad de volumen hasta la fluencia, \(U_r=\sigma_y^2/2E\) (área del triángulo elástico). Los resortes requieren alta resiliencia.</li>
+<li><b>Tenacidad</b> (en tracción): la energía absorbida por unidad de volumen hasta la fractura, el área total bajo la curva. Combina resistencia y ductilidad.</li>
+</ul>
+<div class="sim" data-sim="tensile-test" data-title="Ensayo de tracción: curva de ingeniería, curva verdadera y propiedades"></div>
+<div class="sim-guide"><ul>
+<li>Corra el ensayo con el acero de bajo carbono y observe la meseta de fluencia, el endurecimiento y la estricción. El punto marcado UTS cae donde \(\varepsilon_{\text{verd}}\approx n\) (criterio de Considère).</li>
+<li>Compare el acero 4340 revenido con el cobre recocido: el primero es diez veces más resistente; el segundo, cuatro veces más dúctil. ¿Cuál es más tenaz?</li>
+<li>Active la curva verdadera: sigue subiendo después del máximo de ingeniería, porque el material sigue endureciéndose; la caída de la carga se debe solo a la reducción del área.</li>
+<li>Descargue a mitad del ensayo: la recuperación es elástica, con pendiente \(E\), y queda una deformación permanente.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Esfuerzo y deformación verdaderos</h2>
+<p>Una vez que la sección se reduce de forma apreciable, el esfuerzo de ingeniería subestima el que realmente soporta el material. Se definen el esfuerzo y la deformación verdaderos,</p>
+<div class="eq key" data-name="Esfuerzo y deformación verdaderos">\[\sigma_v=\frac{F}{A_i},\qquad \varepsilon_v=\ln\frac{l_i}{l_0}=\int_{l_0}^{l_i}\frac{\dd l}{l},\]</div>
+<p>y, como el volumen se conserva durante la deformación plástica (\(A_il_i=A_0l_0\)), mientras la deformación sea uniforme:</p>
+<div class="eq">\[\sigma_v=\sigma(1+\varepsilon),\qquad \varepsilon_v=\ln(1+\varepsilon).\]</div>
+<p>En muchos metales, el tramo plástico uniforme de la curva verdadera sigue la ley de Hollomon,</p>
+<div class="eq key" data-name="Endurecimiento por deformación">\[\sigma_v=K\,\varepsilon_v^{\,n},\]</div>
+<p>con \(n\) el <span class="term">exponente de endurecimiento por deformación</span> (0.1 a 0.5) y \(K\) el coeficiente de resistencia. La estricción empieza cuando el aumento de resistencia por endurecimiento ya no compensa la reducción de área, \(\dd(\sigma_vA)=0\); con \(\dd A/A=-\dd\varepsilon_v\) esto es el <span class="term">criterio de Considère</span>:</p>
+<div class="eq">\[\frac{\dd\sigma_v}{\dd\varepsilon_v}=\sigma_v\quad\Longrightarrow\quad\varepsilon_{v,u}=n,\qquad \sigma_u=K\,n^n\ee^{-n}.\]</div>
+<p>Un \(n\) alto significa una deformación uniforme grande antes de la estricción: es la propiedad que buscan las chapas para embutición profunda.</p>
+<div class="tablewrap"><table>
+<tr><th>Material</th><th class="c">\(n\)</th><th class="c">\(K\) (MPa)</th><th class="c">\(\sigma_u=Kn^n\ee^{-n}\) (MPa)</th></tr>
+<tr><td>Acero de bajo carbono recocido</td><td class="c">0.21</td><td class="c">600</td><td class="c">350</td></tr>
+<tr><td>Acero 4340 revenido a 315 °C</td><td class="c">0.12</td><td class="c">2650</td><td class="c">1822</td></tr>
+<tr><td>Acero inoxidable 304 recocido</td><td class="c">0.44</td><td class="c">1400</td><td class="c">628</td></tr>
+<tr><td>Cobre recocido</td><td class="c">0.44</td><td class="c">530</td><td class="c">238</td></tr>
+<tr><td>Latón naval recocido</td><td class="c">0.21</td><td class="c">585</td><td class="c">342</td></tr>
+<tr><td>Aluminio 2024-T3</td><td class="c">0.17</td><td class="c">780</td><td class="c">487</td></tr>
+<tr><td>Magnesio AZ-31B recocido</td><td class="c">0.16</td><td class="c">450</td><td class="c">286</td></tr>
+</table></div>
+<p class="ctrl-note">\(n\) y \(K\): Callister y Rethwisch (2018), tabla 6.4. La última columna se calculó con Considère; el apéndice de validación la compara con las resistencias tabuladas (395, 1720, 515, 220 y 485 MPa): el acuerdo es de ±22 %, razonable para un modelo de dos parámetros.</p>
+<div class="box ex"><h4>Exponente de endurecimiento</h4>
+<p>Una aleación necesita un esfuerzo verdadero de 415 MPa para alcanzar una deformación verdadera de 0.10. Si \(K=1035\) MPa, ¿cuánto vale \(n\)?</p>
+<details><summary>Solución</summary><p>\(n=\ln(415/1035)/\ln(0.10)=0.40\).</p></details>
+</div>
+</section>
+
+<section>
+<h2>Dureza</h2>
+<p>La dureza es la resistencia a la deformación plástica localizada. Se mide presionando un indentador con una carga conocida y midiendo la huella:</p>
+<ul>
+<li><b>Brinell</b>: bola de 10 mm con 500–3000 kg. \(HB=\dfrac{2P}{\pi D\left(D-\sqrt{D^2-d^2}\right)}\) con \(d\) el diámetro de la huella.</li>
+<li><b>Vickers</b>: pirámide de diamante de 136°. \(HV=1.854\,P/d_1^2\), con \(d_1\) la diagonal media en mm y \(P\) en kgf. Con cargas de gramos se convierte en microdureza (Knoop, Vickers), útil para fases individuales y recubrimientos.</li>
+<li><b>Rockwell</b>: profundidad diferencial entre una carga menor y una mayor; escalas B (bola, metales blandos) y C (cono de diamante, aceros templados).</li>
+</ul>
+<p>Como la dureza y la resistencia miden el mismo fenómeno, están correlacionadas. Para aceros, fundiciones y latón, \(\sigma_u\ (\text{MPa})\approx3.45\,HB\). Un ensayo de dureza es casi no destructivo, barato y rápido, y por eso es el control de calidad más usado en la industria.</p>
+<div class="sim" data-sim="hardness" data-title="Huellas de Brinell y Vickers y la correlación con la resistencia"></div>
+<div class="sim-guide"><ul>
+<li>Con 3000 kg y una huella Brinell de 4.0 mm se obtiene 229 HB, lo que corresponde a un acero de unos 790 MPa.</li>
+<li>Reduzca la diagonal Vickers a la mitad: la dureza se cuadruplica.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Variabilidad y factores de seguridad</h2>
+<p>Las propiedades medidas tienen dispersión: varía la composición entre coladas, la microestructura entre zonas de una misma pieza, el maquinado de la probeta y la calibración de la máquina. Se reportan la media \(\bar x\) y la desviación estándar \(s\) de varias probetas. A eso se suma la incertidumbre en las cargas de servicio. Por eso el diseño no usa \(\sigma_y\) directamente sino un <span class="term">esfuerzo de trabajo</span></p>
+<div class="eq">\[\sigma_w=\frac{\sigma_y}{N},\qquad N=1.2\text{–}4,\]</div>
+<p>donde \(N\) es el factor de seguridad, mayor cuanto más grave sea la falla y menos confiables los datos.</p>
+<div class="sim" data-sim="design-scatter" data-title="Dispersión de probetas y factor de seguridad"></div>
+<div class="sim-guide"><ul>
+<li>Con dispersión del 5 % y \(N=2\), ninguna probeta queda por debajo del esfuerzo de trabajo. Con 20 % de dispersión y \(N=1.2\), algunas sí.</li>
+<li>El diámetro mínimo de la barra crece como \(\sqrt N\): la seguridad tiene un costo en peso.</li>
+</ul></div>
+<div class="box ex"><h4>Diámetro de una barra</h4>
+<p>Una barra de acero 1045 (\(\sigma_y=310\) MPa) debe soportar 220 000 N con \(N=2\). Calcule el diámetro (Callister, ej. 6.6).</p>
+<details><summary>Solución</summary><p>\(\sigma_w=155\) MPa; \(d=\sqrt{4F/(\pi\sigma_w)}=\sqrt{4(220000)/(\pi\,155\times10^6)}=42.5\) mm.</p></details>
+</div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un acero tiene \(\sigma_y=250\) MPa y \(E=207\) GPa. Calcule su resiliencia.
+<details><summary>Respuesta</summary><p>\(U_r=\sigma_y^2/2E=0.151\) MJ/m³.</p></details></li>
+<li><span class="lvl">Básico</span>Una probeta de 12.8 mm de diámetro se rompe con un diámetro de 10.7 mm en el cuello. Calcule \(\%RA\).
+<details><summary>Respuesta</summary><p>\(\%RA=100(12.8^2-10.7^2)/12.8^2=30\) %.</p></details></li>
+<li><span class="lvl">Intermedio</span>Para el acero de bajo carbono recocido (\(K=600\) MPa, \(n=0.21\)), calcule el esfuerzo verdadero y el de ingeniería al inicio de la estricción.
+<details><summary>Respuesta</summary><p>\(\varepsilon_v=0.21\), \(\sigma_v=600(0.21)^{0.21}=432\) MPa; \(\varepsilon=\ee^{0.21}-1=0.234\), \(\sigma=432/1.234=350\) MPa.</p></details></li>
+<li><span class="lvl">Intermedio</span>Con \(E=207\) GPa y \(\nu=0.30\), calcule \(G\) y \(K\) del acero.
+<details><summary>Respuesta</summary><p>\(G=79.6\) GPa; \(K=172.5\) GPa.</p></details></li>
+<li><span class="lvl">Intermedio</span>Una huella Vickers con 30 kgf mide 0.40 mm de diagonal. Calcule HV.
+<details><summary>Respuesta</summary><p>\(HV=1.854(30)/0.40^2=348\).</p></details></li>
+<li><span class="lvl">Avanzado</span>Demuestre que, con \(\sigma_v=K\varepsilon_v^n\), la carga \(F=\sigma_vA\) es máxima cuando \(\varepsilon_v=n\).
+<details><summary>Respuesta</summary><p>\(F=K\varepsilon_v^nA_0\ee^{-\varepsilon_v}\) (conservación del volumen). \(\dd F/\dd\varepsilon_v=KA_0\ee^{-\varepsilon_v}\varepsilon_v^{n-1}(n-\varepsilon_v)=0\Rightarrow\varepsilon_v=n\).</p></details></li>
+<li><span class="lvl">Avanzado</span>Un tirante de aluminio y otro de acero deben alargarse lo mismo bajo la misma carga y tener la misma longitud. ¿Cuál pesa menos? (\(E_{Al}=69\) GPa, \(\rho_{Al}=2.70\); \(E_{ac}=207\) GPa, \(\rho_{ac}=7.85\) g/cm³.)
+<details><summary>Respuesta</summary><p>Misma rigidez \(EA/L\) ⇒ \(A\propto1/E\); masa \(\propto\rho A\propto\rho/E\). Al: 0.0391; acero: 0.0379. El acero es apenas 3 % más liviano: es el índice \(E/\rho\) del capítulo 1.</p></details></li>
+</ol>
+<div class="box note"><h4>Para profundizar</h4><p>Callister y Rethwisch (2018), cap. 6. G. E. Dieter, <em>Mechanical Metallurgy</em>, SI ed., McGraw-Hill, 1988, caps. 2 y 8. ASTM E8/E8M, <em>Standard Test Methods for Tension Testing of Metallic Materials</em>. ASTM E10 (Brinell), E18 (Rockwell) y E384 (microdureza).</p></div>
+</section>
+</template>

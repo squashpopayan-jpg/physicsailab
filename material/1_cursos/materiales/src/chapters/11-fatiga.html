@@ -1,0 +1,111 @@
+<template class="chapter-src" data-id="fatiga" data-num="11" data-title="Fatiga y fluencia lenta" data-part="Parte III · Comportamiento mecánico" data-short="Esfuerzos cíclicos, curvas S–N y límite de fatiga, ecuación de Basquin, esfuerzo medio y diagrama de Goodman, iniciación y propagación de grietas con la ley de Paris, curvas de fluencia lenta, ley de Norton y parámetro de Larson–Miller">
+<p class="lead">Dos de cada tres fallas mecánicas en servicio no se deben a una sobrecarga, sino a la acumulación de daño en el tiempo. La fatiga rompe piezas con esfuerzos repetidos muy por debajo del límite elástico; la fluencia lenta deforma piezas cargadas a temperatura alta hasta romperlas. Ambas exigen que el diseño incluya el tiempo como variable.</p>
+
+<section>
+<h2>Esfuerzos cíclicos</h2>
+<p>Un eje que gira, un ala que vibra, un puente al paso de los vehículos: todos soportan esfuerzos que varían periódicamente. Un ciclo se describe con</p>
+<div class="eq">\[\sigma_m=\frac{\sigma_{\max}+\sigma_{\min}}2,\qquad \sigma_a=\frac{\sigma_{\max}-\sigma_{\min}}2,\qquad \Delta\sigma=2\sigma_a,\qquad R=\frac{\sigma_{\min}}{\sigma_{\max}}.\]</div>
+<p>El ciclo totalmente invertido tiene \(\sigma_m=0\), \(R=-1\); el pulsante desde cero, \(R=0\).</p>
+</section>
+
+<section>
+<h2>La curva S–N</h2>
+<p>Se ensayan probetas a distintas amplitudes hasta la rotura y se grafica \(\sigma_a\) contra el número de ciclos \(N_f\) en escala logarítmica. Dos comportamientos aparecen:</p>
+<ul>
+<li>Los aceros y el titanio muestran un <span class="term">límite de fatiga</span> \(\sigma_e\): por debajo de él, la vida es prácticamente infinita. En aceros vale entre 35 y 60 % de la resistencia a la tracción.</li>
+<li>El aluminio, el cobre y el magnesio no tienen límite: la curva sigue bajando, y se especifica una <span class="term">resistencia a la fatiga</span> a un número de ciclos dado, típicamente \(10^7\) o \(5\times10^8\).</li>
+</ul>
+<p>En la región de vida alta, la curva sigue la ley de Basquin (1910):</p>
+<div class="eq key" data-name="Ecuación de Basquin">\[\sigma_a=\sigma_f'\,(2N_f)^{\,b},\qquad b\approx-0.05\text{ a }-0.15.\]</div>
+<p>La dispersión es enorme: probetas idénticas pueden durar vidas que difieren en un factor de diez. Por eso las curvas de diseño se dan con probabilidad de falla (curvas P–S–N).</p>
+<div class="sim" data-sim="sn-curve" data-title="Curvas S–N, límite de fatiga y dispersión"></div>
+<div class="sim-guide"><ul>
+<li>Compare el acero 4340 y el aluminio 7075: el acero tiene un codo horizontal; el aluminio, no.</li>
+<li>Aumente la dispersión y ensaye probetas: los puntos se esparcen alrededor de la curva media una década o más.</li>
+<li>Mueva la amplitud: la vida cambia por un factor de 10 con un cambio de esfuerzo de solo 20–30 %, porque \(b\) es pequeño.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El efecto del esfuerzo medio</h2>
+<p>Un esfuerzo medio de tracción acorta la vida; uno de compresión la alarga (por eso se granallan las superficies: el chorro de perdigones deja esfuerzos residuales de compresión). La corrección más usada es la de Goodman: una amplitud \(\sigma_a\) con media \(\sigma_m\) equivale a una amplitud totalmente invertida</p>
+<div class="eq key" data-name="Relación de Goodman">\[\sigma_{ar}=\frac{\sigma_a}{1-\sigma_m/\sigma_u}.\]</div>
+<p>En el diagrama de Haigh (\(\sigma_a\) contra \(\sigma_m\)), la recta que va de \(\sigma_e\) en el eje vertical a \(\sigma_u\) en el horizontal separa los ciclos seguros de los que fallan.</p>
+<div class="sim" data-sim="goodman" data-title="Diagrama de Haigh con las rectas de Goodman, Gerber y Soderberg"></div>
+<div class="sim-guide"><ul>
+<li>Lleve el punto de operación a la recta de Goodman: el factor de seguridad vale 1.</li>
+<li>Compare los tres criterios: Gerber (parábola) es el menos conservador; Soderberg (hasta \(\sigma_y\)), el más.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Iniciación y propagación de grietas</h2>
+<p>La falla por fatiga tiene tres etapas. (1) <b>Iniciación</b>: en la superficie, donde el esfuerzo es máximo, el deslizamiento cíclico forma intrusiones y extrusiones (bandas persistentes de deslizamiento) que actúan como microgrietas; rayones, cantos vivos, inclusiones y poros aceleran el proceso. (2) <b>Propagación</b>: la grieta avanza un poco en cada ciclo, dejando <span class="term">estrías</span> microscópicas y, a mayor escala, <span class="term">marcas de playa</span> que registran las interrupciones de la carga. (3) <b>Fractura final</b>, rápida, cuando la grieta alcanza la longitud crítica del capítulo 10.</p>
+<p>La velocidad de propagación depende del rango del factor de intensidad, \(\Delta K=Y\Delta\sigma\sqrt{\pi a}\). En un amplio intervalo intermedio vale la ley de Paris (1963):</p>
+<div class="eq key" data-name="Ley de Paris">\[\odv{a}{N}=C\,(\Delta K)^m,\qquad m\approx2\text{–}4.\]</div>
+<p>Integrándola entre la grieta inicial \(a_0\) (la mayor que no detecta la inspección) y la crítica \(a_c\), con \(Y\) constante y \(m\neq2\):</p>
+<div class="eq">\[N_f=\frac{a_c^{1-m/2}-a_0^{1-m/2}}{C\,(Y\Delta\sigma\sqrt\pi)^m\,(1-m/2)}.\]</div>
+<p>Este cálculo es la base de los programas de inspección de los aviones: se inspecciona cada vez que una grieta de tamaño detectable podría crecer hasta la mitad de su vida restante.</p>
+<div class="sim" data-sim="paris" data-title="Crecimiento de una grieta por fatiga con la ley de Paris"></div>
+<div class="sim-guide"><ul>
+<li>Casi toda la vida se consume mientras la grieta es pequeña: la curva \(a(N)\) es plana al principio y se dispara al final.</li>
+<li>Reduzca a la mitad la grieta inicial (mejor inspección): la vida crece mucho más que reducir \(K_{Ic}\) o aumentar \(a_c\).</li>
+<li>Con \(m=3\), duplicar \(\Delta\sigma\) divide la vida por 8.</li>
+</ul></div>
+<div class="box ex"><h4>Vida de una placa con grieta</h4>
+<p>Una placa de acero (\(K_{Ic}=25\) MPa√m, \(C=10^{-12}\) m/ciclo con \(\Delta K\) en MPa√m, \(m=3\), \(Y=1\)) soporta un ciclo de 0 a 200 MPa. La inspección garantiza grietas menores de 0.25 mm. ¿Cuántos ciclos resiste?</p>
+<details><summary>Solución</summary><p>\(a_c=\frac1\pi(25/200)^2=4.97\) mm. Con \(m=3\): \(N_f=\dfrac{a_c^{-1/2}-a_0^{-1/2}}{C(200\sqrt\pi)^3(-1/2)}=\dfrac{2(63.25-14.18)}{10^{-12}(354.5)^3}=2.2\times10^6\) ciclos.</p></details>
+</div>
+<h3>Factores y prevención</h3>
+<ul>
+<li><b>Superficie</b>: pulir, evitar cantos vivos y entallas, redondear transiciones de sección.</li>
+<li><b>Esfuerzos residuales de compresión</b>: granallado, rodillado, endurecimiento superficial (carburización, nitruración).</li>
+<li><b>Ambiente</b>: la fatiga térmica (ciclos de temperatura con dilatación restringida) y la fatiga con corrosión, donde no existe límite de fatiga.</li>
+</ul>
+</section>
+
+<section>
+<h2>Fluencia lenta</h2>
+<p>A temperaturas por encima de unos \(0.4\,T_f\), un material sometido a carga constante se sigue deformando con el tiempo: es la <span class="term">fluencia lenta</span> (creep). Es la limitación principal de los álabes de turbina, los tubos de calderas y los cables de alta tensión, y de los polímeros incluso a temperatura ambiente. La curva típica de deformación contra tiempo tiene tres etapas:</p>
+<ol>
+<li><b>Primaria</b> (transitoria): la velocidad disminuye porque el material se endurece por deformación.</li>
+<li><b>Secundaria</b> (estacionaria): velocidad mínima y constante, \(\dot\varepsilon_s\), por un equilibrio entre endurecimiento y recuperación. Es el parámetro de diseño de las piezas de larga vida.</li>
+<li><b>Terciaria</b>: la velocidad crece por la formación de cavidades en los bordes de grano, el adelgazamiento del área y cambios metalúrgicos, hasta la rotura en \(t_r\).</li>
+</ol>
+<p>La velocidad estacionaria depende del esfuerzo y de la temperatura según la ley de Norton:</p>
+<div class="eq key" data-name="Ley de fluencia de Norton">\[\dot\varepsilon_s=A\,\sigma^n\exp\!\left(-\frac{Q_c}{RT}\right).\]</div>
+<p>El exponente \(n\) identifica el mecanismo: \(n\approx1\) para la fluencia difusional (Nabarro–Herring por el volumen, Coble por los bordes de grano), \(n\approx3\)–\(8\) para la fluencia por trepado de dislocaciones. \(Q_c\) suele coincidir con la energía de activación de la autodifusión.</p>
+<div class="sim" data-sim="creep" data-title="Curvas de fluencia lenta y ley de Norton"></div>
+<div class="sim-guide"><ul>
+<li>Aumente el esfuerzo o la temperatura: la etapa secundaria se empina y el tiempo de rotura se acorta.</li>
+<li>En la gráfica log–log de \(\dot\varepsilon_s\) contra \(\sigma\), la pendiente es \(n\). Con \(n=5\), duplicar el esfuerzo multiplica la velocidad por 32.</li>
+</ul></div>
+<h3>Extrapolación de datos: Larson–Miller</h3>
+<p>Los ensayos de rotura de miles de horas no se pueden hacer para cada condición. Larson y Miller (1952) combinaron tiempo y temperatura en un solo parámetro, de modo que los datos de todas las temperaturas caen en una sola curva contra el esfuerzo:</p>
+<div class="eq key" data-name="Parámetro de Larson–Miller">\[P_{LM}=T\,(C+\log t_r),\qquad C\approx20,\ T\text{ en K},\ t_r\text{ en h}.\]</div>
+<div class="box ex"><h4>Tiempo de rotura de una aleación S-590</h4>
+<p>Una pieza de la aleación S-590 soporta 140 MPa a 800 °C. Según la curva de Larson–Miller de Callister, a ese esfuerzo \(P_{LM}=24.0\times10^3\). Estime el tiempo de rotura.</p>
+<details><summary>Solución</summary><p>\(24000=1073(20+\log t_r)\Rightarrow\log t_r=2.37\Rightarrow t_r=233\) h. Si la pieza debe durar 10 000 h al mismo esfuerzo, la temperatura debe bajar a \(T=24000/24=1000\) K \(=727\) °C.</p></details>
+</div>
+<p>Para resistir la fluencia se usan materiales de alta temperatura de fusión y alto módulo, granos grandes (o monocristales, como en los álabes de turbina de superaleaciones de níquel, que eliminan los bordes de grano transversales), precipitados estables que anclan las dislocaciones (la fase γ′ Ni₃Al) y solutos que frenan la difusión.</p>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un eje soporta un esfuerzo que oscila entre −40 y 160 MPa. Calcule \(\sigma_m\), \(\sigma_a\) y \(R\).
+<details><summary>Respuesta</summary><p>\(\sigma_m=60\) MPa, \(\sigma_a=100\) MPa, \(R=-0.25\).</p></details></li>
+<li><span class="lvl">Básico</span>Con \(\sigma_u=600\) MPa, ¿qué amplitud totalmente invertida equivale a \(\sigma_a=200\), \(\sigma_m=150\) MPa (Goodman)?
+<details><summary>Respuesta</summary><p>\(200/(1-0.25)=267\) MPa.</p></details></li>
+<li><span class="lvl">Intermedio</span>Con Basquin (\(\sigma_f'=1700\) MPa, \(b=-0.09\)), calcule la vida a \(\sigma_a=600\) MPa y a 500 MPa.
+<details><summary>Respuesta</summary><p>\(N_f=\tfrac12(\sigma_a/\sigma_f')^{1/b}\): \(5.3\times10^4\) y \(4.0\times10^5\) ciclos. Bajar el esfuerzo un 17 % multiplica la vida por 7.6.</p></details></li>
+<li><span class="lvl">Intermedio</span>Con \(m=3\), ¿cuánto cambia la vida de Paris si la grieta inicial pasa de 0.25 a 1 mm, con \(a_c=5\) mm?
+<details><summary>Respuesta</summary><p>\(N\propto a_0^{-1/2}-a_c^{-1/2}\): de \(63.2-14.1=49.1\) a \(31.6-14.1=17.5\) (en m⁻½): la vida cae a 36 %.</p></details></li>
+<li><span class="lvl">Intermedio</span>Una aleación tiene \(n=5\) y \(Q_c=300\) kJ/mol. ¿Cuánto cambia \(\dot\varepsilon_s\) al pasar de 700 a 750 °C con el mismo esfuerzo?
+<details><summary>Respuesta</summary><p>\(\exp[(300000/8.314)(1/973-1/1023)]=6.1\): seis veces más rápido.</p></details></li>
+<li><span class="lvl">Avanzado</span>Con \(C=20\), un ensayo acelerado a 900 °C rompe en 50 h. ¿A qué temperatura duraría 50 000 h la pieza al mismo esfuerzo?
+<details><summary>Respuesta</summary><p>\(P=1173(20+\log50)=25453\). \(T=25453/(20+\log50000)=1031\) K \(=758\) °C.</p></details></li>
+</ol>
+<div class="box note"><h4>Para profundizar</h4><p>Callister y Rethwisch (2018), cap. 8, secs. 8.7–8.15. N. E. Dowling, <em>Mechanical Behavior of Materials</em>, 4.ª ed., Pearson, 2013, caps. 9–11 y 15. S. Suresh, <em>Fatigue of Materials</em>, 2.ª ed., Cambridge University Press, 1998. P. C. Paris y F. Erdogan, «A critical analysis of crack propagation laws», <em>J. Basic Eng.</em> 85, 528 (1963). F. R. Larson y J. Miller, <em>Trans. ASME</em> 74, 765 (1952).</p></div>
+</section>
+</template>
