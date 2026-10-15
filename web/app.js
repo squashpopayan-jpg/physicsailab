@@ -218,6 +218,142 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ========================================================
+    // LIMPIEZA Y ENCODING SEGURO DE URLs DE PDFs (CÓMICS)
+    // ========================================================
+    function cleanPdfUrl(path) {
+        if (!path) return '';
+        if (path.startsWith('http://') || path.startsWith('https://')) return path;
+        const parts = path.split('/').map(part => {
+            try {
+                return encodeURIComponent(decodeURIComponent(part));
+            } catch (e) {
+                return encodeURIComponent(part);
+            }
+        });
+        return parts.join('/');
+    }
+    window.cleanPdfUrl = cleanPdfUrl;
+
+    // ========================================================
+    // VISOR MODAL DE CÓMICS (LECTOR MULTIDISPOSITIVO)
+    // ========================================================
+    let currentViewerComic = null;
+    let currentViewerMode = 'google'; // 'google' | 'direct'
+
+    function isMobileDevice() {
+        return window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    }
+
+    window.openComicViewer = function(comicId, preferredMode) {
+        const comic = (data.comics || []).find(c => String(c.id) === String(comicId));
+        if (!comic) {
+            showToast('⚠️ No se encontró la información del cómic.');
+            return;
+        }
+
+        currentViewerComic = comic;
+
+        // Auto-detección: En celulares y navegadores móviles Google Docs Viewer ofrece máxima compatibilidad sin pantalla en blanco
+        if (preferredMode) {
+            currentViewerMode = preferredMode;
+        } else {
+            currentViewerMode = isMobileDevice() ? 'google' : 'direct';
+        }
+
+        const modal = document.getElementById('comic-viewer-modal');
+        const titleEl = document.getElementById('comic-viewer-title');
+        const subtitleEl = document.getElementById('comic-viewer-subtitle');
+        const downloadBtn = document.getElementById('comic-viewer-download-btn');
+        const iframe = document.getElementById('comic-viewer-iframe');
+        const spinner = document.getElementById('comic-loading-spinner');
+        const modeIndicator = document.getElementById('comic-viewer-mode-indicator');
+        const toggleBtn = document.getElementById('comic-viewer-toggle-btn');
+
+        if (!modal || !iframe) return;
+
+        if (titleEl) titleEl.textContent = comic.titulo;
+        if (subtitleEl) subtitleEl.textContent = `🎨 ${comic.categoria} · ✍️ ${comic.autores}`;
+
+        const cleanPath = cleanPdfUrl(comic.archivo);
+        const hostOrigin = (window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1'))
+            ? 'https://www.physicsailab.com'
+            : window.location.origin;
+        const fullAbsUrl = cleanPath.startsWith('http') ? cleanPath : (hostOrigin + (cleanPath.startsWith('/') ? '' : '/') + cleanPath);
+
+        const safeFilename = (comic.titulo || 'comic').replace(/[^a-zA-Z0-9_\-áéíóúÁÉÍÓÚñÑ ]/g, '').trim().replace(/\s+/g, '_') + '.pdf';
+
+        if (downloadBtn) {
+            downloadBtn.href = cleanPath;
+            downloadBtn.setAttribute('download', safeFilename);
+            downloadBtn.onclick = () => trackDownload(comic.titulo);
+        }
+
+        // Mostrar indicador de carga mientras el iframe procesa el documento
+        if (spinner) {
+            spinner.classList.remove('hidden');
+        }
+
+        // Configurar la fuente del iframe según el modo seleccionado
+        if (currentViewerMode === 'google') {
+            iframe.src = `https://docs.google.com/viewer?url=${encodeURIComponent(fullAbsUrl)}&embedded=true`;
+            if (modeIndicator) modeIndicator.textContent = 'Modo: Visor Móvil Interactivo 📱';
+            if (toggleBtn) toggleBtn.innerHTML = '🖥️ Visor Directo';
+        } else {
+            iframe.src = `${cleanPath}#toolbar=1&navpanes=0&view=FitH`;
+            if (modeIndicator) modeIndicator.textContent = 'Modo: Visor Nativo de PDF 🖥️';
+            if (toggleBtn) toggleBtn.innerHTML = '📱 Visor Móvil';
+        }
+
+        iframe.onload = function() {
+            if (spinner) spinner.classList.add('hidden');
+        };
+
+        // Tiempo límite de seguridad en caso de que el navegador no dispare iframe.onload
+        setTimeout(() => {
+            if (spinner) spinner.classList.add('hidden');
+        }, 4000);
+
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+
+        // Registrar lectura en estadísticas
+        trackDownload(comic.titulo);
+    };
+
+    window.closeComicViewer = function() {
+        const modal = document.getElementById('comic-viewer-modal');
+        const iframe = document.getElementById('comic-viewer-iframe');
+        if (modal) modal.classList.remove('active');
+        if (iframe) iframe.src = 'about:blank';
+        document.body.style.overflow = '';
+    };
+
+    window.toggleComicViewerMode = function() {
+        if (!currentViewerComic) return;
+        const nextMode = (currentViewerMode === 'google') ? 'direct' : 'google';
+        window.openComicViewer(currentViewerComic.id, nextMode);
+    };
+
+    // Escuchar clics en el backdrop y tecla Escape para cerrar el visor de cómic
+    const comicModalEl = document.getElementById('comic-viewer-modal');
+    if (comicModalEl) {
+        comicModalEl.addEventListener('click', (e) => {
+            if (e.target === comicModalEl) {
+                window.closeComicViewer();
+            }
+        });
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const m = document.getElementById('comic-viewer-modal');
+            if (m && m.classList.contains('active')) {
+                window.closeComicViewer();
+            }
+        }
+    });
+
+    // ========================================================
     // MARCADORES Y FAVORITOS (CÓMICS Y PODCASTS GUARDADOS)
     // ========================================================
     function getSavedComics() {
@@ -551,23 +687,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
         return `
             <div class="saved-items-grid">
-                ${savedList.map(c => `
+                ${savedList.map(c => {
+                    const cleanUrl = cleanPdfUrl(c.archivo);
+                    const safeDownloadName = (c.titulo || 'comic').replace(/[^a-zA-Z0-9_\-áéíóúÁÉÍÓÚñÑ ]/g, '').trim().replace(/\s+/g, '_') + '.pdf';
+                    return `
                     <div class="saved-card">
                         <div>
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
                                 <span class="comic-cover-badge" style="position:static; font-size:0.7rem; padding:0.2rem 0.5rem;">🎨 ${c.categoria}</span>
                                 <button onclick="toggleSaveComic(${c.id}, event)" title="Quitar de guardados" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:0.85rem;">✕ Quitar</button>
                             </div>
-                            <h4 style="font-size:1.05rem; margin:0 0 0.35rem 0; color:#fff;">${c.titulo}</h4>
+                            <h4 style="font-size:1.05rem; margin:0 0 0.35rem 0; color:#fff; cursor:pointer;" onclick="openComicViewer('${c.id}')" title="Abrir lector interactivo">${c.titulo}</h4>
                             <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:0.4rem;">✍️ ${c.autores}</div>
                             <p style="font-size:0.8rem; color:var(--text-muted); line-height:1.4; margin-bottom:0.75rem;">${c.descripcion.substring(0, 95)}...</p>
                         </div>
                         <div style="display:flex; gap:0.5rem; margin-top:auto;">
-                            <a href="${c.archivo}" target="_blank" class="btn btn-primary" style="flex:1; justify-content:center; font-size:0.82rem; padding:0.45rem;">Leer PDF 📖</a>
-                            <a href="${c.archivo}" download class="btn btn-secondary" style="font-size:0.82rem; padding:0.45rem 0.75rem;" title="Descargar">⬇️</a>
+                            <button onclick="openComicViewer('${c.id}')" class="btn btn-primary" style="flex:1; justify-content:center; font-size:0.82rem; padding:0.45rem;">Leer Cómic 📖</button>
+                            <a href="${cleanUrl}" download="${safeDownloadName}" class="btn btn-secondary" style="font-size:0.82rem; padding:0.45rem 0.75rem;" title="Descargar PDF">⬇️</a>
                         </div>
                     </div>
-                `).join('')}
+                    `;
+                }).join('')}
             </div>
         `;
     }
@@ -1435,9 +1575,11 @@ document.addEventListener('DOMContentLoaded', () => {
         comicsGrid.innerHTML = displayed.map(c => {
             const isSaved = getSavedComics().includes(c.id) || getSavedComics().includes(String(c.id));
             const likeInfo = getItemLikeInfo('comic-' + c.id);
+            const cleanUrl = cleanPdfUrl(c.archivo);
+            const safeDownloadName = (c.titulo || 'comic').replace(/[^a-zA-Z0-9_\-áéíóúÁÉÍÓÚñÑ ]/g, '').trim().replace(/\s+/g, '_') + '.pdf';
             return `
             <div class="comic-card">
-                <div class="comic-cover-wrap">
+                <div class="comic-cover-wrap" onclick="openComicViewer('${c.id}')" style="cursor:pointer;" title="Abrir lector interactivo">
                     <img src="${c.portada}" alt="${c.titulo}" loading="lazy" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'300\\' height=\\'400\\' viewBox=\\'0 0 300 400\\'><rect width=\\'300\\' height=\\'400\\' fill=\\'%23111827\\'/><text x=\\'50%\\' y=\\'50%\\' fill=\\'%23F59E0B\\' font-family=\\'sans-serif\\' font-size=\\'48\\' text-anchor=\\'middle\\' dy=\\'.3em\\'>🎨</text></svg>';" />
                     <span class="comic-cover-badge">🎨 ${c.categoria}</span>
                 </div>
@@ -1447,7 +1589,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">📖 Divulgación Estudiantil</span>
                             <span style="font-size:0.75rem; color:var(--accent-emerald); font-weight:700;">PDF Libre</span>
                         </div>
-                        <h3 class="comic-title">${c.titulo}</h3>
+                        <h3 class="comic-title" onclick="openComicViewer('${c.id}')" style="cursor:pointer;" title="Abrir lector interactivo">${c.titulo}</h3>
                         
                         <div class="comic-authors-box">
                             <span class="comic-authors-icon">✍️</span>
@@ -1466,8 +1608,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
 
                     <div class="card-actions" style="margin-top:auto; flex-wrap:wrap; gap:0.4rem;">
-                        <a href="${c.archivo}" target="_blank" class="btn btn-primary" style="flex:1; justify-content:center; text-decoration:none;" onclick="trackDownload('${c.titulo.replace(/'/g, "\\'")}')">Leer Cómic 📖</a>
-                        <a href="${c.archivo}" download class="btn btn-secondary" onclick="trackDownload('${c.titulo.replace(/'/g, "\\'")}')" style="font-size:0.82rem; padding:0.45rem 0.65rem; text-decoration:none;" title="Descargar PDF">⬇️</a>
+                        <button onclick="openComicViewer('${c.id}')" class="btn btn-primary" style="flex:1; justify-content:center; text-decoration:none;">Leer Cómic 📖</button>
+                        <a href="${cleanUrl}" download="${safeDownloadName}" class="btn btn-secondary" onclick="trackDownload('${c.titulo.replace(/'/g, "\\'")}')" style="font-size:0.82rem; padding:0.45rem 0.65rem; text-decoration:none;" title="Descargar PDF">⬇️</a>
                         <button class="bookmark-btn ${isSaved ? 'saved' : ''}" onclick="toggleSaveComic(${c.id}, event)" title="${isSaved ? 'Quitar de guardados' : 'Guardar en mi perfil'}">
                             ${isSaved ? '🔖' : '🔖 Guardar'}
                         </button>
