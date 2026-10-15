@@ -184,6 +184,668 @@ document.addEventListener('DOMContentLoaded', () => {
         return false;
     }
 
+    // ========================================================
+    // PERFIL DEL ESTUDIANTE Y ESPACIO PERSONAL
+    // ========================================================
+    function getStudentProfile() {
+        try {
+            const raw = localStorage.getItem('physicsailab_student_profile');
+            if (raw) return JSON.parse(raw);
+        } catch(e) {}
+        return {
+            name: 'Estudiante Universitario',
+            career: 'Física / Ingeniería',
+            institution: 'Universidad del Cauca',
+            avatar: '⚛️',
+            created: new Date().toISOString()
+        };
+    }
+
+    function saveStudentProfile(profile) {
+        localStorage.setItem('physicsailab_student_profile', JSON.stringify(profile));
+        updateProfileNavDisplay();
+    }
+
+    function updateProfileNavDisplay() {
+        const profile = getStudentProfile();
+        const avatarEl = document.getElementById('nav-profile-avatar');
+        const labelEl = document.getElementById('nav-profile-label');
+        if (avatarEl) avatarEl.textContent = profile.avatar || '👤';
+        if (labelEl) {
+            const firstName = (profile.name || '').trim().split(' ')[0] || 'Mi Espacio';
+            labelEl.textContent = firstName.length > 12 ? 'Mi Espacio' : firstName;
+        }
+    }
+
+    // ========================================================
+    // MARCADORES Y FAVORITOS (CÓMICS Y PODCASTS GUARDADOS)
+    // ========================================================
+    function getSavedComics() {
+        try {
+            return JSON.parse(localStorage.getItem('physicsailab_saved_comics') || '[]');
+        } catch(e) {
+            return [];
+        }
+    }
+
+    window.toggleSaveComic = function(comicId, event) {
+        if (event) event.stopPropagation();
+        let saved = getSavedComics();
+        const numId = Number(comicId);
+        const exists = saved.includes(numId) || saved.includes(String(comicId));
+        if (exists) {
+            saved = saved.filter(id => id !== numId && id !== String(comicId));
+            localStorage.setItem('physicsailab_saved_comics', JSON.stringify(saved));
+            showToast('🔖 Cómic removido de tus guardados.');
+        } else {
+            saved.push(numId);
+            localStorage.setItem('physicsailab_saved_comics', JSON.stringify(saved));
+            showToast('🔖 ¡Cómic guardado en tu perfil para leer después!');
+        }
+        renderComics(currentComicCategory);
+        updateProfileNavDisplay();
+        const modal = document.getElementById('student-profile-modal');
+        if (modal && modal.classList.contains('active')) {
+            renderStudentProfileBody('comics');
+        }
+    };
+
+    function getSavedPodcasts() {
+        try {
+            return JSON.parse(localStorage.getItem('physicsailab_saved_podcasts') || '[]');
+        } catch(e) {
+            return [];
+        }
+    }
+
+    window.toggleSavePodcast = function(podId, event) {
+        if (event) event.stopPropagation();
+        let saved = getSavedPodcasts();
+        const exists = saved.includes(podId);
+        if (exists) {
+            saved = saved.filter(id => id !== podId);
+            localStorage.setItem('physicsailab_saved_podcasts', JSON.stringify(saved));
+            showToast('🎙️ Podcast removido de tus guardados.');
+        } else {
+            saved.push(podId);
+            localStorage.setItem('physicsailab_saved_podcasts', JSON.stringify(saved));
+            showToast('🎙️ ¡Podcast guardado en tu perfil para escuchar después!');
+        }
+        renderSpotifyChannels();
+        if (typeof renderLocalPodcasts === 'function') renderLocalPodcasts();
+        updateProfileNavDisplay();
+        const modal = document.getElementById('student-profile-modal');
+        if (modal && modal.classList.contains('active')) {
+            renderStudentProfileBody('podcasts');
+        }
+    };
+
+    // ========================================================
+    // ÁTOMO DE ME GUSTA (⚛️ LIKE SYSTEM)
+    // ========================================================
+    function getBaseAtomLikes(itemId) {
+        let hash = 0;
+        const str = String(itemId);
+        for (let i = 0; i < str.length; i++) {
+            hash = (hash << 5) - hash + str.charCodeAt(i);
+            hash |= 0;
+        }
+        return 18 + (Math.abs(hash) % 36);
+    }
+
+    function getAtomLikesState() {
+        try {
+            return JSON.parse(localStorage.getItem('physicsailab_atom_likes') || '{}');
+        } catch(e) {
+            return {};
+        }
+    }
+
+    function getItemLikeInfo(itemId) {
+        const state = getAtomLikesState();
+        const base = getBaseAtomLikes(itemId);
+        const itemState = state[itemId] || { liked: false, delta: 0 };
+        return {
+            liked: !!itemState.liked,
+            count: base + (itemState.delta || 0)
+        };
+    }
+
+    window.toggleAtomLike = function(itemId, itemType, btnElem) {
+        const state = getAtomLikesState();
+        const current = state[itemId] || { liked: false, delta: 0 };
+        const newLiked = !current.liked;
+        const newDelta = newLiked ? (current.delta || 0) + 1 : Math.max(0, (current.delta || 0) - 1);
+
+        state[itemId] = {
+            liked: newLiked,
+            delta: newDelta,
+            type: itemType || 'general',
+            updatedAt: new Date().toISOString()
+        };
+        localStorage.setItem('physicsailab_atom_likes', JSON.stringify(state));
+
+        const base = getBaseAtomLikes(itemId);
+        const finalCount = base + newDelta;
+
+        if (newLiked) {
+            showToast('⚛️ ¡Has impulsado este contenido con un átomo de energía!');
+        }
+
+        const buttons = document.querySelectorAll(`[data-atom-id="${itemId}"]`);
+        buttons.forEach(btn => {
+            btn.classList.toggle('liked', newLiked);
+            const countSpan = btn.querySelector('.atom-count');
+            if (countSpan) countSpan.textContent = finalCount;
+            if (newLiked) {
+                const icon = btn.querySelector('.atom-icon');
+                if (icon) {
+                    icon.style.animation = 'none';
+                    icon.offsetHeight;
+                    icon.style.animation = 'atom-quantum-spin 0.65s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                }
+            }
+        });
+
+        const modal = document.getElementById('student-profile-modal');
+        if (modal && modal.classList.contains('active')) {
+            renderStudentProfileBody('likes');
+        }
+    };
+
+    // ========================================================
+    // ZONA PRIORITARIA DE CURSOS INSCRITOS (ESTUDIANTE)
+    // ========================================================
+    window.renderEnrolledCourses = function() {
+        const section = document.getElementById('mis-cursos');
+        const container = document.getElementById('my-enrolled-courses-container');
+        const quickChip = document.getElementById('quick-chip-my-courses');
+        const drawerItem = document.getElementById('drawer-my-courses-item');
+        const drawerLabel = document.getElementById('drawer-my-courses-label');
+        if (!container || !section) return;
+
+        const unlockedIds = getUnlockedCourses();
+        const adminMode = isAdmin();
+
+        let enrolledCourses = [];
+        if (adminMode) {
+            enrolledCourses = data.cursos || [];
+        } else if (unlockedIds.length > 0) {
+            enrolledCourses = (data.cursos || []).filter(c => unlockedIds.includes(c.id));
+        }
+
+        const count = enrolledCourses.length;
+
+        // Actualizar chips de acceso rápido
+        if (quickChip) {
+            if (count > 0) {
+                quickChip.style.display = 'inline-flex';
+                quickChip.textContent = `🎓 Mis Cursos (${count})`;
+            } else {
+                quickChip.style.display = 'none';
+            }
+        }
+
+        // Actualizar drawer móvil
+        if (drawerItem) {
+            if (count > 0) {
+                drawerItem.style.display = 'block';
+                if (drawerLabel) drawerLabel.textContent = `Mis Cursos Inscritos (${count})`;
+            } else {
+                drawerItem.style.display = 'none';
+            }
+        }
+
+        if (count === 0) {
+            section.style.display = 'none';
+            container.innerHTML = '';
+            return;
+        }
+
+        section.style.display = 'block';
+        container.innerHTML = `
+            <div class="enrolled-shelf-header">
+                <div>
+                    <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; margin-bottom:0.35rem;">
+                        <span class="unlocked-tag" style="background:rgba(16,185,129,0.22); border-color:rgba(16,185,129,0.5);">
+                            🎓 Tus Materias Inscritas · Periodo 2026
+                        </span>
+                        <span style="font-size:0.75rem; color:#34D399; font-weight:700;">
+                            ● ${count} ${count === 1 ? 'materia activa' : 'materias activas'} sin necesidad de buscar abajo
+                        </span>
+                    </div>
+                    <h3 style="color:#fff; font-size:1.35rem; margin:0 0 0.25rem 0;">Acceso Directo a tus Cursos y Laboratorios</h3>
+                    <p style="font-size:0.83rem; color:var(--text-muted); margin:0;">
+                        ${adminMode ? '👑 Modo Administrador: tienes acceso completo a todos los cursos y bancos de prueba.' : 'Aquí tienes acceso inmediato a los simuladores de tus materias desbloqueadas.'}
+                    </p>
+                </div>
+                <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+                    <button class="btn btn-secondary" style="font-size:0.8rem; padding:0.4rem 0.8rem; border-color:rgba(56,189,248,0.4); color:var(--accent-blue);" onclick="openStudentProfileModal('courses')">
+                        👤 Ver en Mi Espacio
+                    </button>
+                    ${!adminMode ? `
+                    <button class="btn btn-secondary" style="font-size:0.8rem; padding:0.4rem 0.8rem;" onclick="abrirCanjeadorRapido()">
+                        🔑 Canjear otra materia
+                    </button>
+                    ` : ''}
+                </div>
+            </div>
+
+            <div class="enrolled-grid">
+                ${enrolledCourses.map(c => {
+                    const isLab = c.id === 'transformadores' || c.esLaboratorio;
+                    const likeInfo = getItemLikeInfo('curso-' + c.id);
+                    return `
+                    <div class="enrolled-card">
+                        <div>
+                            <div class="enrolled-card-header">
+                                <span class="card-tag ${isLab ? 'lab-tag' : 'interactive'}">${c.categoria}</span>
+                                <span style="font-size:0.72rem; color:#34D399; font-weight:700; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); padding:0.15rem 0.45rem; border-radius:9999px;">
+                                    ● Activo
+                                </span>
+                            </div>
+                            <h4 class="enrolled-card-title">${c.titulo}</h4>
+                            <p class="enrolled-card-desc">${c.descripcion.length > 120 ? c.descripcion.substring(0, 117) + '...' : c.descripcion}</p>
+                            <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:0.75rem;">
+                                <strong>Módulos:</strong> <span style="color:var(--accent-indigo);">${c.modulos}</span>
+                            </div>
+                        </div>
+
+                        <div class="enrolled-card-actions">
+                            ${c.demoPath ? `
+                            <a href="${c.demoPath}" target="_blank" class="btn-open-enrolled" title="Abrir simulador directo de ${c.titulo}">
+                                <span>Abrir Curso Directo 🚀</span>
+                            </a>
+                            ` : ''}
+                            <button class="btn btn-secondary" onclick="openCourseDetails('${c.id}')" style="font-size:0.8rem; padding:0.4rem 0.7rem;" title="Ver temario completo">
+                                Temario 📋
+                            </button>
+                            <button class="atom-like-btn ${likeInfo.liked ? 'liked' : ''}" data-atom-id="curso-${c.id}" onclick="toggleAtomLike('curso-${c.id}', 'curso', this)" title="Dar un átomo de me gusta">
+                                <span class="atom-icon">⚛️</span> <span class="atom-count">${likeInfo.count}</span>
+                            </button>
+                        </div>
+                    </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    };
+
+    // ========================================================
+    // MODAL DE PERFIL DEL ESTUDIANTE Y GUARDADOS
+    // ========================================================
+    let currentProfileTab = 'courses';
+
+    window.openStudentProfileModal = function(initialTab = 'courses') {
+        currentProfileTab = initialTab;
+        const modal = document.getElementById('student-profile-modal');
+        if (!modal) return;
+        renderStudentProfileBody(initialTab);
+        modal.classList.add('active');
+    };
+
+    window.closeStudentProfileModal = function() {
+        const modal = document.getElementById('student-profile-modal');
+        if (modal) modal.classList.remove('active');
+    };
+
+    window.switchProfileTab = function(tabId) {
+        currentProfileTab = tabId;
+        renderStudentProfileBody(tabId);
+    };
+
+    function renderProfileCoursesTab(enrolledCourses) {
+        if (!enrolledCourses || enrolledCourses.length === 0) {
+            return `
+                <div style="text-align:center; padding:2.5rem 1rem; background:rgba(255,255,255,0.02); border-radius:14px; border:1px dashed rgba(255,255,255,0.12);">
+                    <div style="font-size:2.5rem; margin-bottom:0.75rem;">🎓</div>
+                    <h3 style="color:#fff; margin-bottom:0.5rem;">Aún no tienes cursos inscritos</h3>
+                    <p style="color:var(--text-muted); font-size:0.88rem; max-width:480px; margin:0 auto 1.25rem;">
+                        Si eres estudiante del Mg. Manuel Alejandro Obando este semestre, canjea el código exclusivo de tu materia para desbloquearla gratis y tenerla aquí a la mano.
+                    </p>
+                    <button class="btn btn-primary" onclick="closeStudentProfileModal(); abrirCanjeadorRapido();">
+                        Ingresar Clave de Clase 🔑
+                    </button>
+                </div>
+            `;
+        }
+
+        return `
+            <div class="saved-items-grid">
+                ${enrolledCourses.map(c => `
+                    <div class="saved-card" style="border-left:3px solid #10B981;">
+                        <div>
+                            <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
+                                <span class="card-tag interactive" style="font-size:0.7rem;">${c.categoria}</span>
+                                <span style="font-size:0.7rem; color:#34D399; font-weight:700;">● Inscrito</span>
+                            </div>
+                            <h4 style="font-size:1.05rem; margin:0 0 0.35rem 0; color:#fff;">${c.titulo}</h4>
+                            <p style="font-size:0.8rem; color:var(--text-muted); line-height:1.4; margin-bottom:0.75rem;">${c.descripcion.substring(0, 95)}...</p>
+                        </div>
+                        <div style="display:flex; gap:0.5rem; margin-top:auto;">
+                            ${c.demoPath ? `<a href="${c.demoPath}" target="_blank" class="btn btn-primary" style="flex:1; justify-content:center; font-size:0.82rem; padding:0.45rem;">Abrir Curso 🚀</a>` : ''}
+                            <button class="btn btn-secondary" onclick="closeStudentProfileModal(); openCourseDetails('${c.id}');" style="font-size:0.82rem; padding:0.45rem 0.75rem;">Temario</button>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    function renderProfileComicsTab(savedComicIds) {
+        const savedList = (data.comics || []).filter(c => savedComicIds.includes(c.id) || savedComicIds.includes(String(c.id)));
+        if (savedList.length === 0) {
+            return `
+                <div style="text-align:center; padding:2.5rem 1rem; background:rgba(255,255,255,0.02); border-radius:14px; border:1px dashed rgba(255,255,255,0.12);">
+                    <div style="font-size:2.5rem; margin-bottom:0.75rem;">🎨</div>
+                    <h3 style="color:#fff; margin-bottom:0.5rem;">No tienes cómics guardados</h3>
+                    <p style="color:var(--text-muted); font-size:0.88rem; max-width:480px; margin:0 auto 1.25rem;">
+                        Explora la galería de 56 cómics creados por estudiantes de física y presiona <strong>🔖 Guardar</strong> en cualquiera para armar tu biblioteca personal de lectura.
+                    </p>
+                    <button class="btn btn-secondary" onclick="closeStudentProfileModal(); location.href='#comics';">
+                        Explorar Cómics Estudiantiles 🎨
+                    </button>
+                </div>
+            `;
+        }
+
+        return `
+            <div class="saved-items-grid">
+                ${savedList.map(c => `
+                    <div class="saved-card">
+                        <div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                                <span class="comic-cover-badge" style="position:static; font-size:0.7rem; padding:0.2rem 0.5rem;">🎨 ${c.categoria}</span>
+                                <button onclick="toggleSaveComic(${c.id}, event)" title="Quitar de guardados" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:0.85rem;">✕ Quitar</button>
+                            </div>
+                            <h4 style="font-size:1.05rem; margin:0 0 0.35rem 0; color:#fff;">${c.titulo}</h4>
+                            <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:0.4rem;">✍️ ${c.autores}</div>
+                            <p style="font-size:0.8rem; color:var(--text-muted); line-height:1.4; margin-bottom:0.75rem;">${c.descripcion.substring(0, 95)}...</p>
+                        </div>
+                        <div style="display:flex; gap:0.5rem; margin-top:auto;">
+                            <a href="${c.archivo}" target="_blank" class="btn btn-primary" style="flex:1; justify-content:center; font-size:0.82rem; padding:0.45rem;">Leer PDF 📖</a>
+                            <a href="${c.archivo}" download class="btn btn-secondary" style="font-size:0.82rem; padding:0.45rem 0.75rem;" title="Descargar">⬇️</a>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    function renderProfilePodcastsTab(savedPodcastsList) {
+        const savedSpotify = (data.canalesSpotify || []).filter(sp => savedPodcastsList.includes(sp.id));
+        const savedLocals = (data.podcasts || []).filter((p, idx) => savedPodcastsList.includes('podcast-local-' + idx));
+
+        if (savedSpotify.length === 0 && savedLocals.length === 0) {
+            return `
+                <div style="text-align:center; padding:2.5rem 1rem; background:rgba(255,255,255,0.02); border-radius:14px; border:1px dashed rgba(255,255,255,0.12);">
+                    <div style="font-size:2.5rem; margin-bottom:0.75rem;">🎙️</div>
+                    <h3 style="color:#fff; margin-bottom:0.5rem;">No tienes podcasts guardados</h3>
+                    <p style="color:var(--text-muted); font-size:0.88rem; max-width:480px; margin:0 auto 1.25rem;">
+                        Guarda los canales oficiales en Spotify o los episodios universitarios pulsando <strong>🔖 Guardar</strong> para escucharlos más tarde mientras estudias.
+                    </p>
+                    <button class="btn btn-secondary" onclick="closeStudentProfileModal(); location.href='#podcasts';">
+                        Explorar Canales de Spotify 🎙️
+                    </button>
+                </div>
+            `;
+        }
+
+        return `
+            <div class="saved-items-grid">
+                ${savedSpotify.map(sp => `
+                    <div class="saved-card" style="border-left:3px solid #1DB954;">
+                        <div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                                <span style="font-size:0.7rem; color:#1DB954; font-weight:700;">🟢 Spotify · ${sp.curso}</span>
+                                <button onclick="toggleSavePodcast('${sp.id}', event)" title="Quitar de guardados" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:0.85rem;">✕ Quitar</button>
+                            </div>
+                            <h4 style="font-size:1.05rem; margin:0 0 0.35rem 0; color:#fff;">${sp.titulo}</h4>
+                            <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:0.4rem;">🎙️ ${sp.autor}</div>
+                            <p style="font-size:0.8rem; color:var(--text-muted); line-height:1.4; margin-bottom:0.75rem;">${sp.descripcion.substring(0, 95)}...</p>
+                        </div>
+                        <div style="display:flex; gap:0.5rem; margin-top:auto;">
+                            <a href="${sp.url}" target="_blank" class="btn btn-spotify" style="flex:1; justify-content:center; font-size:0.82rem; padding:0.45rem;">Abrir Spotify 🎧</a>
+                        </div>
+                    </div>
+                `).join('')}
+
+                ${savedLocals.map((p, idx) => `
+                    <div class="saved-card">
+                        <div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                                <span class="card-tag" style="font-size:0.7rem;">${p.categoria}</span>
+                                <button onclick="toggleSavePodcast('podcast-local-${idx}', event)" title="Quitar de guardados" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:0.85rem;">✕ Quitar</button>
+                            </div>
+                            <h4 style="font-size:1.05rem; margin:0 0 0.35rem 0; color:#fff;">${p.titulo}</h4>
+                            <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:0.4rem;">🎙️ ${p.creditos}</div>
+                            <p style="font-size:0.8rem; color:var(--text-muted); line-height:1.4; margin-bottom:0.75rem;">${p.descripcion.substring(0, 95)}...</p>
+                        </div>
+                        <div style="display:flex; gap:0.5rem; margin-top:auto;">
+                            <button class="btn btn-primary" onclick="closeStudentProfileModal(); playPodcast('${p.archivo}', '${p.titulo.replace(/'/g, "\\'")}', '${p.categoria}');" style="flex:1; justify-content:center; font-size:0.82rem; padding:0.45rem;">Reproducir ▶️</button>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    function renderProfileLikesTab(likedItemIds) {
+        if (!likedItemIds || likedItemIds.length === 0) {
+            return `
+                <div style="text-align:center; padding:2.5rem 1rem; background:rgba(255,255,255,0.02); border-radius:14px; border:1px dashed rgba(255,255,255,0.12);">
+                    <div style="font-size:2.5rem; margin-bottom:0.75rem;">⚛️</div>
+                    <h3 style="color:#fff; margin-bottom:0.5rem;">Aún no has impulsado contenidos con átomos</h3>
+                    <p style="color:var(--text-muted); font-size:0.88rem; max-width:480px; margin:0 auto 1.25rem;">
+                        Presiona el botón cuántico <strong>⚛️</strong> en cualquier curso, cómic, podcast, dato curioso o artículo de squash para dejar tu huella y verlos listados aquí.
+                    </p>
+                </div>
+            `;
+        }
+
+        return `
+            <div class="saved-items-grid">
+                ${likedItemIds.map(id => {
+                    const likeInfo = getItemLikeInfo(id);
+                    let label = id;
+                    let typeBadge = '⚛️ Contenido';
+                    if (id.startsWith('curso-')) {
+                        const c = (data.cursos || []).find(x => 'curso-' + x.id === id);
+                        if (c) label = c.titulo;
+                        typeBadge = '🚀 Curso';
+                    } else if (id.startsWith('comic-')) {
+                        const c = (data.comics || []).find(x => 'comic-' + x.id === id);
+                        if (c) label = c.titulo;
+                        typeBadge = '🎨 Cómic';
+                    } else if (id.startsWith('spotify-')) {
+                        const sp = (data.canalesSpotify || []).find(x => 'spotify-' + x.id === id);
+                        if (sp) label = sp.titulo;
+                        typeBadge = '🎙️ Spotify';
+                    } else if (id.startsWith('fact-')) {
+                        const f = (data.datosCuriosos || []).find(x => 'fact-' + x.id === id);
+                        if (f) label = f.titulo;
+                        typeBadge = '💡 Curiosidad';
+                    } else if (id.startsWith('squash-')) {
+                        const s = (data.articulosSquash || []).find(x => 'squash-' + x.id === id);
+                        if (s) label = s.titulo;
+                        typeBadge = '🎾 Squash';
+                    }
+                    return `
+                        <div class="saved-card" style="border-left:3px solid #38BDF8;">
+                            <div>
+                                <span class="badge" style="font-size:0.68rem; margin-bottom:0.5rem; background:rgba(56,189,248,0.12); color:#38BDF8; border-color:rgba(56,189,248,0.3);">${typeBadge}</span>
+                                <h4 style="font-size:1rem; margin:0 0 0.5rem 0; color:#fff;">${label}</h4>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:auto; padding-top:0.5rem;">
+                                <span style="font-size:0.75rem; color:var(--text-muted);">Tu voto está activo</span>
+                                <button class="atom-like-btn liked" data-atom-id="${id}" onclick="toggleAtomLike('${id}', 'saved', this)">
+                                    <span class="atom-icon">⚛️</span> <span class="atom-count">${likeInfo.count}</span>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    }
+
+    function renderProfileEditTab(profile) {
+        const avatars = ['⚛️', '🔬', '🚀', '🧠', '⚡', '🌌', '🎾', '📚', '📐', '💻', '🔋', '🔭'];
+        return `
+            <div style="max-width:560px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:1.5rem;">
+                <h3 style="color:#fff; font-size:1.2rem; margin:0 0 1rem 0;">Configuración de tu Perfil Estudiantil</h3>
+
+                <div class="payment-form-group">
+                    <label style="color:var(--text-muted); font-size:0.8rem; text-transform:uppercase; font-weight:700;">Selecciona tu Avatar Científico:</label>
+                    <div class="avatar-selector-grid">
+                        ${avatars.map(av => `
+                            <button type="button" class="avatar-option-btn ${profile.avatar === av ? 'selected' : ''}" onclick="selectStudentAvatar('${av}', this)">
+                                ${av}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div class="payment-form-group">
+                    <label style="color:var(--text-muted); font-size:0.8rem; text-transform:uppercase; font-weight:700;">Nombre Completo:</label>
+                    <input type="text" id="edit-profile-name" class="payment-form-input" value="${(profile.name || '').replace(/"/g, '&quot;')}" placeholder="Tu nombre..." />
+                </div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+                    <div class="payment-form-group">
+                        <label style="color:var(--text-muted); font-size:0.8rem; text-transform:uppercase; font-weight:700;">Carrera / Programa:</label>
+                        <input type="text" id="edit-profile-career" class="payment-form-input" value="${(profile.career || '').replace(/"/g, '&quot;')}" placeholder="Ej. Ingeniería Física" />
+                    </div>
+                    <div class="payment-form-group">
+                        <label style="color:var(--text-muted); font-size:0.8rem; text-transform:uppercase; font-weight:700;">Universidad / Institución:</label>
+                        <input type="text" id="edit-profile-inst" class="payment-form-input" value="${(profile.institution || 'Universidad del Cauca').replace(/"/g, '&quot;')}" placeholder="Universidad del Cauca" />
+                    </div>
+                </div>
+
+                <div style="margin-top:1.25rem; display:flex; gap:0.75rem; justify-content:flex-end;">
+                    <button class="btn btn-secondary" onclick="switchProfileTab('courses')">Cancelar</button>
+                    <button class="btn btn-primary" onclick="guardarDatosPerfilEstudiante()">Guardar Cambios 💾</button>
+                </div>
+            </div>
+        `;
+    }
+
+    let selectedAvatarTemp = null;
+    window.selectStudentAvatar = function(av, btn) {
+        selectedAvatarTemp = av;
+        document.querySelectorAll('.avatar-option-btn').forEach(b => b.classList.remove('selected'));
+        if (btn) btn.classList.add('selected');
+    };
+
+    window.guardarDatosPerfilEstudiante = function() {
+        const nameInp = document.getElementById('edit-profile-name');
+        const careerInp = document.getElementById('edit-profile-career');
+        const instInp = document.getElementById('edit-profile-inst');
+
+        const current = getStudentProfile();
+        const updated = {
+            ...current,
+            name: nameInp ? (nameInp.value.trim() || current.name) : current.name,
+            career: careerInp ? (careerInp.value.trim() || current.career) : current.career,
+            institution: instInp ? (instInp.value.trim() || current.institution) : current.institution,
+            avatar: selectedAvatarTemp || current.avatar || '⚛️',
+            updatedAt: new Date().toISOString()
+        };
+
+        saveStudentProfile(updated);
+        showToast('✓ ¡Tu perfil estudiantil ha sido actualizado exitosamente!');
+        switchProfileTab('courses');
+    };
+
+    function renderStudentProfileBody(activeTab = 'courses') {
+        const body = document.getElementById('student-profile-body');
+        if (!body) return;
+
+        const profile = getStudentProfile();
+        selectedAvatarTemp = profile.avatar || '⚛️';
+        const unlockedIds = getUnlockedCourses();
+        const adminMode = isAdmin();
+        const enrolledCourses = adminMode ? (data.cursos || []) : (data.cursos || []).filter(c => unlockedIds.includes(c.id));
+        const savedComicIds = getSavedComics();
+        const savedPodcastsList = getSavedPodcasts();
+        const atomLikesState = getAtomLikesState();
+        const likedItemIds = Object.keys(atomLikesState).filter(k => atomLikesState[k]?.liked);
+
+        body.innerHTML = `
+            <!-- Encabezado de Perfil -->
+            <div class="profile-header-card">
+                <div class="profile-avatar-circle" id="profile-avatar-display">
+                    ${profile.avatar || '⚛️'}
+                </div>
+                <div class="profile-info">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:0.5rem;">
+                        <div>
+                            <h2 class="profile-name">${profile.name || 'Estudiante Universitario'}</h2>
+                            <p class="profile-meta-text">🎓 ${profile.career || 'Física / Ingeniería'} · ${profile.institution || 'Universidad del Cauca'}</p>
+                        </div>
+                        <button class="btn btn-secondary" onclick="switchProfileTab('edit')" style="font-size:0.8rem; padding:0.35rem 0.75rem;">
+                            ✏️ Editar Perfil
+                        </button>
+                    </div>
+                    <div class="profile-stats-bar">
+                        <span class="profile-stat-badge">
+                            <strong>${enrolledCourses.length}</strong> Cursos Inscritos 🎓
+                        </span>
+                        <span class="profile-stat-badge">
+                            <strong>${savedComicIds.length}</strong> Cómics Guardados 🎨
+                        </span>
+                        <span class="profile-stat-badge">
+                            <strong>${savedPodcastsList.length}</strong> Podcasts Guardados 🎙️
+                        </span>
+                        <span class="profile-stat-badge">
+                            <strong>${likedItemIds.length}</strong> Átomos Me Gusta ⚛️
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navegación de Pestañas -->
+            <div class="profile-tabs-nav">
+                <button class="profile-tab-btn ${activeTab === 'courses' ? 'active' : ''}" onclick="switchProfileTab('courses')">
+                    🎓 Mis Cursos (${enrolledCourses.length})
+                </button>
+                <button class="profile-tab-btn ${activeTab === 'comics' ? 'active' : ''}" onclick="switchProfileTab('comics')">
+                    🎨 Cómics Guardados (${savedComicIds.length})
+                </button>
+                <button class="profile-tab-btn ${activeTab === 'podcasts' ? 'active' : ''}" onclick="switchProfileTab('podcasts')">
+                    🎙️ Podcasts Guardados (${savedPodcastsList.length})
+                </button>
+                <button class="profile-tab-btn ${activeTab === 'likes' ? 'active' : ''}" onclick="switchProfileTab('likes')">
+                    ⚛️ Mis 'Me Gusta' (${likedItemIds.length})
+                </button>
+                <button class="profile-tab-btn ${activeTab === 'edit' ? 'active' : ''}" onclick="switchProfileTab('edit')">
+                    ⚙️ Configuración
+                </button>
+            </div>
+
+            <!-- Contenido de Pestañas -->
+            <div class="profile-tab-panel ${activeTab === 'courses' ? 'active' : ''}" id="profile-tab-courses">
+                ${renderProfileCoursesTab(enrolledCourses)}
+            </div>
+
+            <div class="profile-tab-panel ${activeTab === 'comics' ? 'active' : ''}" id="profile-tab-comics">
+                ${renderProfileComicsTab(savedComicIds)}
+            </div>
+
+            <div class="profile-tab-panel ${activeTab === 'podcasts' ? 'active' : ''}" id="profile-tab-podcasts">
+                ${renderProfilePodcastsTab(savedPodcastsList)}
+            </div>
+
+            <div class="profile-tab-panel ${activeTab === 'likes' ? 'active' : ''}" id="profile-tab-likes">
+                ${renderProfileLikesTab(likedItemIds)}
+            </div>
+
+            <div class="profile-tab-panel ${activeTab === 'edit' ? 'active' : ''}" id="profile-tab-edit">
+                ${renderProfileEditTab(profile)}
+            </div>
+        `;
+    }
+
     function unlockCourse(courseId) {
         let list = getUnlockedCourses();
         if (!list.includes(courseId)) {
@@ -192,6 +854,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         localStorage.setItem('unlocked_course_' + courseId, 'true');
         updateStudentBannerState();
+        renderEnrolledCourses();
         renderCourses(currentCourseFilter);
     }
 
@@ -200,6 +863,7 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('physicsailab_unlocked_courses', JSON.stringify(list));
         localStorage.removeItem('unlocked_course_' + courseId);
         updateStudentBannerState();
+        renderEnrolledCourses();
         renderCourses(currentCourseFilter);
         showToast('🔒 El curso ha sido bloqueado nuevamente para pruebas.');
     };
@@ -211,6 +875,7 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.removeItem('estudiante_desbloqueado');
         (data.cursos || []).forEach(c => localStorage.removeItem('unlocked_course_' + c.id));
         updateStudentBannerState();
+        renderEnrolledCourses();
         renderCourses(currentCourseFilter);
         showToast('🔒 Se han cerrado todas las sesiones de cursos y docente.');
     };
@@ -285,8 +950,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         </p>
                     </div>
                     <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+                        <a href="#mis-cursos" class="btn btn-primary" style="font-size:0.8rem; padding:0.4rem 0.8rem; background:linear-gradient(135deg, #059669, #10B981); border:none; text-decoration:none;">
+                            Ver Mis Cursos Arriba 🚀
+                        </a>
+                        <button class="btn btn-secondary" style="font-size:0.8rem; padding:0.4rem 0.8rem;" onclick="openStudentProfileModal('courses')">
+                            👤 Mi Espacio
+                        </button>
                         <button class="btn btn-secondary" style="font-size:0.8rem; padding:0.4rem 0.8rem;" onclick="abrirCanjeadorRapido()">
-                            🔑 Desbloquear otra materia
+                            🔑 Otra materia
                         </button>
                         <button class="btn btn-secondary" style="font-size:0.8rem; padding:0.4rem 0.8rem;" onclick="lockAllCourses()">
                             Bloquear todo 🔒
@@ -347,6 +1018,10 @@ document.addEventListener('DOMContentLoaded', () => {
             alert(`🎉 ¡Clave válida para «${matchedCourse.titulo}»!\n\nTu materia ha sido desbloqueada exitosamente para este periodo académico.`);
             showToast(`🎓 Materia desbloqueada: <strong>${matchedCourse.titulo}</strong>`);
             input.value = '';
+            setTimeout(() => {
+                const el = document.getElementById('mis-cursos');
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 300);
         } else {
             alert('❌ Clave no válida o expirada para este periodo académico.\n\nRecuerda que cada materia tiene su propia clave independiente. Verifica con el Mg. Manuel Alejandro Obando en clase.');
         }
@@ -440,6 +1115,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const courseTitle = course ? course.titulo : 'Curso';
             alert(`🎉 ¡Excelente!\n\nEl curso «${courseTitle}» ha sido desbloqueado con éxito para este periodo.`);
             showToast(`🎓 ¡Curso desbloqueado: <strong>${courseTitle}</strong>!`);
+            setTimeout(() => {
+                const el = document.getElementById('mis-cursos');
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 300);
             return;
         }
 
@@ -501,6 +1180,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const isSquash = c.id === 'squash_sim';
             const courseUnlocked = isCourseUnlocked(c.id);
             const adminMode = isAdmin();
+            const likeInfo = getItemLikeInfo('curso-' + c.id);
 
             const openBtnText = courseUnlocked
                 ? (isLab ? 'Abrir Laboratorio 🚀' : (isSquash ? 'Abrir Simulador Completo 🎾' : 'Abrir Curso Completo 🎓'))
@@ -546,11 +1226,14 @@ document.addEventListener('DOMContentLoaded', () => {
                             ${courseUnlocked ? (adminMode ? 'Acceso maestro docente liberado' : 'Materia desbloqueada para este semestre') : (isSquash ? 'Demo con rutinas pre-generadas · Controles con clave' : (isLab ? 'Banco de pruebas libre · Ensayos con clave' : 'Cap. 0 y 1 en demo · Resto con clave de alumno o compra'))}
                         </div>
                     </div>
-                    <div class="card-actions" style="flex-wrap:wrap;">
+                    <div class="card-actions" style="flex-wrap:wrap; gap:0.4rem;">
                         ${c.demoPath ? `<a href="${c.demoPath}" target="_blank" class="btn btn-primary" style="flex:1; justify-content:center;">${openBtnText}</a>` : ''}
                         ${!courseUnlocked ? `<button class="btn btn-secondary btn-course-key" onclick="openCourseKeyModal('${c.id}')" title="Ingresar clave para ${c.titulo}">🔑 Clave Alumno</button>` : ''}
                         ${!courseUnlocked && c.enlaceCompra ? `<button class="btn btn-secondary" onclick="openPaymentModal('${c.id}')" style="border-color:var(--accent-amber); color:var(--accent-amber);">${buyBtnText}</button>` : ''}
                         <button class="btn btn-secondary" onclick="openCourseDetails('${c.id}')">${detailsBtnText}</button>
+                        <button class="atom-like-btn ${likeInfo.liked ? 'liked' : ''}" data-atom-id="curso-${c.id}" onclick="toggleAtomLike('curso-${c.id}', 'curso', this)" title="Dar un átomo de me gusta">
+                            <span class="atom-icon">⚛️</span> <span class="atom-count">${likeInfo.count}</span>
+                        </button>
                         ${(courseUnlocked && !adminMode) ? `<button class="btn btn-secondary" onclick="lockCourse('${c.id}')" title="Bloquear este curso para pruebas" style="font-size:0.75rem; padding:0.35rem 0.6rem; opacity:0.6;">🔒</button>` : ''}
                     </div>
                 </div>
@@ -579,6 +1262,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    updateProfileNavDisplay();
+    renderEnrolledCourses();
     updateStudentBannerState();
     renderCourses('all');
 
@@ -602,7 +1287,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const total = data.canalesSpotify.length;
         const channelsToRender = (isMobile && !spotifyExpanded) ? data.canalesSpotify.slice(0, 3) : data.canalesSpotify;
 
-        spotifyGrid.innerHTML = channelsToRender.map(sp => `
+        spotifyGrid.innerHTML = channelsToRender.map(sp => {
+            const isSaved = getSavedPodcasts().includes(sp.id);
+            const likeInfo = getItemLikeInfo('spotify-' + sp.id);
+            return `
             <div class="spotify-card">
                 <div>
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.85rem;">
@@ -630,16 +1318,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div id="embed-container-${sp.id}" style="display:none; margin-bottom:1rem; border-radius:12px; overflow:hidden;"></div>
                 </div>
 
-                <div style="display:flex; gap:0.6rem; flex-wrap:wrap;">
+                <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
                     <a href="${sp.url}" target="_blank" class="btn btn-spotify" style="flex:1; justify-content:center; text-decoration:none;">
-                        Escuchar en Spotify 🎧
+                        Spotify 🎧
                     </a>
-                    <button class="btn btn-secondary" style="font-size:0.8rem; padding:0.5rem 0.85rem;" onclick="toggleSpotifyPlayer('${sp.id}', '${sp.spotifyId}', this)">
-                        Reproductor Web ⚡
+                    <button class="btn btn-secondary" style="font-size:0.8rem; padding:0.5rem 0.75rem;" onclick="toggleSpotifyPlayer('${sp.id}', '${sp.spotifyId}', this)">
+                        Web ⚡
+                    </button>
+                    <button class="bookmark-btn ${isSaved ? 'saved' : ''}" onclick="toggleSavePodcast('${sp.id}', event)" title="${isSaved ? 'Quitar de guardados' : 'Guardar en mi perfil'}">
+                        ${isSaved ? '🔖' : '🔖 Guardar'}
+                    </button>
+                    <button class="atom-like-btn ${likeInfo.liked ? 'liked' : ''}" data-atom-id="spotify-${sp.id}" onclick="toggleAtomLike('spotify-${sp.id}', 'spotify', this)" title="Dar un átomo de me gusta">
+                        <span class="atom-icon">⚛️</span> <span class="atom-count">${likeInfo.count}</span>
                     </button>
                 </div>
             </div>
-        `).join('');
+            `;
+        }).join('');
 
         if (toggleContainer) {
             if (isMobile && total > 3) {
@@ -737,7 +1432,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const displayed = filtered.slice(0, comicDisplayLimit);
 
-        comicsGrid.innerHTML = displayed.map(c => `
+        comicsGrid.innerHTML = displayed.map(c => {
+            const isSaved = getSavedComics().includes(c.id) || getSavedComics().includes(String(c.id));
+            const likeInfo = getItemLikeInfo('comic-' + c.id);
+            return `
             <div class="comic-card">
                 <div class="comic-cover-wrap">
                     <img src="${c.portada}" alt="${c.titulo}" loading="lazy" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'300\\' height=\\'400\\' viewBox=\\'0 0 300 400\\'><rect width=\\'300\\' height=\\'400\\' fill=\\'%23111827\\'/><text x=\\'50%\\' y=\\'50%\\' fill=\\'%23F59E0B\\' font-family=\\'sans-serif\\' font-size=\\'48\\' text-anchor=\\'middle\\' dy=\\'.3em\\'>🎨</text></svg>';" />
@@ -767,13 +1465,20 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     </div>
 
-                    <div class="card-actions" style="margin-top:auto;">
-                        <a href="${c.archivo}" target="_blank" class="btn btn-primary" style="flex:1; justify-content:center; text-decoration:none;" onclick="trackDownload('${c.titulo.replace(/'/g, "\\'")}')">Leer Cómic (PDF) 📖</a>
-                        <a href="${c.archivo}" download class="btn btn-secondary" onclick="trackDownload('${c.titulo.replace(/'/g, "\\'")}')" style="font-size:0.85rem; text-decoration:none;" title="Descargar PDF">⬇️ Descargar</a>
+                    <div class="card-actions" style="margin-top:auto; flex-wrap:wrap; gap:0.4rem;">
+                        <a href="${c.archivo}" target="_blank" class="btn btn-primary" style="flex:1; justify-content:center; text-decoration:none;" onclick="trackDownload('${c.titulo.replace(/'/g, "\\'")}')">Leer Cómic 📖</a>
+                        <a href="${c.archivo}" download class="btn btn-secondary" onclick="trackDownload('${c.titulo.replace(/'/g, "\\'")}')" style="font-size:0.82rem; padding:0.45rem 0.65rem; text-decoration:none;" title="Descargar PDF">⬇️</a>
+                        <button class="bookmark-btn ${isSaved ? 'saved' : ''}" onclick="toggleSaveComic(${c.id}, event)" title="${isSaved ? 'Quitar de guardados' : 'Guardar en mi perfil'}">
+                            ${isSaved ? '🔖' : '🔖 Guardar'}
+                        </button>
+                        <button class="atom-like-btn ${likeInfo.liked ? 'liked' : ''}" data-atom-id="comic-${c.id}" onclick="toggleAtomLike('comic-${c.id}', 'comic', this)" title="Dar un átomo de me gusta">
+                            <span class="atom-icon">⚛️</span> <span class="atom-count">${likeInfo.count}</span>
+                        </button>
                     </div>
                 </div>
             </div>
-        `).join('');
+            `;
+        }).join('');
 
         if (comicsPaginationControls) {
             if (filtered.length > comicDisplayLimit) {
@@ -807,12 +1512,22 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // 6. Renderizar Episodios Locales de Podcasts
-    const podcastsGrid = document.getElementById('podcasts-grid');
-    if (podcastsGrid) {
-        podcastsGrid.innerHTML = data.podcasts.map((p, idx) => `
+    function renderLocalPodcasts() {
+        const podcastsGrid = document.getElementById('podcasts-grid');
+        if (!podcastsGrid || !data.podcasts) return;
+        podcastsGrid.innerHTML = data.podcasts.map((p, idx) => {
+            const podId = 'podcast-local-' + idx;
+            const isSaved = getSavedPodcasts().includes(podId);
+            const likeInfo = getItemLikeInfo(podId);
+            return `
             <div class="card">
                 <div>
-                    <span class="card-tag">${p.categoria}</span>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                        <span class="card-tag">${p.categoria}</span>
+                        <button class="atom-like-btn ${likeInfo.liked ? 'liked' : ''}" data-atom-id="${podId}" onclick="toggleAtomLike('${podId}', 'podcast', this)" title="Dar un átomo de me gusta">
+                            <span class="atom-icon">⚛️</span> <span class="atom-count">${likeInfo.count}</span>
+                        </button>
+                    </div>
                     <h3>${p.titulo}</h3>
                     <p>${p.descripcion}</p>
                     <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1rem;">
@@ -820,15 +1535,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
                 <div>
-                    <div class="card-actions">
-                        <button class="btn btn-primary" onclick="playPodcast('${p.archivo}', '${p.titulo.replace(/'/g, "\\'")}', '${p.categoria}')">
-                            Reproducir Episodio ▶️
+                    <div class="card-actions" style="flex-wrap:wrap; gap:0.4rem;">
+                        <button class="btn btn-primary" style="flex:1;" onclick="playPodcast('${p.archivo}', '${p.titulo.replace(/'/g, "\\'")}', '${p.categoria}')">
+                            Reproducir ▶️
+                        </button>
+                        <button class="bookmark-btn ${isSaved ? 'saved' : ''}" onclick="toggleSavePodcast('${podId}', event)" title="${isSaved ? 'Quitar de guardados' : 'Guardar en mi perfil'}">
+                            ${isSaved ? '🔖' : '🔖 Guardar'}
                         </button>
                     </div>
                 </div>
             </div>
-        `).join('');
+            `;
+        }).join('');
     }
+    renderLocalPodcasts();
 
     // Audio Player setup
     window.playPodcast = function(url, title, category) {
@@ -888,12 +1608,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const grid = document.getElementById('articulos-grid');
         if (!grid || !data.articulosSquash) return;
 
-        grid.innerHTML = data.articulosSquash.map(art => `
+        grid.innerHTML = data.articulosSquash.map(art => {
+            const likeInfo = getItemLikeInfo('squash-' + art.id);
+            return `
             <div class="card">
                 <div>
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
                         <span class="card-tag interactive">${art.tag}</span>
-                        <span style="font-size:0.75rem; color:var(--text-muted);">${art.tiempoLectura}</span>
+                        <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <span style="font-size:0.75rem; color:var(--text-muted);">${art.tiempoLectura}</span>
+                            <button class="atom-like-btn ${likeInfo.liked ? 'liked' : ''}" data-atom-id="squash-${art.id}" onclick="toggleAtomLike('squash-${art.id}', 'squash', this)" title="Dar un átomo de me gusta">
+                                <span class="atom-icon">⚛️</span> <span class="atom-count">${likeInfo.count}</span>
+                            </button>
+                        </div>
                     </div>
                     <h3 style="font-size:1.25rem; line-height:1.35; margin-bottom:0.4rem;">${art.icono} ${art.titulo}</h3>
                     <div style="font-size:0.85rem; color:var(--accent-blue); font-weight:600; margin-bottom:0.85rem;">
@@ -914,7 +1641,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
             </div>
-        `).join('');
+            `;
+        }).join('');
     }
 
     renderSquashArticles();
@@ -1866,6 +2594,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderDailyFactBanner() {
         const container = document.getElementById('daily-fact-container');
         if (!container || !todayFact) return;
+        const likeInfo = getItemLikeInfo('fact-' + todayFact.id);
 
         container.innerHTML = `
             <div class="daily-fact-banner">
@@ -1874,7 +2603,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span class="daily-pulse-tag">✨ DATO CURIOSO DEL DÍA</span>
                         <span class="daily-date-badge">📅 ${fechaHoyTexto}</span>
                     </div>
-                    <span class="daily-refresh-indicator">🔄 Rotación Diaria Automática</span>
+                    <div style="display:flex; align-items:center; gap:0.65rem; flex-wrap:wrap;">
+                        <button class="atom-like-btn ${likeInfo.liked ? 'liked' : ''}" data-atom-id="fact-${todayFact.id}" onclick="toggleAtomLike('fact-${todayFact.id}', 'fact', this)" title="Dar un átomo de me gusta al dato del día">
+                            <span class="atom-icon">⚛️</span> <span class="atom-count">${likeInfo.count}</span>
+                        </button>
+                        <span class="daily-refresh-indicator">🔄 Rotación Diaria Automática</span>
+                    </div>
                 </div>
                 
                 <div class="daily-fact-body">
@@ -1938,12 +2672,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const isMobile = window.innerWidth <= 768;
         const factsToRender = (isMobile && !factsExpanded) ? filtered.slice(0, 4) : filtered;
 
-        factsGrid.innerHTML = factsToRender.map(item => `
+        factsGrid.innerHTML = factsToRender.map(item => {
+            const likeInfo = getItemLikeInfo('fact-' + item.id);
+            return `
             <div class="fact-card" id="fact-card-${item.id}">
                 <div>
-                    <span class="fact-badge ${item.categoriaTag || ''}">
-                        ${item.icono} ${item.categoria}
-                    </span>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                        <span class="fact-badge ${item.categoriaTag || ''}">
+                            ${item.icono} ${item.categoria}
+                        </span>
+                        <button class="atom-like-btn ${likeInfo.liked ? 'liked' : ''}" data-atom-id="fact-${item.id}" onclick="toggleAtomLike('fact-${item.id}', 'fact', this)" title="Dar un átomo de me gusta">
+                            <span class="atom-icon">⚛️</span> <span class="atom-count">${likeInfo.count}</span>
+                        </button>
+                    </div>
                     <h3 class="fact-title">${item.titulo}</h3>
                     <p class="fact-desc">${item.descripcion}</p>
                 </div>
@@ -1952,7 +2693,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span style="color:var(--text-muted);">${item.principio}</span>
                 </div>
             </div>
-        `).join('');
+            `;
+        }).join('');
 
         if (factsToggleControls) {
             if (isMobile && filtered.length > 4) {
