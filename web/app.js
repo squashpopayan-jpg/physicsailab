@@ -530,9 +530,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // ========================================================
     // MARCADORES Y FAVORITOS (CÓMICS Y PODCASTS GUARDADOS)
     // ========================================================
+    function normalizeComicId(id) {
+        if (!id) return '';
+        const s = String(id).trim();
+        return s.startsWith('com-') ? s : ('com-' + s);
+    }
+
     function getSavedComics() {
         try {
-            return JSON.parse(localStorage.getItem('physicsailab_saved_comics') || '[]');
+            const raw = JSON.parse(localStorage.getItem('physicsailab_saved_comics') || '[]');
+            if (!Array.isArray(raw)) return [];
+            return raw
+                .filter(id => id !== null && id !== undefined && id !== '' && String(id) !== 'NaN')
+                .map(id => normalizeComicId(id));
         } catch(e) {
             return [];
         }
@@ -540,17 +550,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.toggleSaveComic = function(comicId, event) {
         if (event) event.stopPropagation();
+        if (!comicId) return;
+        const normId = normalizeComicId(comicId);
         let saved = getSavedComics();
-        const numId = Number(comicId);
-        const exists = saved.includes(numId) || saved.includes(String(comicId));
+        const exists = saved.includes(normId);
         if (exists) {
-            saved = saved.filter(id => id !== numId && id !== String(comicId));
+            saved = saved.filter(id => id !== normId);
             localStorage.setItem('physicsailab_saved_comics', JSON.stringify(saved));
             showToast('🔖 Cómic removido de tus guardados.');
         } else {
-            saved.push(numId);
+            saved.push(normId);
             localStorage.setItem('physicsailab_saved_comics', JSON.stringify(saved));
-            showToast('🔖 ¡Cómic guardado en tu perfil para leer después!');
+            showToast('🔖 ¡Cómic guardado en tu perfil para leer después! <a href="javascript:void(0)" onclick="openStudentProfileModal(\'comics\')" style="color:#38BDF8; font-weight:700; margin-left:6px; text-decoration:underline;">Ver en mi perfil ➔</a>');
         }
         renderComics(currentComicCategory);
         updateProfileNavDisplay();
@@ -843,7 +854,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderProfileComicsTab(savedComicIds) {
-        const savedList = (data.comics || []).filter(c => savedComicIds.includes(c.id) || savedComicIds.includes(String(c.id)));
+        const normSaved = (savedComicIds || []).map(normalizeComicId);
+        const savedList = (data.comics || []).filter(c => normSaved.includes(normalizeComicId(c.id)));
         if (savedList.length === 0) {
             return `
                 <div style="text-align:center; padding:2.5rem 1rem; background:rgba(255,255,255,0.02); border-radius:14px; border:1px dashed rgba(255,255,255,0.12);">
@@ -869,7 +881,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div>
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
                                 <span class="comic-cover-badge" style="position:static; font-size:0.7rem; padding:0.2rem 0.5rem;">🎨 ${c.categoria}</span>
-                                <button onclick="toggleSaveComic(${c.id}, event)" title="Quitar de guardados" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:0.85rem;">✕ Quitar</button>
+                                <button onclick="toggleSaveComic('${c.id}', event)" title="Quitar de guardados" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:0.85rem;">✕ Quitar</button>
                             </div>
                             <h4 style="font-size:1.05rem; margin:0 0 0.35rem 0; color:#fff; cursor:pointer;" onclick="openComicViewer('${c.id}')" title="Abrir lector interactivo">${c.titulo}</h4>
                             <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:0.4rem;">✍️ ${c.autores}</div>
@@ -1747,7 +1759,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const displayed = filtered.slice(0, comicDisplayLimit);
 
         comicsGrid.innerHTML = displayed.map(c => {
-            const isSaved = getSavedComics().includes(c.id) || getSavedComics().includes(String(c.id));
+            const isSaved = getSavedComics().includes(normalizeComicId(c.id));
             const likeInfo = getItemLikeInfo('comic-' + c.id);
             const cleanUrl = cleanPdfUrl(c.archivo);
             const safeDownloadName = (c.titulo || 'comic').replace(/[^a-zA-Z0-9_\-áéíóúÁÉÍÓÚñÑ ]/g, '').trim().replace(/\s+/g, '_') + '.pdf';
@@ -1784,8 +1796,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="card-actions" style="margin-top:auto; flex-wrap:wrap; gap:0.4rem;">
                         <button onclick="openComicViewer('${c.id}')" class="btn btn-primary" style="flex:1; justify-content:center; text-decoration:none;">Leer Cómic 📖</button>
                         <a href="${cleanUrl}" download="${safeDownloadName}" class="btn btn-secondary" onclick="trackDownload('${c.titulo.replace(/'/g, "\\'")}')" style="font-size:0.82rem; padding:0.45rem 0.65rem; text-decoration:none;" title="Descargar PDF">⬇️</a>
-                        <button class="bookmark-btn ${isSaved ? 'saved' : ''}" onclick="toggleSaveComic(${c.id}, event)" title="${isSaved ? 'Quitar de guardados' : 'Guardar en mi perfil'}">
-                            ${isSaved ? '🔖' : '🔖 Guardar'}
+                        <button class="bookmark-btn ${isSaved ? 'saved' : ''}" onclick="toggleSaveComic('${c.id}', event)" title="${isSaved ? 'Quitar de guardados' : 'Guardar en mi perfil'}">
+                            ${isSaved ? '🔖 Guardado' : '🔖 Guardar'}
                         </button>
                         <button class="atom-like-btn ${likeInfo.liked ? 'liked' : ''}" data-atom-id="comic-${c.id}" onclick="toggleAtomLike('comic-${c.id}', 'comic', this)" title="Dar un átomo de me gusta">
                             <span class="atom-icon">⚛️</span> <span class="atom-count">${likeInfo.count}</span>
