@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    const observedSections = ['inicio', 'curiosidades', 'cursos', 'libros', 'comics', 'podcasts', 'articulos', 'profesor', 'comentarios'];
+    const observedSections = ['inicio', 'curiosidades', 'cursos', 'comics', 'podcasts', 'articulos', 'profesor', 'comentarios'];
     function highlightActiveSectionOnScroll() {
         const scrollPos = window.scrollY + 180;
         let currentSectionId = 'inicio';
