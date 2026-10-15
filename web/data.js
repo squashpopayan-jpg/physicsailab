@@ -40,6 +40,31 @@ window.PLATFORM_DATA = {
         "finanzas": ["FINANZAS-2026", "CUENTAS-CLARAS-26"]
     },
 
+    // Configuración oficial de Pasarelas de Pago (Wompi PSE, Bancolombia, Nequi y Hotmart)
+    configuracionPasarela: {
+        wompi: {
+            habilitado: true,
+            modo: "sandbox", // 'sandbox' para pruebas, 'produccion' para pagos reales
+            llavePublicaTest: "pub_test_Q5yDA9xoKdePzhSGeVe9HAez7HgGObCi",
+            llavePublicaProd: "",
+            moneda: "COP"
+        },
+        pagoDirecto: {
+            habilitado: true,
+            nequi: "312 874 5821",
+            daviplata: "312 874 5821",
+            bancolombiaTipo: "Ahorros",
+            bancolombiaNumero: "865-000124-91",
+            titular: "Mg. Manuel Alejandro Obando",
+            whatsapp: "573128745821"
+        },
+        hotmart: {
+            habilitado: true,
+            usuario: "@manuel_obando_963654",
+            urlBase: "https://hotmart.com"
+        }
+    },
+
     cursos: [
         {
             id: "mecanica",
@@ -61,6 +86,8 @@ window.PLATFORM_DATA = {
             tipo: "Cuaderno Interactivo HTML5/JS",
             demoPath: "/material/1_cursos/mecanica/dist/index.html",
             precioEstimado: "$29 USD (~$115.000 COP)",
+            precioCOP: 115000,
+            precioUSD: 29,
             valorReal: "$49 USD",
             descuentoTag: "40% OFF Lanzamiento",
             enlaceCompra: "https://hotmart.com"
@@ -107,6 +134,8 @@ window.PLATFORM_DATA = {
             tipo: "Cuaderno Interactivo HTML5/JS",
             demoPath: "/material/1_cursos/materiales/dist/index.html",
             precioEstimado: "$35 USD (~$140.000 COP)",
+            precioCOP: 140000,
+            precioUSD: 35,
             valorReal: "$69 USD",
             descuentoTag: "Especialidad Maestría UFOP",
             enlaceCompra: "https://hotmart.com"
@@ -130,6 +159,8 @@ window.PLATFORM_DATA = {
             esLaboratorio: true,
             demoPath: "/material/1_cursos/transformadores/dist/Transformadores_Laboratorio.html",
             precioEstimado: "$39 USD (~$155.000 COP)",
+            precioCOP: 155000,
+            precioUSD: 39,
             valorReal: "$89 USD",
             descuentoTag: "Laboratorio Insignia",
             enlaceCompra: "https://hotmart.com"
@@ -156,6 +187,8 @@ window.PLATFORM_DATA = {
             tipo: "Cuaderno Interactivo HTML5/JS",
             demoPath: "/material/1_cursos/ondas/dist/index.html",
             precioEstimado: "$29 USD (~$115.000 COP)",
+            precioCOP: 115000,
+            precioUSD: 29,
             valorReal: "$49 USD",
             descuentoTag: "40% OFF Lanzamiento",
             enlaceCompra: "https://hotmart.com"
@@ -191,6 +224,8 @@ window.PLATFORM_DATA = {
             tipo: "Cuaderno Interactivo HTML5/JS",
             demoPath: "/material/1_cursos/neuro/dist/index.html",
             precioEstimado: "$35 USD (~$140.000 COP)",
+            precioCOP: 140000,
+            precioUSD: 35,
             valorReal: "$59 USD",
             descuentoTag: "Neurociencia Aplicada",
             enlaceCompra: "https://hotmart.com"
@@ -212,6 +247,8 @@ window.PLATFORM_DATA = {
             tipo: "Atlas Interactivo Computacional",
             demoPath: "/material/1_cursos/electromagnetismo/dist/index.html",
             precioEstimado: "$29 USD (~$115.000 COP)",
+            precioCOP: 115000,
+            precioUSD: 29,
             valorReal: "$49 USD",
             descuentoTag: "40% OFF Lanzamiento",
             enlaceCompra: "https://hotmart.com"
@@ -242,6 +279,8 @@ window.PLATFORM_DATA = {
             tipo: "Laboratorio Computacional de IA",
             demoPath: "/material/1_cursos/ml/dist/index.html",
             precioEstimado: "$39 USD (~$155.000 COP)",
+            precioCOP: 155000,
+            precioUSD: 39,
             valorReal: "$79 USD",
             descuentoTag: "Especialidad IA UNIR",
             enlaceCompra: "https://hotmart.com"
@@ -263,6 +302,8 @@ window.PLATFORM_DATA = {
             tipo: "Laboratorio Computacional",
             demoPath: "/material/1_cursos/cuantica/dist/index.html",
             precioEstimado: "$35 USD (~$140.000 COP)",
+            precioCOP: 140000,
+            precioUSD: 35,
             valorReal: "$59 USD",
             descuentoTag: "Física Avanzada",
             enlaceCompra: "https://hotmart.com"
@@ -284,6 +325,8 @@ window.PLATFORM_DATA = {
             tipo: "Módulo Profesional",
             demoPath: "/material/1_cursos/retie/dist/index.html",
             precioEstimado: "$49 USD (~$195.000 COP)",
+            precioCOP: 195000,
+            precioUSD: 49,
             valorReal: "$99 USD",
             descuentoTag: "Aplicación Normativa",
             enlaceCompra: "https://hotmart.com"
@@ -308,6 +351,8 @@ window.PLATFORM_DATA = {
             tipo: "Simulador Táctico & Biomecánico",
             demoPath: "/material/1_cursos/squash_sim/dist/index.html",
             precioEstimado: "$25 USD (~$99.000 COP)",
+            precioCOP: 99000,
+            precioUSD: 25,
             valorReal: "$45 USD",
             descuentoTag: "Acceso Premium / Demo de Rutinas",
             enlaceCompra: "https://hotmart.com"
@@ -336,6 +381,8 @@ window.PLATFORM_DATA = {
             tipo: "Cuaderno Interactivo HTML5/JS",
             demoPath: "/material/1_cursos/finanzas/dist/index.html",
             precioEstimado: "$25 USD (~$99.000 COP)",
+            precioCOP: 99000,
+            precioUSD: 25,
             valorReal: "$49 USD",
             descuentoTag: "Finanzas Personales",
             enlaceCompra: "https://hotmart.com"

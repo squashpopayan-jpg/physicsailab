@@ -470,8 +470,8 @@
                     <h4>🛒 Adquirir Licencia del ${buyEntityName}</h4>
                     <p>Acceso permanente de por vida · Sin mensualidades · Certificación y soporte de autor (Mg. Manuel Alejandro Obando).</p>
                     <div class="pg-buy-actions">
-                        <a href="https://physicsailab.com" target="_blank" class="pg-btn-buy">
-                            Adquirir Licencia en PhysicsAILab.com 🚀
+                        <a href="/?buy=${currentCourse}#cursos" target="_blank" class="pg-btn-buy">
+                            ⚡ Pagar con PSE / Tarjeta / Nequi en PhysicsAILab
                         </a>
                         <a href="https://wa.me/?text=${encodeURIComponent('Hola Mg. Manuel Obando, me interesa adquirir la licencia completa para: ' + courseTitle + ' en PhysicsAILab.com')}" target="_blank" class="pg-btn-whatsapp">
                             💬 Consultar al Docente por WhatsApp / Nequi

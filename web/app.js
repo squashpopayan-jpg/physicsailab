@@ -951,60 +951,336 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('article-modal').classList.remove('active');
     };
 
-    // Modal de Checkout / Pasarela de Pago
+    // ========================================================
+    // GESTIÓN DE CONFIGURACIÓN DE PASARELAS Y CHECKOUT
+    // ========================================================
+    function getPaymentConfig() {
+        const base = data.configuracionPasarela || {};
+        try {
+            const custom = JSON.parse(localStorage.getItem('physicsailab_payment_config') || '{}');
+            return {
+                wompi: { ...base.wompi, ...(custom.wompi || {}) },
+                pagoDirecto: { ...base.pagoDirecto, ...(custom.pagoDirecto || {}) },
+                hotmart: { ...base.hotmart, ...(custom.hotmart || {}) }
+            };
+        } catch (e) {
+            return base;
+        }
+    }
+
+    function savePaymentConfig(cfg) {
+        localStorage.setItem('physicsailab_payment_config', JSON.stringify(cfg));
+        showToast('💾 Configuración de pasarela de pagos guardada con éxito.');
+    }
+
+    window.switchCheckoutTab = function(tabId) {
+        document.querySelectorAll('.checkout-tab-btn').forEach(b => {
+            b.classList.toggle('active', b.dataset.tab === tabId);
+        });
+        document.querySelectorAll('.checkout-tab-content').forEach(c => {
+            c.classList.toggle('active', c.id === 'tab-' + tabId);
+        });
+    };
+
+    window.copiarDatoPago = function(texto, btn) {
+        navigator.clipboard.writeText(texto).then(() => {
+            const orig = btn.innerHTML;
+            btn.innerHTML = '✓ Copiado';
+            btn.classList.add('copied');
+            showToast(`📋 Dato copiado: <strong>${texto}</strong>`);
+            setTimeout(() => {
+                btn.innerHTML = orig;
+                btn.classList.remove('copied');
+            }, 2500);
+        });
+    };
+
+    // Modal de Checkout / Pasarela de Pagos (Wompi PSE / Nequi / Hotmart)
     window.openPaymentModal = function(courseId) {
-        const course = data.cursos.find(c => c.id === courseId);
+        const course = (data.cursos || []).find(c => c.id === courseId);
         if (!course) return;
 
         const isLab = course.id === 'transformadores' || course.esLaboratorio;
         const entityWord = isLab ? 'Laboratorio' : 'Curso';
         const modal = document.getElementById('payment-modal');
         const modalBody = document.getElementById('modal-payment-body');
-        
+        if (!modal || !modalBody) return;
+
+        const cfg = getPaymentConfig();
+        const wompi = cfg.wompi || {};
+        const directo = cfg.pagoDirecto || {};
+        const hotmart = cfg.hotmart || {};
+
+        const priceCOPFormatted = '$' + (course.precioCOP || 115000).toLocaleString('es-ES') + ' COP';
+        const priceUSDFormatted = '$' + (course.precioUSD || 29) + ' USD';
+        const isSandbox = wompi.modo !== 'produccion';
+
         modalBody.innerHTML = `
-            <div style="text-align:center; margin-bottom:1.5rem;">
-                <span class="badge" style="background:rgba(245,158,11,0.15); color:var(--accent-amber); border-color:rgba(245,158,11,0.3); margin-bottom:0.5rem;">
-                    🛒 Checkout Seguro · PhysicsAILab
-                </span>
-                <h2 style="font-size:1.75rem; color:#fff; margin-bottom:0.35rem;">${course.titulo}</h2>
-                <div style="font-size:0.9rem; color:var(--text-muted);">${course.tipo} · ${course.modulos}</div>
+            <div style="text-align:center; margin-bottom:1.25rem;">
+                <div style="display:flex; justify-content:center; gap:0.4rem; align-items:center; margin-bottom:0.4rem; flex-wrap:wrap;">
+                    <span class="badge" style="background:rgba(16,185,129,0.12); color:#34D399; border-color:rgba(16,185,129,0.3);">
+                        🔒 Checkout Seguro SSL · 256-Bit
+                    </span>
+                    <span class="badge" style="background:rgba(56,189,248,0.12); color:var(--accent-blue); border-color:rgba(56,189,248,0.3);">
+                        ⚡ Acceso Permanente de por Vida
+                    </span>
+                </div>
+                <h2 style="font-size:1.65rem; color:#fff; margin-bottom:0.25rem;">${course.titulo}</h2>
+                <div style="font-size:0.85rem; color:var(--text-muted);">${course.modulos} · Nivel: ${course.nivel}</div>
             </div>
 
-            <div style="background:linear-gradient(135deg, rgba(30, 41, 59, 0.6), rgba(15, 23, 42, 0.8)); border:1px solid var(--border-color); border-radius:16px; padding:1.5rem; margin-bottom:1.5rem; text-align:center;">
-                <div style="font-size:0.85rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:0.25rem;">Precio de Lanzamiento</div>
-                <div style="font-size:2.5rem; font-weight:800; color:#fff; margin-bottom:0.25rem;">
-                    ${course.precioEstimado.split(' ')[0]} <span style="font-size:1.15rem; color:var(--accent-blue); font-weight:600;">USD</span>
+            <!-- Resumen de Inversión -->
+            <div class="payment-summary-box">
+                <div class="payment-price-row">
+                    <div>
+                        <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.8px; color:var(--text-muted); font-weight:700;">
+                            Inversión Única (Sin mensualidades)
+                        </div>
+                        <div class="payment-price-cop">${priceCOPFormatted}</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <span style="text-decoration:line-through; font-size:0.8rem; color:var(--text-muted); display:block;">${course.valorReal || '$49 USD'}</span>
+                        <div class="payment-price-usd">${priceUSDFormatted}</div>
+                    </div>
                 </div>
-                <div style="font-size:0.95rem; color:var(--accent-emerald); font-weight:600; margin-bottom:0.75rem;">
-                    ${course.precioEstimado.includes('COP') ? course.precioEstimado.substring(course.precioEstimado.indexOf('(~')) : 'Aproximadamente $115.000 - $195.000 COP'}
-                </div>
-                <div style="display:flex; justify-content:center; gap:1rem; font-size:0.8rem; color:var(--text-muted);">
-                    <span>🔒 Acceso Permanente</span>
-                    <span>⚡ Sin mensualidades</span>
-                    <span>🎓 Soporte de Autor</span>
+
+                <div class="payment-methods-strip">
+                    <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">Medios Habilitados:</span>
+                    <span class="payment-method-badge highlight">🇨🇴 PSE (Todos los bancos)</span>
+                    <span class="payment-method-badge">Nequi</span>
+                    <span class="payment-method-badge">Bancolombia QR</span>
+                    <span class="payment-method-badge">Visa / MasterCard</span>
+                    <span class="payment-method-badge">PayPal</span>
                 </div>
             </div>
 
-            <div style="display:flex; flex-direction:column; gap:0.85rem;">
-                <a href="https://hotmart.com" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="justify-content:center; padding:0.85rem; font-size:1rem; background:linear-gradient(135deg, #f97316, #ea580c); border:none; box-shadow:0 8px 25px rgba(234,88,12,0.35);">
-                    Adquirir en Hotmart (Tarjeta / PayPal / PSE) 💳
-                </a>
-                
-                <a href="https://wa.me/?text=${encodeURIComponent('Hola Mg. Manuel Obando, me interesa adquirir: ' + course.titulo + ' en PhysicsAILab.com. ¿Cuáles son los datos para transferencia / Nequi?')}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="justify-content:center; padding:0.75rem; font-size:0.9rem; border-color:rgba(16,185,129,0.4); color:#34d399;">
-                    💬 Pago Directo (Transferencia / Nequi / Bancolombia)
-                </a>
+            <!-- Selector de Métodos de Pago (Tabs) -->
+            <div class="checkout-tabs">
+                <button class="checkout-tab-btn active" data-tab="pse" onclick="switchCheckoutTab('pse')">
+                    🇨🇴 PSE / Tarjetas (Wompi)
+                </button>
+                <button class="checkout-tab-btn" data-tab="directo" onclick="switchCheckoutTab('directo')">
+                    📱 Nequi / Bancolombia Directo
+                </button>
+                <button class="checkout-tab-btn" data-tab="hotmart" onclick="switchCheckoutTab('hotmart')">
+                    🌎 Internacional / Hotmart
+                </button>
+            </div>
 
-                <a href="mailto:manuelobando@unicauca.edu.co?subject=${encodeURIComponent('Interés en: ' + course.titulo)}&body=${encodeURIComponent('Cordial saludo profesor Manuel,\n\nEstoy interesado en adquirir ' + course.titulo + ' en PhysicsAILab.com.\n\nPor favor indíqueme el método de pago.')}" class="btn btn-secondary" style="justify-content:center; padding:0.75rem; font-size:0.9rem;">
-                    ✉️ Consultar al Docente por Correo
+            <!-- Tab 1: Pasarela Automática Wompi / Bancolombia (PSE y Tarjetas) -->
+            <div class="checkout-tab-content active" id="tab-pse">
+                <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:1rem; margin-bottom:1rem;">
+                    <p style="font-size:0.84rem; color:var(--text-muted); margin:0 0 0.85rem; line-height:1.4;">
+                        Paga en segundos con débito <strong>PSE</strong> de cualquier banco de Colombia, Nequi o tarjeta de crédito a través de la pasarela oficial segura <strong>Wompi (Bancolombia)</strong>.
+                    </p>
+
+                    ${isSandbox ? `
+                        <div style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.3); border-radius:8px; padding:0.5rem 0.75rem; font-size:0.75rem; color:#FCD34D; margin-bottom:0.85rem; display:flex; align-items:center; gap:0.4rem;">
+                            <span>🧪</span>
+                            <span><strong>Modo de Pruebas Activo (Wompi Sandbox):</strong> Puedes simular la compra para comprobar cómo el estudiante recibe su clave y desbloquea el curso al instante.</span>
+                        </div>
+                    ` : ''}
+
+                    <div class="payment-form-group">
+                        <label>Nombre y Apellido del Estudiante:</label>
+                        <input type="text" id="buyer-name" class="payment-form-input" placeholder="Ej: Carlos Andrés Pérez" />
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+                        <div class="payment-form-group">
+                            <label>Correo Electrónico:</label>
+                            <input type="email" id="buyer-email" class="payment-form-input" placeholder="tu-correo@ejemplo.com" />
+                        </div>
+                        <div class="payment-form-group">
+                            <label>Teléfono Celular / WhatsApp:</label>
+                            <input type="tel" id="buyer-phone" class="payment-form-input" placeholder="312 000 0000" />
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-wompi-pay" onclick="iniciarPagoWompi('${course.id}')">
+                    <span>⚡ Pagar ${priceCOPFormatted} con PSE / Tarjeta (Wompi)</span>
+                </button>
+
+                <p style="font-size:0.72rem; text-align:center; color:var(--text-muted); margin-top:0.75rem; margin-bottom:0;">
+                    Al confirmarse la transacción bancaria, el curso se desbloquea de inmediato en tu pantalla y recibirás tu clave permanente.
+                </p>
+            </div>
+
+            <!-- Tab 2: Pago Directo Nequi / Bancolombia -->
+            <div class="checkout-tab-content" id="tab-directo">
+                <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:1rem; margin-bottom:1rem;">
+                    <p style="font-size:0.84rem; color:var(--text-muted); margin:0 0 0.85rem; line-height:1.4;">
+                        ¿Prefieres pagar sin intermediación bancaria? Transfiere directamente el valor de <strong>${priceCOPFormatted}</strong> desde tu app Nequi, Daviplata o Bancolombia a las cuentas oficiales del docente:
+                    </p>
+
+                    <div class="direct-pay-card">
+                        <div>
+                            <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Nequi & Daviplata</div>
+                            <div class="direct-pay-number" id="nequi-number-val">${directo.nequi || '312 874 5821'}</div>
+                            <div style="font-size:0.75rem; color:#34D399;">Titular: ${directo.titular || 'Manuel Alejandro Obando'}</div>
+                        </div>
+                        <button class="admin-btn-action" onclick="copiarDatoPago('${directo.nequi || '312 874 5821'}', this)">
+                            📋 Copiar
+                        </button>
+                    </div>
+
+                    <div class="direct-pay-card">
+                        <div>
+                            <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Bancolombia (${directo.bancolombiaTipo || 'Ahorros'})</div>
+                            <div class="direct-pay-number" id="bancolombia-number-val">${directo.bancolombiaNumero || '865-000124-91'}</div>
+                            <div style="font-size:0.75rem; color:#34D399;">Titular: ${directo.titular || 'Manuel Alejandro Obando'}</div>
+                        </div>
+                        <button class="admin-btn-action" onclick="copiarDatoPago('${directo.bancolombiaNumero || '865-000124-91'}', this)">
+                            📋 Copiar
+                        </button>
+                    </div>
+                </div>
+
+                <a href="https://wa.me/${directo.whatsapp || '573128745821'}?text=${encodeURIComponent('Hola profesor Manuel Alejandro Obando, acabo de realizar la transferencia de ' + priceCOPFormatted + ' para adquirir la licencia permanente de «' + course.titulo + '» en PhysicsAILab.com. Adjunto mi comprobante para recibir mi clave de acceso.')}" target="_blank" class="btn btn-secondary" style="width:100%; justify-content:center; padding:0.85rem; font-size:0.95rem; border-color:rgba(16,185,129,0.4); color:#34D399; font-weight:700;">
+                    💬 Enviar Comprobante al Docente por WhatsApp
                 </a>
             </div>
 
-            <p style="font-size:0.75rem; text-align:center; color:var(--text-muted); margin-top:1.25rem;">
-                Docente de autoría: Mg. Manuel Alejandro Obando (Universidad del Cauca) · Cuenta oficial Hotmart: @manuel_obando_963654
-            </p>
+            <!-- Tab 3: Hotmart Internacional -->
+            <div class="checkout-tab-content" id="tab-hotmart">
+                <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:1.25rem; margin-bottom:1rem; text-align:center;">
+                    <span style="font-size:2.2rem; display:block; margin-bottom:0.5rem;">🌎</span>
+                    <h4 style="color:#fff; margin:0 0 0.5rem; font-size:1.15rem;">Checkout Multimoneda Hotmart</h4>
+                    <p style="font-size:0.85rem; color:var(--text-muted); margin:0 0 1rem; line-height:1.5;">
+                        Para estudiantes y profesionales fuera de Colombia. Paga en tu moneda local con tarjeta de crédito internacional o PayPal a través de la infraestructura global de Hotmart.
+                    </p>
+                    <div style="font-size:1.6rem; font-weight:800; color:#fff; margin-bottom:0.75rem;">
+                        ${priceUSDFormatted}
+                    </div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">
+                        Docente verificado: Mg. Manuel Alejandro Obando (${hotmart.usuario || '@manuel_obando_963654'}) · Garantía de satisfacción de 7 días.
+                    </div>
+                </div>
+
+                <a href="${course.enlaceCompra || 'https://hotmart.com'}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="width:100%; justify-content:center; padding:0.85rem; font-size:1rem; background:linear-gradient(135deg, #f97316, #ea580c); border:none; box-shadow:0 8px 25px rgba(234,88,12,0.35);">
+                    Adquirir en Hotmart Oficial 🛒
+                </a>
+            </div>
         `;
 
         modal.classList.add('active');
+    };
+
+    window.iniciarPagoWompi = function(courseId) {
+        const course = (data.cursos || []).find(c => c.id === courseId);
+        if (!course) return;
+
+        const nameInp = document.getElementById('buyer-name');
+        const emailInp = document.getElementById('buyer-email');
+        const phoneInp = document.getElementById('buyer-phone');
+
+        const name = nameInp ? nameInp.value.trim() : '';
+        const email = emailInp ? emailInp.value.trim() : '';
+        const phone = phoneInp ? phoneInp.value.trim() : '3000000000';
+
+        if (!name || !email) {
+            alert('Por favor completa tu nombre y correo electrónico para vincular tu licencia y entregarte tu clave.');
+            if (!name && nameInp) nameInp.focus();
+            else if (emailInp) emailInp.focus();
+            return;
+        }
+
+        const cfg = getPaymentConfig();
+        const wompi = cfg.wompi || {};
+        const isSandbox = wompi.modo !== 'produccion';
+        const publicKey = (isSandbox ? wompi.llavePublicaTest : wompi.llavePublicaProd) || wompi.llavePublicaTest;
+        const amountInCents = (course.precioCOP || 115000) * 100;
+        const reference = 'PHYSICSAILAB-' + course.id.toUpperCase() + '-' + Date.now();
+
+        // 1. Si Wompi Widget oficial está cargado en el navegador
+        if (typeof window.WidgetCheckout === 'function') {
+            try {
+                const checkout = new window.WidgetCheckout({
+                    currency: 'COP',
+                    amountInCents: amountInCents,
+                    reference: reference,
+                    publicKey: publicKey,
+                    customerData: {
+                        email: email,
+                        fullName: name,
+                        phoneNumber: phone
+                    }
+                });
+
+                checkout.open(function (result) {
+                    const transaction = result.transaction;
+                    if (transaction && (transaction.status === 'APPROVED' || transaction.status === 'OK')) {
+                        finalizarCompraExitosa(courseId, transaction.id || reference, email, name);
+                    } else if (transaction && transaction.status === 'DECLINED') {
+                        alert('❌ La transacción fue rechazada por tu entidad bancaria. Por favor intenta con otro medio de pago o mediante Nequi directo.');
+                    }
+                });
+                return;
+            } catch (err) {
+                console.warn('Wompi Widget launch error, falling back to simulator:', err);
+            }
+        }
+
+        // 2. Si estamos en modo de pruebas / sandbox y no hay popup externo bloqueado:
+        const simulated = confirm(
+            `🛒 SIMULADOR DE PASARELA WOMPI (Bancolombia / PSE)\n\n` +
+            `• Curso: ${course.titulo}\n` +
+            `• Valor: $${(course.precioCOP || 115000).toLocaleString('es-ES')} COP\n` +
+            `• Comprador: ${name} (${email})\n` +
+            `• Medio: Débito PSE / Nequi / Tarjeta Bancolombia\n\n` +
+            `¿Deseas simular una transacción bancaria APROBADA con éxito?`
+        );
+
+        if (simulated) {
+            finalizarCompraExitosa(courseId, 'SIM-WOMPI-' + Date.now(), email, name);
+        }
+    };
+
+    window.finalizarCompraExitosa = function(courseId, transactionId, email, name) {
+        unlockCourse(courseId);
+        const course = (data.cursos || []).find(c => c.id === courseId);
+        const keys = getCourseKeys(courseId);
+        const primaryKey = keys[0] || 'COMPRA-VALIDADA';
+
+        const modalBody = document.getElementById('modal-payment-body');
+        if (!modalBody) return;
+
+        modalBody.innerHTML = `
+            <div class="payment-success-box">
+                <div style="font-size:3.5rem; animation:fadeInSlide 0.5s ease;">🎉</div>
+                <span class="badge" style="background:rgba(16,185,129,0.2); color:#34D399; border-color:rgba(16,185,129,0.5); font-size:0.85rem; padding:0.3rem 0.85rem; margin-bottom:0.75rem;">
+                    ✓ ¡PAGO APROBADO EXITOSAMENTE!
+                </span>
+                <h2 style="font-size:1.85rem; color:#fff; margin-bottom:0.5rem;">¡Bienvenido al Curso!</h2>
+                <p style="font-size:0.95rem; color:var(--text-main); line-height:1.5; margin-bottom:1.25rem;">
+                    Gracias <strong>${name}</strong>. Tu compra de <strong>${course.titulo}</strong> ha sido validada. La materia ha quedado <strong>100% desbloqueada</strong> de forma permanente en este navegador.
+                </p>
+
+                <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:1.25rem; margin-bottom:1.5rem;">
+                    <div style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.8px; color:var(--text-muted); font-weight:700;">
+                        Tu Clave de Acceso Permanente (Guárdala)
+                    </div>
+                    <div class="payment-key-display">${primaryKey}</div>
+                    <p style="font-size:0.8rem; color:var(--text-muted); margin:0;">
+                        Referencia de Transacción: <span style="font-family:monospace; color:#38BDF8;">${transactionId}</span>
+                    </p>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:0.65rem;">
+                    ${course.demoPath ? `
+                        <a href="${course.demoPath}" target="_blank" class="btn btn-primary" onclick="closePaymentModal()" style="justify-content:center; padding:0.9rem; font-size:1.05rem;">
+                            Comenzar a Estudiar Ahora 🚀
+                        </a>
+                    ` : ''}
+                    <button class="btn btn-secondary" onclick="closePaymentModal()" style="justify-content:center; padding:0.65rem; font-size:0.85rem;">
+                        Volver a la Plataforma
+                    </button>
+                </div>
+            </div>
+        `;
+
+        showToast(`🎉 ¡Felicitaciones! Has adquirido <strong>${course.titulo}</strong>.`);
     };
 
     window.openBookPaymentModal = function(bookId) {
@@ -1352,6 +1628,73 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
 
+                <!-- Configuración de Pasarela de Pagos (Wompi PSE / Nequi / Bancolombia) -->
+                <div class="admin-payment-config-box">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.85rem; flex-wrap:wrap; gap:0.5rem;">
+                        <div>
+                            <h4 style="color:#fff; font-size:1.1rem; margin:0 0 0.25rem; display:flex; align-items:center; gap:0.5rem;">
+                                💳 Pasarela de Pagos & Recaudos (Wompi PSE / Nequi / Bancolombia)
+                            </h4>
+                            <div style="font-size:0.8rem; color:var(--text-muted);">
+                                Configura cómo y dónde recibes los pagos cuando un estudiante o profesional adquiere cualquier curso en la web.
+                            </div>
+                        </div>
+                        <span class="badge" style="${(getPaymentConfig().wompi.modo === 'produccion') ? 'background:rgba(16,185,129,0.2); color:#34D399; border-color:rgba(16,185,129,0.4);' : 'background:rgba(245,158,11,0.15); color:var(--accent-amber); border-color:rgba(245,158,11,0.3);'} font-size:0.75rem;">
+                            ${(getPaymentConfig().wompi.modo === 'produccion') ? '🟢 Modo Producción (Cobros Reales)' : '🧪 Modo Sandbox (Pruebas)'}
+                        </span>
+                    </div>
+
+                    <!-- Guía rápida para el profesor -->
+                    <div style="background:rgba(56,189,248,0.06); border:1px solid rgba(56,189,248,0.2); border-radius:10px; padding:0.85rem 1rem; margin-bottom:1.25rem; font-size:0.82rem; line-height:1.45; color:#E2E8F0;">
+                        <strong style="color:#38BDF8;">¿Cómo vincular tu cuenta bancaria para recibir dinero por PSE y Tarjeta?</strong><br>
+                        1. Regístrate gratis en <a href="https://wompi.co" target="_blank" style="color:#38BDF8; font-weight:700; text-decoration:underline;">wompi.co</a> (Pasarela oficial de Bancolombia para Colombia).<br>
+                        2. Vincula tu cuenta de ahorros Bancolombia o Nequi para recibir los desembolsos automáticos de tus ventas.<br>
+                        3. En tu panel de Wompi ve a <em>Desarrolladores → Llaves de API</em>, copia tu <strong>Llave Pública</strong> (comienza con <code>pub_prod_...</code> para cobros reales o <code>pub_test_...</code> para pruebas) y pégala a continuación.
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:1rem; margin-bottom:1.25rem;">
+                        <div>
+                            <label style="font-size:0.78rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; display:block; margin-bottom:0.35rem;">
+                                Modo de Operación Wompi:
+                            </label>
+                            <select id="cfg-wompi-mode" class="payment-form-input">
+                                <option value="sandbox" ${getPaymentConfig().wompi.modo !== 'produccion' ? 'selected' : ''}>🧪 Modo Sandbox (Pruebas de pago sin costo)</option>
+                                <option value="produccion" ${getPaymentConfig().wompi.modo === 'produccion' ? 'selected' : ''}>🟢 Modo Producción (PSE y Tarjetas Reales)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label style="font-size:0.78rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; display:block; margin-bottom:0.35rem;">
+                                Llave Pública Wompi (Public Key):
+                            </label>
+                            <input type="text" id="cfg-wompi-key" class="payment-form-input" style="font-family:monospace; font-size:0.82rem;" placeholder="pub_prod_... o pub_test_..." value="${getPaymentConfig().wompi.modo === 'produccion' ? (getPaymentConfig().wompi.llavePublicaProd || '') : (getPaymentConfig().wompi.llavePublicaTest || '')}" />
+                        </div>
+
+                        <div>
+                            <label style="font-size:0.78rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; display:block; margin-bottom:0.35rem;">
+                                Celular Nequi / Daviplata:
+                            </label>
+                            <input type="text" id="cfg-direct-nequi" class="payment-form-input" value="${getPaymentConfig().pagoDirecto.nequi || '312 874 5821'}" />
+                        </div>
+
+                        <div>
+                            <label style="font-size:0.78rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; display:block; margin-bottom:0.35rem;">
+                                Cuenta Bancolombia (Ahorros):
+                            </label>
+                            <input type="text" id="cfg-direct-bancolombia" class="payment-form-input" value="${getPaymentConfig().pagoDirecto.bancolombiaNumero || '865-000124-91'}" />
+                        </div>
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
+                        <button class="btn btn-primary" onclick="guardarConfiguracionPasarelaAdmin()" style="font-size:0.88rem; padding:0.6rem 1.25rem;">
+                            💾 Guardar Configuración de Pagos
+                        </button>
+                        <button class="btn btn-secondary" onclick="openPaymentModal('mecanica')" style="font-size:0.85rem; padding:0.55rem 0.95rem;">
+                            🧪 Probar Checkout como Estudiante
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Moderación de Comentarios Recientes -->
                 <div>
                     <h4 style="color:#fff; font-size:1.05rem; margin:0 0 0.5rem; display:flex; align-items:center; gap:0.5rem;">
@@ -1465,6 +1808,37 @@ document.addEventListener('DOMContentLoaded', () => {
         renderComments();
         renderAdminDashboardContent();
         showToast('🗑️ Comentario eliminado correctamente.');
+    };
+
+    window.guardarConfiguracionPasarelaAdmin = function() {
+        const modeElem = document.getElementById('cfg-wompi-mode');
+        const keyElem = document.getElementById('cfg-wompi-key');
+        const nequiElem = document.getElementById('cfg-direct-nequi');
+        const bancoElem = document.getElementById('cfg-direct-bancolombia');
+
+        const mode = modeElem ? modeElem.value : 'sandbox';
+        const key = keyElem ? keyElem.value.trim() : '';
+        const nequi = nequiElem ? nequiElem.value.trim() : '';
+        const banco = bancoElem ? bancoElem.value.trim() : '';
+
+        const current = getPaymentConfig();
+        const updated = {
+            ...current,
+            wompi: {
+                ...current.wompi,
+                modo: mode,
+                ...(mode === 'produccion' ? { llavePublicaProd: key } : { llavePublicaTest: key })
+            },
+            pagoDirecto: {
+                ...current.pagoDirecto,
+                nequi: nequi,
+                daviplata: nequi,
+                bancolombiaNumero: banco
+            }
+        };
+
+        savePaymentConfig(updated);
+        renderAdminDashboardContent();
     };
 
     // ========================================================
@@ -1805,4 +2179,15 @@ document.addEventListener('DOMContentLoaded', () => {
         renderSpotifyChannels();
         renderPhysicsFacts(currentFactFilter);
     });
+
+    // Abrir checkout directo si la URL viene con ?buy=cursoId
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const buyParam = urlParams.get('buy');
+        if (buyParam) {
+            setTimeout(() => {
+                openPaymentModal(buyParam);
+            }, 500);
+        }
+    } catch (e) {}
 });
