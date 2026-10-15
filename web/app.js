@@ -235,14 +235,112 @@ document.addEventListener('DOMContentLoaded', () => {
     window.cleanPdfUrl = cleanPdfUrl;
 
     // ========================================================
-    // VISOR MODAL DE CÓMICS (LECTOR MULTIDISPOSITIVO)
+    // VISOR MODAL DE CÓMICS (LECTOR MULTIDISPOSITIVO CON PDF.JS)
     // ========================================================
-    let currentViewerComic = null;
-    let currentViewerMode = 'google'; // 'google' | 'direct'
-
-    function isMobileDevice() {
-        return window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (window.pdfjsLib) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     }
+
+    let currentViewerComic = null;
+    let currentViewerMode = 'canvas'; // 'canvas' | 'google' | 'direct'
+    let currentPdfDoc = null;
+    let currentPdfPage = 1;
+    let currentPdfScale = 1.0;
+    let isPdfRendering = false;
+    let pageRenderingQueue = null;
+
+    function renderPdfPage(pageNum) {
+        if (!currentPdfDoc) return;
+        isPdfRendering = true;
+
+        currentPdfDoc.getPage(pageNum).then(page => {
+            const canvas = document.getElementById('comic-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            const wrapper = document.getElementById('comic-canvas-wrapper');
+            const containerWidth = wrapper ? Math.max(300, wrapper.clientWidth - 32) : 800;
+
+            const unscaledViewport = page.getViewport({ scale: 1.0 });
+            let fitScale = (containerWidth > 0 && unscaledViewport.width > 0) ? (containerWidth / unscaledViewport.width) : 1.0;
+            if (fitScale > 2.0) fitScale = 2.0;
+            if (fitScale < 0.5) fitScale = 0.5;
+
+            const appliedScale = fitScale * currentPdfScale;
+            const viewport = page.getViewport({ scale: appliedScale });
+
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+
+            const renderContext = {
+                canvasContext: ctx,
+                viewport: viewport
+            };
+
+            const renderTask = page.render(renderContext);
+            renderTask.promise.then(() => {
+                isPdfRendering = false;
+                if (pageRenderingQueue !== null) {
+                    renderPdfPage(pageRenderingQueue);
+                    pageRenderingQueue = null;
+                }
+                const spinner = document.getElementById('comic-loading-spinner');
+                if (spinner) spinner.classList.add('hidden');
+            }).catch(err => {
+                isPdfRendering = false;
+            });
+        }).catch(err => {
+            console.error('Error al cargar página PDF:', err);
+            isPdfRendering = false;
+        });
+
+        // Actualizar contadores y estados de botones
+        const curEl = document.getElementById('comic-current-page');
+        if (curEl) curEl.textContent = pageNum;
+
+        const prevBtn = document.getElementById('comic-prev-btn');
+        const nextBtn = document.getElementById('comic-next-btn');
+        if (prevBtn) prevBtn.disabled = (pageNum <= 1);
+        if (nextBtn) nextBtn.disabled = (currentPdfDoc ? pageNum >= currentPdfDoc.numPages : false);
+    }
+
+    function queueRenderPage(num) {
+        if (isPdfRendering) {
+            pageRenderingQueue = num;
+        } else {
+            renderPdfPage(num);
+        }
+    }
+
+    window.prevComicPage = function() {
+        if (!currentPdfDoc || currentPdfPage <= 1) return;
+        currentPdfPage--;
+        queueRenderPage(currentPdfPage);
+        const wrapper = document.getElementById('comic-canvas-wrapper');
+        if (wrapper) wrapper.scrollTop = 0;
+    };
+
+    window.nextComicPage = function() {
+        if (!currentPdfDoc || currentPdfPage >= currentPdfDoc.numPages) return;
+        currentPdfPage++;
+        queueRenderPage(currentPdfPage);
+        const wrapper = document.getElementById('comic-canvas-wrapper');
+        if (wrapper) wrapper.scrollTop = 0;
+    };
+
+    window.changeComicZoom = function(delta) {
+        currentPdfScale = Math.max(0.6, Math.min(2.5, currentPdfScale + delta));
+        const label = document.getElementById('comic-zoom-display');
+        if (label) label.textContent = Math.round(currentPdfScale * 100) + '%';
+        queueRenderPage(currentPdfPage);
+    };
+
+    window.resetComicZoom = function() {
+        currentPdfScale = 1.0;
+        const label = document.getElementById('comic-zoom-display');
+        if (label) label.textContent = '100%';
+        queueRenderPage(currentPdfPage);
+    };
 
     window.openComicViewer = function(comicId, preferredMode) {
         const comic = (data.comics || []).find(c => String(c.id) === String(comicId));
@@ -253,11 +351,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         currentViewerComic = comic;
 
-        // Auto-detección: En celulares y navegadores móviles Google Docs Viewer ofrece máxima compatibilidad sin pantalla en blanco
+        // Por defecto usar Lector Canvas si PDF.js está disponible; de lo contrario fallback a Google Docs
         if (preferredMode) {
             currentViewerMode = preferredMode;
         } else {
-            currentViewerMode = isMobileDevice() ? 'google' : 'direct';
+            currentViewerMode = window.pdfjsLib ? 'canvas' : 'google';
         }
 
         const modal = document.getElementById('comic-viewer-modal');
@@ -265,11 +363,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const subtitleEl = document.getElementById('comic-viewer-subtitle');
         const downloadBtn = document.getElementById('comic-viewer-download-btn');
         const iframe = document.getElementById('comic-viewer-iframe');
+        const canvasContainer = document.getElementById('comic-canvas-container');
         const spinner = document.getElementById('comic-loading-spinner');
+        const spinnerText = document.querySelector('.comic-spinner-text');
+        const spinnerDetail = document.getElementById('comic-spinner-subtext');
         const modeIndicator = document.getElementById('comic-viewer-mode-indicator');
         const toggleBtn = document.getElementById('comic-viewer-toggle-btn');
 
-        if (!modal || !iframe) return;
+        if (!modal) return;
 
         if (titleEl) titleEl.textContent = comic.titulo;
         if (subtitleEl) subtitleEl.textContent = `🎨 ${comic.categoria} · ✍️ ${comic.autores}`;
@@ -288,35 +389,74 @@ document.addEventListener('DOMContentLoaded', () => {
             downloadBtn.onclick = () => trackDownload(comic.titulo);
         }
 
-        // Mostrar indicador de carga mientras el iframe procesa el documento
         if (spinner) {
             spinner.classList.remove('hidden');
+            if (spinnerText) spinnerText.textContent = 'Cargando cómic optimizado...';
+            if (spinnerDetail) spinnerDetail.textContent = 'Descarga ultraliviana para lectura inmediata';
         }
-
-        // Configurar la fuente del iframe según el modo seleccionado
-        if (currentViewerMode === 'google') {
-            iframe.src = `https://docs.google.com/viewer?url=${encodeURIComponent(fullAbsUrl)}&embedded=true`;
-            if (modeIndicator) modeIndicator.textContent = 'Modo: Visor Móvil Interactivo 📱';
-            if (toggleBtn) toggleBtn.innerHTML = '🖥️ Visor Directo';
-        } else {
-            iframe.src = `${cleanPath}#toolbar=1&navpanes=0&view=FitH`;
-            if (modeIndicator) modeIndicator.textContent = 'Modo: Visor Nativo de PDF 🖥️';
-            if (toggleBtn) toggleBtn.innerHTML = '📱 Visor Móvil';
-        }
-
-        iframe.onload = function() {
-            if (spinner) spinner.classList.add('hidden');
-        };
-
-        // Tiempo límite de seguridad en caso de que el navegador no dispare iframe.onload
-        setTimeout(() => {
-            if (spinner) spinner.classList.add('hidden');
-        }, 4000);
 
         modal.classList.add('active');
         document.body.style.overflow = 'hidden';
 
-        // Registrar lectura en estadísticas
+        if (currentViewerMode === 'canvas' && window.pdfjsLib) {
+            if (canvasContainer) canvasContainer.style.display = 'flex';
+            if (iframe) {
+                iframe.style.display = 'none';
+                iframe.src = 'about:blank';
+            }
+            if (modeIndicator) modeIndicator.textContent = 'Modo: Lector Interactivo (Páginas) ⚡';
+            if (toggleBtn) toggleBtn.innerHTML = '☁️ Ver en Google Docs';
+
+            currentPdfPage = 1;
+            currentPdfScale = 1.0;
+            const zoomLabel = document.getElementById('comic-zoom-display');
+            if (zoomLabel) zoomLabel.textContent = '100%';
+
+            pdfjsLib.getDocument(cleanPath).promise.then(pdfDoc => {
+                currentPdfDoc = pdfDoc;
+                const totalEl = document.getElementById('comic-total-pages');
+                if (totalEl) totalEl.textContent = pdfDoc.numPages;
+                renderPdfPage(1);
+            }).catch(err => {
+                console.warn('PDF.js falló, cambiando automáticamente a Google Docs:', err);
+                window.openComicViewer(comic.id, 'google');
+            });
+
+        } else if (currentViewerMode === 'google') {
+            if (canvasContainer) canvasContainer.style.display = 'none';
+            if (iframe) {
+                iframe.style.display = 'block';
+                iframe.src = `https://docs.google.com/viewer?url=${encodeURIComponent(fullAbsUrl)}&embedded=true`;
+                iframe.onload = () => {
+                    if (spinner) spinner.classList.add('hidden');
+                };
+            }
+            if (modeIndicator) modeIndicator.textContent = 'Modo: Visor Nube (Google Docs) ☁️';
+            if (toggleBtn) toggleBtn.innerHTML = '🖥️ Visor Directo';
+
+            setTimeout(() => {
+                if (spinner) spinner.classList.add('hidden');
+            }, 3500);
+
+        } else {
+            // Modo Directo
+            if (canvasContainer) canvasContainer.style.display = 'none';
+            if (iframe) {
+                iframe.style.display = 'block';
+                iframe.src = `${cleanPath}#toolbar=1&navpanes=0&view=FitH`;
+                iframe.onload = () => {
+                    if (spinner) spinner.classList.add('hidden');
+                };
+            }
+            if (modeIndicator) modeIndicator.textContent = 'Modo: Visor Nativo / Directo 🖥️';
+            if (toggleBtn) toggleBtn.innerHTML = '⚡ Lector Interactivo';
+
+            setTimeout(() => {
+                if (spinner) spinner.classList.add('hidden');
+            }, 2500);
+        }
+
+        // Registrar analítica
         trackDownload(comic.titulo);
     };
 
@@ -325,16 +465,46 @@ document.addEventListener('DOMContentLoaded', () => {
         const iframe = document.getElementById('comic-viewer-iframe');
         if (modal) modal.classList.remove('active');
         if (iframe) iframe.src = 'about:blank';
+        currentPdfDoc = null;
         document.body.style.overflow = '';
     };
 
     window.toggleComicViewerMode = function() {
         if (!currentViewerComic) return;
-        const nextMode = (currentViewerMode === 'google') ? 'direct' : 'google';
+        let nextMode = 'canvas';
+        if (currentViewerMode === 'canvas') {
+            nextMode = 'google';
+        } else if (currentViewerMode === 'google') {
+            nextMode = 'direct';
+        } else {
+            nextMode = window.pdfjsLib ? 'canvas' : 'google';
+        }
         window.openComicViewer(currentViewerComic.id, nextMode);
     };
 
-    // Escuchar clics en el backdrop y tecla Escape para cerrar el visor de cómic
+    // Gestos táctiles Swipe en celulares para pasar páginas en modo canvas
+    const canvasWrapper = document.getElementById('comic-canvas-wrapper');
+    if (canvasWrapper) {
+        let touchStartX = 0;
+        canvasWrapper.addEventListener('touchstart', e => {
+            if (e.touches && e.touches.length > 0) {
+                touchStartX = e.touches[0].screenX;
+            }
+        }, { passive: true });
+
+        canvasWrapper.addEventListener('touchend', e => {
+            if (e.changedTouches && e.changedTouches.length > 0) {
+                const touchEndX = e.changedTouches[0].screenX;
+                const diff = touchEndX - touchStartX;
+                if (Math.abs(diff) > 55) {
+                    if (diff < 0) window.nextComicPage();
+                    else window.prevComicPage();
+                }
+            }
+        }, { passive: true });
+    }
+
+    // Escuchar clics en el backdrop y tecla Escape para cerrar el visor de cómic, o flechas para pasar página
     const comicModalEl = document.getElementById('comic-viewer-modal');
     if (comicModalEl) {
         comicModalEl.addEventListener('click', (e) => {
@@ -345,10 +515,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            const m = document.getElementById('comic-viewer-modal');
-            if (m && m.classList.contains('active')) {
+        const m = document.getElementById('comic-viewer-modal');
+        if (m && m.classList.contains('active')) {
+            if (e.key === 'Escape') {
                 window.closeComicViewer();
+            } else if (e.key === 'ArrowRight') {
+                window.nextComicPage();
+            } else if (e.key === 'ArrowLeft') {
+                window.prevComicPage();
             }
         }
     });

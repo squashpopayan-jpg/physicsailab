@@ -585,14 +585,38 @@
                 <div id="comic-loading-spinner" class="comic-loading-overlay">
                     <div class="comic-spinner"></div>
                     <p class="comic-spinner-text">Cargando cómic interactivo...</p>
-                    <small class="comic-spinner-subtext">Optimizado para celulares y computadores</small>
+                    <small id="comic-spinner-subtext" class="comic-spinner-subtext">Optimizado para celulares y computadores</small>
                 </div>
-                <iframe id="comic-viewer-iframe" class="comic-viewer-frame" src="" title="Visor de Cómic PDF" allowfullscreen></iframe>
+
+                <!-- Lector Canvas Nativo con PDF.js (Navegación Página por Página) -->
+                <div id="comic-canvas-container" class="comic-canvas-container">
+                    <div class="comic-canvas-toolbar">
+                        <div class="comic-nav-group">
+                            <button id="comic-prev-btn" class="comic-nav-btn" onclick="prevComicPage()" title="Página anterior">◀ Anterior</button>
+                            <span class="comic-page-counter">
+                                Página <strong id="comic-current-page">1</strong> de <strong id="comic-total-pages">--</strong>
+                            </span>
+                            <button id="comic-next-btn" class="comic-nav-btn" onclick="nextComicPage()" title="Página siguiente">Siguiente ▶</button>
+                        </div>
+                        <div class="comic-zoom-group">
+                            <button class="comic-zoom-btn" onclick="changeComicZoom(-0.2)" title="Reducir zoom">🔍−</button>
+                            <span id="comic-zoom-display" class="comic-zoom-val">100%</span>
+                            <button class="comic-zoom-btn" onclick="changeComicZoom(0.2)" title="Aumentar zoom">🔍+</button>
+                            <button class="comic-zoom-btn" onclick="resetComicZoom()" title="Ajustar ancho">Ajustar</button>
+                        </div>
+                    </div>
+                    <div id="comic-canvas-wrapper" class="comic-canvas-wrapper">
+                        <canvas id="comic-canvas"></canvas>
+                    </div>
+                </div>
+
+                <!-- Visor iframe alternativo (Google Docs / Nativo) -->
+                <iframe id="comic-viewer-iframe" class="comic-viewer-frame" style="display:none;" src="" title="Visor de Cómic PDF" allowfullscreen></iframe>
             </div>
 
             <div class="comic-viewer-footer">
-                <span id="comic-viewer-mode-indicator" class="comic-mode-indicator">Modo optimizado activo</span>
-                <span class="comic-footer-tip">💡 Si tu celular tarda en cargar el PDF, pulsa <strong>"Alternar Visor"</strong> o <strong>"Descargar PDF"</strong>.</span>
+                <span id="comic-viewer-mode-indicator" class="comic-mode-indicator">Modo: Lector Interactivo ⚡</span>
+                <span class="comic-footer-tip">💡 En celulares desliza a los lados para pasar páginas o pulsa <strong>"Alternar Visor"</strong>.</span>
             </div>
         </div>
     </div>
@@ -612,6 +636,8 @@
 
     <!-- Pasarela de Pagos (Wompi Bancolombia / PSE) -->
     <script type="text/javascript" src="https://checkout.wompi.co/widget.js"></script>
+    <!-- Motor de Renderizado PDF para Lectura Móvil Fluida -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <!-- Scripts -->
     <script src="data.js"></script>
     <script src="app.js"></script>
