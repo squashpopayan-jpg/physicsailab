@@ -305,7 +305,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </p>
                     </div>
                     <div class="code-input-group">
-                        <input type="text" id="student-code-input" class="code-input" placeholder="Ej: MECANICA-2026, TRANSFO-2026..." onkeydown="if(event.key==='Enter') canjearCodigoEstudiante();" />
+                        <input type="text" id="student-code-input" class="code-input" placeholder="Ingresa la clave de tu curso..." onkeydown="if(event.key==='Enter') canjearCodigoEstudiante();" />
                         <button class="btn btn-primary" onclick="canjearCodigoEstudiante()">Desbloquear Materia 🔓</button>
                     </div>
                 </div>
@@ -379,7 +379,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     Clave de Acceso para ${course.titulo.split(' ')[0]} ${course.titulo.split(' ')[1] || ''}:
                 </label>
                 <div style="display:flex; gap:0.5rem;">
-                    <input type="text" id="modal-course-key-input" class="code-input" placeholder="Ej: ${getCourseKeys(course.id)[0] || 'CLAVE-2026'}" style="flex:1; text-transform:uppercase; font-size:1rem; padding:0.65rem 0.85rem;" onkeydown="if(event.key==='Enter') canjearClaveModalCurso('${course.id}');" />
+                    <input type="text" id="modal-course-key-input" class="code-input" placeholder="Ingresa la clave del curso..." style="flex:1; text-transform:uppercase; font-size:1rem; padding:0.65rem 0.85rem;" onkeydown="if(event.key==='Enter') canjearClaveModalCurso('${course.id}');" />
                 </div>
                 <div id="modal-key-error" style="color:#F87171; font-size:0.8rem; margin-top:0.5rem; display:none;"></div>
             </div>
@@ -1083,7 +1083,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     <div class="payment-form-group">
                         <label>Nombre y Apellido del Estudiante:</label>
-                        <input type="text" id="buyer-name" class="payment-form-input" placeholder="Ej: Carlos Andrés Pérez" />
+                        <input type="text" id="buyer-name" class="payment-form-input" placeholder="Nombre y apellido completo" />
                     </div>
 
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
