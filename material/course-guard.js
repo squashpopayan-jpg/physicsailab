@@ -7,34 +7,76 @@
 (function() {
     'use strict';
 
-    const STORAGE_KEY_STUDENT = 'estudiante_desbloqueado';
-    const STORAGE_KEY_GLOBAL = 'physicsailab_unlocked_all';
-    const VALID_CODES = [
-        "UNICAUCA-FISICA-2026",
-        "OBANDO-AULA-2026",
-        "ELECTRO-FIET-2026",
-        "AMBIENTAL-UNICA-26"
-    ];
+    const ADMIN_MASTER_KEY = "OBANDO-ADMIN-2026";
+    const DEFAULT_COURSE_KEYS = {
+        "mecanica": ["MECANICA-2026", "OBANDO-MEC-26"],
+        "materiales": ["MATERIALES-2026", "SOLIDOS-UFOP-26"],
+        "transformadores": ["TRANSFO-2026", "LAB-TRANS-26"],
+        "ondas": ["ONDAS-2026", "VIBRACIONES-26"],
+        "neuro": ["RECABLEAR-2026", "NEURO-26"],
+        "electromagnetismo": ["ELECTRO-2026", "FIET-EM-26"],
+        "ml": ["DATOS-IA-2026", "MACHINE-LEARNING-26"],
+        "cuantica": ["CUANTICA-2026", "MODERNA-26"],
+        "retie": ["RETIE-2026", "NORMA-RETIE-26"],
+        "squash_sim": ["SQUASH-PRO-2026", "MANU-SQUASH-26"],
+        "finanzas": ["FINANZAS-2026", "CUENTAS-CLARAS-26"]
+    };
+
+    function getCurrentCourseId() {
+        const p = location.pathname.toLowerCase();
+        const m = p.match(/1_cursos\/([^\/]+)/);
+        if (m && m[1]) return m[1];
+        if (p.includes('mecanica')) return 'mecanica';
+        if (p.includes('transformador')) return 'transformadores';
+        if (p.includes('onda')) return 'ondas';
+        if (p.includes('material')) return 'materiales';
+        if (p.includes('electro')) return 'electromagnetismo';
+        if (p.includes('cuantica')) return 'cuantica';
+        if (p.includes('retie')) return 'retie';
+        if (p.includes('/ml/')) return 'ml';
+        if (p.includes('/neuro/')) return 'neuro';
+        if (p.includes('squash')) return 'squash_sim';
+        if (p.includes('finanzas')) return 'finanzas';
+        return 'general';
+    }
 
     function isUnlocked() {
         try {
-            return localStorage.getItem(STORAGE_KEY_STUDENT) === 'true' ||
-                   localStorage.getItem(STORAGE_KEY_GLOBAL) === 'true';
+            // 1. Modo Administrador General (Profesor Obando): todo liberado
+            if (localStorage.getItem('physicsailab_admin') === 'true') return true;
+            if (localStorage.getItem('physicsailab_unlocked_all') === 'true') return true;
+
+            // 2. Desbloqueo específico para este curso
+            const cId = getCurrentCourseId();
+            const unlockedList = JSON.parse(localStorage.getItem('physicsailab_unlocked_courses') || '[]');
+            if (unlockedList.includes(cId)) return true;
+            if (localStorage.getItem('unlocked_course_' + cId) === 'true') return true;
+
+            return false;
         } catch(e) {
             return false;
         }
     }
 
-    function setUnlocked(val) {
+    function setCourseUnlocked(cId, val) {
         try {
+            let list = JSON.parse(localStorage.getItem('physicsailab_unlocked_courses') || '[]');
             if (val) {
-                localStorage.setItem(STORAGE_KEY_STUDENT, 'true');
-                localStorage.setItem(STORAGE_KEY_GLOBAL, 'true');
+                if (!list.includes(cId)) list.push(cId);
+                localStorage.setItem('unlocked_course_' + cId, 'true');
             } else {
-                localStorage.removeItem(STORAGE_KEY_STUDENT);
-                localStorage.removeItem(STORAGE_KEY_GLOBAL);
+                list = list.filter(id => id !== cId);
+                localStorage.removeItem('unlocked_course_' + cId);
+                localStorage.removeItem('physicsailab_admin');
+                localStorage.removeItem('physicsailab_unlocked_all');
             }
+            localStorage.setItem('physicsailab_unlocked_courses', JSON.stringify(list));
         } catch(e) {}
+    }
+
+    function setUnlocked(val) {
+        const cId = getCurrentCourseId();
+        setCourseUnlocked(cId, val);
     }
 
     // Identificar curso y tipo
@@ -469,12 +511,14 @@
 
         const tryUnlock = () => {
             const val = (codeInput.value || '').trim().toUpperCase();
-            if (VALID_CODES.includes(val)) {
-                setUnlocked(true);
+            const currentCourse = getCurrentCourseId();
+
+            // 1. Clave Maestra de Administrador (Profesor Obando)
+            if (val === ADMIN_MASTER_KEY || val === 'OBANDO-MASTER-ADMIN') {
+                localStorage.setItem('physicsailab_admin', 'true');
                 closeModal();
-                showToast(`🎉 ¡Clave válida! Acceso completo desbloqueado con éxito.`, 'success');
+                showToast('👑 ¡Sesión de Administrador Activada! Acceso total liberado a toda la plataforma.', 'success');
                 updateGuardState();
-                // Si el usuario intentaba abrir algo específico, reintentar navegación
                 if (attemptedTarget) {
                     if (isTransformadores) {
                         const tabLink = document.querySelector(`.nav a[href="#${attemptedTarget}"]`);
@@ -483,8 +527,47 @@
                         location.hash = attemptedTarget;
                     }
                 }
+                return;
+            }
+
+            // 2. Obtener claves válidas para este curso
+            let validKeys = DEFAULT_COURSE_KEYS[currentCourse] || [];
+            try {
+                const customMap = JSON.parse(localStorage.getItem('physicsailab_custom_keys') || '{}');
+                if (customMap[currentCourse]) {
+                    validKeys = validKeys.concat(customMap[currentCourse]);
+                }
+            } catch(e) {}
+
+            if (validKeys.includes(val)) {
+                setCourseUnlocked(currentCourse, true);
+                closeModal();
+                showToast(`🎉 ¡Clave válida! Curso desbloqueado exitosamente para este periodo.`, 'success');
+                updateGuardState();
+                if (attemptedTarget) {
+                    if (isTransformadores) {
+                        const tabLink = document.querySelector(`.nav a[href="#${attemptedTarget}"]`);
+                        if (tabLink) tabLink.click();
+                    } else {
+                        location.hash = attemptedTarget;
+                    }
+                }
+                return;
+            }
+
+            // 3. Comprobar si la clave pertenece a otra materia
+            let otherCourse = null;
+            for (const [cId, keys] of Object.entries(DEFAULT_COURSE_KEYS)) {
+                if (keys.includes(val)) {
+                    otherCourse = cId;
+                    break;
+                }
+            }
+
+            if (otherCourse) {
+                showToast(`⚠️ Esta clave corresponde a «${otherCourse.toUpperCase()}». Cada curso tiene su propia clave independiente.`, 'error');
             } else {
-                showToast('❌ Clave no válida o expirada. Consulta con tu profesor en clase.', 'error');
+                showToast('❌ Clave no válida para este curso. Consulta con tu profesor en clase.', 'error');
             }
         };
 
@@ -505,17 +588,23 @@
         }
 
         const unlocked = isUnlocked();
+        const isAdmin = localStorage.getItem('physicsailab_admin') === 'true';
         if (unlocked) {
             topBar.className = 'pg-top-bar unlocked';
-            topBar.innerHTML = `
-                <span>🎓 <strong>Modo Estudiante Activo</strong> · Acceso Completo</span>
-                <button type="button" id="pg-lock-again-btn" title="Cerrar sesión de estudiante">Bloquear 🔒</button>
-            `;
+            topBar.innerHTML = isAdmin
+                ? `<span>👑 <strong>Modo Administrador Activo</strong> (Profesor Obando) · Acceso Maestro Total</span>
+                   <button type="button" id="pg-lock-again-btn" title="Cerrar sesión de administrador">Bloquear 🔒</button>`
+                : `<span>🎓 <strong>Modo Estudiante Activo</strong> · Acceso a esta Materia</span>
+                   <button type="button" id="pg-lock-again-btn" title="Cerrar sesión de estudiante en esta materia">Bloquear 🔒</button>`;
             const lockBtn = topBar.querySelector('#pg-lock-again-btn');
             if (lockBtn) {
                 lockBtn.addEventListener('click', () => {
-                    setUnlocked(false);
-                    showToast('🔒 Modo estudiante cerrado. Curso en vista previa.', 'info');
+                    if (isAdmin) {
+                        localStorage.removeItem('physicsailab_admin');
+                    } else {
+                        setCourseUnlocked(getCurrentCourseId(), false);
+                    }
+                    showToast('🔒 Sesión cerrada. Curso en vista previa.', 'info');
                     updateGuardState();
                 });
             }

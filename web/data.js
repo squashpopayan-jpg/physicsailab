@@ -20,14 +20,25 @@ window.PLATFORM_DATA = {
         hotmartUser: "@manuel_obando_963654"
     },
     
-    // Claves privadas que el docente entrega a sus alumnos en el aula para desbloquear los cursos
-    // (Puedes modificar, agregar o cambiar estas claves cuando comience un nuevo semestre)
-    codigosEstudiantilesValidos: [
-        "UNICAUCA-FISICA-2026",
-        "OBANDO-AULA-2026",
-        "ELECTRO-FIET-2026",
-        "AMBIENTAL-UNICA-26"
-    ],
+    // Clave Maestra de Administrador (Profesor Mg. Manuel Alejandro Obando)
+    // Desbloquea todo el contenido de la plataforma y abre el panel de control docente
+    claveAdministrador: "OBANDO-ADMIN-2026",
+
+    // Claves privadas independientes para cada curso
+    // Cada clave desbloquea ÚNICAMENTE su materia respectiva (un estudiante de Mecánica no accede a Cuántica a menos que tenga la clave de esa materia)
+    clavesCursos: {
+        "mecanica": ["MECANICA-2026", "OBANDO-MEC-26"],
+        "materiales": ["MATERIALES-2026", "SOLIDOS-UFOP-26"],
+        "transformadores": ["TRANSFO-2026", "LAB-TRANS-26"],
+        "ondas": ["ONDAS-2026", "VIBRACIONES-26"],
+        "neuro": ["RECABLEAR-2026", "NEURO-26"],
+        "electromagnetismo": ["ELECTRO-2026", "FIET-EM-26"],
+        "ml": ["DATOS-IA-2026", "MACHINE-LEARNING-26"],
+        "cuantica": ["CUANTICA-2026", "MODERNA-26"],
+        "retie": ["RETIE-2026", "NORMA-RETIE-26"],
+        "squash_sim": ["SQUASH-PRO-2026", "MANU-SQUASH-26"],
+        "finanzas": ["FINANZAS-2026", "CUENTAS-CLARAS-26"]
+    },
 
     cursos: [
         {

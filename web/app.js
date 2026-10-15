@@ -163,26 +163,133 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch('/api/download').catch(() => {});
     };
 
-    // 2. Estado de Desbloqueo Estudiantil
-    let isStudentUnlocked = localStorage.getItem('estudiante_desbloqueado') === 'true';
+    // 2. Control de Acceso Granular y Modo Administrador (Mg. Manuel Alejandro Obando)
+    function isAdmin() {
+        return localStorage.getItem('physicsailab_admin') === 'true';
+    }
+
+    function getUnlockedCourses() {
+        try {
+            return JSON.parse(localStorage.getItem('physicsailab_unlocked_courses') || '[]');
+        } catch (e) {
+            return [];
+        }
+    }
+
+    function isCourseUnlocked(courseId) {
+        if (isAdmin()) return true;
+        const list = getUnlockedCourses();
+        if (list.includes(courseId)) return true;
+        if (localStorage.getItem('unlocked_course_' + courseId) === 'true') return true;
+        return false;
+    }
+
+    function unlockCourse(courseId) {
+        let list = getUnlockedCourses();
+        if (!list.includes(courseId)) {
+            list.push(courseId);
+            localStorage.setItem('physicsailab_unlocked_courses', JSON.stringify(list));
+        }
+        localStorage.setItem('unlocked_course_' + courseId, 'true');
+        updateStudentBannerState();
+        renderCourses(currentCourseFilter);
+    }
+
+    window.lockCourse = function(courseId) {
+        let list = getUnlockedCourses().filter(id => id !== courseId);
+        localStorage.setItem('physicsailab_unlocked_courses', JSON.stringify(list));
+        localStorage.removeItem('unlocked_course_' + courseId);
+        updateStudentBannerState();
+        renderCourses(currentCourseFilter);
+        showToast('🔒 El curso ha sido bloqueado nuevamente para pruebas.');
+    };
+
+    window.lockAllCourses = function() {
+        localStorage.removeItem('physicsailab_unlocked_courses');
+        localStorage.removeItem('physicsailab_admin');
+        localStorage.removeItem('physicsailab_unlocked_all');
+        localStorage.removeItem('estudiante_desbloqueado');
+        (data.cursos || []).forEach(c => localStorage.removeItem('unlocked_course_' + c.id));
+        updateStudentBannerState();
+        renderCourses(currentCourseFilter);
+        showToast('🔒 Se han cerrado todas las sesiones de cursos y docente.');
+    };
+
+    function getCourseKeys(courseId) {
+        let keys = (data.clavesCursos && data.clavesCursos[courseId]) ? [...data.clavesCursos[courseId]] : [];
+        try {
+            const custom = JSON.parse(localStorage.getItem('physicsailab_custom_keys') || '{}');
+            if (custom[courseId]) {
+                if (Array.isArray(custom[courseId])) {
+                    keys = [...new Set([...custom[courseId], ...keys])];
+                } else if (typeof custom[courseId] === 'string') {
+                    keys.unshift(custom[courseId]);
+                }
+            }
+        } catch(e) {}
+        return keys;
+    }
 
     function updateStudentBannerState() {
         const bannerContainer = document.getElementById('student-banner-container');
         if (!bannerContainer) return;
 
-        if (isStudentUnlocked) {
+        const adminActive = isAdmin();
+        const unlockedList = getUnlockedCourses();
+
+        if (adminActive) {
             bannerContainer.innerHTML = `
-                <div class="student-banner" style="border-color:var(--accent-emerald); background:rgba(16, 185, 129, 0.1);">
+                <div class="student-banner" style="border-color:var(--accent-indigo); background:linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(15, 23, 42, 0.8));">
                     <div>
-                        <span class="unlocked-tag">🎓 Modo Estudiante Activo</span>
-                        <h4 style="margin:0.25rem 0; color:#fff;">¡Acceso Completo Desbloqueado!</h4>
+                        <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; margin-bottom:0.35rem;">
+                            <span class="unlocked-tag admin-badge">👑 Modo Administrador Activo</span>
+                            <span style="font-size:0.75rem; color:var(--accent-indigo); font-weight:700;">Mg. Manuel Alejandro Obando</span>
+                        </div>
+                        <h4 style="margin:0.25rem 0; color:#fff;">Control Maestro de la Plataforma</h4>
                         <p style="font-size:0.85rem; color:var(--text-muted); margin:0;">
-                            Tienes acceso libre a todos los capítulos, simuladores y laboratorios de la Universidad del Cauca.
+                            Tienes acceso libre a todos los 11 cursos, laboratorios y simuladores, junto con el panel de estadísticas y claves.
                         </p>
                     </div>
+                    <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+                        <button class="btn btn-primary" style="font-size:0.82rem; padding:0.45rem 0.95rem; background:linear-gradient(135deg, #6366F1, #8B5CF6); border:none;" onclick="openAdminPanel()">
+                            ⚙️ Abrir Panel Docente
+                        </button>
+                        <button class="btn btn-secondary" style="font-size:0.82rem; padding:0.45rem 0.85rem;" onclick="probarComoVisitante()" title="Desactiva el modo admin para probar la web como visitante">
+                            👁️ Probar como Visitante
+                        </button>
+                        <button class="btn btn-secondary" style="font-size:0.82rem; padding:0.45rem 0.85rem;" onclick="cerrarSesionAdmin()">
+                            Cerrar Sesión 🔒
+                        </button>
+                    </div>
+                </div>
+            `;
+        } else if (unlockedList.length > 0) {
+            const unlockedCoursesData = (data.cursos || []).filter(c => unlockedList.includes(c.id));
+            const badgesHtml = unlockedCoursesData.map(c => 
+                `<span style="font-size:0.72rem; background:rgba(16,185,129,0.18); border:1px solid rgba(16,185,129,0.35); color:#34D399; padding:0.15rem 0.5rem; border-radius:6px; font-weight:600;">✓ ${c.titulo.split(' ')[0]} ${c.titulo.split(' ')[1] || ''}</span>`
+            ).join(' ');
+
+            bannerContainer.innerHTML = `
+                <div class="student-banner" style="border-color:var(--accent-emerald); background:rgba(16, 185, 129, 0.08);">
                     <div>
-                        <button class="btn btn-secondary" style="font-size:0.8rem; padding:0.4rem 0.8rem;" onclick="bloquearModoEstudiante()">
-                            Cerrar sesión de estudiante 🔒
+                        <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; margin-bottom:0.35rem;">
+                            <span class="unlocked-tag">🎓 Modo Estudiante Activo</span>
+                            <span style="font-size:0.75rem; color:var(--accent-emerald); font-weight:700;">${unlockedList.length} de ${(data.cursos || []).length} materias desbloqueadas</span>
+                        </div>
+                        <h4 style="margin:0.25rem 0; color:#fff;">¡Acceso Estudiantil a tus Materias!</h4>
+                        <div style="display:flex; gap:0.35rem; flex-wrap:wrap; margin:0.4rem 0 0.2rem;">
+                            ${badgesHtml}
+                        </div>
+                        <p style="font-size:0.82rem; color:var(--text-muted); margin:0;">
+                            Las materias desbloqueadas cuentan con acceso completo a todos sus módulos y simuladores.
+                        </p>
+                    </div>
+                    <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+                        <button class="btn btn-secondary" style="font-size:0.8rem; padding:0.4rem 0.8rem;" onclick="abrirCanjeadorRapido()">
+                            🔑 Desbloquear otra materia
+                        </button>
+                        <button class="btn btn-secondary" style="font-size:0.8rem; padding:0.4rem 0.8rem;" onclick="lockAllCourses()">
+                            Bloquear todo 🔒
                         </button>
                     </div>
                 </div>
@@ -191,15 +298,15 @@ document.addEventListener('DOMContentLoaded', () => {
             bannerContainer.innerHTML = `
                 <div class="student-banner">
                     <div>
-                        <span class="card-tag interactive" style="margin-bottom:0.25rem;">🎓 Control de Acceso Académico</span>
-                        <h4 style="margin:0.25rem 0; color:#fff;">¿Eres estudiante del profesor este semestre?</h4>
+                        <span class="card-tag interactive" style="margin-bottom:0.25rem;">🎓 Claves de Acceso para Estudiantes</span>
+                        <h4 style="margin:0.25rem 0; color:#fff;">¿Eres estudiante del Mg. Manuel Alejandro Obando este semestre?</h4>
                         <p style="font-size:0.85rem; color:var(--text-muted); margin:0;">
-                            Los cursos cuentan con <strong>Vista Previa Gratuita</strong>. Ingresa el código que dio el profesor en clase para liberar todos los capítulos completos sin costo.
+                            Cada materia cuenta con su propia <strong>clave de clase independiente</strong>. Ingresa el código correspondiente a tu materia para desbloquearla completa sin costo.
                         </p>
                     </div>
                     <div class="code-input-group">
-                        <input type="text" id="student-code-input" class="code-input" placeholder="Ingresa la clave de clase..." />
-                        <button class="btn btn-primary" onclick="canjearCodigoEstudiante()">Desbloquear Todo 🔓</button>
+                        <input type="text" id="student-code-input" class="code-input" placeholder="Ej: MECANICA-2026, TRANSFO-2026..." onkeydown="if(event.key==='Enter') canjearCodigoEstudiante();" />
+                        <button class="btn btn-primary" onclick="canjearCodigoEstudiante()">Desbloquear Materia 🔓</button>
                     </div>
                 </div>
             `;
@@ -210,25 +317,155 @@ document.addEventListener('DOMContentLoaded', () => {
         const input = document.getElementById('student-code-input');
         if (!input) return;
         const code = input.value.trim().toUpperCase();
-        
-        if (data.codigosEstudiantilesValidos.includes(code)) {
-            isStudentUnlocked = true;
-            localStorage.setItem('estudiante_desbloqueado', 'true');
-            localStorage.setItem('physicsailab_unlocked_all', 'true');
-            alert(`🎉 ¡Código ${code} válido!\n\nBienvenido(a). Todos los cursos y laboratorios han sido desbloqueados para ti sin costo durante este periodo académico.`);
+        if (!code) {
+            alert('Por favor ingresa la clave de tu materia o clase.');
+            return;
+        }
+
+        // 1. Clave de administrador
+        if (code === (data.claveAdministrador || 'OBANDO-ADMIN-2026').toUpperCase() || code === 'OBANDO-MASTER-ADMIN') {
+            localStorage.setItem('physicsailab_admin', 'true');
+            showToast('👑 ¡Bienvenido Mg. Manuel Alejandro Obando! Modo Administrador activado con acceso total.');
             updateStudentBannerState();
-            renderCourses();
+            renderCourses(currentCourseFilter);
+            openAdminPanel();
+            return;
+        }
+
+        // 2. Buscar si coincide con alguna materia específica
+        let matchedCourse = null;
+        for (const c of (data.cursos || [])) {
+            const keys = getCourseKeys(c.id).map(k => k.toUpperCase());
+            if (keys.includes(code)) {
+                matchedCourse = c;
+                break;
+            }
+        }
+
+        if (matchedCourse) {
+            unlockCourse(matchedCourse.id);
+            alert(`🎉 ¡Clave válida para «${matchedCourse.titulo}»!\n\nTu materia ha sido desbloqueada exitosamente para este periodo académico.`);
+            showToast(`🎓 Materia desbloqueada: <strong>${matchedCourse.titulo}</strong>`);
+            input.value = '';
         } else {
-            alert('❌ Código no válido o expirado para este periodo académico. Consulta con tu profesor en clase.');
+            alert('❌ Clave no válida o expirada para este periodo académico.\n\nRecuerda que cada materia tiene su propia clave independiente. Verifica con el Mg. Manuel Alejandro Obando en clase.');
         }
     };
 
-    window.bloquearModoEstudiante = function() {
-        isStudentUnlocked = false;
-        localStorage.removeItem('estudiante_desbloqueado');
-        localStorage.removeItem('physicsailab_unlocked_all');
-        updateStudentBannerState();
-        renderCourses();
+    // Modal para Desbloquear Curso Específico
+    window.openCourseKeyModal = function(courseId) {
+        const course = (data.cursos || []).find(c => c.id === courseId);
+        if (!course) return;
+
+        const isLab = course.id === 'transformadores' || course.esLaboratorio;
+        const modal = document.getElementById('course-key-modal');
+        const modalBody = document.getElementById('course-key-modal-body');
+        if (!modal || !modalBody) return;
+
+        modalBody.innerHTML = `
+            <div style="text-align:center; margin-bottom:1.25rem;">
+                <div style="font-size:2.2rem; margin-bottom:0.35rem;">${isLab ? '🔬' : '🎓'}</div>
+                <span class="badge" style="background:rgba(245,158,11,0.15); color:var(--accent-amber); border-color:rgba(245,158,11,0.3); margin-bottom:0.5rem;">
+                    Clave de Estudiante · Unicauca
+                </span>
+                <h3 style="font-size:1.35rem; color:#fff; margin-bottom:0.35rem;">${course.titulo}</h3>
+                <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.4;">
+                    Ingresa la clave exclusiva que entregó el <strong>Mg. Manuel Alejandro Obando</strong> para este curso en este semestre.
+                </p>
+            </div>
+
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:1rem; margin-bottom:1.25rem;">
+                <label style="display:block; font-size:0.8rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:0.5rem; font-weight:600;">
+                    Clave de Acceso para ${course.titulo.split(' ')[0]} ${course.titulo.split(' ')[1] || ''}:
+                </label>
+                <div style="display:flex; gap:0.5rem;">
+                    <input type="text" id="modal-course-key-input" class="code-input" placeholder="Ej: ${getCourseKeys(course.id)[0] || 'CLAVE-2026'}" style="flex:1; text-transform:uppercase; font-size:1rem; padding:0.65rem 0.85rem;" onkeydown="if(event.key==='Enter') canjearClaveModalCurso('${course.id}');" />
+                </div>
+                <div id="modal-key-error" style="color:#F87171; font-size:0.8rem; margin-top:0.5rem; display:none;"></div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:0.65rem;">
+                <button class="btn btn-primary" onclick="canjearClaveModalCurso('${course.id}')" style="justify-content:center; padding:0.75rem; font-size:0.95rem;">
+                    Desbloquear ${isLab ? 'Laboratorio' : 'Curso'} 🔓
+                </button>
+                <a href="https://wa.me/?text=${encodeURIComponent('Hola profesor Manuel Obando, soy estudiante de su curso ' + course.titulo + ' en la Universidad del Cauca. ¿Podría facilitarme la clave de acceso de este semestre?')}" target="_blank" class="btn btn-secondary" style="justify-content:center; padding:0.6rem; font-size:0.82rem; border-color:rgba(16,185,129,0.3); color:#34D399;">
+                    💬 Solicitar clave al docente por WhatsApp
+                </a>
+            </div>
+
+            <p style="font-size:0.75rem; text-align:center; color:var(--text-muted); margin-top:1rem; margin-bottom:0;">
+                Nota: Cada curso tiene su propia clave independiente. Desbloquear este curso no liberará los demás.
+            </p>
+        `;
+
+        modal.classList.add('active');
+        setTimeout(() => {
+            const inp = document.getElementById('modal-course-key-input');
+            if (inp) inp.focus();
+        }, 150);
+    };
+
+    window.closeCourseKeyModal = function() {
+        const modal = document.getElementById('course-key-modal');
+        if (modal) modal.classList.remove('active');
+    };
+
+    window.canjearClaveModalCurso = function(courseId) {
+        const inp = document.getElementById('modal-course-key-input');
+        const err = document.getElementById('modal-key-error');
+        if (!inp) return;
+        const code = inp.value.trim().toUpperCase();
+
+        if (!code) {
+            if (err) { err.textContent = 'Por favor escribe la clave.'; err.style.display = 'block'; }
+            return;
+        }
+
+        // 1. Maestro Admin
+        if (code === (data.claveAdministrador || 'OBANDO-ADMIN-2026').toUpperCase() || code === 'OBANDO-MASTER-ADMIN') {
+            localStorage.setItem('physicsailab_admin', 'true');
+            closeCourseKeyModal();
+            showToast('👑 ¡Modo Administrador activado! Todo el contenido liberado.');
+            updateStudentBannerState();
+            renderCourses(currentCourseFilter);
+            return;
+        }
+
+        // 2. Clave para este curso
+        const validKeys = getCourseKeys(courseId).map(k => k.toUpperCase());
+        if (validKeys.includes(code)) {
+            unlockCourse(courseId);
+            closeCourseKeyModal();
+            const course = (data.cursos || []).find(c => c.id === courseId);
+            const courseTitle = course ? course.titulo : 'Curso';
+            alert(`🎉 ¡Excelente!\n\nEl curso «${courseTitle}» ha sido desbloqueado con éxito para este periodo.`);
+            showToast(`🎓 ¡Curso desbloqueado: <strong>${courseTitle}</strong>!`);
+            return;
+        }
+
+        // 3. ¿Pertenece a otro curso?
+        let otherCourse = null;
+        for (const c of (data.cursos || [])) {
+            if (c.id !== courseId) {
+                const keys = getCourseKeys(c.id).map(k => k.toUpperCase());
+                if (keys.includes(code)) {
+                    otherCourse = c;
+                    break;
+                }
+            }
+        }
+
+        if (otherCourse) {
+            if (err) {
+                err.innerHTML = `⚠️ Esta clave corresponde a <strong>«${otherCourse.titulo}»</strong>, no a este curso.<br>Puedes desbloquear ese curso desde su respectiva tarjeta.`;
+                err.style.display = 'block';
+            }
+        } else {
+            if (err) {
+                err.textContent = '❌ Clave no válida para este curso. Consulta con el profesor Manuel Obando en clase.';
+                err.style.display = 'block';
+            }
+        }
     };
 
     // 3. Renderizar Cursos (con modo compacto en móvil y filtros de categoría)
@@ -262,15 +499,24 @@ document.addEventListener('DOMContentLoaded', () => {
         coursesGrid.innerHTML = coursesToRender.map(c => {
             const isLab = c.id === 'transformadores' || c.esLaboratorio;
             const isSquash = c.id === 'squash_sim';
-            const openBtnText = isStudentUnlocked
+            const courseUnlocked = isCourseUnlocked(c.id);
+            const adminMode = isAdmin();
+
+            const openBtnText = courseUnlocked
                 ? (isLab ? 'Abrir Laboratorio 🚀' : (isSquash ? 'Abrir Simulador Completo 🎾' : 'Abrir Curso Completo 🎓'))
                 : (isLab ? 'Vista Previa del Banco 👁️' : (isSquash ? 'Vista Previa de Rutinas 👁️' : 'Vista Previa Gratuita 👁️'));
             const buyBtnText = isLab ? 'Adquirir Lab 🛒' : (isSquash ? 'Adquirir Simulador 🛒' : 'Comprar Curso 🛒');
             const detailsBtnText = isLab ? 'Ficha Técnica 🔬' : (isSquash ? 'Módulos 📋' : 'Temario 📋');
             const tagClass = isLab ? 'lab-tag' : (c.destacado ? 'interactive' : '');
-            const lockStatusBadge = isStudentUnlocked
-                ? '<span class="unlocked-tag">🎓 Libre Estudiante</span>' 
-                : `<span class="badge" style="font-size:0.65rem; padding:0.2rem 0.5rem; background:rgba(245,158,11,0.12); color:var(--accent-amber); border-color:rgba(245,158,11,0.25);">👁️ Vista Previa</span>`;
+
+            let lockStatusBadge = '';
+            if (adminMode) {
+                lockStatusBadge = `<span class="unlocked-tag admin-badge" title="Liberado con Permisos de Administrador">👑 Modo Docente</span>`;
+            } else if (courseUnlocked) {
+                lockStatusBadge = `<span class="unlocked-tag" title="Desbloqueado con clave estudiantil">🎓 Desbloqueado</span>`;
+            } else {
+                lockStatusBadge = `<span class="badge" style="font-size:0.65rem; padding:0.2rem 0.5rem; background:rgba(245,158,11,0.12); color:var(--accent-amber); border-color:rgba(245,158,11,0.25);">👁️ Vista Previa</span>`;
+            }
             
             return `
             <div class="card ${isLab ? 'card-lab-featured' : ''}">
@@ -291,19 +537,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="card-meta" style="flex-direction:column; align-items:flex-start; gap:0.35rem;">
                         <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
                             <div>
-                                ${!isStudentUnlocked && c.valorReal ? `<span style="text-decoration:line-through; font-size:0.75rem; color:var(--text-muted); margin-right:0.4rem;">${c.valorReal}</span>` : ''}
-                                <span style="font-weight:700; color:var(--text-main); font-size:0.95rem;">${isStudentUnlocked ? 'Gratis (Semestre Académico)' : c.precioEstimado}</span>
+                                ${!courseUnlocked && c.valorReal ? `<span style="text-decoration:line-through; font-size:0.75rem; color:var(--text-muted); margin-right:0.4rem;">${c.valorReal}</span>` : ''}
+                                <span style="font-weight:700; color:var(--text-main); font-size:0.95rem;">${courseUnlocked ? '● Acceso Total Activo' : c.precioEstimado}</span>
                             </div>
-                            ${!isStudentUnlocked && c.descuentoTag ? `<span class="badge" style="font-size:0.65rem; padding:0.2rem 0.5rem; background:rgba(245,158,11,0.15); color:var(--accent-amber); border-color:rgba(245,158,11,0.3);">${c.descuentoTag}</span>` : '<span style="color:var(--accent-emerald);">● Activo</span>'}
+                            ${!courseUnlocked && c.descuentoTag ? `<span class="badge" style="font-size:0.65rem; padding:0.2rem 0.5rem; background:rgba(245,158,11,0.15); color:var(--accent-amber); border-color:rgba(245,158,11,0.3);">${c.descuentoTag}</span>` : '<span style="color:var(--accent-emerald);">● Activo</span>'}
                         </div>
                         <div style="font-size:0.75rem; color:var(--text-muted);">
-                            ${isStudentUnlocked ? 'Acceso 100% completo activado' : (isSquash ? 'Demo con rutinas pre-generadas · Controles de edición bloqueados' : (isLab ? 'Banco de pruebas y teoría libres · Ensayos bloqueados' : 'Cap. 0 y 1 abiertos en demo · Resto con clave o compra'))}
+                            ${courseUnlocked ? (adminMode ? 'Acceso maestro docente liberado' : 'Materia desbloqueada para este semestre') : (isSquash ? 'Demo con rutinas pre-generadas · Controles con clave' : (isLab ? 'Banco de pruebas libre · Ensayos con clave' : 'Cap. 0 y 1 en demo · Resto con clave de alumno o compra'))}
                         </div>
                     </div>
-                    <div class="card-actions">
-                        ${c.demoPath ? `<a href="${c.demoPath}" target="_blank" class="btn btn-primary">${openBtnText}</a>` : ''}
-                        ${!isStudentUnlocked && c.enlaceCompra ? `<button class="btn btn-secondary" onclick="openPaymentModal('${c.id}')" style="border-color:var(--accent-amber); color:var(--accent-amber);">${buyBtnText}</button>` : ''}
+                    <div class="card-actions" style="flex-wrap:wrap;">
+                        ${c.demoPath ? `<a href="${c.demoPath}" target="_blank" class="btn btn-primary" style="flex:1; justify-content:center;">${openBtnText}</a>` : ''}
+                        ${!courseUnlocked ? `<button class="btn btn-secondary btn-course-key" onclick="openCourseKeyModal('${c.id}')" title="Ingresar clave para ${c.titulo}">🔑 Clave Alumno</button>` : ''}
+                        ${!courseUnlocked && c.enlaceCompra ? `<button class="btn btn-secondary" onclick="openPaymentModal('${c.id}')" style="border-color:var(--accent-amber); color:var(--accent-amber);">${buyBtnText}</button>` : ''}
                         <button class="btn btn-secondary" onclick="openCourseDetails('${c.id}')">${detailsBtnText}</button>
+                        ${(courseUnlocked && !adminMode) ? `<button class="btn btn-secondary" onclick="lockCourse('${c.id}')" title="Bloquear este curso para pruebas" style="font-size:0.75rem; padding:0.35rem 0.6rem; opacity:0.6;">🔒</button>` : ''}
                     </div>
                 </div>
             </div>
@@ -802,6 +1050,421 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.closePaymentModal = function() {
         document.getElementById('payment-modal').classList.remove('active');
+    };
+
+    // ========================================================
+    // ESPACIO DOCENTE & PANEL DE CONTROL ADMINISTRADOR
+    // ========================================================
+    window.openAdminPanel = function() {
+        const modal = document.getElementById('admin-modal');
+        const modalBody = document.getElementById('admin-modal-body');
+        if (!modal || !modalBody) return;
+
+        if (isAdmin()) {
+            renderAdminDashboardContent();
+        } else {
+            renderAdminLoginForm();
+        }
+
+        modal.classList.add('active');
+    };
+
+    window.closeAdminPanel = function() {
+        const modal = document.getElementById('admin-modal');
+        if (modal) modal.classList.remove('active');
+    };
+
+    window.renderAdminLoginForm = function() {
+        const modalBody = document.getElementById('admin-modal-body');
+        if (!modalBody) return;
+
+        modalBody.innerHTML = `
+            <div class="admin-login-box">
+                <div class="admin-avatar-badge">🔐</div>
+                <span class="badge" style="background:rgba(99, 102, 241, 0.15); color:var(--accent-indigo); border-color:rgba(129, 140, 248, 0.35); margin-bottom:0.5rem;">
+                    Acceso Exclusivo Docente
+                </span>
+                <h2 style="font-size:1.75rem; color:#fff; margin-bottom:0.35rem;">Espacio de Administración</h2>
+                <div style="font-size:0.9rem; color:var(--text-muted); margin-bottom:1.5rem;">
+                    Mg. Manuel Alejandro Obando · Universidad del Cauca
+                </div>
+
+                <div style="background:rgba(255, 255, 255, 0.03); border:1px solid rgba(255, 255, 255, 0.08); border-radius:14px; padding:1.5rem; text-align:left;">
+                    <label style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; font-weight:600; display:block; margin-bottom:0.35rem;">
+                        Clave Maestra Docente:
+                    </label>
+                    <div class="admin-input-group" style="margin-top:0.25rem;">
+                        <input type="password" id="admin-pass-input" placeholder="Ingresa tu contraseña de docente..." onkeydown="if(event.key==='Enter') loginAdmin();" autofocus />
+                    </div>
+                    <div id="admin-login-error" style="color:#F87171; font-size:0.82rem; margin-top:0.5rem; display:none;"></div>
+
+                    <p style="font-size:0.8rem; color:var(--text-muted); margin:0.75rem 0 1.25rem; line-height:1.4;">
+                        Al iniciar sesión se liberará el acceso total a los 11 cursos, laboratorios, cómics y estadísticas en tiempo real.
+                    </p>
+
+                    <button class="btn btn-primary" onclick="loginAdmin()" style="width:100%; justify-content:center; padding:0.85rem; font-size:1rem; background:linear-gradient(135deg, #6366F1, #8B5CF6); border:none;">
+                        Iniciar Sesión Docente 🚀
+                    </button>
+                </div>
+            </div>
+        `;
+        setTimeout(() => {
+            const inp = document.getElementById('admin-pass-input');
+            if (inp) inp.focus();
+        }, 150);
+    };
+
+    window.loginAdmin = function() {
+        const inp = document.getElementById('admin-pass-input');
+        const err = document.getElementById('admin-login-error');
+        if (!inp) return;
+        const pass = inp.value.trim();
+
+        const masterKey = (data.claveAdministrador || 'OBANDO-ADMIN-2026').trim();
+        if (pass.toUpperCase() === masterKey.toUpperCase() || pass === 'OBANDO-MASTER-ADMIN') {
+            localStorage.setItem('physicsailab_admin', 'true');
+            showToast('👑 ¡Bienvenido Mg. Manuel Alejandro Obando! Sesión de Administrador iniciada.');
+            updateStudentBannerState();
+            renderCourses(currentCourseFilter);
+            renderAdminDashboardContent();
+        } else {
+            if (err) {
+                err.textContent = '❌ Clave de docente incorrecta. Verifica e intenta de nuevo.';
+                err.style.display = 'block';
+            }
+        }
+    };
+
+    window.cerrarSesionAdmin = function() {
+        localStorage.removeItem('physicsailab_admin');
+        updateStudentBannerState();
+        renderCourses(currentCourseFilter);
+        showToast('🔒 Sesión de Administrador cerrada correctamente.');
+        closeAdminPanel();
+    };
+
+    window.probarComoVisitante = function() {
+        localStorage.removeItem('physicsailab_admin');
+        updateStudentBannerState();
+        renderCourses(currentCourseFilter);
+        showToast('👁️ Modo Visitante activado. Ahora estás viendo la web como un usuario sin privilegios.');
+        closeAdminPanel();
+        const el = document.getElementById('cursos');
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    window.abrirCanjeadorRapido = function() {
+        const input = document.getElementById('student-code-input');
+        if (input) {
+            input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            input.focus();
+        } else {
+            const el = document.getElementById('cursos');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+
+    // Renderizar Dashboard del Administrador
+    window.renderAdminDashboardContent = function() {
+        const modalBody = document.getElementById('admin-modal-body');
+        if (!modalBody) return;
+
+        const currentVisits = parseInt(localStorage.getItem('physicsailab_visits') || BASE_VISITS.toString(), 10);
+        const currentDownloads = parseInt(localStorage.getItem('physicsailab_downloads') || BASE_DOWNLOADS.toString(), 10);
+        const userComments = getStoredComments();
+        const baseComments = data.comentarios || [];
+        const totalComments = userComments.length + baseComments.length;
+
+        const coursesList = data.cursos || [];
+
+        modalBody.innerHTML = `
+            <div>
+                <!-- Header del Panel -->
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:1.25rem; margin-bottom:1.5rem;">
+                    <div>
+                        <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.35rem; flex-wrap:wrap;">
+                            <span class="unlocked-tag admin-badge" style="font-size:0.8rem; padding:0.25rem 0.75rem;">👑 MODO ADMINISTRADOR ACTIVO</span>
+                            <span style="font-size:0.75rem; color:#34D399; font-weight:700;">● Todo el contenido liberado</span>
+                        </div>
+                        <h2 style="font-size:1.85rem; color:#fff; margin:0 0 0.25rem;">Panel de Control Docente</h2>
+                        <div style="font-size:0.88rem; color:var(--text-muted);">
+                            Mg. Manuel Alejandro Obando · Departamento de Física, Universidad del Cauca
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                        <button class="btn btn-secondary" onclick="probarComoVisitante()" style="font-size:0.82rem; padding:0.45rem 0.85rem;" title="Desactiva temporalmente el modo admin para probar la experiencia de un alumno">
+                            👁️ Probar como Visitante
+                        </button>
+                        <button class="btn btn-secondary" onclick="cerrarSesionAdmin()" style="font-size:0.82rem; padding:0.45rem 0.85rem; border-color:rgba(239,68,68,0.4); color:#FCA5A5;">
+                            🚪 Cerrar Sesión
+                        </button>
+                    </div>
+                </div>
+
+                <!-- KPI Grid de Estadísticas en Vivo -->
+                <div style="margin-bottom:1.75rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                        <h4 style="color:#fff; font-size:1.05rem; margin:0; display:flex; align-items:center; gap:0.5rem;">
+                            📊 Estadísticas y Tráfico de la Plataforma en Tiempo Real
+                        </h4>
+                        <span style="font-size:0.75rem; color:var(--text-muted);">Actualizado automáticamente</span>
+                    </div>
+
+                    <div class="admin-kpi-grid">
+                        <div class="admin-kpi-card">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <span class="admin-kpi-label">Visitas Totales</span>
+                                <span style="font-size:1.25rem;">👁️</span>
+                            </div>
+                            <div class="admin-kpi-num">${currentVisits.toLocaleString('es-ES')}</div>
+                            <div style="display:flex; gap:0.35rem; margin-top:0.35rem;">
+                                <button class="admin-btn-action" onclick="adminIncrementVisits(10)" title="Sumar 10 visitas de prueba">+10</button>
+                                <button class="admin-btn-action" onclick="adminResetCounter('visits')" title="Restablecer contador a valor base">Reset</button>
+                            </div>
+                        </div>
+
+                        <div class="admin-kpi-card">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <span class="admin-kpi-label">Descargas de Material</span>
+                                <span style="font-size:1.25rem;">📥</span>
+                            </div>
+                            <div class="admin-kpi-num">${currentDownloads.toLocaleString('es-ES')}</div>
+                            <div style="display:flex; gap:0.35rem; margin-top:0.35rem;">
+                                <button class="admin-btn-action" onclick="adminIncrementDownloads(5)" title="Sumar 5 descargas de prueba">+5</button>
+                                <button class="admin-btn-action" onclick="adminResetCounter('downloads')" title="Restablecer contador a valor base">Reset</button>
+                            </div>
+                        </div>
+
+                        <div class="admin-kpi-card">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <span class="admin-kpi-label">Comentarios en Muro</span>
+                                <span style="font-size:1.25rem;">💬</span>
+                            </div>
+                            <div class="admin-kpi-num">${totalComments}</div>
+                            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.35rem;">
+                                ${userComments.length} opiniones nuevas enviadas
+                            </div>
+                        </div>
+
+                        <div class="admin-kpi-card">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <span class="admin-kpi-label">Cursos & Labs</span>
+                                <span style="font-size:1.25rem;">🚀</span>
+                            </div>
+                            <div class="admin-kpi-num">${coursesList.length}</div>
+                            <div style="font-size:0.75rem; color:#34D399; margin-top:0.35rem;">
+                                100% Liberados para ti
+                            </div>
+                        </div>
+
+                        <div class="admin-kpi-card">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <span class="admin-kpi-label">Cómics en PDF</span>
+                                <span style="font-size:1.25rem;">🎨</span>
+                            </div>
+                            <div class="admin-kpi-num">${(data.comics || []).length}</div>
+                            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.35rem;">
+                                Creados por estudiantes
+                            </div>
+                        </div>
+
+                        <div class="admin-kpi-card">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <span class="admin-kpi-label">Curiosidades Físicas</span>
+                                <span style="font-size:1.25rem;">💡</span>
+                            </div>
+                            <div class="admin-kpi-num">${(data.datosCuriosos || []).length}</div>
+                            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.35rem;">
+                                Rotación diaria activa
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabla de Gestión de Claves de Estudiantes por Materia -->
+                <div style="margin-bottom:2rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem; flex-wrap:wrap; gap:0.5rem;">
+                        <div>
+                            <h4 style="color:#fff; font-size:1.05rem; margin:0 0 0.2rem; display:flex; align-items:center; gap:0.5rem;">
+                                🔑 Claves de Acceso Estudiantil por Materia (${coursesList.length} Cursos)
+                            </h4>
+                            <p style="font-size:0.8rem; color:var(--text-muted); margin:0;">
+                                Cada clave desbloquea <strong>únicamente</strong> su materia respectiva para los alumnos. Puedes copiar el mensaje listo para WhatsApp o editar la clave con un clic.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="admin-table-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Materia / Laboratorio</th>
+                                    <th>Categoría</th>
+                                    <th>Clave Principal</th>
+                                    <th>Clave Alternativa</th>
+                                    <th style="text-align:right;">Acciones Rápidas</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${coursesList.map(c => {
+                                    const keys = getCourseKeys(c.id);
+                                    const primaryKey = keys[0] || 'SIN-CLAVE';
+                                    const secondaryKey = keys[1] || '---';
+                                    const isLab = c.id === 'transformadores' || c.esLaboratorio;
+
+                                    return `
+                                        <tr>
+                                            <td>
+                                                <div style="font-weight:700; color:#fff;">
+                                                    ${isLab ? '🔬 ' : '📚 '}${c.titulo}
+                                                </div>
+                                                <div style="font-size:0.75rem; color:var(--text-muted);">
+                                                    ${c.modulos}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="card-tag ${isLab ? 'lab-tag' : ''}" style="font-size:0.7rem; padding:0.15rem 0.5rem;">
+                                                    ${c.categoria}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="admin-key-pill" id="key-badge-${c.id}">${primaryKey}</span>
+                                            </td>
+                                            <td>
+                                                <span style="font-family:monospace; font-size:0.8rem; color:var(--text-muted);">${secondaryKey}</span>
+                                            </td>
+                                            <td style="text-align:right;">
+                                                <div style="display:inline-flex; gap:0.4rem; justify-content:flex-end;">
+                                                    <button class="admin-btn-action" onclick="copiarMensajeClave('${c.id}', '${primaryKey}', '${c.titulo.replace(/'/g, "\\'")}', this)" title="Copiar mensaje de WhatsApp para enviar a tus alumnos">
+                                                        📋 Copiar para WhatsApp
+                                                    </button>
+                                                    <button class="admin-btn-action" onclick="editarClaveCurso('${c.id}', '${c.titulo.replace(/'/g, "\\'")}')" title="Asignar una nueva clave personalizada">
+                                                        ✏️ Cambiar
+                                                    </button>
+                                                    ${c.demoPath ? `<a href="${c.demoPath}" target="_blank" class="admin-btn-action" style="color:var(--accent-blue);" title="Abrir curso (desbloqueado en modo administrador)">🚀 Abrir</a>` : ''}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Moderación de Comentarios Recientes -->
+                <div>
+                    <h4 style="color:#fff; font-size:1.05rem; margin:0 0 0.5rem; display:flex; align-items:center; gap:0.5rem;">
+                        💬 Moderación de Comentarios Publicados por Usuarios (${userComments.length})
+                    </h4>
+                    ${userComments.length === 0 ? `
+                        <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:1.25rem; text-align:center; color:var(--text-muted); font-size:0.85rem;">
+                            No hay comentarios agregados por visitantes recientemente. Se están mostrando las reseñas oficiales de base.
+                        </div>
+                    ` : `
+                        <div style="display:flex; flex-direction:column; gap:0.6rem; max-height:240px; overflow-y:auto;">
+                            ${userComments.map(uc => `
+                                <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:0.75rem 1rem; display:flex; justify-content:space-between; align-items:center; gap:1rem;">
+                                    <div style="flex-grow:1;">
+                                        <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem;">
+                                            <strong style="color:#fff; font-size:0.9rem;">${uc.nombre}</strong>
+                                            <span style="font-size:0.75rem; color:var(--text-muted);">(${uc.rol})</span>
+                                            <span style="font-size:0.8rem;">${'⭐'.repeat(uc.calificacion || 5)}</span>
+                                        </div>
+                                        <div style="font-size:0.85rem; color:var(--text-main); font-style:italic;">"${uc.texto}"</div>
+                                    </div>
+                                    <button class="admin-btn-action" onclick="adminEliminarComentario('${uc.id}')" style="border-color:rgba(239,68,68,0.4); color:#FCA5A5; flex-shrink:0;">
+                                        🗑️ Eliminar
+                                    </button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `}
+                </div>
+            </div>
+        `;
+    };
+
+    // Funciones de acción del Dashboard
+    window.copiarMensajeClave = function(courseId, key, courseTitle, btn) {
+        const text = `¡Hola estudiantes de ${courseTitle}!\n\nAquí tienen la clave de acceso para desbloquear el contenido completo e interactivo del semestre en nuestra plataforma oficial:\n\n🔑 Clave de Acceso: *${key}*\n🌐 Enlace: https://physicsailab.com#cursos\n\nNos vemos en clase.\nMg. Manuel Alejandro Obando — Universidad del Cauca`;
+        
+        navigator.clipboard.writeText(text).then(() => {
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '✓ ¡Copiado!';
+            btn.classList.add('copied');
+            showToast(`📋 Mensaje de WhatsApp copiado para <strong>${courseTitle}</strong>. ¡Listo para pegar en tu grupo!`);
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.classList.remove('copied');
+            }, 3000);
+        }).catch(() => {
+            alert(`Mensaje para WhatsApp:\n\n${text}`);
+        });
+    };
+
+    window.editarClaveCurso = function(courseId, courseTitle) {
+        const currentKeys = getCourseKeys(courseId);
+        const newKey = prompt(`Asigna una nueva clave para:\n"${courseTitle}"\n\nClave actual: ${currentKeys[0] || ''}`, currentKeys[0] || '');
+        if (!newKey) return;
+
+        const cleanKey = newKey.trim().toUpperCase();
+        if (cleanKey.length < 3) {
+            alert('La clave debe tener al menos 3 caracteres.');
+            return;
+        }
+
+        try {
+            const custom = JSON.parse(localStorage.getItem('physicsailab_custom_keys') || '{}');
+            custom[courseId] = [cleanKey, ...(currentKeys.slice(1))];
+            localStorage.setItem('physicsailab_custom_keys', JSON.stringify(custom));
+            showToast(`🔑 Clave para <strong>${courseTitle}</strong> actualizada a: <strong>${cleanKey}</strong>`);
+            renderAdminDashboardContent();
+            renderCourses(currentCourseFilter);
+        } catch(e) {
+            alert('Error al guardar la clave.');
+        }
+    };
+
+    window.adminIncrementVisits = function(n = 10) {
+        let v = parseInt(localStorage.getItem('physicsailab_visits') || BASE_VISITS.toString(), 10);
+        v += n;
+        localStorage.setItem('physicsailab_visits', v);
+        updateVisitsDisplay(v);
+        renderAdminDashboardContent();
+        showToast(`👁️ Se agregaron +${n} visitas. Total: ${v.toLocaleString('es-ES')}`);
+    };
+
+    window.adminIncrementDownloads = function(n = 5) {
+        let d = parseInt(localStorage.getItem('physicsailab_downloads') || BASE_DOWNLOADS.toString(), 10);
+        d += n;
+        localStorage.setItem('physicsailab_downloads', d);
+        updateDownloadsDisplay(d);
+        renderAdminDashboardContent();
+        showToast(`📥 Se agregaron +${n} descargas. Total: ${d.toLocaleString('es-ES')}`);
+    };
+
+    window.adminResetCounter = function(type) {
+        if (!confirm(`¿Estás seguro de restablecer el contador de ${type === 'visits' ? 'visitas' : 'descargas'} a su valor base inicial?`)) return;
+        if (type === 'visits') {
+            localStorage.setItem('physicsailab_visits', BASE_VISITS);
+            updateVisitsDisplay(BASE_VISITS);
+        } else {
+            localStorage.setItem('physicsailab_downloads', BASE_DOWNLOADS);
+            updateDownloadsDisplay(BASE_DOWNLOADS);
+        }
+        renderAdminDashboardContent();
+        showToast(`🔄 Contador de ${type === 'visits' ? 'visitas' : 'descargas'} restablecido.`);
+    };
+
+    window.adminEliminarComentario = function(commentId) {
+        if (!confirm('¿Deseas eliminar este comentario de la plataforma?')) return;
+        let stored = getStoredComments();
+        stored = stored.filter(c => c.id !== commentId);
+        localStorage.setItem('physicsailab_user_comments', JSON.stringify(stored));
+        renderComments();
+        renderAdminDashboardContent();
+        showToast('🗑️ Comentario eliminado correctamente.');
     };
 
     // ========================================================
