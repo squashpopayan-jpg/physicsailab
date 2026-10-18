@@ -1,0 +1,76 @@
+name: Garmin AI Pro - Sincronización Automática
+
+on:
+  schedule:
+    # 05:30 AM hora de Colombia todos los días (UTC 10:30)
+    - cron: '30 10 * * *'
+  workflow_dispatch:
+    inputs:
+      force_upload:
+        description: 'Forzar re-subida del entrenamiento al reloj Garmin'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  garmin-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Clonar repositorio
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+          fetch-depth: 1
+
+      - name: 🐍 Configurar Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: tools/garmin/requirements.txt
+
+      - name: 📦 Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r tools/garmin/requirements.txt
+
+      - name: ⌚ Ejecutar motor Garmin AI Pro y subir al Forerunner 970
+        env:
+          GARMINTOKENS: ${{ secrets.GARMINTOKENS }}
+          FORCE_UPLOAD: ${{ inputs.force_upload }}
+        run: |
+          mkdir -p tools/garmin/datos
+          echo "$GARMINTOKENS" > tools/garmin/datos/garmin_tokens.json
+
+          cd tools/garmin
+          if [ "$FORCE_UPLOAD" = "true" ]; then
+            python motor/garmin_training_system_v2.py --auto --force-upload
+          else
+            python motor/garmin_training_system_v2.py --auto
+          fi
+          cd ../..
+
+          rm -f tools/garmin/datos/garmin_tokens.json
+
+      - name: 🌐 Publicar datos actualizados a PhysicsAILab
+        run: |
+          if [ -f "tools/garmin/datos/web_export.json" ]; then
+            mkdir -p web/garmin/data public/garmin/data
+            cp -f tools/garmin/datos/web_export.json web/garmin/data/web_export.json
+            cp -f tools/garmin/datos/web_export.json public/garmin/data/web_export.json
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          if git diff --quiet web/garmin/data/web_export.json; then
+            echo "Sin cambios nuevos en web_export.json."
+          else
+            git add web/garmin/data/web_export.json public/garmin/data/web_export.json
+            git commit -m "datos: sincronización automática Garmin AI Pro [skip ci]"
+            git push
+            echo "✅ Datos sincronizados y desplegados a Vercel con éxito."
+          fi
