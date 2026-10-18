@@ -18,7 +18,7 @@
 })();
 // Auto cache-bust: si esta versión no coincide con el servidor, recargar
 (function(){
-  var CURRENT = 'v5.2-noupload';
+  var CURRENT = 'v5.3-live-direct';
   var stored = sessionStorage.getItem('msq_html_version');
   if (stored && stored !== CURRENT) {
     sessionStorage.setItem('msq_html_version', CURRENT);
@@ -49,26 +49,22 @@
   var base = String(window.MANUSQUASH_API_BASE || '').replace(/\/+$/, '');
   window.MANUSQUASH_API_BASE = base;
   window.msqApi = function(p){ return base + p; };
-  window.msqStaticMode = function(){ return !!window.MANUSQUASH_STATIC_DATA; };
+  window.msqStaticMode = function(){ return true; };
   window.msqFetchData = function(){
-    var stat = window.MANUSQUASH_STATIC_DATA;
-    var u = stat ? stat + (stat.indexOf('?') < 0 ? '?' : '&') + 't=' + Date.now()
-                 : window.msqApi('/data?t=' + Date.now());
-    function get(){ return fetch(u, {cache:'no-store', credentials: stat ? 'omit' : 'include'}); }
-    return get().then(function(r){
-      // /data es privado: si pide sesión, se pide el PIN una vez y se reintenta.
-      if (r.status === 401 && !stat && window.ManuSquashScienceV5) {
-        return window.ManuSquashScienceV5.ensureAuth().then(function(ok){
-          if (!ok) throw new Error('PIN requerido');
-          return get();
-        });
-      }
-      return r;
-    }).then(function(r){
-      window.msqLastStatus = 'OK ' + r.status;
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return r.json();
-    });
+    var stat = window.MANUSQUASH_STATIC_DATA || '/garmin/data/web_export.json';
+    var u = stat + (stat.indexOf('?') < 0 ? '?' : '&') + 't=' + Date.now();
+    return fetch(u, {cache:'no-store', credentials:'omit'})
+      .then(function(r){
+        if (!r.ok) {
+          return fetch('data/web_export.json?t=' + Date.now(), {cache:'no-store'});
+        }
+        return r;
+      })
+      .then(function(r){
+        window.msqLastStatus = 'OK ' + r.status;
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      });
   };
   // PIN dentro de la página (window.prompt lo bloquean algunos visores y apps instaladas).
   window.msqAskPin = function(){
@@ -1682,31 +1678,42 @@ fi.addEventListener('change', e => {
 // CARGA DE DATOS
 // ═══════════════════════════════════════════════════════
 function loadData(data, persist = false) {
-  hideSkeletons();
-  G = data;
-  LAST_APP_LOAD_AT = new Date().toISOString();
-  uz.style.display = 'none';
+  try {
+    hideSkeletons();
+    G = data;
+    window.G = data;
+    LAST_APP_LOAD_AT = new Date().toISOString();
+    var uz = document.getElementById('upload-zone');
+    if (uz) uz.style.display = 'none';
 
-  const meta       = data.meta || {};
-  const exportDate = (meta.exported_at || '').slice(0, 10);
-  document.getElementById('status-badge').textContent = exportDate || 'Cargado';
+    var hoyEmpty = document.getElementById('hoy-empty');
+    if (hoyEmpty) hoyEmpty.style.display = 'none';
+    var hoyContent = document.getElementById('hoy-content');
+    if (hoyContent) hoyContent.style.display = 'block';
 
-  if (persist) {
-    const saved = saveToStorage(data);
-    if (saved) showToast('✅ Datos guardados — se cargarán automáticamente la próxima vez');
+    const meta = data.meta || {};
+    const exportDate = (meta.exported_at || '').slice(0, 10);
+    var sb = document.getElementById('status-badge');
+    if (sb) sb.textContent = exportDate ? ('📅 ' + exportDate) : 'Cargado';
+
+    if (persist) {
+      try { saveToStorage(data); } catch(e) {}
+    }
+
+    renderHoy();
+    renderSyncVersion();
+    showActionButtons();
+    renderSalud();
+    renderVO2();
+    renderZonas();
+    renderAdvancedCards();
+    if (window.renderEdadDefinitiva) window.renderEdadDefinitiva();
+    if (window.renderDatosDefinitivos) window.renderDatosDefinitivos();
+    document.dispatchEvent(new Event('garminDataLoaded'));
+    renderSemaphore();
+  } catch (err) {
+    console.error('Error in loadData:', err);
   }
-
-  renderHoy();
-  renderSyncVersion();
-  showActionButtons();
-  renderSalud();
-  renderVO2();
-  renderZonas();
-  renderAdvancedCards();
-  if (window.renderEdadDefinitiva) window.renderEdadDefinitiva();
-  if (window.renderDatosDefinitivos) window.renderDatosDefinitivos();
-  document.dispatchEvent(new Event('garminDataLoaded'));
-  renderSemaphore();
 }
 
 // Toast notification
@@ -5721,34 +5728,52 @@ window.addEventListener('load', function() {
   renderPlanDay();
   renderWorkoutHistory();
 
-  // Intentar cargar desde el servidor primero (o el JSON estático, ver config.js)
-  document.getElementById('status-badge').textContent = 'Actualizando...';
+function initGarminApp() {
+  if (window.__garminInitialized) return;
+  window.__garminInitialized = true;
+
+  var sv = document.getElementById('sync-version-content');
+  if (sv) { var stale = sv.querySelector('.data-note.warn'); if (stale) stale.remove(); }
+  renderQuickBtns();
+  renderPlanDay();
+  renderWorkoutHistory();
+
+  var sb = document.getElementById('status-badge');
+  if (sb) sb.textContent = 'Cargando...';
 
   window.msqFetchData()
     .then(function(data) {
       LAST_SERVER_STATUS = window.msqLastStatus || 'OK';
-      loadData(data, true);
-      showToast('✅ Datos actualizados desde servidor', 3000);
+      loadData(data, false);
+      showToast('✅ Datos sincronizados', 2500);
     })
     .catch(function(err) {
-      LAST_SERVER_STATUS = 'Error: ' + err.message;
+      console.warn('msqFetchData error:', err);
       var meta = getStorageMeta();
       if (meta) {
-        var saved  = (meta.exported_at || '').slice(0, 10);
-        var vo2    = meta.vo2max ? ' · VO2max ' + meta.vo2max : '';
-        document.getElementById('status-badge').textContent = '💾 Datos locales';
-        setTimeout(function() {
-          var data = loadFromStorage();
-          if (data) {
-            loadData(data, false);
-            showToast('💾 Datos locales (' + saved + vo2 + ')', 3000);
-          }
-        }, 50);
-      } else {
-        document.getElementById('status-badge').textContent = 'Sin datos';
+        var data = loadFromStorage();
+        if (data) {
+          loadData(data, false);
+          return;
+        }
+      }
+      var hoyEmpty = document.getElementById('hoy-empty');
+      if (hoyEmpty) {
+        hoyEmpty.innerHTML =
+          '<div class="empty-icon">⚠️</div>' +
+          '<div style="font-weight:600;margin-bottom:6px">No se pudieron cargar los datos</div>' +
+          '<div style="font-size:12px;color:var(--text2)">' + (err.message || 'Error de conexión') + '</div>' +
+          '<button onclick="triggerUpdate()" style="margin-top:12px;padding:8px 16px;border-radius:8px;background:var(--cyan);color:#0d1117;font-weight:700;border:none;cursor:pointer">Reintentar</button>';
       }
     });
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initGarminApp);
+} else {
+  initGarminApp();
+}
+window.addEventListener('load', initGarminApp);
 
 function showUploadZone() {
   var uz = document.getElementById('upload-zone');
