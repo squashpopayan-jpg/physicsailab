@@ -18,7 +18,7 @@
 })();
 // Auto cache-bust: si esta versión no coincide con el servidor, recargar
 (function(){
-  var CURRENT = 'v5.1';
+  var CURRENT = 'v5.2-noupload';
   var stored = sessionStorage.getItem('msq_html_version');
   if (stored && stored !== CURRENT) {
     sessionStorage.setItem('msq_html_version', CURRENT);
@@ -269,14 +269,8 @@ header{position:sticky;top:0;z-index:100;background:var(--bg);
   border:1px solid var(--border);color:var(--text2)}
 #status-badge{cursor:pointer}
 
-/* UPLOAD ZONE */
-#upload-zone{margin:20px 16px;padding:24px;border:2px dashed var(--border);
-  border-radius:var(--r);text-align:center;cursor:pointer;transition:.2s}
-#upload-zone:hover,#upload-zone.drag{border-color:var(--cyan);background:rgba(34,211,238,.05)}
-#upload-zone input{display:none}
-#upload-zone p{color:var(--text2);font-size:13px;margin-top:6px}
-#upload-zone .icon{font-size:32px;margin-bottom:8px}
-#upload-zone .hint{font-size:11px;color:var(--text3);margin-top:4px}
+/* UPLOAD ZONE (Oculto - Sincronizacion automatica) */
+#upload-zone{display:none !important;}
 
 /* TABS */
 .tabs{display:flex;gap:2px;padding:0 16px;border-bottom:1px solid var(--border);
@@ -664,8 +658,8 @@ canvas{position:relative;z-index:2}
 <a href="/" style="display:inline-flex; align-items:center; gap:6px; color:#22d3ee; text-decoration:none; font-size:12px; font-weight:700; padding:6px 12px; border-radius:8px; border:1px solid #30363d; background:#161b22; margin-right:auto; margin-left:14px;" title="Regresar a PhysicsAILab">
   ← Volver a PhysicsAILab
 </a>
-<span class="badge" id="status-badge" onclick="document.getElementById('upload-zone').style.display='block'" title="Click: subir nuevo | Click derecho: borrar datos">
-    Subir datos
+<span class="badge" id="status-badge" title="Estado de sincronización Garmin">
+    Cargando métricas...
   </span>
 <button id="update-btn" onclick="triggerUpdate()" style="display:none" title="Recargar datos guardados">🔄</button>
 <button id="sync-btn" onclick="syncNow()" style="display:none" title="Sincronizar datos frescos de Garmin (~60 seg)">🔁</button>
@@ -674,27 +668,8 @@ canvas{position:relative;z-index:2}
 <button id="share-btn" onclick="shareDailySummary()" style="display:none" title="Compartir resumen">📤</button>
 <span class="badge mono" id="version-badge" title="Versión de interfaz cargada">UX limpia · paneles organizados</span>
 </header>
-<!-- UPLOAD -->
-<div id="upload-zone">
-<label style="cursor:pointer;display:block">
-<input accept=".json" id="file-input" type="file"/>
-<div class="icon">📁</div>
-<div style="font-weight:600;font-size:14px">Sube tu web_export.json</div>
-<p>Generado con el script Python (opción 8 o 9)</p>
-<p class="hint mono">garmin_data/web_export.json</p>
-</label>
-<div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
-<div style="font-size:11px;color:var(--text3);margin-bottom:8px;font-family:'JetBrains Mono',monospace">O CARGAR DESDE GOOGLE DRIVE</div>
-<div style="display:flex;gap:8px;align-items:center">
-<input id="drive-id-input" onkeydown="if(event.key==='Enter')loadFromDrive()" placeholder="Pega el File ID de Drive..." style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:8px;
-               padding:8px 12px;color:var(--text);font-size:12px;font-family:'JetBrains Mono',monospace;outline:none" type="text">
-<button class="btn btn-outline" onclick="loadFromDrive()" style="font-size:12px;padding:8px 14px">Cargar</button>
-</input></div>
-<div style="font-size:10px;color:var(--text3);margin-top:6px">
-      El archivo debe ser público en Drive (Compartir → Cualquier persona con el enlace)
-    </div>
-</div>
-</div>
+<!-- UPLOAD (Desactivado: sincronización directa con reloj) -->
+<div id="upload-zone" style="display:none !important;"></div>
 <!-- TABS -->
 <div class="tabs"><button class="tab active" data-tab="hoy">🏋️ Hoy</button><button class="tab" data-tab="progreso">📈 Progreso</button><button class="tab" data-tab="rendimiento">🔬 Rendimiento</button><button class="tab" data-tab="salud">❤️ Salud</button><button class="tab" data-tab="ai">🤖 Coach</button><button class="tab" data-tab="datos">🧪 Datos</button></div>
 <!-- CONTENT -->
@@ -723,8 +698,8 @@ canvas{position:relative;z-index:2}
 <div class="section active" id="hoy-section">
 <div class="empty" id="hoy-empty">
 <div class="empty-icon">⌚</div>
-<div style="font-weight:600;margin-bottom:6px">Sin datos cargados</div>
-<div style="font-size:12px">Sube tu web_export.json para ver<br/>tu entrenamiento adaptativo del día</div>
+<div style="font-weight:600;margin-bottom:6px">Cargando métricas de Garmin...</div>
+<div style="font-size:12px">Sincronizando tus datos adaptativos desde el servidor</div>
 </div>
 <div id="hoy-content" style="display:none"><div class="ux-top-note ux-home-primary" id="ux-hoy-note"><strong>Panel diario limpio.</strong><br/>Primero ves decisión, entrenamiento y estado. Lo técnico queda abajo en paneles desplegables para no repetir información.</div>
 <!-- Versión y sincronización -->
@@ -1859,7 +1834,6 @@ function triggerUpdate() {
       LAST_SERVER_STATUS = 'Error: ' + err.message;
       showToast('Error: ' + err.message, 4000);
       if (btn) btn.textContent = 'Actualizar';
-      document.getElementById('upload-zone').style.display = 'block';
     });
 }
 
@@ -2042,18 +2016,10 @@ window.addEventListener('DOMContentLoaded', function() {
   if (savedId && input) input.value = savedId;
 });
 
-// Click derecho en el badge → borrar datos
+// Click derecho en el badge → recargar datos
 document.getElementById('status-badge').addEventListener('contextmenu', e => {
   e.preventDefault();
-  if (confirm('¿Borrar datos guardados y subir un archivo nuevo?')) {
-    clearStorage();
-    G = null;
-    document.getElementById('status-badge').textContent = 'Subir datos';
-    document.getElementById('upload-zone').style.display = 'block';
-    document.getElementById('hoy-empty').style.display   = 'block';
-    document.getElementById('hoy-content').style.display = 'none';
-    showToast('🗑️ Datos borrados');
-  }
+  triggerUpdate();
 });
 
 // ═══════════════════════════════════════════════════════
@@ -5766,43 +5732,27 @@ window.addEventListener('load', function() {
     })
     .catch(function(err) {
       LAST_SERVER_STATUS = 'Error: ' + err.message;
-      // Si falla el servidor, intentar datos guardados localmente
       var meta = getStorageMeta();
       if (meta) {
         var saved  = (meta.exported_at || '').slice(0, 10);
         var vo2    = meta.vo2max ? ' · VO2max ' + meta.vo2max : '';
-        var sizeKb = meta.size_kb ? ' · ' + meta.size_kb + ' KB' : '';
         document.getElementById('status-badge').textContent = '💾 Datos locales';
         setTimeout(function() {
           var data = loadFromStorage();
           if (data) {
             loadData(data, false);
             showToast('💾 Datos locales (' + saved + vo2 + ')', 3000);
-          } else {
-            showUploadZone();
           }
         }, 50);
       } else {
-        showUploadZone();
+        document.getElementById('status-badge').textContent = 'Sin datos';
       }
     });
 });
 
 function showUploadZone() {
-  document.getElementById('upload-zone').innerHTML = ' <label style="cursor:pointer;display:block"> <input type="file" id="file-' + 'input" accept=".json"> <div class="icon">&#x1F4C1;</div> <div style="font-weight:600;font-size:14px">Sube tu web_export.json</div> <p>Generado con el script Python (opción 8 o 9)</p> <p class="hint mono">garmin_data/web_export.json</p> </label>';
-  const newFi = document.getElementById('file-input');
-  if (newFi) {
-    newFi.addEventListener('change', e => {
-      const f = e.target.files[0]; if (!f) return;
-      const r = new FileReader();
-      r.onload = ev => {
-        try { loadData(JSON.parse(ev.target.result), true); }
-        catch(err) { showToast('❌ Archivo JSON inválido', 4000); }
-      };
-      r.readAsText(f);
-    });
-  }
-  document.getElementById('upload-zone').style.display = 'block';
+  var uz = document.getElementById('upload-zone');
+  if (uz) uz.style.display = 'none';
 }
 
 
