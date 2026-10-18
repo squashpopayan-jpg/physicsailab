@@ -18,7 +18,7 @@
 })();
 // Auto cache-bust: si esta versión no coincide con el servidor, recargar
 (function(){
-  var CURRENT = 'v5.3-live-direct';
+  var CURRENT = 'v5.4-clean-data';
   var stored = sessionStorage.getItem('msq_html_version');
   if (stored && stored !== CURRENT) {
     sessionStorage.setItem('msq_html_version', CURRENT);
@@ -5720,14 +5720,6 @@ function clearLocalAndReloadServer() {
   setTimeout(function(){ location.href = location.pathname + '?v=35&t=' + Date.now(); }, 400);
 }
 
-window.addEventListener('load', function() {
-  // Limpiar cualquier banner de error residual de sesiones anteriores
-  var sv = document.getElementById('sync-version-content');
-  if (sv) { var stale = sv.querySelector('.data-note.warn'); if (stale) stale.remove(); }
-  renderQuickBtns();
-  renderPlanDay();
-  renderWorkoutHistory();
-
 function initGarminApp() {
   if (window.__garminInitialized) return;
   window.__garminInitialized = true;
@@ -6736,8 +6728,10 @@ header{
   function semClass(d){var s=String(((d.adaptive_workout||{}).semaphore)||((d.training||{}).today||{}).semaphore||'GREEN').toUpperCase(); return s.indexOf('RED')>=0?'ux-sem-red':(s.indexOf('YELLOW')>=0?'ux-sem-yellow':'ux-sem-green');}
   function renderHeroes(){var d=data(); if(!d||!Object.keys(d).length) return; var p=d.profile||{}, h=latestHealth(d), fm=d.fat_metrics||d.fat_oxidation||{}, wk=fm.weekly||{}, mo=fm.monthly||{}, fatmax=fm.fatmax||{}, wo=d.adaptive_workout||(d.training&&d.training.workout)||{}, ph=d.physiology_panel||{}, pr=(d.training||{}).periodization||{}, lc=(d.training||{}).load_curve||{}, r=d.readiness||d.training_readiness||{}; var sem=by('semaphore-card'), hc=by('hoy-content'); if(sem&&hc){sem.classList.add('ux-hero-card'); sem.classList.remove('ux-sem-red','ux-sem-yellow','ux-sem-green'); sem.classList.add(semClass(d)); if(hc.firstElementChild!==sem) hc.insertBefore(sem,hc.firstElementChild);} hero('salud-section','ux-hero-salud','Recuperación','Estado fisiológico','Lectura rápida de tolerancia al entrenamiento y señales corporales.',[metric('HRV',p.hrv_weekly||h.hrv_week||h.hrv_night||'--','ms / estabilidad','var(--purple)'),metric('FC reposo',p.fc_reposo||h.rhr||'--','bpm','var(--red)'),metric('Body Battery',h.bb_high||h.bb_low||'--','último registro','var(--green)'),metric('Sueño',h.sleep_total_h||'--','horas','var(--cyan)')],'ux-green'); hero('grasa-section','ux-hero-grasa','FatOx Pro','Quema de grasa','FatMax, oxidación estimada y acumulado por sesión sin cambiar cálculos.',[metric('Hoy',(fm.today&&fm.today.fat_g)||'--','g grasa','var(--orange)'),metric('Semana',wk.total_fat_g||'--','g grasa','var(--green)'),metric('FatMax',wk.fatmax_minutes||'--','min / meta','var(--cyan)'),metric('Mes',mo.total_fat_g||'--','g acumulados','var(--purple)')],'ux-yellow'); hero('rendimiento-section','ux-hero-rendimiento','Laboratorio','Rendimiento deportivo','VO2max, carga, adaptación, deriva cardíaca y calidad aeróbica.',[metric('VO2max',p.vo2max||((d.training||{}).status||{}).vo2max_precise||'--','ml/kg/min','var(--cyan)'),metric('Readiness',r.score||((d.today||{}).training_readiness||{}).score||'--','/100','var(--green)'),metric('Bloque',pr.block||pr.name||'--','periodización','var(--yellow)'),metric('Strain',lc.training_strain||ph.training_strain||'--','carga × monotonía','var(--purple)')],''); hero('plan-section','ux-hero-plan','Plan diario',wo.name||'Entrenamiento adaptativo','Sesión sugerida según recuperación, carga, zonas y objetivo.',[metric('Rango FC',wo.hr_range||'--','objetivo','var(--red)'),metric('Duración',wo.total_min||wo.duration_min||'--','min','var(--cyan)'),metric('Zona','Z'+(wo.zone_target||wo.zone||'--'),'target','var(--green)'),metric('FatMax',(fatmax.bpm_low||'--')+'–'+(fatmax.bpm_high||'--'),'bpm','var(--orange)')],''); hero('datos-section','ux-hero-datos','Auditoría','Datos y sincronización','Control técnico del JSON, caché, servidor y calidad de campos.',[metric('Salud',arr(d.health_daily).length,'días','var(--cyan)'),metric('Actividades',arr(d.activities).length,'registros','var(--green)'),metric('Calidad',(d.data_quality&&d.data_quality.score)||'--','/100','var(--purple)'),metric('Contrato',(d.contract&&d.contract.schema)||d.version||'--','schema','var(--yellow)')],'');}
   function resizeCharts(){try{Object.keys(window.charts||{}).forEach(function(k){var ch=window.charts[k]; if(ch&&ch.resize) ch.resize();});}catch(e){}}
-  function bindUpload(){var z=by('upload-zone'); if(z&&!uploadOriginal) uploadOriginal=z.innerHTML; var fi=by('file-input'); if(!fi||fi.dataset.uxBound) return; fi.dataset.uxBound='1'; fi.addEventListener('change',function(e){var f=e.target.files&&e.target.files[0]; if(!f) return; var r=new FileReader(); r.onload=function(ev){try{ if(typeof window.loadData==='function') window.loadData(JSON.parse(ev.target.result),true); else if(typeof loadData==='function') loadData(JSON.parse(ev.target.result),true);}catch(err){ if(typeof showToast==='function') showToast('❌ Archivo JSON inválido',4000); console.error(err);} }; r.readAsText(f);});}
-  function patchUploadZone(){var old=window.showUploadZone||((typeof showUploadZone==='function')?showUploadZone:null); window.showUploadZone=showUploadZone=function(){var z=by('upload-zone'); if(z){if(uploadOriginal) z.innerHTML=uploadOriginal; z.style.display='block'; bindUpload();} else if(old){old();}};}
+  function bindUpload(){}
+  function patchUploadZone(){
+    window.showUploadZone = function(){};
+  }
   function enhanceCards(){document.querySelectorAll('.card').forEach(function(c){if(c.dataset.uxDone) return; c.dataset.uxDone='1'; var title=c.querySelector('.card-title'); if(title) title.title='Tarjeta validada visualmente · no modifica datos';});}
   function activeTab(){return (document.querySelector('.tab.active')||{}).dataset?document.querySelector('.tab.active').dataset.tab:'hoy';}
   function afterData(){setVersion(); renderHeroes(); enhanceCards(); setTimeout(resizeCharts,120); setTimeout(resizeCharts,420);}
