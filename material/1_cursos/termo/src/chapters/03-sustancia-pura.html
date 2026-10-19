@@ -1,0 +1,95 @@
+<template class="chapter-src" data-id="sustancia-pura" data-num="3" data-title="Sustancias puras y cambio de fase" data-part="Parte I · Fundamentos" data-short="Fases del agua, superficie P–v–T, domo de saturación, calidad y regla de la palanca, tablas de vapor desde IAPWS-95, diagrama de fases con punto triple y crítico, la olla a presión y el tanque rígido">
+<p class="lead">El agua es el fluido de trabajo de la civilización industrial: mueve las turbinas que generan la mayor parte de la electricidad del mundo, calienta, enfría y cocina. Su comportamiento no se parece al de un gas ideal: hierve, se condensa, se congela, y en el punto crítico deja de distinguir entre líquido y vapor. Este capítulo enseña a leer sus diagramas y sus tablas, la herramienta de trabajo de todos los capítulos de ingeniería del curso.</p>
+
+<section>
+<h2>Fases y cambios de fase</h2>
+<p>Una <span class="term">sustancia pura</span> tiene composición química homogénea e invariable: el agua, el nitrógeno, el R-134a, y también el aire mientras no se condense. Puede existir en varias <span class="term">fases</span>, regiones físicamente homogéneas separadas por interfaces: sólido, líquido y vapor (y varias fases sólidas: el hielo tiene al menos 19).</p>
+<p>Calentemos 1 kg de agua a presión constante de 1 atm, en un cilindro con pistón libre:</p>
+<ol>
+<li><b>Líquido comprimido</b> (o subenfriado): a 20 °C el agua no está a punto de hervir. Al calentarla, su temperatura sube y su volumen casi no cambia.</li>
+<li><b>Líquido saturado</b>: a 99.97 °C aparece la primera burbuja. Esa es la <span class="term">temperatura de saturación</span> a 101.325 kPa.</li>
+<li><b>Mezcla saturada</b>: el calor que se sigue añadiendo no eleva la temperatura; evapora líquido. Hacen falta 2257 kJ (el <span class="term">calor latente</span> \(h_{fg}\)) para evaporar todo el kilogramo, más de cinco veces lo que costó llevarlo de 0 a 100 °C. Mientras tanto el volumen crece 1600 veces.</li>
+<li><b>Vapor saturado</b>: se evapora la última gota.</li>
+<li><b>Vapor sobrecalentado</b>: el vapor vuelve a subir de temperatura.</li>
+</ol>
+<p>La temperatura de saturación depende de la presión: \(T_{sat}=T_{sat}(P)\). En Popayán, a 81.9 kPa, el agua hierve a 94.1 °C; en una olla a presión con 100 kPa manométricos, a 117 °C. La relación \(P_{sat}(T)\) es la <span class="term">curva de presión de vapor</span>.</p>
+</section>
+
+<section>
+<h2>Diagramas P–v y T–v: el domo de saturación</h2>
+<p>Si se repite el experimento a distintas presiones y se unen los estados de líquido saturado y de vapor saturado, se obtiene una campana: el <span class="term">domo de saturación</span>. A la izquierda queda la región de líquido comprimido; a la derecha, la de vapor sobrecalentado; bajo el domo, las mezclas. Al subir la presión, la meseta de evaporación se acorta, hasta desaparecer en el <span class="term">punto crítico</span>: para el agua, \(T_c=373.946\) °C, \(P_c=22.064\) MPa, \(v_c=0.003106\) m³/kg. Por encima de él no hay ebullición: el fluido pasa de forma continua de denso a ligero.</p>
+<div class="sim" data-sim="domo-agua" data-title="El domo de saturación del agua (IAPWS-95) en los diagramas P–v y T–v"></div>
+<div class="sim-guide"><ul>
+<li>Las isotermas por debajo de \(T_c\) son horizontales dentro del domo en el diagrama \(P\)–\(v\): durante la evaporación, \(P\) y \(T\) no son independientes.</li>
+<li>Note la escala logarítmica de \(v\): el vapor saturado a 10 kPa ocupa 14.7 m³/kg; el líquido, 0.00101 m³/kg.</li>
+<li>Recorra la isóbara de 22.064 MPa: el punto de inflexión horizontal es el punto crítico.</li>
+<li>Las curvas se calcularon con la formulación IAPWS-95, la ecuación de referencia internacional del agua, a través de CoolProp; el curso las interpola con un error menor que 0.1 %.</li>
+</ul></div>
+<h3>Calidad y regla de la palanca</h3>
+<p>Bajo el domo, el estado se fija con la presión (o la temperatura) y la <span class="term">calidad</span> \(x\), la fracción de masa que es vapor. Como el volumen total es la suma de los volúmenes de cada fase,</p>
+<div class="eq key" data-name="Propiedades de una mezcla saturada">\[v=v_f+x\,v_{fg},\qquad u=u_f+x\,u_{fg},\qquad h=h_f+x\,h_{fg},\qquad s=s_f+x\,s_{fg},\]</div>
+<p>con \(v_{fg}=v_g-v_f\) y análogamente para las demás. Despejando, \(x=(v-v_f)/(v_g-v_f)\): la calidad es la fracción de la línea horizontal entre \(v_f\) y \(v\), la misma <b>regla de la palanca</b> de los diagramas de fase de aleaciones.</p>
+<div class="box ex"><h4>Una mezcla a 200 kPa</h4>
+<p>Un recipiente contiene agua a 200 kPa con calidad 0.6. Halle \(T\), \(v\) y \(h\).</p>
+<details><summary>Solución</summary><p>Tabla de saturación a 200 kPa: \(T_{sat}=120.21\) °C, \(v_f=0.001061\), \(v_g=0.8858\) m³/kg, \(h_f=504.7\), \(h_{fg}=2201.6\) kJ/kg. Entonces \(v=0.001061+0.6(0.8847)=0.5318\) m³/kg y \(h=504.7+0.6(2201.6)=1825.6\) kJ/kg. Compruébelo con la calculadora de abajo.</p></details>
+</div>
+</section>
+
+<section>
+<h2>Tablas de propiedades</h2>
+<p>Las propiedades de las sustancias reales no caben en una fórmula sencilla; se tabulan. Las tablas de vapor clásicas (Keenan y Keyes, 1936) se construyeron con miles de mediciones. Hoy se calculan con una <b>ecuación fundamental</b>: una expresión de la energía de Helmholtz \(a(\rho,T)\) con unas 50 constantes ajustadas, de la que todas las demás propiedades se obtienen por derivación (capítulo 16). Para el agua es la IAPWS-95 (Wagner y Pruß, 2002), que reproduce las mejores mediciones dentro de su incertidumbre experimental.</p>
+<p>El uso de las tablas sigue un procedimiento fijo:</p>
+<ol>
+<li>Con dos propiedades, determine la región: compare \(T\) con \(T_{sat}(P)\), o \(v\), \(h\), \(s\) con los valores \(f\) y \(g\) a esa presión.</li>
+<li>Si \(T>T_{sat}\) (o \(h>h_g\)), use la tabla de vapor sobrecalentado; si cae entre \(f\) y \(g\), calcule la calidad.</li>
+<li>Para líquido comprimido sin tabla, aproxime con el líquido saturado <b>a la misma temperatura</b>: \(v\approx v_f(T)\), \(u\approx u_f(T)\), \(h\approx h_f(T)+v_f(T)[P-P_{sat}(T)]\).</li>
+</ol>
+<p>El cero de energía es arbitrario: la convención de la IAPWS fija \(u=0\) y \(s=0\) para el líquido saturado en el punto triple. Solo las diferencias tienen sentido físico, y por eso no se deben mezclar tablas de fuentes con referencias distintas.</p>
+<div class="sim" data-sim="tablas-vapor" data-title="Calculadora de tablas: agua y R-134a"></div>
+<div class="sim-guide"><ul>
+<li>Elija el par de propiedades conocido. La calculadora decide la región, igual que el procedimiento manual, y muestra todas las demás.</li>
+<li>Con \(P=1\) MPa y \(h=2900\) kJ/kg el estado es vapor sobrecalentado a 230.7 °C: \(h>h_g=2777\) kJ/kg.</li>
+<li>El R-134a, refrigerante de neveras y aires acondicionados de automóvil, usa la referencia ASHRAE: \(h=200\) kJ/kg y \(s=1\) kJ/kg·K para el líquido saturado a 0 °C. Las tablas del capítulo 15 la usan.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El diagrama de fases P–T</h2>
+<p>Proyectada sobre el plano \(P\)–\(T\), la superficie de estados se reduce a tres curvas que separan sólido, líquido y vapor y se cortan en el <span class="term">punto triple</span>, el único estado en que coexisten las tres fases: 0.01 °C y 611.657 Pa para el agua. La curva de vaporización termina en el punto crítico; la de fusión, que se sepa, no termina.</p>
+<p>La pendiente de cada curva la da la ecuación de Clapeyron (capítulo 16), \(\dd P/\dd T=h_{fg}/(T\,v_{fg})\). El agua es anómala: el hielo es menos denso que el líquido (\(v_{sf}<0\)), así que la curva de fusión tiene pendiente <b>negativa</b>: presionar el hielo lo funde. Pero hacen falta 111 MPa para fundirlo a −10 °C; el patinaje sobre hielo no se explica así, sino por fricción y por una capa líquida superficial.</p>
+<div class="sim" data-sim="fases-pt" data-title="Diagrama de fases del agua y la olla a presión"></div>
+<div class="sim-guide"><ul>
+<li>La curva de vaporización es la ecuación de Wagner y Pruß (IAPWS); la de sublimación y la de fusión del hielo I, las de la IAPWS (2011).</li>
+<li>Mueva la altitud: la presión atmosférica baja y con ella la temperatura de ebullición.</li>
+<li>Agregue presión manométrica con la válvula de una olla a presión (unos 100 kPa): el agua hierve por encima de 115 °C incluso en Popayán, y los fríjoles se cocinan en un tercio del tiempo.</li>
+</ul></div>
+<div class="box note"><h4>Por qué cocinar tarda más en la montaña</h4><p>La velocidad de las reacciones de cocción (desnaturalización, gelatinización del almidón, ablandamiento de la pectina) crece con la temperatura, típicamente al doble por cada 10 °C. En Popayán el agua hierve 6 °C más fría que en Cartagena, así que la cocción en olla abierta tarda alrededor de 1.5 veces más. La olla a presión invierte la situación.</p></div>
+</section>
+
+<section>
+<h2>Calentar un tanque rígido</h2>
+<p>Un caso que sorprende: un recipiente rígido y cerrado contiene una mezcla de agua líquida y vapor. Al calentarlo, el volumen específico \(v=V/m\) no cambia; el estado sube por una línea vertical en el diagrama \(T\)–\(v\). Si \(v<v_c\), la línea corta la rama del líquido: el líquido se dilata, el vapor se condensa, y el tanque termina lleno de líquido, lo que dispara la presión. Si \(v>v_c\), corta la rama del vapor: el líquido se evapora por completo. Solo si \(v=v_c\) el menisco desaparece en el punto crítico, a media altura. Es el experimento clásico de opalescencia crítica de Andrews (1869).</p>
+<div class="sim" data-sim="tanque-rigido" data-title="Tanque rígido con mezcla líquido–vapor: ¿se llena o se seca?"></div>
+<div class="sim-guide"><ul>
+<li>Con una fracción inicial de líquido grande (\(v<v_c\)) el menisco sube hasta llenar el tanque; con poca, baja hasta secarlo.</li>
+<li>Busque la fracción inicial de volumen líquido que lleva justo al punto crítico a 100 °C: es cercana a 0.33. Un tanque de vapor se diseña con mucho margen frente a esa condición.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Determine la fase y la temperatura del agua a 500 kPa con \(h=2000\) kJ/kg.
+<details><summary>Respuesta</summary><p>\(h_f=640.1<h<h_g=2748.1\): mezcla a 151.8 °C con \(x=(2000-640.1)/2108.0=0.645\).</p></details></li>
+<li><span class="lvl">Básico</span>¿Cuánto calor hace falta para evaporar 1 L de agua en Popayán, partiendo de 18 °C?
+<details><summary>Respuesta</summary><p>Calentar hasta 94.1 °C: \(\approx4.19\times76.1=319\) kJ; evaporar: \(h_{fg}(94.1\,°\text{C})=2272\) kJ. Total ≈ 2590 kJ por kilogramo (0.997 kg en el litro).</p></details></li>
+<li><span class="lvl">Intermedio</span>Un tanque rígido de 0.5 m³ contiene 10 kg de agua a 100 °C. Halle la calidad, la presión y la masa de líquido.
+<details><summary>Respuesta</summary><p>\(v=0.05\) m³/kg; \(x=(0.05-0.001043)/(1.6720-0.001043)=0.0293\); \(P=101.4\) kPa; líquido: 9.71 kg.</p></details></li>
+<li><span class="lvl">Intermedio</span>Agua a 5 MPa y 40 °C. Compare \(h\) con la aproximación de líquido saturado a 40 °C sin corrección de presión.
+<details><summary>Respuesta</summary><p>\(h_f(40\,°\text{C})=167.5\) kJ/kg; con la corrección \(v_f(P-P_{sat})=0.001008\times4993=5.0\) kJ/kg, \(h\approx172.5\). La tabla de líquido comprimido da 171.9 kJ/kg.</p></details></li>
+<li><span class="lvl">Avanzado</span>En el tanque rígido del texto, ¿qué fracción del volumen debe ocupar el líquido a 100 °C para que el estado pase por el punto crítico?
+<details><summary>Respuesta</summary><p>Se necesita \(v=v_c\). Con fracción de volumen \(\phi\): \(m=V[\phi/v_f+(1-\phi)/v_g]\) y \(v=V/m\). Despejando \(\phi=(1/v_c-1/v_g)/(1/v_f-1/v_g)=(322.0-0.598)/(958.4-0.598)=0.336\).</p></details></li>
+</ol>
+<div class="box note"><h4>Para profundizar</h4><p>Çengel y Boles (2019), cap. 3. W. Wagner y A. Pruß, «The IAPWS formulation 1995 for the thermodynamic properties of ordinary water substance», <em>J. Phys. Chem. Ref. Data</em> 31, 387 (2002). IAPWS R14-08(2011), <em>Revised release on the pressure along the melting and sublimation curves of ordinary water substance</em>. I. H. Bell et al., «Pure and pseudo-pure fluid thermophysical property evaluation and the open-source thermophysical property library CoolProp», <em>Ind. Eng. Chem. Res.</em> 53, 2498 (2014).</p></div>
+</section>
+</template>

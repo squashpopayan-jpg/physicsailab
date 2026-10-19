@@ -1,0 +1,82 @@
+<template class="chapter-src" data-id="relaciones" data-num="16" data-title="Potenciales y relaciones termodinámicas" data-part="Parte V · Relaciones, mezclas y reacciones" data-short="Energía interna, entalpía, energías de Helmholtz y de Gibbs, transformadas de Legendre, relaciones de Maxwell comprobadas con las tablas de vapor, ecuación de Clapeyron, relaciones generales para du, dh, ds y cp − cv, y el agua por debajo de 4 °C">
+<p class="lead">Las tablas de vapor contienen \(h\), \(s\) y \(u\), pero ningún instrumento mide la entropía ni la entalpía: se miden presiones, temperaturas, volúmenes y calores específicos. ¿Cómo se obtienen las demás? Con relaciones exactas entre derivadas parciales que se deducen de que las propiedades son funciones de estado. Este capítulo construye esa maquinaria, la comprueba numéricamente con las tablas del agua y la usa para explicar fenómenos como la pendiente de la curva de ebullición y el comportamiento del agua cerca de 4 °C.</p>
+
+<section>
+<h2>Los cuatro potenciales termodinámicos</h2>
+<p>Para un sistema simple compresible, la combinación de la primera y la segunda ley da la <span class="term">relación fundamental</span> \(\dd U=T\,\dd S-P\,\dd V\). La energía interna, vista como función de \(S\) y \(V\), lo contiene todo: sus derivadas dan \(T=(\partial U/\partial S)_V\) y \(P=-(\partial U/\partial V)_S\). Pero \(S\) y \(V\) son variables incómodas de controlar en el laboratorio. Las <span class="term">transformadas de Legendre</span> cambian una variable natural por su conjugada sin perder información:</p>
+<div class="tablewrap"><table>
+<tr><th>Potencial</th><th class="c">Definición</th><th class="c">Diferencial</th><th>Uso</th></tr>
+<tr><td>Energía interna</td><td class="c">\(U\)</td><td class="c">\(\dd U=T\dd S-P\dd V\)</td><td>Sistemas aislados</td></tr>
+<tr><td>Entalpía</td><td class="c">\(H=U+PV\)</td><td class="c">\(\dd H=T\dd S+V\dd P\)</td><td>Flujo, procesos isobáricos</td></tr>
+<tr><td>Energía de Helmholtz</td><td class="c">\(A=U-TS\)</td><td class="c">\(\dd A=-S\dd T-P\dd V\)</td><td>Sistemas a \(T\) y \(V\) fijos; mecánica estadística</td></tr>
+<tr><td>Energía de Gibbs</td><td class="c">\(G=H-TS\)</td><td class="c">\(\dd G=-S\dd T+V\dd P\)</td><td>Fases y reacciones a \(T\) y \(P\) fijos</td></tr>
+</table></div>
+<p>Cada potencial es mínimo en el equilibrio cuando se fijan sus variables naturales: la energía de Gibbs, por ejemplo, decide qué fase es estable a una \(T\) y \(P\) dadas y hacia dónde avanza una reacción química (capítulo 18). Las ecuaciones de referencia modernas, como la IAPWS-95 del agua, son expresiones de la energía de Helmholtz \(a(\rho,T)\): todas las propiedades de las tablas se obtienen derivándola.</p>
+<p>Como \((\partial g/\partial T)_P=-s\), la energía de Gibbs de cada fase cae con la temperatura, y más rápido la de la fase con más entropía. Las curvas del sólido, del líquido y del vapor se cruzan: en cada cruce, dos fases tienen la misma \(g\) y coexisten. Así se explican, con un solo principio, las temperaturas de fusión y de ebullición.</p>
+<div class="sim" data-sim="gibbs-fases" data-title="Energía de Gibbs de las tres fases del agua: la fase estable es la de menor g"></div>
+<div class="sim-guide"><ul>
+<li>Se grafica \(g\) de cada fase menos la del líquido. El líquido es estable entre los dos cruces; por debajo gana el hielo, por encima el vapor.</li>
+<li>Al bajar la presión, la curva del vapor baja (\(g_v\) depende de \(RT\ln P\)) y el cruce con el líquido se mueve a menor temperatura: el agua hierve antes en la montaña.</li>
+<li>Por debajo de 611.657 Pa, el vapor corta al hielo antes que al líquido: el hielo sublima, como la escarcha que desaparece sin derretirse en los páramos.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Las relaciones de Maxwell</h2>
+<p>Si \(\dd z=M\,\dd x+N\,\dd y\) es una diferencial exacta, las derivadas cruzadas son iguales: \((\partial M/\partial y)_x=(\partial N/\partial x)_y\). Aplicado a los cuatro potenciales:</p>
+<div class="eq key" data-name="Relaciones de Maxwell">\[\left(\frac{\partial T}{\partial V}\right)_S=-\left(\frac{\partial P}{\partial S}\right)_V,\quad \left(\frac{\partial T}{\partial P}\right)_S=\left(\frac{\partial V}{\partial S}\right)_P,\quad \left(\frac{\partial S}{\partial V}\right)_T=\left(\frac{\partial P}{\partial T}\right)_V,\quad \left(\frac{\partial S}{\partial P}\right)_T=-\left(\frac{\partial V}{\partial T}\right)_P.\]</div>
+<p>Las dos últimas son las útiles: expresan cómo cambia la entropía, que no se mide, en términos de la ecuación de estado \(P\)–\(v\)–\(T\), que sí. Por ejemplo, la cuarta dice que comprimir isotérmicamente un fluido que se dilata al calentarse reduce su entropía.</p>
+<div class="sim" data-sim="maxwell-check" data-title="Las relaciones de Maxwell comprobadas con las tablas del agua"></div>
+<div class="sim-guide"><ul>
+<li>El simulador calcula ambos lados de una relación de Maxwell por diferencias finitas sobre las tablas IAPWS-95. Coinciden dentro de la precisión de la interpolación (mejor que 0.1 %).</li>
+<li>Para vapor a 1 MPa y 300 °C, \((\partial s/\partial P)_T=-4.960\times10^{-4}\) y \(-(\partial v/\partial T)_P=-4.959\times10^{-4}\), en m³/kg·K.</li>
+<li>Compare con el gas ideal: \(-(\partial v/\partial T)_P=-R/P=-4.615\times10^{-4}\). La diferencia de 7 % es la no idealidad del vapor.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>La ecuación de Clapeyron</h2>
+<p>Durante un cambio de fase a temperatura fija la presión también es fija, así que \((\partial P/\partial T)_v\) es simplemente la pendiente de la curva de saturación. Integrando la tercera relación de Maxwell a lo largo de la evaporación, \(s_{fg}=(\dd P/\dd T)_{sat}\,v_{fg}\), y como \(s_{fg}=h_{fg}/T\):</p>
+<div class="eq key" data-name="Ecuación de Clapeyron">\[\left(\frac{\dd P}{\dd T}\right)_{sat}=\frac{h_{fg}}{T\,v_{fg}}.\]</div>
+<p>Permite calcular el calor latente a partir de mediciones de presión de vapor y volúmenes, sin calorímetro. Si el vapor es un gas ideal y el volumen del líquido es despreciable, \(v_{fg}\approx RT/P\) y se obtiene la ecuación de <span class="term">Clausius–Clapeyron</span>:</p>
+<div class="eq">\[\frac{\dd\ln P}{\dd T}=\frac{h_{fg}}{RT^2}\qquad\Longrightarrow\qquad \ln\frac{P_2}{P_1}\approx\frac{h_{fg}}{R}\left(\frac1{T_1}-\frac1{T_2}\right).\]</div>
+<p>Con ella, la presión de vapor del agua crece un 6–7 % por grado a temperatura ambiente: la razón de que el aire caliente pueda contener mucho más vapor que el frío, con enormes consecuencias meteorológicas.</p>
+<div class="sim" data-sim="clapeyron" data-title="Clapeyron exacta y aproximación de Clausius–Clapeyron"></div>
+<div class="sim-guide"><ul>
+<li>A 100 °C, la pendiente medida de la curva de saturación es 3619 Pa/K; la ecuación de Clapeyron con \(h_{fg}\) y \(v_{fg}\) de las tablas da 3619 Pa/K. Clausius–Clapeyron da 3561 Pa/K (1.6 % menos).</li>
+<li>Cerca del punto crítico la aproximación falla por completo: el vapor ya no es ideal y el volumen del líquido no es despreciable.</li>
+<li>Para la fusión del hielo, \(v_{sf}&lt;0\) y la pendiente es negativa: −13.5 MPa/K (capítulo 3).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Relaciones generales para u, h, s y los calores específicos</h2>
+<p>Con las relaciones de Maxwell se escriben los cambios de energía interna, entalpía y entropía de cualquier sustancia en función de la ecuación de estado y de un calor específico:</p>
+<div class="eq">\[\dd u=c_v\,\dd T+\left[T\left(\frac{\partial P}{\partial T}\right)_v-P\right]\dd v,\qquad \dd s=\frac{c_p}{T}\dd T-\left(\frac{\partial v}{\partial T}\right)_P\dd P.\]</div>
+<p>Para un gas ideal, \(T(\partial P/\partial T)_v-P=0\): queda demostrado que \(u\) solo depende de \(T\). Con el coeficiente de dilatación \(\beta=\frac1v(\partial v/\partial T)_P\) y la compresibilidad isotérmica \(\kappa=-\frac1v(\partial v/\partial P)_T\), la diferencia entre los calores específicos es</p>
+<div class="eq key" data-name="Diferencia de calores específicos">\[c_p-c_v=\frac{Tv\beta^2}{\kappa}\ \ge0,\]</div>
+<p>que vale \(R\) para el gas ideal y es pequeña para sólidos y líquidos. El agua líquida ofrece un caso notable: su densidad es máxima a 3.98 °C, donde \(\beta=0\) y por lo tanto \(c_p=c_v\). Por debajo de esa temperatura, \(\beta&lt;0\): el agua se contrae al calentarse, y una compresión adiabática la <b>enfría</b>.</p>
+<div class="sim" data-sim="cp-cv" data-title="El agua líquida: dilatación anómala y diferencia de calores específicos"></div>
+<div class="sim-guide"><ul>
+<li>Los datos de \(\beta\), \(\kappa\), \(c_p\) y \(c_v\) a 1 atm provienen de IAPWS-95. La curva calcula \(c_p-c_v=Tv\beta^2/\kappa\) y los puntos muestran la diferencia directa de las tablas: coinciden.</li>
+<li>A 4 °C ambas se anulan. Por eso los lagos se estratifican: el agua a 4 °C, la más densa, se queda en el fondo y no se congela.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Demuestre la relación \((\partial S/\partial P)_T=-(\partial V/\partial T)_P\) a partir de \(\dd G\).
+<details><summary>Respuesta</summary><p>\(\dd G=-S\,\dd T+V\,\dd P\) es exacta; igualando las derivadas cruzadas, \(-(\partial S/\partial P)_T=(\partial V/\partial T)_P\).</p></details></li>
+<li><span class="lvl">Básico</span>Con Clausius–Clapeyron y \(h_{fg}=2257\) kJ/kg, estime la presión de vapor del agua a 94 °C partiendo de 101.325 kPa a 100 °C.
+<details><summary>Respuesta</summary><p>\(\ln(P/101.325)=(2257/0.4615)(1/373.15-1/367.15)=-0.2142\); \(P=81.8\) kPa. La tabla da 81.5 kPa: es casi la presión atmosférica de Popayán.</p></details></li>
+<li><span class="lvl">Intermedio</span>Estime \(h_{fg}\) del R-134a a 0 °C a partir de su presión de vapor a −2 °C (272.2 kPa) y 2 °C (314.6 kPa), \(v_g=0.0693\) y \(v_f=0.00077\) m³/kg.
+<details><summary>Respuesta</summary><p>\(\dd P/\dd T\approx42.4/4=10.60\) kPa/K; \(h_{fg}=Tv_{fg}\,\dd P/\dd T=273.15(0.06853)(10.60)=198.4\) kJ/kg (tabla: 198.6).</p></details></li>
+<li><span class="lvl">Intermedio</span>Calcule \(c_p-c_v\) del cobre a 300 K (\(v=7.11\times10^{-6}\) m³/mol, \(\beta=5.0\times10^{-5}\) K⁻¹, \(\kappa=7.3\times10^{-12}\) Pa⁻¹).
+<details><summary>Respuesta</summary><p>\(300(7.11\times10^{-6})(2.5\times10^{-9})/7.3\times10^{-12}=0.73\) J/mol·K, un 3 % de \(c_p=24.4\).</p></details></li>
+<li><span class="lvl">Avanzado</span>Demuestre que el coeficiente de Joule–Thomson es \(\mu_{JT}=\frac{v}{c_p}(T\beta-1)\) y que se anula para el gas ideal.
+<details><summary>Respuesta</summary><p>De \(\dd h=c_p\dd T+[v-T(\partial v/\partial T)_P]\dd P\), con \(\dd h=0\): \(\mu_{JT}=(\partial T/\partial P)_h=[T(\partial v/\partial T)_P-v]/c_p=v(T\beta-1)/c_p\). Para el gas ideal \(\beta=1/T\).</p></details></li>
+</ol>
+<div class="box note"><h4>Para profundizar</h4><p>Callen (1985), caps. 5–7. Çengel y Boles (2019), cap. 12. J. C. Maxwell, <em>Theory of Heat</em>, Longmans, 1871. W. Wagner y A. Pruß (2002), sección 6 (derivación de las propiedades a partir de la energía de Helmholtz).</p></div>
+</section>
+</template>
