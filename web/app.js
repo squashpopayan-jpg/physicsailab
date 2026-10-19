@@ -2939,7 +2939,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function getStoredQuizResults() {
         try {
-            const stored = localStorage.getItem('physicsailab_quiz_results_list');
+            const stored = localStorage.getItem('physicsailab_quiz_results') || localStorage.getItem('physicsailab_quiz_results_list');
             if (stored) return JSON.parse(stored);
         } catch (e) {}
         return [];
@@ -3507,10 +3507,11 @@ document.addEventListener('DOMContentLoaded', () => {
                                 📚 Cuestionario / Temática Asignada
                             </label>
                             <select id="admin-quiz-preset-select" style="width:100%; padding:0.55rem 0.75rem; background:#0b1120; border:1px solid rgba(255,255,255,0.15); color:#fff; border-radius:8px; font-size:0.85rem;">
-                                <option value="cinematica-dinamica" ${getAdminQuizConfig().presetId === 'cinematica-dinamica' ? 'selected' : ''}>Cinemática y Dinámica (10 preguntas)</option>
-                                <option value="termodinamica-gases" ${getAdminQuizConfig().presetId === 'termodinamica-gases' ? 'selected' : ''}>Termodinámica y Gases (10 preguntas)</option>
-                                <option value="laboratorio-ondas" ${getAdminQuizConfig().presetId === 'laboratorio-ondas' ? 'selected' : ''}>Laboratorio y Métodos Experimentales (10 preguntas)</option>
-                                <option value="fisica-moderna" ${getAdminQuizConfig().presetId === 'fisica-moderna' ? 'selected' : ''}>Física Moderna y Relatividad (8 preguntas)</option>
+                                ${(window.QUIZZES_DATA && window.QUIZZES_DATA.presets ? window.QUIZZES_DATA.presets : []).map(p => `
+                                    <option value="${p.id}" ${getAdminQuizConfig().presetId === p.id ? 'selected' : ''}>
+                                        ${p.title} (${p.totalPreguntas} preguntas) [PIN: ${p.code}]
+                                    </option>
+                                `).join('')}
                             </select>
                         </div>
                         <div>

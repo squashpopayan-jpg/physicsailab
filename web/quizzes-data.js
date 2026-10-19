@@ -917,9 +917,174 @@ window.QUIZZES_DATA = {
     ],
     "correcta": "B",
     "explicacion": "La fuerza neta es la fuerza centrípeta dirigida hacia el centro: F_c = m · (v² / r) = 2 kg × (3² / 3) = 2 × 3 = 6 N hacia el centro."
+  },
+  {
+    "id": 61,
+    "num": "61",
+    "tema": "Ley de Gauss",
+    "categoria": "concepto",
+    "pregunta": "Una superficie gaussiana esférica cerrada encierra una carga puntual positiva +q en su centro. Si el radio de la esfera se duplica de R a 2R manteniendo la misma carga en su interior, ¿qué sucede con el flujo eléctrico neto total Φ_E a través de la superficie?",
+    "opciones": [
+      "A. Se reduce a la cuarta parte (Φ_E / 4) por la ley del inverso al cuadrado",
+      "B. Se reduce a la mitad (Φ_E / 2)",
+      "C. Permanece exactamente igual (Φ_E constante)",
+      "D. Se cuadruplica (4Φ_E) porque el área superficial se cuadruplica"
+    ],
+    "correcta": "C",
+    "explicacion": "De acuerdo con la Ley de Gauss: Φ_E = ∮ E · dA = Q_enc / ε₀. El flujo neto total a través de cualquier superficie cerrada depende exclusivamente de la magnitud de la carga neta encerrada. Aunque al duplicar el radio el área se cuadruplica (A ∝ r²), la magnitud del campo eléctrico se reduce a la cuarta parte (E ∝ 1/r²), compensándose de forma exacta. Por tanto, el flujo total permanece inalterado."
+  },
+  {
+    "id": 62,
+    "num": "62",
+    "tema": "Ley de Gauss y Conductores",
+    "categoria": "calculo",
+    "pregunta": "Una esfera conductora sólida en equilibrio electrostático tiene un radio R = 10 cm y posee una carga neta total de +4 μC. ¿Cuál es la magnitud del campo eléctrico E en un punto ubicado en el interior de la esfera a r = 5 cm del centro?",
+    "opciones": [
+      "A. 0 N/C",
+      "B. 1,44 × 10⁷ N/C radial hacia afuera",
+      "C. 3,60 × 10⁶ N/C radial hacia adentro",
+      "D. 7,20 × 10⁶ N/C radial hacia afuera"
+    ],
+    "correcta": "A",
+    "explicacion": "En un conductor en equilibrio electrostático, las cargas libres se repelen mutuamente y residen exclusivamente sobre la superficie exterior. Al aplicar la Ley de Gauss a una superficie esférica concéntrica de radio r = 5 cm (r < R), la carga neta encerrada es Q_enc = 0. En consecuencia, el campo eléctrico en el interior de cualquier conductor en equilibrio electrostático es estrictamente cero (E = 0 N/C)."
+  },
+  {
+    "id": 63,
+    "num": "63",
+    "tema": "Ley de Gauss",
+    "categoria": "grafica",
+    "pregunta": "Un cilindro largo no conductor de radio R posee una densidad volumétrica de carga uniforme ρ. ¿Cuál de las siguientes afirmaciones describe con precisión el comportamiento de la magnitud del campo eléctrico E(r) en función de la distancia radial r desde el eje?",
+    "opciones": [
+      "A. Crece linealmente con r en el interior (r ≤ R) y decae proporcionalmente a 1/r en el exterior (r > R)",
+      "B. Es uniforme y constante en el interior (r ≤ R) y decae como 1/r² en el exterior (r > R)",
+      "C. Es nulo en el interior (r ≤ R) y crece como r² en el exterior (r > R)",
+      "D. Decae como 1/r² tanto en la región interior como exterior"
+    ],
+    "correcta": "A",
+    "explicacion": "Aplicando la Ley de Gauss con una superficie cilíndrica de radio r y longitud L:\n• Para r ≤ R (interior): Q_enc = ρ·(π r² L) ⟹ E·(2π r L) = ρ·(π r² L)/ε₀ ⟹ E(r) = (ρ / 2ε₀)·r (crecimiento lineal directo con r).\n• Para r > R (exterior): Q_enc = ρ·(π R² L) ⟹ E·(2π r L) = ρ·(π R² L)/ε₀ ⟹ E(r) = (ρ R² / 2ε₀)·(1/r) (decae como 1/r).",
+    "graficaSvg": "<svg viewBox=\"0 0 440 220\" class=\"quiz-svg\">\n  <defs>\n    <pattern id=\"grid_em63\" width=\"40\" height=\"30\" patternUnits=\"userSpaceOnUse\">\n      <path d=\"M 40 0 L 0 0 0 30\" fill=\"none\" stroke=\"rgba(255,255,255,0.06)\" stroke-width=\"1\"/>\n    </pattern>\n  </defs>\n  <rect width=\"440\" height=\"220\" fill=\"#0f172a\" rx=\"8\"/>\n  <rect x=\"50\" y=\"20\" width=\"350\" height=\"160\" fill=\"url(#grid_em63)\"/>\n  <!-- Ejes -->\n  <line x1=\"50\" y1=\"180\" x2=\"410\" y2=\"180\" stroke=\"#94a3b8\" stroke-width=\"2\"/>\n  <line x1=\"50\" y1=\"20\" x2=\"50\" y2=\"180\" stroke=\"#94a3b8\" stroke-width=\"2\"/>\n  <text x=\"415\" y=\"184\" fill=\"#94a3b8\" font-size=\"12\" font-family=\"sans-serif\">r</text>\n  <text x=\"20\" y=\"25\" fill=\"#94a3b8\" font-size=\"12\" font-family=\"sans-serif\">E(r)</text>\n  <!-- Radio R -->\n  <line x1=\"180\" y1=\"20\" x2=\"180\" y2=\"180\" stroke=\"#f59e0b\" stroke-dasharray=\"4\" stroke-width=\"1.5\"/>\n  <text x=\"180\" y=\"196\" fill=\"#f59e0b\" font-size=\"12\" font-weight=\"bold\" text-anchor=\"middle\">r = R</text>\n  <text x=\"50\" y=\"196\" fill=\"#cbd5e1\" font-size=\"11\" text-anchor=\"middle\">0</text>\n  <!-- Curva E(r): Lineal de 0 a R, y luego decae como 1/r -->\n  <path d=\"M 50 180 L 180 50 Q 240 115 400 155\" fill=\"none\" stroke=\"#38bdf8\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n  <circle cx=\"180\" cy=\"50\" r=\"5\" fill=\"#38bdf8\"/>\n  <!-- Etiquetas -->\n  <text x=\"100\" y=\"105\" fill=\"#38bdf8\" font-size=\"11\" font-weight=\"bold\">E ∝ r</text>\n  <text x=\"270\" y=\"105\" fill=\"#38bdf8\" font-size=\"11\" font-weight=\"bold\">E ∝ 1/r</text>\n  <text x=\"110\" y=\"165\" fill=\"#94a3b8\" font-size=\"10\">Interior (r ≤ R)</text>\n  <text x=\"290\" y=\"165\" fill=\"#94a3b8\" font-size=\"10\">Exterior (r > R)</text>\n</svg>"
+  },
+  {
+    "id": 64,
+    "num": "64",
+    "tema": "Potencial Eléctrico",
+    "categoria": "concepto",
+    "pregunta": "Si una partícula con carga negativa q = −2 μC se traslada a lo largo de una línea de campo eléctrico uniforme en el mismo sentido del vector E (desde un punto A hacia un punto B), ¿cómo cambian el potencial eléctrico V y la energía potencial electrostática U?",
+    "opciones": [
+      "A. El potencial eléctrico V aumenta y la energía potencial U disminuye",
+      "B. El potencial eléctrico V disminuye y la energía potencial U aumenta",
+      "C. Tanto el potencial eléctrico V como la energía potencial U disminuyen",
+      "D. El potencial eléctrico V aumenta y la energía potencial U aumenta"
+    ],
+    "correcta": "B",
+    "explicacion": "Las líneas de campo eléctrico apuntan siempre en el sentido en que el potencial eléctrico disminuye (V_B < V_A). Por lo tanto, al moverse en el sentido de E, el potencial eléctrico V disminuye (ΔV < 0). El cambio en la energía potencial es ΔU = q·ΔV. Como la carga es negativa (q < 0) y ΔV < 0, el producto es positivo (ΔU > 0), lo que significa que la energía potencial electrostática aumenta (se requiere trabajo externo para forzar una carga negativa a desplazarse en la dirección del campo)."
+  },
+  {
+    "id": 65,
+    "num": "65",
+    "tema": "Potencial Eléctrico",
+    "categoria": "grafica",
+    "pregunta": "En una región del plano xy se observan líneas equipotenciales paralelas como se muestra en la gráfica: V = 10 V en x = 0 cm, V = 20 V en x = 2 cm, y V = 30 V en x = 4 cm. ¿Cuál es el vector campo eléctrico E en dicha región?",
+    "opciones": [
+      "A. E = +500 î V/m",
+      "B. E = −500 î V/m",
+      "C. E = −5 ĵ V/m",
+      "D. E = +250 î V/m"
+    ],
+    "correcta": "B",
+    "explicacion": "El campo eléctrico es el gradiente negativo del potencial eléctrico: E_x = −(dV / dx). La tasa de cambio del potencial en el eje x es ΔV / Δx = (30 V − 10 V) / (0.04 m − 0 m) = 20 / 0.04 = +500 V/m. Aplicando el signo negativo del gradiente se obtiene E_x = −500 V/m, por lo que el vector es E = −500 î V/m. Físicamente, el campo eléctrico siempre apunta hacia donde el potencial disminuye (hacia la izquierda o sentido negativo de x).",
+    "graficaSvg": "<svg viewBox=\"0 0 440 220\" class=\"quiz-svg\">\n  <rect width=\"440\" height=\"220\" fill=\"#0f172a\" rx=\"8\"/>\n  <line x1=\"40\" y1=\"180\" x2=\"410\" y2=\"180\" stroke=\"#64748b\" stroke-width=\"2\"/>\n  <text x=\"415\" y=\"184\" fill=\"#94a3b8\" font-size=\"12\" font-family=\"sans-serif\">x (cm)</text>\n  <!-- 0 cm -> 10V -->\n  <line x1=\"80\" y1=\"30\" x2=\"80\" y2=\"180\" stroke=\"#38bdf8\" stroke-dasharray=\"5,4\" stroke-width=\"2\"/>\n  <text x=\"80\" y=\"198\" fill=\"#94a3b8\" font-size=\"11\" text-anchor=\"middle\">0 cm</text>\n  <rect x=\"52\" y=\"18\" width=\"56\" height=\"20\" fill=\"#0369a1\" rx=\"4\"/>\n  <text x=\"80\" y=\"32\" fill=\"#fff\" font-size=\"11\" font-weight=\"bold\" text-anchor=\"middle\">V = 10 V</text>\n  <!-- 2 cm -> 20V -->\n  <line x1=\"220\" y1=\"30\" x2=\"220\" y2=\"180\" stroke=\"#38bdf8\" stroke-dasharray=\"5,4\" stroke-width=\"2\"/>\n  <text x=\"220\" y=\"198\" fill=\"#94a3b8\" font-size=\"11\" text-anchor=\"middle\">2 cm</text>\n  <rect x=\"192\" y=\"18\" width=\"56\" height=\"20\" fill=\"#0284c7\" rx=\"4\"/>\n  <text x=\"220\" y=\"32\" fill=\"#fff\" font-size=\"11\" font-weight=\"bold\" text-anchor=\"middle\">V = 20 V</text>\n  <!-- 4 cm -> 30V -->\n  <line x1=\"360\" y1=\"30\" x2=\"360\" y2=\"180\" stroke=\"#38bdf8\" stroke-dasharray=\"5,4\" stroke-width=\"2\"/>\n  <text x=\"360\" y=\"198\" fill=\"#94a3b8\" font-size=\"11\" text-anchor=\"middle\">4 cm</text>\n  <rect x=\"332\" y=\"18\" width=\"56\" height=\"20\" fill=\"#0ea5e9\" rx=\"4\"/>\n  <text x=\"360\" y=\"32\" fill=\"#fff\" font-size=\"11\" font-weight=\"bold\" text-anchor=\"middle\">V = 30 V</text>\n  <!-- Flecha de campo E -->\n  <line x1=\"320\" y1=\"100\" x2=\"120\" y2=\"100\" stroke=\"#f43f5e\" stroke-width=\"3\"/>\n  <polygon points=\"120,95 105,100 120,105\" fill=\"#f43f5e\"/>\n  <text x=\"210\" y=\"88\" fill=\"#f43f5e\" font-size=\"13\" font-weight=\"bold\" text-anchor=\"middle\">Vector Campo Eléctrico E (?)</text>\n  <text x=\"210\" y=\"130\" fill=\"#cbd5e1\" font-size=\"11\" text-anchor=\"middle\">ΔV/Δx = +500 V/m ➔ E = −(dV/dx)î</text>\n</svg>"
+  },
+  {
+    "id": 66,
+    "num": "66",
+    "tema": "Potencial Eléctrico",
+    "categoria": "calculo",
+    "pregunta": "Dos cargas puntuales q₁ = +6 nC y q₂ = −6 nC forman un dipolo eléctrico separadas por una distancia d = 20 cm en el vacío. ¿Cuál es el potencial eléctrico total V en el punto medio exacto de la línea que une ambas cargas?",
+    "opciones": [
+      "A. 540 V",
+      "B. 1080 V",
+      "C. 0 V",
+      "D. −540 V"
+    ],
+    "correcta": "C",
+    "explicacion": "El potencial eléctrico es una cantidad escalar y cumple el principio de superposición: V_total = V₁ + V₂ = k·(q₁ / r₁) + k·(q₂ / r₂). En el punto medio, las distancias a ambas cargas son iguales: r₁ = r₂ = 10 cm = 0.10 m. Dado que q₁ = +6 nC y q₂ = −6 nC: V = (k / 0.10) × (+6×10⁻⁹ − 6×10⁻⁹) = 0 V."
+  },
+  {
+    "id": 67,
+    "num": "67",
+    "tema": "Capacitores",
+    "categoria": "calculo",
+    "pregunta": "Un capacitor de placas paralelas posee un área A = 0,02 m² y una separación entre placas d = 1,0 mm con aire/vacío entre ellas (ε₀ = 8,85 × 10⁻¹² C²/N·m²). Si se conecta a una fuente de tensión de 100 V, ¿cuál es su capacitancia C y la carga eléctrica Q almacenada?",
+    "opciones": [
+      "A. C = 177 pF y Q = 17,7 nC",
+      "B. C = 354 pF y Q = 3,54 nC",
+      "C. C = 17,7 pF y Q = 1,77 nC",
+      "D. C = 88,5 pF y Q = 88,5 nC"
+    ],
+    "correcta": "A",
+    "explicacion": "1. Capacitancia: C = ε₀·A / d = (8.85 × 10⁻¹² C²/N·m² × 0.02 m²) / (1.0 × 10⁻³ m) = 1.77 × 10⁻¹⁰ F = 177 pF.\n2. Carga almacenada: Q = C·V = (177 × 10⁻¹² F) × 100 V = 1.77 × 10⁻⁸ C = 17.7 nC."
+  },
+  {
+    "id": 68,
+    "num": "68",
+    "tema": "Capacitores y Dieléctricos",
+    "categoria": "concepto",
+    "pregunta": "Un capacitor de placas paralelas se carga con una batería hasta un voltaje V₀ y luego se desconecta de ella. Posteriormente, se introduce un material dieléctrico de constante κ = 3,0 llenando todo el espacio entre placas. ¿Qué sucede con la capacitancia C, el voltaje V y la energía almacenada U?",
+    "opciones": [
+      "A. C se triplica (3C₀), V se reduce a V₀/3 y U se reduce a U₀/3",
+      "B. C se triplica (3C₀), V permanece constante y U se triplica (3U₀)",
+      "C. C se reduce a C₀/3, V se triplica y U se triplica",
+      "D. C, V y U se triplican simultáneamente"
+    ],
+    "correcta": "A",
+    "explicacion": "Al estar desconectado de la batería, la carga Q₀ permanece estrictamente constante por conservación de la carga. Al insertar el dieléctrico:\n1) La capacitancia aumenta: C = κ·C₀ = 3C₀.\n2) El voltaje entre placas disminuye: V = Q₀ / C = Q₀ / (3C₀) = V₀ / 3.\n3) La energía electrostática almacenada: U = Q₀² / (2C) = Q₀² / (2·3C₀) = U₀ / 3. La energía disminuye porque el campo eléctrico realiza trabajo positivo atrayendo el dieléctrico hacia el interior de las placas."
+  },
+  {
+    "id": 69,
+    "num": "69",
+    "tema": "Circuitos de Capacitores",
+    "categoria": "grafica",
+    "pregunta": "En el circuito de la gráfica, dos capacitores de C₁ = 6 μF y C₂ = 12 μF están conectados en serie, y esa combinación se encuentra en paralelo con un tercer capacitor C₃ = 4 μF. ¿Cuál es la capacitancia equivalente total C_eq entre los terminales A y B?",
+    "opciones": [
+      "A. 22 μF",
+      "B. 8 μF",
+      "C. 1,71 μF",
+      "D. 10 μF"
+    ],
+    "correcta": "B",
+    "explicacion": "1. Capacitores en serie (C₁ y C₂):\n1 / C₁₂ = (1 / 6) + (1 / 12) = (2 + 1) / 12 = 3 / 12 = 1 / 4 ⟹ C₁₂ = 4 μF.\n2. Conexión en paralelo de C₁₂ con C₃:\nC_eq = C₁₂ + C₃ = 4 μF + 4 μF = 8 μF.",
+    "graficaSvg": "<svg viewBox=\"0 0 440 220\" class=\"quiz-svg\">\n  <rect width=\"440\" height=\"220\" fill=\"#0f172a\" rx=\"8\"/>\n  <circle cx=\"50\" cy=\"110\" r=\"6\" fill=\"#38bdf8\"/>\n  <text x=\"50\" y=\"90\" fill=\"#38bdf8\" font-size=\"14\" font-weight=\"bold\" text-anchor=\"middle\">A</text>\n  <circle cx=\"390\" cy=\"110\" r=\"6\" fill=\"#38bdf8\"/>\n  <text x=\"390\" y=\"90\" fill=\"#38bdf8\" font-size=\"14\" font-weight=\"bold\" text-anchor=\"middle\">B</text>\n  <line x1=\"50\" y1=\"110\" x2=\"90\" y2=\"110\" stroke=\"#cbd5e1\" stroke-width=\"2\"/>\n  <line x1=\"90\" y1=\"60\" x2=\"90\" y2=\"160\" stroke=\"#cbd5e1\" stroke-width=\"2\"/>\n  <!-- Rama superior: C1 y C2 en serie -->\n  <line x1=\"90\" y1=\"60\" x2=\"160\" y2=\"60\" stroke=\"#cbd5e1\" stroke-width=\"2\"/>\n  <line x1=\"160\" y1=\"45\" x2=\"160\" y2=\"75\" stroke=\"#f59e0b\" stroke-width=\"3\"/>\n  <line x1=\"172\" y1=\"45\" x2=\"172\" y2=\"75\" stroke=\"#f59e0b\" stroke-width=\"3\"/>\n  <text x=\"166\" y=\"35\" fill=\"#f59e0b\" font-size=\"11\" font-weight=\"bold\" text-anchor=\"middle\">C₁ = 6 μF</text>\n  <line x1=\"172\" y1=\"60\" x2=\"260\" y2=\"60\" stroke=\"#cbd5e1\" stroke-width=\"2\"/>\n  <line x1=\"260\" y1=\"45\" x2=\"260\" y2=\"75\" stroke=\"#f59e0b\" stroke-width=\"3\"/>\n  <line x1=\"272\" y1=\"45\" x2=\"272\" y2=\"75\" stroke=\"#f59e0b\" stroke-width=\"3\"/>\n  <text x=\"266\" y=\"35\" fill=\"#f59e0b\" font-size=\"11\" font-weight=\"bold\" text-anchor=\"middle\">C₂ = 12 μF</text>\n  <line x1=\"272\" y1=\"60\" x2=\"350\" y2=\"60\" stroke=\"#cbd5e1\" stroke-width=\"2\"/>\n  <!-- Rama inferior: C3 en paralelo -->\n  <line x1=\"90\" y1=\"160\" x2=\"210\" y2=\"160\" stroke=\"#cbd5e1\" stroke-width=\"2\"/>\n  <line x1=\"210\" y1=\"145\" x2=\"210\" y2=\"175\" stroke=\"#10b981\" stroke-width=\"3\"/>\n  <line x1=\"222\" y1=\"145\" x2=\"222\" y2=\"175\" stroke=\"#10b981\" stroke-width=\"3\"/>\n  <text x=\"216\" y=\"195\" fill=\"#10b981\" font-size=\"11\" font-weight=\"bold\" text-anchor=\"middle\">C₃ = 4 μF</text>\n  <line x1=\"222\" y1=\"160\" x2=\"350\" y2=\"160\" stroke=\"#cbd5e1\" stroke-width=\"2\"/>\n  <line x1=\"350\" y1=\"60\" x2=\"350\" y2=\"160\" stroke=\"#cbd5e1\" stroke-width=\"2\"/>\n  <line x1=\"350\" y1=\"110\" x2=\"390\" y2=\"110\" stroke=\"#cbd5e1\" stroke-width=\"2\"/>\n  <circle cx=\"90\" cy=\"110\" r=\"3.5\" fill=\"#fff\"/>\n  <circle cx=\"350\" cy=\"110\" r=\"3.5\" fill=\"#fff\"/>\n</svg>"
+  },
+  {
+    "id": 70,
+    "num": "70",
+    "tema": "Capacitores y Energía",
+    "categoria": "calculo",
+    "pregunta": "Un desfibrilador médico hospitalario utiliza un capacitor de 32 μF cargado a una diferencia de potencial de 5000 V. ¿Cuánta energía electrostática total U almacena dicho capacitor antes de la descarga?",
+    "opciones": [
+      "A. 400 J",
+      "B. 800 J",
+      "C. 160 J",
+      "D. 2500 J"
+    ],
+    "correcta": "A",
+    "explicacion": "La energía electrostática almacenada en un capacitor es: U = ½ · C · V² = ½ × (32 × 10⁻⁶ F) × (5000 V)² = 16 × 10⁻⁶ × (2,5 × 10⁷) = 400 J. Esta energía corresponde a los niveles de descarga terapéutica utilizados en desfibrilación ventricular de emergencia."
   }
 ],
   presets: [
+    {
+      id: "electromagnetismo-10",
+      code: "ELECTRO-10",
+      aliases: ["ELECTRO-10", "ELECTRO", "GAUSS-10", "CAPACITORES", "POTENCIAL", "EM-10"],
+      title: "Electromagnetismo: Gauss, Potencial y Capacitores",
+      subtitle: "10 Preguntas · Ley de Gauss, Superficies Equipotenciales y Circuitos Capacitivos",
+      description: "Evaluación oficial universitaria sobre flujo eléctrico, Ley de Gauss, potencial electrostático y capacitores con dieléctricos. Elaborado por Mg. Manuel Alejandro Obando.",
+      badge: "⚡ Electromagnetismo",
+      totalPreguntas: 10,
+      tiempoSugeridoMin: 15,
+      questionIds: [61, 62, 63, 64, 65, 66, 67, 68, 69, 70]
+    },
     {
       id: "quiz-completo",
       code: "FISICA-60",
