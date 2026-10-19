@@ -27,6 +27,216 @@ document.addEventListener('DOMContentLoaded', () => {
         if (drawerDownloadsElem) drawerDownloadsElem.textContent = '+' + formatted;
     }
 
+    // ========================================================
+    // TELEMETRÍA EN TIEMPO REAL & PERFILES EN LA NUBE (FIREBASE)
+    // ========================================================
+    const FIREBASE_BASE = 'https://squashpopayan-65e33-default-rtdb.firebaseio.com/physicsailab';
+
+    function getOrCreateStudentId() {
+        let id = localStorage.getItem('physicsailab_student_id');
+        if (!id) {
+            id = 'std_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 5);
+            localStorage.setItem('physicsailab_student_id', id);
+        }
+        return id;
+    }
+
+    function getDeviceInfo() {
+        const ua = navigator.userAgent || '';
+        const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(ua);
+        let os = 'PC / Escritorio';
+        if (/Android/i.test(ua)) os = 'Android (Móvil)';
+        else if (/iPhone|iPad|iPod/i.test(ua)) os = 'iOS (Apple)';
+        else if (/Windows/i.test(ua)) os = 'Windows (PC)';
+        else if (/Macintosh|Mac OS/i.test(ua)) os = 'macOS (Mac)';
+        else if (/Linux/i.test(ua)) os = 'Linux';
+        return isMobile ? `📱 ${os}` : `💻 ${os}`;
+    }
+
+    function formatRelativeTime(isoStr) {
+        if (!isoStr) return '---';
+        try {
+            const d = new Date(isoStr);
+            const now = new Date();
+            const diffMs = now - d;
+            const diffMin = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMin / 60);
+            const diffDays = Math.floor(diffHours / 24);
+
+            const timeStr = d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+            if (diffMin < 1) return 'Hace unos segundos 🟢';
+            if (diffMin < 60) return `Hace ${diffMin} min (${timeStr})`;
+            if (diffHours < 24) return `Hoy (${timeStr}) · Hace ${diffHours}h`;
+            if (diffDays === 1) return `Ayer (${timeStr})`;
+            return `${d.toLocaleDateString('es-ES')} (${timeStr})`;
+        } catch(e) {
+            return isoStr;
+        }
+    }
+
+    function logRealActivity(action, type = 'general') {
+        const profile = getStudentProfile();
+        const studentId = getOrCreateStudentId();
+        const isDocente = isAdmin();
+        const isCustomized = profile && profile.name && profile.name !== 'Estudiante Universitario';
+
+        const act = {
+            id: 'act_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+            studentId: studentId,
+            studentName: isDocente ? 'Mg. Manuel Obando (Docente)' : (isCustomized ? profile.name : 'Visitante en línea'),
+            career: profile ? (profile.career || '') : '',
+            institution: profile ? (profile.institution || '') : '',
+            avatar: isDocente ? '👑' : (profile ? (profile.avatar || '👤') : '👤'),
+            role: isDocente ? 'docente' : (isCustomized ? 'estudiante' : 'visitante'),
+            device: getDeviceInfo(),
+            action: action,
+            type: type,
+            timestamp: new Date().toISOString()
+        };
+
+        fetch(`${FIREBASE_BASE}/activity/${act.id}.json`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(act)
+        }).catch(() => {});
+    }
+
+    function touchStudentCloudProfile() {
+        const profile = getStudentProfile();
+        const isCustomized = profile && profile.name && profile.name !== 'Estudiante Universitario';
+        if (!isCustomized) return;
+
+        const studentId = getOrCreateStudentId();
+        let visits = parseInt(localStorage.getItem('physicsailab_student_visit_count') || '1', 10) + 1;
+        localStorage.setItem('physicsailab_student_visit_count', visits);
+
+        fetch(`${FIREBASE_BASE}/profiles/${studentId}.json`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                lastActive: new Date().toISOString(),
+                totalVisits: visits,
+                device: getDeviceInfo(),
+                enrolledCourses: getUnlockedCourses()
+            })
+        }).catch(() => {});
+    }
+
+    function syncStudentProfileToCloud(profile) {
+        const studentId = getOrCreateStudentId();
+        const unlockedIds = getUnlockedCourses();
+        const savedComicIds = getSavedComics();
+        const savedPodcastsList = getSavedPodcasts();
+        const atomLikesState = getAtomLikesState();
+        const likedItemIds = Object.keys(atomLikesState).filter(k => atomLikesState[k]?.liked);
+        let visits = parseInt(localStorage.getItem('physicsailab_student_visit_count') || '1', 10);
+
+        const cloudData = {
+            id: studentId,
+            name: profile.name || 'Estudiante Universitario',
+            career: profile.career || 'Física / Ingeniería',
+            institution: profile.institution || 'Universidad del Cauca',
+            avatar: profile.avatar || '⚛️',
+            createdAt: profile.created || new Date().toISOString(),
+            lastActive: new Date().toISOString(),
+            enrolledCourses: unlockedIds,
+            savedComicsCount: savedComicIds.length,
+            savedPodcastsCount: savedPodcastsList.length,
+            totalLikes: likedItemIds.length,
+            device: getDeviceInfo(),
+            totalVisits: visits,
+            updatedAt: new Date().toISOString()
+        };
+
+        fetch(`${FIREBASE_BASE}/profiles/${studentId}.json`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(cloudData)
+        }).catch(() => {});
+
+        logRealActivity(`Guardó/actualizó su perfil de estudiante: ${profile.name}`, 'profile_save');
+    }
+
+    function recordRealVisit() {
+        const isSessionActive = sessionStorage.getItem('physicsailab_session_active');
+        fetch(`${FIREBASE_BASE}/counters.json`)
+            .then(res => res.json())
+            .then(c => {
+                let realVisits = (c && typeof c.real_visits === 'number') ? c.real_visits : 14;
+                let realDownloads = (c && typeof c.real_downloads === 'number') ? c.real_downloads : 6;
+
+                if (!isSessionActive) {
+                    sessionStorage.setItem('physicsailab_session_active', '1');
+                    realVisits += 1;
+                    fetch(`${FIREBASE_BASE}/counters.json`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            real_visits: realVisits,
+                            last_visit: new Date().toISOString()
+                        })
+                    }).catch(() => {});
+
+                    logRealActivity('Visita a la portada principal', 'visit');
+                    touchStudentCloudProfile();
+                }
+
+                localStorage.setItem('physicsailab_real_visits', realVisits);
+                localStorage.setItem('physicsailab_real_downloads', realDownloads);
+                updateVisitsDisplay(BASE_VISITS + realVisits);
+                updateDownloadsDisplay(BASE_DOWNLOADS + realDownloads);
+            })
+            .catch(() => {
+                let realVisits = parseInt(localStorage.getItem('physicsailab_real_visits') || '14', 10);
+                let realDownloads = parseInt(localStorage.getItem('physicsailab_real_downloads') || '6', 10);
+                if (!isSessionActive) {
+                    sessionStorage.setItem('physicsailab_session_active', '1');
+                    realVisits += 1;
+                    localStorage.setItem('physicsailab_real_visits', realVisits);
+                }
+                updateVisitsDisplay(BASE_VISITS + realVisits);
+                updateDownloadsDisplay(BASE_DOWNLOADS + realDownloads);
+            });
+    }
+
+    function recordRealDownload(itemTitle = 'Material Académico') {
+        fetch(`${FIREBASE_BASE}/counters.json`)
+            .then(res => res.json())
+            .then(c => {
+                let realDownloads = (c && typeof c.real_downloads === 'number') ? c.real_downloads : 6;
+                realDownloads += 1;
+                fetch(`${FIREBASE_BASE}/counters.json`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        real_downloads: realDownloads,
+                        last_download: new Date().toISOString()
+                    })
+                }).catch(() => {});
+
+                localStorage.setItem('physicsailab_real_downloads', realDownloads);
+                updateDownloadsDisplay(BASE_DOWNLOADS + realDownloads);
+                logRealActivity(`Descargó: ${itemTitle}`, 'download');
+            })
+            .catch(() => {
+                let realDownloads = parseInt(localStorage.getItem('physicsailab_real_downloads') || '6', 10) + 1;
+                localStorage.setItem('physicsailab_real_downloads', realDownloads);
+                updateDownloadsDisplay(BASE_DOWNLOADS + realDownloads);
+            });
+    }
+
+    // Rastreo automático de acceso a cursos interactivos y simuladores
+    document.addEventListener('click', (e) => {
+        const link = e.target.closest('a');
+        if (!link) return;
+        const href = link.getAttribute('href') || '';
+        if (href.includes('/cursos/') || href.includes('torneos-squash') || href.includes('garmin')) {
+            const rawText = (link.textContent || '').trim().replace(/[\r\n\t]+/g, ' ');
+            const title = link.getAttribute('title') || rawText || href;
+            logRealActivity(`Abrió contenido interactivo: ${title}`, 'course_view');
+        }
+    });
+
     // Navegación Móvil (Drawer y ScrollSpy)
     window.toggleMobileDrawer = function() {
         const drawer = document.getElementById('mobile-drawer');
@@ -101,34 +311,12 @@ document.addEventListener('DOMContentLoaded', () => {
         highlightActiveSectionOnScroll();
     }, { passive: true });
 
-    // Inicializar Visitas
-    let storedVisits = parseInt(localStorage.getItem('physicsailab_visits') || '0', 10);
-    if (!storedVisits || storedVisits < BASE_VISITS) {
-        storedVisits = BASE_VISITS;
-    }
-    storedVisits += 1;
-    localStorage.setItem('physicsailab_visits', storedVisits);
-    updateVisitsDisplay(storedVisits);
-
-    // Sincronizar con backend si existe
-    fetch('/api/visit')
-        .then(res => res.json())
-        .then(resData => {
-            if (resData && resData.visits) {
-                const finalVisits = Math.max(resData.visits, storedVisits);
-                localStorage.setItem('physicsailab_visits', finalVisits);
-                updateVisitsDisplay(finalVisits);
-            }
-        })
-        .catch(() => {});
+    // Inicializar Visitas Reales y Métricas Públicas Persistentes
+    recordRealVisit();
 
     // Inicializar Descargas
-    let storedDownloads = parseInt(localStorage.getItem('physicsailab_downloads') || '0', 10);
-    if (!storedDownloads || storedDownloads < BASE_DOWNLOADS) {
-        storedDownloads = BASE_DOWNLOADS;
-        localStorage.setItem('physicsailab_downloads', storedDownloads);
-    }
-    updateDownloadsDisplay(storedDownloads);
+    let initialRealDownloads = parseInt(localStorage.getItem('physicsailab_real_downloads') || '6', 10);
+    updateDownloadsDisplay(BASE_DOWNLOADS + initialRealDownloads);
 
     // Sistema de Notificaciones Toast
     window.showToast = function(message, duration = 4500) {
@@ -151,16 +339,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Tracking de Descargas
     window.trackDownload = function(itemTitle = 'Material Académico') {
-        let currentDownloads = parseInt(localStorage.getItem('physicsailab_downloads') || BASE_DOWNLOADS.toString(), 10);
-        currentDownloads += 1;
-        localStorage.setItem('physicsailab_downloads', currentDownloads);
-        updateDownloadsDisplay(currentDownloads);
-
-        // Notificación Toast
+        recordRealDownload(itemTitle);
         showToast(`📥 Descarga iniciada: <strong>${itemTitle}</strong>. ¡Gracias por apoyar la divulgación científica abierta!`);
-
-        // Sincronizar con backend si existe
-        fetch('/api/download').catch(() => {});
     };
 
     // 2. Control de Acceso Granular y Modo Administrador (Mg. Manuel Alejandro Obando)
@@ -204,6 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function saveStudentProfile(profile) {
         localStorage.setItem('physicsailab_student_profile', JSON.stringify(profile));
         updateProfileNavDisplay();
+        syncStudentProfileToCloud(profile);
     }
 
     function updateProfileNavDisplay() {
@@ -1182,6 +1363,10 @@ document.addEventListener('DOMContentLoaded', () => {
         updateStudentBannerState();
         renderEnrolledCourses();
         renderCourses(currentCourseFilter);
+        const courseFound = (data.cursos || []).find(c => c.id === courseId);
+        const courseName = courseFound ? courseFound.titulo : courseId;
+        logRealActivity(`Desbloqueó materia: ${courseName}`, 'course_unlock');
+        touchStudentCloudProfile();
     }
 
     window.lockCourse = function(courseId) {
@@ -2521,17 +2706,324 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // ========================================================
+    // TELEMETRÍA Y DASHBOARD DE ADMINISTRACIÓN DOCENTE
+    // ========================================================
+    window.adminTelemetryCache = window.adminTelemetryCache || {
+        counters: {
+            real_visits: parseInt(localStorage.getItem('physicsailab_real_visits') || '14', 10),
+            real_downloads: parseInt(localStorage.getItem('physicsailab_real_downloads') || '6', 10)
+        },
+        profiles: {},
+        activity: {},
+        activeActivityFilter: 'all',
+        studentSearchQuery: ''
+    };
+
+    function getCourseTitleById(id) {
+        if (!id) return '';
+        const found = (data.cursos || []).find(c => c.id === id);
+        if (found) return found.titulo;
+        const map = {
+            termo: 'Termodinámica Computacional',
+            torneos: 'Torneos Squash Pro',
+            mecanica: 'Mecánica Clásica & Lagrangiana',
+            materiales: 'Ciencia de Materiales & Nanotec.',
+            electromagnetismo: 'Electromagnetismo & Maxwell',
+            ondas: 'Ondas & Óptica Cuántica',
+            cuantica: 'Mecánica Cuántica',
+            relatividad: 'Relatividad General',
+            biofisica: 'Biofísica Médica',
+            transformadores: 'Lab Transformadores',
+            astronomia: 'Astrofísica Moderna',
+            estado_solido: 'Física del Estado Sólido',
+            fluidos: 'Mecánica de Fluidos'
+        };
+        return map[id] || id;
+    }
+
+    function renderAdminProfilesHtml(profilesObj, query = '') {
+        const list = Object.values(profilesObj || {});
+        if (list.length === 0) {
+            return `
+                <div style="grid-column: 1 / -1; background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px; padding: 2rem; text-align: center; color: var(--text-muted); font-size: 0.9rem;">
+                    <span style="font-size: 2rem; display: block; margin-bottom: 0.5rem;">👥</span>
+                    Cargando perfiles estudiantiles sincronizados desde la nube...
+                </div>
+            `;
+        }
+
+        const q = (query || '').toLowerCase().trim();
+        const filtered = list.filter(p => {
+            if (!q) return true;
+            const name = (p.name || '').toLowerCase();
+            const career = (p.career || '').toLowerCase();
+            const inst = (p.institution || '').toLowerCase();
+            return name.includes(q) || career.includes(q) || inst.includes(q);
+        });
+
+        if (filtered.length === 0) {
+            return `
+                <div style="grid-column: 1 / -1; background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px; padding: 2rem; text-align: center; color: var(--text-muted); font-size: 0.9rem;">
+                    No se encontraron perfiles que coincidan con "<strong>${query}</strong>".
+                </div>
+            `;
+        }
+
+        filtered.sort((a, b) => {
+            const timeA = new Date(a.lastActive || a.updatedAt || a.createdAt || 0).getTime();
+            const timeB = new Date(b.lastActive || b.updatedAt || b.createdAt || 0).getTime();
+            return timeB - timeA;
+        });
+
+        return filtered.map(p => {
+            const enrolled = Array.isArray(p.enrolledCourses) ? p.enrolledCourses : [];
+            const isDocente = p.role === 'docente' || (p.name || '').toLowerCase().includes('obando');
+            const lastActiveStr = formatRelativeTime(p.lastActive || p.updatedAt || p.createdAt);
+
+            return `
+                <div class="admin-student-card">
+                    <div>
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <div class="admin-student-avatar">${p.avatar || '⚛️'}</div>
+                                <div>
+                                    <h5 style="color: #fff; font-size: 1rem; margin: 0 0 0.2rem; font-weight: 700; display: flex; align-items: center; gap: 0.4rem;">
+                                        ${p.name || 'Estudiante'}
+                                        ${isDocente ? '<span class="admin-badge" style="font-size:0.65rem; padding:0.1rem 0.4rem;">Docente</span>' : ''}
+                                    </h5>
+                                    <div style="font-size: 0.78rem; color: #A5B4FC; font-weight: 600;">${p.career || 'Física / Ingeniería'}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.35rem;">
+                            <span>🏛️</span> <span>${p.institution || 'Universidad del Cauca'}</span>
+                        </div>
+
+                        <div style="margin-bottom: 0.75rem;">
+                            <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 0.35rem; letter-spacing: 0.4px;">
+                                Materias Desbloqueadas (${enrolled.length}):
+                            </div>
+                            <div style="display: flex; flex-wrap: wrap; gap: 0.25rem;">
+                                ${enrolled.length > 0 ? enrolled.map(cId => `
+                                    <span class="admin-student-course-pill" title="${cId}">
+                                        ✓ ${getCourseTitleById(cId)}
+                                    </span>
+                                `).join('') : '<span style="font-size:0.75rem; color:var(--text-muted); font-style:italic;">Ningún curso desbloqueado aún</span>'}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.4rem 0.6rem; font-size: 0.74rem; color: var(--text-muted); margin-bottom: 0.6rem;">
+                            <span>👁️ <strong>${p.totalVisits || 1}</strong> visitas</span>
+                            <span>🎨 <strong>${p.savedComicsCount || 0}</strong> cómics</span>
+                            <span>❤️ <strong>${p.totalLikes || 0}</strong> likes</span>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.72rem; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 0.5rem;">
+                            <span style="color: var(--text-muted);">${p.device || 'Navegador Web'}</span>
+                            <span style="color: #34D399; font-weight: 600;">⏱️ ${lastActiveStr}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function renderAdminActivityHtml(activityObj, filterType = 'all') {
+        const list = Object.values(activityObj || {});
+        if (list.length === 0) {
+            return `
+                <div style="background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px; padding: 1.5rem; text-align: center; color: var(--text-muted); font-size: 0.85rem;">
+                    <span style="font-size: 1.5rem; display: block; margin-bottom: 0.35rem;">⚡</span>
+                    Cargando registro de telemetría y visitantes en tiempo real...
+                </div>
+            `;
+        }
+
+        const filtered = list.filter(item => {
+            if (filterType === 'all') return true;
+            if (filterType === 'visit') return item.type === 'visit';
+            if (filterType === 'profile') return item.type === 'profile_save';
+            if (filterType === 'download') return item.type === 'download';
+            if (filterType === 'course') return item.type === 'course_view' || item.type === 'course_unlock';
+            return true;
+        });
+
+        if (filtered.length === 0) {
+            return `
+                <div style="background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px; padding: 1.5rem; text-align: center; color: var(--text-muted); font-size: 0.85rem;">
+                    No hay eventos registrados en la categoría seleccionada.
+                </div>
+            `;
+        }
+
+        filtered.sort((a, b) => new Date(b.timestamp || 0).getTime() - new Date(a.timestamp || 0).getTime());
+
+        return filtered.slice(0, 35).map(item => {
+            let icon = '⚡';
+            let badgeBg = 'rgba(99, 102, 241, 0.15)';
+            let badgeColor = '#A5B4FC';
+
+            if (item.type === 'visit') {
+                icon = '👁️';
+                badgeBg = 'rgba(56, 189, 248, 0.15)';
+                badgeColor = '#38BDF8';
+            } else if (item.type === 'download') {
+                icon = '📥';
+                badgeBg = 'rgba(16, 185, 129, 0.15)';
+                badgeColor = '#34D399';
+            } else if (item.type === 'profile_save') {
+                icon = '👤';
+                badgeBg = 'rgba(236, 72, 153, 0.15)';
+                badgeColor = '#F472B6';
+            } else if (item.type === 'course_view' || item.type === 'course_unlock') {
+                icon = '📚';
+                badgeBg = 'rgba(245, 158, 11, 0.15)';
+                badgeColor = '#FBBF24';
+            }
+
+            const relTime = formatRelativeTime(item.timestamp);
+
+            return `
+                <div class="admin-activity-item">
+                    <div style="display: flex; align-items: center; gap: 0.85rem; flex-grow: 1; min-width: 0;">
+                        <div style="width: 38px; height: 38px; border-radius: 10px; background: ${badgeBg}; color: ${badgeColor}; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.08);">
+                            ${item.avatar || icon}
+                        </div>
+                        <div style="min-width: 0;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                                <strong style="color: #fff; font-size: 0.88rem;">${item.studentName || 'Visitante en línea'}</strong>
+                                ${item.career ? `<span style="font-size: 0.72rem; color: #A5B4FC;">(${item.career})</span>` : ''}
+                            </div>
+                            <div style="font-size: 0.82rem; color: #E2E8F0; margin-top: 0.15rem; word-break: break-word;">
+                                ${item.action}
+                            </div>
+                            ${item.institution ? `<div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.1rem;">🏛️ ${item.institution}</div>` : ''}
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.25rem; flex-shrink: 0;">
+                        <span class="admin-activity-device-pill">${item.device || 'Navegador Web'}</span>
+                        <span style="font-size: 0.72rem; color: #34D399; font-weight: 600; white-space: nowrap;">⏱️ ${relTime}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    window.fetchAdminCloudTelemetry = function(showFeedback = false) {
+        if (showFeedback) {
+            showToast('🔄 Consultando telemetría y perfiles en tiempo real...');
+        }
+
+        Promise.all([
+            fetch(`${FIREBASE_BASE}/counters.json`).then(r => r.json()).catch(() => null),
+            fetch(`${FIREBASE_BASE}/profiles.json`).then(r => r.json()).catch(() => null),
+            fetch(`${FIREBASE_BASE}/activity.json`).then(r => r.json()).catch(() => null)
+        ]).then(([counters, profiles, activity]) => {
+            if (counters) {
+                window.adminTelemetryCache.counters = counters;
+                if (typeof counters.real_visits === 'number') {
+                    localStorage.setItem('physicsailab_real_visits', counters.real_visits);
+                    updateVisitsDisplay(BASE_VISITS + counters.real_visits);
+                }
+                if (typeof counters.real_downloads === 'number') {
+                    localStorage.setItem('physicsailab_real_downloads', counters.real_downloads);
+                    updateDownloadsDisplay(BASE_DOWNLOADS + counters.real_downloads);
+                }
+            }
+            if (profiles) {
+                window.adminTelemetryCache.profiles = profiles;
+            }
+            if (activity) {
+                window.adminTelemetryCache.activity = activity;
+            }
+
+            const realVisitsEl = document.getElementById('admin-kpi-real-visits');
+            const publicVisitsEl = document.getElementById('admin-kpi-public-visits');
+            const realDownloadsEl = document.getElementById('admin-kpi-real-downloads');
+            const publicDownloadsEl = document.getElementById('admin-kpi-public-downloads');
+            const profilesCountEl = document.getElementById('admin-kpi-profiles-count');
+            const profilesHeaderCountEl = document.getElementById('admin-profiles-header-count');
+
+            const currentRealVisits = (window.adminTelemetryCache.counters && typeof window.adminTelemetryCache.counters.real_visits === 'number')
+                ? window.adminTelemetryCache.counters.real_visits
+                : parseInt(localStorage.getItem('physicsailab_real_visits') || '14', 10);
+            const currentRealDownloads = (window.adminTelemetryCache.counters && typeof window.adminTelemetryCache.counters.real_downloads === 'number')
+                ? window.adminTelemetryCache.counters.real_downloads
+                : parseInt(localStorage.getItem('physicsailab_real_downloads') || '6', 10);
+            const totalProfiles = Object.keys(window.adminTelemetryCache.profiles || {}).length;
+
+            if (realVisitsEl) realVisitsEl.textContent = currentRealVisits.toLocaleString('es-ES');
+            if (publicVisitsEl) publicVisitsEl.textContent = (BASE_VISITS + currentRealVisits).toLocaleString('es-ES');
+            if (realDownloadsEl) realDownloadsEl.textContent = currentRealDownloads.toLocaleString('es-ES');
+            if (publicDownloadsEl) publicDownloadsEl.textContent = (BASE_DOWNLOADS + currentRealDownloads).toLocaleString('es-ES');
+            if (profilesCountEl) profilesCountEl.textContent = totalProfiles;
+            if (profilesHeaderCountEl) profilesHeaderCountEl.textContent = `(${totalProfiles})`;
+
+            const profilesContainer = document.getElementById('admin-student-profiles-container');
+            if (profilesContainer) {
+                profilesContainer.innerHTML = renderAdminProfilesHtml(window.adminTelemetryCache.profiles, window.adminTelemetryCache.studentSearchQuery);
+            }
+
+            const activityContainer = document.getElementById('admin-activity-timeline-container');
+            if (activityContainer) {
+                activityContainer.innerHTML = renderAdminActivityHtml(window.adminTelemetryCache.activity, window.adminTelemetryCache.activeActivityFilter);
+            }
+
+            if (showFeedback) {
+                showToast('✓ ¡Telemetría y perfiles actualizados en tiempo real!');
+            }
+        }).catch(err => {
+            console.warn('Error fetching telemetry:', err);
+            if (showFeedback) {
+                showToast('⚠️ No se pudo sincronizar la telemetría con la nube.');
+            }
+        });
+    };
+
+    window.filterAdminStudentProfiles = function(query) {
+        window.adminTelemetryCache.studentSearchQuery = query;
+        const container = document.getElementById('admin-student-profiles-container');
+        if (container) {
+            container.innerHTML = renderAdminProfilesHtml(window.adminTelemetryCache.profiles, query);
+        }
+    };
+
+    window.filterAdminActivityFeed = function(filterType, btn) {
+        window.adminTelemetryCache.activeActivityFilter = filterType;
+        if (btn && btn.parentElement) {
+            btn.parentElement.querySelectorAll('.admin-btn-action').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+        const container = document.getElementById('admin-activity-timeline-container');
+        if (container) {
+            container.innerHTML = renderAdminActivityHtml(window.adminTelemetryCache.activity, filterType);
+        }
+    };
+
     // Renderizar Dashboard del Administrador
     window.renderAdminDashboardContent = function() {
         const modalBody = document.getElementById('admin-modal-body');
         if (!modalBody) return;
 
-        const currentVisits = parseInt(localStorage.getItem('physicsailab_visits') || BASE_VISITS.toString(), 10);
-        const currentDownloads = parseInt(localStorage.getItem('physicsailab_downloads') || BASE_DOWNLOADS.toString(), 10);
+        const realVisits = (window.adminTelemetryCache.counters && typeof window.adminTelemetryCache.counters.real_visits === 'number')
+            ? window.adminTelemetryCache.counters.real_visits
+            : parseInt(localStorage.getItem('physicsailab_real_visits') || '14', 10);
+        const realDownloads = (window.adminTelemetryCache.counters && typeof window.adminTelemetryCache.counters.real_downloads === 'number')
+            ? window.adminTelemetryCache.counters.real_downloads
+            : parseInt(localStorage.getItem('physicsailab_real_downloads') || '6', 10);
+
+        const publicVisits = BASE_VISITS + realVisits;
+        const publicDownloads = BASE_DOWNLOADS + realDownloads;
+
+        const profilesCount = Object.keys(window.adminTelemetryCache.profiles || {}).length;
+
         const userComments = getStoredComments();
         const baseComments = data.comentarios || [];
         const totalComments = userComments.length + baseComments.length;
-
         const coursesList = data.cursos || [];
 
         modalBody.innerHTML = `
@@ -2543,7 +3035,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <span class="unlocked-tag admin-badge" style="font-size:0.8rem; padding:0.25rem 0.75rem;">👑 MODO ADMINISTRADOR ACTIVO</span>
                             <span style="font-size:0.75rem; color:#34D399; font-weight:700;">● Todo el contenido liberado</span>
                         </div>
-                        <h2 style="font-size:1.85rem; color:#fff; margin:0 0 0.25rem;">Panel de Control Docente</h2>
+                        <h2 style="font-size:1.85rem; color:#fff; margin:0 0 0.25rem;">Panel de Control Docente & Telemetría</h2>
                         <div style="font-size:0.88rem; color:var(--text-muted);">
                             Mg. Manuel Alejandro Obando · Departamento de Física, Universidad del Cauca
                         </div>
@@ -2558,48 +3050,54 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
 
-                <!-- KPI Grid de Estadísticas en Vivo -->
+                <!-- KPI Grid de Estadísticas en Vivo: Datos Reales vs. Promocionales -->
                 <div style="margin-bottom:1.75rem;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
                         <h4 style="color:#fff; font-size:1.05rem; margin:0; display:flex; align-items:center; gap:0.5rem;">
-                            📊 Estadísticas y Tráfico de la Plataforma en Tiempo Real
+                            📊 Telemetría y Métricas de la Plataforma en Tiempo Real
                         </h4>
-                        <span style="font-size:0.75rem; color:var(--text-muted);">Actualizado automáticamente</span>
+                        <span style="font-size:0.75rem; color:var(--text-muted);">Métricas reales sincronizadas con Firebase</span>
                     </div>
 
                     <div class="admin-kpi-grid">
                         <div class="admin-kpi-card">
                             <div style="display:flex; justify-content:space-between; align-items:center;">
-                                <span class="admin-kpi-label">Visitas Totales</span>
-                                <span style="font-size:1.25rem;">👁️</span>
+                                <span class="admin-kpi-label">Visitas Reales</span>
+                                <span class="admin-real-badge">● Tráfico Real</span>
                             </div>
-                            <div class="admin-kpi-num">${currentVisits.toLocaleString('es-ES')}</div>
-                            <div style="display:flex; gap:0.35rem; margin-top:0.35rem;">
-                                <button class="admin-btn-action" onclick="adminIncrementVisits(10)" title="Sumar 10 visitas de prueba">+10</button>
-                                <button class="admin-btn-action" onclick="adminResetCounter('visits')" title="Restablecer contador a valor base">Reset</button>
-                            </div>
-                        </div>
-
-                        <div class="admin-kpi-card">
-                            <div style="display:flex; justify-content:space-between; align-items:center;">
-                                <span class="admin-kpi-label">Descargas de Material</span>
-                                <span style="font-size:1.25rem;">📥</span>
-                            </div>
-                            <div class="admin-kpi-num">${currentDownloads.toLocaleString('es-ES')}</div>
-                            <div style="display:flex; gap:0.35rem; margin-top:0.35rem;">
-                                <button class="admin-btn-action" onclick="adminIncrementDownloads(5)" title="Sumar 5 descargas de prueba">+5</button>
-                                <button class="admin-btn-action" onclick="adminResetCounter('downloads')" title="Restablecer contador a valor base">Reset</button>
-                            </div>
-                        </div>
-
-                        <div class="admin-kpi-card">
-                            <div style="display:flex; justify-content:space-between; align-items:center;">
-                                <span class="admin-kpi-label">Comentarios en Muro</span>
-                                <span style="font-size:1.25rem;">💬</span>
-                            </div>
-                            <div class="admin-kpi-num">${totalComments}</div>
+                            <div class="admin-kpi-num" id="admin-kpi-real-visits">${realVisits.toLocaleString('es-ES')}</div>
                             <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.35rem;">
-                                ${userComments.length} opiniones nuevas enviadas
+                                Público en Web: <strong id="admin-kpi-public-visits" style="color:#38BDF8;">${publicVisits.toLocaleString('es-ES')}</strong>
+                            </div>
+                            <div style="display:flex; gap:0.35rem; margin-top:0.5rem;">
+                                <button class="admin-btn-action" onclick="adminIncrementVisits(10)" title="Sumar 10 visitas de prueba">+10</button>
+                                <button class="admin-btn-action" onclick="adminResetCounter('visits')" title="Restablecer contador real a 1">Reset</button>
+                            </div>
+                        </div>
+
+                        <div class="admin-kpi-card">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <span class="admin-kpi-label">Descargas Reales</span>
+                                <span class="admin-real-badge">● Verificadas</span>
+                            </div>
+                            <div class="admin-kpi-num" id="admin-kpi-real-downloads">${realDownloads.toLocaleString('es-ES')}</div>
+                            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.35rem;">
+                                Público en Web: <strong id="admin-kpi-public-downloads" style="color:#38BDF8;">${publicDownloads.toLocaleString('es-ES')}</strong>
+                            </div>
+                            <div style="display:flex; gap:0.35rem; margin-top:0.5rem;">
+                                <button class="admin-btn-action" onclick="adminIncrementDownloads(5)" title="Sumar 5 descargas de prueba">+5</button>
+                                <button class="admin-btn-action" onclick="adminResetCounter('downloads')" title="Restablecer contador real a 0">Reset</button>
+                            </div>
+                        </div>
+
+                        <div class="admin-kpi-card">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <span class="admin-kpi-label">Perfiles de Alumnos</span>
+                                <span class="admin-marketing-badge">● Guardados</span>
+                            </div>
+                            <div class="admin-kpi-num" id="admin-kpi-profiles-count">${profilesCount}</div>
+                            <div style="font-size:0.75rem; color:#34D399; margin-top:0.35rem;">
+                                Directorio activo en nube
                             </div>
                         </div>
 
@@ -2616,6 +3114,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         <div class="admin-kpi-card">
                             <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <span class="admin-kpi-label">Comentarios en Muro</span>
+                                <span style="font-size:1.25rem;">💬</span>
+                            </div>
+                            <div class="admin-kpi-num">${totalComments}</div>
+                            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.35rem;">
+                                ${userComments.length} opiniones nuevas enviadas
+                            </div>
+                        </div>
+
+                        <div class="admin-kpi-card">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
                                 <span class="admin-kpi-label">Cómics en PDF</span>
                                 <span style="font-size:1.25rem;">🎨</span>
                             </div>
@@ -2624,17 +3133,56 @@ document.addEventListener('DOMContentLoaded', () => {
                                 Creados por estudiantes
                             </div>
                         </div>
+                    </div>
+                </div>
 
-                        <div class="admin-kpi-card">
-                            <div style="display:flex; justify-content:space-between; align-items:center;">
-                                <span class="admin-kpi-label">Curiosidades Físicas</span>
-                                <span style="font-size:1.25rem;">💡</span>
-                            </div>
-                            <div class="admin-kpi-num">${(data.datosCuriosos || []).length}</div>
-                            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.35rem;">
-                                Rotación diaria activa
-                            </div>
+                <!-- SECCIÓN 1: Directorio de Perfiles de Estudiantes -->
+                <div style="margin-bottom:2.25rem; background:rgba(255,255,255,0.015); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:1.25rem 1.4rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.75rem;">
+                        <div>
+                            <h4 style="color:#fff; font-size:1.15rem; margin:0 0 0.25rem; display:flex; align-items:center; gap:0.5rem;">
+                                👥 Directorio de Perfiles de Estudiantes Creados <span id="admin-profiles-header-count" style="font-size:0.92rem; color:#A5B4FC; font-weight:600;">(${profilesCount})</span>
+                            </h4>
+                            <p style="font-size:0.82rem; color:var(--text-muted); margin:0;">
+                                Consulta quiénes han personalizado y guardado su perfil en la plataforma, sus carreras, materias inscritas y actividad.
+                            </p>
                         </div>
+                        <div class="admin-search-box">
+                            <span class="admin-search-icon">🔍</span>
+                            <input type="text" id="admin-student-search-input" class="admin-search-input" placeholder="Buscar por nombre, carrera o universidad..." oninput="window.filterAdminStudentProfiles(this.value)" value="${window.adminTelemetryCache.studentSearchQuery || ''}">
+                        </div>
+                    </div>
+
+                    <div id="admin-student-profiles-container" class="admin-student-grid">
+                        ${renderAdminProfilesHtml(window.adminTelemetryCache.profiles, window.adminTelemetryCache.studentSearchQuery)}
+                    </div>
+                </div>
+
+                <!-- SECCIÓN 2: Monitoreo de Audiencia y Frecuentación en Tiempo Real -->
+                <div style="margin-bottom:2.25rem; background:rgba(255,255,255,0.015); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:1.25rem 1.4rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.75rem;">
+                        <div>
+                            <h4 style="color:#fff; font-size:1.15rem; margin:0 0 0.25rem; display:flex; align-items:center; gap:0.5rem;">
+                                ⚡ Monitoreo de Audiencia y Frecuentación en Vivo
+                            </h4>
+                            <p style="font-size:0.82rem; color:var(--text-muted); margin:0;">
+                                Registra con datos reales quiénes están frecuentando la plataforma, desde qué dispositivos (móvil o PC) y qué acciones realizan.
+                            </p>
+                        </div>
+                        <div style="display:flex; gap:0.4rem; flex-wrap:wrap; align-items:center;">
+                            <button class="admin-btn-action ${window.adminTelemetryCache.activeActivityFilter === 'all' ? 'active' : ''}" onclick="window.filterAdminActivityFeed('all', this)">Todos</button>
+                            <button class="admin-btn-action ${window.adminTelemetryCache.activeActivityFilter === 'visit' ? 'active' : ''}" onclick="window.filterAdminActivityFeed('visit', this)">👁️ Visitas</button>
+                            <button class="admin-btn-action ${window.adminTelemetryCache.activeActivityFilter === 'profile' ? 'active' : ''}" onclick="window.filterAdminActivityFeed('profile', this)">👤 Perfiles</button>
+                            <button class="admin-btn-action ${window.adminTelemetryCache.activeActivityFilter === 'download' ? 'active' : ''}" onclick="window.filterAdminActivityFeed('download', this)">📥 Descargas</button>
+                            <button class="admin-btn-action ${window.adminTelemetryCache.activeActivityFilter === 'course' ? 'active' : ''}" onclick="window.filterAdminActivityFeed('course', this)">📚 Cursos</button>
+                            <button class="btn btn-secondary" onclick="window.fetchAdminCloudTelemetry(true)" style="font-size:0.78rem; padding:0.35rem 0.75rem; margin-left:0.4rem; display:inline-flex; align-items:center; gap:0.35rem;">
+                                🔄 Actualizar en Vivo
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="admin-activity-timeline-container" class="admin-activity-timeline">
+                        ${renderAdminActivityHtml(window.adminTelemetryCache.activity, window.adminTelemetryCache.activeActivityFilter)}
                     </div>
                 </div>
 
@@ -2832,6 +3380,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>
         `;
+
+        // Sincronizar automáticamente en segundo plano telemetría y perfiles
+        fetchAdminCloudTelemetry(false);
     };
 
     // Funciones de acción del Dashboard
@@ -2876,34 +3427,54 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     window.adminIncrementVisits = function(n = 10) {
-        let v = parseInt(localStorage.getItem('physicsailab_visits') || BASE_VISITS.toString(), 10);
+        let v = parseInt(localStorage.getItem('physicsailab_real_visits') || '14', 10);
         v += n;
-        localStorage.setItem('physicsailab_visits', v);
-        updateVisitsDisplay(v);
+        localStorage.setItem('physicsailab_real_visits', v);
+        fetch(`${FIREBASE_BASE}/counters.json`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ real_visits: v, last_visit: new Date().toISOString() })
+        }).catch(() => {});
+        updateVisitsDisplay(BASE_VISITS + v);
         renderAdminDashboardContent();
-        showToast(`👁️ Se agregaron +${n} visitas. Total: ${v.toLocaleString('es-ES')}`);
+        showToast(`👁️ Se agregaron +${n} visitas reales. Total real: ${v.toLocaleString('es-ES')}`);
     };
 
     window.adminIncrementDownloads = function(n = 5) {
-        let d = parseInt(localStorage.getItem('physicsailab_downloads') || BASE_DOWNLOADS.toString(), 10);
+        let d = parseInt(localStorage.getItem('physicsailab_real_downloads') || '6', 10);
         d += n;
-        localStorage.setItem('physicsailab_downloads', d);
-        updateDownloadsDisplay(d);
+        localStorage.setItem('physicsailab_real_downloads', d);
+        fetch(`${FIREBASE_BASE}/counters.json`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ real_downloads: d, last_download: new Date().toISOString() })
+        }).catch(() => {});
+        updateDownloadsDisplay(BASE_DOWNLOADS + d);
         renderAdminDashboardContent();
-        showToast(`📥 Se agregaron +${n} descargas. Total: ${d.toLocaleString('es-ES')}`);
+        showToast(`📥 Se agregaron +${n} descargas reales. Total real: ${d.toLocaleString('es-ES')}`);
     };
 
     window.adminResetCounter = function(type) {
-        if (!confirm(`¿Estás seguro de restablecer el contador de ${type === 'visits' ? 'visitas' : 'descargas'} a su valor base inicial?`)) return;
+        if (!confirm(`¿Estás seguro de restablecer el contador real de ${type === 'visits' ? 'visitas' : 'descargas'}?`)) return;
         if (type === 'visits') {
-            localStorage.setItem('physicsailab_visits', BASE_VISITS);
-            updateVisitsDisplay(BASE_VISITS);
+            localStorage.setItem('physicsailab_real_visits', 1);
+            fetch(`${FIREBASE_BASE}/counters.json`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ real_visits: 1, last_visit: new Date().toISOString() })
+            }).catch(() => {});
+            updateVisitsDisplay(BASE_VISITS + 1);
         } else {
-            localStorage.setItem('physicsailab_downloads', BASE_DOWNLOADS);
+            localStorage.setItem('physicsailab_real_downloads', 0);
+            fetch(`${FIREBASE_BASE}/counters.json`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ real_downloads: 0, last_download: new Date().toISOString() })
+            }).catch(() => {});
             updateDownloadsDisplay(BASE_DOWNLOADS);
         }
         renderAdminDashboardContent();
-        showToast(`🔄 Contador de ${type === 'visits' ? 'visitas' : 'descargas'} restablecido.`);
+        showToast(`🔄 Contador real de ${type === 'visits' ? 'visitas' : 'descargas'} restablecido.`);
     };
 
     window.adminEliminarComentario = function(commentId) {
