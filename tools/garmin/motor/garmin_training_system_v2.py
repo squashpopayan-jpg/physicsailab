@@ -4179,7 +4179,20 @@ def generate_adaptive_workout(profile: dict, raw: dict) -> dict:
                                if isinstance(e, dict) and e.get("wo_type")][:7]
     except Exception:
         pass
-    # Fallback si el log está vacío
+    # Fallback a web_export.json si workout_log.json no existe en el runner
+    if not recent_wo_types:
+        for _cand in [OUT / "web_export.json", PROJECT_DIR.parent / "web" / "garmin" / "data" / "web_export.json"]:
+            if _cand.exists():
+                try:
+                    import json as _json
+                    _we = _json.loads(_cand.read_text(encoding="utf-8"))
+                    _wh = _we.get("workout_history", [])
+                    if _wh:
+                        recent_wo_types = [e["wo_type"] for e in _wh if isinstance(e, dict) and e.get("wo_type")][:7]
+                        break
+                except Exception:
+                    pass
+    # Fallback a actividades recientes si no hay historial previo
     if not recent_wo_types:
         for _a in acts[:7]:
             _t = _a.get("type", "")
@@ -4225,17 +4238,14 @@ def generate_adaptive_workout(profile: dict, raw: dict) -> dict:
     }
 
     FAT_BURN_SCORE = {
-        "fat_burn_long":25,"long_z2":22,"z2_pyramid":21,"easy_z2":18,
-        "fat_burn_hiit":22,"circuit_metabolic":20,"fartlek":18,
-        "squash_cancha":19,"progression_run":16,"tempo_escalonado":16,
-        "strides_neuromuscular":15,"z3_tempo_intro":14,"z3_tempo_continuo":14,
-        "vo2max_4x4":14,"vo2max_intervals":13,"strength_preventive":12,
-        "squash_conditioning":14,"squash_technical":8,"rebuild_base":10,
-        "recovery":5,"mobility_stretch":5,"mindful_recovery":6,
-        "intervals_400m":12,"intervals_800m":12,"cruise_intervals":14,
-        "hill_repeats":16,"norwegian_15_15":14,"z2_negative_split":19,
-        "fat_burn_walk":25,"squash_ghosting_hiit":18,
-        "strength_explosive":15,"yoga_recovery":5,
+        "fat_burn_walk": 20, "fat_burn_long": 20, "z2_pyramid": 20, "z2_negative_split": 20,
+        "circuit_metabolic": 19, "tempo_escalonado": 18, "progression_run": 18, "easy_z2": 18,
+        "long_z2": 18, "fat_burn_hiit": 18, "strength_preventive": 16, "strides_neuromuscular": 16,
+        "squash_cancha": 16, "mobility_stretch": 15, "yoga_recovery": 15, "recovery": 15,
+        "fartlek": 15, "cruise_intervals": 14, "z3_tempo_intro": 14, "z3_tempo_continuo": 14,
+        "vo2max_4x4": 14, "squash_conditioning": 14, "norwegian_15_15": 14, "strength_explosive": 14,
+        "vo2max_intervals": 13, "intervals_400m": 12, "intervals_800m": 12, "rebuild_base": 10,
+        "squash_technical": 10, "mindful_recovery": 10,
     }
 
     bb_curr = float(profile.get("bb_high",50) or 50)
@@ -4267,22 +4277,22 @@ def generate_adaptive_workout(profile: dict, raw: dict) -> dict:
 
         # B. Pérdida de peso / quema grasa (0-25)
         sc += FAT_BURN_SCORE.get(wt, 10)
-        wo_dur_est = min(dur_base+20,70) if wt=="fat_burn_long" else dur_base+15 if wt=="long_z2" else 35
-        if wo_dur_est >= 45: sc += 5
-        if wo_dur_est >= 55: sc += 3
+        # Bonus de volumen prolongado solo en día de tirada larga (Sábado)
+        if wt in {"fat_burn_long", "long_z2"} and weekday == 5:
+            sc += 6
 
-        # C. Variedad anti-repetición (0-20)
+        # C. Variedad anti-repetición (0-35)
         ds = _days_since_type(wt)
-        if ds == 0:   sc -= 20
-        elif ds == 1: sc -= 10
-        elif ds == 2: sc -= 4
-        elif ds >= 4: sc += 8
+        if ds == 0:   sc -= 35   # Ya prescrito o completado hoy -> rotar obligatoriamente
+        elif ds == 1: sc -= 22   # Realizado ayer -> penalización fuerte para no repetir
+        elif ds == 2: sc -= 10   # Realizado anteayer
+        elif ds >= 4: sc += 6    # No realizado en 4+ días -> fomenta rotación
         if len(recent_wo_types) >= 2 and recent_wo_types[0] == wt == recent_wo_types[1]:
-            sc -= 25  # 2 días seguidos del mismo → penalización fuerte
+            sc -= 30  # 2 días seguidos del mismo → penalización máxima
 
         # D. Periodización (0-15)
         if cy_week == 1:  # Acumulación
-            if wt in {"easy_z2","long_z2","fat_burn_long","z2_pyramid"}: sc += 12
+            if wt in {"easy_z2","long_z2","fat_burn_long","z2_pyramid"}: sc += 10
             if wt in HIGH_INTENSITY: sc -= 10
         elif cy_week == 3:  # Intensificación
             if wt in HIGH_INTENSITY: sc += 12
@@ -4290,11 +4300,11 @@ def generate_adaptive_workout(profile: dict, raw: dict) -> dict:
             if wt in RECOVERY_ONLY: sc += 15
             if wt in HIGH_INTENSITY: sc -= 15
         # ACWR
-        if acwr < 0.8 and wt in {"long_z2","fat_burn_long","z2_pyramid"}: sc += 8
+        if acwr < 0.8 and wt in {"long_z2","fat_burn_long","z2_pyramid"}: sc += 6
         if acwr > 1.3 and wt in RECOVERY_ONLY: sc += 10
         # Z4 déficit
         if needs_z4z5 and not high_intensity_3d and not squash_z4z5_48h:
-            if wt in HIGH_INTENSITY: sc += 12
+            if wt in HIGH_INTENSITY: sc += 10
         elif not needs_z4z5 and wt in HIGH_INTENSITY:
             sc -= 5
 
@@ -4304,9 +4314,31 @@ def generate_adaptive_workout(profile: dict, raw: dict) -> dict:
         if ds_sq == 0 and wt == "strength_preventive": sc += 6
         if ds_sq == 1 and wt == "squash_technical": sc += 5
 
-        # F. Día de la semana
-        if weekday == 2 and wt == "strength_preventive": sc += 6
-        if weekday in (5,6) and wt in {"squash_cancha","squash_technical"}: sc += 5
+        # F. Rotación Semanal Científica — Pérdida de Grasa (FatOx / FatMax)
+        # Cada día estimula un pilar metabólico distinto para evitar mesetas y optimizar lipólisis:
+        if weekday == 0:  # LUNES: Activación Mitocondrial & Cadencia FatMax
+            if wt == "z2_pyramid": sc += 16
+            elif wt == "easy_z2": sc += 10
+        elif weekday == 1:  # MARTES: Vaciado Glucogénico & Aceleración Lipídica (EPOC)
+            if wt in {"tempo_escalonado", "progression_run"}: sc += 16
+            elif wt == "fat_burn_hiit": sc += 12
+        elif weekday == 2:  # MIÉRCOLES: Oxidación Lipídica Pura Z1 (cero cortisol, 70% grasa)
+            if wt == "fat_burn_walk": sc += 18
+            elif wt == "recovery": sc += 12
+            elif wt == "strength_preventive": sc += 8
+        elif weekday == 3:  # JUEVES: Preservación Muscular & Circuito Metabólico
+            if wt in {"circuit_metabolic", "strength_preventive"}: sc += 16
+            elif wt == "easy_z2": sc += 8
+        elif weekday == 4:  # VIERNES: Split Negativo Cúspide FatMax
+            if wt == "z2_negative_split": sc += 16
+            elif wt in {"strides_neuromuscular", "easy_z2"}: sc += 10
+        elif weekday == 5:  # SÁBADO: Tirada Larga Quema Grasa (Carnot Lipídico)
+            if wt in {"fat_burn_long", "long_z2"}: sc += 18
+            elif wt in {"squash_cancha", "squash_technical"}: sc += 10
+        elif weekday == 6:  # DOMINGO: Restauración Parasimpática & Disipación de Cortisol
+            if wt in {"mobility_stretch", "yoga_recovery"}: sc += 18
+            elif wt in {"fat_burn_walk", "recovery"}: sc += 14
+            elif wt in {"squash_cancha", "squash_technical"}: sc += 8
 
         return round(sc, 1)
 
@@ -4940,12 +4972,12 @@ def generate_adaptive_workout(profile: dict, raw: dict) -> dict:
     # El scoring necesita saber qué tipo se prescribió ayer y anteayer.
     # Como Garmin no devuelve wo_type, lo guardamos en disco.
     try:
+        import json as _json
         _wo_log_path = OUT / "workout_log.json"
         _log = []
         if _wo_log_path.exists():
-            import json as _json
             try:
-                _log = _json.loads(_wo_log_path.read_text())
+                _log = _json.loads(_wo_log_path.read_text(encoding="utf-8"))
             except Exception:
                 _log = []
         _today_str = _today().isoformat()
@@ -4954,7 +4986,7 @@ def generate_adaptive_workout(profile: dict, raw: dict) -> dict:
         _log.insert(0, {"date": _today_str, "wo_type": wo_type,
                         "score": round(wo_score_top, 1)})
         _log = _log[:30]  # solo últimos 30 días
-        _wo_log_path.write_text(_json.dumps(_log, ensure_ascii=False))
+        _wo_log_path.write_text(_json.dumps(_log, ensure_ascii=False, indent=2), encoding="utf-8")
     except Exception as _e:
         pass  # log no crítico
 

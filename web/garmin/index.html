@@ -3047,50 +3047,66 @@ var WORKOUT_TEMPLATES = {
       ],
       color: 'var(--green)',
     };
-  },
 };
+window.WORKOUT_TEMPLATES = WORKOUT_TEMPLATES;
 
 function getWeekPlan(weekNum) {
   if (weekNum <= 0) weekNum = 1;
   var z = (G && G.zones && G.zones.length > 0) ? G.zones : defaultZones();
-
+  var T = (typeof WORKOUT_TEMPLATES !== 'undefined' && WORKOUT_TEMPLATES) ? WORKOUT_TEMPLATES : (window.WORKOUT_TEMPLATES || {});
+  function getT(fnName) {
+    var args = Array.prototype.slice.call(arguments, 1);
+    if (T && typeof T[fnName] === 'function') {
+      try { return T[fnName].apply(T, args); } catch(e) {}
+    }
+    return {
+      name: 'Base Aeróbica Z2',
+      emoji: '🏃',
+      total_min: 30,
+      zone_target: 2,
+      hr_range: (z[1]?z[1].bpm_low:124) + '-' + (z[1]?z[1].bpm_high:142) + ' bpm',
+      steps: ['① Sesión aeróbica suave en zona FatMax.'],
+      color: 'var(--blue)'
+    };
+  }
 
   if (weekNum <= 4) {
     // Fase 1: Base aeróbica
     return {
-      1: WORKOUT_TEMPLATES.rebuild_base(z, weekNum),
-      2: WORKOUT_TEMPLATES.rest(),
-      3: WORKOUT_TEMPLATES.easy_z2(z, weekNum),
-      4: WORKOUT_TEMPLATES.squash(),
-      5: WORKOUT_TEMPLATES.rebuild_base(z, weekNum),
-      6: WORKOUT_TEMPLATES.rest(),
-      0: WORKOUT_TEMPLATES.long_easy(z, weekNum),
+      1: getT('rebuild_base', z, weekNum),
+      2: getT('rest'),
+      3: getT('easy_z2', z, weekNum),
+      4: getT('squash'),
+      5: getT('rebuild_base', z, weekNum),
+      6: getT('rest'),
+      0: getT('long_easy', z, weekNum),
     };
   } else if (weekNum <= 8) {
     // Fase 2: Desarrollo
     return {
-      1: WORKOUT_TEMPLATES.easy_z2(z, weekNum),
-      2: WORKOUT_TEMPLATES.rest(),
-      3: WORKOUT_TEMPLATES.z3_tempo(z, weekNum),
-      4: WORKOUT_TEMPLATES.squash(),
-      5: WORKOUT_TEMPLATES.easy_z2(z, weekNum),
-      6: WORKOUT_TEMPLATES.rest(),
-      0: WORKOUT_TEMPLATES.long_easy(z, weekNum),
+      1: getT('easy_z2', z, weekNum),
+      2: getT('rest'),
+      3: getT('z3_tempo', z, weekNum),
+      4: getT('squash'),
+      5: getT('easy_z2', z, weekNum),
+      6: getT('rest'),
+      0: getT('long_easy', z, weekNum),
     };
   } else {
     // Fase 3: Rendimiento
     return {
-      1: WORKOUT_TEMPLATES.z3_tempo(z, weekNum),
-      2: WORKOUT_TEMPLATES.rest(),
+      1: getT('z3_tempo', z, weekNum),
+      2: getT('rest'),
       3: (function(){
-          var wo = WORKOUT_TEMPLATES.easy_z2(z, weekNum);
-          wo.name = 'Intervalos VO2max'; wo.emoji = '&#x26A1;';
+          var wo = getT('easy_z2', z, weekNum);
+          wo.name = 'Intervalos VO2max'; wo.emoji = '⚡';
           wo.hr_range = (z[3]?z[3].bpm_low:165)+'-'+(z[4]?z[4].bpm_high:193)+' bpm';
           wo.steps = ['① CALENTAMIENTO 10 min.', '② 4x(3 min Z4 '+(z[3]?z[3].bpm_low:165)+'-'+(z[3]?z[3].bpm_high:179)+' bpm / 3 min Z1).', '③ ENFRIAMIENTO 6 min.'];
-          wo.color = 'var(--red)'; return wo; })(),      4: WORKOUT_TEMPLATES.squash(),
-      5: WORKOUT_TEMPLATES.easy_z2(z, weekNum),
-      6: WORKOUT_TEMPLATES.rest(),
-      0: WORKOUT_TEMPLATES.long_easy(z, weekNum),
+          wo.color = 'var(--red)'; return wo; })(),
+      4: getT('squash'),
+      5: getT('easy_z2', z, weekNum),
+      6: getT('rest'),
+      0: getT('long_easy', z, weekNum),
     };
   }
 }
@@ -6916,7 +6932,7 @@ body{background:transparent;}
 .ux-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:18px;position:relative;z-index:1}
 .ux-metric{background:rgba(13,17,23,.46);border:1px solid rgba(48,54,61,.60);border-radius:18px;padding:13px;min-height:88px}
 .ux-metric-label{font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--text3);font-weight:700;margin-bottom:8px}
-.ux-metric-value{font-size:24px;line-height:1;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ux-metric-value{font-size:22px;line-height:1.15;font-weight:850;white-space:normal;word-break:break-word}
 .ux-metric-sub{font-size:10px;color:var(--text2);margin-top:6px;line-height:1.35}
 #semaphore-card.ux-hero-card{border-radius:26px;border-color:rgba(74,222,128,.22);box-shadow:0 24px 60px rgba(0,0,0,.36)}
 #semaphore-card.ux-sem-red{border-color:rgba(248,113,113,.38)}
@@ -6926,7 +6942,19 @@ body{background:transparent;}
 .ux-pill{border:1px solid rgba(48,54,61,.8);background:rgba(22,27,34,.75);color:var(--text2);border-radius:999px;padding:7px 11px;font-size:11px;font-weight:700;cursor:pointer;}
 .ux-pill.active{border-color:rgba(34,211,238,.42);color:var(--cyan);background:rgba(34,211,238,.10)}
 .ux-card-muted{opacity:.88}.ux-hidden-detail{display:none!important}
-.ux-error-banner{position:fixed;left:12px;right:12px;bottom:calc(12px + var(--safe-bottom));z-index:10000;background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.45);color:#fecaca;padding:10px 12px;border-radius:14px;font-size:12px;box-shadow:var(--shadow)}
+.ux-error-banner{display:none!important}
+@media (max-width:650px){
+  .ux-hero{padding:16px 14px!important;border-radius:20px!important;margin-bottom:14px!important}
+  .ux-title{font-size:clamp(18px,5.2vw,24px)!important;line-height:1.2!important}
+  .ux-sub{font-size:12px!important;line-height:1.45!important}
+  .ux-metrics{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;margin-top:14px!important}
+  .ux-metric{padding:10px 10px!important;min-height:auto!important;border-radius:14px!important}
+  .ux-metric-label{font-size:9px!important;letter-spacing:.06em!important;margin-bottom:4px!important}
+  .ux-metric-value{font-size:15px!important;line-height:1.25!important;white-space:normal!important;word-break:break-word!important;overflow:visible!important;text-overflow:clip!important;font-weight:800!important}
+  .ux-metric-sub{font-size:9px!important;margin-top:4px!important;line-height:1.25!important}
+  .tabs{top:61px!important;padding:6px 10px!important}
+  #content{padding:12px 12px 80px!important}
+}
 @media (min-width:780px){
   #content{padding-top:24px}.section.active{animation:uxFade .22s ease-out}.card{padding:20px}
   .section.active{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}.section.active>.ux-hero,.section.active>#hoy-empty,.section.active>#hoy-content{grid-column:1/-1}.section.active>.card{margin-bottom:0}.section.active>#hoy-content{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.section.active>#hoy-content>.card{margin-bottom:0}.section.active>#hoy-content>#semaphore-card,.section.active>#hoy-content>#sync-version-card{grid-column:1/-1}
@@ -6959,7 +6987,7 @@ body{background:transparent;}
   function enhanceCards(){document.querySelectorAll('.card').forEach(function(c){if(c.dataset.uxDone) return; c.dataset.uxDone='1'; var title=c.querySelector('.card-title'); if(title) title.title='Tarjeta validada visualmente · no modifica datos';});}
   function activeTab(){return (document.querySelector('.tab.active')||{}).dataset?document.querySelector('.tab.active').dataset.tab:'hoy';}
   function afterData(){setVersion(); renderHeroes(); enhanceCards(); setTimeout(resizeCharts,120); setTimeout(resizeCharts,420);}
-  function captureErrors(){if(window.__msqErrHook) return; window.__msqErrHook=true; window.addEventListener('error',function(e){var msg=(e.message||'Error JS')+' · '+(e.filename||'')+':'+(e.lineno||''); console.warn('[ManuSquash UX]',msg); var old=by('ux-error-banner'); if(old) old.remove(); var el=document.createElement('div'); el.className='ux-error-banner'; el.textContent='Se detectó un error visual no crítico: '+msg; document.body.appendChild(el); setTimeout(function(){try{el.remove();}catch(_){}} ,8000);});}
+  function captureErrors(){if(window.__msqErrHook) return; window.__msqErrHook=true; window.addEventListener('error',function(e){var msg=(e.message||'Error JS')+' · '+(e.filename||'')+':'+(e.lineno||''); console.warn('[ManuSquash UX]',msg);});}
   function lockVersion(){
     setVersion();
     var vb=by('version-badge');
