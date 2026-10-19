@@ -3865,6 +3865,649 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1200);
     };
 
+    // =========================================================================
+    // MÓDULO DE QUIZZES GAMIFICADOS ESTILO QUIZIZZ / WAYGROUND CON CÓDIGO PIN
+    // =========================================================================
+    const quizzesCatalogContainer = document.getElementById('quizzes-grid');
+    const quizPlayerModal = document.getElementById('quiz-player-modal');
+    const quizQuestionScreen = document.getElementById('quiz-question-screen');
+    const quizResultsScreen = document.getElementById('quiz-results-screen');
+    const quizFeedbackBanner = document.getElementById('quiz-feedback-banner');
+    
+    let quizSoundEnabled = localStorage.getItem('physicsailab_quiz_sound') !== 'false';
+    let audioCtx = null;
+
+    function getAudioContext() {
+        if (!audioCtx) {
+            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            if (AudioContextClass) audioCtx = new AudioContextClass();
+        }
+        if (audioCtx && audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+        return audioCtx;
+    }
+
+    function playQuizAudio(type) {
+        if (!quizSoundEnabled) return;
+        try {
+            const ctx = getAudioContext();
+            if (!ctx) return;
+            const now = ctx.currentTime;
+
+            if (type === 'correct') {
+                // Arpegio brillante en Do Mayor (C5 - E5 - G5 - C6)
+                const freqs = [523.25, 659.25, 783.99, 1046.50];
+                freqs.forEach((f, i) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(f, now + i * 0.08);
+                    gain.gain.setValueAtTime(0, now + i * 0.08);
+                    gain.gain.linearRampToValueAtTime(0.18, now + i * 0.08 + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.35);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now + i * 0.08);
+                    osc.stop(now + i * 0.08 + 0.36);
+                });
+            } else if (type === 'incorrect') {
+                // Zumbido grave descendente
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(220, now);
+                osc.frequency.linearRampToValueAtTime(140, now + 0.28);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.31);
+            } else if (type === 'finish') {
+                // Fanfarria victoriosa al culminar el examen
+                const melody = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+                melody.forEach((f, i) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(f, now + i * 0.1);
+                    gain.gain.setValueAtTime(0, now + i * 0.1);
+                    gain.gain.linearRampToValueAtTime(0.2, now + i * 0.1 + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.1 + 0.45);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now + i * 0.1);
+                    osc.stop(now + i * 0.1 + 0.46);
+                });
+            } else if (type === 'click') {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, now);
+                gain.gain.setValueAtTime(0.06, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.09);
+            }
+        } catch (e) {}
+    }
+
+    window.toggleQuizSound = function() {
+        quizSoundEnabled = !quizSoundEnabled;
+        localStorage.setItem('physicsailab_quiz_sound', quizSoundEnabled);
+        const btn = document.getElementById('player-sound-btn');
+        if (btn) {
+            btn.textContent = quizSoundEnabled ? '🔊' : '🔇';
+            btn.title = quizSoundEnabled ? 'Sonido activado (clic para silenciar)' : 'Sonido silenciado (clic para activar)';
+        }
+        if (quizSoundEnabled) playQuizAudio('click');
+    };
+
+    let activeQuiz = {
+        preset: null,
+        title: '',
+        roomCode: '',
+        questions: [],
+        currentIndex: 0,
+        score: 0,
+        streak: 0,
+        maxStreak: 0,
+        correctCount: 0,
+        wrongCount: 0,
+        answeredCurrent: false,
+        userAnswers: [],
+        startTime: null
+    };
+
+    function renderQuizzesCatalog() {
+        if (!quizzesCatalogContainer) return;
+        const qData = window.QUIZZES_DATA;
+        if (!qData || !qData.presets) {
+            quizzesCatalogContainer.innerHTML = '<p style="color:var(--text-muted); text-align:center;">Cargando banco oficial de quizzes...</p>';
+            return;
+        }
+
+        quizzesCatalogContainer.innerHTML = qData.presets.map(p => `
+            <div class="quiz-preset-card">
+                <div class="quiz-preset-top">
+                    <span class="quiz-preset-badge">${p.badge || '🎮 Quiz Oficial'}</span>
+                    <h3 class="quiz-preset-title">${p.title}</h3>
+                    <div class="quiz-preset-sub">${p.subtitle}</div>
+                    <p class="quiz-preset-desc">${p.description}</p>
+                    <div class="quiz-preset-meta">
+                        <span class="quiz-meta-pill">🎯 ${p.totalPreguntas} Preguntas</span>
+                        <span class="quiz-meta-pill">⏱️ ~${p.tiempoSugeridoMin} Min</span>
+                        <span class="quiz-meta-pill pin-pill">PIN: ${p.code}</span>
+                    </div>
+                </div>
+                <button type="button" class="quiz-play-btn" onclick="startQuizWithPresetId('${p.id}')">
+                    <span>🚀 Jugar Desafío</span>
+                </button>
+            </div>
+        `).join('');
+    }
+
+    function startQuizWithPreset(preset) {
+        const qData = window.QUIZZES_DATA;
+        if (!qData || !qData.questions) {
+            alert('El banco de preguntas no está disponible en este momento.');
+            return;
+        }
+
+        // Obtener preguntas completas asociadas a este preset
+        const questions = (preset.questionIds || [])
+            .map(id => qData.questions.find(q => q.id === id))
+            .filter(Boolean);
+
+        if (questions.length === 0) {
+            alert('No se encontraron preguntas para este cuestionario.');
+            return;
+        }
+
+        activeQuiz = {
+            preset: preset,
+            title: preset.title,
+            roomCode: preset.code,
+            questions: questions,
+            currentIndex: 0,
+            score: 0,
+            streak: 0,
+            maxStreak: 0,
+            correctCount: 0,
+            wrongCount: 0,
+            answeredCurrent: false,
+            userAnswers: [],
+            startTime: Date.now()
+        };
+
+        // Configurar UI del reproductor
+        if (quizPlayerModal) {
+            quizPlayerModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        const soundBtn = document.getElementById('player-sound-btn');
+        if (soundBtn) {
+            soundBtn.textContent = quizSoundEnabled ? '🔊' : '🔇';
+        }
+
+        playQuizAudio('click');
+        renderCurrentQuizQuestion();
+
+        // Registrar en telemetría Firebase
+        logRealActivity(`Ingresó al Quiz "${preset.title}" con PIN [${preset.code}] (${questions.length} preguntas)`, 'quiz');
+    }
+
+    function renderCurrentQuizQuestion() {
+        if (!activeQuiz.questions || activeQuiz.currentIndex >= activeQuiz.questions.length) {
+            showQuizFinalResults();
+            return;
+        }
+
+        activeQuiz.answeredCurrent = false;
+        const q = activeQuiz.questions[activeQuiz.currentIndex];
+        const total = activeQuiz.questions.length;
+        const currNum = activeQuiz.currentIndex + 1;
+
+        // Topbar
+        const roomBadge = document.getElementById('player-room-badge');
+        if (roomBadge) roomBadge.textContent = `🎯 PIN: ${activeQuiz.roomCode}`;
+
+        const streakBadge = document.getElementById('player-streak-badge');
+        if (streakBadge) streakBadge.textContent = `🔥 Racha x${activeQuiz.streak}`;
+
+        const currentIdxEl = document.getElementById('player-current-idx');
+        if (currentIdxEl) currentIdxEl.textContent = currNum;
+
+        const totalCountEl = document.getElementById('player-total-count');
+        if (totalCountEl) totalCountEl.textContent = total;
+
+        const progressFill = document.getElementById('player-progress-fill');
+        if (progressFill) {
+            const pct = Math.round(((currNum - 1) / total) * 100);
+            progressFill.style.width = `${pct}%`;
+        }
+
+        const scoreEl = document.getElementById('player-score-value');
+        if (scoreEl) scoreEl.textContent = activeQuiz.score.toLocaleString('es-ES');
+
+        // Question Screen
+        if (quizQuestionScreen) quizQuestionScreen.style.display = 'flex';
+        if (quizResultsScreen) quizResultsScreen.style.display = 'none';
+
+        // Question Meta
+        const numTag = document.getElementById('q-num-tag');
+        if (numTag) numTag.textContent = `Pregunta ${q.num || currNum}`;
+
+        const topicTag = document.getElementById('q-topic-tag');
+        if (topicTag) topicTag.textContent = q.tema || 'Cinemática & Dinámica';
+
+        const catTag = document.getElementById('q-cat-tag');
+        if (catTag) {
+            const catMap = {
+                'concepto': '🧠 Concepto',
+                'calculo': '📐 Cálculo',
+                'grafica': '📊 Gráfica'
+            };
+            catTag.textContent = catMap[q.categoria] || (q.categoria ? q.categoria.toUpperCase() : 'GENERAL');
+        }
+
+        // Question Text
+        const qTextEl = document.getElementById('q-question-text');
+        if (qTextEl) qTextEl.textContent = q.pregunta;
+
+        // Diagram / Gráfica (16 preguntas del cuestionario tienen gráfica)
+        const diagramWrapper = document.getElementById('q-diagram-wrapper');
+        const diagramContainer = document.getElementById('q-diagram-container');
+        if (diagramWrapper && diagramContainer) {
+            if (q.graficaSvg) {
+                diagramWrapper.style.display = 'flex';
+                diagramContainer.innerHTML = q.graficaSvg;
+            } else if (q.imagen) {
+                diagramWrapper.style.display = 'flex';
+                diagramContainer.innerHTML = `<img src="${q.imagen}" alt="Diagrama de evaluación">`;
+            } else {
+                diagramWrapper.style.display = 'none';
+                diagramContainer.innerHTML = '';
+            }
+        }
+
+        // Cuadrícula de 4 Opciones Estilo Quizizz / Kahoot
+        const optionsContainer = document.getElementById('q-options-container');
+        if (optionsContainer) {
+            const optStyles = [
+                { cls: 'opt-red', shape: '▲', letter: 'A' },
+                { cls: 'opt-blue', shape: '◆', letter: 'B' },
+                { cls: 'opt-yellow', shape: '●', letter: 'C' },
+                { cls: 'opt-green', shape: '■', letter: 'D' }
+            ];
+
+            optionsContainer.innerHTML = (q.opciones || []).map((optStr, idx) => {
+                const style = optStyles[idx] || optStyles[0];
+                // Limpiar prefijo "A. ", "B. ", etc. si existe para no duplicarlo visualmente
+                const cleanText = optStr.replace(/^[A-D]\.\s*/, '');
+                return `
+                    <button type="button" class="quiz-opt-btn ${style.cls}" data-letter="${style.letter}" onclick="handleQuizOptionSelect('${style.letter}', ${idx})">
+                        <span class="opt-badge">
+                            <span class="opt-shape">${style.shape}</span>
+                            <span class="opt-letter">${style.letter}</span>
+                        </span>
+                        <span class="opt-text">${cleanText}</span>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        // Ocultar banner de feedback
+        if (quizFeedbackBanner) quizFeedbackBanner.style.display = 'none';
+
+        // Scroll al inicio del modal
+        if (quizPlayerModal) quizPlayerModal.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    window.handleQuizOptionSelect = function(letter, optIndex) {
+        if (activeQuiz.answeredCurrent) return;
+        activeQuiz.answeredCurrent = true;
+
+        const q = activeQuiz.questions[activeQuiz.currentIndex];
+        if (!q) return;
+
+        const isCorrect = (letter.trim().toUpperCase() === q.correcta.trim().toUpperCase());
+        const optionsContainer = document.getElementById('q-options-container');
+        const allButtons = optionsContainer ? optionsContainer.querySelectorAll('.quiz-opt-btn') : [];
+
+        // Deshabilitar y resaltar opciones visualmente
+        allButtons.forEach(btn => {
+            btn.disabled = true;
+            const btnLetter = btn.getAttribute('data-letter');
+            if (btnLetter === q.correcta) {
+                btn.classList.add('is-correct');
+            } else if (!isCorrect && btnLetter === letter) {
+                btn.classList.add('is-incorrect');
+            } else {
+                btn.classList.add('is-dimmed');
+            }
+        });
+
+        // Actualizar estadísticas y puntaje
+        let pointsGained = 0;
+        if (isCorrect) {
+            activeQuiz.streak++;
+            if (activeQuiz.streak > activeQuiz.maxStreak) {
+                activeQuiz.maxStreak = activeQuiz.streak;
+            }
+            pointsGained = 100 + ((activeQuiz.streak - 1) * 25);
+            activeQuiz.score += pointsGained;
+            activeQuiz.correctCount++;
+            playQuizAudio('correct');
+
+            // Animación de racha
+            const streakBadge = document.getElementById('player-streak-badge');
+            if (streakBadge) {
+                streakBadge.textContent = `🔥 Racha x${activeQuiz.streak}`;
+                streakBadge.classList.add('streak-pop');
+                setTimeout(() => streakBadge.classList.remove('streak-pop'), 300);
+            }
+        } else {
+            activeQuiz.streak = 0;
+            activeQuiz.wrongCount++;
+            playQuizAudio('incorrect');
+
+            const streakBadge = document.getElementById('player-streak-badge');
+            if (streakBadge) streakBadge.textContent = `🔥 Racha x0`;
+        }
+
+        const scoreEl = document.getElementById('player-score-value');
+        if (scoreEl) scoreEl.textContent = activeQuiz.score.toLocaleString('es-ES');
+
+        // Guardar respuesta del estudiante para la revisión final
+        const selectedOptText = (q.opciones || []).find(o => o.startsWith(letter + '.')) || `${letter}. ${letter}`;
+        const correctOptText = (q.opciones || []).find(o => o.startsWith(q.correcta + '.')) || `${q.correcta}. ${q.correcta}`;
+        activeQuiz.userAnswers.push({
+            question: q,
+            selectedLetter: letter,
+            selectedText: selectedOptText,
+            isCorrect: isCorrect,
+            correctLetter: q.correcta,
+            correctText: correctOptText
+        });
+
+        // Configurar y mostrar banner de feedback inmediato
+        if (quizFeedbackBanner) {
+            quizFeedbackBanner.className = 'quiz-feedback-banner ' + (isCorrect ? 'feedback-correct' : 'feedback-incorrect');
+            
+            const iconEl = document.getElementById('feedback-icon');
+            if (iconEl) iconEl.textContent = isCorrect ? '🎉' : '❌';
+
+            const titleEl = document.getElementById('feedback-title');
+            if (titleEl) titleEl.textContent = isCorrect ? '¡RESPUESTA CORRECTA!' : '¡RESPUESTA INCORRECTA!';
+
+            const descEl = document.getElementById('feedback-desc');
+            if (descEl) {
+                descEl.textContent = isCorrect 
+                    ? `+${pointsGained} Puntos · ¡Racha de ${activeQuiz.streak} seguidas!` 
+                    : `La respuesta correcta era la opción ${q.correcta}`;
+            }
+
+            const expTextEl = document.getElementById('feedback-explanation-text');
+            if (expTextEl) {
+                expTextEl.textContent = q.explicacion || 'Revisa los principios físicos del tema.';
+            }
+
+            const nextBtn = document.getElementById('feedback-next-btn');
+            if (nextBtn) {
+                const isLast = (activeQuiz.currentIndex + 1 >= activeQuiz.questions.length);
+                nextBtn.innerHTML = isLast ? '<span>Ver Resultados Finales 🏆</span>' : '<span>Siguiente Pregunta ➔</span>';
+            }
+
+            quizFeedbackBanner.style.display = 'block';
+
+            // Scroll suave hacia el feedback si la pantalla es móvil
+            setTimeout(() => {
+                quizFeedbackBanner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+        }
+    };
+
+    window.nextQuizQuestion = function() {
+        playQuizAudio('click');
+        activeQuiz.currentIndex++;
+        if (activeQuiz.currentIndex < activeQuiz.questions.length) {
+            renderCurrentQuizQuestion();
+        } else {
+            showQuizFinalResults();
+        }
+    };
+
+    function showQuizFinalResults() {
+        playQuizAudio('finish');
+
+        const total = activeQuiz.questions.length;
+        const correct = activeQuiz.correctCount;
+        const wrong = activeQuiz.wrongCount;
+        const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
+        const gradeNum = total > 0 ? ((correct / total) * 5.0) : 0;
+        const grade = gradeNum.toFixed(1);
+
+        // Barra de progreso llena
+        const progressFill = document.getElementById('player-progress-fill');
+        if (progressFill) progressFill.style.width = '100%';
+
+        // Preguntas falladas
+        const failedList = activeQuiz.userAnswers.filter(a => !a.isCorrect);
+
+        // Rangos de calificación académica universitaria
+        let trophy = '🏆';
+        let rankTitle = '¡Sobresaliente! Maestro de la Física';
+        let rankSub = 'Dominas con excelencia los conceptos, ecuaciones y gráficas evaluadas.';
+        if (gradeNum < 3.0) {
+            trophy = '📚';
+            rankTitle = 'Necesitas Repasar Conceptos Clave';
+            rankSub = 'La física premia el análisis constante. Revisa con detalle cada pregunta fallada a continuación.';
+        } else if (gradeNum < 3.8) {
+            trophy = '💡';
+            rankTitle = '¡Aprobado! Buen Esfuerzo';
+            rankSub = 'Tienes una base sólida. Analiza las explicaciones de tus fallos para alcanzar el nivel sobresaliente.';
+        } else if (gradeNum < 4.5) {
+            trophy = '🎯';
+            rankTitle = '¡Notable Desempeño!';
+            rankSub = 'Has superado el examen con un porcentaje muy alto de aciertos.';
+        }
+
+        // Construir HTML del desglose de errores ("en qué preguntas falló")
+        let failedSectionHtml = '';
+        if (failedList.length === 0) {
+            failedSectionHtml = `
+                <div class="perfect-score-banner">
+                    <h4>🌟 ¡Puntaje Perfecto! Cero Fallos</h4>
+                    <p>Respondiste correctamente todas las <strong>${total}</strong> preguntas del cuestionario. ¡Dominio total de cinemática y dinámica!</p>
+                </div>
+            `;
+        } else {
+            failedSectionHtml = `
+                <div class="quiz-failed-list">
+                    ${failedList.map((item, idx) => {
+                        const q = item.question;
+                        return `
+                            <div class="quiz-failed-item">
+                                <div class="failed-item-header">
+                                    <span class="failed-item-num">Pregunta ${q.num || (idx + 1)}</span>
+                                    <span class="failed-item-topic">📌 ${q.tema || 'Física'} · ${q.categoria ? q.categoria.toUpperCase() : ''}</span>
+                                </div>
+                                <div class="failed-item-question">${q.pregunta}</div>
+                                ${q.graficaSvg ? `<div class="failed-item-diagram">${q.graficaSvg}</div>` : ''}
+                                <div class="failed-answers-compare">
+                                    <div class="answer-card student-picked">
+                                        <span class="answer-card-label">❌ Tu Elección:</span>
+                                        <div>${item.selectedText}</div>
+                                    </div>
+                                    <div class="answer-card correct-key">
+                                        <span class="answer-card-label">✅ Respuesta Correcta:</span>
+                                        <div>${item.correctText}</div>
+                                    </div>
+                                </div>
+                                <div class="failed-explanation-box">
+                                    <strong>💡 Explicación del Mg. Manuel Obando:</strong>
+                                    <div>${q.explicacion}</div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        if (quizQuestionScreen) quizQuestionScreen.style.display = 'none';
+        if (quizResultsScreen) {
+            quizResultsScreen.style.display = 'block';
+            quizResultsScreen.innerHTML = `
+                <div class="quiz-results-card">
+                    <div class="results-hero">
+                        <div class="results-trophy">${trophy}</div>
+                        <div class="results-grade">${grade} <span style="font-size:1.4rem; color:var(--text-muted); font-weight:600;">/ 5.0</span></div>
+                        <h2 class="results-title">${rankTitle}</h2>
+                        <p class="results-subtitle">${rankSub}</p>
+                    </div>
+
+                    <div class="results-stats-grid">
+                        <div class="result-stat-box stat-correct">
+                            <div class="result-stat-val">${correct} / ${total}</div>
+                            <div class="result-stat-lbl">Aciertos</div>
+                        </div>
+                        <div class="result-stat-box stat-wrong">
+                            <div class="result-stat-val">${wrong} / ${total}</div>
+                            <div class="result-stat-lbl">Fallos</div>
+                        </div>
+                        <div class="result-stat-box stat-acc">
+                            <div class="result-stat-val">${accuracy}%</div>
+                            <div class="result-stat-lbl">Precisión</div>
+                        </div>
+                        <div class="result-stat-box stat-score">
+                            <div class="result-stat-val">${activeQuiz.score}</div>
+                            <div class="result-stat-lbl">Puntaje Total</div>
+                        </div>
+                    </div>
+
+                    <!-- Sección Detallada de Preguntas en las que Falló -->
+                    <div class="results-review-section">
+                        <div class="results-review-header">
+                            <h3 class="results-review-title">
+                                <span>📋</span> ¿En Qué Preguntas Falló?
+                                ${wrong > 0 ? `<span class="review-badge-count">${wrong} falladas para repasar</span>` : ''}
+                            </h3>
+                            <span style="font-size:0.85rem; color:var(--text-muted);">
+                                ${wrong === 0 ? 'Examen impecable sin errores' : 'Repasa las soluciones para afianzar el aprendizaje'}
+                            </span>
+                        </div>
+                        ${failedSectionHtml}
+                    </div>
+
+                    <div class="results-actions">
+                        <button type="button" class="btn-quiz-retry" onclick="restartCurrentQuiz()">
+                            🔄 Repetir Este Quiz
+                        </button>
+                        <button type="button" class="btn-quiz-share" onclick="shareQuizResultsWhatsApp('${grade}', ${correct}, ${total})">
+                            📱 Compartir en WhatsApp
+                        </button>
+                        <button type="button" class="btn-quiz-exit" onclick="closeQuizModal()">
+                            🚪 Volver a la Sala de Quizzes
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Scroll al inicio del modal para ver la nota y el podio
+        if (quizPlayerModal) quizPlayerModal.scrollTo({ top: 0, behavior: 'smooth' });
+
+        // Registrar en telemetría de Firebase
+        logRealActivity(`Completó Quiz "${activeQuiz.title}" (PIN: ${activeQuiz.roomCode}) con nota ${grade}/5.0 (${correct}/${total} aciertos, ${accuracy}% de precisión)`, 'quiz');
+    }
+
+    window.shareQuizResultsWhatsApp = function(grade, correct, total) {
+        const text = `¡Hola! Acabo de completar el quiz universitario de física en PhysicsAILab.com:\n\n🏆 Quiz: ${activeQuiz.title}\n📊 Calificación: ${grade} / 5.0\n🎯 Aciertos: ${correct} de ${total} preguntas\n\n¿Te animas a superarme? Ingresa el código PIN "${activeQuiz.roomCode}" en: https://physicsailab.com/#quizzes`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    };
+
+    window.handleQuizJoinSubmit = function(event) {
+        if (event) event.preventDefault();
+        const pinInput = document.getElementById('quiz-pin-input');
+        if (!pinInput) return;
+        const rawPin = pinInput.value.trim().toUpperCase();
+        if (!rawPin) return;
+
+        const qData = window.QUIZZES_DATA;
+        if (!qData || !qData.presets) {
+            alert('El banco de cuestionarios no está cargado.');
+            return;
+        }
+
+        const matched = qData.presets.find(p => 
+            p.code.toUpperCase() === rawPin || 
+            (p.aliases && p.aliases.some(a => a.toUpperCase() === rawPin))
+        );
+
+        if (matched) {
+            startQuizWithPreset(matched);
+        } else {
+            alert(`⚠️ Código PIN "${rawPin}" no encontrado.\n\nPor favor intenta con alguno de los códigos oficiales:\n• FISICA-60 (Banco completo de 60 preguntas)\n• CINEMATICA-15 (MRU, MRUA y Caída Libre)\n• DINAMICA-15 (Leyes de Newton y Fuerzas)\n• EXPRESS-10 (Calentamiento rápido de 10 preguntas)`);
+            pinInput.focus();
+        }
+    };
+
+    window.joinQuizByCode = function(code) {
+        const pinInput = document.getElementById('quiz-pin-input');
+        if (pinInput) pinInput.value = code;
+        window.handleQuizJoinSubmit();
+    };
+
+    window.startQuizWithPresetId = function(presetId) {
+        const qData = window.QUIZZES_DATA;
+        if (!qData || !qData.presets) return;
+        const preset = qData.presets.find(p => p.id === presetId);
+        if (preset) startQuizWithPreset(preset);
+    };
+
+    window.restartCurrentQuiz = function() {
+        if (activeQuiz.preset) {
+            startQuizWithPreset(activeQuiz.preset);
+        }
+    };
+
+    window.confirmExitQuiz = function() {
+        if (activeQuiz.userAnswers && activeQuiz.userAnswers.length > 0 && activeQuiz.userAnswers.length < activeQuiz.questions.length) {
+            if (confirm('¿Seguro que deseas abandonar la partida en curso? Se perderá el avance actual.')) {
+                closeQuizModal();
+            }
+        } else {
+            closeQuizModal();
+        }
+    };
+
+    window.closeQuizModal = function() {
+        if (quizPlayerModal) {
+            quizPlayerModal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    };
+
+    // Renderizar catálogo inicial de quizzes
+    renderQuizzesCatalog();
+
+    // Soporte para entrada directa por URL con ?quiz=CODIGO o ?pin=CODIGO
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const quizParam = urlParams.get('quiz') || urlParams.get('pin');
+        if (quizParam) {
+            setTimeout(() => {
+                window.joinQuizByCode(quizParam);
+            }, 600);
+        }
+    } catch (e) {}
+
     // Adaptar dinámicamente si cambia el tamaño de pantalla
     window.addEventListener('resize', () => {
         renderCourses();
