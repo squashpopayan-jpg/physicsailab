@@ -6719,13 +6719,30 @@ def _auto_upload_workout(api: Garmin, workout: dict, zones: list = None, force: 
 
         if isinstance(result, dict) and result.get("workoutId"):
             wid = result["workoutId"]
-            now_h = _now().hour
-            target_date = _today() if now_h < 6 else _today() + timedelta(days=1)
+            # Siempre programar en el calendario de Garmin para HOY (entrenamiento adaptativo del día)
+            target_date = _today()
             try:
                 api.schedule_workout(wid, target_date.isoformat())
-                print(f"   Programado: {target_date.isoformat()}")
+                print(f"   📅 Programado en calendario Garmin: {target_date.isoformat()} (HOY)")
             except Exception as e:
-                print(f"   Sin programar: {e}")
+                print(f"   ⚠️ Error en calendario: {e}")
+
+            # Enviar directamente a la memoria y cola de sincronización del Forerunner 970
+            try:
+                push_res = api.push_workout_to_device(wid)
+                dev_name = "tu reloj Forerunner 970"
+                if isinstance(push_res, list) and len(push_res) > 0 and push_res[0].get("deviceName"):
+                    dev_name = push_res[0].get("deviceName")
+                print(f"   ⌚ Enviado directo a {dev_name} (cola de sincronización activa)")
+            except Exception as e:
+                print(f"   ⚠️ Error en push a dispositivo: {e}")
+
+            # Sincronizar cola de entrenamientos programados
+            try:
+                api.send_scheduled_workouts_to_devices()
+                print(f"   🔄 Cola de sincronización Garmin Connect actualizada")
+            except Exception:
+                pass
 
         return {"status": "uploaded", "date": today_str, "workout_name": wo_name, "zone": zone_num, "bpm_low": bpm_low, "bpm_high": bpm_high}
 
