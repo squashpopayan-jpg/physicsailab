@@ -3519,9 +3519,12 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <input type="checkbox" id="admin-quiz-antifraud" ${getAdminQuizConfig().antiFraudEnabled !== false ? 'checked' : ''} style="accent-color:#7c3aed; width:16px; height:16px;">
                                 <span>Activar Modo Antifraude Estricto (bloqueo de capturas y detección de cambio de pestaña)</span>
                             </label>
-                            <div style="display:flex; gap:0.5rem;">
+                            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
                                 <button class="btn btn-primary" onclick="window.adminSaveQuizConfig()" style="font-size:0.8rem; padding:0.45rem 0.85rem; background:#7c3aed; border:none; flex:1;">
                                     💾 Guardar PIN
+                                </button>
+                                <button class="btn btn-secondary" onclick="window.openQuizPreviewModal()" style="font-size:0.8rem; padding:0.45rem 0.75rem; border:1px solid #38bdf8; color:#38bdf8;" title="Ver las preguntas completas del quiz">
+                                    👁️ Ver Quiz
                                 </button>
                                 <button class="btn btn-secondary" onclick="window.adminCopyQuizWhatsApp()" style="font-size:0.8rem; padding:0.45rem 0.75rem; border:1px solid #22c55e; color:#4ade80;" title="Copiar invitación con PIN para WhatsApp">
                                     📱 Copiar WhatsApp
@@ -5126,6 +5129,144 @@ document.addEventListener('DOMContentLoaded', () => {
             quizPlayerModal.style.display = 'none';
             document.body.style.overflow = '';
         }
+    };
+
+    window.toggleQuizPinVisibility = function() {
+        const pinInput = document.getElementById('quiz-pin-input');
+        const toggleBtn = document.getElementById('quiz-pwd-toggle-btn') || document.querySelector('.quiz-pwd-toggle-btn');
+        if (!pinInput) return;
+
+        if (pinInput.type === 'password') {
+            pinInput.type = 'text';
+            if (toggleBtn) {
+                toggleBtn.innerHTML = '🙈';
+                toggleBtn.title = 'Ocultar contraseña';
+                toggleBtn.style.color = '#38bdf8';
+            }
+        } else {
+            pinInput.type = 'password';
+            if (toggleBtn) {
+                toggleBtn.innerHTML = '👁️';
+                toggleBtn.title = 'Mostrar contraseña';
+                toggleBtn.style.color = '';
+            }
+        }
+        pinInput.focus();
+    };
+
+    window.openQuizPreviewModal = function(presetId) {
+        const qData = window.QUIZZES_DATA;
+        if (!qData || !qData.presets) {
+            alert('Banco de preguntas no disponible en este momento.');
+            return;
+        }
+
+        let targetPreset = null;
+        if (presetId) {
+            targetPreset = qData.presets.find(p => p.id === presetId);
+        } else {
+            const pinInput = document.getElementById('quiz-pin-input');
+            const rawPin = pinInput ? pinInput.value.trim().toUpperCase() : '';
+            if (rawPin) {
+                targetPreset = qData.presets.find(p => 
+                    p.code.toUpperCase() === rawPin || 
+                    (p.aliases && p.aliases.some(a => a.toUpperCase() === rawPin))
+                );
+            }
+            if (!targetPreset) {
+                const cfg = getAdminQuizConfig();
+                targetPreset = qData.presets.find(p => p.id === cfg.presetId) || qData.presets[0];
+            }
+        }
+
+        if (!targetPreset) targetPreset = qData.presets[0];
+        window._currentPreviewPreset = targetPreset;
+
+        const badgeEl = document.getElementById('preview-quiz-badge');
+        if (badgeEl) badgeEl.textContent = targetPreset.badge || 'Quiz Oficial';
+
+        const pinBadgeEl = document.getElementById('preview-quiz-pin-badge');
+        if (pinBadgeEl) pinBadgeEl.textContent = `PIN: ${targetPreset.code}`;
+
+        const titleEl = document.getElementById('preview-quiz-title');
+        if (titleEl) titleEl.textContent = targetPreset.title;
+
+        const descEl = document.getElementById('preview-quiz-desc');
+        if (descEl) descEl.textContent = `${targetPreset.totalPreguntas} Preguntas · ${targetPreset.subtitle || targetPreset.description}`;
+
+        const questions = (targetPreset.questionIds || [])
+            .map(id => qData.questions.find(q => q.id === id))
+            .filter(Boolean);
+
+        const listContainer = document.getElementById('preview-quiz-questions-list');
+        if (listContainer) {
+            listContainer.innerHTML = questions.map((q, idx) => `
+                <div style="background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:1.25rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem; flex-wrap:wrap; gap:0.4rem;">
+                        <span style="font-weight:800; color:#38bdf8; font-size:0.95rem;">
+                            Pregunta ${idx + 1} de ${questions.length}
+                        </span>
+                        <div style="display:flex; gap:0.4rem;">
+                            <span class="badge" style="background:rgba(56,189,248,0.15); color:#7dd3fc; font-size:0.72rem; padding:0.18rem 0.55rem; border-radius:4px;">
+                                ${q.tema || 'Física'}
+                            </span>
+                            <span class="badge" style="background:rgba(124,58,237,0.15); color:#c4b5fd; font-size:0.72rem; padding:0.18rem 0.55rem; border-radius:4px;">
+                                ${q.categoria ? q.categoria.toUpperCase() : 'GENERAL'}
+                            </span>
+                        </div>
+                    </div>
+                    <div style="color:#f8fafc; font-size:1rem; font-weight:600; line-height:1.45; margin-bottom:0.8rem;">
+                        ${q.pregunta}
+                    </div>
+                    ${q.graficaSvg ? `<div style="margin:0.8rem 0; border-radius:8px; overflow:hidden; border:1px solid rgba(255,255,255,0.1);">${q.graficaSvg}</div>` : ''}
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:0.5rem; margin-bottom:0.8rem;">
+                        ${(q.opciones || []).map(opt => {
+                            const optLetter = opt.charAt(0);
+                            const isCorrect = (optLetter === q.correcta);
+                            return `
+                                <div style="padding:0.6rem 0.8rem; border-radius:8px; font-size:0.85rem; border:1px solid ${isCorrect ? '#22c55e' : 'rgba(255,255,255,0.08)'}; background:${isCorrect ? 'rgba(34,197,94,0.12)' : 'rgba(0,0,0,0.2)'}; color:${isCorrect ? '#86efac' : '#cbd5e1'}; font-weight:${isCorrect ? '700' : 'normal'}; display:flex; align-items:center; justify-content:space-between;">
+                                    <span>${opt}</span>
+                                    ${isCorrect ? '<span style="color:#4ade80;">✅ Correcta</span>' : ''}
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                    <div style="background:rgba(15, 23, 42, 0.6); padding:0.75rem 1rem; border-radius:8px; border-left:3px solid #7c3aed; font-size:0.82rem; color:#94a3b8; line-height:1.45;">
+                        <strong style="color:#c4b5fd;">💡 Explicación del Mg. Manuel Obando:</strong>
+                        <div style="margin-top:0.25rem;">${q.explicacion}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        const modal = document.getElementById('quiz-preview-modal');
+        if (modal) {
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+    };
+
+    window.closeQuizPreviewModal = function() {
+        const modal = document.getElementById('quiz-preview-modal');
+        if (modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    };
+
+    window.startQuizFromPreview = function() {
+        window.closeQuizPreviewModal();
+        const preset = window._currentPreviewPreset || window.QUIZZES_DATA.presets[0];
+        const nameInput = document.getElementById('quiz-student-name');
+        let sName = nameInput ? nameInput.value.trim() : '';
+        if (!sName) {
+            sName = prompt('Escribe tu Nombre y Apellidos para iniciar la evaluación:') || '';
+            if (!sName.trim()) return;
+            if (nameInput) nameInput.value = sName.trim();
+        }
+        const courseInput = document.getElementById('quiz-student-course');
+        const sCourse = courseInput ? courseInput.value.trim() : 'Electromagnetismo';
+        startQuizWithPreset(preset, sName, sCourse, preset.code);
     };
 
     // Renderizar catálogo inicial de quizzes

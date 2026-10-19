@@ -575,7 +575,7 @@ window.PLATFORM_DATA = {
             id: "sp-5",
             titulo: "Electromagnetismo 2025-I",
             autor: "Arnold Castro",
-            curso: "Física II",
+            curso: "Electromagnetismo",
             facultad: "Universidad del Cauca",
             spotifyId: "3QAI0uuC5fkGT0FrzbTQDF",
             portada: "/assets/spotify/3QAI0uuC5fkGT0FrzbTQDF.jpg",

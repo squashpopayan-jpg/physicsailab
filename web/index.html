@@ -264,7 +264,7 @@
                                     type="text" 
                                     id="quiz-student-course" 
                                     class="quiz-form-input" 
-                                    placeholder="Ej: Física I - Grupo 02, Lab de Mecánica..." 
+                                    placeholder="Ej: Electromagnetismo, Mecánica, Laboratorio..." 
                                     maxlength="70"
                                     autocomplete="off"
                                 >
@@ -287,7 +287,7 @@
                                         spellcheck="false"
                                         required
                                     >
-                                    <button type="button" class="quiz-pwd-toggle-btn" onclick="toggleQuizPinVisibility()" title="Mostrar u ocultar contraseña" aria-label="Mostrar u ocultar contraseña">
+                                    <button type="button" class="quiz-pwd-toggle-btn" id="quiz-pwd-toggle-btn" onclick="toggleQuizPinVisibility()" title="Mostrar u ocultar contraseña del Quiz" aria-label="Mostrar u ocultar contraseña">
                                         👁️
                                     </button>
                                 </div>
@@ -298,9 +298,14 @@
                             <div class="quiz-active-room-note" id="quiz-active-room-note">
                                 🔒 Sala oficial protegida por el docente. Sin pistas de acceso.
                             </div>
-                            <button type="submit" class="quiz-join-btn" id="quiz-join-btn">
-                                <span>🚀 Iniciar Evaluación Oficial</span>
-                            </button>
+                            <div style="display:flex; gap:0.6rem; flex-wrap:wrap; align-items:center;">
+                                <button type="button" class="quiz-view-btn" onclick="openQuizPreviewModal()" title="Ver preguntas y temática del quiz" style="background:rgba(56, 189, 248, 0.12); color:#38bdf8; border:1px solid rgba(56, 189, 248, 0.35); padding:0.65rem 1.15rem; border-radius:12px; font-weight:700; font-size:0.92rem; cursor:pointer; display:inline-flex; align-items:center; gap:0.45rem; transition:all 0.2s ease;">
+                                    <span>👁️ Ver Quiz</span>
+                                </button>
+                                <button type="submit" class="quiz-join-btn" id="quiz-join-btn">
+                                    <span>🚀 Iniciar Evaluación Oficial</span>
+                                </button>
+                            </div>
                         </div>
                     </form>
 
@@ -847,6 +852,39 @@
                 <div id="quiz-results-screen" class="quiz-screen" style="display:none;">
                     <!-- Generado dinámicamente con podio, nota, precisión y desglose de fallos -->
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Vista Previa: Ver Quiz (Preguntas, Gráficas y Respuestas) -->
+    <div class="modal" id="quiz-preview-modal" style="display:none;" role="dialog" aria-modal="true" aria-label="Vista Previa de Preguntas del Quiz">
+        <div class="modal-content" style="max-width:850px; max-height:90vh; overflow-y:auto; padding:1.75rem; background:#0f172a; border:1px solid rgba(56,189,248,0.25); border-radius:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.25rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:1rem; gap:1rem;">
+                <div>
+                    <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem; flex-wrap:wrap;">
+                        <span class="badge" id="preview-quiz-badge" style="background:#7c3aed; color:#fff; font-size:0.75rem; padding:0.25rem 0.6rem; border-radius:999px;">⚡ Electromagnetismo</span>
+                        <span class="badge" id="preview-quiz-pin-badge" style="background:rgba(56,189,248,0.15); color:#38bdf8; border:1px solid rgba(56,189,248,0.3); font-size:0.75rem; padding:0.25rem 0.6rem; border-radius:999px;">PIN: ELECTRO-10</span>
+                    </div>
+                    <h3 id="preview-quiz-title" style="color:#fff; font-size:1.35rem; margin:0 0 0.25rem; font-weight:700;">Electromagnetismo: Gauss, Potencial y Capacitores</h3>
+                    <p id="preview-quiz-desc" style="color:var(--text-muted); font-size:0.85rem; margin:0;">
+                        10 Preguntas · Ley de Gauss, Superficies Equipotenciales y Circuitos Capacitivos
+                    </p>
+                </div>
+                <button type="button" class="btn-close-modal" onclick="closeQuizPreviewModal()" style="background:rgba(255,255,255,0.08); border:none; color:#cbd5e1; font-size:1.3rem; width:36px; height:36px; border-radius:8px; cursor:pointer;" title="Cerrar vista previa">✖</button>
+            </div>
+
+            <!-- Contenedor dinámico de preguntas del quiz -->
+            <div id="preview-quiz-questions-list" style="display:flex; flex-direction:column; gap:1.25rem;">
+                <!-- Generado dinámicamente por JavaScript -->
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1.5rem; padding-top:1.2rem; border-top:1px solid rgba(255,255,255,0.1); flex-wrap:wrap; gap:0.75rem;">
+                <button type="button" class="btn btn-secondary" onclick="closeQuizPreviewModal()">
+                    Cerrar Vista Previa
+                </button>
+                <button type="button" class="btn btn-primary" onclick="startQuizFromPreview()" style="background:linear-gradient(135deg, #7c3aed, #4f46e5); border:none; font-weight:700; padding:0.6rem 1.4rem;">
+                    🚀 Iniciar Este Desafío Ahora
+                </button>
             </div>
         </div>
     </div>
