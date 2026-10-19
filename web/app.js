@@ -1227,12 +1227,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const unlockedList = getUnlockedCourses();
 
         const navGarminBtn = document.getElementById('nav-garmin-btn');
+        const mobileGarminBtn = document.getElementById('mobile-garmin-btn');
         const drawerGarminItem = document.getElementById('drawer-garmin-item');
+        const navAdminBtnLabel = document.getElementById('nav-admin-btn-label');
+        const mobileAdminBtnLabel = document.getElementById('mobile-admin-btn-label');
+
         if (navGarminBtn) {
             navGarminBtn.style.display = adminActive ? 'inline-flex' : 'none';
         }
+        if (mobileGarminBtn) {
+            mobileGarminBtn.style.display = adminActive ? 'inline-flex' : 'none';
+        }
         if (drawerGarminItem) {
             drawerGarminItem.style.display = adminActive ? 'block' : 'none';
+        }
+        if (navAdminBtnLabel) {
+            navAdminBtnLabel.textContent = adminActive ? 'Admin 👑' : 'Docente';
+        }
+        if (mobileAdminBtnLabel) {
+            mobileAdminBtnLabel.textContent = adminActive ? 'Admin 👑' : 'Docente';
         }
 
         if (!bannerContainer) return;
