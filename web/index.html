@@ -209,16 +209,16 @@
         </div>
     </section>
 
-    <!-- 1.5. Quizzes Interactivos estilo Quizizz / Wayground con Código de Ingreso PIN -->
+    <!-- 1.5. Quizzes Interactivos estilo Quizizz / Wayground con Código de Ingreso PIN y Seguridad Antifraude -->
     <section class="section" id="quizzes">
         <div class="container">
             <div class="section-header">
-                <span class="badge" style="background:rgba(244, 63, 94, 0.12); border-color:rgba(244, 63, 94, 0.35); color:#fb7185;">🎮 Desafío Gamificado · Estilo Quizizz / Wayground</span>
-                <h2>Quizzes Interactivos de Física</h2>
-                <p>Ingresa el código PIN asignado en clase para unirte a la partida, o selecciona uno de los modos oficiales. Responde preguntas de selección múltiple con gráficas de cinemática y dinámica, validación en tiempo real y revisión detallada de tus aciertos y errores.</p>
+                <span class="badge" style="background:rgba(244, 63, 94, 0.12); border-color:rgba(244, 63, 94, 0.35); color:#fb7185;">🎮 Evaluación Gamificada · Estilo Quizizz / Wayground</span>
+                <h2>Quizzes y Evaluaciones Oficiales</h2>
+                <p>Ambiente seguro de evaluación universitaria con registro de calificación. Ingresa con tu nombre completo y la contraseña o PIN establecida por el profesor Manuel Alejandro Obando.</p>
             </div>
 
-            <!-- Caja de Ingreso por Código PIN (Estilo Quizizz / Kahoot / Wayground) -->
+            <!-- Caja de Ingreso Seguro: Nombre Obligatorio, Curso Opcional, PIN Obligatorio (Sin Sugerencias) -->
             <div class="quiz-pin-wrapper">
                 <div class="quiz-pin-card">
                     <div class="quiz-pin-decorations" aria-hidden="true">
@@ -230,60 +230,91 @@
                     <div class="quiz-pin-header">
                         <div class="quiz-pin-icon">🎯</div>
                         <div>
-                            <h3 class="quiz-pin-title">¿Tienes un Código de Sala?</h3>
-                            <p class="quiz-pin-subtitle">Escribe tu PIN de evaluación proporcionado por el profesor Manuel Obando o elige una sala rápida</p>
+                            <h3 class="quiz-pin-title">Ingreso a la Evaluación con PIN</h3>
+                            <p class="quiz-pin-subtitle">Escribe tu nombre completo y la contraseña de sala asignada para registrar tu calificación oficial</p>
                         </div>
                     </div>
+
                     <form id="quiz-join-form" onsubmit="handleQuizJoinSubmit(event)" class="quiz-join-form">
-                        <div class="quiz-input-group">
-                            <input 
-                                type="text" 
-                                id="quiz-pin-input" 
-                                class="quiz-pin-input" 
-                                placeholder="Ej: FISICA-60, CINEMATICA-15..." 
-                                maxlength="24"
-                                autocomplete="off"
-                                spellcheck="false"
-                                required
-                            >
+                        <div class="quiz-form-grid">
+                            <!-- Nombre Obligatorio -->
+                            <div class="quiz-form-group">
+                                <label for="quiz-student-name" class="quiz-form-label">
+                                    <span>👤 Nombre del Estudiante</span>
+                                    <strong class="label-req">* Obligatorio</strong>
+                                </label>
+                                <input 
+                                    type="text" 
+                                    id="quiz-student-name" 
+                                    class="quiz-form-input" 
+                                    placeholder="Escribe tu nombre y apellidos *" 
+                                    maxlength="70"
+                                    autocomplete="name"
+                                    required
+                                >
+                            </div>
+
+                            <!-- Curso Opcional -->
+                            <div class="quiz-form-group">
+                                <label for="quiz-student-course" class="quiz-form-label">
+                                    <span>📚 Nombre del Curso / Materia</span>
+                                    <span class="label-opt">(Opcional)</span>
+                                </label>
+                                <input 
+                                    type="text" 
+                                    id="quiz-student-course" 
+                                    class="quiz-form-input" 
+                                    placeholder="Ej: Física I - Grupo 02, Lab de Mecánica..." 
+                                    maxlength="70"
+                                    autocomplete="off"
+                                >
+                            </div>
+
+                            <!-- Contraseña / PIN Obligatorio (Sin sugerencias de texto en placeholder) -->
+                            <div class="quiz-form-group">
+                                <label for="quiz-pin-input" class="quiz-form-label">
+                                    <span>🔑 Contraseña / PIN del Quiz</span>
+                                    <strong class="label-req">* Obligatorio</strong>
+                                </label>
+                                <div class="quiz-pwd-wrapper">
+                                    <input 
+                                        type="password" 
+                                        id="quiz-pin-input" 
+                                        class="quiz-form-input quiz-pwd-input" 
+                                        placeholder="Escribe la contraseña asignada *" 
+                                        maxlength="32"
+                                        autocomplete="off"
+                                        spellcheck="false"
+                                        required
+                                    >
+                                    <button type="button" class="quiz-pwd-toggle-btn" onclick="toggleQuizPinVisibility()" title="Mostrar u ocultar contraseña" aria-label="Mostrar u ocultar contraseña">
+                                        👁️
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="quiz-submit-row">
+                            <div class="quiz-active-room-note" id="quiz-active-room-note">
+                                🔒 Sala oficial protegida por el docente. Sin pistas de acceso.
+                            </div>
                             <button type="submit" class="quiz-join-btn" id="quiz-join-btn">
-                                <span>🚀 ¡Entrar al Quiz!</span>
+                                <span>🚀 Iniciar Evaluación Oficial</span>
                             </button>
                         </div>
                     </form>
-                    <div class="quiz-quick-codes">
-                        <span class="quiz-quick-label">⚡ O únete con un clic:</span>
-                        <div class="quiz-quick-tags">
-                            <button type="button" class="quiz-quick-tag" onclick="joinQuizByCode('FISICA-60')">
-                                <span class="tag-pin">FISICA-60</span>
-                                <span class="tag-desc">Examen Completo (60 Qs)</span>
-                            </button>
-                            <button type="button" class="quiz-quick-tag" onclick="joinQuizByCode('CINEMATICA-15')">
-                                <span class="tag-pin">CINEMATICA-15</span>
-                                <span class="tag-desc">MRU &amp; Caída Libre (15 Qs)</span>
-                            </button>
-                            <button type="button" class="quiz-quick-tag" onclick="joinQuizByCode('DINAMICA-15')">
-                                <span class="tag-pin">DINAMICA-15</span>
-                                <span class="tag-desc">Newton &amp; Fuerzas (15 Qs)</span>
-                            </button>
-                            <button type="button" class="quiz-quick-tag" onclick="joinQuizByCode('EXPRESS-10')">
-                                <span class="tag-pin">EXPRESS-10</span>
-                                <span class="tag-desc">Repaso Express (10 Qs)</span>
-                            </button>
+
+                    <!-- Aviso de Seguridad Antifraude -->
+                    <div class="quiz-security-notice">
+                        <div class="security-notice-icon">🛡️</div>
+                        <div class="security-notice-text">
+                            <strong>Protocolo de Seguridad Académica Antifraude:</strong>
+                            <p>
+                                Al iniciar, se activa el modo de examen. <strong>No está permitido cambiar de pestaña, minimizar la ventana ni tomar capturas de pantalla</strong>; cualquier intento queda registrado con fecha y hora en el informe del profesor. <strong>Las preguntas avanzan en sentido único</strong> (no se puede regresar una vez contestada una pregunta).
+                            </p>
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Modos Oficiales Disponibles -->
-            <div class="quiz-presets-header" style="margin-top:2.75rem; margin-bottom:1.25rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
-                <h3 style="font-size:1.25rem; font-weight:700; color:var(--text-main); display:flex; align-items:center; gap:0.5rem;">
-                    <span>📚</span> Salas y Exámenes Oficiales Disponibles
-                </h3>
-                <span style="font-size:0.85rem; color:var(--text-muted);">Banco verificado de 60 preguntas oficiales con gráficas · Univ. del Cauca</span>
-            </div>
-            <div class="cards-grid" id="quizzes-grid">
-                <!-- Generado por JavaScript desde QUIZZES_DATA.presets -->
             </div>
         </div>
     </section>
@@ -713,13 +744,32 @@
         </div>
     </div>
 
-    <!-- Modal Gamificado Fullscreen: Quizizz / Wayground Player -->
+    <!-- Modal Gamificado Fullscreen: Quizizz / Wayground Player con Protocolo Antifraude -->
     <div class="quiz-player-overlay" id="quiz-player-modal" style="display:none;" role="dialog" aria-modal="true" aria-label="Reproductor de Quiz Interactivo">
+        <!-- Escudo de oscurecimiento ante intento de captura -->
+        <div class="quiz-blackout-shield" id="quiz-blackout-shield" style="display:none;">
+            <div class="blackout-message">⚠️ Captura de pantalla bloqueada por seguridad académica</div>
+        </div>
+
+        <!-- Marca de Agua Dinámica Antifraude con Nombre del Alumno -->
+        <div class="quiz-security-watermark" id="quiz-security-watermark" aria-hidden="true"></div>
+
         <div class="quiz-player-container">
+            <!-- Banner de Alerta Antifraude en Tiempo Real -->
+            <div class="quiz-security-banner" id="quiz-security-banner" style="display:none;">
+                <span class="sec-banner-icon">⚠️</span>
+                <div class="sec-banner-content">
+                    <strong id="sec-banner-title">ADVERTENCIA ANTIFRAUDE</strong>
+                    <p id="sec-banner-desc">Has cambiado de pestaña o salido de la prueba. El intento ha sido registrado en tu calificación oficial.</p>
+                </div>
+                <button type="button" class="sec-banner-btn" onclick="dismissSecurityBanner()">Continuar Prueba</button>
+            </div>
+
             <!-- Barra Superior del Quiz -->
             <div class="quiz-topbar">
                 <div class="quiz-topbar-left">
-                    <span class="quiz-room-badge" id="player-room-badge">🎯 PIN: FISICA-60</span>
+                    <span class="quiz-student-pill" id="player-student-badge" title="Estudiante en evaluación">👤 Estudiante</span>
+                    <span class="quiz-room-badge" id="player-room-badge">🎯 PIN: ACTIVO</span>
                     <span class="quiz-streak-badge" id="player-streak-badge" title="Racha de respuestas correctas consecutivas">🔥 Racha x0</span>
                 </div>
                 <div class="quiz-topbar-center">
