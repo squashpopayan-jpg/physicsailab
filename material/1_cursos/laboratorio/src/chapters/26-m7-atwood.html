@@ -1,0 +1,122 @@
+<template class="chapter-src" data-id="m7" data-num="M7" data-title="Máquina de Atwood con encoder" data-part="Parte III · Prácticas de mecánica" data-kits="esp lego" data-short="Dos masas colgadas de una polea LEGO con disco ranurado: la ESP32 cuenta las ranuras, se obtiene la aceleración y se separan g, la inercia de la polea y la fricción">
+<p class="lead">George Atwood inventó en 1784 una máquina para «hacer más lenta» la caída: dos masas casi iguales colgadas de una polea. Con una polea LEGO, un disco ranurado de los que traen los kits de robótica y un optointerruptor, la ESP32 sigue la cuerda milímetro a milímetro y permite pesar algo que no se ve: la inercia de la polea.</p>
+
+<div class="ficha"><div class="ficha-head"><b>Ficha de la práctica</b><span>M7 · 2 horas</span></div><dl>
+<dt>Objetivo</dt><dd>Medir la aceleración en función de la diferencia de masas y obtener \(g\), la masa equivalente de la polea y el efecto de la fricción.</dd>
+<dt>Herramientas</dt><dd><span class="kit esp">ESP32</span><span class="kit lego">LEGO</span></dd>
+<dt>Se mide</dt><dd>Instantes de paso de las ranuras del disco (encoder óptico)</dd>
+<dt>Conceptos</dt><dd>Segunda ley para sistemas, torque y momento de inercia, fricción en el eje</dd>
+<dt>Costo extra</dt><dd>Disco ranurado de 20 ranuras y optointerruptor H206 (unos 8 000 pesos el par)</dd>
+</dl></div>
+
+<section>
+<h2>Fundamento</h2>
+<p>Dos masas \(m_1\gt m_2\) cuelgan de una cuerda que pasa por una polea de radio \(r\) y momento de inercia \(I\). Si la cuerda no desliza, la segunda ley para cada masa y para la polea da</p>
+<div class="eq key" data-name="Máquina de Atwood real">\[a=\frac{(m_1-m_2)\,g-\tau_f/r}{m_1+m_2+I/r^2},\]</div>
+<p>donde \(\tau_f\) es el torque de fricción en el eje. El término \(I/r^2\) actúa como una masa extra que también hay que acelerar. Si se mantiene constante la masa total \(M=m_1+m_2\) (pasando arandelas de un lado al otro) y se varía \(\Delta m=m_1-m_2\):</p>
+<div class="eq">\[a=\frac{g}{M+I/r^2}\,\Delta m-\frac{\tau_f/r}{M+I/r^2}\]</div>
+<p>es una recta en \(\Delta m\). Su pendiente da \(M_{\text{ef}}=M+I/r^2\) (conocido \(g\)) y su intercepto en el eje horizontal es la diferencia de masas mínima para vencer la fricción.</p>
+<h3>El encoder</h3>
+<p>Un disco de 20 ranuras unido al eje de la polea pasa por la ranura de un optointerruptor. Cada ranura produce un pulso: 20 pulsos por vuelta. La cuerda avanza \(\Delta s=2\pi r/20\) entre pulsos. Con los instantes \(t_i\) de los flancos de subida, la velocidad media entre pulsos es \(\Delta s/(t_i-t_{i-1})\), asignada al tiempo medio (igual que con la valla de M1).</p>
+</section>
+
+<section>
+<h2>Materiales y montaje</h2>
+<div class="tablewrap narrow"><table class="bom">
+<thead><tr><th>Material</th><th>Cantidad</th></tr></thead>
+<tbody>
+<tr><td>Torre LEGO con eje Technic horizontal a unos 60 cm de la mesa</td><td>1</td></tr>
+<tr><td>Polea Technic (o rueda sin neumático) de radio conocido</td><td>1</td></tr>
+<tr><td>Disco ranurado de 20 ranuras y optointerruptor ranurado (H206)</td><td>1</td></tr>
+<tr><td>Hilo de nailon delgado, 1.2 m</td><td>1</td></tr>
+<tr><td>Dos portamasas iguales y 20 arandelas pesadas</td><td>—</td></tr>
+<tr><td>ESP32, cables</td><td>1</td></tr>
+</tbody></table></div>
+<div class="sim" data-sim="lego-modelo" data-model="atwood" data-title="Máquina de Atwood LEGO con encoder"></div>
+<p>El disco va en el mismo eje que la polea, del lado de afuera de la torre; el optointerruptor se fija a la torre con un ladrillo Technic de modo que el disco pase por su ranura sin rozar. Mida el radio efectivo de la polea en el fondo de la garganta, más la mitad del grosor del hilo.</p>
+<div class="sim" data-sim="conexion" data-cfg="foto" data-title="Conexión del optointerruptor (use la compuerta 1, GPIO 27)"></div>
+</section>
+
+<section>
+<h2>Configuración: el programa</h2>
+<pre class="code" data-lang="cpp" data-file="M7_atwood_encoder.ino">// M7 · Máquina de Atwood: instantes de cada ranura del disco (20 por vuelta)
+const int PIN_ENC = 27;
+const float R_POLEA = 0.0120;               // m: mida el suyo
+const float DS = 2 * PI * R_POLEA / 20.0;   // avance del hilo entre ranuras
+const int MAX = 400;
+volatile unsigned long t[MAX];
+volatile int n = 0;
+
+void IRAM_ATTR ranura() { if (n < MAX) t[n++] = micros(); }
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(PIN_ENC, INPUT);
+  attachInterrupt(digitalPinToInterrupt(PIN_ENC), ranura, RISING);
+  Serial.println("Suelte las masas");
+}
+
+void loop() {
+  static int nPrev = 0;
+  static unsigned long tUlt = 0;
+  if (n != nPrev) { nPrev = n; tUlt = millis(); }
+  if (n > 5 && millis() - tUlt > 500) {        // el movimiento terminó
+    noInterrupts(); int m = n; interrupts();
+    Serial.println("t_medio_s,v_m_s");
+    for (int i = 1; i < m; i++) {
+      float dt = (t[i] - t[i - 1]) * 1e-6;
+      Serial.print(((t[i] + t[i - 1]) / 2.0 - t[0]) * 1e-6, 5);
+      Serial.print(',');
+      Serial.println(DS / dt, 4);
+    }
+    n = 0; nPrev = 0;
+  }
+}
+</pre>
+</section>
+
+<section>
+<h2>Experimento virtual</h2>
+<div class="sim" data-sim="m7-atwood" data-title="Atwood: pulsos del encoder, velocidad y aceleración" data-layout="below"></div>
+<div class="sim-guide"><ul>
+<li>Con masa total fija, pase arandelas de un lado al otro (Δm de 10 a 60 g) y agregue cada aceleración a la tabla.</li>
+<li>La recta \(a(\Delta m)\) no pasa por el origen: con Δm muy pequeño el sistema ni siquiera arranca (fricción estática).</li>
+<li>Cambie a una polea pesada: la pendiente disminuye porque crece \(I/r^2\).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Procedimiento</h2>
+<ol class="steps">
+<li><b>Pese portamasas y arandelas.</b><p>Arme dos lados iguales de unos 150 g cada uno.</p></li>
+<li><b>Compruebe el encoder.</b><p>Gire la polea a mano una vuelta: deben llegar 20 pulsos.</p></li>
+<li><b>Primer Δm.</b><p>Pase una arandela de un lado al otro. Sostenga la masa liviana abajo, suéltela y atrape la pesada antes de que toque el suelo.</p></li>
+<li><b>Repita tres veces</b><p>y copie las tablas del Monitor Serie.</p></li>
+<li><b>Aumente Δm</b><p>pasando arandelas, hasta tener 6 valores distintos con la misma masa total.</p></li>
+<li><b>Masa total distinta.</b><p>Agregue 50 g a cada lado y repita dos valores de Δm.</p></li>
+</ol>
+</section>
+
+<section>
+<h2>Análisis de los datos</h2>
+<ol>
+<li>Para cada lanzamiento ajuste una recta a \(v(t)\): la pendiente es \(a\). Descarte los primeros pulsos si el hilo estaba flojo.</li>
+<li>Grafique \(a\) contra \(\Delta m\) (masa total fija) y ajuste una recta: pendiente \(m_a\), intercepto \(b\).</li>
+<li>Con \(g=9.777\) m/s²: \(M_{\text{ef}}=g/m_a\) e \(I/r^2=M_{\text{ef}}-M\). Compare con la masa de la polea: para un disco, \(I/r^2\approx m_{\text{polea}}/2\).</li>
+<li>Torque de fricción: \(\tau_f=-b\,M_{\text{ef}}\,r\).</li>
+</ol>
+</section>
+
+<section>
+<h2>Preguntas, fuentes de error y extensiones</h2>
+<ol class="problems">
+<li><span class="lvl">Problema</span>Con \(M=0.300\) kg, \(\Delta m=0.020\) kg, \(I/r^2=0.008\) kg y sin fricción, ¿qué aceleración se espera?
+<details><summary>Respuesta</summary><p>\(a=0.020(9.777)/0.308=0.635\) m/s², unas 15 veces menor que \(g\): en 1 s recorre 32 cm, fácil de medir.</p></details></li>
+<li><span class="lvl">Concepto</span>¿Por qué conviene mantener la masa total constante?
+<details><summary>Respuesta</summary><p>Porque así el denominador \(M+I/r^2\) es el mismo en todas las mediciones y \(a\) es lineal en \(\Delta m\). Además, la fricción en el eje depende de la carga total, que no cambia.</p></details></li>
+<li><span class="lvl">Error</span>El hilo puede deslizar sobre la polea al soltar. ¿Cómo se detecta en los datos?
+<details><summary>Respuesta</summary><p>Los primeros intervalos dan velocidades que no siguen la recta (saltos) y la aceleración inicial sale distinta de la posterior. Si ocurre, aumente el roce (una banda de goma en la garganta de la polea).</p></details></li>
+<li><span class="lvl">Extensión</span>Mida \(I\) de la polea de otra forma: enrolle el hilo en el eje, cuelgue una masa pequeña y mida la aceleración angular con el encoder.</li>
+</ol>
+</section>
+</template>

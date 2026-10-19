@@ -1,0 +1,121 @@
+<template class="chapter-src" data-id="e2" data-num="E2" data-title="Carga y descarga de un condensador" data-part="Parte IV · Prácticas de electromagnetismo" data-kits="esp" data-short="Un pin de la ESP32 carga y descarga un condensador a través de una resistencia; el ADC registra la curva exponencial y se mide la constante de tiempo RC">
+<p class="lead">Un condensador no se carga de golpe: el voltaje sube rápido al principio y cada vez más despacio, siguiendo una exponencial cuya escala de tiempo es el producto \(RC\). La ESP32 hace de fuente cuadrada (un pin que alterna entre 0 y 3.3 V) y de osciloscopio (el ADC), y con unas pocas resistencias y condensadores se comprueba la ley y se mide la capacitancia.</p>
+
+<div class="ficha"><div class="ficha-head"><b>Ficha de la práctica</b><span>E2 · 1.5 horas</span></div><dl>
+<dt>Objetivo</dt><dd>Registrar la carga y la descarga de un circuito RC, medir \(\tau\) por tres métodos y obtener la capacitancia real de varios condensadores.</dd>
+<dt>Herramientas</dt><dd><span class="kit esp">ESP32</span></dd>
+<dt>Se mide</dt><dd>El voltaje del condensador \(V_C(t)\) con el ADC, a 200 muestras por segundo</dd>
+<dt>Conceptos</dt><dd>Capacitancia, corriente de carga, ecuación diferencial de primer orden, linealización logarítmica</dd>
+<dt>Costo extra</dt><dd>Condensadores electrolíticos de 10 a 220 µF y resistencias de 10 a 100 kΩ (unos 3 000 pesos)</dd>
+</dl></div>
+
+<section>
+<h2>Fundamento</h2>
+<p>Si un condensador \(C\) descargado se conecta a una fuente \(V_0\) a través de una resistencia \(R\), la ley de las mallas \(V_0=RI+q/C\), con \(I=dq/dt\), da una ecuación de primer orden cuya solución es</p>
+<div class="eq key" data-name="Carga y descarga RC">\[\text{carga: }V_C(t)=V_0\left(1-e^{-t/\tau}\right),\qquad \text{descarga: }V_C(t)=V_0\,e^{-t/\tau},\qquad \tau=RC .\]</div>
+<p>En un tiempo \(\tau\) el voltaje recorre el 63.2 % del camino; en \(5\tau\), el 99.3 %. Hay tres formas de obtener \(\tau\) de los datos:</p>
+<ol>
+<li><strong>Lectura directa:</strong> el instante en que la descarga llega a \(V_0/e=0.368\,V_0\).</li>
+<li><strong>Linealización:</strong> en la descarga, \(\ln V_C=\ln V_0-t/\tau\): una recta de pendiente \(-1/\tau\).</li>
+<li><strong>Semivida:</strong> el tiempo para caer a la mitad es \(t_{1/2}=\tau\ln2\).</li>
+</ol>
+<p>Los condensadores electrolíticos tienen tolerancias de ±20 %: el valor impreso es sólo aproximado. Este experimento es, de hecho, una buena manera de medir capacitancias.</p>
+</section>
+
+<section>
+<h2>Materiales y montaje</h2>
+<div class="tablewrap narrow"><table class="bom">
+<thead><tr><th>Material</th><th>Cantidad</th></tr></thead>
+<tbody>
+<tr><td>ESP32, protoboard, cables</td><td>1</td></tr>
+<tr><td>Resistencias de 10, 22, 47 y 100 kΩ</td><td>1 c/u</td></tr>
+<tr><td>Condensadores electrolíticos de 10, 47, 100 y 220 µF (16 V o más)</td><td>1 c/u</td></tr>
+<tr><td>Multímetro (para medir las resistencias)</td><td>1</td></tr>
+</tbody></table></div>
+<div class="sim" data-sim="conexion" data-cfg="rc" data-title="Circuito RC: GPIO 25 carga, GPIO 34 mide"></div>
+<div class="box warn">
+<p>Los electrolíticos tienen polaridad: la pata más corta, del lado de la franja con signos «−», va a GND. Conectado al revés se calienta y puede abombarse.</p>
+</div>
+</section>
+
+<section>
+<h2>Configuración: el programa</h2>
+<pre class="code" data-lang="cpp" data-file="E2_RC.ino">// E2 · Carga y descarga RC: GPIO 25 alterna cada SEMIPERIODO_MS; GPIO 34 mide V_C a 200 Hz
+const int PIN_FUENTE = 25, PIN_C = 34;
+const unsigned long SEMIPERIODO_MS = 5000;   // use unos 5τ
+const unsigned long PERIODO_US = 5000;        // 200 muestras por segundo
+unsigned long tSig, tCambio;
+bool alto = false;
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(PIN_FUENTE, OUTPUT);
+  digitalWrite(PIN_FUENTE, LOW);
+  delay(3000);                                // empezar descargado
+  Serial.println("t_ms,fuente,Vc_mV");
+  tSig = micros();
+  tCambio = millis();
+}
+
+void loop() {
+  if (millis() - tCambio >= SEMIPERIODO_MS) {
+    tCambio += SEMIPERIODO_MS;
+    alto = !alto;
+    digitalWrite(PIN_FUENTE, alto ? HIGH : LOW);
+  }
+  if ((long)(micros() - tSig) >= 0) {
+    tSig += PERIODO_US;
+    Serial.print(millis());       Serial.print(',');
+    Serial.print(alto ? 1 : 0);   Serial.print(',');
+    Serial.println(analogReadMilliVolts(PIN_C));
+  }
+}
+</pre>
+<p>Elija el semiperiodo de modo que dure al menos \(5\tau\): con 47 kΩ y 100 µF (\(\tau\approx4.7\) s), use 25 s.</p>
+</section>
+
+<section>
+<h2>Experimento virtual</h2>
+<div class="sim" data-sim="e2-rc" data-title="Carga y descarga RC registradas por el ADC" data-layout="below"></div>
+<div class="sim-guide"><ul>
+<li>Lea \(\tau\) donde la descarga cruza 0.368 \(V_0\) y compárelo con el ajuste de \(\ln V\). La lectura directa sale algo mayor: el ADC se satura cerca de 3.1 V y subestima \(V_0\). El ajuste de \(\ln V\) no depende de \(V_0\), por eso es más confiable.</li>
+<li>Repita con varias resistencias y el mismo condensador: \(\tau\) contra \(R\) es una recta de pendiente \(C\).</li>
+<li>Note que por debajo de unos 0.1 V la curva logarítmica se aplana: es el piso del ADC, no física. Excluya esos puntos del ajuste.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Procedimiento</h2>
+<ol class="steps">
+<li><b>Mida cada resistencia con el multímetro.</b><p>Anote el valor real, no el del código de colores.</p></li>
+<li><b>Arme el circuito</b><p>con 47 kΩ y el condensador de 100 µF.</p></li>
+<li><b>Ajuste el semiperiodo</b><p>a unos \(5RC\) nominales y suba el programa.</p></li>
+<li><b>Registre dos ciclos completos</b><p>y copie los datos del Monitor Serie.</p></li>
+<li><b>Varíe R.</b><p>Con el mismo condensador, repita con 10, 22 y 100 kΩ.</p></li>
+<li><b>Varíe C.</b><p>Con 47 kΩ, repita con los otros condensadores.</p></li>
+</ol>
+</section>
+
+<section>
+<h2>Análisis de los datos</h2>
+<ol>
+<li>Separe un tramo de descarga. Calcule \(\ln V_C\) y ajuste una recta usando sólo los puntos con \(V_C\gt0.15\) V. \(\tau=-1/\text{pendiente}\).</li>
+<li>Compare con la lectura directa en \(0.368V_0\) y con la semivida.</li>
+<li>Para el condensador fijo, grafique \(\tau\) contra \(R\): la pendiente es \(C\). Compare con el valor nominal y su tolerancia.</li>
+<li>Para cada condensador calcule \(C=\tau/R\) con su incertidumbre.</li>
+</ol>
+</section>
+
+<section>
+<h2>Preguntas, fuentes de error y extensiones</h2>
+<ol class="problems">
+<li><span class="lvl">Problema</span>Con 47.3 kΩ, la descarga pasa de 3.15 V a 1.16 V en 4.52 s. ¿Cuánto vale \(C\)?
+<details><summary>Respuesta</summary><p>\(\tau=4.52/\ln(3.15/1.16)=4.52/0.999=4.52\) s; \(C=4.52/47\,300=95.6\) µF, dentro de la tolerancia de un condensador de 100 µF.</p></details></li>
+<li><span class="lvl">Concepto</span>El ADC tiene una resistencia de entrada muy grande, pero no infinita. ¿Afecta la medición?
+<details><summary>Respuesta</summary><p>La entrada del ADC equivale a más de 1 MΩ en paralelo con el condensador; con resistencias de hasta 100 kΩ el efecto es menor que el 10 % en el peor caso y mucho menor con resistencias menores. Por eso conviene usar resistencias de 10–47 kΩ.</p></details></li>
+<li><span class="lvl">Concepto</span>¿Por qué la carga no llega exactamente a 3.3 V?
+<details><summary>Respuesta</summary><p>Porque el pin de salida de la ESP32 tiene una pequeña resistencia interna y su voltaje alto es algo menor que 3.3 V; además el ADC se satura cerca de 3.1 V. Por eso la descarga es más fácil de analizar: sólo importa la forma de la curva, no su valor final.</p></details></li>
+<li><span class="lvl">Extensión</span>Reemplace el condensador por dos en serie y dos en paralelo y compruebe las reglas de combinación.</li>
+</ol>
+</section>
+</template>

@@ -1,0 +1,92 @@
+<template class="chapter-src" data-id="m2" data-num="M2" data-title="Plano inclinado con un carrito LEGO" data-part="Parte III · Prácticas de mecánica" data-kits="cel lego esp" data-short="Un carrito con el celular baja por una rampa de ángulo exacto: aceleración contra sen θ, inercia de las ruedas y resistencia a la rodadura">
+<p class="lead">En un plano inclinado la gravedad se «diluye»: sólo la componente \(g\,\sen\theta\) acelera el carrito. Con una rampa LEGO de ángulo conocido por construcción y un celular a bordo, se mide la aceleración a cinco ángulos y se separan tres efectos: la gravedad, la inercia de las ruedas y la resistencia a la rodadura.</p>
+
+<div class="ficha"><div class="ficha-head"><b>Ficha de la práctica</b><span>M2 · 2 horas</span></div><dl>
+<dt>Objetivo</dt><dd>Comprobar que \(a\) es proporcional a \(\sen\theta\), obtener la «gravedad efectiva» del carrito y estimar su resistencia a la rodadura.</dd>
+<dt>Herramientas</dt><dd><span class="kit cel">Celular</span><span class="kit lego">LEGO</span> · alternativa <span class="kit esp">ESP32</span> con HC-SR04</dd>
+<dt>Se mide</dt><dd>Componente de la aceleración a lo largo de la rampa (acelerómetro) o la posición (ultrasonido)</dd>
+<dt>Conceptos</dt><dd>Segunda ley de Newton, componentes del peso, rodadura, fuerza específica</dd>
+<dt>Costo extra</dt><dd>Ninguno</dd>
+</dl></div>
+
+<section>
+<h2>Fundamento</h2>
+<p>Un carrito de masa \(m\) con ruedas de radio \(R\) y momento de inercia total \(I\) baja por una rampa de ángulo θ. Además del peso y la normal actúa una pequeña fuerza de resistencia a la rodadura, \(F_r=\mu_r\,m g\cos\theta\). La energía que va a hacer girar las ruedas reduce la aceleración:</p>
+<div class="eq key" data-name="Carrito en un plano inclinado">\[a=\frac{g\,\sen\theta-\mu_r\,g\cos\theta}{1+I/(mR^2)}\;\approx\;g_{\text{ef}}\,\sen\theta-\mu_r g_{\text{ef}},\qquad g_{\text{ef}}=\frac{g}{1+I/(mR^2)} .\]</div>
+<p>La gráfica de \(a\) contra \(\sen\theta\) es casi una recta: su pendiente es \(g_{\text{ef}}\) (un poco menor que \(g\)) y su intercepto, \(-\mu_r g_{\text{ef}}\).</p>
+<h3>Qué mide el acelerómetro</h3>
+<p>Coloque el celular plano en el carrito con su eje \(y\) apuntando hacia arriba de la rampa. El acelerómetro mide la fuerza específica \(\vb f=\vb a-\vb g\) (capítulo 4). A lo largo de la rampa:</p>
+<ul>
+<li>con el carrito <strong>quieto</strong>: \(f_y=g\,\sen\theta\);</li>
+<li>con el carrito <strong>bajando</strong> con aceleración \(a\): \(f_y=g\,\sen\theta-a\).</li>
+</ul>
+<p>Por lo tanto \(a=f_{y,\text{quieto}}-f_{y,\text{bajando}}\): basta con restar dos lecturas del mismo eje, sin conocer \(g\) ni la calibración absoluta. Si el carrito no tuviera fricción ni ruedas pesadas, ¡\(f_y\) sería cero mientras baja!, igual que en caída libre.</p>
+</section>
+
+<section>
+<h2>Materiales y montaje</h2>
+<div class="tablewrap narrow"><table class="bom">
+<thead><tr><th>Material</th><th>Cantidad</th></tr></thead>
+<tbody>
+<tr><td>Rampa LEGO de 30 módulos (capítulo 9) con torre de altura variable</td><td>1</td></tr>
+<tr><td>Carrito LEGO con 4 ruedas y soporte para el celular</td><td>1</td></tr>
+<tr><td>Celular con phyphox</td><td>1</td></tr>
+<tr><td>Masas adicionales (ladrillos o arandelas, de 50 g)</td><td>4</td></tr>
+<tr><td>Opcional: ESP32 con HC-SR04 al pie de la rampa</td><td>1</td></tr>
+</tbody></table></div>
+<div class="sim" data-sim="lego-modelo" data-model="carrito" data-title="Carrito LEGO con bandeja para el celular"></div>
+<p>La rampa del capítulo 9 tiene 30 módulos (240 mm) entre apoyos. Con la torre de \(N\) ladrillos, \(\sen\theta=9.6N/240=0.04N\): con 2 a 6 ladrillos se cubren ángulos de 4.6° a 13.9°. Las ruedas deben girar libres pero sin juego lateral: deje medio módulo de holgura entre la llanta y el ladrillo Technic.</p>
+</section>
+
+<section>
+<h2>Configuración</h2>
+<p>En phyphox use «Aceleración con g», pestaña «Gráficas», con ejecución temporizada de 3 s de espera y 6 s de duración. El carrito empieza quieto, retenido por un tope (una placa que se retira) o por un dedo. Así cada registro contiene primero el tramo en reposo y luego la bajada.</p>
+<p><b>Alternativa con la ESP32:</b> el HC-SR04 al pie de la rampa, apuntando hacia arriba a lo largo del carril, mide la distancia al carrito (código del capítulo 7, con <code>delay(20)</code>). La aceleración sale del ajuste \(x(t)=x_0+v_0t+\tfrac12at^2\).</p>
+</section>
+
+<section>
+<h2>Experimento virtual</h2>
+<div class="sim" data-sim="m2-plano" data-title="Carrito en la rampa: acelerómetro y ultrasonido" data-layout="below"></div>
+<div class="sim-guide"><ul>
+<li>Suelte el carrito con 4 ladrillos de torre: \(f_y\) baja de \(g\,\sen\theta\) a un valor pequeño mientras rueda.</li>
+<li>Mida a cinco alturas de torre y agregue cada medida a la tabla. La pendiente de \(a\) contra \(\sen\theta\) es \(g_{\text{ef}}\).</li>
+<li>Cambie a ruedas grandes y pesadas: \(g_{\text{ef}}\) baja. Aumente la carga del carrito: \(g_{\text{ef}}\) sube hacia \(g\).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Procedimiento</h2>
+<ol class="steps">
+<li><b>Nivele la base.</b><p>Ponga el celular plano sobre la base de la rampa sin torre: \(a_y\) debe marcar menos de 0.05 m/s². Si no, calce la mesa.</p></li>
+<li><b>Mida la masa del carrito con el celular.</b><p>Con la celda de carga o una balanza de cocina.</p></li>
+<li><b>Torre de 2 ladrillos.</b><p>Suba la rampa y coloque el carrito en lo alto, retenido.</p></li>
+<li><b>Registre.</b><p>Inicie la ejecución temporizada y suelte el carrito sin empujarlo cuando suene el pitido. Atájelo antes del tope.</p></li>
+<li><b>Repita tres veces</b><p>y exporte los datos de cada bajada.</p></li>
+<li><b>Cambie la altura.</b><p>Repita con 3, 4, 5 y 6 ladrillos.</p></li>
+<li><b>Variante.</b><p>Con 4 ladrillos, repita agregando 100 g y 200 g de carga al carrito.</p></li>
+</ol>
+</section>
+
+<section>
+<h2>Análisis de los datos</h2>
+<ol>
+<li>En cada registro, promedie \(f_y\) en el tramo quieto (1 s) y en el tramo en que baja (descarte el primer décimo de segundo). La diferencia es \(a\); su incertidumbre, la combinación de los dos errores estándar.</li>
+<li>Calcule \(\sen\theta=0.04N\) para cada torre. Haga la tabla \((\sen\theta,\ a)\) con el promedio de las tres bajadas.</li>
+<li>Ajuste una recta: pendiente \(g_{\text{ef}}\), intercepto \(b\). Calcule \(\mu_r=-b/g_{\text{ef}}\) y el factor de inercia \(I/(mR^2)=g/g_{\text{ef}}-1\).</li>
+<li>Con la masa y el radio de las ruedas, compare el momento de inercia obtenido con una estimación: cada rueda es aproximadamente un disco, \(I\approx\tfrac12 m_r R^2\).</li>
+</ol>
+</section>
+
+<section>
+<h2>Preguntas, fuentes de error y extensiones</h2>
+<ol class="problems">
+<li><span class="lvl">Concepto</span>¿Por qué no conviene calcular \(a\) como \(g\,\sen\theta-f_y\) con \(g=9.777\)?
+<details><summary>Respuesta</summary><p>Porque el acelerómetro tiene un sesgo y un error de escala de algunas décimas de por ciento a varios por ciento, y la rampa puede no estar exactamente al ángulo calculado. Al restar dos lecturas del mismo sensor en el mismo montaje, esos errores se cancelan.</p></details></li>
+<li><span class="lvl">Problema</span>Con ruedas de 21 g en total, radio de 15 mm y un carrito de 310 g, estime \(g_{\text{ef}}\).
+<details><summary>Respuesta</summary><p>\(I\approx\tfrac12(0.021)(0.015)^2\); \(I/(mR^2)=0.5(0.021)/0.310=0.034\). \(g_{\text{ef}}=9.777/1.034=9.46\) m/s².</p></details></li>
+<li><span class="lvl">Error</span>Si el celular está girado 5° en la bandeja, ¿cómo afecta a la medición?
+<details><summary>Respuesta</summary><p>El eje \(y\) forma 5° con la línea de la rampa: tanto la lectura quieta como la de bajada se multiplican por \(\cos5°=0.996\), y \(a\) sale 0.4 % baja. Además aparece una pequeña componente en \(x\). Es un error sistemático menor, pero conviene alinear el celular con las paredes de la bandeja.</p></details></li>
+<li><span class="lvl">Extensión</span>Mida la misma bajada con el acelerómetro y con el HC-SR04 a la vez. ¿Coinciden las aceleraciones? ¿Cuál es más precisa y por qué?</li>
+</ol>
+</section>
+</template>

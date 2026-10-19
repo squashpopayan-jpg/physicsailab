@@ -1,0 +1,133 @@
+<template class="chapter-src" data-id="medir" data-num="2" data-title="Medir bien: incertidumbre y ajuste de datos" data-part="Parte I · Fundamentos" data-short="Incertidumbre tipo A y B, error estándar, propagación, mínimos cuadrados, residuos, linealización y cómo comparar con un valor esperado">
+<p class="lead">Un sensor de 5 dólares y uno de 500 dan números. Lo que convierte un número en una medición es saber cuánto se puede confiar en él. Este capítulo reúne las herramientas que se usan en todas las prácticas: cómo estimar la incertidumbre, cómo propagarla, cómo ajustar una recta a los datos y cómo decidir si un resultado concuerda con lo esperado.</p>
+
+<div class="keyideas"><ul>
+<li>Todo resultado se informa como \(x = \bar x \pm u(x)\) con unidades y con la incertidumbre redondeada a una o dos cifras significativas.</li>
+<li>La incertidumbre de tipo A sale de repetir: el error estándar de la media es \(s/\sqrt{N}\). La de tipo B sale de la resolución y de las especificaciones del instrumento.</li>
+<li>Para un producto de potencias, \(f=x^a y^b\), las incertidumbres relativas se suman en cuadratura multiplicadas por los exponentes.</li>
+<li>Un ajuste por mínimos cuadrados da la pendiente y el intercepto con sus incertidumbres; los residuos revelan si el modelo es adecuado.</li>
+<li>Las leyes de potencia se vuelven rectas en escala log–log; las exponenciales, en escala semilogarítmica.</li>
+</ul></div>
+
+<section>
+<h2>Valor, unidad e incertidumbre</h2>
+<p>Medir es comparar una magnitud con un patrón. El resultado tiene tres partes: un valor, una unidad y una <span class="term">incertidumbre</span> que indica el intervalo donde razonablemente está el valor verdadero. «El periodo es 1.43 s» es incompleto; «el periodo es \(1.432 \pm 0.004\) s» es una medición.</p>
+<p>Conviene distinguir dos ideas que en el lenguaje diario se confunden:</p>
+<ul>
+<li><strong>Precisión</strong> (repetibilidad): qué tan parecidos son entre sí los resultados de medir varias veces lo mismo. Mejora promediando.</li>
+<li><strong>Exactitud</strong>: qué tan cerca está el resultado del valor verdadero. Se pierde por <span class="term">errores sistemáticos</span> (un cero mal ajustado, una longitud medida desde el lugar equivocado, un sensor descalibrado) que no se reducen promediando.</li>
+</ul>
+<p>Los sensores de un celular suelen ser muy precisos pero no tan exactos: el acelerómetro de un celular en reposo puede marcar 9.84 m/s² con un ruido de sólo 0.01 m/s², aunque en Popayán \(g\approx9.777\) m/s². La diferencia es un error de calibración (un <span class="term">sesgo</span> u <i>offset</i>), y se corrige comparando con una referencia conocida.</p>
+<div class="box local">
+<p>Popayán está a 2.44° N y 1737 m de altitud. La gravedad local estimada es \(g\approx9.777\) m/s² (el valor «estándar» de 9.806 m/s² corresponde a 45° de latitud y nivel del mar). La presión atmosférica media ronda 822 hPa, y el campo magnético terrestre total es de unos 29 µT con una inclinación de 24° hacia abajo. Use estos valores como referencia en las prácticas.</p>
+</div>
+</section>
+
+<section>
+<h2>Incertidumbre de tipo A: repetir y promediar</h2>
+<p>Si se mide \(N\) veces la misma magnitud y se obtienen \(x_1, x_2,\dots,x_N\), la mejor estimación es la media, y la dispersión se describe con la desviación estándar muestral:</p>
+<div class="eq key" data-name="Media, desviación estándar y error estándar">\[\bar x=\frac1N\sum_{i=1}^N x_i,\qquad s=\sqrt{\frac{1}{N-1}\sum_{i=1}^N (x_i-\bar x)^2},\qquad u_A(\bar x)=\frac{s}{\sqrt N}.\]</div>
+<p>La desviación estándar \(s\) describe cuánto varía <em>una</em> medición; no disminuye al repetir. El <span class="term">error estándar de la media</span>, \(s/\sqrt N\), describe cuánto varía el <em>promedio</em>: con 4 mediciones se reduce a la mitad, con 100, a la décima parte. Por eso un acelerómetro ruidoso que toma 400 datos por segundo puede dar un promedio muy preciso en pocos segundos.</p>
+<div class="sim" data-sim="medir-repetir" data-title="Repetir mediciones: cronómetro manual frente a fotocompuerta"></div>
+<div class="sim-guide"><ul>
+<li>Con el cronómetro manual la dispersión (barra gris del histograma) es de unas décimas de segundo; con la fotocompuerta es mil veces menor.</li>
+<li>Aumente el número de repeticiones y vea cómo la franja del error estándar se estrecha como \(1/\sqrt N\), mientras \(s\) se queda casi igual.</li>
+<li>Active el error sistemático (reacción tardía al detener): la media se corre y promediar no lo arregla.</li>
+</ul></div>
+<div class="box warn">
+<p>Un error frecuente es informar la desviación estándar \(s\) como incertidumbre de la media, o al revés, informar \(s/\sqrt N\) cuando lo que se quiere es saber cuánto varía cada medición. Diga siempre cuál de las dos está usando.</p>
+</div>
+</section>
+
+<section>
+<h2>Incertidumbre de tipo B: resolución y especificaciones</h2>
+<p>Algunas incertidumbres no se obtienen repitiendo, sino del conocimiento del instrumento:</p>
+<ul>
+<li><strong>Resolución digital.</strong> Un instrumento que muestra el último dígito con paso \(\Delta\) redondea al valor más cercano; el valor verdadero está en \(\pm\Delta/2\) con igual probabilidad. La incertidumbre estándar es \(u=\Delta/\sqrt{12}\approx0.29\,\Delta\).</li>
+<li><strong>Escala analógica.</strong> En una regla se suele tomar \(u\approx\) media división (0.5 mm para una regla milimetrada), o más si el borde del objeto no es nítido.</li>
+<li><strong>Especificación del fabricante.</strong> La hoja de datos del BMP280 dice «exactitud relativa ±0.12 hPa»; la del HC-SR04, «±3 mm». Si el valor es un límite máximo, se divide por \(\sqrt3\).</li>
+<li><strong>Piezas LEGO.</strong> Las distancias entre pivotes (8.0 mm) se fabrican con tolerancias de centésimas de milímetro: una longitud de 30 módulos (240 mm) tiene una incertidumbre mucho menor que la de medirla con regla. El error dominante suele estar en dónde está realmente el centro de masa o el sensor.</li>
+</ul>
+<p>Las incertidumbres de tipo A y B independientes se combinan en cuadratura:</p>
+<div class="eq">\[u_c=\sqrt{u_A^2+u_{B1}^2+u_{B2}^2+\cdots}\]</div>
+<div class="box ex">
+<h4>El periodo con fotocompuerta</h4>
+<p>Diez periodos medidos con la ESP32 dan una media de 1.2034 s con \(s=0.0012\) s. El reloj de la ESP32 resuelve 1 µs y su frecuencia tiene una tolerancia de ±40 ppm. ¿Cuál es la incertidumbre del periodo?</p>
+<details><summary>Solución</summary>
+<p>Tipo A: \(0.0012/\sqrt{10}=0.00038\) s. Resolución: \(10^{-6}/\sqrt{12}\approx3\times10^{-7}\) s, despreciable. Reloj: \(40\times10^{-6}\times1.2034/\sqrt3=2.8\times10^{-5}\) s. Combinada: \(\sqrt{0.00038^2+0.000028^2}=0.00038\) s. Resultado: \(T=1.2034\pm0.0004\) s. Domina la variación real entre oscilaciones, no el instrumento.</p>
+</details>
+</div>
+</section>
+
+<section>
+<h2>Propagación de la incertidumbre</h2>
+<p>Casi nunca se mide directamente lo que se quiere: se mide \(L\) y \(T\) y se calcula \(g=4\pi^2L/T^2\). Si las variables son independientes, la incertidumbre de una función \(f(x,y,\dots)\) es</p>
+<div class="eq key" data-name="Propagación (variables independientes)">\[u(f)=\sqrt{\left(\frac{\partial f}{\partial x}\right)^2u(x)^2+\left(\frac{\partial f}{\partial y}\right)^2u(y)^2+\cdots}\]</div>
+<p>Para productos y cocientes de potencias, \(f=k\,x^a y^b\), la fórmula se simplifica a incertidumbres relativas:</p>
+<div class="eq">\[\frac{u(f)}{|f|}=\sqrt{a^2\left(\frac{u(x)}{x}\right)^2+b^2\left(\frac{u(y)}{y}\right)^2}.\]</div>
+<p>En \(g=4\pi^2L/T^2\) el periodo aparece al cuadrado: su incertidumbre relativa pesa el doble. Por eso conviene medir el tiempo de muchas oscilaciones y dividir. La simulación compara la fórmula con el método de Monte Carlo, que consiste en repetir el cálculo miles de veces con valores de \(L\) y \(T\) sorteados según su incertidumbre.</p>
+<div class="sim" data-sim="propagacion" data-title="Propagación de incertidumbre: fórmula y Monte Carlo"></div>
+<div class="sim-guide"><ul>
+<li>Con \(u(T)/T=1\,\%\) y \(u(L)/L=1\,\%\), la incertidumbre de \(g\) es \(\sqrt{1^2+(2\cdot1)^2}=2.2\,\%\).</li>
+<li>Elija otras funciones (la densidad de un cilindro, el campo de un dipolo) y vea qué variable domina: la de mayor exponente por su incertidumbre relativa.</li>
+<li>Con incertidumbres grandes (más del 20 %) la distribución deja de ser simétrica y la fórmula lineal empieza a fallar.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Gráficas y ajuste por mínimos cuadrados</h2>
+<p>Casi todas las prácticas terminan en una gráfica que debería ser una recta: el estiramiento de un resorte frente a la fuerza, el voltaje frente a la corriente, \(T^2\) frente a \(L\). El método de <span class="term">mínimos cuadrados</span> elige la recta \(y=mx+b\) que minimiza la suma de los cuadrados de las distancias verticales a los puntos. Con \(N\) puntos:</p>
+<div class="eq key" data-name="Regresión lineal">\[m=\frac{N\sum x_iy_i-\sum x_i\sum y_i}{\Delta},\quad b=\frac{\sum x_i^2\sum y_i-\sum x_i\sum x_iy_i}{\Delta},\quad \Delta=N\sum x_i^2-\Big(\sum x_i\Big)^2\]</div>
+<div class="eq">\[u(m)=s_y\sqrt{\frac{N}{\Delta}},\qquad u(b)=s_y\sqrt{\frac{\sum x_i^2}{\Delta}},\qquad s_y=\sqrt{\frac{\sum (y_i-mx_i-b)^2}{N-2}}.\]</div>
+<p>Las hojas de cálculo lo hacen con la función <code>ESTIMACION.LINEAL</code> (en inglés, <code>LINEST</code>), que también entrega las incertidumbres. El coeficiente \(R^2\) indica qué fracción de la variación de \(y\) explica la recta, pero un \(R^2\) de 0.99 no garantiza que el modelo sea correcto: hay que mirar los <span class="term">residuos</span>, \(y_i-(mx_i+b)\). Si se reparten al azar alrededor de cero, el modelo es adecuado; si dibujan una curva, falta algo en el modelo.</p>
+<div class="sim" data-sim="regresion" data-title="Ajuste por mínimos cuadrados con residuos"></div>
+<div class="sim-guide"><ul>
+<li>Arrastre un punto lejos de la recta: un solo dato atípico cambia mucho la pendiente.</li>
+<li>Elija la situación «modelo equivocado»: \(R^2\) sigue alto, pero los residuos forman una parábola.</li>
+<li>Aumente el número de puntos y vea cómo baja \(u(m)\), aproximadamente como \(1/\sqrt N\).</li>
+<li>Use el botón de copiar para pegar los datos en una hoja de cálculo y comprobar el resultado con <code>ESTIMACION.LINEAL</code>.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Linealizar: convertir curvas en rectas</h2>
+<p>Muchas leyes físicas no son lineales, pero se pueden transformar en una recta cambiando lo que se grafica:</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Ley</th><th>Se grafica</th><th>Pendiente</th><th>Práctica</th></tr></thead>
+<tbody>
+<tr><td>Péndulo: \(T=2\pi\sqrt{L/g}\)</td><td>\(T^2\) contra \(L\)</td><td>\(4\pi^2/g\)</td><td>M3</td></tr>
+<tr><td>Potencia: \(y=k\,x^n\)</td><td>\(\ln y\) contra \(\ln x\)</td><td>\(n\)</td><td>E3 (dipolo, \(n=-3\))</td></tr>
+<tr><td>Descarga RC: \(V=V_0e^{-t/\tau}\)</td><td>\(\ln V\) contra \(t\)</td><td>\(-1/\tau\)</td><td>E2</td></tr>
+<tr><td>Torricelli: \(\sqrt h=\sqrt{h_0}-kt\)</td><td>\(\sqrt h\) contra \(t\)</td><td>\(-k\)</td><td>F5</td></tr>
+<tr><td>Caída libre: \(y=\tfrac12gt^2\)</td><td>\(y\) contra \(t^2\)</td><td>\(g/2\)</td><td>M1</td></tr>
+</tbody></table></div>
+<p>Cuando no se conoce el exponente de una ley de potencia, la gráfica log–log lo revela: su pendiente <em>es</em> el exponente. Es la forma de descubrir experimentalmente que el campo de un imán cae como \(1/r^3\) y no como \(1/r^2\).</p>
+<div class="sim" data-sim="linealizacion" data-title="Buscar la recta: transformaciones de los ejes"></div>
+<div class="sim-guide"><ul>
+<li>Para cada conjunto de datos, pruebe las transformaciones hasta que los puntos queden en línea recta (el indicador de curvatura llega a cero).</li>
+<li>En escala log–log, lea la pendiente: es el exponente de la ley.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Comparar con un valor esperado</h2>
+<p>Al final de una práctica se compara el resultado con un valor de referencia (por ejemplo, \(g\) de Popayán). Dos números no son «iguales» o «distintos» en abstracto: lo son dentro de sus incertidumbres. Un criterio práctico es el de la <span class="term">discrepancia normalizada</span>:</p>
+<div class="eq key" data-name="Compatibilidad de dos resultados">\[z=\frac{|x_1-x_2|}{\sqrt{u_1^2+u_2^2}}\qquad\begin{cases}z\lt2 & \text{compatibles}\\ 2\le z\lt3 & \text{dudoso}\\ z\ge3 & \text{discrepancia real}\end{cases}\]</div>
+<p>El error porcentual, \(100\,|x-x_{\text{ref}}|/x_{\text{ref}}\), es útil para dar una idea, pero no dice si la diferencia es significativa. Un resultado de \(g=9.70\pm0.02\) m/s² tiene sólo 0.8 % de error, pero \(z=3.8\): hay un error sistemático que se debe buscar. En cambio \(9.6\pm0.2\) m/s², con 1.8 % de error, es compatible (\(z=0.9\)), aunque poco preciso.</p>
+<div class="box tip">
+<p><strong>Reglas de redondeo.</strong> Redondee la incertidumbre a una cifra significativa (dos si la primera es 1 o 2) y escriba el valor con el mismo número de decimales: \(9.7783\pm0.0412\) se informa como \(9.78\pm0.04\) m/s². Las cifras de más no agregan información, sólo ruido.</p>
+</div>
+</section>
+
+<section>
+<h2>Preguntas y problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Concepto</span>Un estudiante mide 50 veces la aceleración de un celular en reposo y obtiene \(\bar a=9.842\) m/s² con \(s=0.012\) m/s². Otro dice que «el celular está mal porque \(g=9.777\)». ¿Quién tiene razón?
+<details><summary>Respuesta</summary><p>La incertidumbre de la media es \(0.012/\sqrt{50}=0.0017\) m/s²; la diferencia de 0.065 m/s² es 38 veces mayor: el sensor tiene un sesgo de calibración de unos 0.07 m/s². No está «mal»: es un error sistemático típico (de 0.5 %) que se corrige midiendo el sesgo en reposo y restándolo, o calibrando con varias orientaciones.</p></details></li>
+<li><span class="lvl">Problema</span>La densidad de un cilindro metálico se calcula como \(\rho=4m/(\pi d^2 h)\) con \(m=19.10\pm0.01\) g (balanza HX711), \(d=20.00\pm0.05\) mm y \(h=22.5\pm0.1\) mm (calibrador). Halle \(\rho\) y su incertidumbre. ¿De qué metal se trata?
+<details><summary>Respuesta</summary><p>\(\rho=4(19.10)/(\pi\,2.000^2\cdot2.25)=2.70\) g/cm³. Incertidumbres relativas: masa 0.05 %, diámetro \(2\times0.25=0.50\,\%\), altura 0.44 %. Total \(\sqrt{0.05^2+0.50^2+0.44^2}=0.67\,\%\): \(\rho=2.70\pm0.02\) g/cm³, el valor del aluminio. El diámetro pesa el doble porque está al cuadrado; la masa casi no importa.</p></details></li>
+<li><span class="lvl">Análisis</span>Un ajuste de \(T^2\) contra \(L\) da pendiente \(m=4.05\pm0.03\) s²/m e intercepto \(b=0.021\pm0.008\) s². ¿Cuánto vale \(g\)? ¿Qué significa el intercepto?
+<details><summary>Respuesta</summary><p>\(g=4\pi^2/m=9.75\pm0.07\) m/s², compatible con 9.777 (\(z=0.4\)). El intercepto distinto de cero (\(z=2.6\)) sugiere que la longitud medida no es la longitud efectiva: el centro de masa del objeto colgado está unos \(b/m\approx5\) mm más abajo de lo que se supuso. La pendiente no se afecta por ese error, y por eso se prefiere al cálculo punto por punto.</p></details></li>
+</ol>
+</section>
+</template>

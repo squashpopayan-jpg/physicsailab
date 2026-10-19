@@ -1,0 +1,140 @@
+<template class="chapter-src" data-id="m1" data-num="M1" data-title="Caída libre: la gravedad de Popayán" data-part="Parte III · Prácticas de mecánica" data-kits="esp lego cel" data-short="Una valla LEGO cae a través de una fotocompuerta: la velocidad crece linealmente y la pendiente es g. Variante: el tiempo de vuelo de un celular">
+<p class="lead">Galileo no tenía cronómetros para medir una caída: diluyó la gravedad en un plano inclinado. Con una ESP32 que marca microsegundos y una valla de ladrillos LEGO de franjas exactas, la caída libre se mide directamente, y en una sola pasada se obtienen siete velocidades a siete instantes distintos.</p>
+
+<div class="ficha"><div class="ficha-head"><b>Ficha de la práctica</b><span>M1 · 2 horas</span></div><dl>
+<dt>Objetivo</dt><dd>Medir la aceleración de la gravedad en el laboratorio con una incertidumbre menor que el 1 % y compararla con el valor local, \(g\approx9.777\) m/s².</dd>
+<dt>Herramientas</dt><dd><span class="kit esp">ESP32</span><span class="kit lego">LEGO</span> (método A) · <span class="kit cel">Celular</span> (método B)</dd>
+<dt>Se mide</dt><dd>Instantes en que la valla corta el haz (µs); tiempo de vuelo del celular; alturas</dd>
+<dt>Conceptos</dt><dd>Movimiento uniformemente acelerado, velocidad media e instantánea, ajuste lineal</dd>
+<dt>Costo extra</dt><dd>Un LED infrarrojo y un fototransistor (unos 2 000 pesos) y ladrillos transparentes</dd>
+</dl></div>
+
+<section>
+<h2>Fundamento</h2>
+<p>Un cuerpo que cae libremente, con rapidez inicial \(v_0\) hacia abajo, tiene</p>
+<div class="eq key" data-name="Caída libre">\[v(t)=v_0+g\,t,\qquad y(t)=v_0t+\tfrac12 g t^2 .\]</div>
+<p>La valla tiene franjas opacas y transparentes de 9.6 mm, de modo que entre dos bordes de ataque consecutivos de las franjas opacas hay exactamente \(d=19.2\) mm. La ESP32 registra el instante \(t_i\) de cada borde de ataque. Entre dos bordes la <strong>velocidad media</strong> es \(\bar v_i=d/(t_i-t_{i-1})\). Para una aceleración constante, la velocidad media en un intervalo es igual a la velocidad instantánea en el <strong>punto medio del intervalo de tiempo</strong>:</p>
+<div class="eq">\[\bar v_i=v\!\left(\frac{t_i+t_{i-1}}{2}\right)\quad\Rightarrow\quad \bar v_i=v_0+g\,t_{\text{medio},i}.\]</div>
+<p>La gráfica de \(\bar v_i\) contra \(t_{\text{medio},i}\) es una recta cuya pendiente es \(g\), sin importar desde dónde se soltó la valla. Por eso no hace falta medir la altura inicial.</p>
+<p><b>Método B, con el celular.</b> Un celular en caída libre tiene \(\vb a=\vb g\) y su acelerómetro marca cero (capítulo 4). El intervalo en que \(|\vb f|\approx0\) es el tiempo de vuelo \(t_v\). Si cae desde el reposo una altura \(h\), entonces \(h=\tfrac12 g t_v^2\): graficando \(h\) contra \(t_v^2\) para varias alturas, la pendiente es \(g/2\).</p>
+</section>
+
+<section>
+<h2>Materiales y montaje</h2>
+<div class="tablewrap narrow"><table class="bom">
+<thead><tr><th>Material</th><th>Cantidad</th></tr></thead>
+<tbody>
+<tr><td>ESP32 con cable USB y protoboard</td><td>1</td></tr>
+<tr><td>LED infrarrojo de 940 nm y resistencia de 100 Ω</td><td>1</td></tr>
+<tr><td>Fototransistor (o fotodiodo IR) y resistencia de 10 kΩ</td><td>1</td></tr>
+<tr><td>Ladrillos 1×4 negros y transparentes (valla)</td><td>7 + 7</td></tr>
+<tr><td>Marco LEGO de fotocompuerta (capítulo 9)</td><td>1</td></tr>
+<tr><td>Cojín o caja con espuma para recibir la valla</td><td>1</td></tr>
+<tr><td>Celular con phyphox y cinta métrica (método B)</td><td>1</td></tr>
+</tbody></table></div>
+<p>Arme la valla y el marco como se indica en el capítulo 9. El haz debe quedar horizontal y la valla debe caer vertical por el centro del marco, sin rozarlo. Una guía de dos vigas Technic a los lados ayuda a que no gire.</p>
+<div class="sim" data-sim="lego-modelo" data-model="valla" data-title="La valla de franjas"></div>
+<p>El circuito: el LED infrarrojo queda siempre encendido a través de su resistencia; el fototransistor conduce cuando recibe luz y lleva el GPIO 27 a 0 V. Cuando una franja opaca corta el haz, el fototransistor deja de conducir y la resistencia de 10 kΩ sube el pin a 3.3 V: un flanco de subida por cada franja opaca.</p>
+<div class="sim" data-sim="conexion" data-cfg="foto-led" data-title="Fotocompuerta con LED infrarrojo y fototransistor"></div>
+<div class="box tip">
+<p>La cámara del celular ve la luz infrarroja: apúntela al LED para comprobar que está encendido (se ve morado).</p>
+</div>
+</section>
+
+<section>
+<h2>Configuración: el programa de la ESP32</h2>
+<p>El programa marca con <code>micros()</code> cada flanco de subida mediante una interrupción. Cuando pasan 300 ms sin flancos (la valla ya cayó), calcula y envía por el puerto serie la tabla de tiempos medios y velocidades.</p>
+<pre class="code" data-lang="cpp" data-file="M1_caida_valla.ino">// M1 · Caída libre con valla LEGO y fotocompuerta (flanco de subida = franja opaca)
+const int PIN_FOTO = 27;
+const float PERIODO = 0.0192;          // m: franja opaca + transparente (dos ladrillos)
+const int MAX = 64;
+volatile unsigned long tFlanco[MAX];
+volatile int n = 0;
+
+void IRAM_ATTR alSubir() {
+  if (n < MAX) tFlanco[n++] = micros();
+}
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(PIN_FOTO, INPUT);            // la resistencia de 10 kΩ hace de pull-up
+  attachInterrupt(digitalPinToInterrupt(PIN_FOTO), alSubir, RISING);
+  Serial.println("Deje caer la valla a través de la fotocompuerta");
+}
+
+void loop() {
+  static int nPrev = 0;
+  static unsigned long tUltimo = 0;
+  if (n != nPrev) { nPrev = n; tUltimo = millis(); }
+  if (n >= 3 && millis() - tUltimo > 300) {      // la valla ya pasó
+    noInterrupts(); int m = n; interrupts();
+    Serial.println("i,t_medio_s,v_m_s");
+    for (int i = 1; i < m; i++) {
+      float dt = (tFlanco[i] - tFlanco[i - 1]) * 1e-6;
+      float tm = ((tFlanco[i] + tFlanco[i - 1]) / 2.0 - tFlanco[0]) * 1e-6;
+      Serial.print(i);         Serial.print(',');
+      Serial.print(tm, 6);     Serial.print(',');
+      Serial.println(PERIODO / dt, 4);
+    }
+    n = 0; nPrev = 0;
+    Serial.println("Listo para otra caída");
+  }
+}
+</pre>
+<p><b>Método B.</b> En phyphox abra «Aceleración con g», pestaña «Absoluto». Use ejecución temporizada (3 s de espera, 6 s de duración) para soltar el celular con la mano quieta.</p>
+</section>
+
+<section>
+<h2>Experimento virtual</h2>
+<div class="sim" data-sim="m1-caida" data-title="Caída libre: valla con fotocompuerta y celular en vuelo" data-layout="below"></div>
+<div class="sim-guide"><ul>
+<li>Método A: suelte la valla desde distintas alturas. La recta \(v(t)\) cambia de intercepto pero no de pendiente.</li>
+<li>Agregue ruido de tiempo grande (50 µs): ¿cuánto empeora la incertidumbre de \(g\)? ¿Y si la valla gira un poco al caer?</li>
+<li>Método B: mida a cinco alturas y ajuste \(h\) contra \(t_v^2\). El retraso al soltar con la mano aparece como un intercepto.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Procedimiento</h2>
+<ol class="steps">
+<li><b>Arme y pruebe la fotocompuerta.</b><p>Con el Monitor Serie abierto a 115200 baudios, pase un dedo por el haz: debe aparecer al menos una lectura cuando el dedo sale.</p></li>
+<li><b>Alinee la valla.</b><p>Sosténgala desde el remate, vertical, con su franja inferior unos 5 cm por encima del haz.</p></li>
+<li><b>Suéltela sin empujarla.</b><p>Abra los dedos de golpe. Debe caer limpia sobre el cojín, sin rozar el marco.</p></li>
+<li><b>Copie los datos.</b><p>Copie la tabla del Monitor Serie a la hoja de cálculo (pestaña con el número de la caída).</p></li>
+<li><b>Repita.</b><p>Haga al menos 10 caídas, algunas desde 15 o 20 cm más arriba.</p></li>
+<li><b>Método B: alturas.</b><p>Sobre un cojín grueso, marque cinco alturas entre 40 cm y 1.2 m (medidas desde la base del celular hasta la superficie del cojín).</p></li>
+<li><b>Método B: caídas.</b><p>Para cada altura, tres caídas con ejecución temporizada. Exporte los datos.</p></li>
+</ol>
+</section>
+
+<section>
+<h2>Análisis de los datos</h2>
+<ol>
+<li>Para cada caída del método A, grafique \(\bar v\) contra \(t_{\text{medio}}\) y haga un ajuste lineal: la pendiente es \(g\) con su incertidumbre \(u(m)\).</li>
+<li>Promedie los valores de \(g\) de las 10 caídas. La incertidumbre del promedio es \(s/\sqrt{10}\); compárela con las \(u(m)\) individuales.</li>
+<li>Incertidumbre de tipo B del periodo de la valla: la altura de dos ladrillos se fabrica con una tolerancia de centésimas de milímetro, pero el desgaste y la presión entre piezas pueden cambiarla. Mida la valla completa (14 ladrillos) con un calibrador: \(d=L/7\).</li>
+<li>En el método B, para cada caída lea \(t_v\) como la duración del intervalo en que \(|\vb f|\lt3\) m/s². Grafique \(h\) contra \(t_v^2\): pendiente \(g/2\).</li>
+<li>Compare cada resultado con \(g=9.777\) m/s² usando \(z\) (capítulo 2).</li>
+</ol>
+<div class="box ex">
+<h4>Datos típicos de una caída</h4>
+<p>Una valla soltada con su primera franja a 5 cm del haz da velocidades de 1.076, 1.240, 1.383, 1.513, 1.632, 1.743 y 1.848 m/s en tiempos medios de 0.0089, 0.0256, 0.0403, 0.0536, 0.0658, 0.0772 y 0.0879 s (contados desde el primer flanco). ¿Cuánto vale \(g\)? ¿Qué significa el intercepto?</p>
+<details><summary>Solución</summary>
+<p>El ajuste lineal da una pendiente de 9.78 m/s² y un intercepto de 0.99 m/s. El intercepto es la rapidez cuando el primer borde cruzó el haz: \(\sqrt{2(9.777)(0.050)}=0.989\) m/s, coherente con los 5 cm de caída previa. Con datos reales, el ruido de unos microsegundos en cada flanco da incertidumbres de 0.5–1 % por caída; promediando diez caídas se baja de 0.3 %.</p>
+</details>
+</div>
+</section>
+
+<section>
+<h2>Preguntas, fuentes de error y extensiones</h2>
+<ol class="problems">
+<li><span class="lvl">Error</span>¿Qué pasa con el valor de \(g\) si la valla cae inclinada un ángulo de 10°?
+<details><summary>Respuesta</summary><p>El haz recorre la valla en diagonal y el periodo efectivo sigue siendo 19.2 mm medido a lo largo de la valla, pero la valla avanza vertical: el periodo vertical es \(19.2\cos10°=18.9\) mm. Si se usa 19.2 mm, \(g\) sale 1.5 % alto. Si además gira durante la caída, el error cambia en cada franja y la recta se curva.</p></details></li>
+<li><span class="lvl">Concepto</span>¿Por qué se usan sólo los flancos de subida y no también los de bajada?
+<details><summary>Respuesta</summary><p>Porque el fototransistor y el umbral hacen que una franja opaca «parezca» un poco más ancha o más angosta que una transparente (capítulo 7). Entre dos flancos del mismo tipo ese efecto se cancela y la distancia es exactamente un periodo.</p></details></li>
+<li><span class="lvl">Análisis</span>¿Es despreciable la resistencia del aire? Estime la fuerza de arrastre sobre la valla a 2 m/s y compárela con su peso.
+<details><summary>Respuesta</summary><p>La valla cae a lo largo de su eje, así que el aire choca con su sección horizontal de \(8\times32\) mm² = \(2.6\times10^{-4}\) m². Con \(F=\tfrac12\rho C_DAv^2\), \(\rho=0.98\) kg/m³ y \(C_D\approx1\): \(F\approx5\times10^{-4}\) N. La valla de 14 ladrillos pesa unos 0.25 N: el arrastre es del orden de 0.2 % del peso (más el roce del aire en los costados). Como crece con \(v^2\), en caídas desde muy alto la recta \(v(t)\) se curva un poco hacia abajo.</p></details></li>
+<li><span class="lvl">Extensión</span>Mida \(g\) con un péndulo (práctica M3) y compare los dos métodos. ¿Cuál tiene menor incertidumbre y por qué?</li>
+</ol>
+</section>
+</template>

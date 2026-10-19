@@ -1,0 +1,123 @@
+<template class="chapter-src" data-id="e6" data-num="E6" data-title="Inducción de Faraday: un imán que cae por una bobina" data-part="Parte IV · Prácticas de electromagnetismo" data-kits="esp lego" data-short="La fem inducida en una bobina por un imán que cae: dos pulsos de signo opuesto, flujo magnético como área bajo la curva y fem proporcional a la rapidez">
+<p class="lead">Cuando un imán atraviesa una bobina, el flujo magnético sube y baja, y aparece una fuerza electromotriz que lo «registra». Dejando caer un imán de neodimio por un tubo con una bobina, la ESP32 captura la señal a 10 000 muestras por segundo: dos pulsos de signo contrario, y en sus áreas, la ley de Faraday.</p>
+
+<div class="ficha"><div class="ficha-head"><b>Ficha de la práctica</b><span>E6 · 2 horas</span></div><dl>
+<dt>Objetivo</dt><dd>Registrar la fem inducida, comprobar que el área de cada pulso es el cambio de flujo y que la fem máxima es proporcional a la rapidez del imán.</dd>
+<dt>Herramientas</dt><dd><span class="kit esp">ESP32</span><span class="kit lego">LEGO</span> (soporte del tubo)</dd>
+<dt>Se mide</dt><dd>Voltaje de la bobina con el ADC a 10 kHz, alturas de caída</dd>
+<dt>Conceptos</dt><dd>Flujo magnético, ley de Faraday–Lenz, integración numérica, muestreo rápido</dd>
+<dt>Costo extra</dt><dd>Tubo de PVC o de cartón de 20 mm, alambre esmaltado, dos resistencias de 10 kΩ</dd>
+</dl></div>
+
+<section>
+<h2>Fundamento</h2>
+<p>La ley de Faraday dice que la fem inducida en una bobina de \(N\) espiras es menos la rapidez de cambio del flujo magnético que la atraviesa:</p>
+<div class="eq key" data-name="Ley de Faraday">\[\mathcal E=-N\frac{d\Phi}{dt}=-N\frac{d\Phi}{dz}\,v .\]</div>
+<p>Cuando el imán se acerca, el flujo crece y la fem tiene un signo; cuando se aleja, el flujo decrece y la fem cambia de signo (la ley de Lenz expresa que la corriente inducida se opone al cambio). Como el imán va acelerando, sale más rápido de lo que entró: el segundo pulso es más alto y más angosto. Pero el área bajo cada pulso es la misma, porque</p>
+<div class="eq">\[\int\mathcal E\,dt=-N\,\Delta\Phi,\]</div>
+<p>y el flujo sube de cero a \(\Phi_{\max}\) y vuelve a cero, sin importar la rapidez. En cambio la fem máxima es proporcional a la rapidez con que el imán cruza la bobina: \(\mathcal E_{\max}\propto v=\sqrt{2gh}\).</p>
+<h3>Medir una señal que cambia de signo</h3>
+<p>El ADC sólo lee voltajes positivos. Por eso la bobina se conecta entre un punto fijo de 1.65 V (un divisor de dos resistencias de 10 kΩ entre 3.3 V y GND) y la entrada del ADC: la señal queda centrada en 1.65 V y puede subir o bajar. Los pulsos duran unos milisegundos, así que hay que muestrear a 10 kHz y guardar los datos en memoria antes de enviarlos.</p>
+</section>
+
+<section>
+<h2>Materiales y montaje</h2>
+<div class="tablewrap narrow"><table class="bom">
+<thead><tr><th>Material</th><th>Cantidad</th></tr></thead>
+<tbody>
+<tr><td>Tubo de PVC o cartón de 20 mm de diámetro interior y 40 cm de largo</td><td>1</td></tr>
+<tr><td>Bobina de 100–200 vueltas de alambre esmaltado calibre 30, de 1 cm de largo, a 25 cm de la boca del tubo (con más vueltas la señal se sale del rango de ±1.6 V del ADC)</td><td>1</td></tr>
+<tr><td>Imán de neodimio cilíndrico (10 × 10 mm)</td><td>1</td></tr>
+<tr><td>Dos resistencias de 10 kΩ (divisor de 1.65 V)</td><td>2</td></tr>
+<tr><td>ESP32, cables; soporte LEGO vertical para el tubo; cojín abajo</td><td>1</td></tr>
+</tbody></table></div>
+<div class="sim" data-sim="conexion" data-cfg="faraday" data-title="Bobina entre el punto de 1.65 V y el GPIO 34"></div>
+<p>El tubo se sostiene vertical con un marco de ladrillos LEGO y vigas Technic. Marque en el tubo alturas de soltado cada 2 cm por encima de la bobina. Abajo, un cojín recibe el imán.</p>
+</section>
+
+<section>
+<h2>Configuración: el programa</h2>
+<pre class="code" data-lang="cpp" data-file="E6_faraday.ino">// E6 · Captura rápida de la fem de una bobina (GPIO 34, centrada en 1.65 V)
+// Muestrea siempre a 10 kHz en un búfer circular; al detectar la señal guarda
+// también los 30 ms anteriores al disparo (pre-disparo), como un osciloscopio.
+const int PIN = 34;
+const int N = 3000, PRE = 300;           // 0.3 s en total, 30 ms antes del disparo
+const unsigned long DT_US = 100;         // 10 000 muestras por segundo
+uint16_t buf[N];
+int cero;
+
+void setup() {
+  Serial.begin(115200);
+  analogReadResolution(12);
+  long s = 0;
+  for (int i = 0; i < 500; i++) s += analogRead(PIN);
+  cero = s / 500;                         // nivel sin señal (≈ 1.65 V)
+  Serial.println("Listo: suelte el imán");
+}
+
+void loop() {
+  static int i = 0, faltan = -1;          // faltan: muestras por tomar tras el disparo
+  static unsigned long tSig = micros();
+  if ((long)(micros() - tSig) < 0) return;
+  tSig += DT_US;
+  int v = analogRead(PIN);
+  buf[i] = v;
+  if (faltan < 0 && abs(v - cero) > 15) faltan = N - PRE;   // disparo
+  i = (i + 1) % N;
+  if (faltan > 0 && --faltan == 0) {
+    Serial.println("t_ms,fem_mV");
+    for (int k = 0; k < N; k++) {
+      int j = (i + k) % N;                // de la muestra más antigua a la más reciente
+      Serial.print((k - PRE) * 0.1, 1);
+      Serial.print(',');
+      Serial.println((buf[j] - cero) * 3300.0 / 4095.0, 1);  // conversión aproximada
+    }
+    faltan = -1;
+    delay(2000);
+    tSig = micros();
+  }
+}
+</pre>
+<p><code>analogRead()</code> tarda unos 10 µs en la ESP32, de modo que 10 kHz es alcanzable. La conversión a milivoltios es aproximada (ganancia nominal), suficiente para comparar áreas y alturas de pulsos.</p>
+</section>
+
+<section>
+<h2>Experimento virtual</h2>
+<div class="sim" data-sim="e6-faraday" data-title="Imán que cae por una bobina: fem, flujo y rapidez" data-layout="below"></div>
+<div class="sim-guide"><ul>
+<li>Observe los dos pulsos: el segundo es mayor y más corto, pero las áreas sombreadas son iguales.</li>
+<li>Suelte desde varias alturas y agregue cada caída: \(\mathcal E_{\max}\) contra \(\sqrt h\) es una recta.</li>
+<li>Baje la frecuencia de muestreo a 500 Hz: los picos se recortan y su altura deja de ser confiable.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Procedimiento</h2>
+<ol class="steps">
+<li><b>Arme el divisor y la bobina</b><p>y compruebe con el Monitor Serie que, sin imán, el nivel es estable.</p></li>
+<li><b>Primera caída.</b><p>Suelte el imán desde la boca del tubo y copie los datos.</p></li>
+<li><b>Alturas.</b><p>Suelte desde 2, 4, 8, 12 y 16 cm sobre la bobina (tres veces cada una), sosteniendo el imán con una placa LEGO que se retira.</p></li>
+<li><b>Orientación.</b><p>Invierta el imán (polo sur abajo) y repita una altura: los pulsos cambian de signo.</p></li>
+</ol>
+</section>
+
+<section>
+<h2>Análisis de los datos</h2>
+<ol>
+<li>Integre cada pulso con la regla del trapecio (sume \(\mathcal E\,\Delta t\)): compare el área del primer pulso con la del segundo.</li>
+<li>Lea \(\mathcal E_{\max}\) de cada pulso y grafíquela contra \(\sqrt{h}\) (o contra la rapidez calculada en la bobina).</li>
+<li>El tiempo entre los dos picos y la longitud de la bobina dan una estimación de la rapidez: compárela con \(\sqrt{2gh}\).</li>
+</ol>
+</section>
+
+<section>
+<h2>Preguntas, fuentes de error y extensiones</h2>
+<ol class="problems">
+<li><span class="lvl">Concepto</span>¿Por qué no se puede usar la frecuencia de muestreo de 200 Hz de las otras prácticas?
+<details><summary>Respuesta</summary><p>Porque cada pulso dura unos 5–10 ms: a 200 Hz habría uno o dos puntos por pulso, y el pico se perdería. Se necesitan decenas de puntos por pulso (capítulo 3).</p></details></li>
+<li><span class="lvl">Concepto</span>Si la bobina se cierra con una resistencia pequeña, ¿cae el imán más despacio?
+<details><summary>Respuesta</summary><p>Sí, un poco: circula corriente, la bobina disipa energía y aparece una fuerza que se opone al movimiento (ley de Lenz). Con la entrada del ADC, de alta impedancia, casi no circula corriente y el efecto es despreciable. Es la idea del freno magnético de la práctica E7.</p></details></li>
+<li><span class="lvl">Extensión</span>Ponga dos bobinas separadas 10 cm y mida el tiempo entre los pulsos: obtenga \(g\).</li>
+</ol>
+</section>
+</template>

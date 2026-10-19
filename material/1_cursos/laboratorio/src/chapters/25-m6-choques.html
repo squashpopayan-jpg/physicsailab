@@ -1,0 +1,121 @@
+<template class="chapter-src" data-id="m6" data-num="M6" data-title="Choques y conservación del momento" data-part="Parte III · Prácticas de mecánica" data-kits="esp lego" data-short="Dos carritos LEGO chocan en un carril; dos fotocompuertas miden las velocidades antes y después: momento lineal, energía y coeficiente de restitución">
+<p class="lead">En un choque las fuerzas son enormes y duran milisegundos, pero hay algo que no cambia: el momento lineal total. Dos carritos LEGO en un carril recto, unas banderas de ancho conocido y dos fotocompuertas bastan para comprobarlo, y para ver que la energía cinética, en cambio, depende de cómo choquen.</p>
+
+<div class="ficha"><div class="ficha-head"><b>Ficha de la práctica</b><span>M6 · 2 horas</span></div><dl>
+<dt>Objetivo</dt><dd>Verificar la conservación del momento lineal en choques elásticos e inelásticos y medir el coeficiente de restitución.</dd>
+<dt>Herramientas</dt><dd><span class="kit esp">ESP32</span><span class="kit lego">LEGO</span> · alternativa <span class="kit vid">Video</span></dd>
+<dt>Se mide</dt><dd>Tiempos de bloqueo de dos fotocompuertas; masas de los carritos</dd>
+<dt>Conceptos</dt><dd>Momento lineal, impulso, energía cinética, coeficiente de restitución</dd>
+<dt>Costo extra</dt><dd>Un segundo optointerruptor, imanes pequeños o velcro</dd>
+</dl></div>
+
+<section>
+<h2>Fundamento</h2>
+<p>Si sobre el sistema de dos carritos no actúan fuerzas externas horizontales (el carril está nivelado y la fricción es pequeña), el momento total se conserva:</p>
+<div class="eq key" data-name="Conservación del momento">\[m_1v_1+m_2v_2=m_1v_1'+m_2v_2' .\]</div>
+<p>La energía cinética sólo se conserva en los choques elásticos. El <span class="term">coeficiente de restitución</span> mide qué tan elástico es el choque comparando las velocidades relativas:</p>
+<div class="eq">\[e=\frac{v_2'-v_1'}{v_1-v_2}\qquad(e=1:\ \text{elástico};\ e=0:\ \text{perfectamente inelástico}).\]</div>
+<p>En el carril, el carrito 2 empieza quieto (\(v_2=0\)). Las velocidades se miden con banderas: una placa vertical de ancho \(w\) sobre cada carrito que corta el haz de una fotocompuerta durante \(\Delta t=w/v\). Con dos ladrillos 1×4 de canto, \(w=32\) mm exactos.</p>
+<p>El carrito 1 pasa por la compuerta A antes del choque. Después, el carrito 2 (y el 1, si sigue avanzando) pasan por la compuerta B. Si el carrito 1 rebota, vuelve a pasar por A en sentido contrario.</p>
+</section>
+
+<section>
+<h2>Materiales y montaje</h2>
+<div class="tablewrap narrow"><table class="bom">
+<thead><tr><th>Material</th><th>Cantidad</th></tr></thead>
+<tbody>
+<tr><td>Carril recto de vigas Technic (unos 80 cm, en tres tramos unidos)</td><td>1</td></tr>
+<tr><td>Dos carritos LEGO iguales con banderas de 32 mm</td><td>2</td></tr>
+<tr><td>Dos optointerruptores ranurados o fotocompuertas LED + fototransistor</td><td>2</td></tr>
+<tr><td>ESP32, cables, protoboard</td><td>1</td></tr>
+<tr><td>Imanes de neodimio enfrentados (choque elástico) o velcro (inelástico)</td><td>2 + 2</td></tr>
+<tr><td>Ladrillos de carga para cambiar las masas; balanza</td><td>—</td></tr>
+</tbody></table></div>
+<div class="sim" data-sim="lego-modelo" data-model="carril" data-title="Carril con dos carritos y dos fotocompuertas"></div>
+<div class="sim" data-sim="conexion" data-cfg="foto" data-title="Dos fotocompuertas a la ESP32 (GPIO 27 y 26)"></div>
+<p>Nivele el carril: un carrito soltado en el centro no debe empezar a moverse solo. Las compuertas se ponen a unos 15 cm a cada lado del punto de choque, para que el choque ocurra entre ellas y no mientras una bandera corta un haz.</p>
+</section>
+
+<section>
+<h2>Configuración: el programa de la ESP32</h2>
+<pre class="code" data-lang="cpp" data-file="M6_dos_compuertas.ino">// M6 · Velocidades con dos fotocompuertas (A en GPIO 27, B en GPIO 26)
+// Cada compuerta registra el inicio y el fin del bloqueo; velocidad = ancho / tiempo
+const int PIN_A = 27, PIN_B = 26;
+const float ANCHO = 0.032;                 // m: bandera de dos ladrillos de canto
+volatile unsigned long tA0 = 0, tB0 = 0, dtA = 0, dtB = 0;
+volatile bool nuevaA = false, nuevaB = false;
+
+// Según el módulo, el pin está en ALTO o en BAJO con el haz cortado: ajuste BLOQ
+const int BLOQ = HIGH;
+
+// En las interrupciones sólo se guardan enteros (nada de cálculos con decimales)
+void IRAM_ATTR cambioA() {
+  if (digitalRead(PIN_A) == BLOQ) tA0 = micros();
+  else { dtA = micros() - tA0; nuevaA = true; }
+}
+void IRAM_ATTR cambioB() {
+  if (digitalRead(PIN_B) == BLOQ) tB0 = micros();
+  else { dtB = micros() - tB0; nuevaB = true; }
+}
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(PIN_A, INPUT);
+  pinMode(PIN_B, INPUT);
+  attachInterrupt(digitalPinToInterrupt(PIN_A), cambioA, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(PIN_B), cambioB, CHANGE);
+  Serial.println("compuerta,t_ms,v_m_s");
+}
+
+void loop() {
+  if (nuevaA) { nuevaA = false; float v = ANCHO / (dtA * 1e-6); Serial.print("A,"); Serial.print(millis()); Serial.print(','); Serial.println(v, 4); }
+  if (nuevaB) { nuevaB = false; float v = ANCHO / (dtB * 1e-6); Serial.print("B,"); Serial.print(millis()); Serial.print(','); Serial.println(v, 4); }
+}
+</pre>
+<p>La ESP32 no sabe en qué sentido se mueve cada carrito: eso lo anota el grupo al observar cada choque (por ejemplo, el carrito 1 que rebota pasa de nuevo por A, con velocidad negativa).</p>
+</section>
+
+<section>
+<h2>Experimento virtual</h2>
+<div class="sim" data-sim="m6-choque" data-title="Choque en el carril con dos fotocompuertas" data-layout="below"></div>
+<div class="sim-guide"><ul>
+<li>Con masas iguales y choque elástico, el carrito 1 se detiene y el 2 sale con casi la misma velocidad.</li>
+<li>Con velcro (inelástico), los dos siguen juntos con la mitad de la velocidad: se conserva el momento, pero se pierde la mitad de la energía.</li>
+<li>Haga \(m_1\lt m_2\) con imanes: el carrito 1 rebota y vuelve a cruzar la compuerta A.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Procedimiento</h2>
+<ol class="steps">
+<li><b>Pese los carritos</b><p>con sus banderas, imanes o velcro, y los ladrillos de carga.</p></li>
+<li><b>Nivele el carril</b><p>y compruebe con un carrito solo que pasa por A y por B con casi la misma velocidad (pérdida menor que 3 %).</p></li>
+<li><b>Choques elásticos con masas iguales.</b><p>Carrito 2 quieto entre las compuertas; impulse el carrito 1 con suavidad. Anote las velocidades y los sentidos. Cinco repeticiones.</p></li>
+<li><b>Masas distintas.</b><p>Cargue el carrito 2 con el doble de masa y repita; luego cargue el carrito 1.</p></li>
+<li><b>Choques inelásticos.</b><p>Cambie los imanes por velcro y repita las tres combinaciones de masas.</p></li>
+</ol>
+</section>
+
+<section>
+<h2>Análisis de los datos</h2>
+<ol>
+<li>Para cada choque calcule el momento antes \(p=m_1v_1\) y después \(p'=m_1v_1'+m_2v_2'\), con signo.</li>
+<li>Grafique \(p'\) contra \(p\) para todos los choques: los puntos deben caer sobre la recta \(p'=p\). La pendiente de un ajuste por el origen indica la fracción conservada (las pérdidas por fricción entre compuertas la hacen algo menor que 1).</li>
+<li>Calcule la razón de energías \(K'/K\) y el coeficiente \(e\) de cada choque. Compare los promedios de los choques con imanes y con velcro.</li>
+<li>Propague la incertidumbre: \(u(v)/v=\sqrt{(u(w)/w)^2+(u(\Delta t)/\Delta t)^2}\).</li>
+</ol>
+</section>
+
+<section>
+<h2>Preguntas, fuentes de error y extensiones</h2>
+<ol class="problems">
+<li><span class="lvl">Problema</span>Carrito 1 de 0.250 kg a 0.42 m/s choca con el carrito 2 de 0.250 kg en reposo; quedan unidos. ¿Velocidad final? ¿Qué fracción de la energía se pierde?
+<details><summary>Respuesta</summary><p>\(v'=0.250(0.42)/0.500=0.21\) m/s. \(K'/K=\tfrac12(0.5)(0.21)^2/[\tfrac12(0.25)(0.42)^2]=0.5\): se pierde la mitad.</p></details></li>
+<li><span class="lvl">Concepto</span>Con imanes, los carritos no se tocan. ¿Es eso un choque?
+<details><summary>Respuesta</summary><p>Sí: un choque es cualquier interacción breve entre dos cuerpos. La fuerza magnética repulsiva actúa durante unos centímetros de acercamiento; como es conservativa, casi no se pierde energía (\(e\approx0.9\)–0.95).</p></details></li>
+<li><span class="lvl">Error</span>¿Por qué el choque debe ocurrir lejos de las compuertas?
+<details><summary>Respuesta</summary><p>Si ocurre mientras una bandera está cortando el haz, la velocidad cambia durante la medición y \(w/\Delta t\) no es ni la velocidad antes ni la de después.</p></details></li>
+<li><span class="lvl">Extensión</span>Grabe un choque en cámara lenta y compare las velocidades obtenidas con Tracker con las de las fotocompuertas.</li>
+</ol>
+</section>
+</template>

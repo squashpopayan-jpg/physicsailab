@@ -1,0 +1,80 @@
+<template class="chapter-src" data-id="f5" data-num="F5" data-title="Vaciado de un recipiente: Torricelli" data-part="Parte V · Prácticas de fluidos" data-kits="esp lego" data-short="Un sensor ultrasónico mide cómo baja el nivel del agua en una botella con un orificio: √h decrece linealmente con el tiempo y se obtiene el coeficiente de descarga">
+<p class="lead">El agua sale por un orificio con la misma rapidez que tendría si cayera libremente desde la superficie: \(v=\sqrt{2gh}\). Evangelista Torricelli lo enunció en 1643. A medida que el nivel baja, el chorro se debilita y el vaciado se hace más lento. Un sensor ultrasónico mirando hacia abajo, sobre la boca de una botella, registra todo el proceso y muestra cuánta agua sale de verdad por el orificio.</p>
+
+<div class="ficha"><div class="ficha-head"><b>Ficha de la práctica</b><span>F5 · 1.5 horas</span></div><dl>
+<dt>Objetivo</dt><dd>Medir \(h(t)\) durante el vaciado, comprobar que \(\sqrt h\) decrece linealmente y obtener el coeficiente de descarga del orificio.</dd>
+<dt>Herramientas</dt><dd><span class="kit esp">ESP32</span> con HC-SR04 · <span class="kit lego">LEGO</span> (soporte del sensor)</dd>
+<dt>Se mide</dt><dd>Distancia del sensor a la superficie del agua cada 0.2 s</dd>
+<dt>Conceptos</dt><dd>Ecuación de Bernoulli, continuidad, coeficiente de descarga, ecuación diferencial</dd>
+<dt>Costo extra</dt><dd>Botella plástica de 2 L con paredes rectas, broca o clavo caliente</dd>
+</dl></div>
+
+<section>
+<h2>Fundamento</h2>
+<p>Aplicando la ecuación de Bernoulli entre la superficie libre (área \(A\), casi quieta) y el chorro a la salida del orificio (área \(a\)), ambos a presión atmosférica, la rapidez de salida es \(v=\sqrt{2gh}\). El caudal real es menor que \(a\,v\): el chorro se contrae al salir y hay fricción en el borde. Esa reducción se resume en el <span class="term">coeficiente de descarga</span> \(C_d\) (unos 0.6 para un orificio de borde afilado):</p>
+<div class="eq">\[-A\frac{dh}{dt}=C_d\,a\sqrt{2gh}.\]</div>
+<p>Separando variables e integrando:</p>
+<div class="eq key" data-name="Vaciado de Torricelli">\[\sqrt{h(t)}=\sqrt{h_0}-k\,t,\qquad k=\frac{C_d\,a}{A}\sqrt{\frac g2}.\]</div>
+<p>La gráfica de \(\sqrt h\) contra \(t\) es una recta de pendiente \(-k\). Con las áreas medidas se obtiene \(C_d\). El tiempo total de vaciado es \(t_v=\sqrt{h_0}/k\): crece sólo como la raíz de la altura inicial.</p>
+</section>
+
+<section>
+<h2>Materiales y montaje</h2>
+<div class="tablewrap narrow"><table class="bom">
+<thead><tr><th>Material</th><th>Cantidad</th></tr></thead>
+<tbody>
+<tr><td>Botella de 2 L de paredes rectas, sin la parte superior (cortada)</td><td>1</td></tr>
+<tr><td>Orificio de 4–5 mm de diámetro en la pared, a 2 cm del fondo (taponado con cinta)</td><td>1</td></tr>
+<tr><td>HC-SR04 con divisor de voltaje y ESP32 (capítulo 7)</td><td>1</td></tr>
+<tr><td>Puente LEGO sobre la botella que sostiene el sensor mirando hacia abajo</td><td>1</td></tr>
+<tr><td>Bandeja o balde para recoger el agua; calibrador; termómetro</td><td>—</td></tr>
+</tbody></table></div>
+<p>El sensor debe quedar a más de 4 cm de la superficie más alta del agua y centrado (lejos de las paredes, para evitar ecos). Mida el diámetro interior de la botella y el del orificio con el calibrador. La altura \(h\) se cuenta desde el centro del orificio hasta la superficie: \(h=d_{\text{fondo}}-d\), donde \(d\) es la distancia que mide el sensor y \(d_{\text{fondo}}\) la distancia del sensor al nivel del orificio.</p>
+</section>
+
+<section>
+<h2>Configuración</h2>
+<p>Use el programa del HC-SR04 del capítulo 7, con <code>delay(200)</code>, y con la temperatura del aire medida. Para reducir el ruido, promedie cinco ecos por lectura. Empiece a registrar antes de retirar la cinta del orificio.</p>
+</section>
+
+<section>
+<h2>Experimento virtual</h2>
+<div class="sim" data-sim="f5-torricelli" data-title="Vaciado de una botella seguido con ultrasonido" data-layout="below"></div>
+<div class="sim-guide"><ul>
+<li>Inicie el vaciado. La curva \(h(t)\) es una parábola; \(\sqrt h\) contra \(t\) es una recta.</li>
+<li>Cambie el diámetro del orificio: el tiempo de vaciado cambia como \(1/a\), es decir, como \(1/d^2\).</li>
+<li>Compare \(C_d\) obtenido con el valor que se configuró. Con un tubo corto en lugar de un orificio, \(C_d\) sube a unos 0.8.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Procedimiento</h2>
+<ol class="steps">
+<li><b>Mida</b><p>los diámetros de la botella y del orificio, y la distancia del sensor al nivel del orificio.</p></li>
+<li><b>Llene</b><p>la botella hasta unos 20 cm sobre el orificio, con el orificio tapado.</p></li>
+<li><b>Registre</b><p>5 s en reposo y retire la cinta de un tirón.</p></li>
+<li><b>Deje vaciar</b><p>hasta que el chorro se convierta en goteo.</p></li>
+<li><b>Repita</b><p>tres veces y con otro orificio (por ejemplo, de 3 mm).</p></li>
+</ol>
+</section>
+
+<section>
+<h2>Análisis de los datos</h2>
+<ol>
+<li>Convierta las distancias en alturas \(h\). Calcule \(\sqrt h\) y grafíquela contra \(t\).</li>
+<li>Ajuste una recta en el tramo central (descarte el principio, cuando el chorro se establece, y el final, cuando la tensión superficial y el menisco importan). La pendiente es \(-k\).</li>
+<li>Calcule \(C_d=\dfrac{k A}{a}\sqrt{\dfrac2g}\) con su incertidumbre. ¿Qué variable domina? (La del diámetro del orificio, que aparece al cuadrado.)</li>
+</ol>
+</section>
+
+<section>
+<h2>Preguntas, fuentes de error y extensiones</h2>
+<ol class="problems">
+<li><span class="lvl">Problema</span>Una botella de 9.4 cm de diámetro interior tiene un orificio de 4.5 mm. El ajuste de \(\sqrt h\) contra \(t\) da \(k=0.00309\) m^½/s. ¿Cuánto vale \(C_d\)? ¿Cuánto tarda en vaciarse desde 20 cm?
+<details><summary>Respuesta</summary><p>\(A/a=(94/4.5)^2=436\); \(C_d=k\,(A/a)\sqrt{2/g}=0.00309\times436\times0.452=0.61\), el valor típico de un orificio de borde afilado. Tiempo de vaciado: \(t_v=\sqrt{0.20}/0.00309=145\) s. Si al calcular \(C_d\) sale mayor que 1, hay un error de unidades (por ejemplo, \(h\) en centímetros).</p></details></li>
+<li><span class="lvl">Concepto</span>¿Por qué el chorro sale con la rapidez de caída libre desde la superficie, si el agua del recipiente casi no se mueve?
+<details><summary>Respuesta</summary><p>Porque la energía potencial que pierde el agua que «sale» de la superficie (bajando el nivel) aparece como energía cinética en el chorro. Bernoulli lo expresa como \(p_0+\rho gh=p_0+\tfrac12\rho v^2\).</p></details></li>
+<li><span class="lvl">Extensión</span>Mida el alcance horizontal del chorro con la botella elevada sobre la mesa y compárelo con \(2\sqrt{h\,y}\) (y, altura del orificio sobre la mesa).</li>
+</ol>
+</section>
+</template>

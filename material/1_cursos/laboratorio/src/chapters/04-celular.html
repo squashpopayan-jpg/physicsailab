@@ -1,0 +1,119 @@
+<template class="chapter-src" data-id="celular" data-num="4" data-title="Los sensores del celular" data-part="Parte II · Herramientas" data-kits="cel" data-short="Acelerómetro MEMS, ejes del celular, giroscopio, magnetómetro y su calibración, barómetro, luz, proximidad, micrófono y cámara">
+<p class="lead">Dentro de un celular hay estructuras de silicio de décimas de milímetro que se mueven, vibran y se deforman para medir la aceleración, la rotación, el campo magnético y la presión. Saber cómo funcionan explica sus lecturas «raras»: por qué el acelerómetro marca 9.8 m/s² cuando el celular está quieto, por qué el giroscopio deriva y por qué la brújula enloquece junto a un imán.</p>
+
+<div class="keyideas"><ul>
+<li>Los ejes del celular son fijos al aparato: \(x\) hacia la derecha de la pantalla, \(y\) hacia arriba de la pantalla y \(z\) saliendo de ella.</li>
+<li>El acelerómetro mide la <strong>fuerza específica</strong> \(\vb a-\vb g\): en reposo marca \(+g\) hacia arriba y en caída libre marca cero.</li>
+<li>El giroscopio mide la velocidad angular en rad/s alrededor de cada eje; integrarla da el ángulo, con una deriva que crece con el tiempo.</li>
+<li>El magnetómetro mide el campo terrestre (29 µT en Popayán) más el campo propio del celular, que se corrige calibrando.</li>
+<li>El barómetro detecta cambios de altura de unos 10 cm: la presión del aire baja unos 9.6 Pa por metro en Popayán.</li>
+</ul></div>
+
+<section>
+<h2>Los ejes del celular</h2>
+<p>Todos los sensores de movimiento del celular reportan tres componentes, \(x\), \(y\) y \(z\), en un sistema de ejes <strong>pegado al aparato</strong>. Con el celular en posición vertical (retrato) y la pantalla hacia usted, el eje \(x\) apunta a la derecha, el eje \(y\) hacia arriba a lo largo de la pantalla y el eje \(z\) sale de la pantalla hacia usted. Es un sistema derecho: \(\uv x\times\uv y=\uv z\). Si el celular gira, los ejes giran con él.</p>
+<p>Esta convención es la de Android; phyphox la usa también en el iPhone, de modo que los datos de los dos sistemas son comparables. Cuando un experimento pide «el eje \(z\)», hay que pensar en cómo está colocado el celular en el montaje.</p>
+<div class="sim" data-sim="ejes-celular" data-title="Orientación del celular y lecturas de sus sensores"></div>
+<div class="sim-guide"><ul>
+<li>Celular plano boca arriba: el acelerómetro marca \(a_z=+9.78\) m/s²; boca abajo, \(-9.78\). En posición vertical, la lectura pasa a \(a_y\).</li>
+<li>Incline el celular un ángulo θ alrededor de \(x\): \(a_y=g\,\sen\theta\) y \(a_z=g\cos\theta\). Así funciona el inclinómetro.</li>
+<li>El campo magnético también cambia de componentes: su magnitud, 29 µT, no.</li>
+<li>Si abre esta página en el navegador de su propio celular, pruebe el botón «Usar mis sensores».</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El acelerómetro: una masa colgada de resortes</h2>
+<p>Un acelerómetro MEMS es una pequeña <span class="term">masa de prueba</span> de silicio sostenida por resortes también de silicio. Cuando el chip acelera, la masa se queda un poco atrás y los resortes se deforman; el desplazamiento, de nanómetros, cambia la capacitancia entre unos peines de placas fijas y móviles, y un circuito lo convierte en un número. Hay una estructura así para cada eje.</p>
+<p>La masa se desplaza cuando los resortes deben ejercer una fuerza neta distinta del peso. Si el chip tiene aceleración \(\vb a\), la segunda ley para la masa de prueba da \(\vb F_{\text{resorte}}+m\vb g=m\vb a\), y el sensor reporta</p>
+<div class="eq key" data-name="Lo que mide un acelerómetro">\[\vb f=\frac{\vb F_{\text{resorte}}}{m}=\vb a-\vb g.\]</div>
+<p>Esta magnitud se llama <span class="term">fuerza específica</span> o aceleración propia. Tiene consecuencias que sorprenden al principio:</p>
+<ul>
+<li><strong>En reposo</strong> sobre la mesa, \(\vb a=0\) y el sensor marca \(-\vb g\), es decir, \(+9.78\) m/s² <em>hacia arriba</em>. Los resortes sostienen la masa contra la gravedad.</li>
+<li><strong>En caída libre</strong>, \(\vb a=\vb g\) y el sensor marca cero: la masa «flota» dentro del chip. Es la ingravidez de los astronautas.</li>
+<li><strong>En un ascensor que arranca hacia arriba</strong>, marca más de 9.78; al frenar, menos.</li>
+</ul>
+<p>phyphox ofrece dos experimentos: «Aceleración con g» entrega \(\vb f\) tal cual, y «Aceleración sin g» entrega una estimación de \(\vb a\) obtenida restando la gravedad, cuya dirección el celular calcula combinando el acelerómetro con el giroscopio. La segunda es un <span class="term">sensor virtual</span>: cómodo, pero puede fallar en movimientos bruscos o con rotaciones rápidas.</p>
+<div class="sim" data-sim="mems-acel" data-title="Dentro del acelerómetro MEMS"></div>
+<div class="sim-guide"><ul>
+<li>Celular quieto: la masa cae un poco y comprime los resortes inferiores; la lectura es 9.78 m/s² hacia arriba.</li>
+<li>Active la caída libre: los resortes vuelven a su largo natural y la lectura se va a cero.</li>
+<li>Acelere el carrito hacia la derecha: la masa se queda atrás y la lectura horizontal es positiva.</li>
+</ul></div>
+<div class="box note">
+<p><strong>Rango y resolución.</strong> Un acelerómetro típico de celular trabaja con rangos de ±8 g o ±16 g, resolución de 0.002 a 0.005 m/s² y ruido de unos 0.01 m/s² por muestra. En Android, desde la versión 12 las aplicaciones están limitadas a 200 Hz salvo que soliciten un permiso especial (phyphox lo hace); en el iPhone, el máximo práctico es 100 Hz.</p>
+</div>
+<div class="box warn">
+<p>El sensor no está en el centro del celular. Si el celular gira, el punto donde está el chip tiene aceleración centrípeta \(\omega^2r\) y tangencial \(\alpha r\) que dependen de su posición. En los experimentos de rotación hay que averiguar dónde está el sensor (la práctica M5 explica cómo).</p>
+</div>
+</section>
+
+<section>
+<h2>El giroscopio: medir la rotación</h2>
+<p>Un giroscopio MEMS no tiene nada que gire: es una masa que <em>vibra</em> a varios kilohercios. Si el chip rota, la fuerza de Coriolis \(-2m\,\vb\omega\times\vb v\) empuja la masa vibrante en dirección perpendicular a su vibración, con una amplitud proporcional a \(\omega\). Midiendo ese movimiento secundario se obtiene la velocidad angular alrededor de cada eje, en rad/s, con signo según la regla de la mano derecha.</p>
+<p>El giroscopio es el mejor sensor del celular para péndulos, plataformas giratorias y objetos que ruedan, porque no se ve afectado por la gravedad. Su defecto es el <span class="term">sesgo</span>: aun quieto marca unas milésimas de rad/s. Para obtener el ángulo se integra, \(\theta(t)=\int\omega\,dt\), y el sesgo se acumula como una deriva que crece linealmente con el tiempo.</p>
+<div class="sim" data-sim="giroscopio" data-title="El giroscopio en una plataforma giratoria"></div>
+<div class="sim-guide"><ul>
+<li>La lectura sigue a la velocidad angular real con un pequeño ruido.</li>
+<li>El ángulo integrado se separa del real por el sesgo: con 0.005 rad/s, son 17° en un minuto.</li>
+<li>Active «restar el sesgo medido en reposo» y vea cuánto mejora.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El magnetómetro y su calibración</h2>
+<p>El magnetómetro mide las tres componentes del campo magnético en microteslas (µT), con sensores de efecto Hall o magnetorresistivos. En Popayán el campo terrestre es de unos 29.1 µT: 26.7 µT horizontales hacia el norte magnético (que está unos 7° al oeste del norte geográfico) y 11.7 µT verticales hacia abajo (inclinación de 24°).</p>
+<p>El problema es que el propio celular tiene piezas magnetizadas (parlantes, tornillos, la carcasa con imanes) que suman un campo fijo al de la Tierra: el <span class="term">efecto de hierro duro</span>. Además, las piezas de hierro blando deforman el campo según la orientación (<span class="term">hierro blando</span>). Si se gira el celular en todas las direcciones y se grafican las lecturas \((B_x,B_y,B_z)\), deberían caer sobre una esfera de radio 29 µT centrada en el origen; en la realidad caen sobre una esfera desplazada (hierro duro) y algo achatada (hierro blando). <strong>Calibrar</strong> es encontrar ese centro y esa deformación y corregirlos. Por eso las aplicaciones de brújula piden mover el celular en forma de ocho.</p>
+<div class="sim" data-sim="magnetometro" data-title="Calibración del magnetómetro: la esfera desplazada"></div>
+<div class="sim-guide"><ul>
+<li>Gire el celular (botón «Girar en todas direcciones»): las lecturas dibujan un círculo desplazado en cada plano.</li>
+<li>Pulse «Calibrar»: se estima el centro con el punto medio entre máximos y mínimos y se resta.</li>
+<li>Acerque el imán: el campo crece como \(1/r^3\) y el sensor se satura a unos 4900 µT.</li>
+</ul></div>
+<div class="box tip">
+<p>Para los experimentos con imanes no hace falta calibrar: basta con medir el campo de fondo sin el imán y restarlo («tarar»), siempre que el celular no se mueva entre las dos mediciones.</p>
+</div>
+</section>
+
+<section>
+<h2>El barómetro: medir la altura con la presión</h2>
+<p>El barómetro del celular es una membrana de silicio sobre una cavidad sellada; la diferencia de presión la deforma y unas resistencias piezoeléctricas cambian su valor. Mide la presión absoluta en hPa (1 hPa = 100 Pa) con un ruido de unos 0.01 hPa. Como la presión del aire disminuye con la altura según</p>
+<div class="eq key" data-name="Gradiente de presión del aire">\[\frac{dp}{dz}=-\rho_{\text{aire}}\,g,\qquad \rho_{\text{aire}}=\frac{p\,M}{RT}\approx0.98\ \text{kg/m}^3\ \text{en Popayán}\ \Rightarrow\ \frac{dp}{dz}\approx-9.6\ \text{Pa/m},\]</div>
+<p>el barómetro detecta un cambio de altura de 10 a 20 cm. En Popayán la presión media ronda 822 hPa, frente a 1013 hPa al nivel del mar, porque hay 1737 m menos de aire encima. Los cambios del clima producen variaciones lentas de 1–3 hPa a lo largo del día; las puertas, el viento y el aire acondicionado, saltos rápidos.</p>
+<div class="sim" data-sim="barometro" data-title="Subir un edificio con el barómetro del celular"></div>
+<div class="sim-guide"><ul>
+<li>Cada piso de 3 m baja la presión unos 0.29 hPa.</li>
+<li>Suba el ruido o active la deriva del clima: con la deriva, conviene medir rápido o restar una tendencia lineal.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Luz, proximidad, micrófono y cámara</h2>
+<div class="modgrid">
+<div class="mod"><div class="mod-top"><b>Sensor de luz</b><span>lux</span></div><p>Un fotodiodo con filtros que imitan la sensibilidad del ojo, junto a la cámara frontal. Responde lento (unos 10 datos por segundo) y satura con luz solar directa. Sirve para la ley del inverso del cuadrado y la ley de Malus (práctica E8).</p></div>
+<div class="mod"><div class="mod-top"><b>Proximidad</b><span>cm</span></div><p>Un LED infrarrojo y un detector que apagan la pantalla en las llamadas. Muchos sólo dan dos valores («cerca» y «lejos»), pero sirven como cronómetro de paso: phyphox tiene un «cronómetro de proximidad».</p></div>
+<div class="mod"><div class="mod-top"><b>Micrófono</b><span>48 000 muestras/s</span></div><p>Mide la presión acústica. Con phyphox sirve como osciloscopio, espectro de audio, sonómetro relativo y <strong>cronómetro acústico</strong>, que registra el tiempo entre dos sonidos fuertes con resolución de milisegundos.</p></div>
+<div class="mod"><div class="mod-top"><b>Cámara</b><span>30 a 240 cuadros/s</span></div><p>El video en cámara lenta, analizado cuadro a cuadro con el programa libre Tracker, da posiciones en dos dimensiones. Se trata en el capítulo siguiente.</p></div>
+</div>
+<p>El micrófono merece atención especial como cronómetro. phyphox detecta cuándo la amplitud del sonido supera un umbral y mide el tiempo hasta el siguiente cruce. Como el sonido tarda unos 2.9 ms en recorrer un metro (a 18 °C, \(v\approx342\) m/s), el celular debe estar a igual distancia de los dos eventos, o hay que corregir ese retraso.</p>
+<div class="sim" data-sim="microfono" data-title="El cronómetro acústico: umbral, retardo y ruido"></div>
+<div class="sim-guide"><ul>
+<li>Con el umbral muy bajo, el ruido de fondo dispara el cronómetro antes de tiempo; muy alto, no detecta el segundo golpe.</li>
+<li>Aleje el celular del segundo evento: el tiempo medido aumenta 2.9 ms por cada metro de diferencia.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Preguntas y problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Concepto</span>Un celular se lanza hacia arriba y se recibe. ¿Qué marca el acelerómetro mientras está en el aire, subiendo y bajando?
+<details><summary>Respuesta</summary><p>Casi cero en los tres ejes durante todo el vuelo (subiendo, en el punto más alto y bajando), porque está en caída libre: \(\vb a=\vb g\). Sólo la resistencia del aire produce una pequeña lectura. Durante el impulso del lanzamiento y la recepción marca valores grandes.</p></details></li>
+<li><span class="lvl">Problema</span>Un celular apoyado en un plano inclinado marca \(a_y=3.12\) m/s² y \(a_z=9.27\) m/s². ¿Cuál es el ángulo del plano? ¿Cuánto vale \(g\) según el sensor?
+<details><summary>Respuesta</summary><p>\(\theta=\arctan(3.12/9.27)=18.6°\); \(g=\sqrt{3.12^2+9.27^2}=9.78\) m/s². El ángulo no depende de la calibración absoluta, sólo del cociente.</p></details></li>
+<li><span class="lvl">Problema</span>Al subir del primer al quinto piso, la presión pasa de 822.41 hPa a 821.27 hPa. ¿Qué altura subió? ¿Cuánto mide cada piso?
+<details><summary>Respuesta</summary><p>\(\Delta p=114\) Pa; \(\Delta z=114/9.6=11.9\) m en cuatro pisos: unos 3.0 m por piso.</p></details></li>
+<li><span class="lvl">Concepto</span>¿Por qué no se puede obtener la distancia recorrida en un bus integrando dos veces el acelerómetro del celular?
+<details><summary>Respuesta</summary><p>Porque el sesgo (y el error en restar la gravedad cuando el celular se inclina) se integra dos veces y produce un error que crece como \(t^2\): un sesgo de 0.02 m/s² da 36 m de error en un minuto. Los navegadores combinan los sensores con GPS para evitarlo.</p></details></li>
+</ol>
+</section>
+</template>

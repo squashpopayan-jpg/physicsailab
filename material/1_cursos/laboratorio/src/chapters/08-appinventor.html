@@ -1,0 +1,161 @@
+<template class="chapter-src" data-id="appinventor" data-num="8" data-title="MIT App Inventor y alternativas" data-part="Parte II · Herramientas" data-kits="ai cel esp" data-short="Diseñador y bloques, probar con el Companion, cuatro aplicaciones de laboratorio: lecturas en pantalla, registrador CSV, gráfica en vivo y datos de la ESP32 por Bluetooth">
+<p class="lead">MIT App Inventor es un entorno gratuito del Instituto Tecnológico de Massachusetts para crear aplicaciones Android encajando bloques en el navegador. Con él, cada grupo puede tener su propia aplicación de laboratorio: una que muestre exactamente las magnitudes que importan, que guarde los datos con el formato deseado o que reciba por Bluetooth lo que mide la ESP32.</p>
+
+<div class="keyideas"><ul>
+<li>Una aplicación tiene dos partes: el <strong>Diseñador</strong> (qué componentes hay y cómo se ven) y los <strong>Bloques</strong> (qué hacen).</li>
+<li>Los programas responden a <strong>eventos</strong>: «cuando cambie la aceleración», «cuando se pulse el botón», «cuando dispare el reloj». No hay un ciclo principal.</li>
+<li>El componente <code>Clock</code> hace de cronómetro y de «ciclo»; <code>Clock.SystemTime</code> da la marca de tiempo de cada dato en milisegundos.</li>
+<li>Para recibir líneas de la ESP32: <code>DelimiterByte = 10</code> y <code>ReceiveText(-1)</code>, que lee hasta el fin de línea.</li>
+</ul></div>
+
+<section>
+<h2>Primeros pasos</h2>
+<ol class="steps">
+<li><b>Entre a App Inventor.</b><p>Abra <code>ai2.appinventor.mit.edu</code> en Chrome del computador e ingrese con una cuenta de Google. En el menú del globo puede elegir la interfaz en español; los bloques de este capítulo se muestran en inglés, que es como aparecen en la mayoría de los tutoriales.</p></li>
+<li><b>Instale el Companion en el celular.</b><p>Desde Google Play, instale «MIT AI2 Companion». El celular y el computador deben estar en la misma red Wi-Fi.</p></li>
+<li><b>Cree un proyecto.</b><p><span class="ui">Proyectos → Comenzar un proyecto nuevo</span>; use nombres sin espacios, como <code>Acelerometro1</code>.</p></li>
+<li><b>Conecte el celular.</b><p><span class="ui">Conectar → AI Companion</span> muestra un código QR; escanéelo con el Companion. Desde ese momento, cada cambio en el Diseñador o en los Bloques aparece de inmediato en el celular.</p></li>
+<li><b>Genere la aplicación instalable.</b><p>Cuando funcione, <span class="ui">Construir → Android App (.apk)</span> da un QR o un archivo para instalarla sin el Companion (Android pedirá permitir la instalación de fuentes desconocidas).</p></li>
+</ol>
+<div class="box note">
+<p>App Inventor también tiene Companion para iPhone, pero algunos componentes, como el Bluetooth clásico, sólo funcionan en Android. Las aplicaciones de este curso están pensadas para Android.</p>
+</div>
+</section>
+
+<section>
+<h2>El Diseñador y el editor de bloques</h2>
+<p>En el <strong>Diseñador</strong> se arrastran componentes desde la paleta. Los componentes <em>visibles</em> (botones, etiquetas, gráficas) aparecen en la pantalla; los <em>no visibles</em> (sensores, reloj, archivo, Bluetooth) quedan en una lista debajo del celular. Cada componente tiene propiedades que se ajustan en el panel derecho. Los más usados en el laboratorio son:</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Cajón de la paleta</th><th>Componente</th><th>Para qué sirve</th></tr></thead>
+<tbody>
+<tr><td>Interfaz de usuario</td><td><code>Label</code>, <code>Button</code>, <code>ListPicker</code></td><td>Mostrar valores, iniciar y detener, elegir un dispositivo Bluetooth</td></tr>
+<tr><td>Sensores</td><td><code>AccelerometerSensor</code>, <code>GyroscopeSensor</code>, <code>MagneticFieldSensor</code>, <code>Barometer</code>, <code>LightSensor</code>, <code>ProximitySensor</code></td><td>Los sensores del celular (m/s², grados/s, µT, hPa, lux, cm)</td></tr>
+<tr><td>Sensores</td><td><code>Clock</code></td><td>Temporizador periódico y hora del sistema en ms</td></tr>
+<tr><td>Gráficos (Charts)</td><td><code>Chart</code> con <code>ChartData2D</code></td><td>Gráfica en vivo de \(y\) contra \(x\)</td></tr>
+<tr><td>Almacenamiento</td><td><code>File</code></td><td>Guardar los datos en un archivo CSV</td></tr>
+<tr><td>Medios sociales</td><td><code>Sharing</code></td><td>Enviar el archivo por correo, Drive o WhatsApp</td></tr>
+<tr><td>Conectividad</td><td><code>BluetoothClient</code></td><td>Recibir datos de la ESP32 por Bluetooth clásico</td></tr>
+</tbody></table></div>
+<p>En el editor de <strong>Bloques</strong>, al tocar un componente aparecen sus bloques: los de <span style="color:#B08C33;font-weight:700">evento</span> («when …»), los de <span style="color:#266643;font-weight:700">asignar propiedad</span> («set … to»), los de <span style="color:#439970;font-weight:700">leer propiedad</span> y los de <span style="color:#7C5385;font-weight:700">método</span> («call …»). Los bloques integrados se agrupan por color: control, lógica, <span style="color:#3F71B5;font-weight:700">matemáticas</span>, <span style="color:#B32D5E;font-weight:700">texto</span>, <span style="color:#3F95C4;font-weight:700">listas</span>, <span style="color:#D05F2D;font-weight:700">variables</span> y procedimientos. Las unidades del acelerómetro son m/s²; las del giroscopio, <strong>grados por segundo</strong> (no radianes).</p>
+</section>
+
+<section>
+<h2>Proyecto 1: el acelerómetro en pantalla</h2>
+<p><b>Diseñador:</b> tres <code>Label</code> (renómbrelos <code>LabelX</code>, <code>LabelY</code>, <code>LabelZ</code>) y un <code>AccelerometerSensor</code>. En las propiedades del sensor ponga <code>MinimumInterval</code> en 10 ms y <code>Sensitivity</code> en «Strong».</p>
+<div class="aib" data-title="Bloques del proyecto 1" data-cap="El evento se dispara cada vez que el sensor entrega un dato nuevo, y trae las tres componentes como parámetros.">
+when AccelerometerSensor1.AccelerationChanged (xAccel, yAccel, zAccel)
+  set LabelX.Text to [join "ax = " [format as decimal number=[get xAccel] places=2]]
+  set LabelY.Text to [join "ay = " [format as decimal number=[get yAccel] places=2]]
+  set LabelZ.Text to [join "az = " [format as decimal number=[get zAccel] places=2]]
+</div>
+<p>Pruebe la aplicación: con el celular plano, <code>az</code> debe marcar unos 9.8 m/s². Ponga el celular de canto y vea pasar la gravedad de un eje a otro.</p>
+</section>
+
+<section>
+<h2>Proyecto 2: un registrador de datos en CSV</h2>
+<p><b>Diseñador:</b> dos botones (<code>BotonIniciar</code>, <code>BotonGuardar</code>), una etiqueta <code>LabelN</code>, un <code>AccelerometerSensor</code>, un <code>Clock</code> (con <code>TimerEnabled</code> desmarcado y <code>TimerInterval</code> = 20), un <code>File</code> y un <code>Sharing</code>. La idea es guardar cada dato con su marca de tiempo en una lista, y al final convertir la lista en texto CSV.</p>
+<div class="aib" data-title="Bloques del proyecto 2" data-cap="Cada fila de la lista es otra lista [tiempo en ms, aceleración z]. «list to csv table» la convierte en líneas separadas por comas.">
+initialize global datos to [create empty list]
+initialize global t0 to 0
+when BotonIniciar.Click
+  set global datos to [create empty list]
+  set global t0 to [call Clock1.SystemTime]
+  set Clock1.TimerEnabled to [true]
+when Clock1.Timer
+  add items to list list=[get global datos] item=[make a list [- [call Clock1.SystemTime] [get global t0]] [AccelerometerSensor1.ZAccel]]
+  set LabelN.Text to [join "datos: " [length of list list=[get global datos]]]
+when BotonGuardar.Click
+  set Clock1.TimerEnabled to [false]
+  call File1.SaveFile text=[list to csv table list=[get global datos]] fileName="/datos.csv"
+when File1.AfterFileSaved (fileName)
+  call Sharing1.ShareFile file=[get fileName]
+</div>
+<div class="box warn">
+<p>El <code>Clock</code> no es un reloj de laboratorio: con <code>TimerInterval = 20</code> Android lo dispara cada 20 a 40 ms, según lo ocupado que esté el celular. Por eso cada fila guarda el tiempo real. La simulación siguiente muestra la diferencia.</p>
+</div>
+<div class="sim" data-sim="ai-reloj" data-title="El reloj de App Inventor: intervalo pedido e intervalo real"></div>
+<div class="sim-guide"><ul>
+<li>Con 10 ms pedidos, los intervalos reales se reparten entre 10 y 30 ms; si se supone 10 ms exactos, el eje de tiempo queda comprimido.</li>
+<li>Active «celular ocupado» (pantalla con gráfica, otra aplicación abierta): aparecen huecos de 50–100 ms.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Proyecto 3: una gráfica en vivo</h2>
+<p><b>Diseñador:</b> un <code>Chart</code> (cajón Charts) con un <code>ChartData2D</code> adentro, un <code>AccelerometerSensor</code> y un <code>Clock</code> (sólo para la hora del sistema; su temporizador puede quedar desactivado). En el <code>Chart</code> ponga <code>Type</code> = Line.</p>
+<div class="aib" data-title="Bloques del proyecto 3" data-cap="La gráfica muestra az contra el tiempo en segundos y se reinicia cada 10 s para no acumular miles de puntos.">
+initialize global t0 to 0
+initialize global t to 0
+when Screen1.Initialize
+  set global t0 to [call Clock1.SystemTime]
+when AccelerometerSensor1.AccelerationChanged (xAccel, yAccel, zAccel)
+  set global t to [- [call Clock1.SystemTime] [get global t0]]
+  call ChartData2D1.AddEntry x=[/ [get global t] 1000] y=[get zAccel]
+  if [> [get global t] 10000]
+    call ChartData2D1.Clear
+    set global t0 to [call Clock1.SystemTime]
+</div>
+</section>
+
+<section>
+<h2>Proyecto 4: recibir los datos de la ESP32 por Bluetooth</h2>
+<p>La ESP32 con el programa <code>04_bluetooth_clasico.ino</code> del capítulo 6 envía líneas como <code>12530,1648</code> (tiempo en ms y voltaje en mV). Antes de usar la aplicación, <strong>empareje</strong> el celular con «ESP32-Lab» en los ajustes de Bluetooth de Android.</p>
+<p><b>Diseñador:</b> un <code>ListPicker</code> (texto «Conectar»), una etiqueta <code>LabelEstado</code>, un <code>BluetoothClient</code> con <code>DelimiterByte</code> = 10 (el carácter de fin de línea), un <code>Clock</code> con <code>TimerInterval</code> = 20 y un <code>Chart</code> con su <code>ChartData2D</code>.</p>
+<div class="aib" data-title="Bloques del proyecto 4" data-cap="ReceiveText con numberOfBytes = −1 lee hasta el delimitador, es decir, una línea completa. Luego se parte en la coma.">
+initialize global linea to ""
+initialize global partes to [create empty list]
+when ListPicker1.BeforePicking
+  set ListPicker1.Elements to [BluetoothClient1.AddressesAndNames]
+when ListPicker1.AfterPicking
+  if [call BluetoothClient1.Connect address=[ListPicker1.Selection]]
+    set LabelEstado.Text to "Conectado"
+when Clock1.Timer
+  if [and [BluetoothClient1.IsConnected] [> [call BluetoothClient1.BytesAvailableToReceive] 0]]
+    set global linea to [call BluetoothClient1.ReceiveText numberOfBytes=-1]
+    set global partes to [split text=[trim [get global linea]] at=","]
+    if [= [length of list list=[get global partes]] 2]
+      call ChartData2D1.AddEntry x=[/ [select list item list=[get global partes] index=1] 1000] y=[select list item list=[get global partes] index=2]
+</div>
+<div class="sim" data-sim="bt-trama" data-title="Líneas por Bluetooth: delimitador, búfer y velocidad"></div>
+<div class="sim-guide"><ul>
+<li>Leer un número fijo de bytes corta las líneas por la mitad: aparecen datos falsos como «48,12» que la gráfica pinta como picos.</li>
+<li>Si la ESP32 envía más líneas por segundo de las que el reloj de la aplicación lee, el búfer crece y la gráfica se atrasa cada vez más. Lea varias líneas por cada disparo o envíe menos.</li>
+</ul></div>
+<div class="box tip">
+<p>En Android 12 o posterior, la aplicación debe tener permiso de «Dispositivos cercanos». App Inventor lo pide al conectar; si se negó por error, actívelo en <span class="ui">Ajustes → Aplicaciones → (su aplicación) → Permisos</span>.</p>
+</div>
+</section>
+
+<section>
+<h2>Practique con los bloques</h2>
+<p>El rompecabezas tiene los cuatro proyectos con algunos bloques faltantes. Toque un bloque de la caja y luego el hueco donde va (o arrástrelo). Cuando todos estén en su lugar, ejecute la aplicación en el celular simulado.</p>
+<div class="sim" data-sim="ai-rompecabezas" data-title="Rompecabezas de App Inventor: complete y ejecute" data-layout="below"></div>
+<div class="sim-guide"><ul>
+<li>Lea los distractores: <code>"xAccel"</code> entre comillas es un texto, no la variable.</li>
+<li>En el nivel 3, ¿qué pasa con el eje de tiempo si no se divide entre 1000?</li>
+<li>En el nivel 4, compare <code>ReceiveText</code> con −1 y con 8 bytes.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Alternativas a App Inventor</h2>
+<div class="modgrid">
+<div class="mod"><div class="mod-top"><b>phyphox + BLE</b><span>sin programar el celular</span></div><p>Si sólo se necesita graficar y exportar lo que mide la ESP32, la librería phyphox BLE es lo más rápido: la aplicación ya existe.</p></div>
+<div class="mod"><div class="mod-top"><b>Kodular</b><span>bloques, gratuito</span></div><p>Entorno derivado de App Inventor, con los mismos bloques y más componentes. Los proyectos son casi compatibles.</p></div>
+<div class="mod"><div class="mod-top"><b>Serial Bluetooth Terminal</b><span>aplicación lista</span></div><p>Terminal de Kai Morich para Android: se conecta a la ESP32, muestra las líneas y las guarda en un archivo. Ideal para verificar que la ESP32 transmite antes de programar la aplicación propia.</p></div>
+<div class="mod"><div class="mod-top"><b>Thunkable</b><span>bloques, multiplataforma</span></div><p>Similar a App Inventor y con versión para iPhone, pero con menos acceso a sensores y Bluetooth en su plan gratuito.</p></div>
+</div>
+</section>
+
+<section>
+<h2>Preguntas y problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Concepto</span>¿Por qué en el proyecto 2 se guarda <code>Clock1.SystemTime</code> en cada fila, en lugar de calcular el tiempo como número de fila × 20 ms?
+<details><summary>Respuesta</summary><p>Porque el temporizador de Android no es regular: los intervalos reales varían entre 20 y 40 ms o más. Con el número de fila el tiempo saldría mal y, por ejemplo, un periodo de oscilación parecería más corto.</p></details></li>
+<li><span class="lvl">Diseño</span>Modifique el proyecto 1 para mostrar el ángulo de inclinación del celular respecto a la vertical.
+<details><summary>Respuesta</summary><p>Con el bloque matemático <code>atan2</code>: \(\theta=\operatorname{atan2}(\sqrt{a_x^2+a_y^2},\,a_z)\), que App Inventor devuelve en grados. Se muestra en una cuarta etiqueta.</p></details></li>
+<li><span class="lvl">Diagnóstico</span>La gráfica del proyecto 4 muestra de vez en cuando picos enormes. ¿Qué puede pasar y cómo se arregla?
+<details><summary>Respuesta</summary><p>Líneas incompletas o pegadas: si <code>DelimiterByte</code> no es 10 o se lee un número fijo de bytes, «12530,1648» puede llegar como «12530,16» y «48». La validación de que la lista tenga dos elementos y el uso de <code>ReceiveText(-1)</code> lo evitan.</p></details></li>
+</ol>
+</section>
+</template>

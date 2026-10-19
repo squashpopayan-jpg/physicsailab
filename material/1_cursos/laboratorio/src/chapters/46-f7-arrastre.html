@@ -1,0 +1,78 @@
+<template class="chapter-src" data-id="f7" data-num="F7" data-title="Arrastre del aire y velocidad terminal" data-part="Parte V · Prácticas de fluidos" data-kits="esp vid" data-short="Filtros de café apilados caen sobre un sensor ultrasónico: la velocidad terminal crece como la raíz de la masa, la firma del arrastre cuadrático">
+<p class="lead">Un filtro de café de papel cae casi sin acelerar: a los pocos centímetros alcanza una velocidad constante en la que el arrastre del aire equilibra su peso. Apilando filtros se cambia la masa sin cambiar la forma. ¿Si se cuadruplica la masa, se cuadruplica la velocidad terminal? La respuesta revela cómo depende el arrastre de la velocidad.</p>
+
+<div class="ficha"><div class="ficha-head"><b>Ficha de la práctica</b><span>F7 · 1.5 horas</span></div><dl>
+<dt>Objetivo</dt><dd>Medir la velocidad terminal de 1 a 6 filtros apilados, decidir entre arrastre lineal y cuadrático y obtener el coeficiente de arrastre.</dd>
+<dt>Herramientas</dt><dd><span class="kit esp">ESP32</span> con HC-SR04 en el piso mirando hacia arriba · alternativa <span class="kit vid">Video</span></dd>
+<dt>Se mide</dt><dd>Distancia al filtro que cae, 20 veces por segundo</dd>
+<dt>Conceptos</dt><dd>Fuerza de arrastre, velocidad terminal, ley de potencias, densidad del aire</dd>
+<dt>Costo extra</dt><dd>Un paquete de filtros de café tipo canasta</dd>
+</dl></div>
+
+<section>
+<h2>Fundamento</h2>
+<p>A velocidades altas para su tamaño, un objeto en el aire deja una estela turbulenta y el arrastre crece con el cuadrado de la velocidad:</p>
+<div class="eq">\[F_d=\tfrac12\,C_D\,\rho\,A\,v^2 .\]</div>
+<p>A la velocidad terminal, \(F_d=mg\). Con \(n\) filtros apilados, la masa es \(n m_1\) y el área \(A\) no cambia:</p>
+<div class="eq key" data-name="Velocidad terminal con arrastre cuadrático">\[v_t^2=\frac{2\,m_1 g}{C_D\,\rho\,A}\;n .\]</div>
+<p>Si el arrastre fuera lineal (\(F_d=bv\), como en la ley de Stokes de F6), sería \(v_t\propto n\). Graficando \(v_t^2\) contra \(n\) y \(v_t\) contra \(n\), sólo una de las dos será una recta. En escala log–log, la pendiente de \(v_t\) contra \(n\) es ½ para el arrastre cuadrático y 1 para el lineal. Recuerde que en Popayán \(\rho_{\text{aire}}\approx0.98\) kg/m³ (práctica F1).</p>
+</section>
+
+<section>
+<h2>Materiales y montaje</h2>
+<div class="tablewrap narrow"><table class="bom">
+<thead><tr><th>Material</th><th>Cantidad</th></tr></thead>
+<tbody>
+<tr><td>Filtros de café tipo canasta (iguales)</td><td>6</td></tr>
+<tr><td>HC-SR04 en el piso, mirando hacia arriba, con ESP32 (programa del capítulo 7, <code>delay(30)</code>)</td><td>1</td></tr>
+<tr><td>Escalera o silla para soltar desde 1.8–2 m; cinta métrica</td><td>1</td></tr>
+<tr><td>Balanza (celda de carga) para pesar los filtros</td><td>1</td></tr>
+</tbody></table></div>
+<p>El sensor queda en el piso apuntando al techo, en un lugar sin corrientes de aire. Suelte el filtro justo encima del sensor, con la abertura hacia arriba, desde unos 1.8 m (el sensor mide hasta 4 m). Practique hasta que el filtro caiga sin bambolear.</p>
+</section>
+
+<section>
+<h2>Configuración</h2>
+<p>El programa del HC-SR04 envía \(t\) y la distancia. El filtro aparece primero lejos y se acerca: la pendiente del tramo recto de la distancia contra el tiempo es \(-v_t\). <b>Alternativa:</b> video con una cinta métrica vertical de fondo.</p>
+</section>
+
+<section>
+<h2>Experimento virtual</h2>
+<div class="sim" data-sim="f7-arrastre" data-title="Filtros de café sobre el sensor ultrasónico" data-layout="below"></div>
+<div class="sim-guide"><ul>
+<li>Suelte de 1 a 6 filtros y agregue cada \(v_t\). La gráfica de \(v_t^2\) contra \(n\) es una recta por el origen.</li>
+<li>Cambie el modelo a «arrastre lineal» para ver cómo serían los datos en ese caso.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Procedimiento</h2>
+<ol class="steps">
+<li><b>Pese</b><p>10 filtros juntos y calcule la masa de uno. Mida el diámetro de la abertura.</p></li>
+<li><b>Un filtro.</b><p>Inicie el registro y suelte el filtro sobre el sensor. Cinco caídas.</p></li>
+<li><b>Más filtros.</b><p>Repita con 2, 3, 4, 5 y 6 filtros apilados.</p></li>
+<li><b>Exporte</b><p>cada caída con un nombre que indique el número de filtros.</p></li>
+</ol>
+</section>
+
+<section>
+<h2>Análisis de los datos</h2>
+<ol>
+<li>En cada caída, ajuste una recta a la distancia en el último metro: la pendiente es \(-v_t\). Promedie las cinco caídas.</li>
+<li>Grafique \(v_t^2\) contra \(n\) y \(v_t\) contra \(n\). ¿Cuál es lineal? Confírmelo con log–log.</li>
+<li>De la pendiente de \(v_t^2\) contra \(n\), obtenga \(C_D=2m_1g/(\rho A\,\text{pendiente})\).</li>
+<li>Calcule el número de Reynolds \(\mathrm{Re}=\rho v D/\eta_{\text{aire}}\), con \(\eta_{\text{aire}}=1.8\times10^{-5}\) Pa·s: ¿es mucho mayor que 1?</li>
+</ol>
+</section>
+
+<section>
+<h2>Preguntas, fuentes de error y extensiones</h2>
+<ol class="problems">
+<li><span class="lvl">Problema</span>Un filtro de 1.0 g con abertura de 12 cm de diámetro cae a 1.33 m/s en Popayán. ¿Cuánto vale \(C_D\)?
+<details><summary>Respuesta</summary><p>\(A=\pi(0.06)^2=0.0113\) m²; \(C_D=2(0.001)(9.777)/(0.98\times0.0113\times1.33^2)=1.00\).</p></details></li>
+<li><span class="lvl">Concepto</span>¿Caería más rápido el mismo filtro al nivel del mar?
+<details><summary>Respuesta</summary><p>Más lento: el aire es más denso (1.2 kg/m³), y \(v_t\propto1/\sqrt\rho\). En Popayán cae un 10 % más rápido que en Cartagena.</p></details></li>
+<li><span class="lvl">Extensión</span>Recorte el borde de los filtros para cambiar el área y compruebe \(v_t\propto A^{-1/2}\).</li>
+</ol>
+</section>
+</template>

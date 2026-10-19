@@ -1,0 +1,373 @@
+<template class="chapter-src" data-id="modulos" data-num="7" data-title="Sensores y módulos para la ESP32" data-part="Parte II · Herramientas" data-kits="esp" data-short="El bus I²C, distancia con ultrasonido, IMU MPU6050, barómetro BMP280, celda de carga con HX711, sensor Hall, fotocompuertas, corriente con INA219 y temperatura con DS18B20">
+<p class="lead">Un módulo es un sensor ya montado en una plaquita con sus componentes de apoyo y unos pines para conectarlo. Cuestan entre 2 000 y 20 000 pesos y convierten a la ESP32 en un instrumento: distancia, aceleración, presión, fuerza, campo magnético, tiempo de paso, corriente y temperatura. Para cada uno se explica cómo funciona, cómo se conecta, el programa básico y cómo se calibra.</p>
+
+<div class="keyideas"><ul>
+<li>Antes de conectar un módulo, revise su voltaje de alimentación y el voltaje de sus salidas: la ESP32 sólo acepta 3.3 V en sus entradas.</li>
+<li>Los módulos I²C comparten dos cables (SDA en GPIO 21 y SCL en GPIO 22); cada uno tiene una dirección de 7 bits que no debe repetirse.</li>
+<li>Las librerías se instalan desde el Administrador de bibliotecas del entorno de Arduino.</li>
+<li>Todo sensor necesita calibración o, al menos, una verificación con una referencia: cero (tara) y ganancia (escala).</li>
+</ul></div>
+
+<section>
+<h2>Conectar módulos: alimentación, niveles y el bus I²C</h2>
+<p>Hay tres tipos de conexión en este kit:</p>
+<ul>
+<li><strong>Analógica:</strong> el módulo entrega un voltaje proporcional a la magnitud (sensor Hall, potenciómetro, fotorresistencia). Se lee con <code>analogReadMilliVolts()</code> en un pin del ADC1.</li>
+<li><strong>Digital de pulsos:</strong> el módulo entrega niveles altos y bajos (fotocompuerta) o pulsos cuya duración codifica la medida (ultrasonido). Se leen con interrupciones o con <code>pulseIn()</code>.</li>
+<li><strong>Bus de datos:</strong> el módulo tiene un convertidor y un procesador propios y entrega números ya digitalizados por un protocolo: I²C (MPU6050, BMP280, INA219), un protocolo propio de dos hilos (HX711) o 1-Wire (DS18B20).</li>
+</ul>
+<p>El bus <span class="term">I²C</span> usa dos líneas: SDA (datos) y SCL (reloj), más alimentación y tierra. La ESP32 actúa como maestra: genera el reloj y llama a cada módulo por su <span class="term">dirección</span>, un número de 7 bits que viene de fábrica y que a veces se puede cambiar con un pin (AD0 en el MPU6050, SDO en el BMP280). Varios módulos pueden colgar del mismo par de cables siempre que sus direcciones sean distintas. Las líneas necesitan resistencias de <i>pull-up</i> a 3.3 V, que casi todos los módulos ya traen.</p>
+<div class="sim" data-sim="i2c-bus" data-title="El bus I²C: direcciones, escáner y una transacción"></div>
+<div class="sim-guide"><ul>
+<li>Conecte varios módulos y pulse «Escanear»: es lo que hace el programa <i>I2C scanner</i>, el primer diagnóstico cuando un sensor «no aparece».</li>
+<li>Conecte dos MPU6050 con AD0 en bajo: chocan en la dirección 0x68. Cambie el AD0 de uno de ellos.</li>
+<li>Observe la transacción: condición de inicio, dirección, bit de lectura o escritura y el ACK con que responde el módulo.</li>
+</ul></div>
+<div class="box tip">
+<p><strong>Instalar una librería:</strong> en el entorno de Arduino, <span class="ui">Herramientas → Administrar bibliotecas</span> (o el ícono de libros), busque el nombre indicado en cada sección y pulse <span class="ui">Instalar</span>. Si pregunta por dependencias, elija «Instalar todas».</p>
+</div>
+</section>
+
+<section>
+<h2>Distancia: el sensor ultrasónico HC-SR04</h2>
+<p>El HC-SR04 emite un tren de 8 pulsos de ultrasonido de 40 kHz cuando recibe un pulso de 10 µs en su pin Trig, y pone en alto su pin Echo durante el tiempo que tarda el sonido en ir hasta el objeto y volver. Con la rapidez del sonido \(v\):</p>
+<div class="eq key" data-name="Distancia por tiempo de vuelo">\[d=\frac{v\,t_{\text{eco}}}{2},\qquad v\approx331.3+0.606\,T\ \ \text{(m/s, con }T\text{ en °C)}.\]</div>
+<p>Mide entre 2 cm y 4 m con una resolución de unos 3 mm, unas 30 veces por segundo. Su haz es un cono de unos 15°: un objeto pequeño o inclinado puede no devolver eco, y las paredes cercanas producen ecos falsos. Como trabaja a 5 V, su pin Echo entrega 5 V: se conecta a la ESP32 a través de un divisor (1 kΩ y 2 kΩ) que lo baja a 3.3 V. Existe una versión de 3.3 V (HC-SR04P o RCWL-1601) que no lo necesita.</p>
+<div class="sim" data-sim="conexion" data-cfg="hcsr04" data-title="Conexión del HC-SR04 con divisor de voltaje"></div>
+<pre class="code" data-lang="cpp" data-file="hcsr04_distancia.ino">// Distancia con HC-SR04: Trig → GPIO 19, Echo → divisor (1k/2k) → GPIO 18
+const int TRIG = 19, ECHO = 18;
+const float T_AIRE = 19.0;                     // temperatura del aire (°C)
+const float V_SON = 331.3 + 0.606 * T_AIRE;    // rapidez del sonido (m/s)
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(TRIG, OUTPUT);
+  pinMode(ECHO, INPUT);
+  Serial.println("t_ms,d_cm");
+}
+
+void loop() {
+  digitalWrite(TRIG, LOW);  delayMicroseconds(2);
+  digitalWrite(TRIG, HIGH); delayMicroseconds(10);   // pulso de disparo
+  digitalWrite(TRIG, LOW);
+  unsigned long us = pulseIn(ECHO, HIGH, 30000);     // ida y vuelta (máx. 30 ms ≈ 5 m)
+  if (us > 0) {
+    float d_cm = us * 1e-6 * V_SON / 2.0 * 100.0;
+    Serial.print(millis());
+    Serial.print(',');
+    Serial.println(d_cm, 2);
+  }
+  delay(30);                                         // deja morir los ecos
+}
+</pre>
+<div class="sim" data-sim="ultrasonido" data-title="Tiempo de vuelo: eco, temperatura y errores del HC-SR04"></div>
+<div class="sim-guide"><ul>
+<li>Si el programa supone 20 °C y el aire está a 30 °C, la distancia sale 1.7 % corta.</li>
+<li>Incline el objetivo más de unos 20°: el eco se va hacia un lado y el sensor no lo recibe.</li>
+<li>Por debajo de 2 cm el eco llega mientras el sensor todavía está emitiendo.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Aceleración y rotación: la IMU MPU6050</h2>
+<p>El MPU6050 reúne un acelerómetro y un giroscopio de tres ejes, como los del celular, con un convertidor de 16 bits y un filtro digital configurable. Pesa un gramo: va montado en un carrito, en un péndulo o en una rueda donde el celular no cabe. Se comunica por I²C en la dirección 0x68 (0x69 si el pin AD0 está en alto). Rangos: ±2, ±4, ±8 o ±16 g y ±250 a ±2000 °/s. La serigrafía de la placa muestra los ejes \(x\) e \(y\).</p>
+<p>Librería: <b>Adafruit MPU6050</b> (instala también Adafruit Unified Sensor y Adafruit BusIO).</p>
+<div class="sim" data-sim="conexion" data-cfg="mpu6050" data-title="Conexión del MPU6050 por I²C"></div>
+<pre class="code" data-lang="cpp" data-file="mpu6050_imu.ino">// Aceleración (m/s²) y velocidad angular (rad/s) del MPU6050 a unos 100 Hz
+#include <Adafruit_MPU6050.h>
+#include <Adafruit_Sensor.h>
+#include <Wire.h>
+
+Adafruit_MPU6050 mpu;
+
+void setup() {
+  Serial.begin(115200);
+  Wire.begin(21, 22);                            // SDA, SCL
+  if (!mpu.begin(0x68)) {
+    Serial.println("No se encontró el MPU6050: revise los cables y la dirección");
+    while (true) delay(10);
+  }
+  mpu.setAccelerometerRange(MPU6050_RANGE_4_G);  // ±4 g
+  mpu.setGyroRange(MPU6050_RANGE_500_DEG);       // ±500 °/s
+  mpu.setFilterBandwidth(MPU6050_BAND_44_HZ);    // filtro pasa-bajas interno
+  Serial.println("t_ms,ax,ay,az,wx,wy,wz");
+}
+
+void loop() {
+  sensors_event_t a, g, temp;
+  mpu.getEvent(&a, &g, &temp);
+  Serial.print(millis());              Serial.print(',');
+  Serial.print(a.acceleration.x, 3);   Serial.print(',');
+  Serial.print(a.acceleration.y, 3);   Serial.print(',');
+  Serial.print(a.acceleration.z, 3);   Serial.print(',');
+  Serial.print(g.gyro.x, 4);           Serial.print(',');
+  Serial.print(g.gyro.y, 4);           Serial.print(',');
+  Serial.println(g.gyro.z, 4);
+  delay(10);
+}
+</pre>
+<div class="box note">
+<p>El MPU6050 se calibra igual que el celular: en reposo, el promedio del giroscopio es su sesgo (se resta), y el acelerómetro colocado sucesivamente con cada eje hacia arriba y hacia abajo debe marcar \(\pm9.777\) m/s²; con esas seis posiciones se obtienen el cero y la ganancia de cada eje.</p>
+</div>
+</section>
+
+<section>
+<h2>Presión: el barómetro BMP280</h2>
+<p>El BMP280 es un barómetro piezorresistivo como el del celular, con un ruido de alrededor de 1 Pa y comunicación I²C en la dirección 0x76 (o 0x77 si SDO está en alto). Mide presiones absolutas de 300 a 1100 hPa y la temperatura del propio chip. En el kit sirve para la presión del aire con la altura, la ley de Boyle (dentro de una jeringa sellada) y la presión hidrostática (dentro de una bolsa o conectado a una manguera).</p>
+<p>Librería: <b>Adafruit BMP280 Library</b>.</p>
+<div class="sim" data-sim="conexion" data-cfg="bmp280" data-title="Conexión del BMP280 por I²C"></div>
+<pre class="code" data-lang="cpp" data-file="bmp280_presion.ino">// Presión (Pa) y temperatura (°C) con el BMP280
+#include <Wire.h>
+#include <Adafruit_BMP280.h>
+
+Adafruit_BMP280 bmp;
+
+void setup() {
+  Serial.begin(115200);
+  if (!bmp.begin(0x76)) {                 // pruebe 0x77 si no aparece
+    Serial.println("BMP280 no encontrado");
+    while (true) delay(10);
+  }
+  // modo continuo, sobremuestreo x16 en presión y filtro interno suave
+  bmp.setSampling(Adafruit_BMP280::MODE_NORMAL,
+                  Adafruit_BMP280::SAMPLING_X2,     // temperatura
+                  Adafruit_BMP280::SAMPLING_X16,    // presión
+                  Adafruit_BMP280::FILTER_X4,
+                  Adafruit_BMP280::STANDBY_MS_1);
+  Serial.println("t_ms,p_Pa,T_C");
+}
+
+void loop() {
+  Serial.print(millis());                 Serial.print(',');
+  Serial.print(bmp.readPressure(), 1);    Serial.print(',');
+  Serial.println(bmp.readTemperature(), 2);
+  delay(40);
+}
+</pre>
+<div class="box warn">
+<p>Muchos módulos vendidos como «BMP280» son en realidad BME280 (que también mide humedad) o al revés. Si <code>bmp.begin()</code> falla con la dirección correcta según el escáner, pruebe la librería <b>Adafruit BME280</b>.</p>
+</div>
+</section>
+
+<section>
+<h2>Fuerza y masa: la celda de carga con el HX711</h2>
+<p>Una celda de carga es una barra de aluminio con cuatro <span class="term">galgas extensiométricas</span> pegadas: resistencias de película que cambian su valor cuando el metal se estira o se comprime. Están conectadas en un <span class="term">puente de Wheatstone</span>, que entrega un voltaje diferencial de apenas unos milivoltios a plena carga (típicamente 1 mV por cada voltio de alimentación). El HX711 es un amplificador con convertidor de 24 bits diseñado para leer ese puente. Con una celda de 1 kg se obtienen resoluciones de unos 0.01–0.05 g.</p>
+<div class="eq">\[V_{\text{salida}}=V_{\text{exc}}\,\frac{\Delta R}{R}\propto F\qquad\Rightarrow\qquad \text{lectura}=\text{cero}+k\,m .\]</div>
+<p>La relación entre la lectura y la masa es lineal, pero hay que medir el <strong>cero</strong> (tara, sin carga) y el <strong>factor de escala</strong> \(k\) (cuentas por gramo) con una masa conocida. Librería: <b>HX711 Arduino Library</b> (de Bogdan Necula).</p>
+<div class="sim" data-sim="conexion" data-cfg="hx711" data-title="Conexión de la celda de carga y el HX711"></div>
+<pre class="code" data-lang="cpp" data-file="hx711_balanza.ino">// Balanza con celda de carga + HX711. Envíe "c" por el Monitor Serie para calibrar.
+#include "HX711.h"
+const int DOUT = 16, SCK_HX = 4;
+const float MASA_PATRON_g = 200.0;     // masa conocida para calibrar
+HX711 celda;
+float factor = 420.0;                  // cuentas por gramo (se reemplaza al calibrar)
+
+void setup() {
+  Serial.begin(115200);
+  celda.begin(DOUT, SCK_HX);
+  Serial.println("Sin carga: midiendo el cero...");
+  delay(1500);
+  celda.tare(20);                      // promedio de 20 lecturas como cero
+  celda.set_scale(factor);
+  Serial.println("t_ms,m_g");
+}
+
+void loop() {
+  if (Serial.available() && Serial.read() == 'c') {
+    Serial.println("Ponga la masa patrón y espere 3 s");
+    delay(3000);
+    celda.set_scale(1.0);
+    float cuentas = celda.get_units(20);           // promedio sin escala
+    factor = cuentas / MASA_PATRON_g;
+    celda.set_scale(factor);
+    Serial.print("Nuevo factor (cuentas/g): ");
+    Serial.println(factor, 2);
+  }
+  if (celda.is_ready()) {
+    Serial.print(millis());
+    Serial.print(',');
+    Serial.println(celda.get_units(5), 3);         // promedio de 5, en gramos
+  }
+}
+</pre>
+<div class="sim" data-sim="celda-carga" data-title="Calibrar la celda de carga: tara, factor, deriva"></div>
+<div class="sim-guide"><ul>
+<li>Antes de calibrar, la lectura en cuentas no significa nada. Pulse «Tarar» sin carga y luego «Calibrar con 200 g».</li>
+<li>Ponga 500 g: el valor debe coincidir dentro del ruido. Suba la temperatura ambiente unos grados: el cero deriva.</li>
+<li>Deje una masa muchos minutos: la lectura sube un poco (fluencia). Por eso conviene tarar justo antes de medir.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Campo magnético: el sensor Hall SS49E</h2>
+<p>Un sensor de efecto Hall es una pastilla semiconductora por la que circula una corriente: un campo magnético perpendicular desvía los portadores de carga y aparece un voltaje transversal proporcional al campo. El SS49E integra la pastilla y un amplificador; su salida está en la mitad de la alimentación sin campo (1.65 V a 3.3 V) y sube o baja según el polo que se acerque, con una sensibilidad de unos 9 mV/mT alimentado a 3.3 V (1.4 mV/G a 5 V; la sensibilidad es proporcional a la alimentación). Mide hasta unos ±100 mT: es para campos de imanes de cerca, no para el campo terrestre de 0.03 mT.</p>
+<div class="sim" data-sim="conexion" data-cfg="ss49e" data-title="Conexión del sensor Hall SS49E"></div>
+<pre class="code" data-lang="cpp" data-file="ss49e_campo.ino">// Campo magnético con el sensor Hall SS49E (salida analógica en GPIO 34)
+const int PIN_HALL = 34;
+const float SENS_mV_por_mT = 14.0 * 3.3 / 5.0;   // ≈ 9.2 mV/mT alimentado a 3.3 V
+float v0_mV;                                      // salida sin imán
+
+float leer_mV(int n) {
+  long s = 0;
+  for (int i = 0; i < n; i++) s += analogReadMilliVolts(PIN_HALL);
+  return (float)s / n;
+}
+
+void setup() {
+  Serial.begin(115200);
+  Serial.println("Aleje los imanes: midiendo el cero...");
+  delay(1000);
+  v0_mV = leer_mV(400);
+  Serial.println("t_ms,B_mT");
+}
+
+void loop() {
+  float B = (leer_mV(32) - v0_mV) / SENS_mV_por_mT;
+  Serial.print(millis());
+  Serial.print(',');
+  Serial.println(B, 2);
+  delay(10);
+}
+</pre>
+<div class="sim" data-sim="hall" data-title="Campo de un imán de neodimio: sensor Hall frente a magnetómetro del celular"></div>
+<div class="sim-guide"><ul>
+<li>El sensor Hall sirve de 2 a 100 mT: muy cerca del imán. El magnetómetro del celular se satura por encima de unos 5 mT, pero mide bien de lejos.</li>
+<li>En escala log–log, lejos del imán la curva es una recta de pendiente −3: el campo de un dipolo.</li>
+</ul></div>
+<div class="box tip">
+<p>La sensibilidad nominal varía ±10 % entre unidades. Para mediciones cuantitativas, calibre el sensor dentro de un solenoide largo, cuyo campo \(B=\mu_0 nI\) se conoce (práctica E5).</p>
+</div>
+</section>
+
+<section>
+<h2>Tiempo de paso: la fotocompuerta</h2>
+<p>Una <span class="term">fotocompuerta</span> es un emisor de luz infrarroja frente a un detector (fototransistor). Cuando un objeto se interpone, el detector deja de recibir luz y su salida cambia. Los <strong>optointerruptores ranurados</strong> (módulos tipo H206, FC-03 o con el chip LM393) traen todo integrado: emisor y detector a los lados de una ranura de 5–10 mm, un comparador que convierte la señal en digital y un LED indicador. Para objetos más grandes se arma una compuerta con un LED infrarrojo y un fototransistor separados, sostenidos por un marco LEGO.</p>
+<p>Con la marca de tiempo de cada flanco (interrupciones, capítulo 6) se obtiene el tiempo de bloqueo \(\Delta t\). Si el objeto tiene un ancho conocido \(w\), su velocidad es \(v=w/\Delta t\). Una «valla» con franjas alternadas (un <span class="term">picket fence</span> de ladrillos LEGO) da muchas velocidades en una sola pasada.</p>
+<div class="sim" data-sim="conexion" data-cfg="foto" data-title="Conexión de dos optointerruptores ranurados"></div>
+<div class="sim" data-sim="fotocompuerta" data-title="Dentro de la fotocompuerta: ancho del haz, umbral y velocidad"></div>
+<div class="sim-guide"><ul>
+<li>El haz tiene un ancho finito: la señal analógica no salta, sube en una rampa. El comparador corta la rampa en el umbral.</li>
+<li>Con el umbral al 50 %, los dos flancos se desplazan igual y el tiempo de bloqueo es correcto. Con el umbral al 20 %, el objeto «parece» más ancho.</li>
+<li>Para objetos angostos (menos que el haz), la señal ni siquiera llega a cero: el comparador puede no dispararse.</li>
+</ul></div>
+<div class="box warn">
+<p>Según el módulo, la salida digital pasa a ALTO o a BAJO cuando se corta el haz. Compruébelo con el LED del módulo o con el Monitor Serie, y use <code>CHANGE</code> en <code>attachInterrupt</code> para registrar ambos flancos.</p>
+</div>
+</section>
+
+<section>
+<h2>Corriente y voltaje: el INA219</h2>
+<p>El INA219 mide la corriente a partir de la caída de voltaje en una resistencia de 0.1 Ω (la <span class="term">resistencia shunt</span>) que se pone en serie con el circuito, y además mide el voltaje del lado de la carga. Tiene su propio convertidor y se lee por I²C (dirección 0x40). Con la calibración de 32 V y 1 A resuelve unos 0.05 mA. Es el «multímetro registrador» del kit para la ley de Ohm, las curvas I–V y los campos producidos por corrientes.</p>
+<p>Librería: <b>Adafruit INA219</b>.</p>
+<div class="sim" data-sim="conexion" data-cfg="ina219" data-title="El INA219 en serie con el circuito a medir"></div>
+<pre class="code" data-lang="cpp" data-file="ina219_corriente.ino">// Voltaje en la carga (V) y corriente (mA) con el INA219
+#include <Wire.h>
+#include <Adafruit_INA219.h>
+
+Adafruit_INA219 ina219;              // dirección 0x40
+
+void setup() {
+  Serial.begin(115200);
+  if (!ina219.begin()) {
+    Serial.println("INA219 no encontrado");
+    while (true) delay(10);
+  }
+  ina219.setCalibration_32V_1A();     // más resolución para corrientes menores de 1 A
+  Serial.println("t_ms,V_V,I_mA");
+}
+
+void loop() {
+  float vbus = ina219.getBusVoltage_V();         // voltaje del lado de la carga
+  float i_mA = ina219.getCurrent_mA();
+  Serial.print(millis());   Serial.print(',');
+  Serial.print(vbus, 3);    Serial.print(',');
+  Serial.println(i_mA, 2);
+  delay(20);
+}
+</pre>
+</section>
+
+<section>
+<h2>Temperatura: el DS18B20 sumergible</h2>
+<p>El DS18B20 es un termómetro digital con resolución de 0.0625 °C y exactitud de ±0.5 °C, en una cápsula de acero sellada con cable: se puede sumergir. Usa el bus 1-Wire: un solo cable de datos, que necesita una resistencia de 4.7 kΩ a 3.3 V. Varios sensores pueden compartir el cable. Cada lectura a 12 bits tarda unos 0.75 s. En el kit sirve para registrar la temperatura del agua o de la glicerina en las prácticas de fluidos, porque la viscosidad depende mucho de ella.</p>
+<p>Librerías: <b>OneWire</b> y <b>DallasTemperature</b>.</p>
+<div class="sim" data-sim="conexion" data-cfg="ds18b20" data-title="Conexión del DS18B20 con su resistencia de 4.7 kΩ"></div>
+<pre class="code" data-lang="cpp" data-file="ds18b20_temperatura.ino">// Temperatura con el DS18B20 (datos en GPIO 4, resistencia de 4.7 kΩ a 3.3 V)
+#include <OneWire.h>
+#include <DallasTemperature.h>
+
+OneWire bus(4);
+DallasTemperature sensores(&bus);
+
+void setup() {
+  Serial.begin(115200);
+  sensores.begin();
+  sensores.setResolution(12);           // 0.0625 °C
+  Serial.println("t_ms,T_C");
+}
+
+void loop() {
+  sensores.requestTemperatures();       // tarda ≈ 750 ms
+  float T = sensores.getTempCByIndex(0);
+  Serial.print(millis());
+  Serial.print(',');
+  Serial.println(T, 3);
+}
+</pre>
+</section>
+
+<section>
+<h2>Enviar varios sensores a phyphox</h2>
+<p>Cualquier combinación de estos módulos se puede enviar a phyphox por BLE con la librería <i>phyphox BLE</i> (capítulo 6). La función <code>PhyphoxBLE::write()</code> acepta hasta cinco valores, que en phyphox aparecen como canales graficables contra el tiempo. Este ejemplo envía la distancia del HC-SR04 y la temperatura del DS18B20:</p>
+<pre class="code" data-lang="cpp" data-file="phyphox_distancia_temperatura.ino">// HC-SR04 + DS18B20 enviados a phyphox por BLE
+#include <phyphoxBle.h>
+#include <OneWire.h>
+#include <DallasTemperature.h>
+
+const int TRIG = 19, ECHO = 18;
+OneWire bus(4);
+DallasTemperature termo(&bus);
+float T = 20.0;
+unsigned long tTemp = 0;
+
+void setup() {
+  pinMode(TRIG, OUTPUT);
+  pinMode(ECHO, INPUT);
+  termo.begin();
+  termo.setWaitForConversion(false);    // no bloquear el programa mientras convierte
+  termo.requestTemperatures();
+  PhyphoxBLE::start("ESP32-Lab");
+}
+
+void loop() {
+  if (millis() - tTemp > 1000) {        // temperatura una vez por segundo
+    T = termo.getTempCByIndex(0);
+    termo.requestTemperatures();
+    tTemp = millis();
+  }
+  digitalWrite(TRIG, LOW);  delayMicroseconds(2);
+  digitalWrite(TRIG, HIGH); delayMicroseconds(10);
+  digitalWrite(TRIG, LOW);
+  unsigned long us = pulseIn(ECHO, HIGH, 30000);
+  float v = 331.3 + 0.606 * T;          // rapidez del sonido corregida
+  float d = us * 1e-6 * v / 2.0;        // metros
+  PhyphoxBLE::write(d, T);              // dos canales
+  delay(30);
+}
+</pre>
+</section>
+
+<section>
+<h2>Preguntas y problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Diagnóstico</span>El escáner I²C no encuentra el MPU6050. Enumere, en orden, lo que revisaría.
+<details><summary>Respuesta</summary><p>1) Alimentación: ¿el LED del módulo enciende? ¿VCC en 3V3 y GND común? 2) SDA en 21 y SCL en 22 (no invertidos). 3) Cables y protoboard: pruebe otros jumpers. 4) Dirección: 0x68 o 0x69 según AD0. 5) Que no haya otro módulo con la misma dirección. 6) Soldaduras de los pines del módulo.</p></details></li>
+<li><span class="lvl">Problema</span>El HC-SR04 mide un eco de 2.915 ms con el aire a 19 °C. ¿A qué distancia está el objeto? ¿Qué error se comete si el programa supone 343 m/s?
+<details><summary>Respuesta</summary><p>\(v=331.3+0.606(19)=342.8\) m/s; \(d=342.8\times0.002915/2=0.4996\) m. Con 343 m/s: 0.4999 m, una diferencia de 0.3 mm, despreciable aquí. La temperatura importa más en días calurosos o cuando se suponen 20 °C en un lugar a 30 °C.</p></details></li>
+<li><span class="lvl">Problema</span>Una celda de carga da 84 210 cuentas de cero y 168 690 cuentas con una masa patrón de 200.0 g. ¿Cuál es el factor? ¿Qué masa corresponde a 129 870 cuentas?
+<details><summary>Respuesta</summary><p>Factor: \((168\,690-84\,210)/200.0=422.4\) cuentas/g. Masa: \((129\,870-84\,210)/422.4=108.1\) g.</p></details></li>
+<li><span class="lvl">Concepto</span>¿Por qué el sensor Hall no sirve para medir el campo terrestre y el magnetómetro del celular no sirve para medir el campo junto a un imán de neodimio?
+<details><summary>Respuesta</summary><p>El SS49E tiene unos 9 mV/mT; el campo terrestre (0.029 mT) le produce 0.27 mV, menos que un escalón del ADC y que su ruido. El magnetómetro del celular resuelve 0.1 µT, pero se satura a unos 5 mT, que es lo que hay a unos 3 cm de un imán pequeño de neodimio.</p></details></li>
+</ol>
+</section>
+</template>

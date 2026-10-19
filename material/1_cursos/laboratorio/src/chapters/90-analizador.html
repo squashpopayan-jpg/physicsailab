@@ -1,0 +1,43 @@
+<template class="chapter-src" data-id="analizador" data-num="A" data-title="Analizador de datos" data-part="Apéndices" data-kits="cel esp" data-short="Una herramienta real para sus propios archivos: pegue o cargue el CSV de phyphox, del monitor serie o de App Inventor, elija columnas y rango, suavice, derive, calcule el espectro y ajuste rectas, parábolas, exponenciales y senos con incertidumbres">
+<p class="lead">Este apéndice no es una simulación: es un analizador que funciona con sus datos. Todo el cálculo ocurre en su navegador; los archivos no se envían a ninguna parte. Sirve para revisar una medición en el mismo laboratorio, antes de desarmar el montaje, y para sacar los parámetros del informe con sus incertidumbres.</p>
+
+<section>
+<h2>Qué archivos acepta</h2>
+<ul>
+<li><b>phyphox</b>: exporte como «CSV (coma, punto decimal)» o «CSV (tabulador, coma decimal)». Cada sensor viene en su propio archivo con la primera columna de tiempo.</li>
+<li><b>Monitor serie de la ESP32</b>: copie las líneas de la consola (Arduino IDE o el Serial Plotter) con una primera línea de encabezados, por ejemplo <code>t,d</code>. Sirven separadores de coma, punto y coma o tabulador.</li>
+<li><b>App Inventor</b>: el archivo que guarda la app del capítulo 8 (columnas separadas por comas).</li>
+<li><b>Tablas hechas a mano</b> (por ejemplo voltaje y corriente), pegadas desde una hoja de cálculo.</li>
+</ul>
+<p>Si la primera fila tiene nombres, se usan como encabezados; si escribe la unidad entre paréntesis, por ejemplo <code>t (s)</code>, el analizador la usa en los resultados. Las comas decimales se reconocen cuando el separador es punto y coma o tabulador.</p>
+</section>
+
+<section>
+<h2>El analizador</h2>
+<div class="sim" data-sim="analizador" data-title="Analizador de datos de laboratorio" data-layout="below"></div>
+<div class="sim-guide"><ul>
+<li>Empiece con los ejemplos: cada uno es un archivo típico de una práctica, con su ruido real. Luego pegue sus propios datos y pulse «Usar estos datos», o cárguelos con «Abrir archivo».</li>
+<li>Recorte el rango con «Desde» y «Hasta» para ajustar sólo el tramo que interesa (por ejemplo, la caída sin el momento de soltar).</li>
+<li>El ajuste se hace sobre los datos crudos; el suavizado sólo cambia lo que se dibuja y la derivada.</li>
+<li>La segunda gráfica muestra los residuos: si el modelo es bueno, se ven como ruido sin forma. Una curva en los residuos indica que falta algo en el modelo.</li>
+<li>En el ejemplo de la descarga RC, los residuos se curvan al final: el ADC de la ESP32 no lee por debajo de unos 0.08 V. Baje «Hasta» a 70 % y compare el nuevo τ con el anterior: así se detecta y se evita un efecto sistemático.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Los modelos de ajuste</h2>
+<div class="tablewrap"><table>
+<thead><tr><th>Modelo</th><th>Fórmula</th><th>Uso típico</th></tr></thead>
+<tbody>
+<tr><td>Recta</td><td>\(y=a+bx\)</td><td>Ley de Ohm, calibraciones, linealizaciones (\(T^2\) contra \(L\), \(1/f^2\) contra \(V\))</td></tr>
+<tr><td>Proporcional</td><td>\(y=bx\)</td><td>Cuando la teoría exige pasar por el origen (Hooke, \(F\) contra \(I\))</td></tr>
+<tr><td>Parábola</td><td>\(y=a+bx+cx^2\)</td><td>Posición con aceleración constante: \(a_{\text{mov}}=2c\)</td></tr>
+<tr><td>Potencia</td><td>\(y=a\,x^b\)</td><td>Leyes de escala: \(B\propto r^{-3}\), \(v_t\propto n^{1/2}\)</td></tr>
+<tr><td>Exponencial</td><td>\(y=A\,e^{-(x-x_0)/\tau}+C\)</td><td>Descarga RC, enfriamiento, vaciado de un recipiente</td></tr>
+<tr><td>Seno</td><td>\(y=A\sin[2\pi f(x-x_0)+\varphi]+C\)</td><td>Oscilaciones sin amortiguamiento apreciable</td></tr>
+<tr><td>Seno amortiguado</td><td>\(y=A\,e^{-\beta(x-x_0)}\sin[2\pi f(x-x_0)+\varphi]+C\)</td><td>Péndulo, resorte, freno magnético débil</td></tr>
+</tbody></table></div>
+<p>Los ajustes no lineales usan el método de Levenberg–Marquardt; los valores iniciales se estiman solos (la frecuencia, por ejemplo, sale del espectro). Las incertidumbres de los parámetros salen de la dispersión de los residuos, como en el capítulo 2, y suponen que el ruido es independiente de un punto a otro.</p>
+<div class="box warn"><b>Cuidado con los números «demasiado buenos».</b> Con miles de puntos, la incertidumbre estadística de un parámetro puede salir diminuta. Casi siempre domina otra cosa: la calibración del sensor, la medida de una longitud con la regla, el modelo aproximado. En el informe, combine la incertidumbre del ajuste con las de tipo B (apéndice B).</div>
+</section>
+</template>

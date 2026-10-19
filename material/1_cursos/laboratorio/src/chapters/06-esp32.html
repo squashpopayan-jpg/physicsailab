@@ -1,0 +1,236 @@
+<template class="chapter-src" data-id="esp32" data-num="6" data-title="La placa ESP32: primeros pasos" data-part="Parte II · Herramientas" data-kits="esp" data-short="La placa DevKit V1 y sus pines, instalar el entorno de Arduino, el primer programa, la protoboard, leer voltajes con el ADC, medir tiempos con interrupciones y enviar datos">
+<p class="lead">La ESP32 es un microcontrolador de Espressif con dos núcleos a 240 MHz, Wi-Fi y Bluetooth, que cuesta menos que un libro. Se programa en C++ desde el entorno de Arduino y lee casi cualquier sensor. En este capítulo se instala todo, se carga el primer programa y se aprenden las tres habilidades que usan todas las prácticas: leer un voltaje, medir un tiempo y enviar los datos.</p>
+
+<div class="keyideas"><ul>
+<li>La ESP32 trabaja a <strong>3.3 V</strong>: ningún pin de entrada debe recibir 5 V.</li>
+<li>No todos los pines sirven para todo: los GPIO 34–39 sólo son entradas, los ADC2 no funcionan con el Wi-Fi activo y algunos pines condicionan el arranque.</li>
+<li>El programa tiene dos funciones: <code>setup()</code> se ejecuta una vez y <code>loop()</code> se repite sin parar.</li>
+<li>Para muestrear a frecuencia fija se usa <code>micros()</code>, no <code>delay()</code>; para cronometrar eventos rápidos, interrupciones.</li>
+<li>Los datos salen por USB (Monitor y Trazador Serie), por Bluetooth (App Inventor) o por BLE (phyphox).</li>
+</ul></div>
+
+<section>
+<h2>La placa DevKit V1 y sus pines</h2>
+<p>Este curso usa la placa más común y barata: la <strong>ESP32 DevKit V1</strong> de 30 pines (también vendida como «DOIT ESP32 DEVKIT V1»), con el módulo ESP32-WROOM-32. Tiene un conector micro-USB o USB-C, un regulador que baja los 5 V del USB a 3.3 V, un convertidor USB-serie (chip CP2102 o CH340), dos botones (EN, que reinicia, y BOOT) y un LED azul conectado al GPIO 2.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Característica</th><th>Valor</th><th>Para qué importa</th></tr></thead>
+<tbody>
+<tr><td>Procesador</td><td>2 núcleos Xtensa LX6, 240 MHz</td><td>Sobra velocidad para muestrear y calcular.</td></tr>
+<tr><td>Voltaje lógico</td><td>3.3 V</td><td>Entradas de más de 3.6 V dañan el chip.</td></tr>
+<tr><td>ADC</td><td>12 bits, 18 canales (6 accesibles en ADC1)</td><td>Leer voltajes de 0 a ≈ 3.1 V.</td></tr>
+<tr><td>DAC</td><td>2 salidas de 8 bits (GPIO 25 y 26)</td><td>Generar voltajes analógicos.</td></tr>
+<tr><td>Comunicación</td><td>UART, I²C, SPI, Wi-Fi, Bluetooth clásico y BLE</td><td>Conectar módulos y enviar datos.</td></tr>
+<tr><td>Corriente por pin</td><td>máx. 20 mA recomendado</td><td>Un LED sí; un motor, nunca directo.</td></tr>
+</tbody></table></div>
+<div class="sim" data-sim="pinout" data-title="Mapa interactivo de pines de la ESP32 DevKit V1"></div>
+<div class="sim-guide"><ul>
+<li>Toque cada pin para ver sus funciones y advertencias. Los verdes son seguros para casi todo.</li>
+<li>Filtre por función: los canales ADC1 están todos en el lado izquierdo; I²C usa los pines 21 y 22.</li>
+</ul></div>
+<div class="box warn">
+<p>Hay variantes con otros chips: la <strong>ESP32-C3</strong> y la <strong>ESP32-S3</strong> no tienen Bluetooth clásico, de modo que la comunicación con App Inventor por <code>BluetoothSerial</code> de este curso no funciona en ellas (sí funciona BLE con phyphox). Compre la ESP32 «clásica», con módulo WROOM-32.</p>
+</div>
+</section>
+
+<section>
+<h2>Instalar el entorno de Arduino</h2>
+<ol class="steps">
+<li><b>Instale Arduino IDE 2.</b><p>Descárguelo de <code>arduino.cc/en/software</code> e instálelo con las opciones por defecto (incluidos los controladores).</p></li>
+<li><b>Agregue las placas ESP32.</b><p>En <span class="ui">Archivo → Preferencias</span>, campo «URL adicionales del gestor de placas», pegue <code>https://espressif.github.io/arduino-esp32/package_esp32_index.json</code>.</p></li>
+<li><b>Instale el paquete.</b><p>Abra el <span class="ui">Gestor de placas</span> (ícono de la placa en la barra izquierda), busque <code>esp32</code> e instale «esp32 by Espressif Systems».</p></li>
+<li><b>Conecte la placa con un cable USB de datos.</b><p>Si Windows no le asigna un puerto COM, instale el controlador del chip USB de su placa: CP210x (Silicon Labs) o CH340 (WCH). Lo puede ver en el Administrador de dispositivos.</p></li>
+<li><b>Elija la placa y el puerto.</b><p>En <span class="ui">Herramientas → Placa → esp32</span> elija «ESP32 Dev Module», y en <span class="ui">Herramientas → Puerto</span>, el COM que apareció al conectarla.</p></li>
+<li><b>Suba el primer programa.</b><p>Pegue el programa de parpadeo de abajo y pulse <span class="ui">Subir</span> (→). Si aparece «Connecting……» por mucho tiempo, mantenga pulsado el botón BOOT de la placa hasta que empiece a escribir.</p></li>
+<li><b>Abra el Monitor Serie.</b><p>Con el ícono de la lupa, y elija 115200 baudios abajo a la derecha. Si ve símbolos raros, la velocidad no coincide.</p></li>
+</ol>
+<p>En el simulador siguiente se recorren estos pasos con los errores reales que suelen aparecer en clase: el cable que sólo carga, el puerto equivocado, el modo de arranque y la velocidad del monitor.</p>
+<div class="sim" data-sim="arduino-ide" data-title="Simulador del entorno de Arduino: de cero a «Hola»" data-layout="below"></div>
+<div class="sim-guide"><ul>
+<li>Siga las tareas en orden. Si algo falla, lea el mensaje de la consola: siempre dice qué pasó.</li>
+<li>Pruebe el monitor a 9600 baudios para reconocer el síntoma de una velocidad equivocada.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El primer programa</h2>
+<p>Todo programa de Arduino (un <span class="term">sketch</span>) tiene dos funciones. <code>setup()</code> se ejecuta una sola vez al encender o reiniciar: ahí se configuran los pines y la comunicación. <code>loop()</code> se repite indefinidamente: ahí se mide y se envía. Este programa hace parpadear el LED azul y envía por el cable USB el tiempo transcurrido.</p>
+<pre class="code" data-lang="cpp" data-file="01_hola_esp32.ino">// Parpadeo del LED integrado y mensajes por el puerto serie
+const int LED = 2;              // LED azul de la DevKit V1 (GPIO 2)
+
+void setup() {
+  pinMode(LED, OUTPUT);         // el pin será una salida
+  Serial.begin(115200);         // misma velocidad que el Monitor Serie
+  Serial.println("Hola desde la ESP32");
+}
+
+void loop() {
+  digitalWrite(LED, HIGH);      // 3.3 V: LED encendido
+  delay(500);                   // esperar 500 ms
+  digitalWrite(LED, LOW);       // 0 V: LED apagado
+  delay(500);
+  Serial.println(millis());     // milisegundos desde el encendido
+}
+</pre>
+<p>Algunas reglas de C++ que conviene saber desde ya: cada instrucción termina en punto y coma; las mayúsculas importan (<code>Serial</code> no es <code>serial</code>); <code>int</code> guarda enteros, <code>float</code> números con decimales y <code>unsigned long</code> los tiempos de <code>millis()</code> y <code>micros()</code>, que crecen sin parar; lo que va después de <code>//</code> es un comentario.</p>
+</section>
+
+<section>
+<h2>La protoboard</h2>
+<p>La protoboard (o placa de pruebas) permite armar circuitos sin soldar. Por dentro tiene tiras metálicas: cada columna numerada de cinco agujeros (a–e, y f–j por el otro lado) está conectada, y las dos filas largas de cada borde (los rieles + y −) también. La ranura central separa las dos mitades: ahí se ponen los chips para que sus patas queden en tiras distintas.</p>
+<p>El primer circuito real es un LED con su resistencia. Un LED rojo necesita unos 2.0 V y conviene limitar su corriente a unos 5 mA; con la salida de 3.3 V de la ESP32, la resistencia es</p>
+<div class="eq">\[R=\frac{3.3\ \text{V}-2.0\ \text{V}}{0.005\ \text{A}}=260\ \Omega\ \ \rightarrow\ \ 220\ \Omega\ \text{o}\ 330\ \Omega\ \text{(valores comerciales)}.\]</div>
+<div class="sim" data-sim="protoboard" data-title="La protoboard: qué agujeros están conectados"></div>
+<div class="sim-guide"><ul>
+<li>Pase el cursor por los agujeros: se iluminan todos los que están conectados entre sí (el mismo nodo eléctrico).</li>
+<li>Elija el circuito del pulsador: con <code>INPUT_PULLUP</code> el pin lee 1 en reposo y 0 al pulsar.</li>
+<li>En el divisor de voltaje, cambie las resistencias y vea el voltaje que llega al pin 34.</li>
+</ul></div>
+<div class="box safe">
+<p>Nunca conecte directamente 3V3 o VIN con GND (cortocircuito), ni un pin de salida en HIGH con GND sin resistencia. Arme y modifique los circuitos con la placa <strong>desconectada</strong> del USB.</p>
+</div>
+</section>
+
+<section>
+<h2>Leer voltajes: el ADC</h2>
+<p>El convertidor analógico-digital de la ESP32 tiene 12 bits: <code>analogRead(pin)</code> devuelve un entero de 0 a 4095. Con la atenuación por defecto (11 dB) el rango útil va de unos 0.15 V a 2.45 V con buena linealidad y llega hasta unos 3.1 V con algo de curvatura. Fuera de ese rango, la lectura se satura. Cada chip tiene además pequeñas diferencias de ganancia, que Espressif mide en fábrica y guarda en el chip: la función <code>analogReadMilliVolts(pin)</code> usa esa calibración y devuelve milivoltios.</p>
+<pre class="code" data-lang="cpp" data-file="02_leer_voltaje.ino">// Lee el voltaje del pin 34 a 100 Hz exactos y lo envía como CSV
+const int PIN = 34;                   // ADC1: funciona aunque se use Wi-Fi
+const unsigned long PERIODO_US = 10000;  // 10 000 µs = 100 muestras por segundo
+unsigned long tSiguiente;
+
+void setup() {
+  Serial.begin(115200);
+  analogReadResolution(12);           // 0 a 4095
+  Serial.println("t_ms,V_mV");        // encabezado del CSV
+  tSiguiente = micros();
+}
+
+void loop() {
+  if ((long)(micros() - tSiguiente) >= 0) {   // ¿ya es hora de medir?
+    tSiguiente += PERIODO_US;                 // la próxima, 10 ms después
+    // promedio de 8 lecturas para bajar el ruido
+    long suma = 0;
+    for (int i = 0; i < 8; i++) suma += analogReadMilliVolts(PIN);
+    Serial.print(millis());
+    Serial.print(',');
+    Serial.println(suma / 8);
+  }
+}
+</pre>
+<div class="sim" data-sim="adc-esp32" data-title="El ADC de la ESP32: rango, curvatura, ruido y calibración"></div>
+<div class="sim-guide"><ul>
+<li>Recorra el voltaje de entrada de 0 a 3.3 V: cerca de 0 V y por encima de 3.1 V la lectura se separa de la recta ideal.</li>
+<li>Compare la conversión ingenua (<code>analogRead × 3300/4095</code>) con <code>analogReadMilliVolts</code>.</li>
+<li>Promedie 1, 8 y 64 lecturas y observe cómo baja la dispersión.</li>
+</ul></div>
+<div class="box tip">
+<p>Para medir voltajes mayores de 3.1 V use un <strong>divisor de voltaje</strong>: dos resistencias en serie, con el pin conectado al punto medio. Con 10 kΩ y 20 kΩ, el pin recibe un tercio del voltaje (hasta 9 V de entrada). Para señales que oscilan alrededor de cero (la fem de una bobina), sume un nivel de 1.65 V con un divisor de dos resistencias iguales entre 3V3 y GND.</p>
+</div>
+</section>
+
+<section>
+<h2>Medir tiempos: <code>micros()</code> e interrupciones</h2>
+<p><code>millis()</code> y <code>micros()</code> devuelven el tiempo desde el encendido en milisegundos y microsegundos. Son la base de todas las mediciones de tiempo. Hay dos formas de detectar un evento, como el paso de un objeto por una fotocompuerta:</p>
+<ul>
+<li><strong>Consulta (polling):</strong> en <code>loop()</code> se lee el pin una y otra vez. Si el <code>loop()</code> hace otras cosas (enviar datos, esperar con <code>delay()</code>), el evento se detecta tarde o se pierde.</li>
+<li><strong>Interrupción:</strong> el hardware detecta el flanco del pin y ejecuta de inmediato una función corta, que sólo anota <code>micros()</code>. La latencia es de pocos microsegundos.</li>
+</ul>
+<pre class="code" data-lang="cpp" data-file="03_fotocompuerta_interrupcion.ino">// Registra el instante (µs) de cada interrupción del haz de una fotocompuerta
+const int PIN_FOTO = 27;              // salida digital del optointerruptor
+const int MAX = 64;
+volatile unsigned long tiempos[MAX];  // "volatile": se cambia dentro de la interrupción
+volatile int n = 0;
+
+void IRAM_ATTR alCortarHaz() {        // rutina de interrupción: corta y rápida
+  if (n < MAX) tiempos[n++] = micros();
+}
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(PIN_FOTO, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(PIN_FOTO), alCortarHaz, FALLING);
+  Serial.println("Listo: pase el objeto por la fotocompuerta");
+}
+
+void loop() {
+  static int enviados = 0;
+  if (enviados < n) {                 // hay instantes nuevos: enviarlos
+    Serial.print(enviados);
+    Serial.print(',');
+    Serial.println(tiempos[enviados]);
+    enviados++;
+  }
+}
+</pre>
+<div class="sim" data-sim="interrupciones" data-title="Consulta frente a interrupción: cronometrar una fotocompuerta"></div>
+<div class="sim-guide"><ul>
+<li>Con un <code>delay(20)</code> en el <code>loop()</code>, la consulta detecta los flancos con hasta 20 ms de retraso y pierde los pulsos cortos.</li>
+<li>La interrupción marca cada flanco con unos microsegundos de error, haga lo que haga el <code>loop()</code>.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Enviar los datos</h2>
+<p>Hay cuatro caminos, de menor a mayor complejidad:</p>
+<div class="modgrid">
+<div class="mod"><div class="mod-top"><b>USB: Monitor Serie</b><span class="kit esp">ESP32</span></div><p>Las líneas «t,valor» se copian del Monitor Serie a una hoja de cálculo, o se capturan con un programa terminal que las guarda en un archivo. Es lo más simple y lo más rápido.</p></div>
+<div class="mod"><div class="mod-top"><b>USB: Trazador Serie</b><span class="kit esp">ESP32</span></div><p>Arduino IDE grafica en vivo las líneas con valores separados por comas o con la forma <code>nombre:valor</code>. Ideal para ver la señal mientras se ajusta el montaje.</p></div>
+<div class="mod"><div class="mod-top"><b>Bluetooth clásico</b><span class="kit ai">App Inventor</span></div><p>Con <code>BluetoothSerial</code>, la ESP32 aparece como un dispositivo que se empareja con el celular. Una aplicación de App Inventor (capítulo 8) o una terminal Bluetooth recibe las líneas.</p></div>
+<div class="mod"><div class="mod-top"><b>BLE con phyphox</b><span class="kit cel">Celular</span></div><p>Con la librería <i>phyphox BLE</i>, los valores aparecen en phyphox, que los grafica y exporta igual que los sensores del celular.</p></div>
+</div>
+<pre class="code" data-lang="cpp" data-file="04_bluetooth_clasico.ino">// Envía "t_ms,mV" por Bluetooth clásico (ESP32 original, no C3/S3)
+#include "BluetoothSerial.h"
+BluetoothSerial BT;
+
+void setup() {
+  Serial.begin(115200);
+  BT.begin("ESP32-Lab");             // nombre que verá el celular
+  Serial.println("Empareje el celular con ESP32-Lab");
+}
+
+void loop() {
+  int mv = analogReadMilliVolts(34);
+  BT.print(millis());
+  BT.print(',');
+  BT.println(mv);                    // println termina la línea con \r\n
+  delay(20);                         // unas 50 líneas por segundo
+}
+</pre>
+<pre class="code" data-lang="cpp" data-file="05_phyphox_ble.ino">// Envía un valor a phyphox por Bluetooth de baja energía
+// Librería: "phyphox BLE" (Gestor de bibliotecas de Arduino)
+#include <phyphoxBle.h>
+
+void setup() {
+  PhyphoxBLE::start("ESP32-Lab");    // en phyphox: botón + → dispositivo Bluetooth
+}
+
+void loop() {
+  float voltios = analogReadMilliVolts(34) / 1000.0;
+  PhyphoxBLE::write(voltios);        // hasta 5 valores: write(a, b, c, ...)
+  delay(20);
+}
+</pre>
+<div class="sim" data-sim="serial-plotter" data-title="Monitor y Trazador Serie: formatos y capacidad del canal"></div>
+<div class="sim-guide"><ul>
+<li>Cambie el formato de las líneas y vea cómo las interpreta el trazador.</li>
+<li>Pida más líneas por segundo de las que caben a 115200 baudios: los datos se retrasan cada vez más, porque el canal está saturado.</li>
+</ul></div>
+<div class="box note">
+<p>Un error frecuente es copiar la segunda librería y ver que <code>#include &lt;phyphoxBle.h&gt;</code> no compila: hay que instalarla antes desde <span class="ui">Herramientas → Administrar bibliotecas</span>, buscando «phyphox».</p>
+</div>
+</section>
+
+<section>
+<h2>Preguntas y problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Concepto</span>Un estudiante conecta el sensor HC-SR04 (que funciona a 5 V) directamente al GPIO 26 y la lectura funciona, pero a los días la placa falla. ¿Qué pasó y cómo se evita?
+<details><summary>Respuesta</summary><p>El pin Echo del HC-SR04 entrega pulsos de 5 V, por encima del máximo de 3.6 V de la ESP32; funciona un tiempo pero degrada el pin. Se evita con un divisor de voltaje (por ejemplo 1 kΩ y 2 kΩ) que baja los 5 V a 3.3 V, o con un módulo de 3.3 V (HC-SR04P o RCWL-1601).</p></details></li>
+<li><span class="lvl">Problema</span>A 115200 baudios cada carácter ocupa 10 bits. ¿Cuántas líneas por segundo de la forma <code>123456,1650\r\n</code> se pueden enviar como máximo?
+<details><summary>Respuesta</summary><p>La línea tiene 13 caracteres = 130 bits; \(115200/130\approx886\) líneas por segundo. En la práctica conviene no pasar de la mitad.</p></details></li>
+<li><span class="lvl">Diseño</span>Quiere medir con el ADC y enviar los datos por Wi-Fi. ¿Puede usar el GPIO 25?
+<details><summary>Respuesta</summary><p>No para el ADC: el 25 pertenece al ADC2, que no funciona con el Wi-Fi activo. Use un pin del ADC1: 32, 33, 34, 35, 36 (VP) o 39 (VN).</p></details></li>
+<li><span class="lvl">Concepto</span>¿Por qué el programa de muestreo usa <code>tSiguiente += PERIODO_US</code> en lugar de <code>tSiguiente = micros() + PERIODO_US</code>?
+<details><summary>Respuesta</summary><p>Porque así los instantes de muestreo quedan en una rejilla fija: si una muestra se atrasa unos microsegundos, la siguiente no hereda el atraso. Con la segunda forma los retrasos se acumulan y la frecuencia real queda por debajo de 100 Hz.</p></details></li>
+</ol>
+</section>
+</template>

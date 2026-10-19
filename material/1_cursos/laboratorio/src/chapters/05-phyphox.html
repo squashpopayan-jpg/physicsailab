@@ -1,0 +1,109 @@
+<template class="chapter-src" data-id="phyphox" data-num="5" data-title="phyphox y el análisis de video" data-part="Parte II · Herramientas" data-kits="cel vid" data-short="La aplicación phyphox paso a paso: experimentos, ejecución temporizada, acceso remoto y exportación; buenas prácticas con el celular y análisis de video con Tracker">
+<p class="lead">phyphox («physical phone experiments») es una aplicación gratuita y sin publicidad de la Universidad RWTH de Aquisgrán que convierte el celular en un registrador de datos de laboratorio. Para lo que el celular no puede sentir directamente, como la trayectoria de una pelota, está la cámara: un video bien tomado y el programa libre Tracker dan posiciones cuadro a cuadro.</p>
+
+<div class="keyideas"><ul>
+<li>phyphox registra cualquier sensor del celular, grafica en vivo y exporta los datos en CSV o Excel.</li>
+<li>La <strong>ejecución temporizada</strong> y el <strong>acceso remoto</strong> permiten medir sin tocar el celular, que es la principal fuente de vibraciones y errores.</li>
+<li>En un computador configurado en español, exporte con «punto y coma, coma decimal» para que la hoja de cálculo reconozca los números.</li>
+<li>Para el video: cámara fija y perpendicular al movimiento, una regla en el mismo plano del objeto y la frecuencia real de cuadros declarada en Tracker.</li>
+</ul></div>
+
+<section>
+<h2>phyphox paso a paso</h2>
+<p>phyphox se instala desde Google Play o App Store. La pantalla principal muestra los experimentos agrupados por tema. Los más útiles para el kit están en «Sensores sin procesar» (aceleración con y sin g, giroscopio, magnetómetro, presión, luz, proximidad) y en «Acústica» (cronómetro acústico, espectro y amplitud de audio). Hay además experimentos ya preparados, como «Péndulo» o «Aceleración centrípeta», que calculan resultados directamente.</p>
+<p>Dentro de un experimento:</p>
+<ol>
+<li>El botón ▶ de la barra superior inicia la medición; el mismo botón la pausa. El ícono de la papelera borra los datos.</li>
+<li>Las <strong>pestañas</strong> muestran los datos de distintas formas: «Gráficas» (cada eje contra el tiempo), «Absoluto» (la magnitud del vector), «Simple» (números grandes) y «Multi».</li>
+<li>Al tocar una gráfica se puede ampliar y usar un cursor para leer valores o seleccionar un intervalo.</li>
+<li>El menú de los tres puntos tiene «Ejecución temporizada», «Permitir acceso remoto», «Exportar datos», «Guardar estado del experimento» e «Información del dispositivo».</li>
+</ol>
+<p>Practique en el simulador: complete las tareas de la lista. El panel de la derecha decide qué le pasa al celular simulado (quieto, en un péndulo, en un ascensor…), para que vea cómo se ven esos datos.</p>
+<div class="sim" data-sim="phyphox-app" data-title="Simulador de phyphox: tareas paso a paso" data-layout="below"></div>
+<div class="sim-guide"><ul>
+<li>Abra «Aceleración con g» con el celular quieto: el eje \(z\) marca unos 9.8 m/s² y los otros, casi cero.</li>
+<li>Configure una ejecución temporizada de 3 s de espera y 5 s de duración, y póngalo a oscilar como péndulo.</li>
+<li>Exporte en el formato «punto y coma, coma decimal» y compare la vista previa con el formato de coma y punto decimal.</li>
+</ul></div>
+<div class="box tip">
+<h4>La ejecución temporizada</h4>
+<p>En «Ejecución temporizada» se fija un <em>retardo</em> antes de empezar (para alejar las manos y que se amortigüe la vibración de tocar la pantalla) y una <em>duración</em>. phyphox avisa con pitidos al comenzar y al terminar. Use 3 s de retardo como regla.</p>
+</div>
+<div class="box tip">
+<h4>El acceso remoto</h4>
+<p>Si el celular y el computador están en la misma red Wi-Fi, «Permitir acceso remoto» muestra una dirección como <code>http://192.168.1.37:8080</code>. Al escribirla en el navegador del computador aparecen las mismas gráficas y botones: se puede iniciar y detener la medición desde el computador, proyectarla al grupo y descargar los datos. Algunas redes institucionales aíslan a los equipos entre sí; en ese caso, cree una zona Wi-Fi con otro celular.</p>
+</div>
+</section>
+
+<section>
+<h2>Exportar y abrir los datos</h2>
+<p>«Exportar datos» ofrece varios formatos. La diferencia importa porque los computadores configurados en español usan la coma como separador decimal:</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Formato</th><th>Ejemplo de fila</th><th>Cuándo usarlo</th></tr></thead>
+<tbody>
+<tr><td>Excel (.xlsx)</td><td>—</td><td>Se abre directamente en Excel o LibreOffice Calc, sin problemas de comas.</td></tr>
+<tr><td>CSV (coma, punto decimal)</td><td class="num">0.0125,9.7812</td><td>Python, Tracker, hojas de cálculo en inglés y el <a href="#analizador">analizador</a> de este curso.</td></tr>
+<tr><td>CSV (tabulador, punto decimal)</td><td class="num">0.0125→9.7812</td><td>Pegar en programas que esperan tabuladores.</td></tr>
+<tr><td>CSV (punto y coma, coma decimal)</td><td class="num">0,0125;9,7812</td><td>Excel o Google Sheets configurados en español.</td></tr>
+</tbody></table></div>
+<p>El archivo trae una columna de tiempo en segundos y una columna por cada magnitud, con su unidad en el encabezado, por ejemplo <code>"Time (s)","Acceleration x (m/s^2)",…</code>. El tiempo empieza en cero al iniciar la medición. Si se pausa y se reanuda, el tiempo sigue corriendo: aparecen huecos, no datos repetidos.</p>
+<div class="box warn">
+<p>Si al abrir un CSV todas las columnas quedan en una sola, o los números aparecen como fechas («9.781» convertido en «9 de julio»), el formato no coincide con la configuración regional. No corrija a mano: vuelva a exportar en el otro formato o use «Datos → Desde texto/CSV» e indique el separador.</p>
+</div>
+</section>
+
+<section>
+<h2>Buenas prácticas con el celular</h2>
+<ul>
+<li><strong>Fíjelo bien.</strong> Un celular que vibra suelto en su soporte mide el soporte, no el experimento. Use bandas elásticas o el soporte LEGO del capítulo 9, y quite fundas gruesas o con imanes.</li>
+<li><strong>No lo toque durante la medición.</strong> Use ejecución temporizada o acceso remoto.</li>
+<li><strong>Modo avión y no molestar.</strong> Una notificación hace vibrar el celular y aparece como un pico en el acelerómetro.</li>
+<li><strong>Mida el fondo.</strong> Registre unos segundos en reposo antes del experimento: da el sesgo del sensor y su ruido.</li>
+<li><strong>Anote la orientación.</strong> Una foto del montaje con el celular puesto resuelve después cualquier duda sobre los ejes.</li>
+<li><strong>Revise «Información del dispositivo».</strong> Allí están la frecuencia real de muestreo y la resolución de cada sensor; anótelas en el informe.</li>
+</ul>
+<p>phyphox también puede leer sensores externos por Bluetooth de baja energía (BLE). Con la librería <i>phyphox BLE</i>, una ESP32 envía sus mediciones a phyphox y aparecen como un experimento más (capítulo <a href="#modulos">Sensores y módulos</a>). Otras aplicaciones útiles son <i>Physics Toolbox Sensor Suite</i> y <i>Sensor Logger</i>; los principios de este capítulo valen para todas.</p>
+</section>
+
+<section>
+<h2>Análisis de video con Tracker</h2>
+<p><a href="https://physlets.org/tracker/" target="_blank" rel="noopener">Tracker</a> es un programa libre (de Open Source Physics) para analizar videos: se marcan las posiciones de un objeto cuadro a cuadro y el programa construye las tablas de \(x(t)\), \(y(t)\), velocidades y aceleraciones. Funciona en Windows, macOS y Linux, y tiene una versión en línea. El análisis de video es la mejor opción para movimientos en dos dimensiones (proyectiles, choques en una mesa) y para comprobar los otros sensores.</p>
+<h3>Cómo grabar un buen video</h3>
+<ul>
+<li>Cámara en un trípode o en el soporte LEGO, <strong>perpendicular</strong> al plano del movimiento y lo más lejos posible usando el zoom: reduce la distorsión de perspectiva.</li>
+<li>Una <strong>regla o un objeto de longitud conocida en el mismo plano</strong> del movimiento. Una viga LEGO Technic de 15 agujeros sirve muy bien: sus agujeros están separados 8 mm, de modo que entre los centros del primero y el último hay exactamente 14 × 8 = 112 mm.</li>
+<li>Mucha luz y fondo liso y contrastante: con exposiciones cortas, el objeto no sale borroso.</li>
+<li>Cámara lenta (120 o 240 cuadros por segundo) para movimientos rápidos. <strong>Atención:</strong> muchos celulares guardan el video lento como si fuera de 30 cuadros por segundo; en Tracker hay que declarar la frecuencia real en «Propiedades del video».</li>
+</ul>
+<h3>Pasos en Tracker</h3>
+<ol>
+<li>Abra el video y recorte el intervalo útil (cuadro inicial y final).</li>
+<li>Ajuste la frecuencia de cuadros real si el video es en cámara lenta.</li>
+<li>Cree una <strong>vara de calibración</strong> y póngala sobre la regla; escriba su longitud real.</li>
+<li>Coloque los <strong>ejes de coordenadas</strong>: el origen en un punto cómodo y el eje \(x\) horizontal.</li>
+<li>Cree una <strong>masa puntual</strong> y marque el objeto en cada cuadro con <kbd>Shift</kbd> + clic, o use el seguimiento automático.</li>
+<li>Exporte la tabla o ajuste curvas en el «Analizador de datos» de Tracker.</li>
+</ol>
+<div class="sim" data-sim="video-tracker" data-title="Análisis de video: calibrar, marcar y ajustar"></div>
+<div class="sim-guide"><ul>
+<li>Primero calibre la escala haciendo clic en los agujeros extremos de la viga LEGO (112 mm entre sus centros).</li>
+<li>Luego marque la pelota en cada cuadro, o use «Seguimiento automático».</li>
+<li>El ajuste de \(y(t)\) a una parábola da \(g\). Active «La pelota está 10 cm delante de la regla» para ver el error de paralaje.</li>
+</ul></div>
+<div class="box warn">
+<p><strong>Paralaje.</strong> Si el objeto se mueve en un plano más cercano a la cámara que la regla de calibración, se ve más grande y todas las distancias salen sobreestimadas en la proporción \(D/(D-d)\), donde \(D\) es la distancia de la cámara a la regla y \(d\) la separación entre los planos. Con la cámara a 1.5 m y 10 cm de separación, el error es del 7 %.</p>
+</div>
+</section>
+
+<section>
+<h2>Preguntas y problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Práctica</span>Exporte 10 s de «Aceleración con g» con el celular quieto y calcule, para cada eje, la media y la desviación estándar. ¿Cuál es el sesgo de su acelerómetro? ¿Cuál es su frecuencia de muestreo real?
+<details><summary>Orientación</summary><p>La media de \(\sqrt{a_x^2+a_y^2+a_z^2}\) debería ser 9.777 m/s² en Popayán; la diferencia es el error de escala o sesgo. La frecuencia real es el número de filas dividido por la duración (o el inverso de la mediana de las diferencias de tiempo).</p></details></li>
+<li><span class="lvl">Concepto</span>Un video grabado a 240 cuadros por segundo se abre en Tracker, que lo trata como de 30 cuadros por segundo. ¿Qué valor de \(g\) saldrá si en realidad es 9.78 m/s²?
+<details><summary>Respuesta</summary><p>Tracker cree que el tiempo entre cuadros es 8 veces mayor; la aceleración es posición sobre tiempo al cuadrado, así que sale \(9.78/64=0.153\) m/s². Un valor absurdo como ese es la señal típica de este error.</p></details></li>
+<li><span class="lvl">Diseño</span>Quiere filmar un carrito LEGO que recorre 1.2 m. ¿A qué distancia pone la cámara si su campo de visión horizontal es de 66°?
+<details><summary>Respuesta</summary><p>Para cubrir 1.5 m (con margen): \(D=0.75/\tan33°=1.15\) m. Mejor aún, un poco más lejos con zoom, para reducir la perspectiva.</p></details></li>
+</ol>
+</section>
+</template>

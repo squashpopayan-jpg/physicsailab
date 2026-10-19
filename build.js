@@ -13,6 +13,7 @@ function copyRecursive(src, dest) {
         for (const item of fs.readdirSync(src)) {
             // Ignorar videos pesados y temporales
             if (/\.(mov|mp4)$/i.test(item)) continue;
+            if (item === 'node_modules' || item === '.git') continue;
             copyRecursive(path.join(src, item), path.join(dest, item));
         }
     } else {

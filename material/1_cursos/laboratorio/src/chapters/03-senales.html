@@ -1,0 +1,99 @@
+<template class="chapter-src" data-id="senales" data-num="3" data-title="Señales digitales: muestreo, ruido y filtros" data-part="Parte I · Fundamentos" data-short="Frecuencia de muestreo y aliasing, resolución del ADC, ruido, promedios y filtros, derivar e integrar datos reales, espectro de Fourier">
+<p class="lead">Un sensor digital no entrega una curva continua: entrega una lista de números tomados cada cierto tiempo y redondeados a cierto paso. Esas dos operaciones, muestrear y cuantizar, tienen consecuencias que todo experimentador debe conocer: frecuencias falsas, escalones, ruido que se amplifica al derivar y posiciones que se alejan al integrar.</p>
+
+<div class="keyideas"><ul>
+<li>Para registrar una oscilación de frecuencia \(f\) hay que muestrear a más de \(2f\) (criterio de Nyquist); en la práctica, a 10 veces \(f\) o más.</li>
+<li>Un convertidor de \(n\) bits divide su rango en \(2^n\) escalones; el ruido permite promediar por debajo de un escalón.</li>
+<li>Promediar o filtrar reduce el ruido, pero retrasa y suaviza la señal: siempre hay un compromiso.</li>
+<li>Derivar datos ruidosos amplifica el ruido; integrar datos con sesgo acumula un error que crece con el tiempo.</li>
+<li>El espectro de Fourier muestra qué frecuencias contiene una señal; su resolución es \(\Delta f = 1/T_{\text{total}}\).</li>
+</ul></div>
+
+<section>
+<h2>Muestrear: cuántos datos por segundo</h2>
+<p>La <span class="term">frecuencia de muestreo</span> \(f_s\) es el número de datos por segundo. Un acelerómetro de celular trabaja entre 100 y 500 Hz; un barómetro, a unos 25 Hz; la ESP32 puede leer su ADC a decenas de kilohercios. El intervalo entre datos es \(\Delta t=1/f_s\).</p>
+<p>Si una señal oscila con frecuencia \(f\) y se muestrea demasiado lento, los puntos pueden dibujar una oscilación más lenta que no existe. Es el <span class="term">aliasing</span>: el mismo efecto que hace ver girar «hacia atrás» las ruedas de un carro en una película. La frecuencia aparente es la distancia de \(f\) al múltiplo de \(f_s\) más cercano:</p>
+<div class="eq key" data-name="Nyquist y aliasing">\[f_s\gt 2f_{\max},\qquad f_{\text{aparente}}=\left|f-k\,f_s\right|\ \ \text{con } k \text{ entero que la hace mínima}.\]</div>
+<p>El límite \(f_s/2\) se llama <span class="term">frecuencia de Nyquist</span>. Muestrear justo por encima de ella permite recuperar la frecuencia, pero no la forma de la onda: para ver bien una oscilación se necesitan al menos 10 a 20 puntos por ciclo.</p>
+<div class="sim" data-sim="muestreo" data-title="Muestreo y aliasing"></div>
+<div class="sim-guide"><ul>
+<li>Con \(f=5\) Hz y \(f_s=100\) Hz los puntos siguen bien la curva. Baje \(f_s\) hasta 12 Hz: aún se ve la frecuencia, pero la forma se deforma.</li>
+<li>Con \(f_s=6\) Hz los puntos dibujan una oscilación de 1 Hz que no existe: eso es aliasing.</li>
+<li>Pruebe la situación «ventilador filmado a 30 cuadros por segundo».</li>
+</ul></div>
+<div class="box warn">
+<p>En App Inventor, un <code>Clock</code> con <code>TimerInterval = 10</code> no garantiza 100 datos por segundo: Android dispara el temporizador cuando puede, con retrasos variables. Guarde siempre el tiempo real de cada dato (con <code>Clock.SystemTime</code>) y no suponga intervalos iguales.</p>
+</div>
+</section>
+
+<section>
+<h2>Cuantizar: la resolución del convertidor</h2>
+<p>Un <span class="term">convertidor analógico-digital</span> (ADC) de \(n\) bits representa su rango de entrada con \(2^n\) valores enteros. El paso entre valores, o <span class="term">LSB</span> (bit menos significativo), es</p>
+<div class="eq">\[\text{LSB}=\frac{\text{rango}}{2^n},\qquad \text{ESP32: } \frac{3.3\ \text{V}}{4096}\approx0.8\ \text{mV};\qquad \text{HX711: } \frac{40\ \text{mV}}{2^{24}}\approx2.4\ \text{nV}.\]</div>
+<p>Cualquier valor dentro de un escalón se lee igual: el error de cuantización está entre \(-\tfrac12\) y \(+\tfrac12\) LSB, con incertidumbre estándar \(\text{LSB}/\sqrt{12}\). Con una señal muy limpia, promediar no sirve de nada: todas las lecturas dan el mismo entero. Pero si hay un poco de ruido (del orden de un LSB), las lecturas saltan entre escalones vecinos en proporción a dónde está el valor verdadero, y el promedio sí lo recupera con resolución fina. Esta técnica se llama <span class="term">sobremuestreo con dither</span>.</p>
+<div class="sim" data-sim="cuantizacion" data-title="Bits, escalones y promedio con ruido"></div>
+<div class="sim-guide"><ul>
+<li>Con 4 bits la señal es una escalera. Suba a 12 bits (ESP32) y a 16 bits (MPU6050).</li>
+<li>Ponga 4 bits, ruido cero y promedio de 64 lecturas: el promedio sigue siendo escalonado. Ahora agregue ruido de 0.5 LSB: el promedio se vuelve suave.</li>
+</ul></div>
+<div class="box note">
+<p>El ADC de la ESP32 no es perfectamente lineal: cerca de 0 V lee 0 hasta unos 0.1 V, y por encima de unos 3.1 V se satura. La función <code>analogReadMilliVolts()</code> aplica la calibración de fábrica de cada chip y da milivoltios corregidos; úsela en lugar de convertir a mano. El capítulo <a href="#esp32">La placa ESP32</a> trae una simulación del ADC.</p>
+</div>
+</section>
+
+<section>
+<h2>Ruido y filtros</h2>
+<p>Todo sensor tiene ruido: fluctuaciones rápidas que no pertenecen a la magnitud medida. Se caracteriza por su desviación estándar en reposo (por ejemplo, 0.01 m/s² en un acelerómetro). Hay dos filtros sencillos que se usan en todas partes:</p>
+<ul>
+<li><strong>Promedio móvil</strong> de \(N\) puntos: cada dato se reemplaza por el promedio de sus vecinos. Reduce el ruido en un factor \(\sqrt N\), pero borra detalles más cortos que \(N\,\Delta t\).</li>
+<li><strong>Filtro exponencial</strong> (pasa-bajas de primer orden): \(y_k=y_{k-1}+\alpha\,(x_k-y_{k-1})\), con \(0\lt\alpha\le1\). Es el filtro de una línea de código que se usa en la ESP32. Equivale a un circuito RC con constante de tiempo \(\tau\approx\Delta t/\alpha\), y retrasa la señal en ese tiempo.</li>
+</ul>
+<div class="sim" data-sim="filtros" data-title="Promedio móvil y filtro exponencial"></div>
+<div class="sim-guide"><ul>
+<li>El filtro exponencial en tiempo real va <em>detrás</em> de la señal: compare el escalón original con el filtrado.</li>
+<li>Un promedio móvil centrado no se retrasa, pero sólo se puede hacer después de medir (necesita datos «del futuro»).</li>
+<li>Con filtros muy fuertes, el golpe corto del carrito desaparece: filtrar también borra física.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Derivar e integrar datos reales</h2>
+<p>De la posición se obtiene la velocidad derivando, y de la aceleración se obtiene la velocidad integrando. Con datos reales, las dos operaciones tienen trampas opuestas:</p>
+<ul>
+<li><strong>Derivar amplifica el ruido.</strong> La derivada numérica \((x_{k+1}-x_{k-1})/(2\Delta t)\) divide diferencias pequeñas entre un \(\Delta t\) pequeño. Un ruido de 1 mm en un sensor ultrasónico a 50 Hz produce un ruido de unos 3.5 cm/s en la velocidad, y de varios m/s² en la aceleración. Solución: filtrar antes de derivar, o ajustar una curva a la posición y derivar la curva.</li>
+<li><strong>Integrar acumula el sesgo.</strong> Si el acelerómetro tiene un sesgo de 0.05 m/s², la velocidad integrada crece 0.05 m/s cada segundo y la posición crece como \(\tfrac12(0.05)t^2\): 2.5 m de error en 10 s. Por eso un celular no puede funcionar como «GPS de interiores» integrando el acelerómetro. Solución: integrar intervalos cortos, restar el sesgo medido en reposo y usar condiciones conocidas (velocidad cero al detenerse).</li>
+</ul>
+<div class="sim" data-sim="derivar-integrar" data-title="Derivar posición ruidosa e integrar aceleración con sesgo"></div>
+<div class="sim-guide"><ul>
+<li>En el modo «derivar», la velocidad obtenida del sensor ultrasónico es aceptable, pero la aceleración es puro ruido. Active el suavizado.</li>
+<li>En el modo «integrar», un sesgo de sólo 0.05 m/s² hace que la posición calculada se aleje sin control. Active la corrección del sesgo.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El espectro: ver las frecuencias</h2>
+<p>Toda señal medida durante un tiempo \(T\) se puede descomponer en una suma de senos y cosenos: es la <span class="term">transformada de Fourier</span>. Los programas usan un algoritmo rápido llamado FFT. El resultado, el <span class="term">espectro</span>, muestra qué frecuencias están presentes y con qué amplitud. phyphox lo usa en «Espectro de audio», y en las prácticas sirve para hallar la frecuencia de una oscilación ruidosa o amortiguada.</p>
+<div class="eq">\[\text{resolución en frecuencia: } \Delta f=\frac{1}{T},\qquad \text{frecuencia máxima: } f_s/2.\]</div>
+<p>Para distinguir dos frecuencias separadas 0.1 Hz hay que medir al menos 10 s. Antes de calcular el espectro se multiplica la señal por una <span class="term">ventana</span> (por ejemplo, la de Hann) que suaviza los extremos y evita picos falsos.</p>
+<div class="sim" data-sim="fft" data-title="Espectro de Fourier de una señal medida"></div>
+<div class="sim-guide"><ul>
+<li>Con 2 s de registro las dos frecuencias cercanas (2.0 y 2.4 Hz) se ven como un solo pico ancho; con 10 s se separan.</li>
+<li>Agregue mucho ruido: en la señal ya no se ve la oscilación, pero el pico del espectro sigue claro.</li>
+<li>Suba la frecuencia por encima de \(f_s/2\): el pico aparece en una frecuencia falsa (aliasing).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Preguntas y problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Concepto</span>Un péndulo oscila a 0.7 Hz y el barómetro del celular muestrea a 25 Hz. ¿Se puede ver la oscilación del péndulo en la presión? ¿Y una vibración de 40 Hz?
+<details><summary>Respuesta</summary><p>La de 0.7 Hz sí (36 puntos por ciclo). La de 40 Hz no: está por encima de la frecuencia de Nyquist (12.5 Hz) y aparecería como una falsa oscilación de \(|40-2\cdot25|=10\) Hz, si el sensor no la filtra internamente.</p></details></li>
+<li><span class="lvl">Problema</span>El HC-SR04 da la distancia con ruido de 2 mm a 40 Hz. Estime el ruido de la velocidad calculada con la derivada central.
+<details><summary>Respuesta</summary><p>\(\sigma_v=\sqrt2\,\sigma_x/(2\Delta t)=\sqrt2(0.002)/(2\times0.025)=0.057\) m/s. Si el carrito va a 0.3 m/s, el ruido es casi del 20 %: hay que suavizar o ajustar una recta a intervalos de posición.</p></details></li>
+<li><span class="lvl">Problema</span>Un acelerómetro con sesgo de 0.02 m/s² se integra dos veces durante 4 s. ¿Qué error de posición produce?
+<details><summary>Respuesta</summary><p>\(\tfrac12(0.02)(4)^2=0.16\) m. En un experimento de 1 m, un 16 % de error sólo por el sesgo.</p></details></li>
+<li><span class="lvl">Diseño</span>Quiere medir el periodo de un resorte de 2.5 Hz con el ADC de la ESP32 y un potenciómetro. ¿Qué frecuencia de muestreo y qué duración elegiría?
+<details><summary>Respuesta</summary><p>Unos 100–200 Hz (40–80 puntos por ciclo) y al menos 10–20 s, para tener muchas oscilaciones y una resolución espectral de 0.05–0.1 Hz. Con la marca de tiempo de cada cruce por cero se obtiene el periodo con mayor resolución que con el espectro.</p></details></li>
+</ol>
+</section>
+</template>

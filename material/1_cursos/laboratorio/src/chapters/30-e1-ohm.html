@@ -1,0 +1,113 @@
+<template class="chapter-src" data-id="e1" data-num="E1" data-title="Ley de Ohm y curvas I–V" data-part="Parte IV · Prácticas de electromagnetismo" data-kits="esp" data-short="La ESP32 como trazador de curvas: resistencia lineal, LED y diodo no lineales, resistencia interna y la resistencia shunt">
+<p class="lead">Un multímetro mide un punto; un trazador de curvas mide la relación completa entre voltaje y corriente. Con un potenciómetro, una resistencia de 1 kΩ y dos entradas del ADC, la ESP32 se convierte en un trazador que muestra por qué una resistencia es «óhmica» y un LED no.</p>
+
+<div class="ficha"><div class="ficha-head"><b>Ficha de la práctica</b><span>E1 · 2 horas</span></div><dl>
+<dt>Objetivo</dt><dd>Obtener las curvas I–V de una resistencia, un LED y un diodo; medir la resistencia y el voltaje umbral, y ajustar el modelo exponencial del diodo.</dd>
+<dt>Herramientas</dt><dd><span class="kit esp">ESP32</span> · alternativa con el módulo INA219</dd>
+<dt>Se mide</dt><dd>Dos voltajes con el ADC; la corriente se calcula con la ley de Ohm en la resistencia shunt de 1 kΩ</dd>
+<dt>Conceptos</dt><dd>Ley de Ohm, resistencia, elementos no lineales, ecuación de Shockley</dd>
+<dt>Costo extra</dt><dd>Potenciómetro de 10 kΩ, dos resistencias de 1 kΩ, LED rojo y azul, diodo 1N4148</dd>
+</dl></div>
+
+<section>
+<h2>Fundamento</h2>
+<p>Un elemento es <span class="term">óhmico</span> si la corriente que lo atraviesa es proporcional al voltaje entre sus terminales:</p>
+<div class="eq key" data-name="Ley de Ohm">\[V=R\,I,\qquad R\ \text{constante}.\]</div>
+<p>Su curva I–V es una recta por el origen de pendiente \(1/R\). Un diodo (y un LED, que es un diodo que emite luz) es muy distinto: casi no conduce hasta un voltaje umbral y luego la corriente crece exponencialmente, según la ecuación de Shockley:</p>
+<div class="eq">\[I=I_s\left(e^{V/(nV_T)}-1\right),\qquad V_T=\frac{k_BT}{e}\approx25.3\ \text{mV a }20\ °\text{C},\]</div>
+<p>con \(I_s\) la corriente de saturación (diminuta) y \(n\) el factor de idealidad (entre 1 y 2). Por encima de unos pocos microamperios, \(\ln I\) es una recta en \(V\) de pendiente \(1/(nV_T)\). El umbral depende del color del LED: unos 1.8–2.0 V para el rojo, 2.7–3.1 V para el azul, porque la energía de los fotones emitidos es \(eV\approx hc/\lambda\).</p>
+<h3>El circuito</h3>
+<p>El potenciómetro, alimentado con 3.3 V, entrega un voltaje regulable. En serie con el elemento se pone una resistencia <span class="term">shunt</span> de 1 kΩ. El ADC mide el voltaje antes del elemento (\(V_A\), GPIO 34) y entre el elemento y la shunt (\(V_B\), GPIO 35). Entonces:</p>
+<div class="eq">\[V_{\text{elemento}}=V_A-V_B,\qquad I=\frac{V_B}{1\ \text{k}\Omega}.\]</div>
+<p>El ADC de la ESP32 no lee bien por debajo de unos 0.1 V: con la shunt de 1 kΩ eso significa que las corrientes menores de 0.1 mA quedan fuera de alcance. Por eso se usa 1 kΩ y no una shunt más pequeña.</p>
+</section>
+
+<section>
+<h2>Materiales y montaje</h2>
+<div class="tablewrap narrow"><table class="bom">
+<thead><tr><th>Material</th><th>Cantidad</th></tr></thead>
+<tbody>
+<tr><td>ESP32, protoboard, cables</td><td>1</td></tr>
+<tr><td>Potenciómetro de 10 kΩ</td><td>1</td></tr>
+<tr><td>Resistencia shunt de 1 kΩ (1 %) y resistencia de 1 kΩ a medir</td><td>1 + 1</td></tr>
+<tr><td>LED rojo, LED azul, diodo 1N4148</td><td>1 c/u</td></tr>
+<tr><td>Multímetro (para verificar)</td><td>1</td></tr>
+</tbody></table></div>
+<div class="sim" data-sim="conexion" data-cfg="iv" data-title="Trazador de curvas I–V con la ESP32"></div>
+<div class="box warn">
+<p>El LED debe ir con el ánodo (pata larga) hacia el potenciómetro. Al revés no conduce: es una buena prueba de que el diodo es un elemento direccional.</p>
+</div>
+</section>
+
+<section>
+<h2>Configuración: el programa</h2>
+<pre class="code" data-lang="cpp" data-file="E1_curva_IV.ino">// E1 · Curva I–V: voltaje del elemento y corriente por la shunt de 1 kΩ
+const int PIN_A = 34;          // cursor del potenciómetro (antes del elemento)
+const int PIN_B = 35;          // entre el elemento y la resistencia shunt
+const float R_SHUNT = 1000.0;  // ohmios (mida la suya con el multímetro)
+
+float leer_mV(int pin) {
+  long s = 0;
+  for (int i = 0; i < 64; i++) s += analogReadMilliVolts(pin);
+  return s / 64.0;
+}
+
+void setup() {
+  Serial.begin(115200);
+  Serial.println("V_mV,I_mA");
+}
+
+void loop() {
+  float va = leer_mV(PIN_A), vb = leer_mV(PIN_B);
+  Serial.print(va - vb, 1);           // voltaje del elemento (mV)
+  Serial.print(',');
+  Serial.println(vb / R_SHUNT, 4);    // corriente (mA) = mV / Ω
+  delay(250);
+}
+</pre>
+<p>Gire el potenciómetro despacio de un extremo al otro mientras el programa envía puntos: el Trazador Serie muestra las dos columnas y el Monitor permite copiarlas. <b>Alternativa:</b> con el INA219 (capítulo 7) en lugar de la shunt se obtienen voltaje y corriente calibrados.</p>
+</section>
+
+<section>
+<h2>Experimento virtual</h2>
+<div class="sim" data-sim="e1-iv" data-title="Trazador de curvas I–V" data-layout="below"></div>
+<div class="sim-guide"><ul>
+<li>Con la resistencia, haga un barrido: los puntos caen en una recta por el origen y el ajuste da \(R\).</li>
+<li>Con el LED rojo, la corriente es casi nula por debajo de 1.7 V. En escala logarítmica, la parte creciente es una recta.</li>
+<li>Compare el umbral del LED rojo con el del azul y relacione la diferencia con la longitud de onda.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Procedimiento</h2>
+<ol class="steps">
+<li><b>Mida la shunt con el multímetro</b><p>y escriba su valor en el programa.</p></li>
+<li><b>Resistencia de 1 kΩ.</b><p>Arme el circuito, suba el programa y gire el potenciómetro de mínimo a máximo en unos 20 s. Copie los datos.</p></li>
+<li><b>LED rojo.</b><p>Reemplace la resistencia por el LED. Gire despacio cerca del umbral, donde la corriente cambia rápido.</p></li>
+<li><b>LED azul y diodo.</b><p>Repita con los otros dos elementos.</p></li>
+<li><b>Polarización inversa.</b><p>Ponga un LED al revés y compruebe que la corriente es cero (dentro del ruido).</p></li>
+</ol>
+</section>
+
+<section>
+<h2>Análisis de los datos</h2>
+<ol>
+<li>Resistencia: ajuste \(V\) contra \(I\) con una recta. La pendiente es \(R\) (en kΩ si \(I\) está en mA y \(V\) en V). Compare con el multímetro y con la tolerancia del código de colores.</li>
+<li>LED y diodo: grafique \(I\) contra \(V\). Defina el umbral como el voltaje para el que \(I=1\) mA.</li>
+<li>En el rango de 0.05 a 5 mA, ajuste \(\ln I\) contra \(V\): la pendiente es \(1/(nV_T)\). Calcule \(n\).</li>
+<li>Estime la energía de los fotones de cada LED con \(eV_{\text{umbral}}\) y compárela con \(hc/\lambda\) (rojo: 630 nm, azul: 465 nm).</li>
+</ol>
+</section>
+
+<section>
+<h2>Preguntas, fuentes de error y extensiones</h2>
+<ol class="problems">
+<li><span class="lvl">Problema</span>Con la shunt de 1000 Ω, \(V_A=2350\) mV y \(V_B=1120\) mV. ¿Cuánto vale la resistencia del elemento?
+<details><summary>Respuesta</summary><p>\(I=1120/1000=1.120\) mA; \(V=1.230\) V; \(R=1.230/1.120\times10^{-3}=1098\) Ω (una resistencia de 1.1 kΩ).</p></details></li>
+<li><span class="lvl">Concepto</span>¿Por qué no se puede medir corrientes de microamperios con este montaje?
+<details><summary>Respuesta</summary><p>Porque 1 µA en 1 kΩ es 1 mV, del orden de la resolución y menor que el ruido del ADC; además, el ADC no lee bien por debajo de unos 0.1 V. Para corrientes pequeñas se necesita una shunt mayor (100 kΩ, a costa de limitar la corriente máxima) o un amplificador como el del INA219.</p></details></li>
+<li><span class="lvl">Concepto</span>¿Qué energía tienen los fotones de un LED rojo de 630 nm? ¿Coincide con su umbral?
+<details><summary>Respuesta</summary><p>\(E=hc/\lambda=1240\ \text{eV·nm}/630\ \text{nm}=1.97\) eV, muy cerca del umbral de unos 1.8–2.0 V: cada electrón que cruza la unión entrega aproximadamente la energía de un fotón.</p></details></li>
+</ol>
+</section>
+</template>

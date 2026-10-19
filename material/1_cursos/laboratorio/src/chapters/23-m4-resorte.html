@@ -1,0 +1,88 @@
+<template class="chapter-src" data-id="m4" data-num="M4" data-title="Oscilador masa–resorte" data-part="Parte III · Prácticas de mecánica" data-kits="cel lego esp" data-short="El celular cuelga de un resorte: constante elástica estática y dinámica, masa efectiva del resorte y amortiguamiento">
+<p class="lead">Un celular colgado de un resorte oscila arriba y abajo, y su acelerómetro registra cada ciclo. Con unas arandelas como masas adicionales se mide la constante del resorte de dos maneras, se descubre que el propio resorte «pesa» un tercio en la oscilación y se cuantifica cuánto amortigua el aire.</p>
+
+<div class="ficha"><div class="ficha-head"><b>Ficha de la práctica</b><span>M4 · 2 horas</span></div><dl>
+<dt>Objetivo</dt><dd>Determinar la constante elástica \(k\) por el método estático y por el dinámico, la masa efectiva del resorte y el factor de calidad \(Q\).</dd>
+<dt>Herramientas</dt><dd><span class="kit cel">Celular</span><span class="kit lego">LEGO</span> · alternativa <span class="kit esp">ESP32</span> con HC-SR04 debajo de la masa</dd>
+<dt>Se mide</dt><dd>Aceleración vertical \(f_y(t)\), alargamientos con regla, masas con balanza</dd>
+<dt>Conceptos</dt><dd>Ley de Hooke, movimiento armónico simple, masa efectiva, oscilaciones amortiguadas</dd>
+<dt>Costo extra</dt><dd>Un resorte de tensión de 10–40 N/m (ferretería) y arandelas</dd>
+</dl></div>
+
+<section>
+<h2>Fundamento</h2>
+<p>Un resorte ideal ejerce una fuerza proporcional a su alargamiento (ley de Hooke). En el <strong>método estático</strong> se cuelgan masas \(m\) y se mide el alargamiento \(\Delta x\) en equilibrio: \(mg=k\,\Delta x\), de modo que \(\Delta x\) contra \(m\) es una recta de pendiente \(g/k\).</p>
+<p>En el <strong>método dinámico</strong> se hace oscilar la masa. Si el resorte tuviera masa nula, \(T=2\pi\sqrt{m/k}\). Un resorte real de masa \(m_s\) también se mueve: su extremo superior está quieto y el inferior se mueve con la masa, de modo que, en promedio, participa con un tercio de su masa:</p>
+<div class="eq key" data-name="Oscilador con resorte real">\[T=2\pi\sqrt{\frac{m+m_s/3}{k}}\qquad\Rightarrow\qquad T^2=\frac{4\pi^2}{k}\,m+\frac{4\pi^2}{k}\,\frac{m_s}{3}.\]</div>
+<p>La gráfica de \(T^2\) contra \(m\) da \(k\) por la pendiente y \(m_s\) por el intercepto. Las dos \(k\) (estática y dinámica) deberían coincidir.</p>
+<p>Con el celular vertical (eje \(y\) hacia arriba), el acelerómetro marca \(f_y=g+a_y\): en reposo, \(g\); oscilando, \(g-\omega^2A\cos(\omega t+\phi)\). La oscilación de \(f_y\) alrededor de su valor medio tiene el mismo periodo que el movimiento. El aire y el roce interno del resorte amortiguan: la amplitud decae como \(e^{-\gamma t}\) y el factor de calidad es \(Q=\omega_0/(2\gamma)\).</p>
+</section>
+
+<section>
+<h2>Materiales y montaje</h2>
+<div class="tablewrap narrow"><table class="bom">
+<thead><tr><th>Material</th><th>Cantidad</th></tr></thead>
+<tbody>
+<tr><td>Torre LEGO con travesaño Technic (la del péndulo)</td><td>1</td></tr>
+<tr><td>Resorte de tensión, unos 10 cm de largo y 10–40 N/m</td><td>1</td></tr>
+<tr><td>Soporte del celular con un gancho (eje Technic doblado o clip)</td><td>1</td></tr>
+<tr><td>Arandelas de 10–20 g, pesadas una por una</td><td>8–12</td></tr>
+<tr><td>Regla, balanza de cocina o celda de carga</td><td>1</td></tr>
+</tbody></table></div>
+<div class="sim" data-sim="lego-modelo" data-model="resorte" data-title="Resorte colgado de la torre LEGO"></div>
+<div class="box safe">
+<p>Ponga un cojín debajo del celular. Antes de colgarlo, pruebe el resorte con una masa similar (una bolsa de arena de 200 g) para comprobar que no se estira de forma permanente.</p>
+</div>
+</section>
+
+<section>
+<h2>Configuración</h2>
+<p>En phyphox abra «Aceleración con g», use la pestaña de gráficas y mire el eje \(y\). Ejecución temporizada: 3 s de espera y 20 s de duración. Para el método estático no se necesita el celular: cuelgue un platillo (un vaso con hilo) y agregue arandelas.</p>
+<p><b>Alternativa con la ESP32:</b> el HC-SR04 en el suelo, mirando hacia arriba, mide la posición de la masa (código del capítulo 7 con <code>delay(15)</code>). Así se ve \(x(t)\) directamente y se puede comparar con \(a(t)\).</p>
+</section>
+
+<section>
+<h2>Experimento virtual</h2>
+<div class="sim" data-sim="m4-resorte" data-title="Oscilador masa–resorte con el acelerómetro del celular" data-layout="below"></div>
+<div class="sim-guide"><ul>
+<li>Agregue arandelas de 20 g una por una; para cada masa, mida el periodo y agréguelo a la tabla.</li>
+<li>El intercepto de \(T^2\) contra \(m\) no es cero: corresponde a un tercio de la masa del resorte.</li>
+<li>Aumente el amortiguamiento y lea γ en la envolvente de la señal.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Procedimiento</h2>
+<ol class="steps">
+<li><b>Pese el resorte, el soporte del celular y cada arandela.</b><p>Anote las masas con su incertidumbre.</p></li>
+<li><b>Método estático.</b><p>Cuelgue el platillo, mida la longitud del resorte, y agregue arandelas de a una midiendo cada vez la nueva longitud (8 puntos).</p></li>
+<li><b>Cuelgue el celular en su soporte.</b><p>Compruebe que queda vertical y que no gira.</p></li>
+<li><b>Haga oscilar el celular</b><p>tirando de él unos 2 cm hacia abajo y soltándolo con la ejecución temporizada. La oscilación debe ser vertical, sin balanceo.</p></li>
+<li><b>Agregue masa.</b><p>Pegue arandelas al soporte (con cinta) y repita para 5 o 6 masas.</p></li>
+<li><b>Registro largo.</b><p>Con la masa mayor, registre 60 s para medir el amortiguamiento.</p></li>
+</ol>
+</section>
+
+<section>
+<h2>Análisis de los datos</h2>
+<ol>
+<li>Método estático: grafique el alargamiento contra la masa colgada; la pendiente es \(g/k\). Con \(g=9.777\) m/s² calcule \(k\) y su incertidumbre.</li>
+<li>Método dinámico: reste a \(f_y\) su promedio y cuente los cruces por cero de subida para hallar \(T\). Ajuste \(T^2\) contra \(m\) (masa total del celular, soporte y arandelas).</li>
+<li>De la pendiente obtenga \(k\); del intercepto, \(m_s\). Compare con la masa medida del resorte.</li>
+<li>Amortiguamiento: tome los máximos de \(f_y-\bar f_y\), grafique su logaritmo contra el tiempo y ajuste una recta de pendiente \(-\gamma\). Calcule \(Q\).</li>
+</ol>
+</section>
+
+<section>
+<h2>Preguntas, fuentes de error y extensiones</h2>
+<ol class="problems">
+<li><span class="lvl">Problema</span>Con \(k=24.0\) N/m, un resorte de 30 g y un celular con soporte de 240 g, ¿qué periodo se espera?
+<details><summary>Respuesta</summary><p>\(T=2\pi\sqrt{(0.240+0.010)/24.0}=0.641\) s. Sin la corrección del resorte serían 0.629 s: un 2 % menos.</p></details></li>
+<li><span class="lvl">Concepto</span>¿Depende el periodo de \(g\)? ¿Oscilaría igual en la Luna?
+<details><summary>Respuesta</summary><p>No: \(g\) sólo cambia la posición de equilibrio (el alargamiento), no el periodo. En la Luna el resorte estaría menos estirado pero oscilaría con el mismo periodo.</p></details></li>
+<li><span class="lvl">Error</span>Si el celular además se balancea como péndulo, ¿qué aparece en los datos?
+<details><summary>Respuesta</summary><p>Una segunda frecuencia, la del péndulo de longitud igual a la del resorte estirado, visible en los ejes \(x\) o \(z\) y como pulsaciones en \(y\). Si las dos frecuencias están cerca (resonancia paramétrica), la energía pasa de un modo al otro: el celular deja de subir y bajar y empieza a balancearse.</p></details></li>
+<li><span class="lvl">Extensión</span>Ponga dos resortes iguales en serie y en paralelo. ¿Qué \(k\) efectivas espera y cuáles mide?</li>
+</ol>
+</section>
+</template>

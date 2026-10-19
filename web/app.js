@@ -2737,7 +2737,8 @@ document.addEventListener('DOMContentLoaded', () => {
             transformadores: 'Lab Transformadores',
             astronomia: 'Astrofísica Moderna',
             estado_solido: 'Física del Estado Sólido',
-            fluidos: 'Mecánica de Fluidos'
+            fluidos: 'Mecánica de Fluidos',
+            laboratorio: 'Proyecto Laboratorio: Kits de Física'
         };
         return map[id] || id;
     }

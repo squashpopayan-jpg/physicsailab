@@ -1,0 +1,81 @@
+<template class="chapter-src" data-id="f4" data-num="F4" data-title="Ley de Boyle con una jeringa" data-part="Parte V · Prácticas de fluidos" data-kits="esp" data-short="Una jeringa conectada a un BMP280: presión contra volumen, volumen muerto, compresión rápida y lenta">
+<p class="lead">Si se tapa la punta de una jeringa y se empuja el émbolo, el aire se resiste cada vez más. Robert Boyle midió en 1662 que, a temperatura constante, la presión y el volumen de un gas son inversamente proporcionales. Con una jeringa sellada a un barómetro BMP280 la ley aparece en minutos, junto con un detalle que Boyle también tuvo que resolver: el volumen que no se ve.</p>
+
+<div class="ficha"><div class="ficha-head"><b>Ficha de la práctica</b><span>F4 · 1.5 horas</span></div><dl>
+<dt>Objetivo</dt><dd>Verificar \(pV=\) constante, determinar el volumen muerto del sistema y observar el calentamiento en una compresión rápida.</dd>
+<dt>Herramientas</dt><dd><span class="kit esp">ESP32</span> con BMP280 (que también mide la temperatura)</dd>
+<dt>Se mide</dt><dd>Presión y temperatura del aire encerrado para cada volumen de la jeringa</dd>
+<dt>Conceptos</dt><dd>Ley de Boyle, gas ideal, linealización, procesos isotérmico y adiabático</dd>
+<dt>Costo extra</dt><dd>Jeringa de 60 mL, frasco pequeño con tapa, silicona o plastilina</dd>
+</dl></div>
+
+<section>
+<h2>Fundamento</h2>
+<p>Para una cantidad fija de gas ideal a temperatura constante:</p>
+<div class="eq key" data-name="Ley de Boyle">\[p\,V=nRT=\text{constante}.\]</div>
+<p>El aire encerrado no está sólo en la jeringa: también en la manguera y en el frasco donde está el sensor. Ese <span class="term">volumen muerto</span> \(V_m\) no se lee en la escala. Si \(V_j\) es la lectura de la jeringa, \(p\,(V_j+V_m)=C\), y linealizando:</p>
+<div class="eq">\[\frac1p=\frac{1}{C}\,V_j+\frac{V_m}{C}\qquad\Rightarrow\qquad V_m=\frac{\text{intercepto}}{\text{pendiente}}.\]</div>
+<p>Una restricción práctica: el BMP280 mide hasta 1100 hPa. En Popayán la presión es de 822 hPa, de modo que el aire sólo se puede comprimir hasta un 75 % de su volumen inicial. Por eso conviene empezar con la jeringa a la mitad (30 mL) y medir tanto comprimiendo como expandiendo.</p>
+<p>Si el émbolo se empuja de golpe, no hay tiempo para que el calor salga: el gas se calienta (proceso casi adiabático, \(pV^{\gamma}=\) constante con \(\gamma=1.4\)) y la presión sube más de lo que predice Boyle. En unos segundos el gas se enfría hasta la temperatura del cuarto y la presión baja al valor isotérmico.</p>
+</section>
+
+<section>
+<h2>Materiales y montaje</h2>
+<div class="tablewrap narrow"><table class="bom">
+<thead><tr><th>Material</th><th>Cantidad</th></tr></thead>
+<tbody>
+<tr><td>ESP32 con BMP280 y cables delgados</td><td>1</td></tr>
+<tr><td>Frasco pequeño (unos 20 mL) con tapa perforada para los cables y la manguera</td><td>1</td></tr>
+<tr><td>Jeringa de 60 mL y 10 cm de manguera de silicona</td><td>1</td></tr>
+<tr><td>Silicona caliente o plastilina para sellar</td><td>—</td></tr>
+</tbody></table></div>
+<p>El BMP280 va dentro del frasco; los cables salen por un agujero sellado con silicona. La manguera une el frasco con la jeringa. Antes de cerrar, ponga el émbolo en 30 mL: así el aire queda encerrado a la presión atmosférica. Compruebe la hermeticidad: empuje el émbolo a 25 mL y suéltelo; debe volver casi a 30 mL.</p>
+</section>
+
+<section>
+<h2>Configuración</h2>
+<p>Use el programa del BMP280 del capítulo 7 (que imprime presión y temperatura). Para cada volumen espere unos 30 s hasta que la presión deje de cambiar.</p>
+</section>
+
+<section>
+<h2>Experimento virtual</h2>
+<div class="sim" data-sim="f4-boyle" data-title="Jeringa sellada: presión, volumen y temperatura" data-layout="below"></div>
+<div class="sim-guide"><ul>
+<li>Mueva el émbolo despacio, espere el equilibrio y agregue el punto. La gráfica de \(1/p\) contra \(V_j\) es una recta que no pasa por el origen.</li>
+<li>Pruebe «empujar de golpe»: la presión salta por encima del valor de Boyle y luego se relaja mientras la temperatura vuelve a la del cuarto.</li>
+<li>Note el límite del sensor: por encima de 1100 hPa la lectura se satura.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Procedimiento</h2>
+<ol class="steps">
+<li><b>Selle el sistema</b><p>con el émbolo en 30 mL y compruebe que no hay fugas.</p></li>
+<li><b>Expansión.</b><p>Tire del émbolo hasta 35, 40, 45, 50, 55 y 60 mL, esperando 30 s en cada uno y anotando \(p\) y \(T\).</p></li>
+<li><b>Compresión.</b><p>Vuelva a 30 mL y empuje hasta 28, 26, 24 y 22 mL (no pase del límite del sensor).</p></li>
+<li><b>Compresión rápida.</b><p>De 40 a 25 mL en menos de medio segundo, registrando la presión cada 50 ms durante 30 s.</p></li>
+</ol>
+</section>
+
+<section>
+<h2>Análisis de los datos</h2>
+<ol>
+<li>Grafique \(p\) contra \(V_j\): una hipérbola. Grafique \(1/p\) contra \(V_j\) y ajuste una recta.</li>
+<li>Calcule \(V_m=b/m\) y la constante \(C=1/m\). Con \(T\) medida, obtenga el número de moles \(n=C/(RT)\).</li>
+<li>Compruebe que \(p(V_j+V_m)\) es constante para todos los puntos.</li>
+<li>En la compresión rápida, compare el pico de presión con la predicción adiabática \(p_1(V_1/V_2)^{1.4}\) y la presión final con la de Boyle.</li>
+</ol>
+</section>
+
+<section>
+<h2>Preguntas, fuentes de error y extensiones</h2>
+<ol class="problems">
+<li><span class="lvl">Problema</span>Con la jeringa en 30 mL la presión es 822 hPa; en 50 mL, 538 hPa. ¿Cuánto vale el volumen muerto?
+<details><summary>Respuesta</summary><p>\(822(30+V_m)=538(50+V_m)\Rightarrow 24\,660+822V_m=26\,900+538V_m\Rightarrow V_m=7.9\) mL.</p></details></li>
+<li><span class="lvl">Concepto</span>Al tirar del émbolo de golpe, ¿qué pasa con la temperatura del aire?
+<details><summary>Respuesta</summary><p>Baja: en una expansión adiabática el gas hace trabajo a costa de su energía interna. Luego se calienta lentamente hasta la temperatura del cuarto y la presión sube un poco.</p></details></li>
+<li><span class="lvl">Error</span>Si hay una pequeña fuga, ¿cómo se nota en los datos?
+<details><summary>Respuesta</summary><p>La presión no se estabiliza: tiende lentamente a la atmosférica. Además los puntos de ida y vuelta no coinciden y \(p(V_j+V_m)\) disminuye con el tiempo.</p></details></li>
+</ol>
+</section>
+</template>

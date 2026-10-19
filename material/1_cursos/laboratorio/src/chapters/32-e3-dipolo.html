@@ -1,0 +1,91 @@
+<template class="chapter-src" data-id="e3" data-num="E3" data-title="El campo de un imán: la ley 1/r³" data-part="Parte IV · Prácticas de electromagnetismo" data-kits="cel lego esp" data-short="Un imán de neodimio se aleja del celular en pasos de 8 mm sobre un riel LEGO: el magnetómetro revela el exponente −3 del dipolo, el momento magnético y dónde está el sensor">
+<p class="lead">¿Cómo disminuye el campo de un imán con la distancia? Un imán pequeño visto de lejos es un dipolo magnético, y su campo cae como \(1/r^3\), mucho más rápido que la gravedad o el campo eléctrico de una carga. Con un riel LEGO que fija las distancias en pasos exactos de 8 mm y el magnetómetro del celular se mide el exponente, el momento magnético del imán y, de paso, la posición del sensor dentro del celular.</p>
+
+<div class="ficha"><div class="ficha-head"><b>Ficha de la práctica</b><span>E3 · 1.5 horas</span></div><dl>
+<dt>Objetivo</dt><dd>Determinar la dependencia del campo con la distancia en el eje y en el plano ecuatorial de un imán, y medir su momento magnético.</dd>
+<dt>Herramientas</dt><dd><span class="kit cel">Celular</span><span class="kit lego">LEGO</span> · alternativa <span class="kit esp">ESP32</span> con sensor Hall para distancias cortas</dd>
+<dt>Se mide</dt><dd>Componentes del campo magnético (µT) en función de la posición del imán</dd>
+<dt>Conceptos</dt><dd>Dipolo magnético, momento magnético, ley de potencias, gráfica log–log, ajuste no lineal</dd>
+<dt>Costo extra</dt><dd>Un imán de neodimio pequeño (disco de 10 × 3 mm)</dd>
+</dl></div>
+
+<section>
+<h2>Fundamento</h2>
+<p>A distancias grandes comparadas con su tamaño, un imán de momento magnético \(m\) produce un campo de dipolo. En su eje (la línea que une sus polos) y en su plano ecuatorial (perpendicular al eje por su centro):</p>
+<div class="eq key" data-name="Campo de un dipolo magnético">\[B_{\text{eje}}=\frac{\mu_0}{4\pi}\,\frac{2m}{r^3},\qquad B_{\text{ecuador}}=\frac{\mu_0}{4\pi}\,\frac{m}{r^3},\qquad \frac{\mu_0}{4\pi}=10^{-7}\ \text{T·m/A}.\]</div>
+<p>En escala log–log, \(\ln B=\ln k-3\ln r\): una recta de pendiente −3. Hay dos complicaciones prácticas:</p>
+<ul>
+<li><strong>El campo de fondo.</strong> El magnetómetro siempre mide además el campo terrestre (29 µT en Popayán) y el del propio celular. Se resuelve «tarando»: se mide sin el imán y se resta, componente por componente, sin mover el celular.</li>
+<li><strong>¿Desde dónde se mide \(r\)?</strong> No se sabe dónde está el sensor dentro del celular. Si se mide \(x\) desde el borde del celular, la distancia real es \(r=x+\delta\), con \(\delta\) desconocido. Se puede obtener ajustando \(B=k/(x+\delta)^3\), o linealizando: \(B^{-1/3}=(x+\delta)/k^{1/3}\) es una recta en \(x\), cuyo intercepto da \(\delta\).</li>
+</ul>
+</section>
+
+<section>
+<h2>Materiales y montaje</h2>
+<div class="tablewrap narrow"><table class="bom">
+<thead><tr><th>Material</th><th>Cantidad</th></tr></thead>
+<tbody>
+<tr><td>Celular con phyphox</td><td>1</td></tr>
+<tr><td>Imán de neodimio de 10 × 3 mm (o similar) pegado en un ladrillo 1×2</td><td>1</td></tr>
+<tr><td>Riel LEGO: placas largas con una fila de pivotes como «regla» de 8 mm</td><td>1</td></tr>
+<tr><td>Calibrador o regla (para medir el imán)</td><td>1</td></tr>
+</tbody></table></div>
+<div class="sim" data-sim="lego-modelo" data-model="riel-iman" data-title="Riel LEGO para el imán y soporte fijo del celular"></div>
+<p>El celular queda fijo en su soporte al extremo del riel y no se mueve durante toda la práctica. El imán, pegado a un ladrillo 1×2, se encaja en el riel en posiciones sucesivas: cada pivote es un paso de exactamente 8.0 mm. Para el eje, el imán apunta hacia el celular; para el plano ecuatorial, se gira 90°.</p>
+<div class="box safe">
+<p>No acerque el imán a menos de 2 cm del celular: el magnetómetro se satura (unos 5 mT) y un campo muy intenso puede magnetizar piezas del celular y desviar la brújula, que luego hay que recalibrar con el movimiento en ocho.</p>
+</div>
+</section>
+
+<section>
+<h2>Configuración</h2>
+<p>En phyphox use «Magnetómetro», pestaña «Absoluto» o «Simple». Para cada posición registre 3 s y anote el promedio de cada componente; o use «Multi» y exporte. El primer registro es <strong>sin imán</strong> (el imán lejos, a más de un metro): es el fondo que se restará.</p>
+<p><b>Alternativa con la ESP32 y el sensor SS49E</b> (capítulo 7): para distancias de 0.5 a 3 cm, donde el celular se satura, el sensor Hall en el extremo del riel mide los campos de 2 a 100 mT.</p>
+</section>
+
+<section>
+<h2>Experimento virtual</h2>
+<div class="sim" data-sim="e3-dipolo" data-title="Campo de un imán sobre el riel LEGO" data-layout="below"></div>
+<div class="sim-guide"><ul>
+<li>Primero mida el fondo sin imán; luego ponga el imán a 4 cm y vaya alejándolo de a un pivote, agregando cada medida a la tabla.</li>
+<li>En la gráfica log–log usando \(x\) (desde el borde) la pendiente sale entre −2 y −3. Con el ajuste de \(\delta\) se obtiene −3.</li>
+<li>Gire el imán (orientación ecuatorial): el campo es la mitad a la misma distancia.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Procedimiento</h2>
+<ol class="steps">
+<li><b>Fije el celular</b><p>en el soporte, con el riel a lo largo de su eje \(y\) (o \(x\)), y anote la orientación.</p></li>
+<li><b>Mida el fondo.</b><p>Con el imán lejos, registre 5 s y anote \(B_x\), \(B_y\), \(B_z\).</p></li>
+<li><b>Posición inicial.</b><p>Ponga el imán orientado hacia el celular a unos 4 cm del borde (5 pivotes).</p></li>
+<li><b>Registre y aleje.</b><p>Registre 3 s, aleje un pivote y repita hasta unos 20 cm. Cerca del celular use pasos de un pivote; lejos, de dos o tres.</p></li>
+<li><b>Orientación ecuatorial.</b><p>Gire el imán 90° y repita algunas posiciones.</p></li>
+<li><b>Verifique el fondo</b><p>al final: si cambió, el celular se movió.</p></li>
+</ol>
+</section>
+
+<section>
+<h2>Análisis de los datos</h2>
+<ol>
+<li>Reste el fondo componente por componente y calcule la magnitud \(B=\sqrt{\Delta B_x^2+\Delta B_y^2+\Delta B_z^2}\).</li>
+<li>Grafique \(\ln B\) contra \(\ln x\) y observe la curvatura: no es una recta exacta porque falta \(\delta\).</li>
+<li>Grafique \(B^{-1/3}\) contra \(x\) y ajuste una recta: \(\delta=\) intercepto/pendiente y \(k=\) pendiente\(^{-3}\).</li>
+<li>Con \(r=x+\delta\), ajuste \(\ln B\) contra \(\ln r\): la pendiente debe ser −3.</li>
+<li>Calcule el momento: \(m=k/(2\times10^{-7})\) en el eje. Compare con la estimación \(m=B_rV/\mu_0\) a partir del volumen del imán y \(B_r\approx1.2\) T.</li>
+</ol>
+</section>
+
+<section>
+<h2>Preguntas, fuentes de error y extensiones</h2>
+<ol class="problems">
+<li><span class="lvl">Problema</span>Un disco de neodimio de 10 mm de diámetro y 3 mm de alto tiene \(B_r=1.2\) T. Estime su momento magnético y el campo en su eje a 10 cm.
+<details><summary>Respuesta</summary><p>\(V=\pi(0.005)^2(0.003)=2.36\times10^{-7}\) m³; \(m=B_rV/\mu_0=1.2(2.36\times10^{-7})/(1.257\times10^{-6})=0.225\) A·m². A 10 cm: \(B=2\times10^{-7}(0.225)/0.1^3=45\) µT, del orden del campo terrestre.</p></details></li>
+<li><span class="lvl">Concepto</span>¿Por qué el campo de un dipolo decae como \(1/r^3\) y no como \(1/r^2\)?
+<details><summary>Respuesta</summary><p>Porque un dipolo es como dos «polos» opuestos muy cercanos: sus campos, que caerían como \(1/r^2\), casi se cancelan, y lo que queda es la diferencia entre ellos, proporcional a la separación sobre \(r^3\).</p></details></li>
+<li><span class="lvl">Error</span>¿Qué pasa con el resultado si el celular se mueve un poco entre la medición del fondo y las demás?
+<details><summary>Respuesta</summary><p>El campo terrestre (29 µT) se reparte distinto entre las componentes y la resta deja un error de varios µT, comparable al campo del imán a 15–20 cm. Por eso las mediciones lejanas son las más sensibles: conviene repetir el fondo al final.</p></details></li>
+<li><span class="lvl">Extensión</span>Use dos imanes pegados (momento doble) y compruebe que \(k\) se duplica.</li>
+</ol>
+</section>
+</template>

@@ -1,0 +1,85 @@
+<template class="chapter-src" data-id="f2" data-num="F2" data-title="Presión hidrostática y densidad de líquidos" data-part="Parte V · Prácticas de fluidos" data-kits="esp lego cel" data-short="Un barómetro BMP280 en una bolsa flexible baja dentro de un líquido: la presión crece linealmente con la profundidad y la pendiente da la densidad">
+<p class="lead">Bajo el agua la presión crece unos 98 Pa por cada centímetro de profundidad: mil veces más rápido que en el aire de la práctica anterior. Un barómetro de 12 000 pesos metido en una bolsa hermética lo registra con claridad, y la pendiente de la recta revela la densidad del líquido: agua dulce, agua de mar, aceite o alcohol.</p>
+
+<div class="ficha"><div class="ficha-head"><b>Ficha de la práctica</b><span>F2 · 1.5 horas</span></div><dl>
+<dt>Objetivo</dt><dd>Comprobar que \(\Delta p=\rho g h\) y medir la densidad de varios líquidos.</dd>
+<dt>Herramientas</dt><dd><span class="kit esp">ESP32</span> con BMP280 · <span class="kit lego">LEGO</span> (regla de profundidad) · alternativa <span class="kit cel">Celular</span> en bolsa doble</dd>
+<dt>Se mide</dt><dd>Presión absoluta a distintas profundidades</dd>
+<dt>Conceptos</dt><dd>Presión hidrostática, densidad, principio de Pascal, ley de Boyle (en la variante con manguera)</dd>
+<dt>Costo extra</dt><dd>Bolsas herméticas pequeñas, una probeta alta o un tubo de 50 cm cerrado en un extremo, sal de cocina</dd>
+</dl></div>
+
+<section>
+<h2>Fundamento</h2>
+<p>En un líquido en reposo de densidad ρ, la presión a una profundidad \(h\) bajo la superficie libre es</p>
+<div class="eq key" data-name="Presión hidrostática">\[p(h)=p_0+\rho\,g\,h ,\]</div>
+<p>donde \(p_0\) es la presión atmosférica sobre la superficie. La forma del recipiente no importa, sólo la profundidad. La gráfica de \(p\) contra \(h\) es una recta de pendiente \(\rho g\): con agua, unos 97.6 Pa/cm en Popayán.</p>
+<p>El sensor va dentro de una bolsa hermética <strong>flexible</strong> con un poco de aire: la bolsa se comprime hasta que el aire de adentro tiene la misma presión que el agua de afuera, y el sensor la mide. Si en lugar de una bolsa flexible se usa una manguera con aire atrapado, el agua entra un poco en la manguera y comprime el aire (ley de Boyle): la presión medida resulta algo menor que \(\rho gh\), tanto más cuanto mayor sea el volumen de aire atrapado. El experimento virtual permite ver ese error sistemático.</p>
+</section>
+
+<section>
+<h2>Materiales y montaje</h2>
+<div class="tablewrap narrow"><table class="bom">
+<thead><tr><th>Material</th><th>Cantidad</th></tr></thead>
+<tbody>
+<tr><td>ESP32 con BMP280 (capítulo 7) y cables de 1 m</td><td>1</td></tr>
+<tr><td>Dos bolsas herméticas pequeñas (una dentro de la otra) y cinta</td><td>2</td></tr>
+<tr><td>Probeta de 500 mL o tubo transparente de 50 cm cerrado abajo</td><td>1</td></tr>
+<tr><td>Viga Technic graduada (o regla) sujeta al sensor, para leer la profundidad</td><td>1</td></tr>
+<tr><td>Agua, sal, aceite de cocina, alcohol antiséptico</td><td>—</td></tr>
+<tr><td>Termómetro DS18B20 (opcional)</td><td>1</td></tr>
+</tbody></table></div>
+<p>Suelde o conecte cables largos al BMP280, envuélvalo en una bolsa pequeña con unos centímetros cúbicos de aire, ciérrela con cinta alrededor del cable y métala en una segunda bolsa. La ESP32 queda afuera, seca. El sensor se sujeta al extremo de una viga Technic: cada agujero, 8 mm, marca la profundidad. La profundidad se mide desde la superficie libre hasta el centro del sensor.</p>
+<div class="box safe">
+<p>La ESP32 y el computador nunca deben estar en la bandeja del agua. Haga primero una prueba de la bolsa sumergida sin el sensor. El alcohol es inflamable: trabaje lejos de llamas y en un lugar ventilado.</p>
+</div>
+</section>
+
+<section>
+<h2>Configuración</h2>
+<p>Use el programa del BMP280 del capítulo 7 con el filtro interno en <code>FILTER_X16</code>. Para cada profundidad espere 10 s y promedie las lecturas: el sensor también responde a la temperatura del agua, y necesita unos segundos para equilibrarse.</p>
+</section>
+
+<section>
+<h2>Experimento virtual</h2>
+<div class="sim" data-sim="f2-hidro" data-title="Presión contra profundidad en varios líquidos" data-layout="below"></div>
+<div class="sim-guide"><ul>
+<li>Baje el sensor de a 2 cm y agregue cada medida. La pendiente da ρ.</li>
+<li>Cambie el líquido: la pendiente es mayor en agua salada y menor en aceite y en alcohol.</li>
+<li>Cambie el método a «manguera con aire atrapado» y aumente el volumen de aire: la pendiente medida baja y la densidad sale errada.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Procedimiento</h2>
+<ol class="steps">
+<li><b>Presión en el aire.</b><p>Con el sensor fuera del agua, a la altura de la superficie libre, registre \(p_0\) durante 10 s.</p></li>
+<li><b>Profundidades.</b><p>Sumerja el sensor de a 2 cm (dos pivotes y medio, o use la regla) hasta el fondo, esperando 10 s en cada posición.</p></li>
+<li><b>Vuelva a subir</b><p>registrando las mismas profundidades.</p></li>
+<li><b>Otros líquidos.</b><p>Repita con agua con 35 g de sal por litro, con aceite y con alcohol (en recipientes limpios).</p></li>
+<li><b>Temperatura.</b><p>Anote la temperatura de cada líquido.</p></li>
+</ol>
+</section>
+
+<section>
+<h2>Análisis de los datos</h2>
+<ol>
+<li>Calcule \(\Delta p=p-p_0\) para cada profundidad (promedio de bajada y subida).</li>
+<li>Ajuste una recta \(\Delta p\) contra \(h\): pendiente \(\rho g\). Obtenga ρ con su incertidumbre.</li>
+<li>Compare con las densidades de referencia: agua 998 kg/m³ a 20 °C, agua salada al 3.5 % unos 1025 kg/m³, aceite de cocina unos 920 kg/m³, alcohol antiséptico (70 %) unos 870 kg/m³.</li>
+<li>Si el intercepto no es cero, ¿qué indica? (Pista: dónde está realmente el sensor dentro de la bolsa.)</li>
+</ol>
+</section>
+
+<section>
+<h2>Preguntas, fuentes de error y extensiones</h2>
+<ol class="problems">
+<li><span class="lvl">Problema</span>A 25.0 cm de profundidad en un líquido el sensor marca 2265 Pa más que en la superficie. ¿Qué líquido es?
+<details><summary>Respuesta</summary><p>\(\rho=2265/(9.777\times0.250)=927\) kg/m³: aceite.</p></details></li>
+<li><span class="lvl">Concepto</span>¿Por qué no importa que el recipiente sea angosto o ancho?
+<details><summary>Respuesta</summary><p>Porque la presión en un punto sólo depende del peso de la columna de líquido por unidad de área sobre ese punto, y eso sólo depende de la altura de la columna, no de su ancho (paradoja hidrostática).</p></details></li>
+<li><span class="lvl">Error</span>Con la manguera con aire atrapado, ¿cómo se corrige el error?
+<details><summary>Respuesta</summary><p>Reduciendo el volumen de aire atrapado (sensor en un recipiente pequeño, manguera corta) o terminando la manguera en una campana ancha con membrana. También se puede calcular la corrección con la ley de Boyle si se conocen el volumen y el área de la manguera.</p></details></li>
+</ol>
+</section>
+</template>

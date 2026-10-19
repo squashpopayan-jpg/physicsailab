@@ -1,0 +1,81 @@
+<template class="chapter-src" data-id="f1" data-num="F1" data-title="La presión del aire y la altura" data-part="Parte V · Prácticas de fluidos" data-kits="cel esp" data-short="Con el barómetro del celular se sube un edificio piso por piso: la presión baja linealmente y la pendiente da la densidad del aire de Popayán">
+<p class="lead">Vivimos en el fondo de un océano de aire. Subir unos metros es salir un poco de ese fondo, y el barómetro del celular lo nota: en Popayán la presión baja unos 9.6 Pa por cada metro. Midiendo esa pendiente en las escaleras de un edificio se pesa, literalmente, el aire.</p>
+
+<div class="ficha"><div class="ficha-head"><b>Ficha de la práctica</b><span>F1 · 1.5 horas</span></div><dl>
+<dt>Objetivo</dt><dd>Medir la variación de la presión atmosférica con la altura y obtener la densidad del aire; compararla con la ecuación de los gases ideales.</dd>
+<dt>Herramientas</dt><dd><span class="kit cel">Celular</span> con barómetro · alternativa <span class="kit esp">ESP32</span> con BMP280</dd>
+<dt>Se mide</dt><dd>Presión absoluta en cada piso; altura de cada piso; temperatura del aire</dd>
+<dt>Conceptos</dt><dd>Hidrostática de los gases, densidad del aire, ecuación de estado, deriva y corrección de tendencia</dd>
+<dt>Costo extra</dt><dd>Ninguno (cinta métrica larga)</dd>
+</dl></div>
+
+<section>
+<h2>Fundamento</h2>
+<p>En un fluido en reposo, la presión aumenta con la profundidad porque cada capa sostiene el peso de las de encima:</p>
+<div class="eq key" data-name="Hidrostática">\[\frac{dp}{dz}=-\rho\,g .\]</div>
+<p>Para unos pocos metros, la densidad del aire casi no cambia y la presión baja linealmente con la altura. La pendiente de \(p\) contra \(z\) es \(-\rho g\). El aire es un gas ideal, así que su densidad depende de la presión y la temperatura:</p>
+<div class="eq">\[\rho=\frac{p\,M}{R\,T},\qquad M=0.02897\ \text{kg/mol},\quad R=8.314\ \text{J/(mol·K)}.\]</div>
+<p>En Popayán (\(p\approx822\) hPa, \(T\approx19\) °C), \(\rho\approx0.98\) kg/m³, un 20 % menos que al nivel del mar, y la pendiente esperada es de unos 9.6 Pa/m, es decir, 0.29 hPa por cada piso de 3 m. El barómetro del celular tiene un ruido de alrededor de 1 Pa, de modo que la medición es muy clara.</p>
+<p>La presión también cambia con el clima, típicamente 1 a 2 hPa a lo largo del día. Por eso la medición se hace subiendo y bajando, y se corrige la tendencia con el tiempo.</p>
+</section>
+
+<section>
+<h2>Materiales y montaje</h2>
+<div class="tablewrap narrow"><table class="bom">
+<thead><tr><th>Material</th><th>Cantidad</th></tr></thead>
+<tbody>
+<tr><td>Celular con barómetro (compruébelo en «Información del dispositivo» de phyphox)</td><td>1</td></tr>
+<tr><td>Cinta métrica de 5 m (para medir la altura de un piso)</td><td>1</td></tr>
+<tr><td>Termómetro (o el DS18B20 con la ESP32)</td><td>1</td></tr>
+<tr><td>Alternativa: ESP32 con BMP280 y batería portátil</td><td>1</td></tr>
+</tbody></table></div>
+<p>Elija un edificio de 4 o más pisos con escaleras. Mida la altura de un piso con la cinta (la altura de un escalón por el número de escalones también sirve). Mantenga el celular siempre a la misma altura respecto al suelo de cada piso (por ejemplo, apoyado en la baranda).</p>
+</section>
+
+<section>
+<h2>Configuración</h2>
+<p>En phyphox use «Presión» con un registro continuo durante todo el recorrido. En cada piso, espere 20 s quieto para que la lectura se estabilice (el aire de la escalera se mueve). Anote la hora de llegada a cada piso o, mejor, use la vista «Gráficas» para reconocer los escalones de presión.</p>
+</section>
+
+<section>
+<h2>Experimento virtual</h2>
+<div class="sim" data-sim="f1-altura" data-title="Subir y bajar un edificio con el barómetro" data-layout="below"></div>
+<div class="sim-guide"><ul>
+<li>Inicie el recorrido: el celular sube piso por piso, se detiene 20 s en cada uno y luego baja. La presión forma una escalera.</li>
+<li>Agregue el promedio de cada piso a la tabla. La pendiente de \(p\) contra \(z\) da \(\rho g\).</li>
+<li>Active la deriva del clima: subida y bajada no coinciden. El promedio de las dos corrige la deriva lineal.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Procedimiento</h2>
+<ol class="steps">
+<li><b>Mida la altura de un piso</b><p>y la temperatura del aire.</p></li>
+<li><b>Inicie el registro</b><p>en la planta baja y espere 30 s quieto.</p></li>
+<li><b>Suba un piso</b><p>y espere 20 s quieto. Repita hasta el último piso.</p></li>
+<li><b>Baje</b><p>con el mismo protocolo, hasta la planta baja.</p></li>
+<li><b>Exporte</b><p>los datos y anote la hora de inicio y de final.</p></li>
+</ol>
+</section>
+
+<section>
+<h2>Análisis de los datos</h2>
+<ol>
+<li>Para cada piso, promedie la presión de los 20 s de espera, en la subida y en la bajada.</li>
+<li>Promedie subida y bajada para cada piso: eso cancela una deriva lineal del clima.</li>
+<li>Grafique \(p\) contra \(z\) y ajuste una recta. La pendiente es \(-\rho g\): obtenga ρ con su incertidumbre.</li>
+<li>Calcule ρ con la ecuación de los gases ideales usando la presión y la temperatura medidas, y compare.</li>
+</ol>
+</section>
+
+<section>
+<h2>Preguntas, fuentes de error y extensiones</h2>
+<ol class="problems">
+<li><span class="lvl">Problema</span>Entre la planta baja y el quinto piso (15.0 m) la presión baja de 821.84 a 820.40 hPa. ¿Cuál es la densidad del aire?
+<details><summary>Respuesta</summary><p>\(\Delta p=144\) Pa; \(\rho=144/(9.777\times15.0)=0.98\) kg/m³.</p></details></li>
+<li><span class="lvl">Concepto</span>¿Por qué el aire acondicionado o una ventana abierta pueden arruinar la medición?
+<details><summary>Respuesta</summary><p>Porque producen diferencias de presión de algunos pascales entre zonas del edificio, comparables al efecto de un metro de altura. Las corrientes de aire en las escaleras también: por eso se espera quieto en cada piso.</p></details></li>
+<li><span class="lvl">Extensión</span>En un ascensor, registre a la vez la presión y la aceleración: integre dos veces la aceleración y compare la altura obtenida con la del barómetro.</li>
+</ol>
+</section>
+</template>

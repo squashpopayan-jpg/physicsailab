@@ -1,0 +1,115 @@
+<template class="chapter-src" data-id="e7" data-num="E7" data-title="Frenado magnético: corrientes de Foucault" data-part="Parte IV · Prácticas de electromagnetismo" data-kits="esp cel" data-short="Un imán cae lentísimo dentro de un tubo de cobre: velocidad terminal medida con dos sensores Hall, dependencia con el material y el espesor del tubo">
+<p class="lead">Suelte un imán de neodimio dentro de un tubo de cobre: en lugar de caer en una fracción de segundo, tarda varios segundos en salir por el otro extremo, aunque nada lo toca. Las corrientes que el imán induce en la pared del tubo producen un campo que se le opone. Es el principio de los frenos de los trenes y de las montañas rusas.</p>
+
+<div class="ficha"><div class="ficha-head"><b>Ficha de la práctica</b><span>E7 · 1.5 horas</span></div><dl>
+<dt>Objetivo</dt><dd>Medir la velocidad terminal de un imán en tubos de distintos materiales y espesores, y relacionarla con la conductividad.</dd>
+<dt>Herramientas</dt><dd><span class="kit esp">ESP32</span> con dos sensores Hall · alternativa <span class="kit cel">Celular</span> (cronómetro acústico o magnetómetro)</dd>
+<dt>Se mide</dt><dd>Instantes en que el imán pasa frente a dos sensores separados una distancia conocida</dd>
+<dt>Conceptos</dt><dd>Corrientes de Foucault, ley de Lenz, fuerza de arrastre proporcional a la velocidad, velocidad terminal</dd>
+<dt>Costo extra</dt><dd>Tubo de cobre de 15 mm y 50 cm (ferretería), tubo de aluminio o PVC del mismo diámetro</dd>
+</dl></div>
+
+<section>
+<h2>Fundamento</h2>
+<p>Al caer el imán, el flujo magnético a través de cada anillo del tubo cambia: crece delante del imán y decrece detrás. Según la ley de Faraday aparecen corrientes circulares en la pared (las <span class="term">corrientes de Foucault</span>), que por la ley de Lenz crean campos que se oponen al movimiento. La fuerza de frenado es proporcional a la velocidad, \(F=Kv\), y el imán llega muy rápido a una velocidad terminal en la que el freno equilibra el peso:</p>
+<div class="eq key" data-name="Velocidad terminal">\[v_t=\frac{mg}{K},\qquad K\approx\frac{45}{1024}\,\frac{\mu_0^2\,m_d^2\,\sigma\,w}{a^4},\]</div>
+<p>donde \(m_d\) es el momento magnético del imán, σ la conductividad del tubo, \(w\) el espesor de la pared y \(a\) el radio del tubo (aproximación para pared delgada). La velocidad terminal es inversamente proporcional a la conductividad: en cobre (σ = 59 MS/m) el imán cae más despacio que en aluminio (35 MS/m), y en PVC cae libremente.</p>
+<p>Con dos sensores Hall pegados al exterior del tubo a una distancia \(d\), la ESP32 registra el paso del imán por cada uno: \(v_t=d/\Delta t\).</p>
+</section>
+
+<section>
+<h2>Materiales y montaje</h2>
+<div class="tablewrap narrow"><table class="bom">
+<thead><tr><th>Material</th><th>Cantidad</th></tr></thead>
+<tbody>
+<tr><td>Tubo de cobre de 15 mm de diámetro y unos 50 cm</td><td>1</td></tr>
+<tr><td>Tubo de aluminio y tubo de PVC de diámetro similar</td><td>1 + 1</td></tr>
+<tr><td>Imán de neodimio cilíndrico de 12 × 12 mm (que pase holgado por el tubo)</td><td>1</td></tr>
+<tr><td>Dos sensores SS49E, pegados con cinta a 10 cm y 40 cm de la boca</td><td>2</td></tr>
+<tr><td>ESP32, cables largos; soporte vertical LEGO; cojín</td><td>1</td></tr>
+</tbody></table></div>
+<p>Los sensores Hall se pegan con la cara plana contra el tubo y se conectan como en el capítulo 7, al GPIO 34 y al GPIO 35. Mida con cuidado la distancia entre sus centros. Sostenga el tubo vertical con un marco LEGO y ponga un cojín debajo.</p>
+<div class="box safe">
+<p>El imán sale del tubo con poca velocidad, pero en el tubo de PVC cae libremente: no ponga la mano debajo. Guarde el imán lejos de otros imanes y de objetos de hierro.</p>
+</div>
+</section>
+
+<section>
+<h2>Configuración: el programa</h2>
+<pre class="code" data-lang="cpp" data-file="E7_foucault.ino">// E7 · Tiempo de paso de un imán frente a dos sensores Hall (GPIO 34 y 35)
+const int S1 = 34, S2 = 35;
+const float D_SENSORES = 0.300;      // m entre los dos sensores (mida el suyo)
+const int UMBRAL = 60;               // cuentas del ADC sobre el nivel sin imán
+int cero1, cero2;
+
+int promedio(int pin) { long s = 0; for (int i = 0; i < 200; i++) s += analogRead(pin); return s / 200; }
+
+void setup() {
+  Serial.begin(115200);
+  cero1 = promedio(S1);
+  cero2 = promedio(S2);
+  Serial.println("Suelte el imán en el tubo");
+}
+
+void loop() {
+  static unsigned long t1 = 0;
+  static int pico1 = 0, pico2 = 0;
+  int d1 = abs(analogRead(S1) - cero1), d2 = abs(analogRead(S2) - cero2);
+  // el instante de paso es el del máximo de la señal de cada sensor
+  if (d1 > UMBRAL && d1 > pico1) { pico1 = d1; t1 = micros(); }
+  if (t1 && d2 > UMBRAL && d2 > pico2) { pico2 = d2; }
+  if (t1 && pico2 && d2 < UMBRAL / 2) {      // el imán ya pasó el segundo sensor
+    static unsigned long t2;
+    t2 = micros();                            // aproximación: final del pulso 2
+    float dt = (t2 - t1) * 1e-6;
+    Serial.print("dt = "); Serial.print(dt, 3);
+    Serial.print(" s   v = "); Serial.print(D_SENSORES / dt, 4); Serial.println(" m/s");
+    t1 = 0; pico1 = pico2 = 0;
+  }
+}
+</pre>
+<p>El programa es deliberadamente simple: toma el instante del máximo del primer sensor y el del final del pulso del segundo, lo que introduce un pequeño error sistemático. Una mejora es guardar las dos señales completas, como en la práctica E6, y ubicar los máximos en el análisis. <b>Alternativa sin ESP32:</b> el cronómetro acústico de phyphox entre el golpe al soltar (dedo contra el tubo) y el golpe al llegar al cojín de una superficie dura.</p>
+</section>
+
+<section>
+<h2>Experimento virtual</h2>
+<div class="sim" data-sim="e7-foucault" data-title="Imán en tubos de cobre, aluminio y PVC" data-layout="below"></div>
+<div class="sim-guide"><ul>
+<li>Compare los tiempos de caída en cobre, aluminio y PVC.</li>
+<li>Duplique el espesor de la pared: la velocidad terminal baja a la mitad.</li>
+<li>Pegue dos imanes juntos: el momento se duplica y \(K\) se cuadruplica, pero la masa sólo se duplica: cae más despacio.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Procedimiento</h2>
+<ol class="steps">
+<li><b>Pese el imán</b><p>y mida el diámetro interior y el espesor de cada tubo.</p></li>
+<li><b>Calibre la detección.</b><p>Pase el imán a mano frente a cada sensor y verifique que el programa detecta el paso.</p></li>
+<li><b>Tubo de cobre.</b><p>Suelte el imán en la boca del tubo, cinco veces.</p></li>
+<li><b>Otros tubos.</b><p>Repita con el de aluminio y el de PVC (en este último, use el cronómetro acústico o un video, porque cae muy rápido).</p></li>
+<li><b>Dos imanes.</b><p>Repita en el cobre con dos imanes pegados.</p></li>
+</ol>
+</section>
+
+<section>
+<h2>Análisis de los datos</h2>
+<ol>
+<li>Calcule \(v_t=d/\Delta t\) y su incertidumbre para cada tubo.</li>
+<li>Obtenga \(K=mg/v_t\). Compare \(K_{\text{cobre}}/K_{\text{aluminio}}\) con el cociente de conductividades (y de espesores, si son distintos).</li>
+<li>Estime el momento magnético del imán con \(m_d=B_rV/\mu_0\) y calcule \(K\) con la fórmula; compárelo con el medido (la fórmula es aproximada: un acuerdo dentro de un factor 2 es bueno).</li>
+</ol>
+</section>
+
+<section>
+<h2>Preguntas, fuentes de error y extensiones</h2>
+<ol class="problems">
+<li><span class="lvl">Concepto</span>¿Se calienta el tubo? ¿De dónde sale esa energía?
+<details><summary>Respuesta</summary><p>Sí, muy poco: las corrientes de Foucault disipan energía por efecto Joule. Esa energía es la energía potencial gravitacional que pierde el imán al bajar a velocidad constante: \(mgv_t\) cada segundo.</p></details></li>
+<li><span class="lvl">Problema</span>Un imán de 10 g cae a 5.2 cm/s en un tubo de cobre. ¿Cuánto vale \(K\)? ¿Qué potencia se disipa?
+<details><summary>Respuesta</summary><p>\(K=mg/v=0.010(9.777)/0.052=1.88\) kg/s. Potencia \(mgv=0.010(9.777)(0.052)=5.1\) mW.</p></details></li>
+<li><span class="lvl">Concepto</span>¿Frenaría igual un tubo de cobre con una ranura a lo largo?
+<details><summary>Respuesta</summary><p>Mucho menos: la ranura corta los caminos circulares de las corrientes de Foucault. Es la razón por la que los núcleos de los transformadores se hacen de láminas aisladas.</p></details></li>
+</ol>
+</section>
+</template>

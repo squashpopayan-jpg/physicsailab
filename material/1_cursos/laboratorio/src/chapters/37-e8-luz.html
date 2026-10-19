@@ -1,0 +1,96 @@
+<template class="chapter-src" data-id="e8" data-num="E8" data-title="Luz: inverso del cuadrado y ley de Malus" data-part="Parte IV · Prácticas de electromagnetismo" data-kits="cel lego esp" data-short="El sensor de luz del celular mide cómo se diluye la luz de un LED con la distancia y cómo un polarizador gira la intensidad según cos²θ">
+<p class="lead">La luz es una onda electromagnética. Dos de sus propiedades se miden con el sensor de luz del celular y unas piezas LEGO: la intensidad de una fuente pequeña se reparte sobre esferas cada vez más grandes y cae como \(1/r^2\); y una onda polarizada que atraviesa un polarizador conserva sólo la fracción \(\cos^2\theta\) de su intensidad, la ley que Malus descubrió mirando reflejos en una ventana.</p>
+
+<div class="ficha"><div class="ficha-head"><b>Ficha de la práctica</b><span>E8 · 2 horas</span></div><dl>
+<dt>Objetivo</dt><dd>Comprobar la ley del inverso del cuadrado para una fuente casi puntual y la ley de Malus para luz polarizada.</dd>
+<dt>Herramientas</dt><dd><span class="kit cel">Celular</span> (sensor de luz) · <span class="kit lego">LEGO</span> (riel y plataforma giratoria) · <span class="kit esp">ESP32</span> (para encender el LED con corriente estable)</dd>
+<dt>Se mide</dt><dd>Iluminancia en lux contra distancia y contra ángulo del polarizador</dd>
+<dt>Conceptos</dt><dd>Intensidad, ángulo sólido, polarización, ley de Malus, luz de fondo</dd>
+<dt>Costo extra</dt><dd>LED blanco de alto brillo, lámina polarizadora (unos 8 000 pesos)</dd>
+</dl></div>
+
+<section>
+<h2>Fundamento</h2>
+<p>Una fuente puntual que emite una potencia \(P\) en todas las direcciones la reparte sobre la superficie de una esfera de área \(4\pi r^2\). La iluminancia (en lux) que recibe un sensor que mira hacia la fuente es</p>
+<div class="eq key" data-name="Inverso del cuadrado">\[E(r)=\frac{k}{r^2}+E_0,\]</div>
+<p>con \(E_0\) la luz de fondo del cuarto. Dos detalles: el sensor está bajo el vidrio, a una distancia \(\delta\) desconocida del borde desde donde se mide; y un LED real no emite igual en todas direcciones, pero sobre su eje la ley se cumple a distancias grandes comparadas con su tamaño. Linealizando, \((E-E_0)^{-1/2}=(x+\delta)/\sqrt k\).</p>
+<p>La pantalla LCD de un celular, una calculadora o un monitor emite luz <strong>polarizada</strong>: el campo eléctrico de la onda oscila en una dirección fija. Un polarizador sólo deja pasar la componente del campo paralela a su eje. Si el eje forma un ángulo θ con la polarización, el campo se reduce en \(\cos\theta\) y la intensidad (proporcional al campo al cuadrado) en \(\cos^2\theta\):</p>
+<div class="eq key" data-name="Ley de Malus">\[I(\theta)=I_0\cos^2(\theta-\theta_0)+I_{\text{fondo}} .\]</div>
+</section>
+
+<section>
+<h2>Materiales y montaje</h2>
+<div class="tablewrap narrow"><table class="bom">
+<thead><tr><th>Material</th><th>Cantidad</th></tr></thead>
+<tbody>
+<tr><td>Celular con phyphox (sensor de luz junto a la cámara frontal)</td><td>1</td></tr>
+<tr><td>LED blanco de 5 mm con resistencia de 47 Ω (unos 5 mA), alimentado por un pin de la ESP32</td><td>1</td></tr>
+<tr><td>Riel LEGO de 32 módulos y soporte del LED que se desliza</td><td>1</td></tr>
+<tr><td>Segundo dispositivo con pantalla LCD (otro celular o un monitor)</td><td>1</td></tr>
+<tr><td>Lámina polarizadora sobre una plataforma giratoria Technic con engranaje de 24 dientes</td><td>1</td></tr>
+<tr><td>Caja de cartón negra para tapar la luz del cuarto</td><td>1</td></tr>
+</tbody></table></div>
+<p>Para el inverso del cuadrado, el celular queda de pie al extremo del riel, mirando el LED, y el LED se aleja de a dos pivotes (16 mm). Todo se hace dentro de una caja de cartón forrada de negro para reducir \(E_0\) y los reflejos. Para Malus, el sensor del celular mira a la pantalla LCD a través del polarizador; la plataforma giratoria con un engranaje de 24 dientes permite girar el polarizador en pasos exactos de 15° (un diente).</p>
+<div class="box warn">
+<p>Muchos celulares ajustan el brillo de su pantalla con el sensor de luz: si el celular que mide es el mismo que emite, el experimento se arruina. Use dos dispositivos, y en el que emite desactive el brillo automático.</p>
+</div>
+</section>
+
+<section>
+<h2>Configuración</h2>
+<p>En phyphox abra «Luz». El sensor entrega unas 5 a 10 lecturas por segundo; registre 3 s en cada posición y use el promedio. La ESP32 sólo enciende el LED con un pin en alto y una resistencia (corriente estable); también puede apagarlo para medir el fondo.</p>
+<pre class="code" data-lang="cpp" data-file="E8_led.ino">// E8 · LED de prueba en el GPIO 26: se enciende y apaga con el botón BOOT (GPIO 0)
+const int LED = 26, BOTON = 0;
+bool encendido = true;
+void setup() { pinMode(LED, OUTPUT); pinMode(BOTON, INPUT_PULLUP); digitalWrite(LED, HIGH); }
+void loop() {
+  if (digitalRead(BOTON) == LOW) {          // botón presionado
+    encendido = !encendido;
+    digitalWrite(LED, encendido ? HIGH : LOW);
+    delay(400);                              // antirrebote
+  }
+}
+</pre>
+</section>
+
+<section>
+<h2>Experimento virtual</h2>
+<div class="sim" data-sim="e8-luz" data-title="Sensor de luz: distancia y polarizador" data-layout="below"></div>
+<div class="sim-guide"><ul>
+<li>Inverso del cuadrado: mida el fondo con el LED apagado, luego aleje el LED y agregue cada medida. El ajuste de \((E-E_0)^{-1/2}\) contra \(x\) da una recta.</li>
+<li>Abra la tapa de la caja: el fondo sube y, si no se resta, la ley parece fallar a distancias grandes.</li>
+<li>Malus: gire el polarizador de a 15° y vea la forma \(\cos^2\).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Procedimiento</h2>
+<ol class="steps">
+<li><b>Fondo.</b><p>Con el LED apagado y la caja cerrada, registre \(E_0\).</p></li>
+<li><b>Distancias.</b><p>LED encendido a 3 pivotes del borde del celular; registre. Aleje de a dos pivotes hasta 30.</p></li>
+<li><b>Repita el fondo</b><p>al final.</p></li>
+<li><b>Malus: alinee.</b><p>Ponga el polarizador entre la pantalla LCD y el sensor, gírelo hasta el máximo y anote ese ángulo como referencia.</p></li>
+<li><b>Malus: gire.</b><p>Avance de a un diente (15°) hasta completar 360°, registrando en cada paso.</p></li>
+</ol>
+</section>
+
+<section>
+<h2>Análisis de los datos</h2>
+<ol>
+<li>Reste \(E_0\). Grafique \((E-E_0)^{-1/2}\) contra \(x\) y ajuste una recta: obtenga δ y \(k\). Luego compruebe en log–log con \(r=x+\delta\) que la pendiente es −2.</li>
+<li>Malus: grafique \(I\) contra \(\cos^2\theta\): debe ser una recta de pendiente \(I_0\) e intercepto \(I_{\text{fondo}}\). Si el máximo no está en 0°, use \(\theta-\theta_0\).</li>
+<li>Calcule la razón de extinción \(I_{\min}/I_{\max}\) del polarizador.</li>
+</ol>
+</section>
+
+<section>
+<h2>Preguntas, fuentes de error y extensiones</h2>
+<ol class="problems">
+<li><span class="lvl">Problema</span>A 10.0 cm del borde, un LED da 410 lx sobre un fondo de 12 lx; a 20.0 cm, 112 lx. ¿A qué profundidad está el sensor?
+<details><summary>Respuesta</summary><p>\(\sqrt{398}(10+\delta)=\sqrt{100}(20+\delta)\Rightarrow 19.95(10+\delta)=10(20+\delta)\Rightarrow\delta=0.05\) cm. El sensor está casi en el borde: es el sensor de luz del frente del celular.</p></details></li>
+<li><span class="lvl">Concepto</span>¿Por qué dos polarizadores cruzados (a 90°) no dejan pasar luz, pero si se pone un tercero entre ellos a 45°, sí pasa?
+<details><summary>Respuesta</summary><p>Con el tercero, la luz atraviesa dos pasos de 45°: \(\cos^245°\times\cos^245°=1/4\) de la intensidad tras el primero. Cada polarizador «redefine» la dirección de polarización.</p></details></li>
+<li><span class="lvl">Extensión</span>Mire con el polarizador el cielo azul a 90° del Sol, o el reflejo de una ventana: esa luz está parcialmente polarizada.</li>
+</ol>
+</section>
+</template>

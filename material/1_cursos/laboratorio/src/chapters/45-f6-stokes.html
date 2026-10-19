@@ -1,0 +1,86 @@
+<template class="chapter-src" data-id="f6" data-num="F6" data-title="Viscosidad: la ley de Stokes" data-part="Parte V · Prácticas de fluidos" data-kits="esp vid" data-short="Esferas de acero caen en glicerina a velocidad constante; dos fotocompuertas miden el tiempo. Viscosidad, corrección por las paredes, número de Reynolds y efecto de la temperatura">
+<p class="lead">Una bolita de acero que cae en glicerina alcanza en milímetros una velocidad constante y baja como en cámara lenta. Esa velocidad depende del cuadrado del radio de la bolita y del inverso de la viscosidad: la ley de Stokes convierte un cronómetro y unos balines de bicicleta en un viscosímetro, y muestra lo mucho que cambia la viscosidad con la temperatura.</p>
+
+<div class="ficha"><div class="ficha-head"><b>Ficha de la práctica</b><span>F6 · 2 horas</span></div><dl>
+<dt>Objetivo</dt><dd>Medir la velocidad terminal de esferas de varios radios, comprobar que \(v\propto r^2\) y determinar la viscosidad de la glicerina.</dd>
+<dt>Herramientas</dt><dd><span class="kit esp">ESP32</span> con dos fotocompuertas y DS18B20 · alternativa <span class="kit vid">Video</span></dd>
+<dt>Se mide</dt><dd>Tiempo entre dos fotocompuertas separadas 20 cm; diámetro de las esferas; temperatura del líquido</dd>
+<dt>Conceptos</dt><dd>Viscosidad, arrastre lineal, velocidad terminal, número de Reynolds, efecto de las paredes</dd>
+<dt>Costo extra</dt><dd>500 mL de glicerina, probeta o tubo transparente, balines de acero de 2 a 6 mm, imán para sacarlos</dd>
+</dl></div>
+
+<section>
+<h2>Fundamento</h2>
+<p>Una esfera de radio \(r\) que se mueve despacio en un fluido viscoso sufre una fuerza de arrastre proporcional a su velocidad (ley de Stokes):</p>
+<div class="eq">\[F_d=6\pi\eta\,r\,v .\]</div>
+<p>Cuando el arrastre y el empuje equilibran el peso, la esfera cae a velocidad constante:</p>
+<div class="eq key" data-name="Velocidad terminal de Stokes">\[v_t=\frac{2}{9}\,\frac{(\rho_s-\rho_f)\,g\,r^2}{\eta}\qquad\Rightarrow\qquad \eta=\frac{2}{9}\,\frac{(\rho_s-\rho_f)\,g}{\text{pendiente de }v_t\text{ contra }r^2}.\]</div>
+<p>La ley vale si el flujo es lento y ordenado, es decir, si el <span class="term">número de Reynolds</span> \(\mathrm{Re}=\rho_f v\,2r/\eta\) es menor que 1. Además, las paredes del tubo frenan la esfera; la corrección de Ladenburg para un tubo de radio \(R\) es</p>
+<div class="eq">\[v_\infty=v_{\text{medida}}\left(1+2.4\,\frac rR\right).\]</div>
+<p>La viscosidad de la glicerina depende mucho de la temperatura: alrededor de 1.4 Pa·s a 20 °C y la mitad a 28 °C. Por eso se registra la temperatura del líquido en cada medición.</p>
+</section>
+
+<section>
+<h2>Materiales y montaje</h2>
+<div class="tablewrap narrow"><table class="bom">
+<thead><tr><th>Material</th><th>Cantidad</th></tr></thead>
+<tbody>
+<tr><td>Probeta de 500 mL o tubo transparente de 3–4 cm de diámetro, lleno de glicerina</td><td>1</td></tr>
+<tr><td>Balines de acero de 2, 3, 4, 5 y 6 mm (rodamientos de bicicleta)</td><td>5 c/u</td></tr>
+<tr><td>Dos fotocompuertas de LED infrarrojo y fototransistor a los lados del tubo, separadas 20 cm, en un marco LEGO</td><td>2</td></tr>
+<tr><td>ESP32 (programa de M6) y termómetro DS18B20 sumergido</td><td>1</td></tr>
+<tr><td>Calibrador, pinzas, imán</td><td>—</td></tr>
+</tbody></table></div>
+<p>La primera compuerta va al menos 8 cm por debajo de la superficie, para que la esfera ya haya alcanzado su velocidad terminal. Los haces cruzan el tubo horizontalmente por su centro. Suelte cada esfera con pinzas, centrada y desde justo encima de la superficie, para que no arrastre burbujas.</p>
+<div class="box tip">
+<p>Si no hay fotocompuertas, filme la caída junto a una regla y mida el tiempo entre dos marcas en el video (capítulo 5). Las esferas lentas también se pueden cronometrar a mano con buena exactitud, porque tardan varios segundos.</p>
+</div>
+</section>
+
+<section>
+<h2>Configuración</h2>
+<p>Use el programa de dos compuertas de la práctica M6, cambiando la salida para que imprima el instante de inicio de cada bloqueo. La velocidad es \(v=0.200\ \text{m}/(t_B-t_A)\). Registre la temperatura con el DS18B20 al comienzo y al final de cada serie.</p>
+</section>
+
+<section>
+<h2>Experimento virtual</h2>
+<div class="sim" data-sim="f6-stokes" data-title="Esferas en glicerina con dos fotocompuertas" data-layout="below"></div>
+<div class="sim-guide"><ul>
+<li>Suelte esferas de los cinco diámetros y agregue cada tiempo a la tabla. \(v\) contra \(r^2\) es casi una recta.</li>
+<li>Compare la viscosidad obtenida sin y con la corrección de pared: en un tubo angosto la diferencia es de 30–50 %.</li>
+<li>Caliente la glicerina 5 °C: la viscosidad baja casi a dos tercios.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Procedimiento</h2>
+<ol class="steps">
+<li><b>Mida</b><p>el diámetro de cada balín, la densidad de la glicerina (masa de 100 mL) y el diámetro interior del tubo.</p></li>
+<li><b>Temperatura.</b><p>Deje la glicerina una hora a temperatura ambiente y anote su temperatura.</p></li>
+<li><b>Caídas.</b><p>Para cada diámetro, cinco caídas; anote los tiempos entre compuertas.</p></li>
+<li><b>Recupere los balines</b><p>con el imán por fuera del tubo, al final.</p></li>
+<li><b>Temperatura final.</b><p>Anótela de nuevo.</p></li>
+</ol>
+</section>
+
+<section>
+<h2>Análisis de los datos</h2>
+<ol>
+<li>Calcule \(v\) de cada caída y el promedio por diámetro.</li>
+<li>Corrija por la pared con Ladenburg y grafique \(v_\infty\) contra \(r^2\). Ajuste una recta por el origen.</li>
+<li>Obtenga η con \(\rho_s=7800\) kg/m³ (acero) y la densidad medida de la glicerina.</li>
+<li>Calcule el número de Reynolds de la esfera más rápida: si pasa de 1, la ley de Stokes empieza a fallar y ese punto queda por debajo de la recta.</li>
+</ol>
+</section>
+
+<section>
+<h2>Preguntas, fuentes de error y extensiones</h2>
+<ol class="problems">
+<li><span class="lvl">Problema</span>Un balín de 4.00 mm de diámetro tarda 4.96 s en recorrer 20.0 cm en glicerina (ρ = 1260 kg/m³) dentro de un tubo de 40 mm de diámetro. Halle η.
+<details><summary>Respuesta</summary><p>\(v=0.0403\) m/s; \(v_\infty=0.0403(1+2.4\times2/20)=0.0500\) m/s. \(\eta=\tfrac29(6540)(9.777)(0.002)^2/0.0500=1.14\) Pa·s (glicerina a unos 22 °C).</p></details></li>
+<li><span class="lvl">Concepto</span>¿Por qué la velocidad terminal depende de \(r^2\) y no de \(r^3\), si el peso crece como \(r^3\)?
+<details><summary>Respuesta</summary><p>Porque el arrastre de Stokes crece como \(r\): el cociente peso/arrastre crece como \(r^3/r=r^2\).</p></details></li>
+<li><span class="lvl">Extensión</span>Repita con miel o con aceite de motor y compare las viscosidades.</li>
+</ol>
+</section>
+</template>

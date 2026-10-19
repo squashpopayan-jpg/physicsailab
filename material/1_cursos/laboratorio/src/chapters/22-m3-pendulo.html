@@ -1,0 +1,118 @@
+<template class="chapter-src" data-id="m3" data-num="M3" data-title="El celular como péndulo" data-part="Parte III · Prácticas de mecánica" data-kits="cel lego esp" data-short="El giroscopio mide la oscilación de un celular colgado de un eje LEGO: periodo contra longitud, péndulo físico, amplitud y amortiguamiento">
+<p class="lead">Colgado de un eje, el celular se convierte en un péndulo que mide su propia oscilación: el giroscopio registra la velocidad angular cientos de veces por segundo. Con brazos LEGO de longitud conocida se obtiene \(g\), y se descubre por qué un celular no es un «péndulo simple».</p>
+
+<div class="ficha"><div class="ficha-head"><b>Ficha de la práctica</b><span>M3 · 2 horas</span></div><dl>
+<dt>Objetivo</dt><dd>Medir el periodo en función de la distancia del pivote al centro de masa, obtener \(g\) y el radio de giro del celular, y estudiar el efecto de la amplitud.</dd>
+<dt>Herramientas</dt><dd><span class="kit cel">Celular</span><span class="kit lego">LEGO</span> · alternativa <span class="kit esp">ESP32</span> con potenciómetro como pivote</dd>
+<dt>Se mide</dt><dd>Velocidad angular \(\omega_z(t)\); distancias pivote–centro de masa</dd>
+<dt>Conceptos</dt><dd>Péndulo simple y físico, momento de inercia, teorema de los ejes paralelos, isocronismo</dd>
+<dt>Costo extra</dt><dd>Ninguno</dd>
+</dl></div>
+
+<section>
+<h2>Fundamento</h2>
+<p>Un péndulo simple de longitud \(L\) oscila, para amplitudes pequeñas, con \(T_0=2\pi\sqrt{L/g}\). Pero un celular colgado de un brazo rígido es un <span class="term">péndulo físico</span>: un cuerpo extendido que gira alrededor de un eje. Si \(d\) es la distancia del eje al centro de masa e \(I_O\) el momento de inercia respecto al eje,</p>
+<div class="eq key" data-name="Péndulo físico">\[T=2\pi\sqrt{\frac{I_O}{m\,g\,d}},\qquad I_O=m\,(k^2+d^2)\ \Rightarrow\ T=2\pi\sqrt{\frac{d^2+k^2}{g\,d}},\]</div>
+<p>donde \(k\) es el <span class="term">radio de giro</span> del cuerpo alrededor de su centro de masa (teorema de Steiner). Para un rectángulo de lados \(a\) y \(b\) que oscila en su propio plano, \(k^2=(a^2+b^2)/12\); para un celular de 155 × 75 mm, \(k\approx5.0\) cm. El celular se comporta como un péndulo simple de longitud equivalente \(L_{\text{eq}}=d+k^2/d\), siempre un poco mayor que \(d\).</p>
+<p>La ecuación se linealiza multiplicando por \(d\):</p>
+<div class="eq">\[T^2d=\frac{4\pi^2}{g}\,d^2+\frac{4\pi^2}{g}\,k^2 .\]</div>
+<p>La gráfica de \(T^2d\) contra \(d^2\) es una recta: la pendiente da \(g\) y el intercepto, \(k^2\). Para amplitudes no tan pequeñas, el periodo crece: \(T\approx T_{\text{peq}}\left(1+\tfrac{\theta_0^2}{16}\right)\), con \(\theta_0\) en radianes (un 0.5 % a 16°).</p>
+<p>El giroscopio mide \(\omega_z=d\theta/dt\) directamente, sin integrar ni restar la gravedad: es la mejor señal para medir periodos. Los cruces por cero de \(\omega_z\) en el mismo sentido están separados un periodo.</p>
+</section>
+
+<section>
+<h2>Materiales y montaje</h2>
+<div class="tablewrap narrow"><table class="bom">
+<thead><tr><th>Material</th><th>Cantidad</th></tr></thead>
+<tbody>
+<tr><td>Torre de péndulo LEGO (capítulo 9) con peso en la base</td><td>1</td></tr>
+<tr><td>Brazo de vigas Technic (2 vigas de 15 agujeros unidas) y eje de 6</td><td>1</td></tr>
+<tr><td>Soporte del celular, fijado al brazo con pasadores</td><td>1</td></tr>
+<tr><td>Celular con phyphox</td><td>1</td></tr>
+<tr><td>Regla y un borde (una regla de canto) para hallar el centro de masa</td><td>1</td></tr>
+</tbody></table></div>
+<div class="sim" data-sim="lego-modelo" data-model="pendulo" data-title="Torre de péndulo (capítulo 9)"></div>
+<p>El brazo cuelga del eje por uno de sus agujeros. Cambiando el agujero se cambia \(d\) en pasos exactos de 8 mm. Para conocer \(d\) hay que ubicar el centro de masa del conjunto brazo + soporte + celular: apóyelo sobre el canto de una regla hasta que quede en equilibrio y marque ese punto. Mida \(d\) desde el centro del agujero del pivote.</p>
+<div class="box warn">
+<p>El celular debe oscilar en el plano de su pantalla (rotación alrededor de su eje \(z\)). Si la torre se balancea, se mueve con el péndulo y el periodo cambia: ponga peso sobre la base y compruebe con la mano que la torre está firme.</p>
+</div>
+</section>
+
+<section>
+<h2>Configuración</h2>
+<p>En phyphox use «Giroscopio (velocidad de rotación)» y mire el eje \(z\), o el experimento «Péndulo», que calcula el periodo automáticamente. Para el análisis completo exporte los datos del giroscopio.</p>
+<p><b>Alternativa con la ESP32:</b> un potenciómetro de 10 kΩ como pivote mide el ángulo directamente. Su eje se acopla al eje Technic con un trozo de manguera de silicona; los extremos van a 3V3 y GND y el cursor al GPIO 34.</p>
+<pre class="code" data-lang="cpp" data-file="M3_pendulo_potenciometro.ino">// M3 · Ángulo de un péndulo con un potenciómetro como pivote (GPIO 34), 200 Hz
+const int PIN = 34;
+const float GRADOS_POR_mV = 270.0 / 3300.0;   // potenciómetro de 270° alimentado a 3.3 V
+const unsigned long PERIODO_US = 5000;
+float cero_mV;
+unsigned long tSig;
+
+float leer() { long s = 0; for (int i = 0; i < 8; i++) s += analogReadMilliVolts(PIN); return s / 8.0; }
+
+void setup() {
+  Serial.begin(115200);
+  delay(500);
+  cero_mV = leer();                  // con el péndulo quieto en equilibrio
+  Serial.println("t_ms,theta_grados");
+  tSig = micros();
+}
+
+void loop() {
+  if ((long)(micros() - tSig) >= 0) {
+    tSig += PERIODO_US;
+    Serial.print(millis());
+    Serial.print(',');
+    Serial.println((leer() - cero_mV) * GRADOS_POR_mV, 2);
+  }
+}
+</pre>
+</section>
+
+<section>
+<h2>Experimento virtual</h2>
+<div class="sim" data-sim="m3-pendulo" data-title="Péndulo físico con giroscopio" data-layout="below"></div>
+<div class="sim-guide"><ul>
+<li>Mida el periodo para \(d\) = 8, 12, 16, 20, 24, 28 y 32 cm, siempre con 10°. Compare la gráfica de \(T^2\) contra \(d\) con la de \(T^2d\) contra \(d^2\).</li>
+<li>Con \(d\) fijo, cambie la amplitud de 5° a 60°: el periodo aumenta según \(1+\theta_0^2/16\).</li>
+<li>Active «péndulo simple» para comparar: con \(d\) pequeño la diferencia es grande; con \(d\) grande, casi nula.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Procedimiento</h2>
+<ol class="steps">
+<li><b>Ubique el centro de masa</b><p>del brazo con el celular puesto (equilibrio sobre un canto) y márquelo.</p></li>
+<li><b>Cuelgue el brazo del agujero más alejado</b><p>y mida \(d\) con la regla, del centro del eje a la marca.</p></li>
+<li><b>Ejecución temporizada de 3 s y 30 s.</b><p>Separe el celular unos 10° y suéltelo con el pitido sin empujarlo.</p></li>
+<li><b>Repita dos veces</b><p>y exporte los datos.</p></li>
+<li><b>Cambie el agujero.</b><p>Repita para al menos 6 valores de \(d\) entre 5 y 35 cm. Si el centro de masa queda cerca del eje, el periodo se hace muy largo: es normal.</p></li>
+<li><b>Amplitud.</b><p>Con el \(d\) más largo, registre oscilaciones de 5°, 15°, 30° y 45° (lea la amplitud en el inclinómetro de phyphox o calcúlela de \(\omega_{\max}\)).</p></li>
+</ol>
+</section>
+
+<section>
+<h2>Análisis de los datos</h2>
+<ol>
+<li>En cada registro busque los cruces por cero de \(\omega_z\) de subida (interpolando entre muestras). El periodo es \((t_{\text{último}}-t_{\text{primero}})/(\text{número de cruces}-1)\).</li>
+<li>Grafique \(T^2d\) contra \(d^2\) y ajuste una recta. Calcule \(g=4\pi^2/m\) y \(k=\sqrt{b/m}\).</li>
+<li>Compare \(k\) con el valor estimado para un rectángulo de las dimensiones del conjunto.</li>
+<li>Con los datos de amplitud, grafique \(T/T_{\text{peq}}\) contra \(\theta_0^2\): la pendiente debería ser cercana a 1/16.</li>
+<li>Estime el amortiguamiento: la amplitud de \(\omega_z\) decae como \(e^{-\gamma t}\). Ajuste el logaritmo de los máximos contra el tiempo.</li>
+</ol>
+</section>
+
+<section>
+<h2>Preguntas, fuentes de error y extensiones</h2>
+<ol class="problems">
+<li><span class="lvl">Problema</span>Un celular de 155 × 75 mm cuelga con su centro a \(d=20.0\) cm del eje. ¿Qué periodo tiene? ¿Cuánto diferiría si fuera un péndulo simple de 20.0 cm?
+<details><summary>Respuesta</summary><p>\(k^2=0.00247\) m²; \(L_{\text{eq}}=0.200+0.00247/0.200=0.2124\) m; \(T=2\pi\sqrt{0.2124/9.777}=0.926\) s. El péndulo simple daría 0.899 s: 3 % menos. Si se usara la fórmula simple, \(g\) saldría 6 % bajo.</p></details></li>
+<li><span class="lvl">Concepto</span>¿Existe un valor de \(d\) para el que el periodo es mínimo? ¿Cuál?
+<details><summary>Respuesta</summary><p>Sí: \(T^2\propto d+k^2/d\) es mínimo cuando \(d=k\), unos 5 cm para el celular solo. Cerca de ese punto el periodo casi no depende de \(d\): un error en \(d\) afecta poco al periodo.</p></details></li>
+<li><span class="lvl">Error</span>Si la torre se mueve con el péndulo, ¿el periodo medido es mayor o menor?
+<details><summary>Respuesta</summary><p>Si la torre cede horizontalmente, el pivote se mueve en sentido contrario al peso y la fuerza de restitución efectiva disminuye: el periodo aumenta y \(g\) sale bajo. Por eso la base necesita peso y la torre, refuerzos.</p></details></li>
+<li><span class="lvl">Extensión</span>Cuelgue el celular de un hilo largo (1 m) en lugar del brazo rígido. ¿Qué cambia? Observe en el magnetómetro o el giroscopio si el celular también gira sobre sí mismo (torsión del hilo).</li>
+</ol>
+</section>
+</template>
