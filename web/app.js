@@ -4989,18 +4989,60 @@ document.addEventListener('DOMContentLoaded', () => {
             return copy;
         }
 
-        // Obtener preguntas completas asociadas a este preset
+        // Obtener preguntas completas asociadas a este preset (copia profunda para cada estudiante)
         const rawQuestions = (preset.questionIds || [])
             .map(id => qData.questions.find(q => q.id === id))
-            .filter(Boolean);
+            .filter(Boolean)
+            .map(q => JSON.parse(JSON.stringify(q)));
 
         if (rawQuestions.length === 0) {
             alert('No se encontraron preguntas para este cuestionario.');
             return;
         }
 
-        // Mezclar las preguntas en orden aleatorio único para cada estudiante
-        const questions = shuffleQuestionsArray(rawQuestions);
+        // 1. Mezclar las preguntas en orden aleatorio único para cada estudiante
+        const shuffledQuestions = shuffleQuestionsArray(rawQuestions);
+
+        // 2. Mezclar las 4 opciones de cada pregunta garantizando que la letra correcta NUNCA se repita de forma consecutiva
+        const LETTERS = ['A', 'B', 'C', 'D'];
+        let lastCorrectLetter = null;
+
+        const questions = shuffledQuestions.map(q => {
+            const originalCorrect = (q.correcta || 'A').trim().toUpperCase();
+
+            // Separar la opción correcta y los distractores
+            const parsedOptions = (q.opciones || []).map(optStr => {
+                const optLetter = optStr.trim().charAt(0).toUpperCase();
+                const cleanText = optStr.replace(/^[A-D]\.\s*/, '').trim();
+                const isCorrect = (optLetter === originalCorrect);
+                return { text: cleanText, isCorrect };
+            });
+
+            const correctOpt = parsedOptions.find(o => o.isCorrect) || parsedOptions[0];
+            const distractors = shuffleQuestionsArray(parsedOptions.filter(o => o !== correctOpt));
+
+            // Seleccionar una letra objetivo distinta a la de la pregunta inmediatamente anterior
+            const eligibleLetters = LETTERS.filter(l => l !== lastCorrectLetter);
+            const targetLetter = eligibleLetters[Math.floor(Math.random() * eligibleLetters.length)];
+            lastCorrectLetter = targetLetter;
+
+            const targetIndex = LETTERS.indexOf(targetLetter);
+            const finalOptions = new Array(4);
+            finalOptions[targetIndex] = correctOpt;
+
+            let distractorIdx = 0;
+            for (let i = 0; i < 4; i++) {
+                if (i !== targetIndex) {
+                    finalOptions[i] = distractors[distractorIdx++] || { text: '', isCorrect: false };
+                }
+            }
+
+            // Reasignar q.opciones con los prefijos A., B., C., D. y actualizar q.correcta
+            q.opciones = finalOptions.map((opt, idx) => `${LETTERS[idx]}. ${opt.text}`);
+            q.correcta = targetLetter;
+
+            return q;
+        });
 
         const adminCfg = getAdminQuizConfig();
         const activeStudent = studentName || (activeQuiz && activeQuiz.studentName) || 'Estudiante';
