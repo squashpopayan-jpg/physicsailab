@@ -1,0 +1,93 @@
+<template class="chapter-src" data-id="cinematica" data-num="6" data-title="Cinemática y conservación de la masa" data-part="Parte II · Leyes de conservación" data-short="Descripciones de Lagrange y Euler, derivada material y aceleración convectiva, líneas de corriente, trayectorias y trazas, rotación y deformación de un elemento, el teorema del transporte de Reynolds, la ecuación de continuidad y la función de corriente">
+<p class="lead">Antes de preguntar qué fuerzas mueven un fluido hay que saber describir su movimiento. Un fluido no es un cuerpo rígido: cada porción se traslada, gira, se estira y se cizalla a la vez. Este capítulo da el vocabulario para describir esos movimientos y deduce la primera ley de conservación, la de la masa.</p>
+
+<section>
+<h2>Lagrange y Euler: la derivada material</h2>
+<p>En la <b>descripción lagrangiana</b> se sigue cada partícula de fluido, identificada por su posición inicial \(\vb X\): su trayectoria es \(\vb x(\vb X,t)\). En la <b>descripción euleriana</b> se observan los campos en puntos fijos: \(\vb u(\vb x,t)\). La segunda es la natural para medir y calcular, pero las leyes de Newton se aplican a partículas. El puente es la <span class="term">derivada material</span>: la rapidez de cambio de una propiedad \(f\) siguiendo a la partícula que en el instante \(t\) pasa por \(\vb x\),</p>
+<div class="eq key" data-name="Derivada material">\[\frac{Df}{Dt}=\pdv{f}{t}+\vb u\cdot\grad f.\]</div>
+<p>El primer término es el cambio <em>local</em>, en el punto fijo; el segundo, el cambio <em>convectivo</em>, debido a que la partícula se mueve hacia una región donde \(f\) es distinta. Aplicada a la velocidad da la aceleración de la partícula:</p>
+<div class="eq">\[\vb a=\frac{D\vb u}{Dt}=\pdv{\vb u}{t}+(\vb u\cdot\grad)\vb u.\]</div>
+<p>Un flujo estacionario puede acelerar a sus partículas. En la boquilla de una manguera el agua pasa de 1 m/s en un tubo de 2 cm a 16 m/s en una salida de 5 mm, a lo largo de unos 5 cm: la aceleración convectiva media es \((16^2-1^2)/(2\times0.05)\approx2600\) m/s², más de 250 veces la gravedad, aunque en cada punto la velocidad no cambie con el tiempo. El término no lineal \((\vb u\cdot\grad)\vb u\) es la fuente de casi toda la dificultad, y la riqueza, de la mecánica de fluidos.</p>
+<div class="sim" data-sim="derivada-material" data-title="Aceleración local y convectiva en una tobera"></div>
+<div class="sim-guide"><ul>
+<li>En régimen estacionario la aceleración local es nula en cada punto, pero la partícula acelera al entrar en la parte estrecha: toda su aceleración es convectiva, \(u\,\dd u/\dd x\).</li>
+<li>Haga variar el caudal en el tiempo: aparece la aceleración local \(\partial u/\partial t\), igual en todos los puntos de una misma sección.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Líneas de corriente, trayectorias y trazas</h2>
+<p>Tres familias de curvas visualizan un flujo:</p>
+<ul>
+<li>Una <span class="term">línea de corriente</span> es tangente en cada punto a la velocidad en un instante dado: \(\dd x/u=\dd y/v=\dd z/w\). Es una «fotografía» del campo.</li>
+<li>Una <span class="term">trayectoria</span> es el camino que recorre una partícula a lo largo del tiempo. Es lo que registra una foto de larga exposición de una partícula brillante.</li>
+<li>Una <span class="term">traza</span> (o línea de emisión) une todas las partículas que pasaron por un mismo punto. Es lo que dibuja un hilo de humo o de tinta inyectado de forma continua.</li>
+</ul>
+<p>En un flujo estacionario las tres coinciden. En uno no estacionario son distintas, y confundirlas lleva a interpretaciones erróneas de las visualizaciones: una columna de humo que ondula no significa que cada partícula haga ondas.</p>
+<div class="sim" data-sim="lineas-trazas" data-title="Líneas de corriente, trayectorias y trazas en un flujo que oscila"></div>
+<div class="sim-guide"><ul>
+<li>El flujo es uniforme en el espacio, \(u=U_0\), \(v=V_0\sin\omega t\). Las líneas de corriente son rectas que giran con el tiempo; cada trayectoria es una sinusoide; la traza que sale del emisor es otra sinusoide que viaja.</li>
+<li>Con \(V_0=0\) el flujo es estacionario y las tres familias coinciden.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Rotación y deformación de un elemento de fluido</h2>
+<p>Cerca de un punto, la velocidad se aproxima a primer orden por \(\vb u(\vb x+\delta\vb x)\approx\vb u(\vb x)+\nabla\vb u\cdot\delta\vb x\). El gradiente de velocidad se separa en una parte simétrica y una antisimétrica:</p>
+<div class="eq key" data-name="Descomposición del gradiente de velocidad">\[\pdv{u_i}{x_j}=S_{ij}+\Omega_{ij},\qquad S_{ij}=\tfrac12\left(\pdv{u_i}{x_j}+\pdv{u_j}{x_i}\right),\qquad \Omega_{ij}=\tfrac12\left(\pdv{u_i}{x_j}-\pdv{u_j}{x_i}\right).\]</div>
+<p>La <span class="term">rapidez de deformación</span> \(S_{ij}\) estira el elemento en sus direcciones principales y cambia los ángulos; su traza \(S_{ii}=\divg\vb u\) es la rapidez de cambio de volumen. La parte antisimétrica describe una rotación rígida con velocidad angular \(\tfrac12\boldsymbol\omega\), donde la <span class="term">vorticidad</span> es</p>
+<div class="eq">\[\boldsymbol\omega=\curl\vb u,\qquad \omega_z=\pdv{v}{x}-\pdv{u}{y}\ \text{en 2D}.\]</div>
+<p>El cortante simple \(u=\dot\gamma y\), el del flujo de Couette, es la suma de una rotación con \(\omega_z=-\dot\gamma\) y una deformación pura a 45°. Un flujo puede ser circular sin que sus elementos giren: en el vórtice irrotacional \(v_\theta=\Gamma/2\pi r\) las partículas recorren círculos pero conservan su orientación, como las cabinas de una rueda de Chicago. Y puede ser rectilíneo con elementos que giran, como en el cortante simple.</p>
+<div class="sim" data-sim="elemento-deforma" data-title="Un cuadrado de fluido en un flujo lineal: rotación y deformación"></div>
+<div class="sim-guide"><ul>
+<li>Elija un flujo o ajuste las componentes del gradiente. Las flechas negras son las direcciones principales de \(S_{ij}\); el ángulo marcado en el cuadrado gira con velocidad \(\omega_z/2\).</li>
+<li>En el cortante simple, el cuadrado se inclina y se alarga a 45° mientras gira en sentido horario. En la deformación pura no gira; en la rotación rígida no se deforma.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Sistemas, volúmenes de control y el teorema de Reynolds</h2>
+<p>Las leyes de la física se enuncian para un <span class="term">sistema</span>, una cantidad fija de materia. En ingeniería interesa una región del espacio, el <span class="term">volumen de control</span>, por la que el fluido entra y sale. El <span class="term">teorema del transporte de Reynolds</span> relaciona ambas: para una propiedad extensiva \(B\) con densidad por unidad de masa \(b\),</p>
+<div class="eq key" data-name="Teorema del transporte de Reynolds">\[\frac{\dd B_{sis}}{\dd t}=\frac{\dd}{\dd t}\int_{VC}\rho b\,\dd V+\oint_{SC}\rho b\,(\vb u_r\cdot\vb n)\,\dd A,\]</div>
+<p>donde \(\vb u_r\) es la velocidad relativa a la superficie de control. El cambio en el sistema es el cambio dentro del volumen de control más el flujo neto que sale por su frontera. Con \(b=1\) se obtiene la conservación de la masa; con \(b=\vb u\), la de la cantidad de movimiento (capítulo 8); con \(b=e\), la de la energía (capítulo 9).</p>
+</section>
+
+<section>
+<h2>La ecuación de continuidad</h2>
+<p>La masa de un sistema no cambia. Con el teorema de Reynolds y \(b=1\), para un volumen de control fijo:</p>
+<div class="eq">\[\frac{\dd}{\dd t}\int_{VC}\rho\,\dd V+\oint_{SC}\rho\,\vb u\cdot\vb n\,\dd A=0.\]</div>
+<p>Aplicando el teorema de la divergencia a un volumen arbitrario se obtiene la forma diferencial:</p>
+<div class="eq key" data-name="Ecuación de continuidad">\[\pdv{\rho}{t}+\divg(\rho\vb u)=0\qquad\Longleftrightarrow\qquad\frac{D\rho}{Dt}+\rho\,\divg\vb u=0.\]</div>
+<p>Si la densidad de cada partícula no cambia (\(D\rho/Dt=0\)), el flujo es <span class="term">incompresible</span> y \(\divg\vb u=0\): el volumen de cada elemento se conserva. Es el caso de los líquidos y de los gases a velocidades bajas frente al sonido. Para un tubo con flujo estacionario, la masa que entra sale: \(\rho_1V_1A_1=\rho_2V_2A_2\), y para un fluido incompresible, \(V_1A_1=V_2A_2\).</p>
+<div class="box ex"><h4>La sangre en el sistema circulatorio</h4><p>El corazón bombea unos 5 L/min (83 cm³/s). En la aorta, de 2.5 cm de diámetro (4.9 cm²), la velocidad media es de unos 17 cm/s. Los capilares son finísimos, pero son miles de millones y su sección total es de varios miles de centímetros cuadrados; la continuidad obliga a que la sangre allí avance a fracciones de milímetro por segundo, el tiempo necesario para intercambiar oxígeno y nutrientes con los tejidos.</p></div>
+</section>
+
+<section>
+<h2>La función de corriente</h2>
+<p>En un flujo plano incompresible, \(\partial u/\partial x+\partial v/\partial y=0\) se satisface idénticamente si la velocidad deriva de una <span class="term">función de corriente</span> \(\psi(x,y)\):</p>
+<div class="eq key" data-name="Función de corriente">\[u=\pdv{\psi}{y},\qquad v=-\pdv{\psi}{x}.\]</div>
+<p>Como \(\vb u\cdot\grad\psi=0\), las curvas \(\psi=\text{cte}\) son líneas de corriente, y el caudal por unidad de profundidad entre dos de ellas es la diferencia de sus valores, \(q=\psi_2-\psi_1\). Donde las líneas se juntan, el fluido acelera. La vorticidad se relaciona con \(\psi\) por \(\omega_z=-\lap\psi\); el capítulo 26 usa esta relación para resolver numéricamente el flujo en una cavidad.</p>
+<div class="sim" data-sim="funcion-corriente" data-title="Función de corriente: líneas, caudal entre ellas y velocidad"></div>
+<div class="sim-guide"><ul>
+<li>Las líneas de corriente se dibujan con valores de \(\psi\) igualmente espaciados: entre dos vecinas pasa siempre el mismo caudal, y por eso la velocidad es mayor donde están juntas.</li>
+<li>El flujo de esquina \(\psi=Ar^n\sin n\theta\) describe el flujo cerca de un punto de estancamiento (\(n=2\)) o alrededor de una esquina (\(n=2/3\)), donde la velocidad se hace infinita.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Por una tubería de 10 cm de diámetro circula agua a 1.5 m/s. Se reduce a 5 cm. Halle la velocidad en la sección estrecha y el caudal.
+<details><summary>Respuesta</summary><p>\(V_2=1.5\times4=6\) m/s; \(Q=1.5\times\pi(0.05)^2=11.8\) L/s.</p></details></li>
+<li><span class="lvl">Básico</span>Para el campo \(u=2x\), \(v=-2y\), halle la aceleración de la partícula que pasa por (1, 1).
+<details><summary>Respuesta</summary><p>\(a_x=u\,\partial u/\partial x=4x=4\); \(a_y=v\,\partial v/\partial y=4y=4\) (en las unidades del campo).</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Es incompresible el flujo \(u=x^2y\), \(v=-xy^2\)? Halle su vorticidad y su función de corriente.
+<details><summary>Respuesta</summary><p>\(\divg\vb u=2xy-2xy=0\): sí. \(\omega_z=-y^2-x^2\). \(\psi=x^2y^2/2\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Un tanque cilíndrico de 1 m de diámetro recibe 2 L/s y pierde 0.5 L/s por un orificio. ¿A qué ritmo sube el nivel?
+<details><summary>Respuesta</summary><p>\(\dd h/\dd t=(2-0.5)\times10^{-3}/(\pi\times0.25)=1.91\) mm/s.</p></details></li>
+<li><span class="lvl">Avanzado</span>En el flujo \(u=U_0\), \(v=V_0\sin\omega t\), halle la ecuación de la trayectoria de la partícula que pasa por el origen en \(t=0\) y la de la traza emitida desde el origen, observada en el instante \(t\).
+<details><summary>Respuesta</summary><p>Trayectoria: \(x=U_0t\), \(y=(V_0/\omega)(1-\cos\omega t)\), es decir \(y=(V_0/\omega)[1-\cos(\omega x/U_0)]\). Traza: la partícula emitida en \(\tau\) está en \(x=U_0(t-\tau)\), \(y=(V_0/\omega)(\cos\omega\tau-\cos\omega t)\); eliminando \(\tau\), \(y=(V_0/\omega)[\cos(\omega t-\omega x/U_0)-\cos\omega t]\).</p></details></li>
+</ol>
+<div class="box note"><h4>Para profundizar</h4><p>P. K. Kundu, I. M. Cohen y D. R. Dowling, <em>Fluid Mechanics</em>, 6.ª ed., cap. 3. G. K. Batchelor, <em>An Introduction to Fluid Dynamics</em>, cap. 2. National Committee for Fluid Mechanics Films, <em>Flow Visualization</em> (S. J. Kline, 1963), disponible en línea. M. Van Dyke, <em>An Album of Fluid Motion</em>, Parabolic Press, 1982.</p></div>
+</section>
+</template>

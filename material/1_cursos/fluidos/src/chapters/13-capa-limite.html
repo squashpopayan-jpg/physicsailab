@@ -1,0 +1,85 @@
+<template class="chapter-src" data-id="capa-limite" data-num="13" data-title="La capa límite" data-part="Parte III · Flujo viscoso" data-short="La idea de Prandtl, las ecuaciones de la capa límite, la solución de Blasius, espesores de desplazamiento y de cantidad de movimiento, la ecuación integral de von Kármán, los perfiles de Falkner–Skan y la separación, y la capa límite turbulenta">
+<p class="lead">A comienzos del siglo XX la mecánica de fluidos estaba partida en dos: una hidrodinámica matemática elegante que predecía arrastre nulo para cualquier cuerpo, y una hidráulica empírica llena de coeficientes. En 1904, en una ponencia de ocho páginas, Ludwig Prandtl las unió con una idea: la viscosidad del aire o del agua solo importa en una capa muy delgada junto a las paredes. Fuera de ella el flujo es ideal; dentro, la velocidad pasa de cero al valor exterior en una distancia minúscula.</p>
+
+<section>
+<h2>La idea de Prandtl</h2>
+<p>En un flujo con número de Reynolds grande el término viscoso de Navier–Stokes es pequeño, salvo donde la velocidad cambia bruscamente. La condición de no deslizamiento obliga a que eso ocurra junto a las paredes. Para que viscosidad e inercia se equilibren en esa capa, su espesor \(\delta\) debe cumplir \(U^2/L\sim\nu U/\delta^2\):</p>
+<div class="eq key" data-name="Espesor de la capa límite">\[\frac{\delta}{L}\sim\frac{1}{\sqrt{\mathrm{Re}_L}}.\]</div>
+<p>Para el ala de un avión pequeño, con \(\mathrm{Re}\sim10^{7}\), la capa límite es unas 3000 veces más delgada que la cuerda: milímetros. Pero en ella nace todo el arrastre de fricción, y su desprendimiento (la separación) decide la forma de la estela, el arrastre de presión y la pérdida de sustentación. Así se resuelve la paradoja de d'Alembert del capítulo 17.</p>
+</section>
+
+<section>
+<h2>Las ecuaciones de la capa límite</h2>
+<p>Dentro de la capa, las derivadas en \(y\) son \(L/\delta\) veces mayores que las derivadas en \(x\) y la velocidad normal \(v\) es \(\delta/L\) veces menor que \(u\). Conservando solo los términos dominantes, Navier–Stokes se reduce a</p>
+<div class="eq key" data-name="Ecuaciones de Prandtl">\[u\pdv{u}{x}+v\pdv{u}{y}=U\odv{U}{x}+\nu\pddv{u}{y},\qquad\pdv{p}{y}=0,\qquad\pdv{u}{x}+\pdv{v}{y}=0.\]</div>
+<p>La presión no cambia a través de la capa: la impone el flujo exterior por Bernoulli, \(-\dd p/\dd x=\rho U\,\dd U/\dd x\). Las ecuaciones son parabólicas: la información viaja aguas abajo y pueden integrarse desde el borde de ataque como un problema de evolución.</p>
+</section>
+
+<section>
+<h2>La solución de Blasius</h2>
+<p>Para una placa plana sin gradiente de presión (\(U\) constante), Blasius, alumno de Prandtl, encontró en 1908 que los perfiles en distintas posiciones son el mismo perfil estirado: con \(\eta=y\sqrt{U/\nu x}\) y \(\psi=\sqrt{\nu Ux}\,f(\eta)\), las ecuaciones se reducen a una ecuación diferencial ordinaria:</p>
+<div class="eq key" data-name="Ecuación de Blasius">\[f'''+\tfrac12ff''=0,\qquad f(0)=f'(0)=0,\quad f'(\infty)=1.\]</div>
+<p>No tiene solución en forma cerrada. Se resuelve por <b>disparo</b>: se integra desde la pared con un valor de prueba de \(f''(0)\) y se ajusta hasta que \(f'\to1\). El valor correcto es \(f''(0)=0.332057\). De él salen los resultados que se usan en ingeniería:</p>
+<div class="eq">\[\frac{\delta_{99}}{x}=\frac{4.91}{\sqrt{\mathrm{Re}_x}},\quad\frac{\delta^*}{x}=\frac{1.7208}{\sqrt{\mathrm{Re}_x}},\quad\frac{\theta}{x}=\frac{0.664}{\sqrt{\mathrm{Re}_x}},\quad c_f=\frac{0.664}{\sqrt{\mathrm{Re}_x}},\quad C_D=\frac{1.328}{\sqrt{\mathrm{Re}_L}}.\]</div>
+<p>El <span class="term">espesor de desplazamiento</span> \(\delta^*=\int(1-u/U)\,\dd y\) es la distancia que la capa límite «empuja» hacia afuera las líneas de corriente exteriores; el <span class="term">espesor de cantidad de movimiento</span> \(\theta=\int(u/U)(1-u/U)\,\dd y\) mide la cantidad de movimiento que se ha perdido por fricción, y su cociente es el <span class="term">factor de forma</span> \(H=\delta^*/\theta=2.59\).</p>
+<div class="sim" data-sim="blasius" data-title="Solución de Blasius por el método de disparo"></div>
+<div class="sim-guide"><ul>
+<li>Las curvas grises son los intentos con valores de \(f''(0)\) demasiado grandes (\(f'\) se dispara) o demasiado pequeños (\(f'\) se derrumba). La bisección encuentra \(0.332057\) en unas 40 iteraciones.</li>
+<li>La línea discontinua muestra \(\delta^*\): el área entre el perfil y \(u=U\) a su izquierda es igual a la del rectángulo hasta \(\delta^*\).</li>
+</ul></div>
+<div class="sim" data-sim="capa-placa" data-title="Capa límite sobre una placa plana: laminar, transición y turbulenta"></div>
+<div class="sim-guide"><ul>
+<li>Aire a 10 m/s sobre una placa de 1 m: la capa es laminar hasta 0.76 m, donde \(\mathrm{Re}_x=5\times10^{5}\) y mide 5.2 mm; luego transita y crece mucho más rápido.</li>
+<li>Los perfiles dibujados son el de Blasius en la zona laminar y la ley de la potencia 1/7 en la turbulenta: más llenos cerca de la pared, con mayor esfuerzo cortante.</li>
+<li>La capa turbulenta arranca con un origen virtual que conserva el espesor de cantidad de movimiento en la transición. Integrar su \(c_f\) da un coeficiente medio un 10 % mayor que la fórmula de Schlichting: las correlaciones turbulentas difieren entre sí en esa medida.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>La ecuación integral de von Kármán</h2>
+<p>Integrando las ecuaciones de la capa límite a través de su espesor, von Kármán obtuvo en 1921 una relación exacta entre los espesores integrales:</p>
+<div class="eq key" data-name="Ecuación integral de von Kármán">\[\odv{\theta}{x}+(2+H)\frac{\theta}{U}\odv{U}{x}=\frac{c_f}{2}=\frac{\tau_w}{\rho U^2}.\]</div>
+<p>Si se supone una forma para el perfil, \(u/U=F(y/\delta)\), la ecuación da \(\delta(x)\) sin resolver la ecuación diferencial. Pohlhausen propuso en 1921 un polinomio de cuarto grado; un perfil cúbico o uno senoidal dan errores de apenas 2–3 % en la fricción frente a la solución exacta. El método, extendido por Thwaites, fue durante décadas la herramienta de diseño aerodinámico.</p>
+<div class="sim" data-sim="pohlhausen" data-title="Perfiles aproximados de Kármán–Pohlhausen contra Blasius"></div>
+<div class="sim-guide"><ul>
+<li>Para un perfil \(F(\eta)\), la ecuación integral da \(\delta\sqrt{\mathrm{Re}_x}/x=\sqrt{2F'(0)/\alpha}\) y \(c_f\sqrt{\mathrm{Re}_x}=\sqrt{2\alpha F'(0)}\), con \(\alpha=\int_0^1F(1-F)\,\dd\eta\).</li>
+<li>El perfil lineal es el peor; el senoidal, uno de los mejores, a pesar de su sencillez.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Gradiente de presión y separación</h2>
+<p>Cuando el flujo exterior acelera (\(\dd U/\dd x&gt;0\), presión decreciente) la capa límite se adelgaza y se vuelve más estable. Cuando desacelera (gradiente <b>adverso</b>), el fluido lento de la capa, con poca cantidad de movimiento, no puede vencer el aumento de presión: se frena, se detiene junto a la pared (\(\tau_w=0\)) y regresa. La capa se <span class="term">separa</span> de la superficie y forma una estela.</p>
+<p>Los flujos de cuña \(U=Cx^m\) admiten soluciones de similitud, las de <span class="term">Falkner–Skan</span> (1931): \(f'''+ff''+\beta(1-f'^2)=0\), con \(\beta=2m/(m+1)\). Con \(\beta=0\) se recupera Blasius (en otra escala); con \(\beta=1\), el flujo de estancamiento plano; con \(\beta&lt;0\), un gradiente adverso. La separación ocurre en \(\beta=-0.1988\): una desaceleración de apenas \(U\propto x^{-0.09}\) basta para separar una capa laminar.</p>
+<div class="sim" data-sim="falkner-skan" data-title="Perfiles de Falkner–Skan: aceleración, desaceleración y separación"></div>
+<div class="sim-guide"><ul>
+<li>Con gradiente adverso el perfil desarrolla un punto de inflexión y el esfuerzo en la pared cae; en \(\beta=-0.1988\) se anula y el factor de forma llega a 4.03.</li>
+<li>Con gradiente favorable el perfil es lleno, \(H\) baja hacia 2.2 y la capa resiste bien.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>La capa límite turbulenta</h2>
+<p>En una placa lisa la capa laminar se vuelve inestable y transita a la turbulencia hacia \(\mathrm{Re}_x\approx5\times10^{5}\); con superficies rugosas o un flujo exterior perturbado, antes; en túneles muy silenciosos, hasta \(3\times10^{6}\). La capa turbulenta mezcla el fluido rápido del exterior con el lento de la pared: su perfil es más lleno, su fricción mayor y su crecimiento más rápido. Con un perfil de potencia 1/7 y una ley de fricción empírica, Prandtl obtuvo</p>
+<div class="eq">\[\frac{\delta}{x}\approx\frac{0.37}{\mathrm{Re}_x^{1/5}},\qquad c_f\approx\frac{0.0592}{\mathrm{Re}_x^{1/5}},\qquad C_D\approx\frac{0.455}{(\log_{10}\mathrm{Re}_L)^{2.58}}-\frac{1700}{\mathrm{Re}_L},\]</div>
+<p>la última, de Schlichting, para una placa con transición en \(\mathrm{Re}=5\times10^{5}\). En el casco de un buque de 120 m la capa límite turbulenta llega a unos 70 cm de espesor en la popa. La gran ventaja de la capa turbulenta es que resiste mucho mejor la separación, porque la mezcla lleva cantidad de movimiento hacia la pared: es el secreto de los hoyuelos de una pelota de golf (capítulo 16) y de los generadores de vórtices de las alas.</p>
+<div class="box ex"><h4>La fricción sobre una placa de 1 m</h4><p>Aire a 20 °C y 10 m/s sobre una placa de 1 m de largo y 1 m de ancho: \(\mathrm{Re}_L=6.6\times10^{5}\). Si toda la capa fuera laminar, \(C_D=1.328/\sqrt{6.6\times10^{5}}=0.00163\); con la transición a 0.76 m, la fórmula de Schlichting da \(C_D=0.0024\), un 47 % más. La fuerza sobre una cara es \(\tfrac12\rho U^2C_D\,A=0.14\) N.</p></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Agua a 20 °C fluye a 0.5 m/s sobre una placa. ¿Qué espesor tiene la capa límite a 20 cm del borde?
+<details><summary>Respuesta</summary><p>\(\mathrm{Re}_x=0.5\times0.2/1.004\times10^{-6}=99\,600\) (laminar); \(\delta=4.91\times0.2/\sqrt{99\,600}=3.1\) mm.</p></details></li>
+<li><span class="lvl">Básico</span>¿Dónde empieza la transición en una placa sobre la que sopla aire a 30 m/s en Popayán (\(\nu=1.85\times10^{-5}\) m²/s)?
+<details><summary>Respuesta</summary><p>\(x=5\times10^{5}\nu/U=0.31\) m.</p></details></li>
+<li><span class="lvl">Intermedio</span>Compare el arrastre de fricción laminar sobre una placa de longitud \(L\) con el de una de longitud \(2L\).
+<details><summary>Respuesta</summary><p>\(F\propto C_DL\propto L/\sqrt L=\sqrt L\): la placa doble tiene solo \(\sqrt2\) veces más arrastre, porque su segunda mitad tiene una capa más gruesa y menos fricción.</p></details></li>
+<li><span class="lvl">Intermedio</span>Con el perfil cúbico \(u/U=\tfrac32\eta-\tfrac12\eta^3\), halle \(\delta\sqrt{\mathrm{Re}_x}/x\) con la ecuación integral.
+<details><summary>Respuesta</summary><p>\(\alpha=39/280\), \(F'(0)=3/2\): \(\sqrt{2\times1.5\times280/39}=4.64\), frente a 4.91 exacto (definido al 99 %).</p></details></li>
+<li><span class="lvl">Avanzado</span>Demuestre que para \(U=Cx^m\) el parámetro de Falkner–Skan es \(\beta=2m/(m+1)\) y halle el exponente \(m\) que produce la separación.
+<details><summary>Respuesta</summary><p>Con \(\eta=y\sqrt{(m+1)U/2\nu x}\) y \(\psi=\sqrt{2\nu Ux/(m+1)}\,f(\eta)\) la ecuación toma la forma de Falkner–Skan con \(\beta=2m/(m+1)\). Separación: \(\beta=-0.1988\) → \(m=\beta/(2-\beta)=-0.0904\).</p></details></li>
+</ol>
+<div class="box note"><h4>Para profundizar</h4><p>L. Prandtl, «Über Flüssigkeitsbewegung bei sehr kleiner Reibung», <em>Verh. III. Int. Math.-Kongr.</em>, Heidelberg, 1904, 484–491. H. Blasius, «Grenzschichten in Flüssigkeiten mit kleiner Reibung», <em>Z. Math. Phys.</em> 56, 1 (1908). V. M. Falkner y S. W. Skan, «Some approximate solutions of the boundary layer equations», <em>Phil. Mag.</em> 12, 865 (1931). H. Schlichting y K. Gersten, <em>Boundary-Layer Theory</em>, 9.ª ed., Springer, 2017. F. M. White, <em>Viscous Fluid Flow</em>, 3.ª ed., cap. 4.</p></div>
+</section>
+</template>

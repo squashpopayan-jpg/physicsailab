@@ -1,0 +1,70 @@
+<template class="chapter-src" data-id="sensores" data-num="13" data-title="Fotopuertas y adquisición con microcontroladores" data-part="Parte III · Construir montajes" data-short="Fotopuerta con LED infrarrojo y fototransistor, Arduino y ESP32, temporización por interrupciones con micros(), banderas y vallas, exportar a CSV; seguridad en muy baja tensión y relación con el Laboratorio de Bolsillo">
+<p class="lead">Una fotopuerta convierte el paso de un objeto por un haz de luz en una marca de tiempo con resolución de microsegundos. Con un Arduino de bajo costo, un LED infrarrojo y un fototransistor, una institución puede medir velocidades, aceleraciones y periodos con la calidad de un laboratorio universitario. Los montajes elaborados de la parte VI la usan en caída libre, riel de aire, péndulo físico y choques.</p>
+
+<section>
+<h2>Cómo funciona una fotopuerta</h2>
+<p>Un LED infrarrojo de 940 nm ilumina un fototransistor colocado enfrente. Mientras el haz llega, el fototransistor conduce y la entrada del microcontrolador lee un nivel bajo; cuando un objeto lo interrumpe, deja de conducir y la resistencia de polarización lleva la entrada a nivel alto. El microcontrolador registra el instante de cada cambio con su reloj interno.</p>
+<div class="tablewrap"><table>
+<tr><th>Elemento</th><th>Valor</th><th>Por qué</th></tr>
+<tr><td>LED infrarrojo de 940 nm</td><td>Resistencia de 220 Ω a 5 V</td><td>Corriente de unos (5 − 1,2) V / 220 Ω ≈ 17 mA, dentro del rango de un LED de 5 mm.</td></tr>
+<tr><td>Fototransistor (por ejemplo, de la serie PT o un módulo de barrera)</td><td>Resistencia de polarización de 10 kΩ a 47 kΩ</td><td>Mayor resistencia, más sensibilidad pero respuesta más lenta.</td></tr>
+<tr><td>Separación LED–fototransistor</td><td>2 a 10 cm, alineados con un tubo o una pieza impresa</td><td>La luz ambiente (sol, lámparas) puede cegar el sensor: conviene un tubo negro.</td></tr>
+<tr><td>Alimentación</td><td>USB del computador (5 V)</td><td>Muy baja tensión: sin riesgo eléctrico para los estudiantes.</td></tr>
+</table></div>
+<p>Hay módulos de barrera óptica en forma de U, con el emisor y el receptor ya alineados y su comparador, que se conectan directamente a una entrada digital; su ranura limita el tamaño del objeto, pero ahorran la alineación.</p>
+</section>
+
+<section>
+<h2>El programa</h2>
+<p>El Arduino Uno mide el tiempo con <code>micros()</code>, que avanza en pasos de 4 µs; el ESP32, en pasos de 1 µs. Para no perder eventos rápidos se usa una interrupción en el cambio de nivel. Este programa registra los instantes de interrupción y desbloqueo del haz y los envía por el puerto serie en formato CSV:</p>
+<pre class="codebox"><code>// Fotopuerta: instantes de bloqueo y desbloqueo en microsegundos
+const byte PIN = 2;                 // entrada con interrupción (Uno: 2 o 3)
+volatile unsigned long t[64];
+volatile byte nivel[64];
+volatile byte n = 0;
+
+void cambio() {
+  if (n &lt; 64) { t[n] = micros(); nivel[n] = digitalRead(PIN); n++; }
+}
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(PIN, INPUT);              // resistencia de 10 kΩ a 5 V en el montaje
+  attachInterrupt(digitalPinToInterrupt(PIN), cambio, CHANGE);
+  Serial.println("evento;t_us;nivel");
+}
+
+void loop() {
+  static byte enviados = 0;
+  while (enviados &lt; n) {
+    Serial.print(enviados); Serial.print(';');
+    Serial.print(t[enviados]); Serial.print(';');
+    Serial.println(nivel[enviados]);
+    enviados++;
+  }
+}</code></pre>
+<p>Con el monitor serie del entorno de Arduino se copian las líneas a una hoja de cálculo o a un archivo .csv; el analizador del capítulo 9 las lee directamente. Para el ESP32 el mismo programa funciona con cualquier pin de entrada, con la precaución de que sus entradas son de 3,3 V: la resistencia de polarización va a 3,3 V, no a 5 V.</p>
+</section>
+
+<section>
+<h2>Banderas, vallas y el ancho del haz</h2>
+<p>Una <b>bandera</b> de ancho \(w\) que cruza la fotopuerta a velocidad \(v\) bloquea el haz durante \(\Delta t=w/v\). Pero el haz no es un punto: tiene un diámetro efectivo \(d\), y el sensor cambia de estado cuando la bandera cubre una fracción de él. Si el sensor cambia de estado cuando una fracción \(f\) del haz está cubierta, el tiempo medido corresponde a un ancho efectivo \(w+d\,(1-2f)\): la corrección es del orden de un milímetro y su signo depende del umbral. Para una bandera de 1 cm, ese milímetro es un error sistemático del 10 % en la velocidad.</p>
+<p>Dos soluciones: usar banderas anchas (5 cm o más) y, mejor aún, medir siempre entre <b>flancos iguales</b> (de un bloqueo al siguiente bloqueo) en una <b>valla</b>: una tira transparente con franjas opacas separadas por una distancia \(s\) conocida. Entre dos flancos de bajada consecutivos el objeto recorre exactamente \(s\), sin importar el ancho del haz.</p>
+<div class="sim" data-sim="fotopuerta" data-kind="Simulación" data-title="Fotopuerta: ancho del haz, bandera y valla"></div>
+<div class="sim-guide"><ul>
+<li>Con una bandera de 1 cm, un haz efectivo de 1,5 mm y un sensor que cambia de estado cuando el 10 % del haz está cubierto, el ancho efectivo es \(w+d(1-2f)=11{,}2\) mm y la velocidad calculada con \(w/\Delta t\) sale 11 % baja. Con un umbral del 50 % el error desaparece, pero el umbral real casi nunca se conoce.</li>
+<li>Con la valla, la velocidad entre flancos iguales no depende del haz: el error baja a la resolución del reloj.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Otras opciones de adquisición</h2>
+<ul>
+<li><b>Celular con phyphox</b>: el sensor de luz o el de proximidad funcionan como fotopuerta lenta (decenas de milisegundos); el cronómetro acústico, como fotopuerta sonora.</li>
+<li><b>Sensores digitales económicos</b> para Arduino: distancia ultrasónica (HC-SR04, resolución de unos 3 mm, útil para movimientos lentos), temperatura (DS18B20), aceleración (MPU-6050), presión (BMP280).</li>
+<li><b>Laboratorio de Bolsillo</b>: el cuaderno hermano del mismo autor desarrolla en detalle el celular, el ESP32, App Inventor y LEGO como herramientas de laboratorio, con sus propias prácticas.</li>
+</ul>
+<div class="box warn"><h4>Seguridad con microcontroladores</h4><p>Se alimentan por USB desde un computador o con un cargador certificado; nunca se conectan directamente a la red. Las placas no se manipulan conectadas, los cables se revisan para evitar cortocircuitos entre 5 V y tierra, y las baterías de litio solo se usan con módulos de protección y carga.</p></div>
+<div class="box note"><h4>Para profundizar</h4><p>Arduino, documentación de <code>attachInterrupt()</code> y <code>micros()</code>. G. Organtini, <i>Physics Experiments with Arduino and Smartphones</i>, Springer, 2021.</p></div>
+</section>
+</template>

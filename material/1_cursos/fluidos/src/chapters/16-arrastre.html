@@ -1,0 +1,85 @@
+<template class="chapter-src" data-id="arrastre" data-num="16" data-title="Arrastre y sustentación" data-part="Parte III · Flujo viscoso" data-short="Arrastre de fricción y de presión, la curva de arrastre de la esfera y la crisis de arrastre, velocidad terminal de gotas, granizo y paracaidistas, la calle de vórtices de von Kármán, perfiles alares, sustentación y arrastre inducido, y el efecto Magnus en las pelotas">
+<p class="lead">Un ciclista gasta casi toda su potencia en empujar el aire; un avión se sostiene porque desvía hacia abajo toneladas de aire por segundo; una pelota de squash con efecto curva su trayectoria. Las fuerzas que un fluido ejerce sobre un cuerpo en movimiento relativo se resumen en dos coeficientes, el de arrastre y el de sustentación, que dependen de la forma, del número de Reynolds y, a veces, de detalles como la rugosidad o el giro.</p>
+
+<section>
+<h2>Arrastre de fricción y de presión</h2>
+<p>La fuerza del fluido sobre un cuerpo es la integral de la presión y del esfuerzo cortante sobre su superficie. Su componente en la dirección del flujo es el <span class="term">arrastre</span> \(F_D\); la perpendicular, la <span class="term">sustentación</span> \(F_L\). Se expresan con coeficientes adimensionales:</p>
+<div class="eq key" data-name="Coeficientes de arrastre y sustentación">\[F_D=C_D\,\tfrac12\rho V^2A,\qquad F_L=C_L\,\tfrac12\rho V^2A,\]</div>
+<p>con \(A\) el área frontal (cuerpos romos) o el área en planta (alas). El arrastre tiene dos orígenes: la <b>fricción</b> en la capa límite y la <b>presión</b>, que aparece cuando la capa se separa y deja detrás una estela de baja presión. En un cuerpo <span class="term">fuselado</span> (un perfil alar, un pez) domina la fricción y \(C_D\) es pequeño; en un cuerpo <span class="term">romo</span> (una esfera, un camión, un ciclista) domina la presión. Una placa plana larga perpendicular al flujo tiene \(C_D\approx2\); un perfil alar del mismo espesor tiene un arrastre decenas de veces menor.</p>
+</section>
+
+<section>
+<h2>La curva de arrastre de la esfera</h2>
+<p>El análisis dimensional dice que \(C_D\) de una esfera lisa depende solo del número de Reynolds. La curva medida recorre todos los regímenes del flujo: con \(\mathrm{Re}&lt;1\), la ley de Stokes \(C_D=24/\mathrm{Re}\); hacia \(\mathrm{Re}\approx20\) el flujo se separa y aparece un anillo de recirculación detrás; por encima de \(\mathrm{Re}\approx400\) la estela se vuelve inestable y desprende vórtices; entre \(10^{3}\) y \(2\times10^{5}\) el coeficiente se mantiene casi constante, entre 0.4 y 0.5, porque la capa límite laminar se separa siempre cerca del ecuador. Hacia \(\mathrm{Re}\approx3\times10^{5}\) ocurre la <span class="term">crisis de arrastre</span>: la capa límite se vuelve turbulenta antes de separarse, resiste más el gradiente adverso, la separación se mueve hacia atrás, la estela se estrecha y \(C_D\) cae a menos de la cuarta parte.</p>
+<p>Los hoyuelos de una pelota de golf provocan la transición a un número de Reynolds menor, dentro del rango de un golpe (\(\sim10^{5}\)): la pelota vuela con un coeficiente de arrastre de alrededor de 0.25 en vez del 0.5 de una esfera lisa, y llega casi el doble de lejos. Las costuras de una pelota de béisbol o de críquet y la pelusa de una de tenis hacen algo parecido.</p>
+<div class="sim" data-sim="cd-esfera" data-title="Coeficiente de arrastre de la esfera y del cilindro contra el número de Reynolds"></div>
+<div class="sim-guide"><ul>
+<li>La correlación de Morrison (2013) cubre de \(10^{-1}\) a \(10^{6}\) e incluye la crisis de arrastre; las de White y Clift–Gauvin solo valen antes de la crisis. Las de Morrison y Clift–Gauvin se comparan en el apéndice B con las implementaciones independientes de la biblioteca <i>fluids</i>; la de White es la fórmula de ajuste de su libro de texto.</li>
+<li>El cilindro (ajuste de White, válido hasta \(2\times10^{5}\)) tiene un arrastre por unidad de área frontal unas dos veces mayor que la esfera: el flujo no puede rodearlo por los lados.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Velocidad terminal</h2>
+<p>Un cuerpo que cae acelera hasta que el arrastre iguala su peso aparente: \((\rho_c-\rho)gV=C_D(\mathrm{Re})\tfrac12\rho V_t^2A\). Como \(C_D\) depende de la velocidad, se resuelve iterando. Una gota de lluvia de 1 mm cae a unos 4 m/s; los granizos de 2 cm, a más de 20 m/s; un paracaidista en posición de caída libre, a unos 43 m/s (155 km/h) al nivel del mar y a 48 m/s en el aire más delgado de Popayán. Las gotas grandes no siguen el modelo de esfera rígida: se aplastan como panes de hamburguesa, su arrastre crece y su velocidad se estanca hacia 9 m/s; las de más de 6 mm se rompen. Gunn y Kinzer las midieron en 1949 con precisión que sigue siendo referencia.</p>
+<div class="sim" data-sim="velocidad-terminal" data-title="Caída con arrastre: gotas, granizo, pelotas y paracaidistas"></div>
+<div class="sim-guide"><ul>
+<li>La velocidad se integra con Runge–Kutta usando la correlación de Morrison; la línea horizontal es la velocidad terminal.</li>
+<li>Para las gotas, compare con las mediciones de Gunn y Kinzer: el modelo de esfera rígida acierta hasta 2 mm y sobrestima después.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>La calle de vórtices de von Kármán</h2>
+<p>Detrás de un cilindro, a partir de \(\mathrm{Re}\approx47\), los dos remolinos simétricos de la estela se vuelven inestables y empiezan a desprenderse alternadamente de cada lado: es una bifurcación de Hopf, el nacimiento de una oscilación. Los vórtices forman dos filas escalonadas que viajan aguas abajo, la <span class="term">calle de vórtices de von Kármán</span>, quien estudió su estabilidad en 1911. La frecuencia de desprendimiento \(f\) se expresa con el número de Strouhal:</p>
+<div class="eq">\[\mathrm{St}=\frac{fD}{U}\approx0.2\qquad(300&lt;\mathrm{Re}&lt;2\times10^{5}).\]</div>
+<p>Cerca del umbral, St es menor: 0.164 en \(\mathrm{Re}=100\). El desprendimiento produce fuerzas laterales oscilantes; si su frecuencia coincide con una frecuencia natural de la estructura, aparecen <span class="term">vibraciones inducidas por vórtices</span>: cables que «cantan» con el viento, chimeneas que oscilan, tubos de intercambiadores que se fatigan. Las chimeneas metálicas llevan aletas helicoidales para desordenar el desprendimiento.</p>
+<div class="sim" data-sim="estela-cilindro" data-title="Estela de un cilindro: simulación con Lattice Boltzmann"></div>
+<div class="sim-guide"><ul>
+<li>Con \(\mathrm{Re}=30\) la estela es estacionaria, con dos remolinos simétricos. Con \(\mathrm{Re}=100\) desprende vórtices; la sonda mide la frecuencia y el número de Strouhal. El cilindro ocupa el 14 % del alto del canal numérico, y ese bloqueo acelera el flujo a su alrededor: el valor medido, cerca de 0.18, es algo mayor que el 0.164 de un cilindro aislado.</li>
+<li>El canal numérico es periódico arriba y abajo y el cilindro ocupa el 14 % del ancho; ese bloqueo eleva St unos puntos respecto al cilindro aislado.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Perfiles alares y sustentación</h2>
+<p>Un perfil alar a un ángulo de ataque \(\alpha\) desvía el aire hacia abajo y, por reacción, recibe una fuerza hacia arriba. La teoría del perfil delgado (capítulo 17) predice, para ángulos pequeños,</p>
+<div class="eq key" data-name="Sustentación de un perfil delgado">\[C_L=2\pi(\alpha-\alpha_0),\]</div>
+<p>con \(\alpha_0\) el ángulo de sustentación nula, negativo para perfiles con curvatura. Al aumentar el ángulo, el gradiente adverso sobre el extradós crece hasta que la capa límite se separa: el ala entra en <span class="term">pérdida</span>, la sustentación cae y el arrastre se dispara, hacia 12–16° en los perfiles comunes. Un ala de envergadura finita pierde sustentación en las puntas, donde el aire pasa del intradós al extradós formando vórtices; el resultado es una sustentación menor y un <span class="term">arrastre inducido</span>, según la teoría de la línea sustentadora de Prandtl:</p>
+<div class="eq">\[C_L=\frac{a_0\alpha}{1+a_0/(\pi e\,AR)},\qquad C_{D,i}=\frac{C_L^2}{\pi e\,AR},\]</div>
+<p>donde \(AR=b^2/S\) es el alargamiento y \(e\approx0.8\)–1 el factor de Oswald. Por eso los planeadores y los albatros tienen alas largas y estrechas. La sustentación necesaria fija la velocidad mínima de vuelo: \(V_{min}=\sqrt{2mg/(\rho SC_{L,max})}\). Una avioneta de 1100 kg con 16.2 m² de ala y \(C_{L,max}=1.6\) entra en pérdida a 26 m/s al nivel del mar y a 29 m/s en Popayán: en los aeropuertos altos los aviones necesitan más velocidad y pistas más largas.</p>
+<div class="sim" data-sim="perfil-alar" data-title="Polar de un ala finita y velocidad de pérdida"></div>
+<div class="sim-guide"><ul>
+<li>El modelo de pérdida es ilustrativo: la pendiente sigue la teoría del perfil delgado corregida por el alargamiento, y después del ángulo de pérdida la sustentación cae suavemente.</li>
+<li>Con los valores iniciales, sin flaps, \(C_{L,max}\approx1.34\) y la pérdida ocurre a 28.5 m/s al nivel del mar; los flaps elevan \(C_{L,max}\) a 1.6–2 y bajan esa velocidad, como en el ejemplo del texto.</li>
+<li>La eficiencia aerodinámica \(C_L/C_D\) es máxima cuando el arrastre inducido iguala al parásito; con \(AR=25\), como un planeador, supera 40.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El efecto Magnus</h2>
+<p>Una pelota que gira arrastra el aire de su capa límite; de un lado ese movimiento se suma al flujo y del otro se opone, la separación se vuelve asimétrica y la estela se desvía. Por reacción, la pelota recibe una fuerza perpendicular a su velocidad y a su eje de giro: el <span class="term">efecto Magnus</span>, descrito por Magnus en 1852 para proyectiles de artillería. Se expresa con un coeficiente de sustentación que depende del parámetro de giro \(S=\omega r/V\). Un revés con efecto cortado en squash flota y cae tarde; uno liftado en tenis cae bruscamente; un tiro libre de fútbol con efecto curva lateralmente varios metros.</p>
+<div class="sim" data-sim="magnus" data-title="Trayectorias de pelotas con arrastre y efecto Magnus"></div>
+<div class="sim-guide"><ul>
+<li>Las trayectorias se integran con arrastre (Morrison) y sustentación por giro \(C_L(S)\) según el ajuste de Sawicki, Hubbard y Stronge (2003) para pelotas de béisbol; para otras pelotas el resultado es ilustrativo.</li>
+<li>En Popayán el aire es 20 % menos denso: una pelota de squash lanzada a 30 m/s con 20° llega 7 % más lejos que al nivel del mar, y los efectos se notan menos.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un ciclista con \(C_DA=0.3\) m² rueda a 40 km/h. ¿Qué potencia gasta contra el aire al nivel del mar y en Popayán?
+<details><summary>Respuesta</summary><p>\(P=\tfrac12\rho C_DAV^3\): con \(V=11.1\) m/s, 252 W al nivel del mar y 201 W en Popayán.</p></details></li>
+<li><span class="lvl">Básico</span>¿Con qué frecuencia desprende vórtices un cable de 1 cm de diámetro con viento de 10 m/s?
+<details><summary>Respuesta</summary><p>\(\mathrm{Re}=6600\), \(\mathrm{St}\approx0.2\): \(f=0.2\times10/0.01=200\) Hz, un zumbido audible.</p></details></li>
+<li><span class="lvl">Intermedio</span>Estime la velocidad terminal de una pelota de ping-pong (40 mm, 2.7 g) al nivel del mar.
+<details><summary>Respuesta</summary><p>Con \(C_D\approx0.5\): \(V=\sqrt{2mg/(\rho C_DA)}=\sqrt{2(0.0027)(9.807)/(1.225\times0.5\times1.257\times10^{-3})}=8.3\) m/s; con la correlación completa, 9.3 m/s (\(C_D\approx0.4\) a \(\mathrm{Re}=2.5\times10^{4}\)).</p></details></li>
+<li><span class="lvl">Intermedio</span>Un ala con \(AR=8\), \(e=0.85\) y perfil con \(a_0=2\pi\) vuela con \(\alpha=5°\). Halle \(C_L\) y \(C_{D,i}\).
+<details><summary>Respuesta</summary><p>\(a=2\pi/(1+2\pi/(\pi\times0.85\times8))=4.86\) por radián; \(C_L=4.86\times0.0873=0.424\); \(C_{D,i}=0.424^2/(\pi\times0.85\times8)=0.0084\).</p></details></li>
+<li><span class="lvl">Avanzado</span>Demuestre que la eficiencia \(C_L/C_D\) de un avión con polar \(C_D=C_{D0}+kC_L^2\) es máxima cuando \(kC_L^2=C_{D0}\), y que entonces vale \(1/(2\sqrt{kC_{D0}})\).
+<details><summary>Respuesta</summary><p>Maximizar \(C_L/(C_{D0}+kC_L^2)\): derivando, \(C_{D0}+kC_L^2-2kC_L^2=0\). Con \(C_L=\sqrt{C_{D0}/k}\), \(C_L/C_D=\sqrt{C_{D0}/k}/(2C_{D0})=1/(2\sqrt{kC_{D0}})\).</p></details></li>
+</ol>
+<div class="box note"><h4>Para profundizar</h4><p>F. A. Morrison, <em>An Introduction to Fluid Mechanics</em>, Cambridge, 2013 (correlación de \(C_D\) de la esfera). R. Gunn y G. D. Kinzer, «The terminal velocity of fall for water droplets in stagnant air», <em>J. Meteorol.</em> 6, 243 (1949). C. H. K. Williamson, «Vortex dynamics in the cylinder wake», <em>Annu. Rev. Fluid Mech.</em> 28, 477 (1996). G. S. Sawicki, M. Hubbard y W. J. Stronge, «How to hit home runs», <em>Am. J. Phys.</em> 71, 1152 (2003). J. D. Anderson, <em>Fundamentals of Aerodynamics</em>, 6.ª ed., McGraw-Hill, 2017.</p></div>
+</section>
+</template>

@@ -1,0 +1,90 @@
+<template class="chapter-src" data-id="stokes" data-num="12" data-title="Flujo a bajo número de Reynolds" data-part="Parte III · Flujo viscoso" data-short="Las ecuaciones de Stokes y la reversibilidad, el flujo alrededor de una esfera y la ley de Stokes, sedimentación, burbujas y gotas, el movimiento browniano y la relación de Stokes–Einstein, la lubricación y cómo nadan los microorganismos">
+<p class="lead">Cuando un objeto es muy pequeño, muy lento o se mueve en un fluido muy viscoso, la inercia deja de importar. Ese mundo es el de las bacterias, los espermatozoides, el limo que se asienta en el fondo de un río, la miel, el magma y la película de aceite de un cojinete. Sus leyes son lineales y sorprendentes: no hay inercia que permita deslizarse, y los movimientos se pueden deshacer exactamente.</p>
+
+<section>
+<h2>Las ecuaciones de Stokes</h2>
+<p>Si \(\mathrm{Re}\ll1\), en las ecuaciones adimensionales de Navier–Stokes el término inercial es despreciable frente al viscoso. Escalando la presión con \(\mu U/L\) en vez de \(\rho U^2\) se obtienen las <span class="term">ecuaciones de Stokes</span>:</p>
+<div class="eq key" data-name="Flujo de Stokes">\[\grad p=\mu\lap\vb u,\qquad\divg\vb u=0.\]</div>
+<p>Tres propiedades las distinguen. Son <b>lineales</b>: las soluciones se superponen y las fuerzas son proporcionales a las velocidades. Son <b>instantáneas</b>: no aparece el tiempo; el flujo en cada momento depende solo de las condiciones de frontera en ese momento. Y son <b>reversibles</b>: si se invierte el movimiento de las fronteras, el fluido recorre hacia atrás el mismo camino. G. I. Taylor lo mostró en una película célebre: una gota de tinta en glicerina, entre dos cilindros, se estira hasta desaparecer al girar el cilindro interior y reaparece intacta al girarlo en sentido contrario.</p>
+<div class="sim" data-sim="reversibilidad" data-title="Reversibilidad: una mancha de tinta entre dos cilindros que giran"></div>
+<div class="sim-guide"><ul>
+<li>Gire varias vueltas y luego regrese el mismo número. En el flujo de Couette circular, que es solución exacta de las ecuaciones de Stokes, cada partícula vuelve a su sitio.</li>
+<li>Añada difusión (movimiento browniano de la tinta): la reversibilidad se pierde poco a poco, porque la difusión es irreversible.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>La esfera de Stokes</h2>
+<p>Stokes resolvió en 1851 el flujo alrededor de una esfera de radio \(a\) en una corriente uniforme \(U\). En coordenadas esféricas, la función de corriente es</p>
+<div class="eq">\[\psi=\frac{U}{2}\sin^2\theta\left(r^2-\frac{3ar}{2}+\frac{a^3}{2r}\right),\]</div>
+<p>y la fuerza sobre la esfera, de la cual un tercio viene de la presión y dos tercios de la fricción, es la <span class="term">ley de Stokes</span>:</p>
+<div class="eq key" data-name="Ley de Stokes">\[F=6\pi\mu aU,\qquad C_D=\frac{24}{\mathrm{Re}}\quad(\mathrm{Re}=2aU\rho/\mu\ll1).\]</div>
+<p>La perturbación que produce la esfera decae como \(1/r\), muchísimo más lento que en el flujo potencial (\(1/r^3\)): a bajo Reynolds los objetos «sienten» a sus vecinos y a las paredes a gran distancia. Esa lentitud hace que la aproximación falle lejos de la esfera (paradoja de Whitehead); Oseen la corrigió en 1910 reteniendo parte de la inercia, \(C_D=(24/\mathrm{Re})(1+3\mathrm{Re}/16)\).</p>
+<div class="sim" data-sim="stokes-esfera" data-title="Líneas de corriente alrededor de una esfera: Stokes contra flujo potencial"></div>
+<div class="sim-guide"><ul>
+<li>Ambos patrones son simétricos entre adelante y atrás: a bajo Reynolds no hay estela. Pero en el flujo de Stokes las líneas se apartan mucho más lejos de la esfera.</li>
+<li>El color muestra la perturbación de la velocidad \(|\vb u-\vb U|/U\) en escala logarítmica: compare su alcance en ambos casos.</li>
+</ul></div>
+<p>Igualando la ley de Stokes con el peso aparente se obtiene la <b>velocidad de sedimentación</b> de una partícula de densidad \(\rho_s\):</p>
+<div class="eq">\[V_s=\frac{2(\rho_s-\rho)ga^2}{9\mu}.\]</div>
+<p>En agua a 20 °C, una partícula de arcilla de 2 µm (\(\rho_s=2650\) kg/m³) cae 3.6 µm/s y tarda casi ocho horas en bajar 10 cm; un grano de limo de 20 µm, cinco minutos; uno de arena fina de 100 µm, once segundos. Por eso los ríos cargados de arcilla tardan días en aclararse y las plantas de potabilización usan coagulantes que agrupan las partículas finas en flóculos más grandes. Millikan usó la misma ley, con una corrección por el recorrido libre medio del aire, para medir la carga del electrón con gotas de aceite que caían a una décima de milímetro por segundo.</p>
+<div class="sim" data-sim="sedimentacion" data-title="Sedimentación de arcilla, limo y arena en una columna de agua"></div>
+<div class="sim-guide"><ul>
+<li>El tiempo avanza en escala logarítmica. Para la arcilla y el limo la ley de Stokes es exacta; para la arena gruesa (\(\mathrm{Re}&gt;1\)) sobrestima la velocidad, y la simulación usa la correlación completa del arrastre (capítulo 16).</li>
+<li>La tabla compara ambas velocidades: con 0.5 mm de diámetro, Stokes predice 22 cm/s y la realidad es 8 cm/s.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Burbujas y gotas</h2>
+<p>Si el objeto es una gota de otro fluido, su superficie se mueve y el fluido interior circula. Hadamard y Rybczynski (1911) encontraron que el arrastre se reduce en el factor \((2+3\kappa)/(3+3\kappa)\), con \(\kappa\) el cociente entre la viscosidad interior y la exterior. Para una burbuja de gas (\(\kappa\to0\)) el arrastre es 2/3 del de Stokes y la burbuja sube 1.5 veces más rápido que una esfera sólida igual. En la práctica, trazas de tensoactivos se acumulan en la superficie, la inmovilizan y las burbujas pequeñas se comportan como esferas rígidas: el agua del grifo y la del laboratorio dan resultados distintos.</p>
+</section>
+
+<section>
+<h2>Movimiento browniano y la relación de Stokes–Einstein</h2>
+<p>Una partícula pequeña recibe choques desordenados de las moléculas del fluido y se mueve al azar. Einstein mostró en 1905 que su coeficiente de difusión resulta del balance entre esa agitación y la fricción de Stokes:</p>
+<div class="eq key" data-name="Relación de Stokes–Einstein">\[D=\frac{k_BT}{6\pi\mu a},\qquad\langle x^2\rangle=2Dt.\]</div>
+<p>Una esfera de 1 µm en agua a 20 °C tiene \(D=4.3\times10^{-13}\) m²/s y se desplaza en promedio 0.93 µm por eje en un segundo, 7.2 µm en un minuto: visible al microscopio. Perrin midió esos desplazamientos en 1908 y obtuvo el número de Avogadro, una de las pruebas decisivas de la existencia de los átomos.</p>
+<div class="sim" data-sim="browniano" data-title="Movimiento browniano y desplazamiento cuadrático medio"></div>
+<div class="sim-guide"><ul>
+<li>Cada partícula da pasos gaussianos con varianza \(2D\,\Delta t\) por eje. El desplazamiento cuadrático medio crece linealmente con el tiempo; su pendiente es \(4D\) en el plano.</li>
+<li>Duplique el radio: \(D\) se reduce a la mitad. Caliente el agua: \(D\) crece por \(T\) y, sobre todo, porque la viscosidad baja.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Lubricación</h2>
+<p>En una película delgada de espesor \(h(x)\ll L\), las variaciones a lo largo de la película son lentas y la presión solo depende de \(x\). Las ecuaciones de Stokes dan un perfil de Couette–Poiseuille en cada sección; imponiendo la conservación del caudal se obtiene la <span class="term">ecuación de Reynolds</span> (1886):</p>
+<div class="eq key" data-name="Ecuación de Reynolds de la lubricación">\[\odv{}{x}\left(h^3\odv{p}{x}\right)=6\mu U\odv{h}{x}.\]</div>
+<p>Una película que se estrecha en la dirección del movimiento genera presión: el fluido arrastrado hacia la cuña no cabe y debe ser empujado por un gradiente de presión. Para un patín de cuña lineal con espesores \(h_1\) a la entrada y \(h_2=h_1/k\) a la salida, la carga por unidad de ancho es</p>
+<div class="eq">\[W=\frac{6\mu UL^2}{h_2^2}\,\frac{1}{(k-1)^2}\left[\ln k-\frac{2(k-1)}{k+1}\right],\]</div>
+<p>máxima en \(k=2.19\), con \(W=0.160\,\mu UL^2/h_2^2\). Las presiones son enormes: un patín de 10 cm a 5 m/s sobre aceite de 0.05 Pa·s con 20 µm de holgura soporta 1 MN por metro de ancho, con picos de presión de 16 MPa. Así flotan los ejes de las turbinas sin tocar sus cojinetes.</p>
+<div class="sim" data-sim="cojinete" data-title="Patín lubricado: presión en la película y capacidad de carga"></div>
+<div class="sim-guide"><ul>
+<li>La línea es la solución analítica; los puntos, la ecuación de Reynolds resuelta por diferencias finitas. Con 1000 intervalos, la carga coincide en cinco cifras significativas; el error decrece como el cuadrado del paso.</li>
+<li>Barra el cociente \(k=h_1/h_2\): la carga tiene un máximo cerca de 2.2. Si la cuña se invierte (\(k&lt;1\)) la presión es negativa y la película se rompe por cavitación.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Nadar sin inercia</h2>
+<p>Purcell explicó en 1977, en una conferencia famosa, qué significa vivir a \(\mathrm{Re}\approx10^{-5}\): si una bacteria deja de nadar, se detiene en menos de un microsegundo tras recorrer una distancia menor que el tamaño de un átomo. No puede impulsarse por reacción como un nadador, y por la reversibilidad un movimiento recíproco (abrir y cerrar como una vieira) la deja donde empezó: es el <span class="term">teorema de la vieira</span>. Los microorganismos usan movimientos no recíprocos: flagelos helicoidales que giran como sacacorchos o cilios que baten con golpes asimétricos. Funcionan porque una varilla delgada tiene el doble de arrastre al moverse de lado que a lo largo, de modo que una onda que se propaga por el flagelo empuja al organismo en sentido contrario.</p>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Con qué velocidad cae en el aire una gota de niebla de 10 µm de diámetro?
+<details><summary>Respuesta</summary><p>\(V=2(998)(9.807)(5\times10^{-6})^2/(9\times1.81\times10^{-5})=3.0\) mm/s; \(\mathrm{Re}=0.002\).</p></details></li>
+<li><span class="lvl">Básico</span>Halle el coeficiente de difusión de una proteína esférica de radio 3 nm en agua a 37 °C (\(\mu=6.9\times10^{-4}\) Pa·s).
+<details><summary>Respuesta</summary><p>\(D=1.381\times10^{-23}\times310.15/(6\pi\times6.9\times10^{-4}\times3\times10^{-9})=1.1\times10^{-10}\) m²/s.</p></details></li>
+<li><span class="lvl">Intermedio</span>Una burbuja de aire de 0.1 mm sube en agua pura. Compare su velocidad con la de una esfera rígida del mismo tamaño.
+<details><summary>Respuesta</summary><p>Rígida: \(V=2(997)(9.807)(5\times10^{-5})^2/(9\times1.002\times10^{-3})=5.4\) mm/s. Superficie libre (Hadamard–Rybczynski): 1.5 veces, 8.1 mm/s. \(\mathrm{Re}=0.5\): la aproximación es aceptable.</p></details></li>
+<li><span class="lvl">Intermedio</span>Estime la distancia que recorre por inercia una bacteria de 1 µm de radio que nada a 30 µm/s cuando deja de impulsarse.
+<details><summary>Respuesta</summary><p>Tiempo de frenado \(\tau=m/(6\pi\mu a)=2\rho a^2/9\mu=2.2\times10^{-7}\) s; distancia \(V\tau=6.7\times10^{-12}\) m, una fracción del radio de un átomo.</p></details></li>
+<li><span class="lvl">Avanzado</span>Dos discos paralelos de radio \(R\) separados \(h\) se acercan con velocidad \(\dot h\), expulsando un fluido viscoso (película de compresión). Con la aproximación de lubricación, demuestre que la fuerza es \(F=3\pi\mu R^4\dot h/(2h^3)\).
+<details><summary>Respuesta</summary><p>Caudal radial a través de un círculo de radio \(r\): \(\pi r^2\dot h=-2\pi r\,(h^3/12\mu)\,\dd p/\dd r\), así que \(\dd p/\dd r=-6\mu\dot hr/h^3\) y \(p=3\mu\dot h(R^2-r^2)/h^3\). Integrando sobre el disco, \(F=3\pi\mu\dot hR^4/(2h^3)\). Por eso dos placas de vidrio mojadas son difíciles de separar.</p></details></li>
+</ol>
+<div class="box note"><h4>Para profundizar</h4><p>G. G. Stokes, «On the effect of the internal friction of fluids on the motion of pendulums», <em>Trans. Camb. Phil. Soc.</em> 9, 8 (1851). E. M. Purcell, «Life at low Reynolds number», <em>Am. J. Phys.</em> 45, 3 (1977). A. Einstein, «Über die von der molekularkinetischen Theorie der Wärme geforderte Bewegung…», <em>Ann. Phys.</em> 17, 549 (1905). O. Reynolds, «On the theory of lubrication», <em>Phil. Trans. R. Soc.</em> 177, 157 (1886). G. I. Taylor, <em>Low Reynolds Number Flows</em> (película, NCFMF, 1967).</p></div>
+</section>
+</template>

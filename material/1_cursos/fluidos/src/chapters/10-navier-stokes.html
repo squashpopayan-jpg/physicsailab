@@ -1,0 +1,93 @@
+<template class="chapter-src" data-id="navier-stokes" data-num="10" data-title="Las ecuaciones de Navier–Stokes" data-part="Parte III · Flujo viscoso" data-short="La ecuación de Cauchy, la ley constitutiva del fluido newtoniano, las ecuaciones de Navier–Stokes y sus condiciones de frontera, soluciones exactas de Couette, Poiseuille y de películas, los problemas de Stokes, el arranque del flujo en un tubo y la disipación viscosa">
+<p class="lead">Las ecuaciones de Navier–Stokes son la segunda ley de Newton para un fluido viscoso. Describen desde la miel que gotea hasta el viento sobre un avión y la circulación de la atmósfera, y aún guardan uno de los problemas matemáticos abiertos más famosos. Este capítulo las deduce y resuelve exactamente los pocos casos en que el término no lineal se anula, que son la base de la lubricación, la reología y la medida de la viscosidad.</p>
+
+<section>
+<h2>La ecuación de Cauchy</h2>
+<p>Para un volumen material, la rapidez de cambio de su cantidad de movimiento es igual a las fuerzas de cuerpo más las de superficie. Escribiendo las de superficie con el tensor de esfuerzos, \(\oint\sigma_{ij}n_j\,\dd A=\int\partial_j\sigma_{ij}\,\dd V\), y como el volumen es arbitrario:</p>
+<div class="eq key" data-name="Ecuación de Cauchy">\[\rho\frac{Du_i}{Dt}=\pdv{\sigma_{ij}}{x_j}+\rho g_i.\]</div>
+<p>Vale para cualquier medio continuo: sólido, fluido o pasta. Lo que distingue a cada material es la <span class="term">ley constitutiva</span> que relaciona \(\sigma_{ij}\) con el movimiento.</p>
+</section>
+
+<section>
+<h2>El fluido newtoniano y las ecuaciones de Navier–Stokes</h2>
+<p>Un fluido newtoniano es aquel cuyo esfuerzo viscoso depende linealmente de la rapidez de deformación \(S_{ij}\) y es isotrópico. Las únicas combinaciones posibles son</p>
+<div class="eq">\[\sigma_{ij}=-p\,\delta_{ij}+2\mu S_{ij}+\lambda\,(\divg\vb u)\,\delta_{ij}.\]</div>
+<p>La rotación rígida no produce esfuerzos, por eso aparece \(S_{ij}\) y no el gradiente completo. Con la hipótesis de Stokes, \(\lambda=-\tfrac23\mu\), la presión mecánica coincide con la termodinámica. Para un fluido incompresible el último término desaparece y, con \(\mu\) constante, \(\partial_j(2\mu S_{ij})=\mu\lap u_i\). Resultan las <span class="term">ecuaciones de Navier–Stokes</span>:</p>
+<div class="eq key" data-name="Navier–Stokes incompresible">\[\rho\left(\pdv{\vb u}{t}+(\vb u\cdot\grad)\vb u\right)=-\grad p+\mu\lap\vb u+\rho\vb g,\qquad\divg\vb u=0.\]</div>
+<p>Son cuatro ecuaciones para cuatro incógnitas, \(\vb u\) y \(p\). La presión no tiene ecuación propia: actúa como un multiplicador que garantiza \(\divg\vb u=0\). El término \((\vb u\cdot\grad)\vb u\) las hace no lineales; el cociente entre él y el término viscoso es el número de Reynolds (capítulo 11). Navier las propuso en 1822 con un modelo molecular; Stokes las dedujo en 1845 desde el continuo.</p>
+<h3>Condiciones de frontera</h3>
+<ul>
+<li><b>No deslizamiento</b>: en una pared sólida el fluido tiene la velocidad de la pared, tangencial y normal. Es un hecho experimental, válido mientras \(\mathrm{Kn}&lt;0.01\) (capítulo 1).</li>
+<li><b>Superficie libre</b>: la superficie se mueve con el fluido (condición cinemática) y el esfuerzo es continuo; el cortante es nulo y la presión salta \(\gamma(1/R_1+1/R_2)\) (condición dinámica).</li>
+<li><b>Entradas y salidas</b>: perfiles de velocidad o presiones conocidas.</li>
+</ul>
+<div class="box hist"><h4>Un problema del milenio</h4><p>No se sabe si, en tres dimensiones, las ecuaciones de Navier–Stokes con datos iniciales suaves tienen siempre soluciones suaves para todo tiempo, o si pueden desarrollar singularidades. El Instituto Clay ofrece un millón de dólares por la respuesta. En la práctica se resuelven numéricamente a diario (capítulo 26).</p></div>
+</section>
+
+<section>
+<h2>Soluciones exactas: flujos paralelos</h2>
+<p>Si el flujo es paralelo, \(\vb u=u(y)\,\uv x\), la continuidad se cumple sola y el término convectivo se anula. Navier–Stokes se reduce a un balance entre el gradiente de presión \(G=-\dd p/\dd x\) y la viscosidad: \(\mu\,\dd^2u/\dd y^2=-G\). Entre una placa fija en \(y=0\) y una que se mueve a \(U\) en \(y=h\):</p>
+<div class="eq key" data-name="Flujo de Couette–Poiseuille">\[u(y)=U\frac{y}{h}+\frac{G}{2\mu}\,y(h-y).\]</div>
+<p>Con \(G=0\) es el <b>flujo de Couette</b>, lineal; con \(U=0\), el <b>flujo de Poiseuille plano</b>, parabólico. Si el gradiente de presión es adverso y fuerte, aparece flujo en retroceso junto a la pared fija. El parámetro adimensional \(P=Gh^2/(2\mu U)\) gobierna la forma del perfil.</p>
+<div class="sim" data-sim="couette-poiseuille" data-title="Familia de perfiles de Couette–Poiseuille"></div>
+<div class="sim-guide"><ul>
+<li>Con \(P&lt;-1\) hay retroceso cerca de la pared inferior: es el inicio de la separación que se estudia en la capa límite (capítulo 13).</li>
+<li>Con \(P=3\) el caudal es el doble que en Couette puro; el esfuerzo en la pared fija se anula cuando \(P=-1\).</li>
+</ul></div>
+<p>En un tubo circular de radio \(R\) con gradiente \(G\), el mismo balance en coordenadas cilíndricas da el <span class="term">flujo de Hagen–Poiseuille</span>:</p>
+<div class="eq key" data-name="Hagen–Poiseuille">\[u(r)=\frac{G}{4\mu}(R^2-r^2),\qquad Q=\frac{\pi R^4G}{8\mu},\qquad\tau_w=\frac{GR}{2}.\]</div>
+<p>El caudal crece con la cuarta potencia del radio: un vaso sanguíneo que se dilata un 19 % duplica su flujo con la misma presión, y un tubo de 1 mm de diámetro y 1 m de largo con 1 kPa de diferencia deja pasar apenas 0.024 mL/s de agua. Expresado como factor de fricción, \(f=64/\mathrm{Re}\), el resultado que el capítulo 15 extiende al flujo turbulento. Hagen (1839) y Poiseuille (1840), este último médico interesado en la circulación, lo establecieron experimentalmente.</p>
+<div class="sim" data-sim="hagen-poiseuille" data-title="Flujo de Hagen–Poiseuille en un tubo"></div>
+<div class="sim-guide"><ul>
+<li>Duplique el radio: el caudal se multiplica por 16. La velocidad máxima en el eje es el doble de la media.</li>
+<li>La lectura del número de Reynolds avisa cuándo el flujo dejaría de ser laminar (\(\mathrm{Re}\gtrsim2300\)).</li>
+</ul></div>
+<p>Otras soluciones exactas útiles: la <b>película</b> de espesor \(h\) que baja por un plano inclinado \(\theta\), con \(u=(\rho g\sin\theta/\mu)(hy-y^2/2)\) y caudal por unidad de ancho \(q=\rho g\sin\theta\,h^3/3\mu\) (una película de agua de 0.3 mm sobre un plano a 30° tiene velocidad superficial de 0.22 m/s); y el <b>flujo de Couette circular</b> entre cilindros que giran, \(v_\theta=Ar+B/r\), base de los viscosímetros rotacionales y del problema de estabilidad de Taylor (capítulo 23).</p>
+</section>
+
+<section>
+<h2>Flujos no estacionarios: los problemas de Stokes</h2>
+<p>Una placa infinita en reposo bajo un fluido en reposo se pone de pronto en movimiento con velocidad \(U\). Navier–Stokes se reduce a la ecuación de difusión, \(\partial u/\partial t=\nu\,\partial^2u/\partial y^2\), con solución de similitud</p>
+<div class="eq key" data-name="Primer problema de Stokes">\[u=U\,\operatorname{erfc}\left(\frac{y}{2\sqrt{\nu t}}\right),\qquad\delta_{99}=3.64\sqrt{\nu t}.\]</div>
+<p>La cantidad de movimiento se difunde: en 1 s alcanza 3.6 mm en el agua y 14 mm en el aire; en un minuto, 2.8 cm y 11 cm. La escala \(\sqrt{\nu t}\) reaparece en la capa límite. Si la placa oscila, \(U\cos\omega t\) (segundo problema de Stokes), la solución es una onda amortiguada que penetra una profundidad \(\delta=\sqrt{2\nu/\omega}\):</p>
+<div class="eq">\[u=U\,\ee^{-y/\delta}\cos\left(\omega t-\frac{y}{\delta}\right).\]</div>
+<p>A 1 Hz, \(\delta=0.56\) mm en el agua y 2.2 mm en el aire: las capas de Stokes son delgadas y por eso el flujo oscilatorio de alta frecuencia es casi no viscoso fuera de ellas.</p>
+<div class="sim" data-sim="stokes-problema" data-title="Primer y segundo problema de Stokes: solución exacta y numérica"></div>
+<div class="sim-guide"><ul>
+<li>Los puntos son la solución numérica con diferencias finitas (Crank–Nicolson); las líneas, la solución exacta. Las pruebas del apéndice B comparan ambas.</li>
+<li>En el modo oscilante, la envolvente \(\pm U\ee^{-y/\delta}\) encierra todos los perfiles; el fluido lejos de la placa se mueve con un retraso de fase \(y/\delta\).</li>
+</ul></div>
+<h3>El arranque del flujo en un tubo</h3>
+<p>Si se aplica de pronto un gradiente de presión a un fluido en reposo dentro de un tubo, el perfil parabólico tarda en formarse. La solución (Szymanski, 1932) es una serie de Fourier–Bessel:</p>
+<div class="eq">\[\frac{u}{u_{max}}=1-\frac{r^2}{R^2}-8\sum_{n=1}^{\infty}\frac{J_0(\lambda_nr/R)}{\lambda_n^3J_1(\lambda_n)}\ee^{-\lambda_n^2\nu t/R^2},\]</div>
+<p>con \(\lambda_n\) los ceros de \(J_0\). El modo más lento decae con \(\lambda_1^2=5.78\): la velocidad en el eje alcanza el 99 % de su valor final en \(t=0.81R^2/\nu\), 81 s para agua en un tubo de 2 cm de diámetro.</p>
+<div class="sim" data-sim="arranque-tubo" data-title="Arranque del flujo en un tubo: serie de Bessel y diferencias finitas"></div>
+<div class="sim-guide"><ul>
+<li>Al principio el perfil es plano en el centro: el fluido acelera uniformemente y solo cerca de la pared lo frena la viscosidad. Más tarde se vuelve parabólico.</li>
+<li>Las dos soluciones, la serie con 60 términos y las diferencias finitas en coordenadas cilíndricas, coinciden en todo instante.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Disipación viscosa</h2>
+<p>El trabajo de los esfuerzos viscosos se convierte en calor a razón de \(\Phi=2\mu S_{ij}S_{ij}\) por unidad de volumen, siempre positiva. En el flujo de Hagen–Poiseuille, la integral de \(\Phi\) sobre el tubo es exactamente la potencia \(\Delta p\,Q\) que entrega la diferencia de presión: toda la energía que empuja el fluido termina como calor. En los cojinetes y las películas lubricantes delgadas esa disipación calienta el aceite y reduce su viscosidad, un acoplamiento que limita la carga que pueden soportar.</p>
+<div class="box ex"><h4>¿Cuánto se calienta el aceite de un cojinete?</h4><p>En el problema 3 del capítulo 2, un cojinete disipa 1.0 kW en una película de 0.1 mm × 15.7 cm². Si no se renovara el aceite y no hubiera conducción, la película (\(\rho c_p\approx1.7\) MJ/m³K, volumen \(1.6\times10^{-6}\) m³) se calentaría a razón de \(1000/(1.7\times10^{6}\times1.6\times10^{-6})\approx370\) K/s. Por eso los cojinetes necesitan un flujo continuo de aceite que se lleve el calor.</p></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Halle la caída de presión necesaria para que pase 1 L/min de agua a 20 °C por un tubo de 2 mm de diámetro y 50 cm de largo. ¿Es laminar?
+<details><summary>Respuesta</summary><p>\(Q=1.667\times10^{-5}\) m³/s; \(\Delta p=8\mu LQ/(\pi R^4)=8(1.002\times10^{-3})(0.5)(1.667\times10^{-5})/(\pi\times10^{-12})=21.3\) kPa. \(V=5.3\) m/s, \(\mathrm{Re}=10\,600\): no es laminar; la fórmula no vale y la caída real es mayor.</p></details></li>
+<li><span class="lvl">Básico</span>¿Qué distancia recorre la difusión de cantidad de movimiento en 10 s en glicerina (\(\nu=1.1\times10^{-3}\) m²/s)?
+<details><summary>Respuesta</summary><p>\(\delta_{99}=3.64\sqrt{1.1\times10^{-3}\times10}=0.38\) m.</p></details></li>
+<li><span class="lvl">Intermedio</span>En un flujo de Couette–Poiseuille, ¿para qué valor de \(P=Gh^2/(2\mu U)\) es nulo el esfuerzo en la pared fija? ¿Y para cuál el caudal neto es nulo?
+<details><summary>Respuesta</summary><p>\(\dd u/\dd y|_0=U/h+Gh/2\mu=0\) → \(P=-1\). Caudal \(Uh/2+Gh^3/12\mu=0\) → \(P=-3\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Una película de aceite (\(\nu=10^{-4}\) m²/s) de 1 mm de espesor baja por una pared vertical. Halle su velocidad superficial y su caudal por metro de ancho.
+<details><summary>Respuesta</summary><p>\(u_s=gh^2/2\nu=9.807\times10^{-6}/2\times10^{-4}=0.049\) m/s; \(q=gh^3/3\nu=3.27\times10^{-5}\) m²/s.</p></details></li>
+<li><span class="lvl">Avanzado</span>Demuestre que en el flujo de Hagen–Poiseuille \(\int\Phi\,\dd V=\Delta p\,Q\).
+<details><summary>Respuesta</summary><p>\(\Phi=\mu(\dd u/\dd r)^2=\mu(Gr/2\mu)^2=G^2r^2/4\mu\). \(\int_0^R\Phi\,2\pi rL\,\dd r=\pi LG^2R^4/8\mu\). Con \(\Delta p=GL\) y \(Q=\pi R^4G/8\mu\), \(\Delta p\,Q=\pi LG^2R^4/8\mu\).</p></details></li>
+</ol>
+<div class="box note"><h4>Para profundizar</h4><p>G. G. Stokes, «On the theories of the internal friction of fluids in motion», <em>Trans. Camb. Phil. Soc.</em> 8, 287 (1845). F. M. White, <em>Viscous Fluid Flow</em>, 3.ª ed., McGraw-Hill, 2006, cap. 3. H. Schlichting y K. Gersten, <em>Boundary-Layer Theory</em>, 9.ª ed., Springer, 2017, cap. 5. P. Szymanski, «Quelques solutions exactes des équations de l'hydrodynamique du fluide visqueux», <em>J. Math. Pures Appl.</em> 11, 67 (1932). C. L. Fefferman, «Existence and smoothness of the Navier–Stokes equation», Clay Mathematics Institute, 2000.</p></div>
+</section>
+</template>

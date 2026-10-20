@@ -4525,9 +4525,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateQuizWatermark(studentName, pin) {
         const watermarkEl = document.getElementById('quiz-security-watermark');
         if (!watermarkEl) return;
-        const text = `${studentName} · PIN: ${pin} · PhysicsAILab Oficial`;
+        const sessId = (activeQuiz && activeQuiz.sessionId) || ('UNICAUCA-' + Math.random().toString(36).substring(2, 6).toUpperCase());
+        const text = `👤 ${studentName} · 🔑 PIN: ${pin} · 🛡️ UNICAUCA OFICIAL #${sessId}`;
         let stamps = '';
-        for (let i = 0; i < 28; i++) {
+        for (let i = 0; i < 36; i++) {
             stamps += `<span class="watermark-stamp">${text}</span>`;
         }
         watermarkEl.innerHTML = stamps;
@@ -4548,19 +4549,57 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 6500);
         }
 
-        if (type === 'screenshot' || type === 'tab') {
-            const shield = document.getElementById('quiz-blackout-shield');
-            if (shield) {
-                shield.style.display = 'flex';
-                shield.style.opacity = '1';
+        const qScreen = document.getElementById('quiz-question-screen');
+        if (qScreen) qScreen.style.filter = 'blur(25px)';
+
+        const shield = document.getElementById('quiz-blackout-shield');
+        if (shield) {
+            shield.style.display = 'flex';
+            shield.style.opacity = '1';
+            if (type === 'screenshot') {
                 setTimeout(() => {
                     shield.style.opacity = '0';
-                    setTimeout(() => { shield.style.display = 'none'; shield.style.opacity = '1'; }, 250);
-                }, 1500);
+                    setTimeout(() => { 
+                        shield.style.display = 'none'; 
+                        shield.style.opacity = '1';
+                        if (qScreen) qScreen.style.filter = 'none';
+                    }, 250);
+                }, 1800);
             }
         }
 
         playQuizAudio('incorrect');
+    }
+
+    function onTouchStartGuard(e) {
+        if (!antiCheatActive || !activeQuiz || !activeQuiz.antiFraudEnabled) return;
+        if (e.touches && e.touches.length > 1) {
+            e.preventDefault();
+            activeQuiz.tabSwitches = (activeQuiz.tabSwitches || 0) + 1;
+            triggerAntiCheatAlert('touch', `⚠️ <strong>GESTO NO PERMITIDO:</strong> Se detectó toque con múltiples dedos en pantalla (#${activeQuiz.tabSwitches}). Solo se permite un dedo para contestar.`);
+            logRealActivity(`[ANTIFRAUDE] Alumno "${activeQuiz.studentName}" ejecutó gesto multi-touch (#${activeQuiz.tabSwitches})`, 'quiz');
+            return false;
+        }
+    }
+
+    function onTouchCancelGuard(e) {
+        if (!antiCheatActive || !activeQuiz || !activeQuiz.antiFraudEnabled) return;
+        activeQuiz.tabSwitches = (activeQuiz.tabSwitches || 0) + 1;
+        triggerAntiCheatAlert('touch', `⚠️ <strong>ALERTA DE SEGURIDAD MÓVIL:</strong> Se detectó interrupción touch o captura de pantalla (#${activeQuiz.tabSwitches}).`);
+        logRealActivity(`[ANTIFRAUDE] Interrupción touch en iPhone/móvil para "${activeQuiz.studentName}" (#${activeQuiz.tabSwitches})`, 'quiz');
+    }
+
+    function onGestureGuard(e) {
+        if (!antiCheatActive || !activeQuiz || !activeQuiz.antiFraudEnabled) return;
+        e.preventDefault();
+        return false;
+    }
+
+    function onPageHideGuard() {
+        if (!antiCheatActive || !activeQuiz || !activeQuiz.antiFraudEnabled) return;
+        activeQuiz.tabSwitches = (activeQuiz.tabSwitches || 0) + 1;
+        triggerAntiCheatAlert('tab', `⚠️ <strong>ALERTA DE SEGURIDAD MÓVIL:</strong> Se detectó cambio de aplicación o suspensión (#${activeQuiz.tabSwitches}).`);
+        logRealActivity(`[ANTIFRAUDE] Dispositivo móvil suspendido/cambio de app para "${activeQuiz.studentName}" (#${activeQuiz.tabSwitches})`, 'quiz');
     }
 
     function onVisibilityChange() {
@@ -4648,6 +4687,8 @@ document.addEventListener('DOMContentLoaded', () => {
     window.resumeQuizFromBlackout = function() {
         const shield = document.getElementById('quiz-blackout-shield');
         if (shield) shield.style.display = 'none';
+        const qScreen = document.getElementById('quiz-question-screen');
+        if (qScreen) qScreen.style.filter = 'none';
         try {
             if (document.documentElement && document.documentElement.requestFullscreen && !document.fullscreenElement) {
                 document.documentElement.requestFullscreen().catch(() => {});
@@ -4742,10 +4783,20 @@ document.addEventListener('DOMContentLoaded', () => {
         antiCheatActive = true;
         document.addEventListener('visibilitychange', onVisibilityChange);
         window.addEventListener('blur', onWindowBlur);
+        window.addEventListener('focusout', onWindowBlur);
+        window.addEventListener('pagehide', onPageHideGuard);
+        window.addEventListener('freeze', onPageHideGuard);
         window.addEventListener('keydown', onKeyDownGuard, true);
         window.addEventListener('contextmenu', onContextMenuGuard);
         window.addEventListener('popstate', onPopStateGuard);
         window.addEventListener('beforeunload', onBeforeUnloadGuard);
+
+        // Touch & gestos en iPhone y Android
+        document.addEventListener('touchstart', onTouchStartGuard, { passive: false });
+        document.addEventListener('touchcancel', onTouchCancelGuard, { passive: false });
+        document.addEventListener('gesturestart', onGestureGuard, { passive: false });
+        document.addEventListener('gesturechange', onGestureGuard, { passive: false });
+        document.addEventListener('gestureend', onGestureGuard, { passive: false });
 
         document.addEventListener('fullscreenchange', onFullscreenChange);
         document.addEventListener('webkitfullscreenchange', onFullscreenChange);
@@ -4769,10 +4820,19 @@ document.addEventListener('DOMContentLoaded', () => {
         antiCheatActive = false;
         document.removeEventListener('visibilitychange', onVisibilityChange);
         window.removeEventListener('blur', onWindowBlur);
+        window.removeEventListener('focusout', onWindowBlur);
+        window.removeEventListener('pagehide', onPageHideGuard);
+        window.removeEventListener('freeze', onPageHideGuard);
         window.removeEventListener('keydown', onKeyDownGuard, true);
         window.removeEventListener('contextmenu', onContextMenuGuard);
         window.removeEventListener('popstate', onPopStateGuard);
         window.removeEventListener('beforeunload', onBeforeUnloadGuard);
+
+        document.removeEventListener('touchstart', onTouchStartGuard);
+        document.removeEventListener('touchcancel', onTouchCancelGuard);
+        document.removeEventListener('gesturestart', onGestureGuard);
+        document.removeEventListener('gesturechange', onGestureGuard);
+        document.removeEventListener('gestureend', onGestureGuard);
 
         document.removeEventListener('fullscreenchange', onFullscreenChange);
         document.removeEventListener('webkitfullscreenchange', onFullscreenChange);
@@ -4780,6 +4840,13 @@ document.addEventListener('DOMContentLoaded', () => {
         document.removeEventListener('cut', onClipboardGuard);
         document.removeEventListener('paste', onClipboardGuard);
         document.removeEventListener('selectstart', onClipboardGuard);
+
+        if (window._quizClockInterval) {
+            clearInterval(window._quizClockInterval);
+            window._quizClockInterval = null;
+        }
+        const stamp = document.getElementById('q-mobile-security-stamp');
+        if (stamp) stamp.remove();
 
         const banner = document.getElementById('quiz-security-banner');
         if (banner) banner.style.display = 'none';
@@ -4938,6 +5005,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 'grafica': '📊 Gráfica'
             };
             catTag.textContent = catMap[q.categoria] || (q.categoria ? q.categoria.toUpperCase() : 'GENERAL');
+        }
+
+        // Sello de Seguridad Dinámico Móvil con Reloj en Tiempo Real
+        let secStamp = document.getElementById('q-mobile-security-stamp');
+        if (!secStamp) {
+            const qBox = document.querySelector('.quiz-question-box');
+            if (qBox) {
+                secStamp = document.createElement('div');
+                secStamp.id = 'q-mobile-security-stamp';
+                secStamp.className = 'mobile-security-stamp';
+                qBox.insertBefore(secStamp, qBox.firstChild);
+            }
+        }
+        if (secStamp) {
+            secStamp.innerHTML = `
+                <span>👤 <strong>${activeQuiz.studentName}</strong> (${activeQuiz.studentCourse || 'Evaluación Oficial'})</span>
+                <span>🔑 PIN: <strong>${activeQuiz.roomCode}</strong></span>
+                <span>🕒 <strong id="q-live-clock">${new Date().toLocaleTimeString('es-ES')}</strong> · <span style="color:#ef4444; font-weight:800;">AUDITADO</span></span>
+            `;
+        }
+        if (!window._quizClockInterval) {
+            window._quizClockInterval = setInterval(() => {
+                const clockEl = document.getElementById('q-live-clock');
+                if (clockEl) clockEl.textContent = new Date().toLocaleTimeString('es-ES');
+            }, 1000);
         }
 
         // Question Text

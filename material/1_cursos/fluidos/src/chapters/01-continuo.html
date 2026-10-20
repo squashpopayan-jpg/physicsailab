@@ -1,0 +1,101 @@
+<template class="chapter-src" data-id="continuo" data-num="1" data-title="El fluido como medio continuo" data-part="Parte I · Fluidos en reposo" data-short="Qué distingue a un fluido de un sólido, la hipótesis del continuo y el número de Knudsen, los campos eulerianos, el tensor de esfuerzos y la presión, unidades y órdenes de magnitud">
+<p class="lead">El agua de un río, el aire de un aula, la sangre, la lava y la miel tienen algo en común: no resisten un esfuerzo cortante sostenido, por pequeño que sea. Este capítulo precisa esa idea, justifica por qué un conjunto de moléculas en movimiento caótico puede describirse con campos suaves de densidad, velocidad y presión, y presenta el objeto matemático que lleva las fuerzas de contacto dentro de un fluido: el tensor de esfuerzos.</p>
+
+<section>
+<h2>¿Qué es un fluido?</h2>
+<p>Un sólido sometido a un esfuerzo cortante pequeño se deforma un ángulo finito y se queda ahí: almacena energía elástica y la devuelve al retirar la carga. Un <span class="term">fluido</span>, en cambio, se deforma de manera continua mientras actúe el cortante; lo que el esfuerzo fija no es la deformación sino su <em>rapidez</em>. Para un fluido newtoniano en cortante simple,</p>
+<div class="eq key" data-name="Ley de viscosidad de Newton">\[\tau=\mu\,\dot\gamma=\mu\,\odv{u}{y},\]</div>
+<p>donde \(\mu\) es la <span class="term">viscosidad dinámica</span> (Pa·s) y \(\dot\gamma\) la rapidez de deformación angular. La consecuencia es fundamental: un fluido en reposo no puede soportar esfuerzos cortantes, y sobre cualquier superficie dentro de él solo actúa una fuerza normal, la presión.</p>
+<p>Entre sólidos y fluidos hay materiales <span class="term">viscoelásticos</span> que se comportan como uno u otro según la escala de tiempo. La brea parece sólida y se rompe con un martillo, pero el experimento de la gota de brea de la Universidad de Queensland, iniciado en 1927, ha visto caer menos de diez gotas: su viscosidad es del orden de \(10^{8}\) Pa·s, cien mil millones de veces la del agua. El cociente entre el tiempo de relajación del material y el tiempo de observación, el <span class="term">número de Deborah</span>, decide si lo vemos fluir.</p>
+<div class="sim" data-sim="deformacion" data-title="Sólido, fluido y material viscoelástico bajo un esfuerzo cortante"></div>
+<div class="sim-guide"><ul>
+<li>Aplique un esfuerzo y retírelo. El sólido elástico se deforma \(\gamma=\tau/G\) al instante y vuelve a cero. El fluido newtoniano se deforma a ritmo constante \(\tau/\mu\) y conserva la deformación acumulada.</li>
+<li>El modelo de Maxwell (resorte y amortiguador en serie) suma ambos comportamientos. Su tiempo de relajación \(\lambda=\mu/G\) separa las cargas rápidas, a las que responde como sólido, de las lentas, a las que responde como fluido.</li>
+</ul></div>
+<p>Los fluidos se dividen en <b>líquidos</b>, con moléculas en contacto permanente, densidad casi fija y superficie libre, y <b>gases</b>, con moléculas separadas por distancias de unas diez veces su tamaño, que ocupan todo el recipiente y se comprimen con facilidad. Para la mecánica de fluidos la diferencia práctica es la compresibilidad, y aun un gas se comporta como incompresible si se mueve despacio frente a la velocidad del sonido (capítulo 21).</p>
+</section>
+
+<section>
+<h2>La hipótesis del continuo</h2>
+<p>Un metro cúbico de aire a 20 °C y 1 atm contiene \(n=p/k_BT=2.50\times10^{25}\) moléculas. Si definimos la densidad en un punto como la masa contenida en un volumen pequeño \(\delta V\) dividida por \(\delta V\), el resultado depende del tamaño de \(\delta V\): cuando el volumen contiene pocas moléculas, la medida fluctúa al azar; cuando es demasiado grande, promedia variaciones macroscópicas reales. La <span class="term">hipótesis del continuo</span> supone que existe una escala intermedia en la que el promedio es estable:</p>
+<div class="eq">\[\rho(\vb x,t)=\lim_{\delta V\to\delta V^*}\frac{\delta m}{\delta V},\qquad \frac{\sigma_\rho}{\rho}\approx\frac{1}{\sqrt N}.\]</div>
+<p>Un cubo de 1 µm de arista contiene \(2.5\times10^{7}\) moléculas de aire, y su densidad fluctúa apenas 0.02 %. En el agua líquida, \(3.3\times10^{28}\) moléculas por metro cúbico, incluso un cubo de 10 nm tiene unas 33 000 moléculas y una fluctuación de 0.5 %. Por eso las ecuaciones del continuo sirven desde los capilares sanguíneos hasta la atmósfera entera.</p>
+<div class="sim" data-sim="continuo-muestreo" data-title="Densidad medida con una ventana de tamaño variable"></div>
+<div class="sim-guide"><ul>
+<li>Achique la ventana de muestreo: con pocas partículas dentro, la densidad medida salta de un instante a otro. Agrándela: el valor se estabiliza.</li>
+<li>La gráfica muestra la desviación relativa de las medidas contra el número medio de partículas en la ventana. La pendiente de \(-1/2\) en escala logarítmica es la ley de los grandes números.</li>
+</ul></div>
+<p>El criterio cuantitativo para los gases es el <span class="term">número de Knudsen</span>, cociente entre el recorrido libre medio de las moléculas \(\lambda\) y la longitud característica del problema \(L\):</p>
+<div class="eq key" data-name="Número de Knudsen">\[\mathrm{Kn}=\frac{\lambda}{L},\qquad \lambda=\frac{\mu}{p}\sqrt{\frac{\pi R_gT}{2}}.\]</div>
+<p>Con \(\mathrm{Kn}&lt;0.01\) el continuo con condición de no deslizamiento es exacto; entre 0.01 y 0.1 el gas «resbala» sobre las paredes; entre 0.1 y 10 hay un régimen de transición, y por encima de 10 las moléculas casi no chocan entre sí (flujo molecular libre). En el aire a nivel del mar \(\lambda=65\) nm; en Popayán, con 81.9 kPa, sube a 80 nm. Un microcanal de 1 µm tiene \(\mathrm{Kn}\approx0.07\): está en régimen de deslizamiento. La cabeza lectora de un disco duro, que vuela a unos nanómetros del plato, y un satélite en órbita baja viven en el régimen molecular.</p>
+<div class="sim" data-sim="knudsen" data-title="Mapa de regímenes de Knudsen: presión, tamaño y altitud"></div>
+<div class="sim-guide"><ul>
+<li>El recorrido libre medio es inversamente proporcional a la presión. Suba la altitud con la atmósfera estándar: a 80 km, \(\lambda\) ya es de milímetros.</li>
+<li>Cada franja diagonal es un régimen. El punto móvil muestra el caso elegido; los marcadores fijos son ejemplos típicos.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Campos y la descripción euleriana</h2>
+<p>Aceptado el continuo, el estado del fluido se describe con <span class="term">campos</span>: la densidad \(\rho(\vb x,t)\), la presión \(p(\vb x,t)\), la temperatura \(T(\vb x,t)\) y la velocidad \(\vb u(\vb x,t)\). La velocidad en un punto es la velocidad media de las moléculas que pasan por un pequeño volumen alrededor de ese punto: la agitación térmica, de unos 500 m/s en el aire, se promedia a cero y queda el movimiento colectivo.</p>
+<p>Esta manera de describir el fluido, con campos en puntos fijos del espacio, se llama <span class="term">euleriana</span>. La alternativa, seguir cada partícula de fluido desde su posición inicial, se llama <span class="term">lagrangiana</span>. El capítulo 6 relaciona ambas mediante la derivada material \(D/Dt\). Una estación meteorológica mide en forma euleriana; una boya a la deriva o un globo sonda, en forma lagrangiana.</p>
+<div class="box def"><h4>Partícula de fluido</h4><p>Es un volumen material lo bastante pequeño para tratarse como un punto en las escalas del flujo, pero lo bastante grande para contener muchísimas moléculas. Sus propiedades son los valores de los campos en su posición. A diferencia de una molécula, una partícula de fluido se deforma, gira y cambia de volumen.</p></div>
+</section>
+
+<section>
+<h2>Fuerzas en un fluido y el tensor de esfuerzos</h2>
+<p>Sobre una porción de fluido actúan dos clases de fuerzas. Las <b>fuerzas de cuerpo</b> actúan sobre toda la masa a distancia, como la gravedad \(\rho\vb g\,\dd V\). Las <b>fuerzas de superficie</b> las ejerce el fluido vecino a través de la frontera. Sobre un elemento de área \(\dd A\) con normal exterior \(\vb n\) la fuerza es \(\vb t\,\dd A\), y Cauchy demostró, con el equilibrio de un tetraedro infinitesimal, que el vector de esfuerzo depende linealmente de la normal:</p>
+<div class="eq key" data-name="Teorema de Cauchy">\[t_i=\sigma_{ij}n_j,\qquad \sigma_{ij}=\sigma_{ji}.\]</div>
+<p>El <span class="term">tensor de esfuerzos</span> \(\sigma_{ij}\) es simétrico por el equilibrio de momentos. Sus elementos diagonales son esfuerzos normales y los demás, cortantes. En un fluido en reposo los cortantes son nulos en <em>todos</em> los planos, lo que solo es posible si el tensor es isotrópico:</p>
+<div class="eq">\[\sigma_{ij}=-p\,\delta_{ij}.\]</div>
+<p>Es la <span class="term">ley de Pascal</span> en un punto: la presión no depende de la orientación de la superficie. El signo menos indica que la presión empuja hacia dentro de la superficie. En un fluido en movimiento aparece además una parte viscosa \(\tau_{ij}\), que el capítulo 10 relaciona con la rapidez de deformación.</p>
+<div class="sim" data-sim="tension-plano" data-title="Esfuerzo sobre un plano que gira: círculo de Mohr"></div>
+<div class="sim-guide"><ul>
+<li>Con el preajuste «fluido en reposo» el círculo de Mohr se reduce a un punto: el esfuerzo sobre cualquier plano es normal y vale \(-p\).</li>
+<li>En el flujo cortante de Couette aparece un cortante \(\tau_{xy}\); el esfuerzo cortante máximo actúa a 45° de los esfuerzos principales y el círculo tiene radio \(\tau_{xy}\).</li>
+<li>Gire el plano y siga las componentes normal y tangencial del vector de esfuerzo.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Densidad, presión y unidades</h2>
+<p>La <span class="term">densidad</span> \(\rho\) se mide en kg/m³; el <span class="term">peso específico</span> es \(\gamma_e=\rho g\) (N/m³) y la <span class="term">densidad relativa</span> o gravedad específica, \(\rho/\rho_{agua}\) a 4 °C. La presión se mide en pascales; en la práctica conviven otras unidades:</p>
+<div class="tablewrap narrow"><table>
+<tr><th>Unidad</th><th class="c">Equivalencia en Pa</th><th>Uso</th></tr>
+<tr><td>atmósfera estándar (atm)</td><td class="c">101 325</td><td>química, buceo</td></tr>
+<tr><td>bar</td><td class="c">100 000</td><td>meteorología (mbar = hPa), neumáticos</td></tr>
+<tr><td>milímetro de mercurio (mmHg)</td><td class="c">133.322</td><td>medicina, barómetros</td></tr>
+<tr><td>metro de columna de agua (mca)</td><td class="c">9 806.65</td><td>acueductos y bombas</td></tr>
+<tr><td>libra por pulgada cuadrada (psi)</td><td class="c">6 894.76</td><td>neumáticos, compresores</td></tr>
+</table></div>
+<p>Hay que distinguir la <b>presión absoluta</b>, medida desde el vacío, de la <b>presión manométrica</b>, medida desde la presión atmosférica local. Un neumático «a 32 psi» tiene 32 psi manométricos; en Popayán su presión absoluta es 32 + 11.9 = 43.9 psi.</p>
+<div class="tablewrap"><table>
+<tr><th>Fluido (20 °C, 1 atm)</th><th class="c">ρ (kg/m³)</th><th class="c">μ (Pa·s)</th><th class="c">ν (m²/s)</th></tr>
+<tr><td>Aire</td><td class="c">1.204</td><td class="c">\(1.82\times10^{-5}\)</td><td class="c">\(1.51\times10^{-5}\)</td></tr>
+<tr><td>Agua</td><td class="c">998.2</td><td class="c">\(1.002\times10^{-3}\)</td><td class="c">\(1.004\times10^{-6}\)</td></tr>
+<tr><td>Agua de mar</td><td class="c">1025</td><td class="c">\(1.07\times10^{-3}\)</td><td class="c">\(1.04\times10^{-6}\)</td></tr>
+<tr><td>Etanol</td><td class="c">789</td><td class="c">\(1.19\times10^{-3}\)</td><td class="c">\(1.51\times10^{-6}\)</td></tr>
+<tr><td>Aceite SAE 30</td><td class="c">891</td><td class="c">0.29</td><td class="c">\(3.3\times10^{-4}\)</td></tr>
+<tr><td>Glicerina</td><td class="c">1261</td><td class="c">1.41</td><td class="c">\(1.1\times10^{-3}\)</td></tr>
+<tr><td>Mercurio</td><td class="c">13 546</td><td class="c">\(1.55\times10^{-3}\)</td><td class="c">\(1.14\times10^{-7}\)</td></tr>
+</table></div>
+<div class="box ex"><h4>La presión en Popayán en distintas unidades</h4><p>Según la atmósfera estándar, a 1760 m la presión es 81.9 kPa. Equivale a \(81.9/101.325=0.808\) atm, a \(81\,900/133.322=614\) mmHg, a \(81\,900/(998.2\times9.807)=8.37\) m de columna de agua y a 11.9 psi. Un barómetro de mercurio en Popayán marca unos 614 mm, no los 760 mm del nivel del mar.</p></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Cuántas moléculas hay en un cubo de aire de 1 µm de arista a 20 °C y 1 atm, y cuánto fluctúa su densidad?
+<details><summary>Respuesta</summary><p>\(N=pV/k_BT=2.50\times10^{7}\); \(\sigma_\rho/\rho\approx1/\sqrt N=2.0\times10^{-4}\).</p></details></li>
+<li><span class="lvl">Básico</span>Una llanta marca 30 psi en el manómetro en Popayán. ¿Cuál es su presión absoluta en kPa?
+<details><summary>Respuesta</summary><p>\(30\times6.895=206.8\) kPa manométricos; absoluta \(206.8+81.9=288.7\) kPa.</p></details></li>
+<li><span class="lvl">Intermedio</span>Calcule el número de Knudsen de un microcanal de 1 µm con aire a 20 °C, al nivel del mar y en Popayán. ¿En qué régimen está?
+<details><summary>Respuesta</summary><p>\(\lambda=65.3\) nm y 80.5 nm; \(\mathrm{Kn}=0.065\) y 0.080: régimen de deslizamiento en ambos casos.</p></details></li>
+<li><span class="lvl">Intermedio</span>En un punto de un flujo de agua \(\sigma_{xx}=\sigma_{yy}=-100\) kPa y \(\tau_{xy}=5\) Pa. Halle los esfuerzos principales y el cortante máximo.
+<details><summary>Respuesta</summary><p>Centro del círculo de Mohr: −100 kPa; radio: 5 Pa. Esfuerzos principales \(-100\,000\pm5\) Pa a ±45° de los ejes; cortante máximo 5 Pa. La presión domina por cuatro órdenes de magnitud.</p></details></li>
+<li><span class="lvl">Avanzado</span>Se ha dicho que el vidrio de los vitrales medievales fluyó y por eso es más grueso abajo. Con una viscosidad de \(10^{20}\) Pa·s (las estimaciones modernas son mucho mayores), estime cuánto se engrosaría en 800 años el borde inferior de un vidrio de 1 m de alto y 5 mm de espesor, de densidad 2500 kg/m³. Use que la viscosidad extensional de un fluido newtoniano es \(3\mu\) (Trouton).
+<details><summary>Respuesta</summary><p>Esfuerzo en la base \(\rho gH=2.45\times10^{4}\) Pa; deformación \(\varepsilon=\rho gHt/3\mu=2.45\times10^{4}\times2.52\times10^{10}/(3\times10^{20})=2.1\times10^{-6}\). El espesor crecería \(5\text{ mm}\times2.1\times10^{-6}\approx10\) nm, invisible. El engrosamiento observado viene de la fabricación del vidrio soplado.</p></details></li>
+</ol>
+<div class="box note"><h4>Para profundizar</h4><p>G. K. Batchelor, <em>An Introduction to Fluid Dynamics</em>, Cambridge, 1967, cap. 1. P. K. Kundu, I. M. Cohen y D. R. Dowling, <em>Fluid Mechanics</em>, 6.ª ed., Academic Press, 2016, caps. 1–2. G. A. Bird, <em>Molecular Gas Dynamics and the Direct Simulation of Gas Flows</em>, Oxford, 1994. R. Edgeworth, B. J. Dalton y T. Parnell, «The pitch drop experiment», <em>Eur. J. Phys.</em> 5, 198 (1984).</p></div>
+</section>
+</template>

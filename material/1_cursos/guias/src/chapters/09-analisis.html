@@ -1,0 +1,63 @@
+<template class="chapter-src" data-id="analisis" data-num="9" data-title="Gráficas, linealización y ajuste" data-part="Parte II · Diseñar la guía" data-short="Gráficas bien hechas, linealización de las relaciones de la física escolar, mínimos cuadrados con incertidumbre de pendiente e intercepto, residuos, funciones de la hoja de cálculo en español y un analizador de datos">
+<p class="lead">El estándar pide utilizar «las matemáticas para modelar, analizar y presentar datos». En el laboratorio de la media eso casi siempre significa lo mismo: graficar, convertir una curva en una recta con el modelo físico, ajustarla por mínimos cuadrados y leer en la pendiente o en el intercepto la magnitud buscada, con su incertidumbre. Este capítulo da las herramientas y un analizador para usar con datos reales.</p>
+
+<section>
+<h2>Una gráfica bien hecha</h2>
+<ul>
+<li>La variable que se controla (independiente) va en el eje horizontal; la que se mide como respuesta, en el vertical.</li>
+<li>Cada eje lleva la magnitud, su símbolo y su unidad: «<i>T</i>² (s²)».</li>
+<li>La escala aprovecha el área del gráfico; el cero se incluye cuando el modelo pasa por el origen y se quiere juzgar el intercepto.</li>
+<li>Los datos van como puntos, con barras de incertidumbre cuando son apreciables; nunca se unen con segmentos quebrados.</li>
+<li>La curva del modelo o la recta de ajuste se dibuja continua, y la leyenda distingue datos de modelo.</li>
+</ul>
+</section>
+
+<section>
+<h2>Linealizar con el modelo</h2>
+<p>Una recta se reconoce a simple vista y se ajusta con fórmulas sencillas; una curva no. Por eso se transforman las variables de modo que el modelo físico quede en la forma \(Y=mX+b\). La tabla reúne las linealizaciones de las prácticas del cuaderno:</p>
+<div class="tablewrap"><table>
+<tr><th>Modelo</th><th class="c">Eje X</th><th class="c">Eje Y</th><th>Pendiente</th><th>Práctica</th></tr>
+<tr><td>\(T=2\pi\sqrt{L/g}\)</td><td class="c">\(L\)</td><td class="c">\(T^2\)</td><td>\(4\pi^2/g\)</td><td>Péndulo</td></tr>
+<tr><td>\(T=2\pi\sqrt{(m+m_r/3)/k}\)</td><td class="c">\(m\)</td><td class="c">\(T^2\)</td><td>\(4\pi^2/k\); intercepto \(4\pi^2 m_r/3k\)</td><td>Masa–resorte</td></tr>
+<tr><td>\(x=\tfrac12at^2\)</td><td class="c">\(t^2\)</td><td class="c">\(x\)</td><td>\(a/2\)</td><td>Movimiento acelerado</td></tr>
+<tr><td>\(D=2\sqrt{hH/(1+\beta)}\)</td><td class="c">\(h\)</td><td class="c">\(D^2\)</td><td>\(4H/(1+\beta)\)</td><td>Rampa y lanzamiento</td></tr>
+<tr><td>\(P^2=4\pi^2 mL/(Mg)\)</td><td class="c">\(1/M\)</td><td class="c">\(P^2\)</td><td>\(4\pi^2 mL/g\)</td><td>Movimiento circular</td></tr>
+<tr><td>\(x=2\sqrt{hy}\)</td><td class="c">\(h\)</td><td class="c">\(x^2\)</td><td>\(4y\)</td><td>Torricelli</td></tr>
+<tr><td>\(1/f=1/s_o+1/s_i\)</td><td class="c">\(1/s_o\)</td><td class="c">\(1/s_i\)</td><td>\(-1\); intercepto \(1/f\)</td><td>Lentes</td></tr>
+<tr><td>\(pV=\text{cte}\)</td><td class="c">\(1/p\)</td><td class="c">\(V\)</td><td>\(nRT\)</td><td>Ley de Boyle</td></tr>
+<tr><td>\(V=V_0e^{-t/RC}\)</td><td class="c">\(t\)</td><td class="c">\(\ln V\)</td><td>\(-1/RC\)</td><td>Circuito RC</td></tr>
+<tr><td>\(y=Ax^n\)</td><td class="c">\(\ln x\)</td><td class="c">\(\ln y\)</td><td>\(n\) (exponente)</td><td>Cuando el modelo se desconoce</td></tr>
+</table></div>
+</section>
+
+<section>
+<h2>Mínimos cuadrados</h2>
+<p>Para \(n\) puntos \((x_i,y_i)\) con la misma incertidumbre en \(y\), la recta que minimiza la suma de los cuadrados de las desviaciones verticales tiene</p>
+<div class="eq">\[m=\frac{n\sum x_iy_i-\sum x_i\sum y_i}{\Delta},\qquad b=\frac{\sum x_i^2\sum y_i-\sum x_i\sum x_iy_i}{\Delta},\qquad \Delta=n\sum x_i^2-\Big(\sum x_i\Big)^2,\]</div>
+<p>y, con \(s^2=\sum (y_i-mx_i-b)^2/(n-2)\), las incertidumbres estándar</p>
+<div class="eq key" data-name="Incertidumbres del ajuste">\[u_m=s\sqrt{\frac{n}{\Delta}},\qquad u_b=s\sqrt{\frac{\sum x_i^2}{\Delta}} .\]</div>
+<p>El coeficiente \(R^2\) mide qué fracción de la variación de \(y\) explica la recta, pero no prueba que la relación sea lineal: datos curvos pueden dar \(R^2=0{,}99\). La prueba está en los <span class="term">residuos</span> \(y_i-(mx_i+b)\): si el modelo es correcto se reparten al azar alrededor de cero; si dibujan un arco, falta algo en el modelo.</p>
+<div class="sim" data-sim="ajuste-datos" data-kind="Herramienta" data-title="Analizador de datos: linealización, ajuste y residuos"></div>
+<div class="sim-guide"><ul>
+<li>Pegue dos columnas copiadas de una hoja de cálculo (tabulador, punto y coma o espacios; coma o punto decimal) o use los ejemplos.</li>
+<li>Con el ejemplo del péndulo, la gráfica de \(T\) contra \(L\) da \(R^2\) alto pero residuos en arco; con \(T^2\) contra \(L\) los residuos quedan al azar.</li>
+<li>La pendiente y el intercepto se informan con su incertidumbre; para obtener la magnitud física aplique la fórmula de la tabla de linealizaciones.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>En la hoja de cálculo</h2>
+<p>Excel y Google Sheets en español, y LibreOffice Calc, tienen las funciones necesarias (en configuración regional colombiana los argumentos se separan con punto y coma):</p>
+<div class="tablewrap"><table>
+<tr><th>Cálculo</th><th>Excel y Google Sheets en español</th><th>LibreOffice Calc</th></tr>
+<tr><td>Promedio</td><td><code>=PROMEDIO(B2:B11)</code></td><td><code>=PROMEDIO(B2:B11)</code></td></tr>
+<tr><td>Desviación estándar experimental</td><td><code>=DESVEST.M(B2:B11)</code></td><td><code>=DESVEST(B2:B11)</code></td></tr>
+<tr><td>Incertidumbre tipo A</td><td><code>=DESVEST.M(B2:B11)/RAIZ(CONTAR(B2:B11))</code></td><td><code>=DESVEST(B2:B11)/RAIZ(CONTAR(B2:B11))</code></td></tr>
+<tr><td>Pendiente e intercepto</td><td><code>=PENDIENTE(Y;X)</code>, <code>=INTERSECCION.EJE(Y;X)</code></td><td><code>=PENDIENTE(Y;X)</code>, <code>=INTERSECCION(Y;X)</code></td></tr>
+<tr><td>Ajuste con incertidumbres</td><td colspan="2"><code>=ESTIMACION.LINEAL(Y;X;VERDADERO;VERDADERO)</code> en un rango de 5 × 2: la primera fila da \(m\) y \(b\); la segunda, \(u_m\) y \(u_b\); la tercera, \(R^2\).</td></tr>
+<tr><td>Coeficiente de determinación</td><td><code>=COEFICIENTE.R2(Y;X)</code></td><td><code>=COEFICIENTE.R2(Y;X)</code></td></tr>
+</table></div>
+<p>El apéndice B ofrece una hoja de cálculo con estas fórmulas ya armadas: incertidumbre de medidas repetidas, ajuste lineal con gráfica, propagación para la densidad y compatibilidad.</p>
+<div class="box note"><h4>Para profundizar</h4><p>J. R. Taylor, <i>An Introduction to Error Analysis</i>, cap. 8, 1997. P. R. Bevington y D. K. Robinson, <i>Data Reduction and Error Analysis for the Physical Sciences</i>, 3.ª ed., McGraw-Hill, 2003.</p></div>
+</section>
+</template>

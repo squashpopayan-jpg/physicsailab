@@ -1,0 +1,84 @@
+<template class="chapter-src" data-id="cfd" data-num="26" data-title="Dinámica de fluidos computacional" data-part="Parte VII · Fronteras" data-short="Discretización y error de truncamiento, consistencia, estabilidad y la condición CFL, esquemas de advección y difusión numérica, el flujo en una cavidad con la formulación corriente–vorticidad y los datos de Ghia, el método de Lattice Boltzmann, modelos de turbulencia y la verificación por convergencia de malla">
+<p class="lead">Casi todos los flujos de interés práctico se resuelven hoy con computadores: el aire alrededor de un automóvil, la combustión en un motor, la sangre en un aneurisma, el clima del planeta. La dinámica de fluidos computacional (CFD) convierte las ecuaciones de Navier–Stokes en millones de ecuaciones algebraicas. Este capítulo muestra cómo, qué puede salir mal y cómo se comprueba que un resultado numérico merece confianza. Varias simulaciones del curso usan estos mismos métodos.</p>
+
+<section>
+<h2>Discretizar: del continuo a la malla</h2>
+<p>Un método numérico reemplaza las derivadas por diferencias entre valores en puntos de una malla. Con un paso \(\Delta x\), la diferencia centrada \((u_{i+1}-u_{i-1})/2\Delta x\) aproxima \(\partial u/\partial x\) con un error proporcional a \(\Delta x^2\): es de <b>segundo orden</b>. En los <b>volúmenes finitos</b> se integran las leyes de conservación sobre celdas y se calculan los flujos a través de sus caras, de modo que la masa, la cantidad de movimiento y la energía se conservan exactamente en la malla; es el método de casi todos los programas comerciales. Los <b>elementos finitos</b> aproximan la solución con funciones definidas por trozos y son preferidos en geometrías complejas.</p>
+<div class="box law"><h4>Teorema de equivalencia de Lax</h4><p>Para un problema lineal bien planteado, un esquema consistente (su error de truncamiento tiende a cero con la malla) converge a la solución exacta si y solo si es estable (los errores no crecen sin límite). Consistencia más estabilidad es igual a convergencia.</p></div>
+</section>
+
+<section>
+<h2>Advección, estabilidad y difusión numérica</h2>
+<p>La ecuación de advección \(\partial u/\partial t+c\,\partial u/\partial x=0\) traslada un perfil sin deformarlo. Es el núcleo del término convectivo de Navier–Stokes y la prueba más exigente para un esquema. La primera exigencia es la <span class="term">condición de Courant–Friedrichs–Lewy</span> (1928): la información no puede avanzar más de una celda por paso de tiempo,</p>
+<div class="eq key" data-name="Condición CFL">\[C=\frac{c\,\Delta t}{\Delta x}\le1.\]</div>
+<p>El esquema centrado explícito (FTCS) es inestable para cualquier \(C\): sus errores crecen exponencialmente. El esquema <b>contra el viento</b> (upwind), que usa el punto de donde viene el flujo, es estable pero de primer orden, y su ecuación modificada muestra por qué difumina los perfiles: resuelve en realidad una ecuación con una <b>difusión numérica</b> \(\nu_{num}=\tfrac12c\Delta x(1-C)\). El esquema de Lax–Wendroff es de segundo orden pero produce oscilaciones junto a las discontinuidades. Godunov demostró en 1959 que ningún esquema lineal puede ser a la vez de segundo orden y libre de oscilaciones; los esquemas modernos lo logran siendo no lineales: los <b>limitadores</b> (minmod, van Leer, superbee) usan segundo orden donde la solución es suave y primer orden junto a los saltos.</p>
+<div class="sim" data-sim="advection-esquemas" data-title="Advección de un pulso: comparación de esquemas numéricos"></div>
+<div class="sim-guide"><ul>
+<li>Con \(C=1\) el esquema contra el viento es exacto: copia cada valor a la celda vecina. Con \(C=0.5\) el pulso se difumina por la difusión numérica.</li>
+<li>Lax–Wendroff conserva la forma pero oscila; con el limitador minmod no hay oscilaciones. El esquema centrado explota en pocos pasos.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El flujo en una cavidad</h2>
+<p>Un recipiente cuadrado lleno de fluido cuya tapa se desliza con velocidad \(U\) es el problema de prueba más usado de la CFD incompresible. En dos dimensiones conviene la formulación <span class="term">corriente–vorticidad</span>, que elimina la presión: la vorticidad se transporta según</p>
+<div class="eq">\[\pdv{\omega}{t}+u\pdv{\omega}{x}+v\pdv{\omega}{y}=\frac{1}{\mathrm{Re}}\lap\omega,\qquad\lap\psi=-\omega,\qquad u=\pdv{\psi}{y},\ v=-\pdv{\psi}{x}.\]</div>
+<p>En cada paso se avanza la vorticidad, se resuelve la ecuación de Poisson para \(\psi\) por sobrerrelajación sucesiva (SOR) y se calcula la vorticidad en las paredes con la fórmula de Thom, que traduce la condición de no deslizamiento. Se itera hasta el estado estacionario. Ghia, Ghia y Shin (1982) publicaron soluciones de referencia con mallas de 129 × 129 que siguen siendo el estándar de comparación. Con \(\mathrm{Re}=100\) el remolino principal tiene su centro cerca de (0.62, 0.74) y \(\psi_{min}=-0.1034\); al aumentar Re el centro baja hacia el centro de la cavidad y aparecen remolinos secundarios en las esquinas inferiores.</p>
+<div class="sim" data-sim="cavidad" data-title="Cavidad con tapa móvil: corriente–vorticidad contra Ghia et al. (1982)"></div>
+<div class="sim-guide"><ul>
+<li>La simulación usa una malla de 41 × 41 o de 65 × 65; la prueba del apéndice B usa 65 × 65 y compara 17 puntos del perfil de velocidad con los de Ghia: la diferencia máxima es menor que 0.003 con Re = 100.</li>
+<li>Con Re = 1000 la malla de 41 × 41 ya no resuelve las capas delgadas junto a las paredes: el perfil se aparta hasta 0.16 de los puntos de referencia. Con 65 × 65 la diferencia baja a 0.06. Refinar la malla y ver cómo se acerca a la referencia es exactamente la verificación de la última sección.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El método de Lattice Boltzmann</h2>
+<p>En vez de discretizar las ecuaciones del continuo, el método de Lattice Boltzmann simula una versión simplificada de la dinámica de las moléculas: en cada nodo de una red hay poblaciones de partículas ficticias \(f_i\) que se mueven en unas pocas direcciones fijas (nueve en el modelo D2Q9), chocan y se relajan hacia un equilibrio local:</p>
+<div class="eq key" data-name="Ecuación de Lattice Boltzmann (BGK)">\[f_i(\vb x+\vb e_i\Delta t,t+\Delta t)=f_i(\vb x,t)-\frac{1}{\tau}\left[f_i-f_i^{eq}(\rho,\vb u)\right],\qquad\nu=c_s^2\left(\tau-\tfrac12\right)\Delta t,\quad c_s^2=\frac13\left(\frac{\Delta x}{\Delta t}\right)^2.\]</div>
+<p>La densidad y la velocidad son los momentos de las poblaciones, y el desarrollo de Chapman–Enskog demuestra que, a número de Mach bajo, el método reproduce las ecuaciones de Navier–Stokes. Es local, fácil de paralelizar y maneja geometrías complicadas con un simple «rebote» de las poblaciones en las paredes. La estela de la portada y del capítulo 16 se calcula así. En el apéndice B se verifica con dos soluciones exactas: el decaimiento del vórtice de Taylor–Green y el perfil de Poiseuille.</p>
+<div class="sim" data-sim="tunel-lbm" data-title="Túnel de viento numérico con Lattice Boltzmann"></div>
+<div class="sim-guide"><ul>
+<li>Dibuje obstáculos con el ratón o elija una configuración. Para Re altos se activa un modelo de Smagorinsky que estabiliza el cálculo, como en una simulación de grandes remolinos (LES).</li>
+<li>Compare la estela de una placa perpendicular, la de un perfil y la de dos cilindros en tándem.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Modelos de turbulencia</h2>
+<p>Simular todas las escalas de un flujo turbulento (simulación numérica directa, DNS) exige una malla de \(\mathrm{Re}^{9/4}\) puntos (capítulo 14) y, contando los pasos de tiempo, del orden de \(\mathrm{Re}^{3}\) operaciones: posible para un canal a \(\mathrm{Re}_\tau\sim10^{4}\), impensable para un avión. Por eso se modela:</p>
+<ul>
+<li><b>RANS</b> resuelve las ecuaciones promediadas de Reynolds con una viscosidad turbulenta dada por modelos de una o dos ecuaciones (Spalart–Allmaras, \(k\)–\(\varepsilon\), \(k\)–\(\omega\) SST). Es barato y el estándar de la industria, pero no ve la dinámica de los remolinos.</li>
+<li><b>LES</b> resuelve los remolinos grandes y modela solo los menores que la malla, por ejemplo con la viscosidad de Smagorinsky \(\nu_t=(C_s\Delta)^2|S|\). Captura estelas, mezcla y ruido, a un costo cientos de veces mayor.</li>
+<li><b>DNS</b> no modela nada y sirve de referencia para calibrar los modelos, como las simulaciones de canal de Moser, Kim y Mansour usadas en el capítulo 14.</li>
+</ul>
+</section>
+
+<section>
+<h2>Verificación y validación</h2>
+<p>Dos preguntas distintas deciden si un resultado de CFD es confiable. La <span class="term">verificación</span> pregunta si se resolvieron bien las ecuaciones: se refina la malla y se comprueba que la solución converge con el orden esperado. La <span class="term">validación</span> pregunta si se resolvieron las ecuaciones correctas: se compara con experimentos. Con soluciones en dos mallas de pasos \(h\) y \(h/2\) y un método de orden \(p\), la <span class="term">extrapolación de Richardson</span> estima el valor en malla infinitamente fina,</p>
+<div class="eq">\[\phi_{exacta}\approx\phi_{h/2}+\frac{\phi_{h/2}-\phi_h}{2^p-1},\]</div>
+<p>y la diferencia entre mallas da una estimación del error. Todas las simulaciones de este curso se verificaron así o contra soluciones exactas; el apéndice B reúne los resultados.</p>
+<div class="sim" data-sim="convergencia" data-title="Convergencia de malla y extrapolación de Richardson: flujo laminar en un ducto cuadrado"></div>
+<div class="sim-guide"><ul>
+<li>Se resuelve \(\lap u=-G/\mu\) en un cuadrado de lado \(a\) con diferencias finitas de segundo orden y se calcula el caudal; la solución exacta en serie da \(Q=0.0351443\,Ga^4/\mu\), es decir \(f\mathrm{Re}=56.91\).</li>
+<li>En escala logarítmica el error cae con pendiente 2. La extrapolación de Richardson con las mallas de 32 y 64 celdas reduce el error de \(8\times10^{-4}\) a \(2\times10^{-6}\): mejor que una malla 16 veces más fina.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Se simula aire a 30 m/s con celdas de 1 mm. ¿Qué paso de tiempo máximo permite la condición CFL? ¿Y si el método es compresible y debe resolver el sonido?
+<details><summary>Respuesta</summary><p>\(\Delta t\le\Delta x/c=10^{-3}/30=33\) µs. Con ondas de sonido, \(\Delta t\le\Delta x/(V+c)=10^{-3}/373=2.7\) µs.</p></details></li>
+<li><span class="lvl">Básico</span>En Lattice Boltzmann, ¿qué tiempo de relajación da \(\nu=0.01\) en unidades de red? ¿Qué pasa si \(\tau\to\tfrac12\)?
+<details><summary>Respuesta</summary><p>\(\tau=3\nu+\tfrac12=0.53\). Si \(\tau\to\tfrac12\) la viscosidad tiende a cero y el método se vuelve inestable; por eso se usan modelos de turbulencia o mallas más finas.</p></details></li>
+<li><span class="lvl">Intermedio</span>Con el esquema contra el viento, \(c=1\) m/s, \(\Delta x=1\) cm y \(C=0.5\), ¿qué difusión numérica se introduce? Compárela con la viscosidad cinemática del agua.
+<details><summary>Respuesta</summary><p>\(\nu_{num}=\tfrac12(1)(0.01)(0.5)=2.5\times10^{-3}\) m²/s, 2500 veces la del agua: la simulación sería la de un fluido mucho más viscoso.</p></details></li>
+<li><span class="lvl">Intermedio</span>Un cálculo da \(C_D=0.420\) con una malla y 0.405 con una malla dos veces más fina. Con un método de segundo orden, estime el valor extrapolado y el error de la malla fina.
+<details><summary>Respuesta</summary><p>\(0.405+(0.405-0.420)/3=0.400\); error estimado de la malla fina, 0.005 (1.25 %).</p></details></li>
+<li><span class="lvl">Avanzado</span>Demuestre con el análisis de von Neumann que el esquema FTCS para la advección es incondicionalmente inestable.
+<details><summary>Respuesta</summary><p>Con \(u_j^n=G^n\ee^{\ii kj\Delta x}\): \(G=1-\ii C\sin(k\Delta x)\), así que \(|G|^2=1+C^2\sin^2(k\Delta x)&gt;1\) para todo \(C&gt;0\): los modos crecen.</p></details></li>
+</ol>
+<div class="box note"><h4>Para profundizar</h4><p>J. H. Ferziger, M. Perić y R. L. Street, <em>Computational Methods for Fluid Dynamics</em>, 4.ª ed., Springer, 2020. U. Ghia, K. N. Ghia y C. T. Shin, «High-Re solutions for incompressible flow using the Navier–Stokes equations and a multigrid method», <em>J. Comput. Phys.</em> 48, 387 (1982). T. Krüger et al., <em>The Lattice Boltzmann Method: Principles and Practice</em>, Springer, 2017. R. J. LeVeque, <em>Finite Volume Methods for Hyperbolic Problems</em>, Cambridge, 2002. P. J. Roache, <em>Verification and Validation in Computational Science and Engineering</em>, Hermosa, 1998.</p></div>
+</section>
+</template>

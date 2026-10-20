@@ -1,0 +1,93 @@
+<template class="chapter-src" data-id="semejanza" data-num="11" data-title="Análisis dimensional y semejanza" data-part="Parte III · Flujo viscoso" data-short="Homogeneidad dimensional, el teorema Π de Buckingham, los números adimensionales de la mecánica de fluidos, la adimensionalización de Navier–Stokes, modelos a escala de barcos y ríos, y la estimación de G. I. Taylor de la energía de una explosión">
+<p class="lead">Muy pocos problemas de fluidos tienen solución exacta. El análisis dimensional permite, sin resolver ecuación alguna, reducir el número de variables de un problema, organizar los experimentos y trasladar los resultados de un modelo de laboratorio a la escala real. Es también una herramienta de pensamiento: bien usado, revela la física dominante de un fenómeno con una cuenta de servilleta.</p>
+
+<section>
+<h2>Homogeneidad dimensional</h2>
+<p>Toda ecuación física correcta es dimensionalmente homogénea: cada término tiene las mismas dimensiones. En mecánica de fluidos bastan cuatro dimensiones fundamentales: masa M, longitud L, tiempo T y temperatura Θ. La presión es M L⁻¹ T⁻²; la viscosidad dinámica, M L⁻¹ T⁻¹; la tensión superficial, M T⁻². Si una relación entre variables es homogénea, puede escribirse como una relación entre combinaciones adimensionales de ellas, que no dependen del sistema de unidades.</p>
+</section>
+
+<section>
+<h2>El teorema Π de Buckingham</h2>
+<div class="box law"><h4>Teorema Π (Buckingham, 1914)</h4><p>Si un fenómeno depende de \(n\) variables dimensionales y la matriz de sus dimensiones tiene rango \(r\), entonces puede describirse con \(n-r\) grupos adimensionales independientes \(\Pi_1,\dots,\Pi_{n-r}\): \(\Pi_1=\phi(\Pi_2,\dots,\Pi_{n-r})\).</p></div>
+<p>El método de las <span class="term">variables repetidas</span> construye los grupos: se eligen \(r\) variables que juntas contengan todas las dimensiones pero que no formen un grupo adimensional entre sí (típicamente una densidad, una velocidad y una longitud), y cada una de las restantes se combina con ellas en un grupo. Por ejemplo, la fuerza de arrastre \(F\) sobre una esfera depende de \(\rho\), \(V\), \(D\) y \(\mu\): cinco variables, rango 3, dos grupos:</p>
+<div class="eq">\[\frac{F}{\rho V^2D^2}=\phi\left(\frac{\rho VD}{\mu}\right)\quad\Longleftrightarrow\quad C_D=\phi(\mathrm{Re}).\]</div>
+<p>En vez de medir el arrastre para cada combinación de cuatro variables basta una sola curva, que el capítulo 16 muestra. Del mismo modo, la caída de presión en un tubo, que depende de \(\rho,V,D,\mu,L\) y la rugosidad \(\varepsilon\), se reduce a \(f=\phi(\mathrm{Re},\varepsilon/D)\): el diagrama de Moody (capítulo 15).</p>
+<div class="sim" data-sim="buckingham" data-title="Constructor de grupos Π: elija el problema y las variables repetidas"></div>
+<div class="sim-guide"><ul>
+<li>El rango de la matriz dimensional y los exponentes se calculan con aritmética racional exacta. Si las variables repetidas elegidas no tienen el rango completo, el programa avisa.</li>
+<li>Cambiar las variables repetidas cambia la forma de los grupos pero no su número: son combinaciones unos de otros.</li>
+</ul></div>
+<div class="box warn"><h4>El análisis dimensional no elige las variables</h4><p>Si se omite una variable relevante, los grupos resultantes son incompletos; si se incluye una irrelevante, sobra un grupo que el experimento mostrará inútil. La física debe decir qué importa. Y el teorema no da la función \(\phi\): esa sale de la teoría, de la simulación o del experimento.</p></div>
+</section>
+
+<section>
+<h2>Los números adimensionales de la mecánica de fluidos</h2>
+<div class="tablewrap"><table>
+<tr><th>Número</th><th class="c">Definición</th><th>Cociente físico</th><th>Dónde importa</th></tr>
+<tr><td>Reynolds</td><td class="c">\(\rho VL/\mu\)</td><td>inercia / viscosidad</td><td>casi siempre</td></tr>
+<tr><td>Froude</td><td class="c">\(V/\sqrt{gL}\)</td><td>inercia / gravedad</td><td>superficie libre, barcos, ríos</td></tr>
+<tr><td>Weber</td><td class="c">\(\rho V^2L/\gamma\)</td><td>inercia / tensión superficial</td><td>gotas, chorros, atomización</td></tr>
+<tr><td>Mach</td><td class="c">\(V/c\)</td><td>velocidad / sonido</td><td>flujo compresible</td></tr>
+<tr><td>Euler</td><td class="c">\(\Delta p/\rho V^2\)</td><td>presión / inercia</td><td>coeficientes de presión, cavitación</td></tr>
+<tr><td>Strouhal</td><td class="c">\(fL/V\)</td><td>inestacionario / convectivo</td><td>vórtices, aleteo</td></tr>
+<tr><td>Capilar</td><td class="c">\(\mu V/\gamma\)</td><td>viscosidad / tensión superficial</td><td>microfluídica, mojado</td></tr>
+<tr><td>Bond</td><td class="c">\(\rho gL^2/\gamma\)</td><td>gravedad / tensión superficial</td><td>gotas, meniscos</td></tr>
+<tr><td>Prandtl</td><td class="c">\(\nu/\alpha\)</td><td>difusión de cantidad de movimiento / de calor</td><td>convección térmica</td></tr>
+<tr><td>Rossby</td><td class="c">\(V/fL\)</td><td>inercia / Coriolis</td><td>atmósfera y océano</td></tr>
+<tr><td>Knudsen</td><td class="c">\(\lambda/L\)</td><td>recorrido libre / tamaño</td><td>gases enrarecidos</td></tr>
+</table></div>
+<div class="sim" data-sim="numeros-adim" data-title="Calculadora de números adimensionales con ejemplos"></div>
+<div class="sim-guide"><ul>
+<li>Una bacteria nada a \(\mathrm{Re}\approx10^{-5}\); un nadador olímpico, a \(10^{6}\); un avión de línea, a \(10^{8}\). Los fenómenos que dominan cambian por completo a lo largo de esa escala.</li>
+<li>El número de Bond dice si una gota es esférica (\(\mathrm{Bo}\ll1\)) o se aplasta; el de Weber, si se rompe en el aire.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Adimensionalización de las ecuaciones de Navier–Stokes</h2>
+<p>Midiendo las longitudes con \(L\), las velocidades con \(U\), el tiempo con \(L/U\) y la presión con \(\rho U^2\), las ecuaciones de Navier–Stokes con gravedad se convierten en</p>
+<div class="eq key" data-name="Navier–Stokes adimensional">\[\frac{D\vb u^*}{Dt^*}=-\grad^*p^*+\frac{1}{\mathrm{Re}}\lap^*\vb u^*+\frac{1}{\mathrm{Fr}^2}\uv g.\]</div>
+<p>Dos flujos geométricamente semejantes con el mismo número de Reynolds y el mismo de Froude obedecen exactamente la misma ecuación adimensional: sus soluciones son idénticas a escala. Además, la forma adimensional dice qué términos pueden despreciarse: con \(\mathrm{Re}\ll1\) la inercia desaparece (capítulo 12); con \(\mathrm{Re}\gg1\) la viscosidad solo importa en capas delgadas (capítulo 13).</p>
+</section>
+
+<section>
+<h2>Semejanza y modelos a escala</h2>
+<p>Un modelo reproduce el comportamiento del prototipo si hay <b>semejanza geométrica</b> (mismas proporciones), <b>cinemática</b> (líneas de corriente semejantes) y <b>dinámica</b> (mismos grupos adimensionales). El problema es que a menudo no pueden igualarse todos a la vez. En un modelo de barco a escala \(1/\lambda\), la resistencia por olas exige igualar el número de Froude, lo que fija \(V_m=V_p/\sqrt\lambda\); pero entonces el número de Reynolds del modelo es \(\lambda^{3/2}\) veces menor. Para tener el mismo Reynolds en un modelo de 3 m de un buque de 120 m que navega a 10 m/s habría que remolcarlo a 383 m/s.</p>
+<p>William Froude resolvió el dilema en 1868 separando la resistencia en una parte de fricción, que depende de Re y se estima como la de una placa plana equivalente, y una parte residual (olas y forma), que depende de Fr y se mide en el modelo y se escala. Es el método que siguen usando los canales de ensayo, con la línea de fricción de la ITTC de 1957, \(C_F=0.075/(\log_{10}\mathrm{Re}-2)^2\).</p>
+<div class="sim" data-sim="modelo-escala" data-title="Modelo de un barco: semejanza de Froude y método de Froude"></div>
+<div class="sim-guide"><ul>
+<li>El modelo se ensaya a la velocidad de Froude; el coeficiente de fricción del modelo es más del doble que el del buque porque su número de Reynolds es 240 veces menor.</li>
+<li>La resistencia total del buque se obtiene sumando la residual medida en el modelo (igual coeficiente) y la de fricción calculada para el buque.</li>
+</ul></div>
+<p>Los modelos de ríos y de estructuras hidráulicas se construyen también con semejanza de Froude. Como el modelo es más «liso» que el río a escala, se distorsiona la escala vertical o se añade rugosidad para reproducir el coeficiente de Manning.</p>
+</section>
+
+<section>
+<h2>Una cuenta célebre: la energía de una explosión</h2>
+<p>En 1950, G. I. Taylor publicó una estimación de la energía de la primera bomba atómica, que era secreta, a partir de las fotografías de la bola de fuego que había publicado la revista <i>Life</i>. Su argumento dimensional: en las primeras milésimas de segundo, el radio \(R\) de la onda de choque solo puede depender de la energía liberada \(E\), la densidad del aire \(\rho\) y el tiempo \(t\). La única combinación con dimensiones de longitud es</p>
+<div class="eq key" data-name="Onda expansiva de Taylor–Sedov">\[R=S(\gamma)\left(\frac{Et^2}{\rho}\right)^{1/5},\]</div>
+<p>con \(S(1.4)\approx1.03\) obtenido de la solución completa. Los radios medidos en las fotografías siguen la ley \(R\propto t^{2/5}\) con precisión notable, y el ajuste con \(\rho=1.25\) kg/m³ da \(E\approx6.8\times10^{13}\) J, unos 16 kilotones de TNT. Taylor obtuvo 17 kilotones; el rendimiento oficial, desclasificado años después, fue de unos 20.</p>
+<div class="sim" data-sim="taylor-explosion" data-title="La bola de fuego de la prueba Trinity: R contra t en escala logarítmica"></div>
+<div class="sim-guide"><ul>
+<li>Los puntos son los radios que midió Taylor en las fotografías. La pendiente ajustada libremente es 0.406, muy cerca de 2/5.</li>
+<li>Cambie la densidad del aire o la energía supuesta y observe cómo se desplaza la recta \(R=S(Et^2/\rho)^{1/5}\).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>El periodo \(T\) de un péndulo depende de su longitud \(\ell\), su masa \(m\) y \(g\). Halle la forma de la relación.
+<details><summary>Respuesta</summary><p>Un solo grupo: \(T\sqrt{g/\ell}=\text{cte}\). La masa no puede intervenir: es la única variable con M. La constante, \(2\pi\), sale de la dinámica.</p></details></li>
+<li><span class="lvl">Básico</span>Calcule el número de Reynolds de una pelota de squash (40 mm) a 30 m/s en Popayán (\(\rho=0.977\), \(\mu=1.81\times10^{-5}\)).
+<details><summary>Respuesta</summary><p>\(\mathrm{Re}=0.977\times30\times0.04/1.81\times10^{-5}=6.5\times10^{4}\).</p></details></li>
+<li><span class="lvl">Intermedio</span>La frecuencia \(f\) con que oscila una gota de radio \(R\) depende de \(\rho\), \(\gamma\) y \(R\). Halle la ley de escala y estime \(f\) para una gota de agua de 1 mm.
+<details><summary>Respuesta</summary><p>\(f\propto\sqrt{\gamma/\rho R^3}\). Con \(R=1\) mm, \(\sqrt{0.0727/(998\times10^{-9})}=270\) s⁻¹; la teoría de Rayleigh da \(f=\sqrt{8}/2\pi\) veces eso para el modo fundamental, unos 120 Hz.</p></details></li>
+<li><span class="lvl">Intermedio</span>Un modelo de vertedero a escala 1:25 descarga 0.15 m³/s. ¿Qué caudal descarga el prototipo?
+<details><summary>Respuesta</summary><p>Con semejanza de Froude, \(Q\propto L^{5/2}\): \(Q_p=0.15\times25^{2.5}=469\) m³/s.</p></details></li>
+<li><span class="lvl">Avanzado</span>La potencia \(P\) de una hélice depende de \(\rho\), su diámetro \(D\), su velocidad de giro \(n\), la velocidad de avance \(V\) y \(\mu\). Halle los grupos adimensionales y explique por qué en la práctica se ignora el último.
+<details><summary>Respuesta</summary><p>\(C_P=P/\rho n^3D^5=\phi(J,\mathrm{Re})\) con el coeficiente de avance \(J=V/nD\) y \(\mathrm{Re}=\rho nD^2/\mu\). A los números de Reynolds de las hélices reales (\(10^{6}\)–\(10^{7}\)) la dependencia con Re es débil.</p></details></li>
+</ol>
+<div class="box note"><h4>Para profundizar</h4><p>E. Buckingham, «On physically similar systems», <em>Phys. Rev.</em> 4, 345 (1914). G. I. Taylor, «The formation of a blast wave by a very intense explosion. II. The atomic explosion of 1945», <em>Proc. R. Soc. Lond. A</em> 201, 175 (1950). G. I. Barenblatt, <em>Scaling, Self-Similarity, and Intermediate Asymptotics</em>, Cambridge, 1996. ITTC, <em>Recommended Procedures 7.5-02-02-01: Resistance Test</em>, 2017.</p></div>
+</section>
+</template>

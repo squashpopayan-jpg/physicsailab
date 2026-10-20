@@ -1,0 +1,78 @@
+<template class="chapter-src" data-id="turbulencia" data-num="14" data-title="Turbulencia" data-part="Parte III · Flujo viscoso" data-short="El experimento de Reynolds y la transición, las propiedades de la turbulencia, el promedio de Reynolds y el problema de cierre, la longitud de mezcla, la ley de la pared y el perfil logarítmico, la cascada de energía de Richardson y Kolmogorov y la escala de disipación">
+<p class="lead">Casi todos los flujos que vemos son turbulentos: el humo de una chimenea, el río, el viento, la sangre en la aorta de un atleta, el agua en las tuberías de la casa. La turbulencia mezcla, disipa y transporta muchísimo más que el flujo laminar, y aun así carece de una teoría completa; Feynman la llamó el problema más importante sin resolver de la física clásica. Este capítulo presenta lo que sí se sabe: cómo aparece, cómo se describe estadísticamente y cuáles son sus leyes de escala.</p>
+
+<section>
+<h2>El experimento de Reynolds</h2>
+<p>En 1883 Osborne Reynolds inyectó un hilo de tinta en el eje de un tubo de vidrio por el que fluía agua desde un depósito. A velocidades bajas el hilo se mantenía recto y nítido hasta el final del tubo. Al aumentar la velocidad, a partir de cierto punto el hilo se agitaba, se rompía en remolinos y teñía todo el tubo de manera uniforme. Reynolds descubrió que el cambio dependía de una sola combinación, \(\rho VD/\mu\), hoy el número de Reynolds.</p>
+<p>En un tubo con entrada normal la turbulencia aparece hacia \(\mathrm{Re}\approx2300\), y por debajo de unos 2000 cualquier perturbación se amortigua. Pero el flujo de Hagen–Poiseuille es linealmente estable a todos los números de Reynolds: con entradas muy cuidadas se ha mantenido laminar hasta \(\mathrm{Re}=10^{5}\). La transición es <b>subcrítica</b>: la provocan perturbaciones de amplitud finita. Entre 2000 y 3000 aparecen <span class="term">bocanadas</span> turbulentas localizadas que viajan con el flujo, separadas por tramos laminares: el flujo es <span class="term">intermitente</span>.</p>
+<div class="sim" data-sim="reynolds-tinta" data-title="El experimento de Reynolds: un hilo de tinta en un tubo (ilustración)"></div>
+<div class="sim-guide"><ul>
+<li>Ilustración cualitativa: la tinta sigue un perfil parabólico en régimen laminar y uno turbulento con fluctuaciones crecientes; entre 2000 y 4000 aparecen bocanadas intermitentes.</li>
+<li>Observe la mezcla: en régimen turbulento la tinta ocupa toda la sección en unos pocos diámetros.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Qué es la turbulencia</h2>
+<p>No hay una definición breve, pero sí un conjunto de rasgos que la caracterizan: es <b>irregular</b> e impredecible en detalle, aunque sus estadísticas son reproducibles; es <b>tridimensional</b> y está llena de vorticidad que se estira y se pliega; es <b>difusiva</b>, mezcla calor, masa y cantidad de movimiento órdenes de magnitud más rápido que la difusión molecular; es <b>disipativa</b>, necesita un suministro continuo de energía porque la viscosidad la convierte en calor; y ocupa un <b>rango enorme de escalas</b>, desde el tamaño del flujo hasta remolinos de fracciones de milímetro. Aun así, es un fenómeno del continuo: los remolinos más pequeños son miles de veces mayores que el recorrido libre medio, y las ecuaciones de Navier–Stokes la describen por completo.</p>
+</section>
+
+<section>
+<h2>El promedio de Reynolds y el problema de cierre</h2>
+<p>Reynolds propuso en 1895 separar cada variable en su promedio y su fluctuación: \(u=\bar u+u'\), con \(\overline{u'}=0\). Al promediar las ecuaciones de Navier–Stokes, el término no lineal produce productos de fluctuaciones que no se anulan:</p>
+<div class="eq key" data-name="Ecuaciones de Reynolds (RANS)">\[\rho\left(\pdv{\bar u_i}{t}+\bar u_j\pdv{\bar u_i}{x_j}\right)=-\pdv{\bar p}{x_i}+\pdv{}{x_j}\left(\mu\pdv{\bar u_i}{x_j}-\rho\overline{u_i'u_j'}\right).\]</div>
+<p>Las <span class="term">tensiones de Reynolds</span> \(-\rho\overline{u_i'u_j'}\) son el transporte de cantidad de movimiento por las fluctuaciones; en una capa límite son cientos de veces mayores que el esfuerzo viscoso. Son nuevas incógnitas sin ecuación propia: es el <span class="term">problema de cierre</span>. Escribir ecuaciones para ellas introduce correlaciones triples, y así sucesivamente. Hay que modelarlas.</p>
+<div class="sim" data-sim="senal-turbulenta" data-title="Una señal de velocidad turbulenta: promedio, fluctuaciones y tensión de Reynolds"></div>
+<div class="sim-guide"><ul>
+<li>La señal sintética tiene un espectro de Kolmogorov. El promedio móvil converge lentamente: hace falta promediar sobre muchos tiempos integrales.</li>
+<li>Si las fluctuaciones \(u'\) y \(v'\) están correlacionadas negativamente, como cerca de una pared, \(\overline{u'v'}&lt;0\) y la tensión de Reynolds transporta cantidad de movimiento hacia la pared.</li>
+</ul></div>
+<p>La idea más antigua, de Boussinesq (1877), es una <span class="term">viscosidad turbulenta</span>: \(-\overline{u'v'}=\nu_t\,\partial\bar u/\partial y\). Prandtl la estimó en 1925 con una <span class="term">longitud de mezcla</span> \(\ell\), la distancia que recorre un grumo de fluido antes de mezclarse: \(\nu_t=\ell^2|\partial\bar u/\partial y|\). Cerca de una pared el único tamaño disponible es la distancia a ella, \(\ell=\kappa y\). Los modelos modernos (\(k\)–\(\varepsilon\), \(k\)–\(\omega\), Spalart–Allmaras) resuelven ecuaciones de transporte para las escalas de la turbulencia, pero conservan la idea de Boussinesq.</p>
+</section>
+
+<section>
+<h2>La ley de la pared</h2>
+<p>Cerca de una pared el flujo solo «conoce» el esfuerzo en la pared \(\tau_w\), la densidad y la viscosidad. Con ellos se forman la <span class="term">velocidad de fricción</span> \(u_\tau=\sqrt{\tau_w/\rho}\) y la longitud viscosa \(\nu/u_\tau\), y las variables de pared \(u^+=\bar u/u_\tau\), \(y^+=yu_\tau/\nu\). El perfil es universal:</p>
+<ul>
+<li><b>Subcapa viscosa</b> (\(y^+&lt;5\)): domina la viscosidad y \(u^+=y^+\).</li>
+<li><b>Zona logarítmica</b> (\(y^+&gt;30\), lejos aún del borde de la capa): con la longitud de mezcla \(\ell=\kappa y\) y esfuerzo constante, \(\dd u^+/\dd y^+=1/\kappa y^+\):</li>
+</ul>
+<div class="eq key" data-name="Ley logarítmica de la pared">\[u^+=\frac{1}{\kappa}\ln y^++B,\qquad\kappa\approx0.41,\quad B\approx5.0.\]</div>
+<p>Entre ambas, la <b>zona de amortiguamiento</b> las une. Spalding (1961) dio una fórmula que cubre las tres. El perfil logarítmico es uno de los resultados más robustos de la turbulencia: lo confirman experimentos y simulaciones directas en tubos, canales y capas límite, con \(\kappa\) entre 0.38 y 0.42. Integrándolo sobre la sección de un tubo se obtiene la ley de fricción de Prandtl para tubos lisos (capítulo 15).</p>
+<div class="sim" data-sim="ley-pared" data-title="Ley de la pared y canal turbulento con longitud de mezcla"></div>
+<div class="sim-guide"><ul>
+<li>La curva naranja es la solución numérica de un canal turbulento con la longitud de mezcla de Nikuradse y el amortiguamiento de van Driest. Para \(\mathrm{Re}_\tau=395\) da \(U_b^+=18.0\), cerca del 17.5 de la simulación directa de Moser, Kim y Mansour (1999).</li>
+<li>La lectura compara el coeficiente de fricción con la correlación de Dean para canales; la diferencia, de 5 a 8 %, es el error típico de este modelo de cierre.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>La cascada de energía</h2>
+<p>Lewis Fry Richardson resumió en 1922 la idea central con unos versos: los remolinos grandes tienen remolinos pequeños que se alimentan de su velocidad, y estos, otros menores, y así hasta la viscosidad. La energía entra al flujo en la escala grande \(L\), con una velocidad \(U\); se transfiere sin pérdidas a escalas cada vez menores, porque los remolinos se estiran y se rompen; y solo se disipa en calor cuando las escalas son tan pequeñas que la viscosidad domina. La tasa de disipación por unidad de masa es independiente de la viscosidad: \(\varepsilon\sim U^3/L\).</p>
+<p>Kolmogorov (1941) dedujo de ahí, por análisis dimensional, las escalas de la disipación y la forma del espectro en el rango intermedio, que solo puede depender de \(\varepsilon\) y del número de onda \(k\):</p>
+<div class="eq key" data-name="Escalas y espectro de Kolmogorov">\[\eta=\left(\frac{\nu^3}{\varepsilon}\right)^{1/4},\qquad\tau_\eta=\left(\frac{\nu}{\varepsilon}\right)^{1/2},\qquad E(k)=C\varepsilon^{2/3}k^{-5/3},\qquad\frac{L}{\eta}\sim\mathrm{Re}^{3/4}.\]</div>
+<p>La ley \(-5/3\), con \(C\approx1.5\), se ha medido en la atmósfera, el océano, chorros y túneles de viento. La relación \(L/\eta\sim\mathrm{Re}^{3/4}\) fija el costo de simular la turbulencia resolviendo todas las escalas: una malla de \((L/\eta)^3\sim\mathrm{Re}^{9/4}\) puntos. Para el agua de un río se necesitarían \(10^{15}\) puntos; para la atmósfera, \(10^{19}\). Por eso la ingeniería usa modelos (capítulo 26).</p>
+<div class="sim" data-sim="kolmogorov" data-title="Escalas de Kolmogorov y espectro de energía"></div>
+<div class="sim-guide"><ul>
+<li>En una taza de café que se revuelve, los remolinos más pequeños miden unas 80 µm; en un río, 30 µm; en la capa baja de la atmósfera, medio milímetro.</li>
+<li>El espectro modelo de Pope tiene un rango inercial con pendiente \(-5/3\) entre la escala de producción y la de disipación; integrado da exactamente la energía cinética y la disipación supuestas.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Es laminar o turbulento el agua a 20 °C que fluye a 0.5 m/s por un tubo de 2 cm? ¿Y la sangre (\(\nu=3.3\times10^{-6}\) m²/s) a 0.3 m/s en una aorta de 2.5 cm?
+<details><summary>Respuesta</summary><p>Agua: \(\mathrm{Re}=0.5\times0.02/1.004\times10^{-6}=9960\), turbulento. Sangre: \(\mathrm{Re}=0.3\times0.025/3.3\times10^{-6}=2270\), en la frontera; el flujo aórtico es pulsátil y casi laminar en reposo.</p></details></li>
+<li><span class="lvl">Básico</span>En un tubo con \(u_\tau=0.05\) m/s y agua, ¿a qué distancia de la pared está \(y^+=30\)?
+<details><summary>Respuesta</summary><p>\(y=30\nu/u_\tau=30\times10^{-6}/0.05=0.6\) mm.</p></details></li>
+<li><span class="lvl">Intermedio</span>Con la ley logarítmica, halle la velocidad a 1 cm de la pared en el tubo anterior.
+<details><summary>Respuesta</summary><p>\(y^+=500\), \(u^+=\ln500/0.41+5.0=20.2\), \(u=1.01\) m/s.</p></details></li>
+<li><span class="lvl">Intermedio</span>En un túnel de viento, \(U=10\) m/s y la rejilla genera remolinos de 5 cm. Estime \(\varepsilon\), \(\eta\) y \(\tau_\eta\).
+<details><summary>Respuesta</summary><p>Con \(u'\approx0.05U=0.5\) m/s, \(\varepsilon\sim u'^3/L=2.5\) W/kg; \(\eta=(1.5\times10^{-5})^{3/4}/2.5^{1/4}=0.19\) mm; \(\tau_\eta=\sqrt{1.5\times10^{-5}/2.5}=2.4\) ms.</p></details></li>
+<li><span class="lvl">Avanzado</span>Deduzca la ley logarítmica a partir de la longitud de mezcla \(\ell=\kappa y\) y la hipótesis de esfuerzo constante \(\tau=\tau_w\) en la región cercana a la pared, despreciando la viscosidad.
+<details><summary>Respuesta</summary><p>\(\tau_w=\rho\ell^2(\dd\bar u/\dd y)^2\) → \(u_\tau=\kappa y\,\dd\bar u/\dd y\) → \(\bar u=(u_\tau/\kappa)\ln y+\text{cte}\). La constante la fija el empalme con la subcapa viscosa: \(B\approx5\).</p></details></li>
+</ol>
+<div class="box note"><h4>Para profundizar</h4><p>O. Reynolds, «An experimental investigation of the circumstances which determine whether the motion of water shall be direct or sinuous», <em>Phil. Trans. R. Soc.</em> 174, 935 (1883). A. N. Kolmogorov, «The local structure of turbulence in incompressible viscous fluid for very large Reynolds numbers», <em>Dokl. Akad. Nauk SSSR</em> 30, 301 (1941). S. B. Pope, <em>Turbulent Flows</em>, Cambridge, 2000. H. Tennekes y J. L. Lumley, <em>A First Course in Turbulence</em>, MIT Press, 1972. R. D. Moser, J. Kim y N. N. Mansour, «Direct numerical simulation of turbulent channel flow up to Re_τ = 590», <em>Phys. Fluids</em> 11, 943 (1999).</p></div>
+</section>
+</template>
