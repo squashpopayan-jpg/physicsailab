@@ -4540,8 +4540,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     let antiCheatActive = false;
+    let isBlackoutCooldown = false;
+    let blackoutCooldownTimer = null;
+    let windowBlurTimer = null;
 
     function triggerAntiCheatAlert(type, message) {
+        if (isBlackoutCooldown) return;
+
         const banner = document.getElementById('quiz-security-banner');
         const textEl = document.getElementById('quiz-security-text') || document.getElementById('sec-banner-desc');
         if (banner) {
@@ -4554,13 +4559,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const qScreen = document.getElementById('quiz-question-screen');
-        if (qScreen) qScreen.style.filter = 'blur(25px)';
-
         const shield = document.getElementById('quiz-blackout-shield');
-        if (shield) {
-            shield.style.display = 'flex';
-            shield.style.opacity = '1';
-            if (type === 'screenshot') {
+
+        if (type === 'screenshot') {
+            if (qScreen) qScreen.style.filter = 'blur(25px)';
+            if (shield) {
+                shield.style.display = 'flex';
+                shield.style.opacity = '1';
                 setTimeout(() => {
                     shield.style.opacity = '0';
                     setTimeout(() => { 
@@ -4587,10 +4592,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function onTouchCancelGuard(e) {
-        if (!antiCheatActive || !activeQuiz || !activeQuiz.antiFraudEnabled) return;
-        activeQuiz.tabSwitches = (activeQuiz.tabSwitches || 0) + 1;
-        triggerAntiCheatAlert('touch', `⚠️ <strong>ALERTA DE SEGURIDAD MÓVIL:</strong> Se detectó interrupción touch o captura de pantalla (#${activeQuiz.tabSwitches}).`);
-        logRealActivity(`[ANTIFRAUDE] Interrupción touch en iPhone/móvil para "${activeQuiz.studentName}" (#${activeQuiz.tabSwitches})`, 'quiz');
+        // En dispositivos móviles (iPhone / Android), touchcancel es una acción natural
+        // por desplazamiento de pantalla o rechazo de palma. No debe bloquear al estudiante.
     }
 
     function onGestureGuard(e) {
@@ -4601,6 +4604,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function onPageHideGuard() {
         if (!antiCheatActive || !activeQuiz || !activeQuiz.antiFraudEnabled) return;
+        if (isBlackoutCooldown) return;
         activeQuiz.tabSwitches = (activeQuiz.tabSwitches || 0) + 1;
         triggerAntiCheatAlert('tab', `⚠️ <strong>ALERTA DE SEGURIDAD MÓVIL:</strong> Se detectó cambio de aplicación o suspensión (#${activeQuiz.tabSwitches}).`);
         logRealActivity(`[ANTIFRAUDE] Dispositivo móvil suspendido/cambio de app para "${activeQuiz.studentName}" (#${activeQuiz.tabSwitches})`, 'quiz');
@@ -4608,9 +4612,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function onVisibilityChange() {
         if (!antiCheatActive || !activeQuiz || !activeQuiz.antiFraudEnabled) return;
+        if (isBlackoutCooldown) return;
+
         if (document.hidden || document.visibilityState === 'hidden') {
+            if (windowBlurTimer) {
+                clearTimeout(windowBlurTimer);
+                windowBlurTimer = null;
+            }
             activeQuiz.tabSwitches = (activeQuiz.tabSwitches || 0) + 1;
             
+            const qScreen = document.getElementById('quiz-question-screen');
+            if (qScreen) qScreen.style.filter = 'blur(20px)';
+
             const shield = document.getElementById('quiz-blackout-shield');
             if (shield) {
                 shield.style.display = 'flex';
@@ -4623,48 +4636,85 @@ document.addEventListener('DOMContentLoaded', () => {
                             Se detectó que minimizaste el navegador o cambiaste de pestaña o aplicación.<br>
                             <strong>Incidencia registrada: #${activeQuiz.tabSwitches}</strong> en la planilla oficial de notas.
                         </p>
-                        <button type="button" onclick="resumeQuizFromBlackout()" style="background:#dc2626; color:#fff; border:none; padding:0.75rem 1.6rem; font-weight:800; border-radius:10px; cursor:pointer; font-size:1rem; box-shadow:0 4px 15px rgba(220,38,38,0.5);">
+                        <button type="button" onclick="resumeQuizFromBlackout(event)" style="background:#dc2626; color:#fff; border:none; padding:0.8rem 1.8rem; font-weight:800; border-radius:10px; cursor:pointer; font-size:1.05rem; box-shadow:0 4px 15px rgba(220,38,38,0.5); -webkit-tap-highlight-color:transparent; position:relative; z-index:1000000;">
                             ⚠️ Reanudar Evaluación
                         </button>
                     </div>
                 `;
             }
-            triggerAntiCheatAlert('tab', `⚠️ <strong>ALERTA DE SEGURIDAD:</strong> Se detectó cambio de pestaña o aplicación. Incidencia registrada en el informe del docente (#${activeQuiz.tabSwitches}).`);
+            triggerAntiCheatAlert('tab', `⚠️ <strong>ALERTA DE SEGURIDAD:</strong> Se detectó cambio de pestaña o aplicación (#${activeQuiz.tabSwitches}).`);
             logRealActivity(`[ANTIFRAUDE] Alumno "${activeQuiz.studentName}" cambió de pestaña en evaluación "${activeQuiz.title}" (Incidente #${activeQuiz.tabSwitches})`, 'quiz');
+        } else if (document.visibilityState === 'visible') {
+            if (windowBlurTimer) {
+                clearTimeout(windowBlurTimer);
+                windowBlurTimer = null;
+            }
         }
     }
 
     function onWindowBlur() {
         if (!antiCheatActive || !activeQuiz || !activeQuiz.antiFraudEnabled) return;
-        // Si la ventana pierde el foco (ej. alt-tab, clic en otra pantalla o recorte de captura), oscurecer de inmediato
-        const shield = document.getElementById('quiz-blackout-shield');
-        if (shield && shield.style.display !== 'flex') {
-            shield.style.display = 'flex';
-            shield.style.opacity = '1';
-            shield.innerHTML = `
-                <div class="blackout-message" style="max-width:540px; text-align:center;">
-                    <div style="font-size:2.8rem; margin-bottom:0.75rem;">🚫</div>
-                    <h3 style="margin:0 0 0.5rem 0; color:#fff; font-size:1.3rem;">VENTANA FUERA DE FOCO</h3>
-                    <p style="font-size:0.95rem; color:#fca5a5; line-height:1.45; margin-bottom:1.25rem;">
-                        La ventana de la evaluación perdió el foco activo.<br>
-                        Por seguridad académica no se permite interactuar con otras ventanas.
-                    </p>
-                    <button type="button" onclick="resumeQuizFromBlackout()" style="background:#dc2626; color:#fff; border:none; padding:0.75rem 1.6rem; font-weight:800; border-radius:10px; cursor:pointer; font-size:1rem;">
-                        ⚠️ Volver a la Evaluación
-                    </button>
-                </div>
-            `;
+        if (isBlackoutCooldown) return;
+
+        if (windowBlurTimer) clearTimeout(windowBlurTimer);
+
+        // Debounce de 1400ms: en móviles o al interactuar con opciones, blur puede dispararse de forma transitoria.
+        windowBlurTimer = setTimeout(() => {
+            if (!antiCheatActive || !activeQuiz || !activeQuiz.antiFraudEnabled) return;
+            if (isBlackoutCooldown) return;
+
+            // Si el documento ya recuperó foco o está activo y visible, no bloquear
+            if (document.hasFocus && document.hasFocus()) return;
+            if (document.hidden || document.visibilityState === 'hidden') {
+                return; // Ya gestionado con precisión por visibilitychange
+            }
+
+            const qScreen = document.getElementById('quiz-question-screen');
+            if (qScreen) qScreen.style.filter = 'blur(20px)';
+
+            const shield = document.getElementById('quiz-blackout-shield');
+            if (shield) {
+                shield.style.display = 'flex';
+                shield.style.opacity = '1';
+                shield.innerHTML = `
+                    <div class="blackout-message" style="max-width:540px; text-align:center;">
+                        <div style="font-size:2.8rem; margin-bottom:0.75rem;">⚠️</div>
+                        <h3 style="margin:0 0 0.5rem 0; color:#fff; font-size:1.3rem;">VENTANA FUERA DE FOCO</h3>
+                        <p style="font-size:0.95rem; color:#fca5a5; line-height:1.45; margin-bottom:1.25rem;">
+                            La ventana de la evaluación perdió el foco activo.<br>
+                            Por favor mantén la ventana en primer plano para responder con tranquilidad.
+                        </p>
+                        <button type="button" onclick="resumeQuizFromBlackout(event)" style="background:#dc2626; color:#fff; border:none; padding:0.8rem 1.8rem; font-weight:800; border-radius:10px; cursor:pointer; font-size:1.05rem; box-shadow:0 4px 15px rgba(220,38,38,0.5); -webkit-tap-highlight-color:transparent; position:relative; z-index:1000000;">
+                            ✅ Volver a la Evaluación
+                        </button>
+                    </div>
+                `;
+            }
+            activeQuiz.tabSwitches = (activeQuiz.tabSwitches || 0) + 1;
+            triggerAntiCheatAlert('tab', `⚠️ <strong>ALERTA DE SEGURIDAD:</strong> La ventana del examen perdió el foco (#${activeQuiz.tabSwitches}).`);
+            logRealActivity(`[ANTIFRAUDE] Alumno "${activeQuiz.studentName}" perdió foco de la ventana en "${activeQuiz.title}" (Incidente #${activeQuiz.tabSwitches})`, 'quiz');
+        }, 1400);
+    }
+
+    function onWindowFocus() {
+        if (windowBlurTimer) {
+            clearTimeout(windowBlurTimer);
+            windowBlurTimer = null;
         }
-        activeQuiz.tabSwitches = (activeQuiz.tabSwitches || 0) + 1;
-        triggerAntiCheatAlert('tab', `⚠️ <strong>ALERTA DE SEGURIDAD:</strong> La ventana del examen perdió el foco (#${activeQuiz.tabSwitches}).`);
-        logRealActivity(`[ANTIFRAUDE] Alumno "${activeQuiz.studentName}" perdió foco de la ventana en "${activeQuiz.title}" (Incidente #${activeQuiz.tabSwitches})`, 'quiz');
     }
 
     function onFullscreenChange() {
         if (!antiCheatActive || !activeQuiz || !activeQuiz.antiFraudEnabled) return;
+        if (isBlackoutCooldown) return;
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        if (isMobile) return; // En móviles no se fuerza Fullscreen API estricta por compatibilidad de navegador
+
         const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement);
         if (!isFullscreen) {
             activeQuiz.tabSwitches = (activeQuiz.tabSwitches || 0) + 1;
+            const qScreen = document.getElementById('quiz-question-screen');
+            if (qScreen) qScreen.style.filter = 'blur(20px)';
+
             const shield = document.getElementById('quiz-blackout-shield');
             if (shield) {
                 shield.style.display = 'flex';
@@ -4672,12 +4722,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 shield.innerHTML = `
                     <div class="blackout-message" style="max-width:540px; text-align:center;">
                         <div style="font-size:2.8rem; margin-bottom:0.75rem;">🖥️</div>
-                        <h3 style="margin:0 0 0.5rem 0; color:#fff; font-size:1.3rem;">PANTALLA COMPLETA OBLIGATORIA</h3>
+                        <h3 style="margin:0 0 0.5rem 0; color:#fff; font-size:1.3rem;">PANTALLA COMPLETA REQUERIDA</h3>
                         <p style="font-size:0.95rem; color:#fca5a5; line-height:1.45; margin-bottom:1.25rem;">
-                            Has salido del modo de pantalla completa. Por protocolo antifraude la prueba debe realizarse a pantalla completa.<br>
+                            Has salido del modo de pantalla completa.<br>
                             <strong>Incidencia registrada: #${activeQuiz.tabSwitches}</strong>.
                         </p>
-                        <button type="button" onclick="resumeQuizFullscreen()" style="background:#7c3aed; color:#fff; border:none; padding:0.75rem 1.6rem; font-weight:800; border-radius:10px; cursor:pointer; font-size:1rem; box-shadow:0 4px 15px rgba(124,58,237,0.5);">
+                        <button type="button" onclick="resumeQuizFullscreen(event)" style="background:#7c3aed; color:#fff; border:none; padding:0.8rem 1.8rem; font-weight:800; border-radius:10px; cursor:pointer; font-size:1.05rem; box-shadow:0 4px 15px rgba(124,58,237,0.5); -webkit-tap-highlight-color:transparent; position:relative; z-index:1000000;">
                             🖥️ Volver a Pantalla Completa
                         </button>
                     </div>
@@ -4688,26 +4738,56 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    window.resumeQuizFromBlackout = function() {
+    window.resumeQuizFromBlackout = function(e) {
+        if (e && e.stopPropagation) {
+            e.stopPropagation();
+            e.preventDefault();
+        }
+
+        if (windowBlurTimer) {
+            clearTimeout(windowBlurTimer);
+            windowBlurTimer = null;
+        }
+
+        // Cooldown de 3.5 segundos para evitar reactivación inmediata por clic o transición de foco
+        isBlackoutCooldown = true;
+        if (blackoutCooldownTimer) clearTimeout(blackoutCooldownTimer);
+        blackoutCooldownTimer = setTimeout(() => {
+            isBlackoutCooldown = false;
+        }, 3500);
+
         const shield = document.getElementById('quiz-blackout-shield');
-        if (shield) shield.style.display = 'none';
+        if (shield) {
+            shield.style.display = 'none';
+            shield.style.opacity = '1';
+        }
         const qScreen = document.getElementById('quiz-question-screen');
-        if (qScreen) qScreen.style.filter = 'none';
+        if (qScreen) {
+            qScreen.style.filter = 'none';
+        }
+
+        const banner = document.getElementById('quiz-security-banner');
+        if (banner) {
+            const textEl = document.getElementById('quiz-security-text') || document.getElementById('sec-banner-desc');
+            if (textEl) textEl.innerHTML = '✅ <strong>Evaluación reanudada:</strong> Continúa respondiendo con normalidad.';
+            setTimeout(() => { if (banner) banner.style.display = 'none'; }, 2200);
+        }
+
         try {
-            if (document.documentElement && document.documentElement.requestFullscreen && !document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(() => {});
-            }
-        } catch (e) {}
+            window.focus();
+        } catch (err) {}
     };
 
-    window.resumeQuizFullscreen = function() {
-        const shield = document.getElementById('quiz-blackout-shield');
-        if (shield) shield.style.display = 'none';
-        try {
-            if (document.documentElement && document.documentElement.requestFullscreen) {
-                document.documentElement.requestFullscreen().catch(() => {});
-            }
-        } catch (e) {}
+    window.resumeQuizFullscreen = function(e) {
+        window.resumeQuizFromBlackout(e);
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        if (!isMobile) {
+            try {
+                if (document.documentElement && document.documentElement.requestFullscreen && !document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(() => {});
+                }
+            } catch (err) {}
+        }
     };
 
     function onKeyDownGuard(e) {
@@ -4745,7 +4825,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             Por seguridad académica está prohibido capturar, copiar o inspeccionar preguntas.<br>
                             <strong>Intento registrado: #${activeQuiz.screenshotAttempts}</strong> en el reporte docente.
                         </p>
-                        <button type="button" onclick="resumeQuizFromBlackout()" style="background:#dc2626; color:#fff; border:none; padding:0.75rem 1.6rem; font-weight:800; border-radius:10px; cursor:pointer; font-size:1rem;">
+                        <button type="button" onclick="resumeQuizFromBlackout(event)" style="background:#dc2626; color:#fff; border:none; padding:0.8rem 1.8rem; font-weight:800; border-radius:10px; cursor:pointer; font-size:1.05rem; -webkit-tap-highlight-color:transparent; position:relative; z-index:1000000;">
                             Continuar Evaluación
                         </button>
                     </div>
@@ -4785,9 +4865,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function setupAntiCheatListeners() {
         antiCheatActive = true;
+        isBlackoutCooldown = true;
+        if (blackoutCooldownTimer) clearTimeout(blackoutCooldownTimer);
+        blackoutCooldownTimer = setTimeout(() => {
+            isBlackoutCooldown = false;
+        }, 2500);
+
         document.addEventListener('visibilitychange', onVisibilityChange);
         window.addEventListener('blur', onWindowBlur);
-        window.addEventListener('focusout', onWindowBlur);
+        window.addEventListener('focus', onWindowFocus);
         window.addEventListener('pagehide', onPageHideGuard);
         window.addEventListener('freeze', onPageHideGuard);
         window.addEventListener('keydown', onKeyDownGuard, true);
@@ -4813,18 +4899,31 @@ document.addEventListener('DOMContentLoaded', () => {
             history.pushState({ inQuiz: true }, '');
         } catch (e) {}
 
-        try {
-            if (document.documentElement && document.documentElement.requestFullscreen) {
-                document.documentElement.requestFullscreen().catch(() => {});
-            }
-        } catch (e) {}
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        if (!isMobile) {
+            try {
+                if (document.documentElement && document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen().catch(() => {});
+                }
+            } catch (e) {}
+        }
     }
 
     function removeAntiCheatListeners() {
         antiCheatActive = false;
+        isBlackoutCooldown = false;
+        if (blackoutCooldownTimer) {
+            clearTimeout(blackoutCooldownTimer);
+            blackoutCooldownTimer = null;
+        }
+        if (windowBlurTimer) {
+            clearTimeout(windowBlurTimer);
+            windowBlurTimer = null;
+        }
+
         document.removeEventListener('visibilitychange', onVisibilityChange);
         window.removeEventListener('blur', onWindowBlur);
-        window.removeEventListener('focusout', onWindowBlur);
+        window.removeEventListener('focus', onWindowFocus);
         window.removeEventListener('pagehide', onPageHideGuard);
         window.removeEventListener('freeze', onPageHideGuard);
         window.removeEventListener('keydown', onKeyDownGuard, true);
@@ -4857,6 +4956,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const shield = document.getElementById('quiz-blackout-shield');
         if (shield) shield.style.display = 'none';
+
+        const qScreen = document.getElementById('quiz-question-screen');
+        if (qScreen) qScreen.style.filter = 'none';
 
         const watermarkEl = document.getElementById('quiz-security-watermark');
         if (watermarkEl) watermarkEl.style.display = 'none';
@@ -4991,8 +5093,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (scoreEl) scoreEl.textContent = activeQuiz.score.toLocaleString('es-ES');
 
         // Question Screen
-        if (quizQuestionScreen) quizQuestionScreen.style.display = 'flex';
+        if (quizQuestionScreen) {
+            quizQuestionScreen.style.display = 'flex';
+            quizQuestionScreen.style.filter = 'none';
+        }
         if (quizResultsScreen) quizResultsScreen.style.display = 'none';
+        const shieldEl = document.getElementById('quiz-blackout-shield');
+        if (shieldEl) shieldEl.style.display = 'none';
 
         // Question Meta
         const numTag = document.getElementById('q-num-tag');
@@ -5092,6 +5199,11 @@ document.addEventListener('DOMContentLoaded', () => {
     window.handleQuizOptionSelect = function(letter, optIndex) {
         if (activeQuiz.answeredCurrent) return;
         activeQuiz.answeredCurrent = true;
+
+        // Protección antifraude: cooldown temporal para evitar falso blur/focusout al deshabilitar botones
+        isBlackoutCooldown = true;
+        if (blackoutCooldownTimer) clearTimeout(blackoutCooldownTimer);
+        blackoutCooldownTimer = setTimeout(() => { isBlackoutCooldown = false; }, 2000);
 
         const q = activeQuiz.questions[activeQuiz.currentIndex];
         if (!q) return;
@@ -5206,6 +5318,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function showQuizFinalResults() {
         playQuizAudio('finish');
         removeAntiCheatListeners();
+        const shieldEl = document.getElementById('quiz-blackout-shield');
+        if (shieldEl) shieldEl.style.display = 'none';
+        const qScreen = document.getElementById('quiz-question-screen');
+        if (qScreen) qScreen.style.filter = 'none';
 
         const total = activeQuiz.questions.length;
         const correct = activeQuiz.correctCount;
