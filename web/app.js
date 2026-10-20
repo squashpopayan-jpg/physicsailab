@@ -2918,8 +2918,119 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ========================================================
-    // GESTIÓN DOCENTE DE QUIZZES, PIN Y CALIFICACIONES EN GRUPO
+    // GESTIÓN DOCENTE DE QUIZZES, CONTRASEÑAS INDEPENDIENTES Y CALIFICACIONES EN GRUPO
     // ========================================================
+    const DEFAULT_QUIZ_PASSWORDS = {
+        'electromagnetismo-10': 'ELECTRO2026',
+        'quiz-completo': 'FISICA60',
+        'quiz-cinematica': 'CINEMATICA15',
+        'quiz-dinamica': 'DINAMICA15',
+        'quiz-express': 'EXPRESS10'
+    };
+
+    function getStoredQuizPasswords() {
+        let passwords = Object.assign({}, DEFAULT_QUIZ_PASSWORDS);
+        try {
+            const stored = localStorage.getItem('physicsailab_quiz_passwords');
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                if (parsed && typeof parsed === 'object') {
+                    passwords = Object.assign(passwords, parsed);
+                }
+            }
+        } catch (e) {}
+        if (window.adminTelemetryCache && window.adminTelemetryCache.quizPasswords) {
+            passwords = Object.assign(passwords, window.adminTelemetryCache.quizPasswords);
+        }
+        return passwords;
+    }
+
+    function getQuizPassword(quizId) {
+        const map = getStoredQuizPasswords();
+        return (map[quizId] || DEFAULT_QUIZ_PASSWORDS[quizId] || 'FISICA2026').trim().toUpperCase();
+    }
+
+    function setQuizPassword(quizId, newPassword) {
+        const map = getStoredQuizPasswords();
+        const pin = (newPassword || '').trim().toUpperCase();
+        map[quizId] = pin;
+        try {
+            localStorage.setItem('physicsailab_quiz_passwords', JSON.stringify(map));
+        } catch (e) {}
+        if (window.adminTelemetryCache) {
+            window.adminTelemetryCache.quizPasswords = map;
+        }
+        fetch(`${FIREBASE_BASE}/quiz_passwords.json`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(map)
+        }).catch(() => {});
+        return map;
+    }
+
+    window.adminSaveSingleQuizPassword = function(quizId) {
+        const input = document.getElementById(`admin-pin-${quizId}`);
+        if (!input) return;
+        const pin = input.value.trim().toUpperCase();
+        if (pin.length < 3) {
+            alert('La contraseña del quiz debe tener al menos 3 caracteres.');
+            input.focus();
+            return;
+        }
+        setQuizPassword(quizId, pin);
+        const qData = window.QUIZZES_DATA;
+        const preset = qData ? qData.presets.find(p => p.id === quizId) : null;
+        const title = preset ? preset.title : quizId;
+        showToast(`🔑 Contraseña de "${title}" actualizada a: <strong>${pin}</strong>`);
+        logRealActivity(`Docente asignó nueva contraseña [${pin}] al quiz "${title}"`, 'admin');
+    };
+
+    window.adminSaveAllQuizPasswords = function() {
+        const qData = window.QUIZZES_DATA;
+        if (!qData || !qData.presets) return;
+        const map = getStoredQuizPasswords();
+        let updatedCount = 0;
+        qData.presets.forEach(p => {
+            const input = document.getElementById(`admin-pin-${p.id}`);
+            if (input && input.value.trim()) {
+                map[p.id] = input.value.trim().toUpperCase();
+                updatedCount++;
+            }
+        });
+        try {
+            localStorage.setItem('physicsailab_quiz_passwords', JSON.stringify(map));
+        } catch (e) {}
+        if (window.adminTelemetryCache) {
+            window.adminTelemetryCache.quizPasswords = map;
+        }
+        fetch(`${FIREBASE_BASE}/quiz_passwords.json`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(map)
+        }).catch(() => {});
+        showToast(`💾 Se guardaron correctamente las contraseñas de las ${updatedCount} evaluaciones.`);
+        logRealActivity(`Docente guardó todas las contraseñas de los quizzes (${updatedCount} evaluaciones)`, 'admin');
+    };
+
+    window.adminCopyWhatsAppForQuiz = function(quizId) {
+        const qData = window.QUIZZES_DATA;
+        const preset = qData ? qData.presets.find(p => p.id === quizId) : null;
+        if (!preset) return;
+        const pin = getQuizPassword(quizId);
+
+        const text = `¡Hola estudiantes!\n\nYa está habilitada la evaluación oficial en nuestra plataforma:\n\n📝 Evaluación: *${preset.title}*\n🎯 Total: *${preset.totalPreguntas} preguntas*\n🔑 Contraseña / PIN de Ingreso: *${pin}*\n🌐 Enlace directo: https://physicsailab.com/#quizzes\n\nInstrucciones:\n1. En el menú desplegable selecciona "${preset.title}".\n2. Ingresa con tu Nombre y Apellidos completos.\n3. Escribe la contraseña oficial: *${pin}*\n4. La prueba cuenta con protocolo antifraude: preguntas en orden aleatorio, sin cambio de pestañas ni capturas de pantalla.\n5. Avanza pregunta por pregunta (no está permitido retroceder).\n\nMuchos éxitos en la prueba.\nMg. Manuel Alejandro Obando — Universidad del Cauca`;
+
+        navigator.clipboard.writeText(text).then(() => {
+            showToast(`📋 Invitación de WhatsApp copiada para "${preset.title}".`);
+        }).catch(() => {
+            alert(text);
+        });
+    };
+
+    window.openAdminQuizPreview = function(quizId) {
+        window.openQuizPreviewModal(quizId);
+    };
+
     function getAdminQuizConfig() {
         try {
             const stored = localStorage.getItem('physicsailab_quiz_config');
@@ -3191,8 +3302,13 @@ document.addEventListener('DOMContentLoaded', () => {
             fetch(`${FIREBASE_BASE}/profiles.json`).then(r => r.json()).catch(() => null),
             fetch(`${FIREBASE_BASE}/activity.json`).then(r => r.json()).catch(() => null),
             fetch(`${FIREBASE_BASE}/quiz_results.json`).then(r => r.json()).catch(() => null),
-            fetch(`${FIREBASE_BASE}/quiz_config.json`).then(r => r.json()).catch(() => null)
-        ]).then(([counters, profiles, activity, quizResults, quizConfig]) => {
+            fetch(`${FIREBASE_BASE}/quiz_config.json`).then(r => r.json()).catch(() => null),
+            fetch(`${FIREBASE_BASE}/quiz_passwords.json`).then(r => r.json()).catch(() => null)
+        ]).then(([counters, profiles, activity, quizResults, quizConfig, quizPasswords]) => {
+            if (quizPasswords && typeof quizPasswords === 'object') {
+                window.adminTelemetryCache.quizPasswords = Object.assign({}, DEFAULT_QUIZ_PASSWORDS, quizPasswords);
+                localStorage.setItem('physicsailab_quiz_passwords', JSON.stringify(window.adminTelemetryCache.quizPasswords));
+            }
             if (counters) {
                 window.adminTelemetryCache.counters = counters;
                 if (typeof counters.real_visits === 'number') {
@@ -3468,23 +3584,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
 
-                <!-- SECCIÓN 2.5: Gestión de Quizzes Oficiales, Contraseña de Acceso y Planilla de Calificaciones -->
+                <!-- SECCIÓN 2.5: Gestión de Quizzes Oficiales, Contraseñas Independientes y Planilla de Calificaciones -->
                 <div class="admin-quiz-box" style="margin-bottom:2.25rem;">
                     <div class="admin-quiz-header">
                         <div>
                             <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.35rem; flex-wrap:wrap;">
                                 <h4 style="color:#fff; font-size:1.15rem; margin:0; display:flex; align-items:center; gap:0.5rem;">
-                                    📝 Gestión de Quizzes, PIN de Sala y Planilla de Notas
+                                    📝 Gestión de Quizzes, Contraseñas por Evaluación y Planilla de Notas
                                 </h4>
                                 <span class="badge" style="background:rgba(124, 58, 237, 0.25); color:#c4b5fd; border:1px solid rgba(167, 139, 250, 0.4); font-size:0.72rem; padding:0.18rem 0.55rem;">
                                     MODO EVALUACIÓN OFICIAL
                                 </span>
                             </div>
                             <p style="font-size:0.83rem; color:var(--text-muted); margin:0;">
-                                Define la contraseña que deben escribir los estudiantes para presentar la evaluación, comparte el enlace y descarga la plantilla de notas en Excel (CSV).
+                                Cada quiz de la lista tiene su contraseña independiente asignada. Los estudiantes seleccionan el quiz de la lista desplegable e ingresan con la clave correspondiente.
                             </p>
                         </div>
                         <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+                            <button class="btn btn-primary" onclick="window.adminSaveAllQuizPasswords()" style="font-size:0.8rem; padding:0.4rem 0.85rem; background:#7c3aed; border:none; display:inline-flex; align-items:center; gap:0.35rem; font-weight:700;">
+                                💾 Guardar Todas las Contraseñas
+                            </button>
                             <button class="btn btn-secondary" onclick="window.fetchAdminCloudTelemetry(true)" style="font-size:0.8rem; padding:0.4rem 0.85rem; display:inline-flex; align-items:center; gap:0.35rem;">
                                 🔄 Refrescar Notas
                             </button>
@@ -3494,42 +3613,58 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     </div>
 
-                    <!-- Configuración activa de Sala / PIN -->
-                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:1rem; margin-bottom:1.25rem; background:rgba(0,0,0,0.25); padding:1rem 1.15rem; border-radius:10px; border:1px solid rgba(255,255,255,0.06); align-items:center;">
-                        <div>
-                            <label style="display:block; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.8px; color:var(--text-muted); margin-bottom:0.35rem; font-weight:600;">
-                                🔑 Contraseña / PIN de Ingreso del Quiz
-                            </label>
-                            <input type="text" id="admin-quiz-pin-input" value="${getAdminQuizConfig().pin}" style="width:100%; font-family:monospace; font-size:1.05rem; font-weight:800; letter-spacing:2px; text-transform:uppercase; padding:0.5rem 0.75rem; background:#0b1120; border:1px solid #7c3aed; color:#a78bfa; border-radius:8px;" maxlength="12">
+                    <!-- Configuración de Contraseñas Individuales por Quiz -->
+                    <div style="margin-bottom:1.5rem; background:rgba(0,0,0,0.28); padding:1.2rem; border-radius:12px; border:1px solid rgba(255,255,255,0.07);">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;">
+                            <span style="font-size:0.85rem; font-weight:700; color:#e2e8f0; text-transform:uppercase; letter-spacing:0.7px;">
+                                🔑 Lista de Evaluaciones y sus Contraseñas de Ingreso:
+                            </span>
+                            <span style="font-size:0.75rem; color:#a78bfa; background:rgba(124,58,237,0.15); padding:0.2rem 0.6rem; border-radius:6px; border:1px solid rgba(124,58,237,0.3);">
+                                5 Quizzes Oficiales Configurados
+                            </span>
                         </div>
-                        <div>
-                            <label style="display:block; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.8px; color:var(--text-muted); margin-bottom:0.35rem; font-weight:600;">
-                                📚 Cuestionario / Temática Asignada
-                            </label>
-                            <select id="admin-quiz-preset-select" style="width:100%; padding:0.55rem 0.75rem; background:#0b1120; border:1px solid rgba(255,255,255,0.15); color:#fff; border-radius:8px; font-size:0.85rem;">
-                                ${(window.QUIZZES_DATA && window.QUIZZES_DATA.presets ? window.QUIZZES_DATA.presets : []).map(p => `
-                                    <option value="${p.id}" ${getAdminQuizConfig().presetId === p.id ? 'selected' : ''}>
-                                        ${p.title} (${p.totalPreguntas} preguntas) [PIN: ${p.code}]
-                                    </option>
-                                `).join('')}
-                            </select>
+
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:0.85rem;">
+                            ${(window.QUIZZES_DATA && window.QUIZZES_DATA.presets ? window.QUIZZES_DATA.presets : []).map(p => {
+                                const currentPwd = getQuizPassword(p.id);
+                                return `
+                                    <div style="background:#0b1120; border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:0.85rem 1rem; display:flex; flex-direction:column; justify-content:space-between; gap:0.6rem;">
+                                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.5rem;">
+                                            <div>
+                                                <div style="font-size:0.72rem; color:#38bdf8; font-weight:700; text-transform:uppercase;">${p.badge || 'Quiz'}</div>
+                                                <div style="font-weight:700; color:#fff; font-size:0.9rem; line-height:1.3;">${p.title}</div>
+                                                <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">🎯 ${p.totalPreguntas} preguntas · ⏱️ ~${p.tiempoSugeridoMin} min</div>
+                                            </div>
+                                        </div>
+
+                                        <div style="display:flex; gap:0.4rem; align-items:center;">
+                                            <div style="flex:1;">
+                                                <label for="admin-pin-${p.id}" style="display:block; font-size:0.68rem; color:var(--text-muted); margin-bottom:0.2rem; text-transform:uppercase;">Contraseña / PIN:</label>
+                                                <input type="text" id="admin-pin-${p.id}" value="${currentPwd}" style="width:100%; font-family:monospace; font-size:0.92rem; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; padding:0.42rem 0.6rem; background:#0f172a; border:1px solid #7c3aed; color:#c4b5fd; border-radius:6px;" maxlength="16">
+                                            </div>
+                                            <button class="btn btn-primary" onclick="window.adminSaveSingleQuizPassword('${p.id}')" style="align-self:flex-end; font-size:0.75rem; padding:0.45rem 0.65rem; background:#7c3aed; border:none; height:34px; font-weight:700;" title="Guardar contraseña de este quiz">
+                                                💾 Guardar
+                                            </button>
+                                            <button class="btn btn-secondary" onclick="window.openAdminQuizPreview('${p.id}')" style="align-self:flex-end; font-size:0.75rem; padding:0.45rem 0.65rem; border:1px solid #38bdf8; color:#38bdf8; height:34px;" title="Ver las preguntas de este quiz (Exclusivo Docente)">
+                                                👁️ Ver
+                                            </button>
+                                            <button class="btn btn-secondary" onclick="window.adminCopyWhatsAppForQuiz('${p.id}')" style="align-self:flex-end; font-size:0.75rem; padding:0.45rem 0.65rem; border:1px solid #22c55e; color:#4ade80; height:34px;" title="Copiar invitación de WhatsApp con este PIN">
+                                                📱 WhatsApp
+                                            </button>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
                         </div>
-                        <div>
-                            <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.82rem; color:#e2e8f0; margin-bottom:0.6rem; cursor:pointer;">
-                                <input type="checkbox" id="admin-quiz-antifraud" ${getAdminQuizConfig().antiFraudEnabled !== false ? 'checked' : ''} style="accent-color:#7c3aed; width:16px; height:16px;">
-                                <span>Activar Modo Antifraude Estricto (bloqueo de capturas y detección de cambio de pestaña)</span>
+
+                        <div style="margin-top:1rem; padding-top:0.85rem; border-top:1px solid rgba(255,255,255,0.06); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.6rem;">
+                            <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.82rem; color:#e2e8f0; cursor:pointer;">
+                                <input type="checkbox" id="admin-quiz-antifraud" checked style="accent-color:#7c3aed; width:16px; height:16px;">
+                                <span>🛡️ Protocolo Antifraude Estricto Activado (bloqueo de capturas, bloqueo de cambio de pestaña y orden aleatorio de preguntas)</span>
                             </label>
-                            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-                                <button class="btn btn-primary" onclick="window.adminSaveQuizConfig()" style="font-size:0.8rem; padding:0.45rem 0.85rem; background:#7c3aed; border:none; flex:1;">
-                                    💾 Guardar PIN
-                                </button>
-                                <button class="btn btn-secondary" onclick="window.openQuizPreviewModal()" style="font-size:0.8rem; padding:0.45rem 0.75rem; border:1px solid #38bdf8; color:#38bdf8;" title="Ver las preguntas completas del quiz">
-                                    👁️ Ver Quiz
-                                </button>
-                                <button class="btn btn-secondary" onclick="window.adminCopyQuizWhatsApp()" style="font-size:0.8rem; padding:0.45rem 0.75rem; border:1px solid #22c55e; color:#4ade80;" title="Copiar invitación con PIN para WhatsApp">
-                                    📱 Copiar WhatsApp
-                                </button>
-                            </div>
+                            <span style="font-size:0.78rem; color:var(--text-muted);">
+                                Cada estudiante recibe las preguntas en orden diferente.
+                            </span>
                         </div>
                     </div>
 
@@ -4362,15 +4497,30 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="quiz-preset-meta">
                         <span class="quiz-meta-pill">🎯 ${p.totalPreguntas} Preguntas</span>
                         <span class="quiz-meta-pill">⏱️ ~${p.tiempoSugeridoMin} Min</span>
-                        <span class="quiz-meta-pill pin-pill">PIN: ${p.code}</span>
+                        <span class="quiz-meta-pill pin-pill">🔒 Con Contraseña del Docente</span>
                     </div>
                 </div>
-                <button type="button" class="quiz-play-btn" onclick="startQuizWithPresetId('${p.id}')">
-                    <span>🚀 Jugar Desafío</span>
+                <button type="button" class="quiz-play-btn" onclick="selectQuizAndScrollToForm('${p.id}')">
+                    <span>🚀 Presentar Evaluación</span>
                 </button>
             </div>
         `).join('');
     }
+
+    window.selectQuizAndScrollToForm = function(quizId) {
+        const selectDropdown = document.getElementById('quiz-select-dropdown');
+        if (selectDropdown) selectDropdown.value = quizId;
+        const formEl = document.getElementById('quiz-join-form');
+        if (formEl) formEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const nameInput = document.getElementById('quiz-student-name');
+        if (nameInput && !nameInput.value.trim()) {
+            setTimeout(() => nameInput.focus(), 400);
+            showToast('✍️ Escribe tu Nombre y Apellidos y la contraseña asignada por tu docente.');
+        } else {
+            const pinInput = document.getElementById('quiz-pin-input');
+            if (pinInput) setTimeout(() => pinInput.focus(), 400);
+        }
+    };
 
     function updateQuizWatermark(studentName, pin) {
         const watermarkEl = document.getElementById('quiz-security-watermark');
@@ -4388,25 +4538,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function triggerAntiCheatAlert(type, message) {
         const banner = document.getElementById('quiz-security-banner');
-        const textEl = document.getElementById('quiz-security-text');
-        if (banner && textEl) {
-            textEl.innerHTML = message;
+        const textEl = document.getElementById('quiz-security-text') || document.getElementById('sec-banner-desc');
+        if (banner) {
+            if (textEl) textEl.innerHTML = message;
             banner.style.display = 'flex';
             if (window._securityBannerTimeout) clearTimeout(window._securityBannerTimeout);
             window._securityBannerTimeout = setTimeout(() => {
                 banner.style.display = 'none';
-            }, 6000);
+            }, 6500);
         }
 
-        if (type === 'screenshot') {
+        if (type === 'screenshot' || type === 'tab') {
             const shield = document.getElementById('quiz-blackout-shield');
             if (shield) {
                 shield.style.display = 'flex';
                 shield.style.opacity = '1';
                 setTimeout(() => {
                     shield.style.opacity = '0';
-                    setTimeout(() => { shield.style.display = 'none'; }, 250);
-                }, 1200);
+                    setTimeout(() => { shield.style.display = 'none'; shield.style.opacity = '1'; }, 250);
+                }, 1500);
             }
         }
 
@@ -4417,27 +4567,117 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!antiCheatActive || !activeQuiz || !activeQuiz.antiFraudEnabled) return;
         if (document.hidden || document.visibilityState === 'hidden') {
             activeQuiz.tabSwitches = (activeQuiz.tabSwitches || 0) + 1;
-            triggerAntiCheatAlert('tab', `⚠️ <strong>ALERTA DE SEGURIDAD:</strong> Se detectó cambio de pestaña o aplicación. Incidencia registrada en tu reporte oficial (#${activeQuiz.tabSwitches}).`);
-            logRealActivity(`[ANTIFRAUDE] Alumno "${activeQuiz.studentName}" cambió de pestaña en evaluación (Incidente #${activeQuiz.tabSwitches})`, 'quiz');
+            
+            const shield = document.getElementById('quiz-blackout-shield');
+            if (shield) {
+                shield.style.display = 'flex';
+                shield.style.opacity = '1';
+                shield.innerHTML = `
+                    <div class="blackout-message" style="max-width:540px; text-align:center;">
+                        <div style="font-size:2.8rem; margin-bottom:0.75rem;">🚫</div>
+                        <h3 style="margin:0 0 0.5rem 0; color:#fff; font-size:1.3rem;">CAMBIO DE PESTAÑA DETECTADO</h3>
+                        <p style="font-size:0.95rem; color:#fca5a5; line-height:1.45; margin-bottom:1.25rem;">
+                            Se detectó que minimizaste el navegador o cambiaste de pestaña o aplicación.<br>
+                            <strong>Incidencia registrada: #${activeQuiz.tabSwitches}</strong> en la planilla oficial de notas.
+                        </p>
+                        <button type="button" onclick="resumeQuizFromBlackout()" style="background:#dc2626; color:#fff; border:none; padding:0.75rem 1.6rem; font-weight:800; border-radius:10px; cursor:pointer; font-size:1rem; box-shadow:0 4px 15px rgba(220,38,38,0.5);">
+                            ⚠️ Reanudar Evaluación
+                        </button>
+                    </div>
+                `;
+            }
+            triggerAntiCheatAlert('tab', `⚠️ <strong>ALERTA DE SEGURIDAD:</strong> Se detectó cambio de pestaña o aplicación. Incidencia registrada en el informe del docente (#${activeQuiz.tabSwitches}).`);
+            logRealActivity(`[ANTIFRAUDE] Alumno "${activeQuiz.studentName}" cambió de pestaña en evaluación "${activeQuiz.title}" (Incidente #${activeQuiz.tabSwitches})`, 'quiz');
         }
     }
 
     function onWindowBlur() {
         if (!antiCheatActive || !activeQuiz || !activeQuiz.antiFraudEnabled) return;
+        // Si la ventana pierde el foco (ej. alt-tab, clic en otra pantalla o recorte de captura), oscurecer de inmediato
+        const shield = document.getElementById('quiz-blackout-shield');
+        if (shield && shield.style.display !== 'flex') {
+            shield.style.display = 'flex';
+            shield.style.opacity = '1';
+            shield.innerHTML = `
+                <div class="blackout-message" style="max-width:540px; text-align:center;">
+                    <div style="font-size:2.8rem; margin-bottom:0.75rem;">🚫</div>
+                    <h3 style="margin:0 0 0.5rem 0; color:#fff; font-size:1.3rem;">VENTANA FUERA DE FOCO</h3>
+                    <p style="font-size:0.95rem; color:#fca5a5; line-height:1.45; margin-bottom:1.25rem;">
+                        La ventana de la evaluación perdió el foco activo.<br>
+                        Por seguridad académica no se permite interactuar con otras ventanas.
+                    </p>
+                    <button type="button" onclick="resumeQuizFromBlackout()" style="background:#dc2626; color:#fff; border:none; padding:0.75rem 1.6rem; font-weight:800; border-radius:10px; cursor:pointer; font-size:1rem;">
+                        ⚠️ Volver a la Evaluación
+                    </button>
+                </div>
+            `;
+        }
         activeQuiz.tabSwitches = (activeQuiz.tabSwitches || 0) + 1;
-        triggerAntiCheatAlert('tab', `⚠️ <strong>ALERTA DE SEGURIDAD:</strong> La ventana del examen perdió el foco. Incidencia registrada (#${activeQuiz.tabSwitches}).`);
-        logRealActivity(`[ANTIFRAUDE] Alumno "${activeQuiz.studentName}" perdió foco de la ventana (Incidente #${activeQuiz.tabSwitches})`, 'quiz');
+        triggerAntiCheatAlert('tab', `⚠️ <strong>ALERTA DE SEGURIDAD:</strong> La ventana del examen perdió el foco (#${activeQuiz.tabSwitches}).`);
+        logRealActivity(`[ANTIFRAUDE] Alumno "${activeQuiz.studentName}" perdió foco de la ventana en "${activeQuiz.title}" (Incidente #${activeQuiz.tabSwitches})`, 'quiz');
     }
+
+    function onFullscreenChange() {
+        if (!antiCheatActive || !activeQuiz || !activeQuiz.antiFraudEnabled) return;
+        const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement);
+        if (!isFullscreen) {
+            activeQuiz.tabSwitches = (activeQuiz.tabSwitches || 0) + 1;
+            const shield = document.getElementById('quiz-blackout-shield');
+            if (shield) {
+                shield.style.display = 'flex';
+                shield.style.opacity = '1';
+                shield.innerHTML = `
+                    <div class="blackout-message" style="max-width:540px; text-align:center;">
+                        <div style="font-size:2.8rem; margin-bottom:0.75rem;">🖥️</div>
+                        <h3 style="margin:0 0 0.5rem 0; color:#fff; font-size:1.3rem;">PANTALLA COMPLETA OBLIGATORIA</h3>
+                        <p style="font-size:0.95rem; color:#fca5a5; line-height:1.45; margin-bottom:1.25rem;">
+                            Has salido del modo de pantalla completa. Por protocolo antifraude la prueba debe realizarse a pantalla completa.<br>
+                            <strong>Incidencia registrada: #${activeQuiz.tabSwitches}</strong>.
+                        </p>
+                        <button type="button" onclick="resumeQuizFullscreen()" style="background:#7c3aed; color:#fff; border:none; padding:0.75rem 1.6rem; font-weight:800; border-radius:10px; cursor:pointer; font-size:1rem; box-shadow:0 4px 15px rgba(124,58,237,0.5);">
+                            🖥️ Volver a Pantalla Completa
+                        </button>
+                    </div>
+                `;
+            }
+            triggerAntiCheatAlert('tab', `⚠️ <strong>ALERTA DE SEGURIDAD:</strong> Salida de pantalla completa registrada (#${activeQuiz.tabSwitches}).`);
+            logRealActivity(`[ANTIFRAUDE] Alumno "${activeQuiz.studentName}" salió de pantalla completa en "${activeQuiz.title}" (Incidente #${activeQuiz.tabSwitches})`, 'quiz');
+        }
+    }
+
+    window.resumeQuizFromBlackout = function() {
+        const shield = document.getElementById('quiz-blackout-shield');
+        if (shield) shield.style.display = 'none';
+        try {
+            if (document.documentElement && document.documentElement.requestFullscreen && !document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            }
+        } catch (e) {}
+    };
+
+    window.resumeQuizFullscreen = function() {
+        const shield = document.getElementById('quiz-blackout-shield');
+        if (shield) shield.style.display = 'none';
+        try {
+            if (document.documentElement && document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            }
+        } catch (e) {}
+    };
 
     function onKeyDownGuard(e) {
         if (!antiCheatActive || !activeQuiz || !activeQuiz.antiFraudEnabled) return;
 
-        const isPrintScreen = (e.key === 'PrintScreen' || e.code === 'PrintScreen');
-        const isSnippingTool = (e.shiftKey && (e.metaKey || e.key === 'S' || e.key === 's') && (e.ctrlKey || e.metaKey));
-        const isInspect = (e.key === 'F12' || ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')));
-        const isCopySave = ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'C' || e.key === 'u' || e.key === 'U' || e.key === 's' || e.key === 'S' || e.key === 'p' || e.key === 'P'));
+        const key = (e.key || '').toLowerCase();
+        const code = (e.code || '').toLowerCase();
 
-        if (isPrintScreen || isSnippingTool || isInspect || isCopySave) {
+        const isPrintScreen = (key === 'printscreen' || code === 'printscreen');
+        const isSnippingTool = (e.shiftKey && (e.metaKey || key === 's') && (e.ctrlKey || e.metaKey));
+        const isMacScreenshot = (e.metaKey && e.shiftKey && ['3', '4', '5'].includes(key));
+        const isInspect = (key === 'f12' || ((e.ctrlKey || e.metaKey) && e.shiftKey && ['i', 'j', 'c'].includes(key)));
+        const isCopySave = ((e.ctrlKey || e.metaKey) && ['c', 'u', 's', 'p', 'a', 'x', 'v'].includes(key));
+
+        if (isPrintScreen || isSnippingTool || isMacScreenshot || isInspect || isCopySave) {
             e.preventDefault();
             e.stopPropagation();
             activeQuiz.screenshotAttempts = (activeQuiz.screenshotAttempts || 0) + 1;
@@ -4448,10 +4688,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } catch (err) {}
 
+            const shield = document.getElementById('quiz-blackout-shield');
+            if (shield) {
+                shield.style.display = 'flex';
+                shield.style.opacity = '1';
+                shield.innerHTML = `
+                    <div class="blackout-message" style="max-width:540px; text-align:center;">
+                        <div style="font-size:2.8rem; margin-bottom:0.75rem;">🚫</div>
+                        <h3 style="margin:0 0 0.5rem 0; color:#fff; font-size:1.3rem;">CAPTURA BLOQUEADA</h3>
+                        <p style="font-size:0.95rem; color:#fca5a5; line-height:1.45; margin-bottom:1.25rem;">
+                            Por seguridad académica está prohibido capturar, copiar o inspeccionar preguntas.<br>
+                            <strong>Intento registrado: #${activeQuiz.screenshotAttempts}</strong> en el reporte docente.
+                        </p>
+                        <button type="button" onclick="resumeQuizFromBlackout()" style="background:#dc2626; color:#fff; border:none; padding:0.75rem 1.6rem; font-weight:800; border-radius:10px; cursor:pointer; font-size:1rem;">
+                            Continuar Evaluación
+                        </button>
+                    </div>
+                `;
+            }
+
             triggerAntiCheatAlert('screenshot', `🚫 <strong>CAPTURA BLOQUEADA:</strong> Por seguridad académica está prohibido capturar o copiar preguntas. Intento registrado (#${activeQuiz.screenshotAttempts}).`);
-            logRealActivity(`[ANTIFRAUDE] Intento de captura bloqueado para "${activeQuiz.studentName}" (#${activeQuiz.screenshotAttempts})`, 'quiz');
+            logRealActivity(`[ANTIFRAUDE] Intento de captura de pantalla bloqueado para "${activeQuiz.studentName}" en "${activeQuiz.title}" (#${activeQuiz.screenshotAttempts})`, 'quiz');
             return false;
         }
+    }
+
+    function onClipboardGuard(e) {
+        if (!antiCheatActive || !activeQuiz || !activeQuiz.antiFraudEnabled) return;
+        e.preventDefault();
+        return false;
     }
 
     function onContextMenuGuard(e) {
@@ -4482,6 +4747,13 @@ document.addEventListener('DOMContentLoaded', () => {
         window.addEventListener('popstate', onPopStateGuard);
         window.addEventListener('beforeunload', onBeforeUnloadGuard);
 
+        document.addEventListener('fullscreenchange', onFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+        document.addEventListener('copy', onClipboardGuard);
+        document.addEventListener('cut', onClipboardGuard);
+        document.addEventListener('paste', onClipboardGuard);
+        document.addEventListener('selectstart', onClipboardGuard);
+
         try {
             history.pushState({ inQuiz: true }, '');
         } catch (e) {}
@@ -4502,8 +4774,18 @@ document.addEventListener('DOMContentLoaded', () => {
         window.removeEventListener('popstate', onPopStateGuard);
         window.removeEventListener('beforeunload', onBeforeUnloadGuard);
 
+        document.removeEventListener('fullscreenchange', onFullscreenChange);
+        document.removeEventListener('webkitfullscreenchange', onFullscreenChange);
+        document.removeEventListener('copy', onClipboardGuard);
+        document.removeEventListener('cut', onClipboardGuard);
+        document.removeEventListener('paste', onClipboardGuard);
+        document.removeEventListener('selectstart', onClipboardGuard);
+
         const banner = document.getElementById('quiz-security-banner');
         if (banner) banner.style.display = 'none';
+
+        const shield = document.getElementById('quiz-blackout-shield');
+        if (shield) shield.style.display = 'none';
 
         const watermarkEl = document.getElementById('quiz-security-watermark');
         if (watermarkEl) watermarkEl.style.display = 'none';
@@ -4522,15 +4804,30 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // Función para barajar aleatoriamente las preguntas (Fisher-Yates shuffle)
+        function shuffleQuestionsArray(arr) {
+            const copy = [...arr];
+            for (let i = copy.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                const temp = copy[i];
+                copy[i] = copy[j];
+                copy[j] = temp;
+            }
+            return copy;
+        }
+
         // Obtener preguntas completas asociadas a este preset
-        const questions = (preset.questionIds || [])
+        const rawQuestions = (preset.questionIds || [])
             .map(id => qData.questions.find(q => q.id === id))
             .filter(Boolean);
 
-        if (questions.length === 0) {
+        if (rawQuestions.length === 0) {
             alert('No se encontraron preguntas para este cuestionario.');
             return;
         }
+
+        // Mezclar las preguntas en orden aleatorio único para cada estudiante
+        const questions = shuffleQuestionsArray(rawQuestions);
 
         const adminCfg = getAdminQuizConfig();
         const activeStudent = studentName || (activeQuiz && activeQuiz.studentName) || 'Estudiante';
@@ -5021,12 +5318,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const nameInput = document.getElementById('quiz-student-name');
         const courseInput = document.getElementById('quiz-student-course');
         const pinInput = document.getElementById('quiz-pin-input');
+        const selectDropdown = document.getElementById('quiz-select-dropdown');
 
         if (!nameInput || !pinInput) return;
 
         const studentName = nameInput.value.trim();
         const studentCourse = courseInput ? courseInput.value.trim() : '';
         const rawPin = pinInput.value.trim().toUpperCase();
+        const selectedQuizId = selectDropdown ? selectDropdown.value : 'electromagnetismo-10';
 
         if (!studentName) {
             alert('⚠️ Por favor escribe tu Nombre y Apellidos completos para registrar tu nota en la evaluación oficial.');
@@ -5035,7 +5334,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (!rawPin) {
-            alert('⚠️ Por favor escribe la contraseña o PIN de sala asignado por el docente.');
+            alert('⚠️ Por favor escribe la contraseña asignada por tu docente para esta evaluación.');
             pinInput.focus();
             return;
         }
@@ -5046,28 +5345,17 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const adminCfg = getAdminQuizConfig();
-        const adminPin = (adminCfg && adminCfg.pin) ? adminCfg.pin.trim().toUpperCase() : 'FISICA2026';
+        const matched = qData.presets.find(p => p.id === selectedQuizId) || qData.presets[0];
+        const expectedPin = getQuizPassword(matched.id);
 
-        let matched = null;
+        const isValid = (rawPin === expectedPin) || 
+                        (rawPin === matched.code.toUpperCase()) || 
+                        (matched.aliases && matched.aliases.some(a => a.toUpperCase() === rawPin));
 
-        // 1. Coincide con el PIN dinámico asignado por el Docente
-        if (rawPin === adminPin) {
-            matched = qData.presets.find(p => p.id === adminCfg.presetId) || qData.presets[0];
-        }
-
-        // 2. Coincide con preset oficial o alias
-        if (!matched) {
-            matched = qData.presets.find(p => 
-                p.code.toUpperCase() === rawPin || 
-                (p.aliases && p.aliases.some(a => a.toUpperCase() === rawPin))
-            );
-        }
-
-        if (matched) {
+        if (isValid) {
             startQuizWithPreset(matched, studentName, studentCourse, rawPin);
         } else {
-            alert(`⚠️ Contraseña o PIN de sala incorrecto.\n\nPor favor verifica con tu docente el código asignado para la evaluación e inténtalo nuevamente.`);
+            alert(`⚠️ Contraseña incorrecta para "${matched.title}".\n\nPor favor solicita la contraseña de esta evaluación a tu docente e inténtalo nuevamente.`);
             pinInput.focus();
         }
     };
@@ -5156,55 +5444,46 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.openQuizPreviewModal = function(presetId) {
         const qData = window.QUIZZES_DATA;
-        if (!qData || !qData.presets) {
-            alert('Banco de preguntas no disponible en este momento.');
-            return;
-        }
+        if (!qData || !qData.presets || !qData.questions) return;
 
         let targetPreset = null;
         if (presetId) {
             targetPreset = qData.presets.find(p => p.id === presetId);
-        } else {
-            const pinInput = document.getElementById('quiz-pin-input');
-            const rawPin = pinInput ? pinInput.value.trim().toUpperCase() : '';
-            if (rawPin) {
-                targetPreset = qData.presets.find(p => 
-                    p.code.toUpperCase() === rawPin || 
-                    (p.aliases && p.aliases.some(a => a.toUpperCase() === rawPin))
-                );
-            }
-            if (!targetPreset) {
-                const cfg = getAdminQuizConfig();
-                targetPreset = qData.presets.find(p => p.id === cfg.presetId) || qData.presets[0];
-            }
+        }
+        if (!targetPreset) {
+            const dropdown = document.getElementById('quiz-select-dropdown');
+            const selectedId = dropdown ? dropdown.value : null;
+            if (selectedId) targetPreset = qData.presets.find(p => p.id === selectedId);
+        }
+        if (!targetPreset) {
+            targetPreset = qData.presets.find(p => p.id === 'electromagnetismo-10') || qData.presets[0];
         }
 
-        if (!targetPreset) targetPreset = qData.presets[0];
         window._currentPreviewPreset = targetPreset;
 
         const badgeEl = document.getElementById('preview-quiz-badge');
-        if (badgeEl) badgeEl.textContent = targetPreset.badge || 'Quiz Oficial';
-
         const pinBadgeEl = document.getElementById('preview-quiz-pin-badge');
-        if (pinBadgeEl) pinBadgeEl.textContent = `PIN: ${targetPreset.code}`;
-
         const titleEl = document.getElementById('preview-quiz-title');
-        if (titleEl) titleEl.textContent = targetPreset.title;
-
         const descEl = document.getElementById('preview-quiz-desc');
-        if (descEl) descEl.textContent = `${targetPreset.totalPreguntas} Preguntas · ${targetPreset.subtitle || targetPreset.description}`;
+        const listEl = document.getElementById('preview-quiz-questions-list');
 
-        const questions = (targetPreset.questionIds || [])
-            .map(id => qData.questions.find(q => q.id === id))
-            .filter(Boolean);
+        const activePin = getQuizPassword(targetPreset.id);
 
-        const listContainer = document.getElementById('preview-quiz-questions-list');
-        if (listContainer) {
-            listContainer.innerHTML = questions.map((q, idx) => `
-                <div style="background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:1.25rem;">
+        if (badgeEl) badgeEl.textContent = targetPreset.badge || '⚡ Evaluación Oficial';
+        if (pinBadgeEl) pinBadgeEl.textContent = `PIN: ${activePin}`;
+        if (titleEl) titleEl.textContent = targetPreset.title;
+        if (descEl) descEl.textContent = `${targetPreset.totalPreguntas} Preguntas Universitarias · Solucionario Exclusivo para Docente`;
+
+        if (listEl) {
+            const questions = (targetPreset.questionIds || [])
+                .map(id => qData.questions.find(q => q.id === id))
+                .filter(Boolean);
+
+            listEl.innerHTML = questions.map((q, idx) => `
+                <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:1.25rem;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem; flex-wrap:wrap; gap:0.4rem;">
-                        <span style="font-weight:800; color:#38bdf8; font-size:0.95rem;">
-                            Pregunta ${idx + 1} de ${questions.length}
+                        <span style="font-size:0.75rem; font-weight:800; color:var(--accent-blue); letter-spacing:1px;">
+                            PREGUNTA ${idx + 1} DE ${questions.length}
                         </span>
                         <div style="display:flex; gap:0.4rem;">
                             <span class="badge" style="background:rgba(56,189,248,0.15); color:#7dd3fc; font-size:0.72rem; padding:0.18rem 0.55rem; border-radius:4px;">
@@ -5252,21 +5531,6 @@ document.addEventListener('DOMContentLoaded', () => {
             modal.style.display = 'none';
             document.body.style.overflow = '';
         }
-    };
-
-    window.startQuizFromPreview = function() {
-        window.closeQuizPreviewModal();
-        const preset = window._currentPreviewPreset || window.QUIZZES_DATA.presets[0];
-        const nameInput = document.getElementById('quiz-student-name');
-        let sName = nameInput ? nameInput.value.trim() : '';
-        if (!sName) {
-            sName = prompt('Escribe tu Nombre y Apellidos para iniciar la evaluación:') || '';
-            if (!sName.trim()) return;
-            if (nameInput) nameInput.value = sName.trim();
-        }
-        const courseInput = document.getElementById('quiz-student-course');
-        const sCourse = courseInput ? courseInput.value.trim() : 'Electromagnetismo';
-        startQuizWithPreset(preset, sName, sCourse, preset.code);
     };
 
     // Renderizar catálogo inicial de quizzes
