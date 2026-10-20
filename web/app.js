@@ -263,6 +263,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const observedSections = ['inicio', 'curiosidades', 'cursos', 'comics', 'podcasts', 'articulos', 'profesor', 'comentarios'];
     function highlightActiveSectionOnScroll() {
+        if (document.body.classList.contains('modular-pages')) {
+            return;
+        }
         const scrollPos = window.scrollY + 180;
         let currentSectionId = 'inicio';
 
@@ -5652,8 +5655,179 @@ document.addEventListener('DOMContentLoaded', () => {
         const buyParam = urlParams.get('buy');
         if (buyParam) {
             setTimeout(() => {
+                window.navigateToSection('cursos', false);
                 openPaymentModal(buyParam);
             }, 500);
         }
     } catch (e) {}
+
+    // ==========================================================================
+    // ARQUITECTURA MODULAR POR PÁGINAS DEDICADAS (SPA ROUTER UNIVERSITARIO)
+    // ==========================================================================
+    const ALL_PAGE_SECTIONS = [
+        'inicio',
+        'cursos',
+        'quizzes',
+        'juegos',
+        'comics',
+        'podcasts',
+        'articulos',
+        'curiosidades',
+        'profesor',
+        'comentarios'
+    ];
+
+    window.navigateToSection = function(sectionId, pushToHistory = true) {
+        if (!sectionId) sectionId = 'inicio';
+        sectionId = sectionId.replace(/^#/, '');
+
+        // Si la sección solicitada es mis-cursos, redirigir a cursos y hacer scroll
+        if (sectionId === 'mis-cursos') {
+            window.navigateToSection('cursos', pushToHistory);
+            setTimeout(() => {
+                const mc = document.getElementById('mis-cursos');
+                if (mc) {
+                    mc.style.display = 'block';
+                    mc.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 120);
+            return;
+        }
+
+        if (!ALL_PAGE_SECTIONS.includes(sectionId)) {
+            sectionId = 'inicio';
+        }
+
+        // Asegurar clase modular-pages en body
+        if (!document.body.classList.contains('modular-pages')) {
+            document.body.classList.add('modular-pages');
+        }
+
+        // Cerrar drawer móvil si está abierto
+        if (typeof window.closeMobileDrawer === 'function') {
+            window.closeMobileDrawer();
+        }
+
+        // Ocultar todas las secciones y activar la seleccionada
+        ALL_PAGE_SECTIONS.forEach(id => {
+            const sec = document.getElementById(id);
+            if (sec) {
+                if (id === sectionId) {
+                    sec.classList.add('active-page-view');
+                } else {
+                    sec.classList.remove('active-page-view');
+                }
+            }
+        });
+
+        // Actualizar historial del navegador (back/forward button)
+        if (pushToHistory) {
+            const newHash = sectionId === 'inicio' ? '' : '#' + sectionId;
+            const newUrl = newHash ? (window.location.pathname + newHash) : window.location.pathname;
+            if (window.location.hash !== newHash) {
+                history.pushState({ section: sectionId }, '', newUrl);
+            }
+        }
+
+        // Actualizar enlaces activos en Navbar Desktop
+        document.querySelectorAll('.nav-links a').forEach(a => {
+            const href = a.getAttribute('href') || '';
+            if (href === '#' + sectionId || (sectionId === 'inicio' && href === '#inicio')) {
+                a.classList.add('active');
+            } else {
+                a.classList.remove('active');
+            }
+        });
+
+        // Actualizar enlaces activos en Bottom Nav Móvil
+        document.querySelectorAll('.bottom-nav-item').forEach(item => {
+            const sec = item.getAttribute('data-section') || (item.getAttribute('href') || '').replace(/^#/, '');
+            if (sec === sectionId) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
+
+        // Actualizar chips de acceso rápido
+        document.querySelectorAll('.quick-chip').forEach(chip => {
+            const href = chip.getAttribute('href') || '';
+            if (href === '#' + sectionId) {
+                chip.classList.add('active');
+            } else {
+                chip.classList.remove('active');
+            }
+        });
+
+        // Desplazar suavemente arriba
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        // Activadores específicos según la sección
+        if (sectionId === 'juegos') {
+            setTimeout(() => {
+                if (typeof window.switchPhysicsGame === 'function') {
+                    window.switchPhysicsGame('cannon');
+                }
+            }, 90);
+        }
+
+        if (sectionId === 'quizzes') {
+            setTimeout(() => {
+                const selectEl = document.getElementById('quiz-course-select');
+                if (selectEl && (!selectEl.options || selectEl.options.length <= 1) && typeof window.populateQuizSelect === 'function') {
+                    window.populateQuizSelect();
+                }
+            }, 90);
+        }
+    };
+
+    window.navigateToNextSection = function(currentId) {
+        const idx = ALL_PAGE_SECTIONS.indexOf(currentId);
+        if (idx !== -1 && idx < ALL_PAGE_SECTIONS.length - 1) {
+            window.navigateToSection(ALL_PAGE_SECTIONS[idx + 1]);
+        } else {
+            window.navigateToSection('inicio');
+        }
+    };
+
+    window.navigateToPrevSection = function(currentId) {
+        const idx = ALL_PAGE_SECTIONS.indexOf(currentId);
+        if (idx > 0) {
+            window.navigateToSection(ALL_PAGE_SECTIONS[idx - 1]);
+        } else {
+            window.navigateToSection('inicio');
+        }
+    };
+
+    // Interceptor global de clics en enlaces con hash (#) para navegación fluida
+    document.addEventListener('click', (e) => {
+        const link = e.target.closest('a[href^="#"]');
+        if (!link) return;
+        const href = link.getAttribute('href');
+        if (!href || href === '#' || href.startsWith('#!')) return;
+        const targetId = href.replace(/^#/, '');
+        if (targetId === 'mis-cursos' || ALL_PAGE_SECTIONS.includes(targetId)) {
+            e.preventDefault();
+            window.navigateToSection(targetId);
+        }
+    });
+
+    // Escuchar botón Atrás/Adelante del navegador y gestos swipe en móviles
+    window.addEventListener('popstate', (e) => {
+        const targetSection = (e.state && e.state.section) || window.location.hash.replace(/^#/, '') || 'inicio';
+        window.navigateToSection(targetSection, false);
+    });
+
+    // Inicializar la vista correcta según el hash de la URL o mostrar el portal de bienvenida
+    function initPageRouter() {
+        document.body.classList.add('modular-pages');
+        const initialHash = window.location.hash.replace(/^#/, '');
+        if (initialHash && (ALL_PAGE_SECTIONS.includes(initialHash) || initialHash === 'mis-cursos')) {
+            window.navigateToSection(initialHash, false);
+        } else {
+            window.navigateToSection('inicio', false);
+        }
+    }
+    initPageRouter();
+
 });
