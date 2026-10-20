@@ -50,7 +50,8 @@ window.PLATFORM_DATA = {
     configuracionPasarela: {
         wompi: {
             habilitado: true,
-            modo: "sandbox", // 'sandbox' para pruebas, 'produccion' para pagos reales
+            modo: "produccion", // 'produccion' para pagos reales con Wompi Bancolombia
+            linkPago: "https://checkout.wompi.co/l/VPOS_b6GD2z",
             llavePublicaTest: "pub_test_Q5yDA9xoKdePzhSGeVe9HAez7HgGObCi",
             llavePublicaProd: "",
             moneda: "COP"
@@ -109,7 +110,8 @@ window.PLATFORM_DATA = {
             precioUSD: 29,
             valorReal: "$49 USD",
             descuentoTag: "40% OFF Lanzamiento",
-            enlaceCompra: "https://hotmart.com"
+            enlaceCompra: "https://hotmart.com",
+            enlaceWompi: "https://checkout.wompi.co/l/VPOS_b6GD2z"
         },
         {
             id: "materiales",
@@ -157,7 +159,8 @@ window.PLATFORM_DATA = {
             precioUSD: 35,
             valorReal: "$69 USD",
             descuentoTag: "Especialidad Maestría UFOP",
-            enlaceCompra: "https://hotmart.com"
+            enlaceCompra: "https://hotmart.com",
+            enlaceWompi: "https://checkout.wompi.co/l/VPOS_b6GD2z"
         },
         {
             id: "transformadores",
@@ -182,7 +185,8 @@ window.PLATFORM_DATA = {
             precioUSD: 39,
             valorReal: "$89 USD",
             descuentoTag: "Laboratorio Insignia",
-            enlaceCompra: "https://hotmart.com"
+            enlaceCompra: "https://hotmart.com",
+            enlaceWompi: "https://checkout.wompi.co/l/VPOS_b6GD2z"
         },
         {
             id: "ondas",
@@ -210,7 +214,8 @@ window.PLATFORM_DATA = {
             precioUSD: 29,
             valorReal: "$49 USD",
             descuentoTag: "40% OFF Lanzamiento",
-            enlaceCompra: "https://hotmart.com"
+            enlaceCompra: "https://hotmart.com",
+            enlaceWompi: "https://checkout.wompi.co/l/VPOS_b6GD2z"
         },
         {
             id: "neuro",
@@ -247,7 +252,8 @@ window.PLATFORM_DATA = {
             precioUSD: 35,
             valorReal: "$59 USD",
             descuentoTag: "Neurociencia Aplicada",
-            enlaceCompra: "https://hotmart.com"
+            enlaceCompra: "https://hotmart.com",
+            enlaceWompi: "https://checkout.wompi.co/l/VPOS_b6GD2z"
         },
         {
             id: "electromagnetismo",
@@ -270,7 +276,8 @@ window.PLATFORM_DATA = {
             precioUSD: 29,
             valorReal: "$49 USD",
             descuentoTag: "40% OFF Lanzamiento",
-            enlaceCompra: "https://hotmart.com"
+            enlaceCompra: "https://hotmart.com",
+            enlaceWompi: "https://checkout.wompi.co/l/VPOS_b6GD2z"
         },
         {
             id: "ml",
@@ -302,7 +309,8 @@ window.PLATFORM_DATA = {
             precioUSD: 39,
             valorReal: "$79 USD",
             descuentoTag: "Especialidad IA UNIR",
-            enlaceCompra: "https://hotmart.com"
+            enlaceCompra: "https://hotmart.com",
+            enlaceWompi: "https://checkout.wompi.co/l/VPOS_b6GD2z"
         },
         {
             id: "cuantica",
@@ -325,7 +333,8 @@ window.PLATFORM_DATA = {
             precioUSD: 35,
             valorReal: "$59 USD",
             descuentoTag: "Física Avanzada",
-            enlaceCompra: "https://hotmart.com"
+            enlaceCompra: "https://hotmart.com",
+            enlaceWompi: "https://checkout.wompi.co/l/VPOS_b6GD2z"
         },
         {
             id: "retie",
@@ -348,7 +357,8 @@ window.PLATFORM_DATA = {
             precioUSD: 49,
             valorReal: "$99 USD",
             descuentoTag: "Aplicación Normativa",
-            enlaceCompra: "https://hotmart.com"
+            enlaceCompra: "https://hotmart.com",
+            enlaceWompi: "https://checkout.wompi.co/l/VPOS_b6GD2z"
         },
         {
             id: "squash_sim",
@@ -374,7 +384,8 @@ window.PLATFORM_DATA = {
             precioUSD: 25,
             valorReal: "$45 USD",
             descuentoTag: "Acceso Premium / Demo de Rutinas",
-            enlaceCompra: "https://hotmart.com"
+            enlaceCompra: "https://hotmart.com",
+            enlaceWompi: "https://checkout.wompi.co/l/VPOS_b6GD2z"
         },
         {
             id: "finanzas",
@@ -404,7 +415,8 @@ window.PLATFORM_DATA = {
             precioUSD: 25,
             valorReal: "$49 USD",
             descuentoTag: "Finanzas Personales",
-            enlaceCompra: "https://hotmart.com"
+            enlaceCompra: "https://hotmart.com",
+            enlaceWompi: "https://checkout.wompi.co/l/VPOS_b6GD2z"
         },
         {
             id: "termo",
@@ -449,7 +461,8 @@ window.PLATFORM_DATA = {
             precioUSD: 39,
             valorReal: "$80 USD",
             descuentoTag: "Nuevo · 25 Capítulos",
-            enlaceCompra: "https://hotmart.com"
+            enlaceCompra: "https://hotmart.com",
+            enlaceWompi: "https://checkout.wompi.co/l/VPOS_b6GD2z"
         },
         {
             id: "torneos",
@@ -478,7 +491,8 @@ window.PLATFORM_DATA = {
             precioUSD: 29,
             valorReal: "$60 USD",
             descuentoTag: "Versión 15 Oficial",
-            enlaceCompra: "https://hotmart.com"
+            enlaceCompra: "https://hotmart.com",
+            enlaceWompi: "https://checkout.wompi.co/l/VPOS_b6GD2z"
         },
         {
             id: "laboratorio",
@@ -537,7 +551,8 @@ window.PLATFORM_DATA = {
             precioUSD: 35,
             valorReal: "$79 USD",
             descuentoTag: "Nuevo · 38 Prácticas",
-            enlaceCompra: "https://hotmart.com"
+            enlaceCompra: "https://hotmart.com",
+            enlaceWompi: "https://checkout.wompi.co/l/VPOS_b6GD2z"
         },
         {
             id: "fluidos",
@@ -584,7 +599,8 @@ window.PLATFORM_DATA = {
             precioUSD: 29,
             valorReal: "$59 USD",
             descuentoTag: "Nuevo Lanzamiento 2026",
-            enlaceCompra: "https://hotmart.com"
+            enlaceCompra: "https://hotmart.com",
+            enlaceWompi: "https://checkout.wompi.co/l/VPOS_b6GD2z"
         },
         {
             id: "guias",
@@ -624,7 +640,8 @@ window.PLATFORM_DATA = {
             precioUSD: 29,
             valorReal: "$59 USD",
             descuentoTag: "Nuevo Lanzamiento 2026",
-            enlaceCompra: "https://hotmart.com"
+            enlaceCompra: "https://hotmart.com",
+            enlaceWompi: "https://checkout.wompi.co/l/VPOS_b6GD2z"
         },
         {
             id: "ingles",
@@ -659,7 +676,8 @@ window.PLATFORM_DATA = {
             precioUSD: 29,
             valorReal: "$69 USD",
             descuentoTag: "Nuevo Lanzamiento 2026",
-            enlaceCompra: "https://hotmart.com"
+            enlaceCompra: "https://hotmart.com",
+            enlaceWompi: "https://checkout.wompi.co/l/VPOS_b6GD2z"
         }
     ],
 
