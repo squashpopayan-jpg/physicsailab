@@ -2924,6 +2924,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // GESTIÓN DOCENTE DE QUIZZES, CONTRASEÑAS INDEPENDIENTES Y CALIFICACIONES EN GRUPO
     // ========================================================
     const DEFAULT_QUIZ_PASSWORDS = {
+        'quiz-dcl': 'DCL2026',
         'electromagnetismo-10': 'ELECTRO2026',
         'quiz-completo': 'FISICA60',
         'quiz-cinematica': 'CINEMATICA15',
@@ -5420,7 +5421,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const studentName = nameInput.value.trim();
         const studentCourse = courseInput ? courseInput.value.trim() : '';
         const rawPin = pinInput.value.trim().toUpperCase();
-        const selectedQuizId = selectDropdown ? selectDropdown.value : 'electromagnetismo-10';
+        const selectedQuizId = selectDropdown ? selectDropdown.value : 'quiz-dcl';
 
         if (!studentName) {
             alert('⚠️ Por favor escribe tu Nombre y Apellidos completos para registrar tu nota en la evaluación oficial.');
@@ -5551,7 +5552,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (selectedId) targetPreset = qData.presets.find(p => p.id === selectedId);
         }
         if (!targetPreset) {
-            targetPreset = qData.presets.find(p => p.id === 'electromagnetismo-10') || qData.presets[0];
+            targetPreset = qData.presets.find(p => p.id === 'quiz-dcl') || qData.presets[0];
         }
 
         window._currentPreviewPreset = targetPreset;
