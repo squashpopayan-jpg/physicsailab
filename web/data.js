@@ -58,12 +58,12 @@ window.PLATFORM_DATA = {
         },
         pagoDirecto: {
             habilitado: true,
-            nequi: "312 874 5821",
-            daviplata: "312 874 5821",
+            nequi: "313 711 5473",
+            daviplata: "313 711 5473",
             bancolombiaTipo: "Ahorros",
             bancolombiaNumero: "865-000124-91",
             titular: "Mg. Manuel Alejandro Obando",
-            whatsapp: "573128745821"
+            whatsapp: "573137115473"
         },
         hotmart: {
             habilitado: true,

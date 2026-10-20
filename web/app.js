@@ -1394,6 +1394,453 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast('🔒 Se han cerrado todas las sesiones de cursos y docente.');
     };
 
+    // ========================================================
+    // SISTEMA DE CÓDIGOS ÚNICOS E INTRANSFERIBLES DE ESTUDIANTES
+    // ========================================================
+    function generateUniqueStudentCode(courseId) {
+        const prefixMap = {
+            mecanica: 'MEC',
+            materiales: 'MAT',
+            transformadores: 'TRA',
+            ondas: 'OND',
+            neuro: 'NEU',
+            electromagnetismo: 'ELM',
+            ml: 'MLA',
+            cuantica: 'CUA',
+            retie: 'RET',
+            squash_sim: 'SQU',
+            finanzas: 'FIN',
+            termo: 'TER',
+            torneos: 'TOR',
+            laboratorio: 'LAB',
+            fluidos: 'FLU',
+            guias: 'GUI',
+            ingles: 'ENG'
+        };
+        const p = prefixMap[courseId] || (courseId ? courseId.slice(0, 3).toUpperCase() : 'FIS');
+        const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+        const s1 = Array.from({length: 4}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+        const s2 = Array.from({length: 4}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+        return `${p}-${s1}-${s2}`;
+    }
+
+    function getStudentLicenses() {
+        try {
+            return JSON.parse(localStorage.getItem('physicsailab_student_licenses') || '[]');
+        } catch (e) {
+            return [];
+        }
+    }
+
+    function saveStudentLicenses(licenses) {
+        localStorage.setItem('physicsailab_student_licenses', JSON.stringify(licenses));
+    }
+
+    function registerStudentLicense(licenseData) {
+        const licenses = getStudentLicenses();
+        const cleanCode = (licenseData.codigo || '').trim().toUpperCase();
+        const existingIdx = licenses.findIndex(l => (l.codigo || '').toUpperCase() === cleanCode);
+        if (existingIdx >= 0) {
+            licenses[existingIdx] = { ...licenses[existingIdx], ...licenseData };
+        } else {
+            licenses.unshift(licenseData);
+        }
+        saveStudentLicenses(licenses);
+
+        // Sincronización en la nube (Firebase) para persistencia multidispositivo
+        try {
+            const licId = licenseData.id || ('lic_' + Date.now());
+            fetch(`${FIREBASE_BASE}/licenses/${licId}.json`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(licenseData)
+            }).catch(() => {});
+        } catch(e) {}
+
+        return licenseData;
+    }
+
+    function syncLicensesFromCloud(callback) {
+        try {
+            fetch(`${FIREBASE_BASE}/licenses.json`)
+                .then(res => res.json())
+                .then(cloudData => {
+                    if (cloudData && typeof cloudData === 'object') {
+                        const local = getStudentLicenses();
+                        const cloudList = Object.values(cloudData).filter(x => x && x.codigo);
+                        const map = new Map();
+                        local.forEach(l => map.set(l.codigo.toUpperCase(), l));
+                        cloudList.forEach(c => map.set(c.codigo.toUpperCase(), { ...(map.get(c.codigo.toUpperCase()) || {}), ...c }));
+                        const merged = Array.from(map.values());
+                        saveStudentLicenses(merged);
+                        if (callback) callback(merged);
+                    } else if (callback) {
+                        callback(getStudentLicenses());
+                    }
+                })
+                .catch(() => {
+                    if (callback) callback(getStudentLicenses());
+                });
+        } catch(e) {
+            if (callback) callback(getStudentLicenses());
+        }
+    }
+
+    function findLicenseByCode(code) {
+        const cleanCode = (code || '').trim().toUpperCase();
+        if (!cleanCode) return null;
+        const licenses = getStudentLicenses();
+        return licenses.find(l => (l.codigo || '').trim().toUpperCase() === cleanCode) || null;
+    }
+
+    window.closeLicenseModal = function() {
+        const modal = document.getElementById('license-modal');
+        if (modal) modal.classList.remove('active');
+    };
+
+    window.renderStudentLicensesTableHtml = function(licenses) {
+        if (!licenses || licenses.length === 0) {
+            return `
+                <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:1.5rem; text-align:center; color:var(--text-muted); font-size:0.85rem;">
+                    No hay códigos particulares de alumnos registrados aún.<br>
+                    Haz clic en <strong>➕ Generar Código Único para Alumno</strong> o se registrarán automáticamente cuando los alumnos completen el checkout.
+                </div>
+            `;
+        }
+
+        return `
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Estudiante</th>
+                        <th>Materia / Curso</th>
+                        <th>Código Único</th>
+                        <th>Fecha / Origen</th>
+                        <th>Estado</th>
+                        <th style="text-align:right;">Acciones del Docente</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${licenses.map(lic => `
+                        <tr id="lic-row-${lic.id}">
+                            <td>
+                                <strong style="color:#fff; font-size:0.9rem;">${lic.estudianteNombre}</strong>
+                                <div style="font-size:0.75rem; color:var(--text-muted);">
+                                    ${lic.estudianteCorreo || 'Sin correo'} ${lic.estudianteTelefono ? '· 📱 ' + lic.estudianteTelefono : ''}
+                                </div>
+                            </td>
+                            <td>
+                                <span style="color:#E2E8F0; font-size:0.85rem; font-weight:600;">${lic.cursoTitulo || lic.cursoId}</span>
+                            </td>
+                            <td>
+                                <span class="admin-key-pill" style="font-family:monospace; font-size:0.85rem; letter-spacing:1px; background:rgba(245,158,11,0.15); color:#FBBF24; border-color:rgba(245,158,11,0.4);" id="lic-code-val-${lic.id}">
+                                    ${lic.codigo}
+                                </span>
+                            </td>
+                            <td>
+                                <div style="font-size:0.8rem; color:#fff;">${lic.fechaTexto || (new Date(lic.fecha).toLocaleDateString('es-ES'))}</div>
+                                <div style="font-size:0.72rem; color:var(--text-muted);">${lic.origen || 'Wompi'}</div>
+                            </td>
+                            <td>
+                                ${lic.estado === 'activo'
+                                    ? `<span class="badge" style="background:rgba(16,185,129,0.15); color:#34D399; border-color:rgba(16,185,129,0.3); font-size:0.72rem;">🟢 Activo</span>`
+                                    : `<span class="badge" style="background:rgba(239,68,68,0.15); color:#FCA5A5; border-color:rgba(239,68,68,0.3); font-size:0.72rem;">🔴 Revocado</span>`
+                                }
+                            </td>
+                            <td style="text-align:right;">
+                                <div style="display:inline-flex; gap:0.35rem; justify-content:flex-end; flex-wrap:wrap;">
+                                    <button class="admin-btn-action" onclick="adminCambiarCodigoAlumno('${lic.id}', '${(lic.estudianteNombre || '').replace(/'/g, "\\'")}', '${lic.codigo}')" title="Modificar o asignar un nuevo código a este estudiante">
+                                        ✏️ Cambiar Código
+                                    </button>
+                                    <button class="admin-btn-action" onclick="adminToggleEstadoLicencia('${lic.id}')" style="${lic.estado === 'activo' ? 'border-color:rgba(239,68,68,0.3); color:#FCA5A5;' : 'border-color:rgba(16,185,129,0.3); color:#34D399;'}" title="${lic.estado === 'activo' ? 'Bloquear/Revocar este código' : 'Reactivar este código'}">
+                                        ${lic.estado === 'activo' ? '🚫 Revocar' : '🟢 Reactivar'}
+                                    </button>
+                                    <button class="admin-btn-action" onclick="adminEnviarClaveWhatsApp('${lic.id}')" style="border-color:rgba(16,185,129,0.3); color:#34D399;" title="Enviar código por WhatsApp al estudiante">
+                                        💬 WhatsApp
+                                    </button>
+                                    <button class="admin-btn-action" onclick="adminEliminarLicencia('${lic.id}')" style="border-color:rgba(239,68,68,0.25); color:#F87171;" title="Eliminar registro">
+                                        🗑️
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+    };
+
+    window.adminFiltrarLicencias = function(term) {
+        const clean = (term || '').trim().toLowerCase();
+        const licenses = getStudentLicenses();
+        const filtered = clean ? licenses.filter(l => 
+            (l.estudianteNombre || '').toLowerCase().includes(clean) ||
+            (l.estudianteCorreo || '').toLowerCase().includes(clean) ||
+            (l.codigo || '').toLowerCase().includes(clean) ||
+            (l.cursoTitulo || '').toLowerCase().includes(clean)
+        ) : licenses;
+        const container = document.getElementById('admin-licenses-table-container');
+        if (container) {
+            container.innerHTML = renderStudentLicensesTableHtml(filtered);
+        }
+    };
+
+    window.adminGenerarCodigoAlumnoModal = function(presetCourseId) {
+        const modal = document.getElementById('license-modal');
+        const modalBody = document.getElementById('modal-license-body');
+        if (!modal || !modalBody) return;
+
+        const courses = data.cursos || [];
+        const selectedId = presetCourseId || (courses[0] ? courses[0].id : 'mecanica');
+        const initialCode = generateUniqueStudentCode(selectedId);
+
+        modalBody.innerHTML = `
+            <div style="text-align:center; margin-bottom:1.25rem;">
+                <div style="font-size:2.4rem; margin-bottom:0.25rem;">🎓 🔑</div>
+                <h3 style="color:#fff; font-size:1.35rem; margin:0 0 0.35rem;">
+                    Generar Código Único para Estudiante
+                </h3>
+                <p style="font-size:0.84rem; color:var(--text-muted); margin:0; line-height:1.4;">
+                    Crea una licencia personal e intransferible. El código es único y solo podrá ser utilizado por este alumno.
+                </p>
+            </div>
+
+            <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:1.15rem; margin-bottom:1.25rem;">
+                <div class="payment-form-group" style="margin-bottom:0.85rem;">
+                    <label style="font-size:0.78rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; display:block; margin-bottom:0.35rem;">
+                        Materia / Curso:
+                    </label>
+                    <select id="new-lic-course" class="payment-form-input" onchange="document.getElementById('new-lic-code').value = generateUniqueStudentCode(this.value)">
+                        ${courses.map(c => `<option value="${c.id}" ${c.id === selectedId ? 'selected' : ''}>${c.titulo}</option>`).join('')}
+                    </select>
+                </div>
+
+                <div class="payment-form-group" style="margin-bottom:0.85rem;">
+                    <label style="font-size:0.78rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; display:block; margin-bottom:0.35rem;">
+                        Nombre Completo del Estudiante:
+                    </label>
+                    <input type="text" id="new-lic-student" class="payment-form-input" placeholder="Ej: Andrés Gómez" />
+                </div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:0.85rem;">
+                    <div class="payment-form-group">
+                        <label style="font-size:0.78rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; display:block; margin-bottom:0.35rem;">
+                            Correo Electrónico (Opcional):
+                        </label>
+                        <input type="email" id="new-lic-email" class="payment-form-input" placeholder="alumno@correo.com" />
+                    </div>
+                    <div class="payment-form-group">
+                        <label style="font-size:0.78rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; display:block; margin-bottom:0.35rem;">
+                            Celular WhatsApp (Opcional):
+                        </label>
+                        <input type="tel" id="new-lic-phone" class="payment-form-input" placeholder="310 000 0000" />
+                    </div>
+                </div>
+
+                <div class="payment-form-group">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
+                        <label style="font-size:0.78rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; margin:0;">
+                            Código Único Generado:
+                        </label>
+                        <button type="button" class="admin-btn-action" onclick="document.getElementById('new-lic-code').value = generateUniqueStudentCode(document.getElementById('new-lic-course').value)" style="font-size:0.72rem; padding:0.2rem 0.5rem;">
+                            🎲 Generar Otro
+                        </button>
+                    </div>
+                    <input type="text" id="new-lic-code" class="payment-form-input" value="${initialCode}" style="font-family:monospace; font-size:1.05rem; letter-spacing:2px; font-weight:700; color:#FBBF24; text-transform:uppercase; text-align:center;" />
+                    <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.3rem;">
+                        Puedes editar o escribir cualquier código particular deseado para este estudiante.
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:0.65rem;">
+                <button class="btn btn-primary" onclick="adminGuardarNuevaLicenciaAlumno()" style="justify-content:center; padding:0.8rem; font-size:0.95rem; background:linear-gradient(135deg, #10B981, #059669); border:none; box-shadow:0 4px 15px rgba(16,185,129,0.3);">
+                    💾 Guardar y Emitir Licencia Única
+                </button>
+                <button class="btn btn-secondary" onclick="closeLicenseModal()" style="justify-content:center; padding:0.6rem; font-size:0.85rem;">
+                    Cancelar
+                </button>
+            </div>
+        `;
+
+        modal.classList.add('active');
+        setTimeout(() => {
+            const inp = document.getElementById('new-lic-student');
+            if (inp) inp.focus();
+        }, 150);
+    };
+
+    window.adminGuardarNuevaLicenciaAlumno = function() {
+        const courseElem = document.getElementById('new-lic-course');
+        const studentElem = document.getElementById('new-lic-student');
+        const emailElem = document.getElementById('new-lic-email');
+        const phoneElem = document.getElementById('new-lic-phone');
+        const codeElem = document.getElementById('new-lic-code');
+
+        const courseId = courseElem ? courseElem.value : 'mecanica';
+        const studentName = studentElem ? studentElem.value.trim() : '';
+        const email = emailElem ? emailElem.value.trim() : '';
+        const phone = phoneElem ? phoneElem.value.trim() : '';
+        const code = codeElem ? codeElem.value.trim().toUpperCase() : '';
+
+        if (!studentName) {
+            alert('Por favor escribe el nombre del estudiante.');
+            if (studentElem) studentElem.focus();
+            return;
+        }
+
+        if (!code || code.length < 3) {
+            alert('El código debe tener al menos 3 caracteres.');
+            if (codeElem) codeElem.focus();
+            return;
+        }
+
+        const course = (data.cursos || []).find(c => c.id === courseId) || {};
+        const now = new Date();
+        const fechaStr = now.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+        const licenseRecord = {
+            id: 'lic_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+            codigo: code,
+            cursoId: courseId,
+            cursoTitulo: course.titulo || courseId,
+            estudianteNombre: studentName,
+            estudianteCorreo: email,
+            estudianteTelefono: phone,
+            fecha: now.toISOString(),
+            fechaTexto: fechaStr,
+            origen: 'Docente Directo',
+            transaccionId: 'ADM-' + Date.now().toString(36).toUpperCase(),
+            estado: 'activo',
+            usos: 0,
+            dispositivo: ''
+        };
+
+        registerStudentLicense(licenseRecord);
+        showToast(`🎓 Licencia emitida para <strong>${studentName}</strong> (${code})`);
+
+        // Mostrar pantalla de confirmación con botón de WhatsApp en el modal
+        const modalBody = document.getElementById('modal-license-body');
+        if (modalBody) {
+            const waMsg = encodeURIComponent(
+                `¡Hola ${studentName}!\n\nTu acceso para el curso «${course.titulo}» en PhysicsAILab.com está activo.\n\n` +
+                `🔑 Tu CÓDIGO ÚNICO DE ACCESO es: *${code}*\n` +
+                `🌐 Enlace directo: https://physicsailab.com#cursos\n\n` +
+                `⚠️ AVISO IMPORTANTE: Este código es ÚNICO, PERSONAL E INTRANSFERIBLE. El sistema registrará tu dispositivo y no permite uso compartido.\n\n` +
+                `¡Muchos éxitos en tu estudio!\nMg. Manuel Alejandro Obando — Universidad del Cauca`
+            );
+            const cleanPhone = phone ? phone.replace(/[^0-9]/g, '') : '';
+            const waTarget = cleanPhone.startsWith('57') ? cleanPhone : ('57' + cleanPhone);
+            const waUrl = cleanPhone ? `https://wa.me/${waTarget}?text=${waMsg}` : `https://wa.me/?text=${waMsg}`;
+
+            modalBody.innerHTML = `
+                <div style="text-align:center; padding:0.5rem 0;">
+                    <div style="font-size:3rem; margin-bottom:0.35rem;">🎉 ✅</div>
+                    <span class="badge" style="background:rgba(16,185,129,0.2); color:#34D399; border-color:rgba(16,185,129,0.4); font-size:0.85rem; padding:0.3rem 0.85rem; margin-bottom:0.75rem;">
+                        ¡LICENCIA EMITIDA CON ÉXITO!
+                    </span>
+                    <h3 style="font-size:1.4rem; color:#fff; margin:0.6rem 0 0.35rem;">
+                        Código Listo para ${studentName}
+                    </h3>
+
+                    <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:1.15rem; margin:1rem 0; text-align:center;">
+                        <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; font-weight:700;">
+                            CÓDIGO ÚNICO E INTRANSFERIBLE:
+                        </div>
+                        <div class="payment-key-display" style="font-size:1.85rem; color:#FBBF24; letter-spacing:2px; margin:0.4rem 0;">${code}</div>
+                        <div style="font-size:0.82rem; color:#E2E8F0;">
+                            Materia: <strong>${course.titulo}</strong>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; flex-direction:column; gap:0.65rem;">
+                        <a href="${waUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="justify-content:center; padding:0.85rem; font-size:0.95rem; background:linear-gradient(135deg, #10B981, #059669); border:none; box-shadow:0 4px 15px rgba(16,185,129,0.3);">
+                            💬 Enviar Código por WhatsApp al Estudiante
+                        </a>
+                        <button class="btn btn-secondary" onclick="copiarDatoPago('${code}', this)" style="justify-content:center; padding:0.65rem; font-size:0.85rem;">
+                            📋 Copiar Código
+                        </button>
+                        <button class="btn btn-secondary" onclick="closeLicenseModal(); renderAdminDashboardContent();" style="justify-content:center; padding:0.65rem; font-size:0.85rem;">
+                            Volver al Panel
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        renderAdminDashboardContent();
+    };
+
+    window.adminCambiarCodigoAlumno = function(licId, studentName, currentCode) {
+        const newCode = prompt(`Asigna un nuevo código particular para:\n"${studentName}"\n\nCódigo actual: ${currentCode}\n(Puedes escribir uno propio o dejar el actual):`, currentCode);
+        if (!newCode) return;
+
+        const cleanKey = newCode.trim().toUpperCase();
+        if (cleanKey.length < 3) {
+            alert('El código debe tener al menos 3 caracteres.');
+            return;
+        }
+
+        const licenses = getStudentLicenses();
+        const lic = licenses.find(l => l.id === licId);
+        if (lic) {
+            lic.codigo = cleanKey;
+            registerStudentLicense(lic);
+            showToast(`🔑 Código de <strong>${studentName}</strong> cambiado a: <strong>${cleanKey}</strong>`);
+            renderAdminDashboardContent();
+        }
+    };
+
+    window.adminToggleEstadoLicencia = function(licId) {
+        const licenses = getStudentLicenses();
+        const lic = licenses.find(l => l.id === licId);
+        if (!lic) return;
+
+        lic.estado = (lic.estado === 'activo') ? 'revocado' : 'activo';
+        registerStudentLicense(lic);
+
+        if (lic.estado === 'revocado') {
+            showToast(`🚫 Licencia de <strong>${lic.estudianteNombre}</strong> (${lic.codigo}) ha sido <strong>REVOCADA</strong>.`);
+        } else {
+            showToast(`🟢 Licencia de <strong>${lic.estudianteNombre}</strong> (${lic.codigo}) ha sido <strong>REACTIVADA</strong>.`);
+        }
+        renderAdminDashboardContent();
+    };
+
+    window.adminEliminarLicencia = function(licId) {
+        if (!confirm('¿Estás seguro de eliminar este registro de licencia?')) return;
+        let licenses = getStudentLicenses();
+        const lic = licenses.find(l => l.id === licId);
+        licenses = licenses.filter(l => l.id !== licId);
+        saveStudentLicenses(licenses);
+
+        // Eliminar en Firebase
+        try {
+            fetch(`${FIREBASE_BASE}/licenses/${licId}.json`, { method: 'DELETE' }).catch(() => {});
+        } catch(e) {}
+
+        showToast(`🗑️ Licencia de <strong>${lic ? lic.estudianteNombre : 'alumno'}</strong> eliminada.`);
+        renderAdminDashboardContent();
+    };
+
+    window.adminEnviarClaveWhatsApp = function(licId) {
+        const licenses = getStudentLicenses();
+        const lic = licenses.find(l => l.id === licId);
+        if (!lic) return;
+
+        const waMsg = encodeURIComponent(
+            `¡Hola ${lic.estudianteNombre}!\n\nTu acceso para el curso «${lic.cursoTitulo}» en PhysicsAILab.com está activo.\n\n` +
+            `🔑 Tu CÓDIGO ÚNICO DE ACCESO es: *${lic.codigo}*\n` +
+            `🌐 Enlace directo: https://physicsailab.com#cursos\n\n` +
+            `⚠️ AVISO IMPORTANTE: Este código es ÚNICO, PERSONAL E INTRANSFERIBLE. El sistema registrará tu dispositivo y no permite uso compartido.\n\n` +
+            `¡Muchos éxitos en tu estudio!\nMg. Manuel Alejandro Obando — Universidad del Cauca`
+        );
+        const cleanPhone = lic.estudianteTelefono ? lic.estudianteTelefono.replace(/[^0-9]/g, '') : '';
+        const waTarget = cleanPhone.startsWith('57') ? cleanPhone : ('57' + cleanPhone);
+        const waUrl = cleanPhone ? `https://wa.me/${waTarget}?text=${waMsg}` : `https://wa.me/?text=${waMsg}`;
+        window.open(waUrl, '_blank');
+    };
+
     function getCourseKeys(courseId) {
         let keys = (data.clavesCursos && data.clavesCursos[courseId]) ? [...data.clavesCursos[courseId]] : [];
         try {
@@ -1524,25 +1971,56 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     window.canjearCodigoEstudiante = function() {
-        const input = document.getElementById('student-code-input');
+        const input = document.getElementById("student-code-input");
         if (!input) return;
         const code = input.value.trim().toUpperCase();
         if (!code) {
-            alert('Por favor ingresa la clave de tu materia o clase.');
+            alert("Por favor ingresa la clave de tu materia o clase.");
             return;
         }
 
         // 1. Clave de administrador
-        if (code === (data.claveAdministrador || 'OBANDO-ADMIN-2026').toUpperCase() || code === 'OBANDO-MASTER-ADMIN') {
-            localStorage.setItem('physicsailab_admin', 'true');
-            showToast('👑 ¡Bienvenido Mg. Manuel Alejandro Obando! Modo Administrador activado con acceso total.');
+        if (code === (data.claveAdministrador || "OBANDO-ADMIN-2026").toUpperCase() || code === "OBANDO-MASTER-ADMIN") {
+            localStorage.setItem("physicsailab_admin", "true");
+            showToast("👑 ¡Bienvenido Mg. Manuel Alejandro Obando! Modo Administrador activado con acceso total.");
             updateStudentBannerState();
             renderCourses(currentCourseFilter);
             openAdminPanel();
             return;
         }
 
-        // 2. Buscar si coincide con alguna materia específica
+        // 2. Verificar si es una Licencia Única de Estudiante registrada
+        const studentLic = findLicenseByCode(code);
+        if (studentLic) {
+            if (studentLic.estado === "revocado") {
+                alert(`❌ ESTE CÓDIGO HA SIDO REVOCADO\n\nEl código «${studentLic.codigo}» fue bloqueado o revocado por el docente.\nComunícate con el Mg. Manuel Alejandro Obando al WhatsApp 313 711 5473.`);
+                return;
+            }
+
+            const targetCourse = (data.cursos || []).find(c => c.id === studentLic.cursoId) || { id: studentLic.cursoId, titulo: studentLic.cursoTitulo || "Materia" };
+            studentLic.usos = (studentLic.usos || 0) + 1;
+            studentLic.ultimoAcceso = new Date().toISOString();
+            studentLic.dispositivo = navigator.userAgent.slice(0, 60);
+            registerStudentLicense(studentLic);
+
+            unlockCourse(studentLic.cursoId);
+            alert(
+                `🎉 ¡LICENCIA PERSONAL VALIDADA CON ÉXITO!\n\n` +
+                `• Materia Desbloqueada: «${targetCourse.titulo}»\n` +
+                `• Estudiante Titular: ${studentLic.estudianteNombre}\n` +
+                `• Código Único: ${studentLic.codigo}\n\n` +
+                `⚠️ AVISO IMPORTANTE: Este código es ÚNICO, PERSONAL E INTRANSFERIBLE. El sistema ha registrado la firma digital de este navegador. No lo compartas con nadie para evitar que sea revocado.`
+            );
+            showToast(`🎓 Licencia personal activa: <strong>${targetCourse.titulo}</strong> (${studentLic.estudianteNombre})`);
+            input.value = "";
+            setTimeout(() => {
+                const el = document.getElementById("mis-cursos");
+                if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+            }, 300);
+            return;
+        }
+
+        // 3. Buscar si coincide con alguna materia específica (claves generales colectivas)
         let matchedCourse = null;
         for (const c of (data.cursos || [])) {
             const keys = getCourseKeys(c.id).map(k => k.toUpperCase());
@@ -1556,13 +2034,13 @@ document.addEventListener('DOMContentLoaded', () => {
             unlockCourse(matchedCourse.id);
             alert(`🎉 ¡Clave válida para «${matchedCourse.titulo}»!\n\nTu materia ha sido desbloqueada exitosamente para este periodo académico.`);
             showToast(`🎓 Materia desbloqueada: <strong>${matchedCourse.titulo}</strong>`);
-            input.value = '';
+            input.value = "";
             setTimeout(() => {
-                const el = document.getElementById('mis-cursos');
-                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                const el = document.getElementById("mis-cursos");
+                if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
             }, 300);
         } else {
-            alert('❌ Clave no válida o expirada para este periodo académico.\n\nRecuerda que cada materia tiene su propia clave independiente. Verifica con el Mg. Manuel Alejandro Obando en clase.');
+            alert("❌ Clave no válida o expirada para este periodo académico.\n\nRecuerda que cada materia tiene su propia clave independiente. Verifica con el Mg. Manuel Alejandro Obando en clase.");
         }
     };
 
@@ -1602,7 +2080,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button class="btn btn-primary" onclick="canjearClaveModalCurso('${course.id}')" style="justify-content:center; padding:0.75rem; font-size:0.95rem;">
                     Desbloquear ${isLab ? 'Laboratorio' : 'Curso'} 🔓
                 </button>
-                <a href="https://wa.me/?text=${encodeURIComponent('Hola profesor Manuel Obando, soy estudiante de su curso ' + course.titulo + ' en la Universidad del Cauca. ¿Podría facilitarme la clave de acceso de este semestre?')}" target="_blank" class="btn btn-secondary" style="justify-content:center; padding:0.6rem; font-size:0.82rem; border-color:rgba(16,185,129,0.3); color:#34D399;">
+                <a href="https://wa.me/573137115473?text=${encodeURIComponent('Hola profesor Manuel Obando, soy estudiante de su curso ' + course.titulo + ' en la Universidad del Cauca. ¿Podría facilitarme la clave de acceso de este semestre?')}" target="_blank" class="btn btn-secondary" style="justify-content:center; padding:0.6rem; font-size:0.82rem; border-color:rgba(16,185,129,0.3); color:#34D399;">
                     💬 Solicitar clave al docente por WhatsApp
                 </a>
             </div>
@@ -1625,43 +2103,82 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     window.canjearClaveModalCurso = function(courseId) {
-        const inp = document.getElementById('modal-course-key-input');
-        const err = document.getElementById('modal-key-error');
+        const inp = document.getElementById("modal-course-key-input");
+        const err = document.getElementById("modal-key-error");
         if (!inp) return;
         const code = inp.value.trim().toUpperCase();
 
         if (!code) {
-            if (err) { err.textContent = 'Por favor escribe la clave.'; err.style.display = 'block'; }
+            if (err) { err.textContent = "Por favor escribe la clave."; err.style.display = "block"; }
             return;
         }
 
         // 1. Maestro Admin
-        if (code === (data.claveAdministrador || 'OBANDO-ADMIN-2026').toUpperCase() || code === 'OBANDO-MASTER-ADMIN') {
-            localStorage.setItem('physicsailab_admin', 'true');
+        if (code === (data.claveAdministrador || "OBANDO-ADMIN-2026").toUpperCase() || code === "OBANDO-MASTER-ADMIN") {
+            localStorage.setItem("physicsailab_admin", "true");
             closeCourseKeyModal();
-            showToast('👑 ¡Modo Administrador activado! Todo el contenido liberado.');
+            showToast("👑 ¡Modo Administrador activado! Todo el contenido liberado.");
             updateStudentBannerState();
             renderCourses(currentCourseFilter);
             return;
         }
 
-        // 2. Clave para este curso
+        // 2. Verificar si es una Licencia Única de Estudiante registrada
+        const studentLic = findLicenseByCode(code);
+        if (studentLic) {
+            if (studentLic.estado === "revocado") {
+                if (err) { err.textContent = "❌ Este código ha sido revocado o bloqueado."; err.style.display = "block"; }
+                alert(`❌ ESTE CÓDIGO HA SIDO REVOCADO\n\nEl código «${studentLic.codigo}» fue bloqueado o revocado por el docente.\nComunícate con el Mg. Manuel Alejandro Obando al WhatsApp 313 711 5473.`);
+                return;
+            }
+
+            if (studentLic.cursoId !== courseId) {
+                const actualCourse = (data.cursos || []).find(c => c.id === studentLic.cursoId);
+                const actualTitle = actualCourse ? actualCourse.titulo : studentLic.cursoId;
+                alert(`⚠️ Este código personal corresponde a la materia «${actualTitle}», no a este curso.\n\nPor favor canjéalo en su materia respectiva.`);
+                return;
+            }
+
+            const targetCourse = (data.cursos || []).find(c => c.id === courseId) || { id: courseId, titulo: "Curso" };
+            studentLic.usos = (studentLic.usos || 0) + 1;
+            studentLic.ultimoAcceso = new Date().toISOString();
+            studentLic.dispositivo = navigator.userAgent.slice(0, 60);
+            registerStudentLicense(studentLic);
+
+            unlockCourse(courseId);
+            closeCourseKeyModal();
+            alert(
+                `🎉 ¡LICENCIA PERSONAL VALIDADA CON ÉXITO!\n\n` +
+                `• Materia Desbloqueada: «${targetCourse.titulo}»\n` +
+                `• Estudiante Titular: ${studentLic.estudianteNombre}\n` +
+                `• Código Único: ${studentLic.codigo}\n\n` +
+                `⚠️ AVISO IMPORTANTE: Este código es ÚNICO, PERSONAL E INTRANSFERIBLE. El sistema ha registrado la firma digital de este navegador. No lo compartas con nadie para evitar que sea revocado.`
+            );
+            showToast(`🎓 Licencia personal activa: <strong>${targetCourse.titulo}</strong> (${studentLic.estudianteNombre})`);
+            setTimeout(() => {
+                const el = document.getElementById("mis-cursos");
+                if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+            }, 300);
+            return;
+        }
+
+        // 3. Clave para este curso (claves generales colectivas)
         const validKeys = getCourseKeys(courseId).map(k => k.toUpperCase());
         if (validKeys.includes(code)) {
             unlockCourse(courseId);
             closeCourseKeyModal();
             const course = (data.cursos || []).find(c => c.id === courseId);
-            const courseTitle = course ? course.titulo : 'Curso';
+            const courseTitle = course ? course.titulo : "Curso";
             alert(`🎉 ¡Excelente!\n\nEl curso «${courseTitle}» ha sido desbloqueado con éxito para este periodo.`);
             showToast(`🎓 ¡Curso desbloqueado: <strong>${courseTitle}</strong>!`);
             setTimeout(() => {
-                const el = document.getElementById('mis-cursos');
-                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                const el = document.getElementById("mis-cursos");
+                if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
             }, 300);
             return;
         }
 
-        // 3. ¿Pertenece a otro curso?
+        // 4. ¿Pertenece a otro curso?
         let otherCourse = null;
         for (const c of (data.cursos || [])) {
             if (c.id !== courseId) {
@@ -1676,12 +2193,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (otherCourse) {
             if (err) {
                 err.innerHTML = `⚠️ Esta clave corresponde a <strong>«${otherCourse.titulo}»</strong>, no a este curso.<br>Puedes desbloquear ese curso desde su respectiva tarjeta.`;
-                err.style.display = 'block';
+                err.style.display = "block";
             }
         } else {
             if (err) {
-                err.textContent = '❌ Clave no válida para este curso. Consulta con el profesor Manuel Obando en clase.';
-                err.style.display = 'block';
+                err.textContent = "❌ Clave no válida para este curso. Consulta con el profesor Manuel Obando en clase.";
+                err.style.display = "block";
             }
         }
     };
@@ -2393,7 +2910,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                         <div class="payment-form-group">
                             <label>Teléfono Celular / WhatsApp:</label>
-                            <input type="tel" id="buyer-phone" class="payment-form-input" placeholder="312 000 0000" value="${defaultPhone}" />
+                            <input type="tel" id="buyer-phone" class="payment-form-input" placeholder="313 000 0000" value="${defaultPhone}" />
                         </div>
                     </div>
                 </div>
@@ -2421,10 +2938,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="direct-pay-card">
                         <div>
                             <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Nequi & Daviplata</div>
-                            <div class="direct-pay-number" id="nequi-number-val">${directo.nequi || '312 874 5821'}</div>
+                            <div class="direct-pay-number" id="nequi-number-val">${directo.nequi || '313 711 5473'}</div>
                             <div style="font-size:0.75rem; color:#34D399;">Titular: ${directo.titular || 'Manuel Alejandro Obando'}</div>
                         </div>
-                        <button class="admin-btn-action" onclick="copiarDatoPago('${directo.nequi || '312 874 5821'}', this)">
+                        <button class="admin-btn-action" onclick="copiarDatoPago('${directo.nequi || '313 711 5473'}', this)">
                             📋 Copiar
                         </button>
                     </div>
@@ -2441,7 +2958,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
 
-                <a href="https://wa.me/${directo.whatsapp || '573128745821'}?text=${encodeURIComponent('Hola profesor Manuel Alejandro Obando, acabo de realizar la transferencia de ' + priceCOPFormatted + ' para adquirir la licencia permanente de «' + course.titulo + '» en PhysicsAILab.com. Adjunto mi comprobante para recibir mi clave de acceso.')}" target="_blank" class="btn btn-secondary" style="width:100%; justify-content:center; padding:0.85rem; font-size:0.95rem; border-color:rgba(16,185,129,0.4); color:#34D399; font-weight:700;">
+                <a href="https://wa.me/${directo.whatsapp || '573137115473'}?text=${encodeURIComponent('Hola profesor Manuel Alejandro Obando, acabo de realizar la transferencia de ' + priceCOPFormatted + ' para adquirir la licencia permanente de «' + course.titulo + '» en PhysicsAILab.com. Adjunto mi comprobante para recibir mi clave de acceso.')}" target="_blank" class="btn btn-secondary" style="width:100%; justify-content:center; padding:0.85rem; font-size:0.95rem; border-color:rgba(16,185,129,0.4); color:#34D399; font-weight:700;">
                     💬 Enviar Comprobante al Docente por WhatsApp
                 </a>
             </div>
@@ -2554,7 +3071,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 `• Ref. Interna: ${reference}\n\n` +
                 `¿Podría verificar mi pago y confirmarme mi clave de acceso permanente? ¡Muchas gracias!`
             );
-            const whatsappUrl = `https://wa.me/${directo.whatsapp || '573128745821'}?text=${whatsappMsg}`;
+            const whatsappUrl = `https://wa.me/${directo.whatsapp || '573137115473'}?text=${whatsappMsg}`;
 
             modalBody.innerHTML = `
                 <div style="text-align:center; padding:0.5rem 0;">
@@ -2608,34 +3125,71 @@ document.addEventListener('DOMContentLoaded', () => {
         closePaymentModal();
         openCourseKeyModal(courseId);
     };
-    window.finalizarCompraExitosa = function(courseId, transactionId, email, name) {
+    window.finalizarCompraExitosa = function(courseId, transactionId, email, name, phone) {
         unlockCourse(courseId);
-        const course = (data.cursos || []).find(c => c.id === courseId);
-        const keys = getCourseKeys(courseId);
-        const primaryKey = keys[0] || 'COMPRA-VALIDADA';
+        const course = (data.cursos || []).find(c => c.id === courseId) || { id: courseId, titulo: "Curso de Física" };
+        
+        // Generar código único aleatorio e intransferible para este estudiante
+        const uniqueCode = generateUniqueStudentCode(courseId);
+        const studentName = name || "Estudiante";
+        const studentEmail = email || "";
+        const studentPhone = phone || "";
 
-        const modalBody = document.getElementById('modal-payment-body');
+        const now = new Date();
+        const fechaStr = now.toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+
+        const licenseRecord = {
+            id: "lic_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5),
+            codigo: uniqueCode,
+            cursoId: courseId,
+            cursoTitulo: course.titulo,
+            estudianteNombre: studentName,
+            estudianteCorreo: studentEmail,
+            estudianteTelefono: studentPhone,
+            fecha: now.toISOString(),
+            fechaTexto: fechaStr,
+            origen: (transactionId && transactionId.startsWith("SIM-")) ? "Simulación Pruebas" : "Pasarela Wompi",
+            transaccionId: transactionId || ("TX-" + Date.now()),
+            estado: "activo",
+            usos: 1,
+            dispositivo: navigator.userAgent.slice(0, 60)
+        };
+
+        registerStudentLicense(licenseRecord);
+
+        const modalBody = document.getElementById("modal-payment-body");
         if (!modalBody) return;
 
         modalBody.innerHTML = `
             <div class="payment-success-box">
                 <div style="font-size:3.5rem; animation:fadeInSlide 0.5s ease;">🎉</div>
                 <span class="badge" style="background:rgba(16,185,129,0.2); color:#34D399; border-color:rgba(16,185,129,0.5); font-size:0.85rem; padding:0.3rem 0.85rem; margin-bottom:0.75rem;">
-                    ✓ ¡PAGO APROBADO EXITOSAMENTE!
+                    ✓ ¡PAGO APROBADO & LICENCIA EMITIDA!
                 </span>
-                <h2 style="font-size:1.85rem; color:#fff; margin-bottom:0.5rem;">¡Bienvenido al Curso!</h2>
+                <h2 style="font-size:1.85rem; color:#fff; margin-bottom:0.35rem;">¡Bienvenido al Curso!</h2>
                 <p style="font-size:0.95rem; color:var(--text-main); line-height:1.5; margin-bottom:1.25rem;">
-                    Gracias <strong>${name}</strong>. Tu compra de <strong>${course.titulo}</strong> ha sido validada. La materia ha quedado <strong>100% desbloqueada</strong> de forma permanente en este navegador.
+                    Gracias <strong>${studentName}</strong>. Tu compra de <strong>${course.titulo}</strong> ha sido verificada. La materia ha quedado <strong>100% desbloqueada</strong> de forma permanente en este navegador.
                 </p>
 
-                <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:1.25rem; margin-bottom:1.5rem;">
-                    <div style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.8px; color:var(--text-muted); font-weight:700;">
-                        Tu Clave de Acceso Permanente (Guárdala)
+                <!-- Caja de Código Único e Intransferible -->
+                <div style="background:linear-gradient(135deg, rgba(245,158,11,0.12), rgba(15,23,42,0.9)); border:1.5px solid rgba(245,158,11,0.5); border-radius:14px; padding:1.25rem; margin-bottom:1.5rem; text-align:center;">
+                    <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:1px; color:#FCD34D; font-weight:800; margin-bottom:0.25rem;">
+                        🔒 TU CÓDIGO ÚNICO DE ACCESO AL CURSO
                     </div>
-                    <div class="payment-key-display">${primaryKey}</div>
-                    <p style="font-size:0.8rem; color:var(--text-muted); margin:0;">
-                        Referencia de Transacción: <span style="font-family:monospace; color:#38BDF8;">${transactionId}</span>
-                    </p>
+                    <div class="payment-key-display" style="font-size:2rem; letter-spacing:3px; color:#FBBF24; margin:0.4rem 0;">${uniqueCode}</div>
+
+                    <div style="background:rgba(0,0,0,0.35); border-radius:10px; padding:0.75rem 1rem; margin-top:0.75rem; text-align:left; border-left:3px solid #F59E0B;">
+                        <div style="color:#FEF3C7; font-size:0.82rem; font-weight:700; margin-bottom:0.3rem; display:flex; align-items:center; gap:0.4rem;">
+                            <span>⚠️</span> AVISO DE SEGURIDAD (CÓDIGO PERSONAL E INTRANSFERIBLE)
+                        </div>
+                        <div style="color:#FDE68A; font-size:0.78rem; line-height:1.45;">
+                            Este código fue generado exclusivamente para ti (<strong>${studentName}</strong> ${studentEmail ? `· <code>${studentEmail}</code>` : ""}). <strong>NO lo compartas con nadie</strong>. La plataforma registra la firma digital de tu dispositivo y navegador. Si se detecta un uso compartido o no autorizado en múltiples ubicaciones, el acceso será bloqueado y revocado automáticamente.
+                        </div>
+                    </div>
+
+                    <button class="btn btn-secondary" onclick="copiarDatoPago('${uniqueCode}', this)" style="margin-top:0.85rem; border-color:rgba(245,158,11,0.5); color:#FCD34D; font-size:0.85rem; padding:0.45rem 1rem; font-weight:700;">
+                        📋 Copiar y Guardar mi Código
+                    </button>
                 </div>
 
                 <div style="display:flex; flex-direction:column; gap:0.65rem;">
@@ -2643,7 +3197,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <a href="${course.demoPath}" target="_blank" class="btn btn-primary" onclick="closePaymentModal()" style="justify-content:center; padding:0.9rem; font-size:1.05rem;">
                             Comenzar a Estudiar Ahora 🚀
                         </a>
-                    ` : ''}
+                    ` : ""}
                     <button class="btn btn-secondary" onclick="closePaymentModal()" style="justify-content:center; padding:0.65rem; font-size:0.85rem;">
                         Volver a la Plataforma
                     </button>
@@ -2651,7 +3205,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
 
-        showToast(`🎉 ¡Felicitaciones! Has adquirido <strong>${course.titulo}</strong>.`);
+        showToast(`🎉 ¡Licencia única emitida para <strong>${course.titulo}</strong>!`);
     };
 
     window.openBookPaymentModal = function(bookId) {
@@ -3815,6 +4369,39 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
 
+                <!-- Gestión de Códigos Únicos y Licencias Particulares de Alumnos -->
+                <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:1.25rem; margin-bottom:1.75rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1rem; flex-wrap:wrap; gap:0.75rem;">
+                        <div>
+                            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem; flex-wrap:wrap;">
+                                <h4 style="color:#fff; font-size:1.15rem; margin:0; display:flex; align-items:center; gap:0.5rem;">
+                                    🎓 Códigos Únicos y Licencias Particulares de Alumnos
+                                </h4>
+                                <span class="badge" style="background:rgba(16,185,129,0.18); color:#34D399; border-color:rgba(16,185,129,0.4); font-size:0.75rem;" id="admin-licenses-counter">
+                                    ${(getStudentLicenses()).length} Registradas
+                                </span>
+                            </div>
+                            <p style="font-size:0.82rem; color:var(--text-muted); margin:0; line-height:1.45;">
+                                Códigos aleatorios únicos e intransferibles generados para cada estudiante. Los estudiantes no pueden compartirlos. Puedes cambiar el código de cualquier alumno, revocarlo o emitir uno nuevo.
+                            </p>
+                        </div>
+                        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                            <button class="btn btn-primary" onclick="adminGenerarCodigoAlumnoModal()" style="font-size:0.82rem; padding:0.5rem 0.95rem; background:linear-gradient(135deg, #10B981, #059669); border:none; box-shadow:0 4px 15px rgba(16,185,129,0.3);">
+                                ➕ Generar Código Único para Alumno
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Buscador en vivo de licencias -->
+                    <div style="margin-bottom:0.85rem; display:flex; gap:0.5rem;">
+                        <input type="text" id="admin-search-license" class="payment-form-input" placeholder="🔍 Buscar por nombre de alumno, correo o código..." oninput="adminFiltrarLicencias(this.value)" style="font-size:0.82rem; padding:0.45rem 0.85rem; max-width:380px;" />
+                    </div>
+
+                    <div class="admin-table-container" style="max-height:300px; overflow-y:auto;" id="admin-licenses-table-container">
+                        ${renderStudentLicensesTableHtml(getStudentLicenses())}
+                    </div>
+                </div>
+
                 <!-- Tabla de Gestión de Claves de Estudiantes por Materia -->
                 <div style="margin-bottom:2rem;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem; flex-wrap:wrap; gap:0.5rem;">
@@ -3942,7 +4529,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <label style="font-size:0.78rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; display:block; margin-bottom:0.35rem;">
                                 Celular Nequi / Daviplata:
                             </label>
-                            <input type="text" id="cfg-direct-nequi" class="payment-form-input" value="${getPaymentConfig().pagoDirecto.nequi || '312 874 5821'}" />
+                            <input type="text" id="cfg-direct-nequi" class="payment-form-input" value="${getPaymentConfig().pagoDirecto.nequi || '313 711 5473'}" />
                         </div>
 
                         <div>
@@ -3997,6 +4584,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Sincronizar automáticamente en segundo plano telemetría y perfiles
         fetchAdminCloudTelemetry(false);
+        syncLicensesFromCloud((updated) => {
+            const container = document.getElementById("admin-licenses-table-container");
+            const counter = document.getElementById("admin-licenses-counter");
+            const searchInp = document.getElementById("admin-search-license");
+            if (container && (!searchInp || !searchInp.value.trim())) {
+                container.innerHTML = renderStudentLicensesTableHtml(updated);
+            }
+            if (counter) counter.textContent = `${updated.length} Registradas`;
+        });
     };
 
     // Funciones de acción del Dashboard
