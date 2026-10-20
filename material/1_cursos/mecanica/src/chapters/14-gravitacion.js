@@ -1,5 +1,5 @@
 /* ===================================================================
-   Capítulo 14 — Gravitación universal
+   Capítulo 15 — Gravitación universal
    Simulaciones: gravitacion-ley, campo-g, canon-newton, kepler
    =================================================================== */
 (function () {

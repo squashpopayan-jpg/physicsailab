@@ -1,4 +1,4 @@
-/* Capítulo 12 — Momento angular */
+/* Capítulo 13 — Momento angular */
 (function () {
   'use strict';
   const MC = window.MC, M = MC.M, D = MC.draw;

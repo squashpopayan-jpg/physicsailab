@@ -1,5 +1,5 @@
 /* ===================================================================
-   Capítulo 17 — Ondas mecánicas
+   Capítulo 18 — Ondas mecánicas
    Simulaciones: onda-viajera, superposicion, estacionarias
    =================================================================== */
 (function () {

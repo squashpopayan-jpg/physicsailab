@@ -1,4 +1,4 @@
-/* Capítulo 9 — Cantidad de movimiento y colisiones */
+/* Capítulo 10 — Cantidad de movimiento y colisiones */
 (function () {
   'use strict';
   const MC = window.MC, M = MC.M, D = MC.draw;

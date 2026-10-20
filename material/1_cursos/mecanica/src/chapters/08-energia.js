@@ -1,4 +1,4 @@
-/* Capítulo 8 — Energía potencial y conservación de la energía */
+/* Capítulo 9 — Energía potencial y conservación de la energía */
 (function () {
   'use strict';
   const MC = window.MC, M = MC.M, D = MC.draw;

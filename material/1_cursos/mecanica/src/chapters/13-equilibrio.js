@@ -1,5 +1,5 @@
 /* ===================================================================
-   Capítulo 13 — Equilibrio estático y elasticidad
+   Capítulo 14 — Equilibrio estático y elasticidad
    Simulaciones: balancin, escalera, volcar, elasticidad
    =================================================================== */
 (function () {

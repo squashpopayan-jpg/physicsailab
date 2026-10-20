@@ -1,5 +1,5 @@
 /* ===================================================================
-   Capítulo 16 — Oscilaciones
+   Capítulo 17 — Oscilaciones
    Simulaciones: mas-resorte, mas-energia, pendulo, amortiguado, forzado
    =================================================================== */
 (function () {

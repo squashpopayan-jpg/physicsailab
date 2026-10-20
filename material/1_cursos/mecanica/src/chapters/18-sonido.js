@@ -1,5 +1,5 @@
 /* ===================================================================
-   Capítulo 18 — Sonido
+   Capítulo 19 — Sonido
    Simulaciones: sonido-onda, decibeles, doppler, pulsaciones, tubos
    =================================================================== */
 (function () {

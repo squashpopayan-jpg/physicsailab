@@ -1412,15 +1412,19 @@ footer p {
     bottom: 0;
     left: 0;
     right: 0;
-    height: 62px;
-    background: rgba(10, 14, 23, 0.94);
-    backdrop-filter: blur(18px);
-    border-top: 1px solid var(--border-color);
+    height: calc(58px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: max(5px, env(safe-area-inset-bottom, 0px));
+    padding-left: max(0.25rem, env(safe-area-inset-left, 0px));
+    padding-right: max(0.25rem, env(safe-area-inset-right, 0px));
+    background: rgba(8, 12, 22, 0.96);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
     z-index: 9980;
     justify-content: space-around;
     align-items: center;
-    padding: 0 0.25rem;
-    box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.6);
+    touch-action: manipulation;
 }
 
 .bottom-nav-item {
@@ -5472,5 +5476,142 @@ body.modular-pages .hero.active-page-view {
     .dedicated-view-footer button {
         width: 100%;
         justify-content: center;
+    }
+}
+
+
+/* ==========================================================================
+   OPTIMIZACIONES MÓVILES NATIVAS PARA ANDROID & iOS (PhysicsAILab Mobile Pro)
+   ========================================================================== */
+
+/* 1. Ergonomía táctil y prevención de latencia de toque */
+button, a, .card, .btn, .bottom-nav-item, .quiz-opt-btn, .game-card, .filter-btn, .nav-links a, .portal-hub-card {
+    -webkit-tap-highlight-color: transparent !important;
+    touch-action: manipulation;
+}
+
+/* 2. Scroll fluido con aceleración por hardware en iOS Safari */
+.filter-bar,
+.cards-grid,
+.modal-content,
+.mobile-drawer,
+.quiz-player-overlay,
+.view-jump-chips,
+.admin-table-container,
+.code-input-group {
+    -webkit-overflow-scrolling: touch;
+}
+
+/* 3. Prevención de desborde horizontal en pantallas angostas (iPhone SE 375px, Android 360px) */
+html, body {
+    overflow-x: hidden !important;
+    max-width: 100vw;
+}
+
+/* 4. Reglas específicas para pantallas móviles (Smartphones Android & iPhones) */
+@media (max-width: 768px) {
+    /* Safe-area insets en el encabezado principal */
+    .navbar {
+        padding-top: max(0.75rem, env(safe-area-inset-top, 0px));
+        padding-left: max(0.85rem, env(safe-area-inset-left, 0px));
+        padding-right: max(0.85rem, env(safe-area-inset-right, 0px));
+    }
+
+    /* Espacio inferior de seguridad para que ningún botón o texto quede tapado por la barra móvil o el Home Indicator de iOS */
+    body.modular-pages {
+        padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+    
+    .section, .active-page-view {
+        padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px)) !important;
+    }
+
+    /* Botón flotante 'Volver arriba' por encima del Bottom Nav */
+    .back-to-top-btn {
+        bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
+        right: max(16px, env(safe-area-inset-right, 16px)) !important;
+        width: 44px !important;
+        height: 44px !important;
+    }
+
+    /* Prevenir zoom automático intrusivo en iOS Safari al tocar cualquier campo de texto o selección */
+    input, select, textarea,
+    .quiz-pin-input,
+    .code-input,
+    .quiz-form-input,
+    .admin-input-group input,
+    .admin-search-input,
+    .payment-form-input,
+    .admin-cfg-input {
+        font-size: 16px !important; /* 16px exactos elimina el zoom no deseado en iOS */
+    }
+
+    /* Items de navegación inferior con tamaño táctil óptimo (Apple HIG 44px) */
+    .bottom-nav-item {
+        min-height: 46px;
+        padding: 0.3rem 0.25rem;
+        font-size: 0.67rem;
+        letter-spacing: 0.01em;
+    }
+
+    .bottom-nav-item .bottom-nav-icon {
+        font-size: 1.25rem;
+        margin-bottom: 1px;
+    }
+
+    /* Resaltados de color específicos por sección activa */
+    .bottom-nav-item[data-section="quizzes"].active,
+    .bottom-nav-item[data-section="quizzes"]:hover {
+        color: #fb7185 !important;
+    }
+
+    .bottom-nav-item[data-section="juegos"].active,
+    .bottom-nav-item[data-section="juegos"]:hover {
+        color: #38bdf8 !important;
+    }
+
+    .bottom-nav-item[data-section="comics"].active,
+    .bottom-nav-item[data-section="comics"]:hover {
+        color: #a78bfa !important;
+    }
+
+    .bottom-nav-item[data-section="cursos"].active,
+    .bottom-nav-item[data-section="cursos"]:hover {
+        color: #34d399 !important;
+    }
+
+    /* Cajón de navegación lateral (Drawer) con safe areas */
+    .mobile-drawer {
+        padding-top: max(1.2rem, env(safe-area-inset-top, 0px));
+        padding-bottom: max(1.5rem, env(safe-area-inset-bottom, 0px));
+        padding-left: max(1rem, env(safe-area-inset-left, 0px));
+        padding-right: max(1rem, env(safe-area-inset-right, 0px));
+    }
+
+    /* Modales con márgenes de seguridad en celular */
+    .modal-content {
+        max-height: calc(100vh - 40px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
+        padding-bottom: max(1.25rem, env(safe-area-inset-bottom, 0px)) !important;
+    }
+
+    /* Reproductor de Quizzes a pantalla completa en móvil */
+    .quiz-player-overlay {
+        padding: max(0.6rem, env(safe-area-inset-top, 0px)) max(0.6rem, env(safe-area-inset-right, 0px)) max(0.8rem, env(safe-area-inset-bottom, 0px)) max(0.6rem, env(safe-area-inset-left, 0px)) !important;
+    }
+
+    .quiz-question-box {
+        padding: 1.15rem 1rem !important;
+        font-size: 1.05rem !important;
+    }
+
+    .quiz-opt-btn {
+        min-height: 58px !important;
+        padding: 0.85rem 1rem !important;
+    }
+
+    /* Botones y chips con espaciado cómodo para pulgar */
+    .filter-btn, .quick-chip, .view-chip {
+        min-height: 38px;
+        padding: 0.45rem 0.95rem;
     }
 }

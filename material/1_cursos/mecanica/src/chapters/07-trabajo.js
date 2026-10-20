@@ -1,4 +1,4 @@
-/* Capítulo 7 — Trabajo y energía cinética */
+/* Capítulo 8 — Trabajo y energía cinética */
 (function () {
   'use strict';
   const MC = window.MC, M = MC.M, D = MC.draw;

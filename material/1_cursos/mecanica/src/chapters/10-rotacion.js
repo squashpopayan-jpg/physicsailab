@@ -1,4 +1,4 @@
-/* Capítulo 10 — Rotación de cuerpos rígidos */
+/* Capítulo 11 — Rotación de cuerpos rígidos */
 (function () {
   'use strict';
   const MC = window.MC, M = MC.M, D = MC.draw;

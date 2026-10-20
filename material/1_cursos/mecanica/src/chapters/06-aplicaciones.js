@@ -1,4 +1,4 @@
-/* Capítulo 6 — Aplicaciones de las leyes de Newton */
+/* Capítulo 7 — Aplicaciones de las leyes de Newton */
 (function () {
   'use strict';
   const MC = window.MC, M = MC.M, D = MC.draw;

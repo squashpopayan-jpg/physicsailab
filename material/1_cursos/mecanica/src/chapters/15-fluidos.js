@@ -1,5 +1,5 @@
 /* ===================================================================
-   Capítulo 15 — Mecánica de fluidos
+   Capítulo 16 — Mecánica de fluidos
    Simulaciones: presion-hidrostatica, pascal, arquimedes, bernoulli, torricelli
    =================================================================== */
 (function () {

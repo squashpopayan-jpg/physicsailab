@@ -1,4 +1,4 @@
-/* Capítulo 11 — Dinámica de la rotación */
+/* Capítulo 12 — Dinámica de la rotación */
 (function () {
   'use strict';
   const MC = window.MC, M = MC.M, D = MC.draw;
