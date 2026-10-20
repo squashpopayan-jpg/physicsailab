@@ -1051,6 +1051,16 @@
         level: 1,
         electronOffset: 0,
 
+        nudgeVoltage(delta) {
+            playSound('click');
+            this.voltage = Math.max(2, Math.min(24, this.voltage + delta));
+            const rngV = document.getElementById('rng-cr-v');
+            if (rngV) rngV.value = this.voltage;
+            const lbl = document.getElementById('lbl-cr-v');
+            if (lbl) lbl.textContent = this.voltage + ' V';
+            this.recalculate();
+        },
+
         init(container) {
             container.innerHTML = `
                 <div class="game-layout">
@@ -1061,73 +1071,88 @@
                         <div class="hud-pill">⭐ Puntos: <strong id="cr-score">0</strong></div>
                     </div>
 
-                    <div class="game-canvas-wrap">
-                        <canvas id="circuit-canvas"></canvas>
-                        <div class="game-telemetry-overlay" id="circuit-telemetry">
-                            <span>🔋 Voltaje Fuente: <strong id="cr-v">12 V</strong></span>
-                            <span>⚡ Corriente Medida: <strong id="cr-i">2.00 A</strong></span>
-                            <span>💡 Potencia Activa: <strong id="cr-p">24.0 W</strong></span>
-                            <span>🎚️ R_Equivalente: <strong id="cr-req">6.0 Ω</strong></span>
-                        </div>
-                    </div>
+                    <div class="game-main-row">
+                        <!-- Columna Principal / Canvas -->
+                        <div class="game-stage-col">
+                            <div class="game-canvas-wrap">
+                                <canvas id="circuit-canvas"></canvas>
+                                <div class="game-telemetry-overlay" id="circuit-telemetry">
+                                    <span>🔋 Voltaje: <strong id="cr-v">12 V</strong></span>
+                                    <span>⚡ Corriente: <strong id="cr-i">2.00 A</strong></span>
+                                    <span>💡 Potencia: <strong id="cr-p">24.0 W</strong></span>
+                                    <span>🎚️ R_Eq: <strong id="cr-req">6.0 Ω</strong></span>
+                                </div>
+                            </div>
 
-                    <div class="game-controls-panel">
-                        <div class="ctrl-group">
-                            <label>🔋 Voltaje de Fuente (V): <strong id="lbl-cr-v">12 V</strong></label>
-                            <input type="range" id="rng-cr-v" min="2" max="24" value="12" class="game-slider">
-                        </div>
-
-                        <div class="ctrl-group">
-                            <label>🔀 Topología de Conexión:</label>
-                            <div class="btn-group-row">
-                                <button type="button" class="btn-topol active" onclick="window.CircuitGame.setTopology('single')">Circuito Simple (R₁)</button>
-                                <button type="button" class="btn-topol" onclick="window.CircuitGame.setTopology('series')">En Serie (R₁ + R₂)</button>
-                                <button type="button" class="btn-topol" onclick="window.CircuitGame.setTopology('parallel')">En Paralelo (R₁ || R₂)</button>
+                            <div class="game-quick-fire-bar">
+                                <button type="button" class="btn-game-primary btn-fire-large" onclick="window.CircuitGame.checkSolution()">
+                                    ⚡ COMPROBAR SOLUCIÓN & ACTIVAR
+                                </button>
+                                <button type="button" class="btn-game-secondary" onclick="window.CircuitGame.resetFuse()" title="Reemplazar fusible quemado">
+                                    🔧 Cambiar Fusible
+                                </button>
                             </div>
                         </div>
 
-                        <div class="ctrl-group-buttons">
-                            <span class="ctrl-sublabel">Resistencia R₁ (Ω):</span>
-                            <div class="btn-group-row" id="r1-buttons">
-                                <button type="button" class="btn-res" onclick="window.CircuitGame.setR1(2)">2Ω</button>
-                                <button type="button" class="btn-res" onclick="window.CircuitGame.setR1(4)">4Ω</button>
-                                <button type="button" class="btn-res active" onclick="window.CircuitGame.setR1(6)">6Ω</button>
-                                <button type="button" class="btn-res" onclick="window.CircuitGame.setR1(8)">8Ω</button>
-                                <button type="button" class="btn-res" onclick="window.CircuitGame.setR1(12)">12Ω</button>
+                        <!-- Columna de Controles / Instrumentación -->
+                        <div class="game-controls-col">
+                            <div class="game-controls-panel">
+                                <div class="ctrl-group">
+                                    <div class="ctrl-header-row">
+                                        <label>🔋 Voltaje de Fuente (V): <strong id="lbl-cr-v">12 V</strong></label>
+                                        <span class="ctrl-badge">Fuente DC</span>
+                                    </div>
+                                    <div class="slider-with-nudge">
+                                        <button type="button" class="btn-nudge" onclick="window.CircuitGame.nudgeVoltage(-1)" title="Restar 1 Voltio">−1V</button>
+                                        <input type="range" id="rng-cr-v" min="2" max="24" value="12" class="game-slider" aria-label="Voltaje">
+                                        <button type="button" class="btn-nudge" onclick="window.CircuitGame.nudgeVoltage(+1)" title="Sumar 1 Voltio">+1V</button>
+                                    </div>
+                                </div>
+
+                                <div class="ctrl-group">
+                                    <span class="ctrl-sublabel">🔀 Topología de Conexión:</span>
+                                    <div class="btn-group-row">
+                                        <button type="button" class="btn-topol active" onclick="window.CircuitGame.setTopology('single')">Simple (R₁)</button>
+                                        <button type="button" class="btn-topol" onclick="window.CircuitGame.setTopology('series')">En Serie (R₁+R₂)</button>
+                                        <button type="button" class="btn-topol" onclick="window.CircuitGame.setTopology('parallel')">En Paralelo (R₁||R₂)</button>
+                                    </div>
+                                </div>
+
+                                <div class="ctrl-group-buttons">
+                                    <span class="ctrl-sublabel">Resistencia R₁ (Ω):</span>
+                                    <div class="btn-group-row" id="r1-buttons">
+                                        <button type="button" class="btn-res" onclick="window.CircuitGame.setR1(2)">2Ω</button>
+                                        <button type="button" class="btn-res" onclick="window.CircuitGame.setR1(4)">4Ω</button>
+                                        <button type="button" class="btn-res active" onclick="window.CircuitGame.setR1(6)">6Ω</button>
+                                        <button type="button" class="btn-res" onclick="window.CircuitGame.setR1(8)">8Ω</button>
+                                        <button type="button" class="btn-res" onclick="window.CircuitGame.setR1(12)">12Ω</button>
+                                    </div>
+                                </div>
+
+                                <div class="ctrl-group-buttons" id="r2-group" style="display:none;">
+                                    <span class="ctrl-sublabel">Resistencia R₂ (Ω):</span>
+                                    <div class="btn-group-row" id="r2-buttons">
+                                        <button type="button" class="btn-res" onclick="window.CircuitGame.setR2(2)">2Ω</button>
+                                        <button type="button" class="btn-res active" onclick="window.CircuitGame.setR2(4)">4Ω</button>
+                                        <button type="button" class="btn-res" onclick="window.CircuitGame.setR2(6)">6Ω</button>
+                                        <button type="button" class="btn-res" onclick="window.CircuitGame.setR2(8)">8Ω</button>
+                                        <button type="button" class="btn-res" onclick="window.CircuitGame.setR2(12)">12Ω</button>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="ctrl-group-buttons" id="r2-group" style="display:none;">
-                            <span class="ctrl-sublabel">Resistencia R₂ (Ω):</span>
-                            <div class="btn-group-row" id="r2-buttons">
-                                <button type="button" class="btn-res" onclick="window.CircuitGame.setR2(2)">2Ω</button>
-                                <button type="button" class="btn-res active" onclick="window.CircuitGame.setR2(4)">4Ω</button>
-                                <button type="button" class="btn-res" onclick="window.CircuitGame.setR2(6)">6Ω</button>
-                                <button type="button" class="btn-res" onclick="window.CircuitGame.setR2(8)">8Ω</button>
-                                <button type="button" class="btn-res" onclick="window.CircuitGame.setR2(12)">12Ω</button>
+                            <div class="game-physics-note">
+                                <span class="note-icon">💡</span>
+                                <div class="note-content">
+                                    <strong>Leyes Fundamentales de Circuitos:</strong>
+                                    <p>
+                                        <strong>Ley de Ohm:</strong> <code>I = V / R_eq</code> &nbsp;|&nbsp;
+                                        <strong>Potencia:</strong> <code>P = V · I = I² · R</code><br>
+                                        <strong>Serie:</strong> <code>R_eq = R₁ + R₂</code> &nbsp;|&nbsp;
+                                        <strong>Paralelo:</strong> <code>1/R_eq = 1/R₁ + 1/R₂</code>
+                                    </p>
+                                </div>
                             </div>
-                        </div>
-
-                        <div class="ctrl-action-buttons">
-                            <button type="button" class="btn-game-primary" onclick="window.CircuitGame.checkSolution()">
-                                ⚡ COMPROBAR SOLUCIÓN & ACTIVAR CARGA
-                            </button>
-                            <button type="button" class="btn-game-secondary" onclick="window.CircuitGame.resetFuse()">
-                                🔧 Cambiar Fusible
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="game-physics-note">
-                        <span class="note-icon">💡</span>
-                        <div class="note-content">
-                            <strong>Leyes Fundamentales de Circuitos:</strong>
-                            <p>
-                                <strong>Ley de Ohm:</strong> <code>I = V / R_eq</code> &nbsp;|&nbsp;
-                                <strong>Potencia Eléctrica:</strong> <code>P = V · I = I² · R</code> &nbsp;|&nbsp;
-                                <strong>Resistencia en Serie:</strong> <code>R_eq = R₁ + R₂</code> &nbsp;|&nbsp;
-                                <strong>Resistencia en Paralelo:</strong> <code>1/R_eq = 1/R₁ + 1/R₂</code>
-                            </p>
                         </div>
                     </div>
                 </div>
@@ -1143,9 +1168,13 @@
 
         resize() {
             if (!this.canvas) return;
-            const rect = this.canvas.parentElement.getBoundingClientRect();
-            const w = Math.max(340, Math.floor(rect.width));
-            const h = Math.min(380, Math.max(260, Math.floor(w * 0.48)));
+            const parent = this.canvas.parentElement;
+            const rect = parent ? parent.getBoundingClientRect() : { width: 360 };
+            const isMobile = window.innerWidth <= 768;
+            const w = Math.max(260, Math.floor(rect.width) || (window.innerWidth - 32));
+            const h = isMobile 
+                ? Math.max(230, Math.min(300, Math.floor(w * 0.65))) 
+                : Math.min(380, Math.max(260, Math.floor(w * 0.42)));
             const s = setupRetinaCanvas(this.canvas, w, h);
             this.ctx = s.ctx;
             this.w = w;
