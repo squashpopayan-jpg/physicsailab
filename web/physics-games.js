@@ -115,9 +115,34 @@
         particles: [],
         isAiming: false,
 
+        nudgeAngle(delta) {
+            const rngA = document.getElementById('rng-angle');
+            const newAng = Math.max(5, Math.min(85, this.angle + delta));
+            this.angle = newAng;
+            if (rngA) rngA.value = newAng;
+            const lbl = document.getElementById('lbl-angle');
+            const tLbl = document.getElementById('t-angle');
+            if (lbl) lbl.textContent = newAng + '°';
+            if (tLbl) tLbl.textContent = newAng + '°';
+            this.updateTelemetry();
+        },
+
+        nudgeV0(delta) {
+            const rngV = document.getElementById('rng-v0');
+            const newV = Math.max(15, Math.min(60, this.v0 + delta));
+            this.v0 = newV;
+            if (rngV) rngV.value = newV;
+            const lbl = document.getElementById('lbl-v0');
+            const tLbl = document.getElementById('t-v0');
+            if (lbl) lbl.textContent = newV + ' m/s';
+            if (tLbl) tLbl.textContent = newV + ' m/s';
+            this.updateTelemetry();
+        },
+
         init(container) {
             container.innerHTML = `
                 <div class="game-layout">
+                    <!-- HUD Superior: Estadísticas en vivo -->
                     <div class="game-hud-bar">
                         <div class="hud-pill">🏆 Puntaje: <strong id="c-score">0</strong></div>
                         <div class="hud-pill">🔥 Racha: <strong id="c-streak">x0</strong></div>
@@ -126,42 +151,71 @@
                         <div class="hud-pill">🪐 Entorno: <strong id="c-env" style="color:#38bdf8;">🌍 Tierra (9.8 m/s²)</strong></div>
                     </div>
 
-                    <div class="game-canvas-wrap">
-                        <canvas id="cannon-canvas"></canvas>
-                        <div class="game-telemetry-overlay" id="cannon-telemetry">
-                            <span>📐 θ = <strong id="t-angle">45°</strong></span>
-                            <span>🚀 v₀ = <strong id="t-v0">38 m/s</strong></span>
-                            <span>⏱️ T_vuelo = <strong id="t-time">---</strong></span>
-                            <span>🏔️ H_max = <strong id="t-hmax">---</strong></span>
-                            <span>🎯 R_teórico = <strong id="t-range">---</strong></span>
-                        </div>
-                    </div>
+                    <!-- Fila Cockpit: Canvas a la izquierda, Controles a la derecha en PC -->
+                    <div class="game-main-row">
+                        <!-- Columna de Simulación / Canvas 100% Despejado -->
+                        <div class="game-stage-col">
+                            <div class="game-canvas-wrap">
+                                <canvas id="cannon-canvas"></canvas>
+                            </div>
 
-                    <div class="game-controls-panel">
-                        <div class="ctrl-group">
-                            <label>📐 Ángulo de Tiro: <strong id="lbl-angle">45°</strong></label>
-                            <input type="range" id="rng-angle" min="5" max="85" value="45" class="game-slider">
-                        </div>
-                        <div class="ctrl-group">
-                            <label>🚀 Rapidez Inicial (v₀): <strong id="lbl-v0">38 m/s</strong></label>
-                            <input type="range" id="rng-v0" min="15" max="60" value="38" class="game-slider">
-                        </div>
-                        <div class="ctrl-group-buttons">
-                            <span class="ctrl-sublabel">Gravedad Planetaria:</span>
-                            <div class="btn-group-row">
-                                <button type="button" class="btn-planet active" onclick="window.CannonGame.setGravity('earth')">🌍 Tierra (9.8)</button>
-                                <button type="button" class="btn-planet" onclick="window.CannonGame.setGravity('moon')">🌕 Luna (1.62)</button>
-                                <button type="button" class="btn-planet" onclick="window.CannonGame.setGravity('mars')">🪐 Marte (3.71)</button>
-                                <button type="button" class="btn-planet" onclick="window.CannonGame.setGravity('jupiter')">⚡ Júpiter (24.8)</button>
+                            <!-- Barra de Telemetría Dinámica (FUERA del canvas para no tapar el cañón ni el blanco) -->
+                            <div class="game-telemetry-bar" id="cannon-telemetry">
+                                <span>📐 θ = <strong id="t-angle">45°</strong></span>
+                                <span>🚀 v₀ = <strong id="t-v0">38 m/s</strong></span>
+                                <span>⏱️ T_vuelo = <strong id="t-time">---</strong></span>
+                                <span>⛰️ H_max = <strong id="t-hmax">---</strong></span>
+                                <span>🎯 R_teórico = <strong id="t-range">---</strong></span>
+                            </div>
+
+                            <!-- Botones de Acción Rápida -->
+                            <div class="game-quick-fire-bar">
+                                <button type="button" class="btn-game-primary btn-fire-large" id="btn-fire" onclick="window.CannonGame.fire()">
+                                    🚀 ¡DISPARAR CAÑÓN!
+                                </button>
+                                <button type="button" class="btn-game-secondary" onclick="window.CannonGame.resetTarget()" title="Generar un nuevo objetivo a diferente distancia">
+                                    🎯 Nuevo Blanco
+                                </button>
                             </div>
                         </div>
-                        <div class="ctrl-action-buttons">
-                            <button type="button" class="btn-game-primary" id="btn-fire" onclick="window.CannonGame.fire()">
-                                🚀 ¡DISPARAR CAÑÓN!
-                            </button>
-                            <button type="button" class="btn-game-secondary" onclick="window.CannonGame.resetTarget()">
-                                🎯 Nuevo Blanco
-                            </button>
+
+                        <!-- Columna de Controles e Instrumentación -->
+                        <div class="game-controls-col">
+                            <div class="game-controls-panel">
+                                <div class="ctrl-group">
+                                    <div class="ctrl-header-row">
+                                        <label>📐 Ángulo de Tiro (θ): <strong id="lbl-angle">45°</strong></label>
+                                        <span class="ctrl-badge">Elevación</span>
+                                    </div>
+                                    <div class="slider-with-nudge">
+                                        <button type="button" class="btn-nudge" onclick="window.CannonGame.nudgeAngle(-1)" title="Restar 1 grado">−1°</button>
+                                        <input type="range" id="rng-angle" min="5" max="85" value="45" class="game-slider" aria-label="Ángulo de tiro">
+                                        <button type="button" class="btn-nudge" onclick="window.CannonGame.nudgeAngle(+1)" title="Sumar 1 grado">+1°</button>
+                                    </div>
+                                </div>
+
+                                <div class="ctrl-group">
+                                    <div class="ctrl-header-row">
+                                        <label>🚀 Rapidez Inicial (v₀): <strong id="lbl-v0">38 m/s</strong></label>
+                                        <span class="ctrl-badge">Velocidad</span>
+                                    </div>
+                                    <div class="slider-with-nudge">
+                                        <button type="button" class="btn-nudge" onclick="window.CannonGame.nudgeV0(-1)" title="Restar 1 m/s">−1</button>
+                                        <input type="range" id="rng-v0" min="15" max="60" value="38" class="game-slider" aria-label="Rapidez inicial">
+                                        <button type="button" class="btn-nudge" onclick="window.CannonGame.nudgeV0(+1)" title="Sumar 1 m/s">+1</button>
+                                    </div>
+                                </div>
+
+                                <div class="ctrl-group">
+                                    <span class="ctrl-sublabel">🪐 Gravedad Planetaria:</span>
+                                    <div class="btn-group-row">
+                                        <button type="button" class="btn-planet active" onclick="window.CannonGame.setGravity('earth')">🌍 Tierra (9.8)</button>
+                                        <button type="button" class="btn-planet" onclick="window.CannonGame.setGravity('moon')">🌕 Luna (1.62)</button>
+                                        <button type="button" class="btn-planet" onclick="window.CannonGame.setGravity('mars')">🪐 Marte (3.71)</button>
+                                        <button type="button" class="btn-planet" onclick="window.CannonGame.setGravity('jupiter')">⚡ Júpiter (24.8)</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -643,6 +697,7 @@
         init(container) {
             container.innerHTML = `
                 <div class="game-layout">
+                    <!-- HUD Superior: Estado Orbital -->
                     <div class="game-hud-bar">
                         <div class="hud-pill">🚀 Nivel: <strong id="o-lvl">1</strong></div>
                         <div class="hud-pill">💎 Cristales: <strong id="o-crys">0/3</strong></div>
@@ -651,26 +706,51 @@
                         <div class="hud-pill">⚡ E_Mecánica: <strong id="o-energy">---</strong></div>
                     </div>
 
-                    <div class="game-canvas-wrap">
-                        <canvas id="orbit-canvas"></canvas>
-                        <div class="game-telemetry-overlay" id="orbit-telemetry">
-                            <span>🪐 Ley de Gravitación: <strong>F = G·(M·m)/r²</strong></span>
-                            <span>🛸 Arrastra desde la base y suelta para lanzar la sonda con vector v₀</span>
-                        </div>
-                    </div>
+                    <div class="game-main-row">
+                        <!-- Columna de Simulación / Canvas 100% Despejado -->
+                        <div class="game-stage-col">
+                            <div class="game-canvas-wrap">
+                                <canvas id="orbit-canvas"></canvas>
+                            </div>
 
-                    <div class="game-controls-panel">
-                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.6rem; width:100%;">
-                            <span style="font-size:0.85rem; color:#cbd5e1;">
-                                🎯 <strong>Objetivo:</strong> Lanza la sonda, recoge los 3 cristales de energía y acopla en la Estación Espacial verde sin estrellarte contra el planeta central.
-                            </span>
-                            <div style="display:flex; gap:0.5rem;">
-                                <button type="button" class="btn-game-secondary" onclick="window.OrbitGame.resetProbe()">
-                                    🔄 Reiniciar Intento
+                            <!-- Barra de Telemetría Dinámica (FUERA del canvas para no tapar los planetas ni las órbitas) -->
+                            <div class="game-telemetry-bar" id="orbit-telemetry">
+                                <span>🪐 Ley Gravitación: <strong>F = G·(M·m)/r²</strong></span>
+                                <span>🛸 Control: <strong>Arrastra sobre la sonda y suelta para lanzar</strong></span>
+                            </div>
+
+                            <div class="game-quick-fire-bar">
+                                <button type="button" class="btn-game-secondary" onclick="window.OrbitGame.resetProbe()" style="flex:1;">
+                                    🔄 Reiniciar Sonda
                                 </button>
-                                <button type="button" class="btn-game-primary" onclick="window.OrbitGame.nextLevel()">
+                                <button type="button" class="btn-game-primary" onclick="window.OrbitGame.nextLevel()" style="flex:1;">
                                     🚀 Siguiente Nivel
                                 </button>
+                            </div>
+                        </div>
+
+                        <!-- Columna de Controles e Información -->
+                        <div class="game-controls-col">
+                            <div class="game-controls-panel">
+                                <div class="ctrl-group">
+                                    <div class="ctrl-header-row">
+                                        <label>🎯 Misión Orbital:</label>
+                                        <span class="ctrl-badge">Nivel <span id="o-lvl-badge">1</span></span>
+                                    </div>
+                                    <p style="font-size:0.85rem; color:#cbd5e1; line-height:1.5; margin:0.35rem 0 0.65rem 0;">
+                                        Lanza la sonda espacial con el vector inicial adecuado. Recolecta los <strong>3 cristales de energía</strong> y acóplate con éxito en la <strong>Estación Espacial verde</strong> sin colisionar con el planeta central.
+                                    </p>
+                                </div>
+
+                                <div class="ctrl-group">
+                                    <span class="ctrl-sublabel">🪐 Seleccionar Nivel:</span>
+                                    <div class="btn-group-row">
+                                        <button type="button" class="btn-planet btn-orbit-lvl active" onclick="window.OrbitGame.setupLevel(1)">Nivel 1</button>
+                                        <button type="button" class="btn-planet btn-orbit-lvl" onclick="window.OrbitGame.setupLevel(2)">Nivel 2</button>
+                                        <button type="button" class="btn-planet btn-orbit-lvl" onclick="window.OrbitGame.setupLevel(3)">Nivel 3</button>
+                                        <button type="button" class="btn-planet btn-orbit-lvl" onclick="window.OrbitGame.setupLevel(4)">Nivel 4</button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -681,7 +761,7 @@
                             <strong>Mecánica Orbital Newtoniana:</strong>
                             <p>
                                 Fuerza centrípeta gravitatoria: <code>a = -G·M / r²</code>. 
-                                Si la rapidez es menor que la velocidad circular <code>v_c = √(GM/r)</code> la sonda cae en espiral. 
+                                Si la rapidez es menor que la velocidad circular <code>v_c = √(GM/r)</code> la sonda cae en espiral hacia el planeta. 
                                 Si supera la velocidad de escape <code>v_e = √(2GM/r)</code> escapa a la infinidad en trayectoria hiperbólica.
                             </p>
                         </div>
@@ -731,6 +811,11 @@
                 });
             }
 
+            const badge = document.getElementById('o-lvl-badge');
+            if (badge) badge.textContent = this.level;
+            document.querySelectorAll('.btn-orbit-lvl').forEach((b, idx) => {
+                b.classList.toggle('active', idx + 1 === this.level);
+            });
             this.resetProbe();
             this.updateHud();
         },
@@ -1076,12 +1161,14 @@
                         <div class="game-stage-col">
                             <div class="game-canvas-wrap">
                                 <canvas id="circuit-canvas"></canvas>
-                                <div class="game-telemetry-overlay" id="circuit-telemetry">
-                                    <span>🔋 Voltaje: <strong id="cr-v">12 V</strong></span>
-                                    <span>⚡ Corriente: <strong id="cr-i">2.00 A</strong></span>
-                                    <span>💡 Potencia: <strong id="cr-p">24.0 W</strong></span>
-                                    <span>🎚️ R_Eq: <strong id="cr-req">6.0 Ω</strong></span>
-                                </div>
+                            </div>
+
+                            <!-- Barra de Telemetría Eléctrica (FUERA del canvas para no tapar cables ni instrumentos) -->
+                            <div class="game-telemetry-bar" id="circuit-telemetry">
+                                <span>🔋 Voltaje: <strong id="cr-v">12 V</strong></span>
+                                <span>⚡ Corriente: <strong id="cr-i">2.00 A</strong></span>
+                                <span>💡 Potencia: <strong id="cr-p">24.0 W</strong></span>
+                                <span>🎚️ R_Eq: <strong id="cr-req">6.0 Ω</strong></span>
                             </div>
 
                             <div class="game-quick-fire-bar">
