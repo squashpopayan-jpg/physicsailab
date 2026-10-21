@@ -125,6 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function syncStudentProfileToCloud(profile) {
         const studentId = getOrCreateStudentId();
         const unlockedIds = getUnlockedCourses();
+        const savedCourseIds = getSavedCourses();
         const savedComicIds = getSavedComics();
         const savedPodcastsList = getSavedPodcasts();
         const atomLikesState = getAtomLikesState();
@@ -387,6 +388,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function saveStudentProfile(profile) {
         localStorage.setItem('physicsailab_student_profile', JSON.stringify(profile));
         updateProfileNavDisplay();
+        updateWelcomeStudentBanner();
         syncStudentProfileToCloud(profile);
     }
 
@@ -394,10 +396,47 @@ document.addEventListener('DOMContentLoaded', () => {
         const profile = getStudentProfile();
         const avatarEl = document.getElementById('nav-profile-avatar');
         const labelEl = document.getElementById('nav-profile-label');
+        const mobileAvatarEl = document.getElementById('mobile-profile-avatar');
         if (avatarEl) avatarEl.textContent = profile.avatar || '👤';
+        if (mobileAvatarEl) mobileAvatarEl.textContent = profile.avatar || '👤';
         if (labelEl) {
             const firstName = (profile.name || '').trim().split(' ')[0] || 'Mi Espacio';
             labelEl.textContent = firstName.length > 12 ? 'Mi Espacio' : firstName;
+        }
+        updateWelcomeStudentBanner();
+    }
+
+    function updateWelcomeStudentBanner() {
+        const profile = getStudentProfile();
+        const unlockedIds = getUnlockedCourses();
+        const enrolledCourses = (data.cursos || []).filter(c => unlockedIds.includes(c.id));
+        const savedCourses = getSavedCourses();
+        const savedComics = getSavedComics();
+        const savedPodcasts = getSavedPodcasts();
+        const totalSaved = savedCourses.length + savedComics.length + savedPodcasts.length;
+        const atomLikesState = getAtomLikesState();
+        const likedCount = Object.keys(atomLikesState).filter(k => atomLikesState[k]?.liked).length;
+
+        const prevAvatar = document.getElementById('welcome-preview-avatar');
+        const prevName = document.getElementById('welcome-preview-name');
+        const prevCareer = document.getElementById('welcome-preview-career');
+        const countCourses = document.getElementById('welcome-count-courses');
+        const countSaved = document.getElementById('welcome-count-saved');
+        const countLikes = document.getElementById('welcome-count-likes');
+        const savedCounter = document.getElementById('welcome-saved-counter');
+        const bannerTitle = document.getElementById('student-welcome-title');
+
+        if (prevAvatar) prevAvatar.textContent = profile.avatar || '⚛️';
+        if (prevName) prevName.textContent = profile.name || 'Estudiante Universitario';
+        if (prevCareer) prevCareer.textContent = `${profile.career || 'Física / Ingeniería'} · ${profile.institution || 'Unicauca'}`;
+        if (countCourses) countCourses.textContent = enrolledCourses.length;
+        if (countSaved) countSaved.textContent = totalSaved;
+        if (countLikes) countLikes.textContent = likedCount;
+        if (savedCounter) savedCounter.textContent = totalSaved;
+
+        if (bannerTitle && profile.name && profile.name !== 'Estudiante Universitario') {
+            const firstName = profile.name.trim().split(' ')[0];
+            bannerTitle.textContent = `¡Hola, ${firstName}! Continúa explorando y guardando tus contenidos favoritos ✨`;
         }
     }
 
@@ -720,6 +759,40 @@ document.addEventListener('DOMContentLoaded', () => {
         return s.startsWith('com-') ? s : ('com-' + s);
     }
 
+    function getSavedCourses() {
+        try {
+            const raw = localStorage.getItem('physicsailab_saved_courses');
+            return raw ? JSON.parse(raw) : [];
+        } catch(e) {
+            return [];
+        }
+    }
+
+    window.toggleSaveCourse = function(courseId, event) {
+        if (event) event.stopPropagation();
+        if (!courseId) return;
+        let saved = getSavedCourses();
+        const exists = saved.includes(courseId);
+        const course = (data.cursos || []).find(c => c.id === courseId);
+        const title = course ? course.titulo : 'Curso';
+        if (exists) {
+            saved = saved.filter(id => id !== courseId);
+            localStorage.setItem('physicsailab_saved_courses', JSON.stringify(saved));
+            showToast(`🔖 <strong>${title}</strong> removido de tus guardados.`);
+        } else {
+            saved.push(courseId);
+            localStorage.setItem('physicsailab_saved_courses', JSON.stringify(saved));
+            showToast(`🔖 ¡<strong>${title}</strong> guardado en tu perfil para estudiar! <a href="javascript:void(0)" onclick="openStudentProfileModal('saved_courses')" style="color:#38BDF8; font-weight:700; margin-left:6px; text-decoration:underline;">Ver en mi espacio ➔</a>`);
+        }
+        renderCourses(currentCourseFilter);
+        updateProfileNavDisplay();
+        updateWelcomeStudentBanner();
+        const modal = document.getElementById('student-profile-modal');
+        if (modal && modal.classList.contains('active')) {
+            renderStudentProfileBody(currentProfileTab || 'courses');
+        }
+    };
+
     function getSavedComics() {
         try {
             const raw = JSON.parse(localStorage.getItem('physicsailab_saved_comics') || '[]');
@@ -1037,6 +1110,45 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
     }
 
+    function renderProfileSavedCoursesTab(savedCourseIds) {
+        const savedList = (data.cursos || []).filter(c => savedCourseIds.includes(c.id));
+        if (savedList.length === 0) {
+            return `
+                <div style="text-align:center; padding:2.5rem 1rem; background:rgba(255,255,255,0.02); border-radius:14px; border:1px dashed rgba(255,255,255,0.12);">
+                    <div style="font-size:2.5rem; margin-bottom:0.75rem;">⭐</div>
+                    <h3 style="color:#fff; margin-bottom:0.5rem;">No tienes cursos ni simuladores en favoritos</h3>
+                    <p style="color:var(--text-muted); font-size:0.88rem; max-width:480px; margin:0 auto 1.25rem;">
+                        Explora los 17 cursos, cuadernos computacionales y laboratorios virtuales. Pulsa el botón <strong>🔖 Guardar</strong> en cualquier materia para tenerla aquí a mano en tus sesiones de estudio.
+                    </p>
+                    <button class="btn btn-primary" onclick="closeStudentProfileModal(); location.href='#cursos';">
+                        Explorar Cursos &amp; Labs 🚀
+                    </button>
+                </div>
+            `;
+        }
+
+        return `
+            <div class="saved-items-grid">
+                ${savedList.map(c => `
+                    <div class="saved-card" style="border-left:3px solid #38BDF8;">
+                        <div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                                <span class="card-tag interactive" style="font-size:0.7rem;">${c.categoria}</span>
+                                <button onclick="toggleSaveCourse('${c.id}', event)" title="Quitar de favoritos" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:0.85rem;">✕ Quitar</button>
+                            </div>
+                            <h4 style="font-size:1.05rem; margin:0 0 0.35rem 0; color:#fff;">${c.titulo}</h4>
+                            <p style="font-size:0.8rem; color:var(--text-muted); line-height:1.4; margin-bottom:0.75rem;">${c.descripcion.substring(0, 95)}...</p>
+                        </div>
+                        <div style="display:flex; gap:0.5rem; margin-top:auto;">
+                            ${c.demoPath ? `<a href="${c.demoPath}" target="_blank" class="btn btn-primary" style="flex:1; justify-content:center; font-size:0.82rem; padding:0.45rem;">Abrir 🚀</a>` : ''}
+                            <button class="btn btn-secondary" onclick="closeStudentProfileModal(); openCourseDetails('${c.id}');" style="font-size:0.82rem; padding:0.45rem 0.75rem;">Temario</button>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
     function renderProfileComicsTab(savedComicIds) {
         const normSaved = (savedComicIds || []).map(normalizeComicId);
         const savedList = (data.comics || []).filter(c => normSaved.includes(normalizeComicId(c.id)));
@@ -1302,13 +1414,16 @@ document.addEventListener('DOMContentLoaded', () => {
                             <strong>${enrolledCourses.length}</strong> Cursos Inscritos 🎓
                         </span>
                         <span class="profile-stat-badge">
-                            <strong>${savedComicIds.length}</strong> Cómics Guardados 🎨
+                            <strong>${savedCourseIds.length}</strong> Favoritos ⭐
                         </span>
                         <span class="profile-stat-badge">
-                            <strong>${savedPodcastsList.length}</strong> Podcasts Guardados 🎙️
+                            <strong>${savedComicIds.length}</strong> Cómics 🎨
                         </span>
                         <span class="profile-stat-badge">
-                            <strong>${likedItemIds.length}</strong> Átomos Me Gusta ⚛️
+                            <strong>${savedPodcastsList.length}</strong> Podcasts 🎙️
+                        </span>
+                        <span class="profile-stat-badge">
+                            <strong>${likedItemIds.length}</strong> Átomos ⚛️
                         </span>
                     </div>
                 </div>
@@ -1319,14 +1434,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button class="profile-tab-btn ${activeTab === 'courses' ? 'active' : ''}" onclick="switchProfileTab('courses')">
                     🎓 Mis Cursos (${enrolledCourses.length})
                 </button>
+                <button class="profile-tab-btn ${activeTab === 'saved_courses' ? 'active' : ''}" onclick="switchProfileTab('saved_courses')">
+                    ⭐ Cursos Guardados (${savedCourseIds.length})
+                </button>
                 <button class="profile-tab-btn ${activeTab === 'comics' ? 'active' : ''}" onclick="switchProfileTab('comics')">
-                    🎨 Cómics Guardados (${savedComicIds.length})
+                    🎨 Cómics (${savedComicIds.length})
                 </button>
                 <button class="profile-tab-btn ${activeTab === 'podcasts' ? 'active' : ''}" onclick="switchProfileTab('podcasts')">
-                    🎙️ Podcasts Guardados (${savedPodcastsList.length})
+                    🎙️ Podcasts (${savedPodcastsList.length})
                 </button>
                 <button class="profile-tab-btn ${activeTab === 'likes' ? 'active' : ''}" onclick="switchProfileTab('likes')">
-                    ⚛️ Mis 'Me Gusta' (${likedItemIds.length})
+                    ⚛️ Me Gusta (${likedItemIds.length})
                 </button>
                 <button class="profile-tab-btn ${activeTab === 'edit' ? 'active' : ''}" onclick="switchProfileTab('edit')">
                     ⚙️ Configuración
@@ -1336,6 +1454,10 @@ document.addEventListener('DOMContentLoaded', () => {
             <!-- Contenido de Pestañas -->
             <div class="profile-tab-panel ${activeTab === 'courses' ? 'active' : ''}" id="profile-tab-courses">
                 ${renderProfileCoursesTab(enrolledCourses)}
+            </div>
+
+            <div class="profile-tab-panel ${activeTab === 'saved_courses' ? 'active' : ''}" id="profile-tab-saved_courses">
+                ${renderProfileSavedCoursesTab(savedCourseIds)}
             </div>
 
             <div class="profile-tab-panel ${activeTab === 'comics' ? 'active' : ''}" id="profile-tab-comics">
@@ -2287,6 +2409,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         ${!courseUnlocked ? `<button class="btn btn-secondary btn-course-key" onclick="openCourseKeyModal('${c.id}')" title="Ingresar clave para ${c.titulo}">🔑 Clave Alumno</button>` : ''}
                         ${!courseUnlocked && c.enlaceCompra ? `<button class="btn btn-secondary" onclick="openPaymentModal('${c.id}')" style="border-color:rgba(0,234,144,0.5); color:#00EA90; display:inline-flex; align-items:center; gap:0.35rem;" title="Comprar en portal oficial Wompi (PSE / Nequi / Bancolombia)"><img src="./wompi-iso-secondary.svg" style="height:14px; width:14px;" />${buyBtnText}</button>` : ''}
                         <button class="btn btn-secondary" onclick="openCourseDetails('${c.id}')">${detailsBtnText}</button>
+                        <button class="bookmark-btn ${getSavedCourses().includes(c.id) ? 'saved' : ''}" onclick="toggleSaveCourse('${c.id}', event)" title="${getSavedCourses().includes(c.id) ? 'Quitar de guardados' : 'Guardar curso en mi espacio'}" style="padding:0.4rem 0.65rem;">
+                            <span class="bookmark-icon">🔖</span> <span class="bookmark-text" style="font-size:0.75rem;">${getSavedCourses().includes(c.id) ? 'Guardado' : 'Guardar'}</span>
+                        </button>
                         <button class="atom-like-btn ${likeInfo.liked ? 'liked' : ''}" data-atom-id="curso-${c.id}" onclick="toggleAtomLike('curso-${c.id}', 'curso', this)" title="Dar un átomo de me gusta">
                             <span class="atom-icon">⚛️</span> <span class="atom-count">${likeInfo.count}</span>
                         </button>
@@ -3743,6 +3868,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <th style="text-align:center;">Precisión</th>
                             <th style="text-align:center;">Seguridad Antifraude</th>
                             <th style="text-align:right;">Fecha / Hora</th>
+                            <th style="text-align:center;">Acción</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -3788,6 +3914,11 @@ document.addEventListener('DOMContentLoaded', () => {
                                     <td style="text-align:right; font-size:0.75rem; color:var(--text-muted); white-space:nowrap;">
                                         ${dateStr}
                                     </td>
+                                    <td style="text-align:center; white-space:nowrap;">
+                                        <button type="button" class="admin-btn-action" onclick="window.adminDeleteSingleQuizRecord('${r.id}', '${(r.studentName || 'Estudiante').replace(/'/g, "\\'")}')" title="Eliminar registro de ${r.studentName || 'este estudiante'}" style="background:rgba(239,68,68,0.12); color:#F87171; border:1px solid rgba(239,68,68,0.3); border-radius:8px; padding:0.35rem 0.65rem; font-size:0.75rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:0.25rem;">
+                                            🗑️ Eliminar
+                                        </button>
+                                    </td>
                                 </tr>
                             `;
                         }).join('')}
@@ -3803,6 +3934,97 @@ document.addEventListener('DOMContentLoaded', () => {
         if (container) {
             container.innerHTML = renderAdminQuizResultsHtml(val);
         }
+    };
+
+    window.adminDeleteSingleQuizRecord = function(recordId, studentName) {
+        if (!recordId) return;
+        const conf = confirm(
+            `🗑️ ¿Eliminar registro del estudiante?\n\n` +
+            `• Estudiante: ${studentName || 'Estudiante'}\n` +
+            `• ID Registro: ${recordId}\n\n` +
+            `Se eliminará la nota, aciertos y auditoría antifraude tanto de este dispositivo como de la base de datos en la nube (Firebase).\n\n¿Deseas continuar?`
+        );
+        if (!conf) return;
+
+        // 1. Eliminar de localStorage
+        try {
+            const local = getStoredQuizResults();
+            const filtered = local.filter(r => r && r.id !== recordId);
+            localStorage.setItem('physicsailab_quiz_results', JSON.stringify(filtered));
+            localStorage.setItem('physicsailab_quiz_results_list', JSON.stringify(filtered));
+        } catch(e) {
+            console.warn('Error deleting from localStorage:', e);
+        }
+
+        // 2. Eliminar de cache en memoria
+        if (window.adminTelemetryCache && window.adminTelemetryCache.quizResults) {
+            delete window.adminTelemetryCache.quizResults[recordId];
+            if (Array.isArray(window.adminTelemetryCache.quizResults)) {
+                window.adminTelemetryCache.quizResults = window.adminTelemetryCache.quizResults.filter(r => r && r.id !== recordId);
+            }
+        }
+
+        // 3. Eliminar de Firebase Realtime Database
+        fetch(`${FIREBASE_BASE}/quiz_results/${recordId}.json`, {
+            method: 'DELETE'
+        }).catch(err => console.warn('Cloud delete error:', err));
+
+        // 4. Actualizar tabla
+        const container = document.getElementById('admin-quiz-table-container');
+        if (container) {
+            container.innerHTML = renderAdminQuizResultsHtml(window.adminTelemetryCache.quizFilterQuery || '');
+        }
+
+        showToast(`🗑️ Registro de <strong>${studentName || 'Estudiante'}</strong> eliminado exitosamente.`);
+    };
+
+    window.adminClearAllQuizRecords = function() {
+        const cloudResults = window.adminTelemetryCache && window.adminTelemetryCache.quizResults 
+            ? Object.values(window.adminTelemetryCache.quizResults) 
+            : [];
+        const localResults = getStoredQuizResults();
+        const map = new Map();
+        [...cloudResults, ...localResults].forEach(item => {
+            if (item && item.id) map.set(item.id, item);
+        });
+        const count = map.size;
+
+        if (count === 0) {
+            showToast('ℹ️ No hay registros de quizes para eliminar.');
+            return;
+        }
+
+        const conf = confirm(
+            `⚠️ ATENCIÓN: ACCIÓN IRREVERSIBLE\n\n` +
+            `¿Estás seguro de que deseas ELIMINAR TODOS los ${count} registros de estudiantes evaluados en quizes?\n\n` +
+            `Se borrarán permanentemente las notas, aciertos y auditorías antifraude en la nube (Firebase) y en este navegador.\n\n` +
+            `Presiona Aceptar para confirmar el borrado total.`
+        );
+        if (!conf) return;
+
+        // 1. Limpiar localStorage
+        try {
+            localStorage.removeItem('physicsailab_quiz_results');
+            localStorage.removeItem('physicsailab_quiz_results_list');
+        } catch(e) {}
+
+        // 2. Limpiar cache en memoria
+        if (window.adminTelemetryCache) {
+            window.adminTelemetryCache.quizResults = {};
+        }
+
+        // 3. Limpiar en Firebase RTDB
+        fetch(`${FIREBASE_BASE}/quiz_results.json`, {
+            method: 'DELETE'
+        }).catch(err => console.warn('Cloud bulk delete error:', err));
+
+        // 4. Actualizar tabla
+        const container = document.getElementById('admin-quiz-table-container');
+        if (container) {
+            container.innerHTML = renderAdminQuizResultsHtml('');
+        }
+
+        showToast(`🗑️ Se han eliminado todos los registros (${count}) de la planilla de quizes.`);
     };
 
     window.adminSaveQuizConfig = function() {
@@ -4316,9 +4538,17 @@ document.addEventListener('DOMContentLoaded', () => {
                         <h5 style="color:#e2e8f0; font-size:0.95rem; margin:0; display:flex; align-items:center; gap:0.4rem;">
                             📊 Planilla de Estudiantes Evaluados
                         </h5>
-                        <div class="admin-search-box" style="margin:0; max-width:320px;">
-                            <span class="admin-search-icon">🔍</span>
-                            <input type="text" id="admin-quiz-search-input" class="admin-search-input" placeholder="Buscar por estudiante, curso o PIN..." oninput="window.filterAdminQuizTable(this.value)" value="${window.adminTelemetryCache.quizFilterQuery || ''}">
+                        <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+                            <button type="button" class="btn btn-secondary" onclick="window.adminDownloadQuizCsv()" style="font-size:0.78rem; padding:0.35rem 0.75rem;" title="Exportar calificaciones a formato CSV para Excel">
+                                📥 Exportar CSV
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="window.adminClearAllQuizRecords()" style="font-size:0.78rem; padding:0.35rem 0.75rem; border-color:rgba(239,68,68,0.45); color:#F87171; background:rgba(239,68,68,0.08); font-weight:700;" title="Eliminar todos los registros de estudiantes evaluados">
+                                🗑️ Borrar Todos los Registros
+                            </button>
+                            <div class="admin-search-box" style="margin:0; max-width:280px;">
+                                <span class="admin-search-icon">🔍</span>
+                                <input type="text" id="admin-quiz-search-input" class="admin-search-input" placeholder="Buscar por estudiante, curso o PIN..." oninput="window.filterAdminQuizTable(this.value)" value="${window.adminTelemetryCache.quizFilterQuery || ''}">
+                            </div>
                         </div>
                     </div>
 
