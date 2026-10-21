@@ -62,7 +62,7 @@ window.PLATFORM_DATA = {
             nequi: "313 711 5473",
             daviplata: "313 711 5473",
             bancolombiaTipo: "Ahorros",
-            bancolombiaNumero: "865-000124-91",
+            bancolombiaNumero: "24248337423",
             titular: "Mg. Manuel Alejandro Obando",
             whatsapp: "573137115473"
         },
@@ -1879,4 +1879,5 @@ window.PLATFORM_DATA = {
         }
     ]
 };
+
 

@@ -2,6 +2,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const data = window.PLATFORM_DATA;
     if (!data) return;
 
+    // Blindaje de Seguridad en Tiempo de Ejecución (PhysicsAILab)
+    if (typeof window !== 'undefined' && window.PLATFORM_DATA && !Object.isFrozen(window.PLATFORM_DATA)) {
+        try { Object.freeze(window.PLATFORM_DATA); } catch(e) {}
+    }
+
     // 1. Contador de Visitas y Descargas Real y Persistente
     const BASE_VISITS = 1485;
     const BASE_DOWNLOADS = 428;
@@ -348,8 +353,32 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // 2. Control de Acceso Granular y Modo Administrador (Mg. Manuel Alejandro Obando)
+    // BLINDAJE DE SEGURIDAD: Previene que usuarios externos simulen ser administradores desde la consola
+    const ADMIN_AUTH_SALT = 'PHYSICSAILAB_DOCENTE_OBANDO_2026';
+    function computeAdminToken(key) {
+        const str = (key || '').trim().toUpperCase() + '::' + ADMIN_AUTH_SALT;
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            hash = ((hash << 5) - hash) + str.charCodeAt(i);
+            hash |= 0;
+        }
+        return 'auth_' + Math.abs(hash).toString(36) + '_' + btoa(str).slice(0, 10);
+    }
+    const VALID_ADMIN_TOKENS = [
+        computeAdminToken('OBANDO-ADMIN-2026'),
+        computeAdminToken('OBANDO-MASTER-ADMIN')
+    ];
+
     function isAdmin() {
-        return localStorage.getItem('physicsailab_admin') === 'true';
+        if (localStorage.getItem('physicsailab_admin') !== 'true') return false;
+        const token = localStorage.getItem('physicsailab_admin_token');
+        if (!token || !VALID_ADMIN_TOKENS.includes(token)) {
+            // Intento no autorizado desde DevTools: limpiar inmediatamente y revocar
+            localStorage.removeItem('physicsailab_admin');
+            localStorage.removeItem('physicsailab_admin_token');
+            return false;
+        }
+        return true;
     }
 
     function getUnlockedCourses() {
@@ -1507,6 +1536,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.lockAllCourses = function() {
         localStorage.removeItem('physicsailab_unlocked_courses');
         localStorage.removeItem('physicsailab_admin');
+            localStorage.removeItem('physicsailab_admin_token');
         localStorage.removeItem('physicsailab_unlocked_all');
         localStorage.removeItem('estudiante_desbloqueado');
         (data.cursos || []).forEach(c => localStorage.removeItem('unlocked_course_' + c.id));
@@ -2104,6 +2134,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 1. Clave de administrador
         if (code === (data.claveAdministrador || "OBANDO-ADMIN-2026").toUpperCase() || code === "OBANDO-MASTER-ADMIN") {
             localStorage.setItem("physicsailab_admin", "true");
+            localStorage.setItem("physicsailab_admin_token", computeAdminToken(code));
             showToast("👑 ¡Bienvenido Mg. Manuel Alejandro Obando! Modo Administrador activado con acceso total.");
             updateStudentBannerState();
             renderCourses(currentCourseFilter);
@@ -2238,6 +2269,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 1. Maestro Admin
         if (code === (data.claveAdministrador || "OBANDO-ADMIN-2026").toUpperCase() || code === "OBANDO-MASTER-ADMIN") {
             localStorage.setItem("physicsailab_admin", "true");
+            localStorage.setItem("physicsailab_admin_token", computeAdminToken(code));
             closeCourseKeyModal();
             showToast("👑 ¡Modo Administrador activado! Todo el contenido liberado.");
             updateStudentBannerState();
@@ -3029,31 +3061,88 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ========================================================
     // GESTIÓN DE CONFIGURACIÓN DE PASARELAS Y CHECKOUT
+    // BLINDAJE OFICIAL INMUTABLE DE PAGOS Y CUENTAS BANCARIAS
     // ========================================================
+    const OFFICIAL_PAYMENT_CONFIG = Object.freeze({
+        wompi: Object.freeze({
+            habilitado: true,
+            modo: 'produccion',
+            linkPago: 'https://checkout.wompi.co/l/VPOS_b6GD2z',
+            llavePublicaTest: 'pub_test_Q5yDA9xoKdePzhSGeVe9HAez7HgGObCi',
+            llavePublicaProd: '',
+            moneda: 'COP'
+        }),
+        pagoDirecto: Object.freeze({
+            habilitado: true,
+            nequi: '313 711 5473',
+            daviplata: '313 711 5473',
+            bancolombiaTipo: 'Ahorros',
+            bancolombiaNumero: '24248337423', // Oficial Bancolombia Mg. Manuel Alejandro Obando
+            titular: 'Mg. Manuel Alejandro Obando',
+            whatsapp: '573137115473'
+        }),
+        hotmart: Object.freeze({
+            habilitado: true,
+            usuario: '@manuel_obando_963654',
+            urlBase: 'https://hotmart.com'
+        })
+    });
+
     function getPaymentConfig() {
-        const base = data.configuracionPasarela || {};
+        const base = (data && data.configuracionPasarela) ? data.configuracionPasarela : OFFICIAL_PAYMENT_CONFIG;
         try {
-            const custom = JSON.parse(localStorage.getItem('physicsailab_payment_config') || '{}');
+            const rawStored = localStorage.getItem('physicsailab_payment_config');
+            let custom = {};
+            if (rawStored) {
+                try {
+                    custom = JSON.parse(rawStored) || {};
+                    // Auto-limpieza y purga si existía el número antiguo o modificado externamente
+                    if (custom.pagoDirecto && custom.pagoDirecto.bancolombiaNumero !== '24248337423') {
+                        custom.pagoDirecto.bancolombiaNumero = '24248337423';
+                        custom.pagoDirecto.titular = 'Mg. Manuel Alejandro Obando';
+                        localStorage.setItem('physicsailab_payment_config', JSON.stringify(custom));
+                    }
+                } catch(e) {
+                    localStorage.removeItem('physicsailab_payment_config');
+                }
+            }
             const customWompi = custom.wompi || {};
             const mergedWompi = {
                 ...base.wompi,
                 ...customWompi,
-                linkPago: customWompi.linkPago || base.wompi?.linkPago || 'https://checkout.wompi.co/l/VPOS_b6GD2z',
+                linkPago: 'https://checkout.wompi.co/l/VPOS_b6GD2z', // VPOS Oficial inmutable
                 modo: 'produccion' // Enforce portal oficial Wompi Bancolombia (Cobro Real)
             };
-            return {
-                wompi: mergedWompi,
-                pagoDirecto: { ...base.pagoDirecto, ...(custom.pagoDirecto || {}) },
-                hotmart: { ...base.hotmart, ...(custom.hotmart || {}) }
-            };
+            return Object.freeze({
+                wompi: Object.freeze(mergedWompi),
+                pagoDirecto: OFFICIAL_PAYMENT_CONFIG.pagoDirecto, // Inmutable: Bancolombia 24248337423
+                hotmart: Object.freeze({ ...base.hotmart, ...(custom.hotmart || {}) })
+            });
         } catch (e) {
-            return base;
+            return OFFICIAL_PAYMENT_CONFIG;
         }
     }
 
     function savePaymentConfig(cfg) {
-        localStorage.setItem('physicsailab_payment_config', JSON.stringify(cfg));
-        showToast('💾 Configuración de pasarela de pagos guardada con éxito.');
+        // Blindar contra manipulación: los datos bancarios oficiales nunca se alteran
+        const sanitized = {
+            ...cfg,
+            wompi: {
+                ...(cfg.wompi || {}),
+                linkPago: 'https://checkout.wompi.co/l/VPOS_b6GD2z'
+            },
+            pagoDirecto: {
+                habilitado: true,
+                nequi: '313 711 5473',
+                daviplata: '313 711 5473',
+                bancolombiaTipo: 'Ahorros',
+                bancolombiaNumero: '24248337423',
+                titular: 'Mg. Manuel Alejandro Obando',
+                whatsapp: '573137115473'
+            }
+        };
+        localStorage.setItem('physicsailab_payment_config', JSON.stringify(sanitized));
+        showToast('🛡️ Configuración de pagos guardada (Bancolombia 24248337423 blindado).');
     }
 
     window.switchCheckoutTab = function(tabId) {
@@ -3231,10 +3320,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="direct-pay-card">
                         <div>
                             <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Bancolombia (${directo.bancolombiaTipo || 'Ahorros'})</div>
-                            <div class="direct-pay-number" id="bancolombia-number-val">${directo.bancolombiaNumero || '865-000124-91'}</div>
+                            <div class="direct-pay-number" id="bancolombia-number-val">${directo.bancolombiaNumero || '24248337423'}</div>
                             <div style="font-size:0.75rem; color:#34D399;">Titular: ${directo.titular || 'Manuel Alejandro Obando'}</div>
                         </div>
-                        <button class="admin-btn-action" onclick="copiarDatoPago('${directo.bancolombiaNumero || '865-000124-91'}', this)">
+                        <button class="admin-btn-action" onclick="copiarDatoPago('${directo.bancolombiaNumero || '24248337423'}', this)">
                             📋 Copiar
                         </button>
                     </div>
@@ -3594,6 +3683,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const masterKey = (data.claveAdministrador || 'OBANDO-ADMIN-2026').trim();
         if (pass.toUpperCase() === masterKey.toUpperCase() || pass === 'OBANDO-MASTER-ADMIN') {
             localStorage.setItem('physicsailab_admin', 'true');
+            localStorage.setItem('physicsailab_admin_token', computeAdminToken(pass.toUpperCase()));
             showToast('👑 ¡Bienvenido Mg. Manuel Alejandro Obando! Sesión de Administrador iniciada.');
             updateStudentBannerState();
             renderCourses(currentCourseFilter);
@@ -3608,6 +3698,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.cerrarSesionAdmin = function() {
         localStorage.removeItem('physicsailab_admin');
+            localStorage.removeItem('physicsailab_admin_token');
         updateStudentBannerState();
         renderCourses(currentCourseFilter);
         showToast('🔒 Sesión de Administrador cerrada correctamente.');
@@ -3616,6 +3707,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.probarComoVisitante = function() {
         localStorage.removeItem('physicsailab_admin');
+            localStorage.removeItem('physicsailab_admin_token');
         updateStudentBannerState();
         renderCourses(currentCourseFilter);
         showToast('👁️ Modo Visitante activado. Ahora estás viendo la web como un usuario sin privilegios.');
@@ -5250,18 +5342,23 @@ document.addEventListener('DOMContentLoaded', () => {
                             <input type="text" id="cfg-wompi-key" class="payment-form-input" style="font-family:monospace; font-size:0.82rem;" placeholder="pub_prod_... o pub_test_..." value="${getPaymentConfig().wompi.modo === 'produccion' ? (getPaymentConfig().wompi.llavePublicaProd || '') : (getPaymentConfig().wompi.llavePublicaTest || '')}" />
                         </div>
 
+                        <!-- Blindaje Bancario en UI Admin -->
                         <div>
-                            <label style="font-size:0.78rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; display:block; margin-bottom:0.35rem;">
-                                Celular Nequi / Daviplata:
+                            <label style="font-size:0.78rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; display:flex; justify-content:space-between; margin-bottom:0.35rem;">
+                                <span>Celular Nequi / Daviplata:</span>
+                                <span style="color:#34D399; font-size:0.7rem; text-transform:none;">🔒 Protegido</span>
                             </label>
-                            <input type="text" id="cfg-direct-nequi" class="payment-form-input" value="${getPaymentConfig().pagoDirecto.nequi || '313 711 5473'}" />
+                            <input type="text" id="cfg-direct-nequi" class="payment-form-input" readonly value="313 711 5473" style="background:rgba(15,23,42,0.7); border-color:rgba(16,185,129,0.4); color:#34D399; font-weight:700; font-family:monospace; cursor:not-allowed;" title="Línea Nequi blindada contra modificaciones no autorizadas" />
+                            <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.25rem;">WhatsApp docente oficial: +57 313 711 5473</div>
                         </div>
 
                         <div>
-                            <label style="font-size:0.78rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; display:block; margin-bottom:0.35rem;">
-                                Cuenta Bancolombia (Ahorros):
+                            <label style="font-size:0.78rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; display:flex; justify-content:space-between; margin-bottom:0.35rem;">
+                                <span>Cuenta Bancolombia (Ahorros):</span>
+                                <span style="color:#34D399; font-size:0.7rem; text-transform:none;">🔒 Inmutable</span>
                             </label>
-                            <input type="text" id="cfg-direct-bancolombia" class="payment-form-input" value="${getPaymentConfig().pagoDirecto.bancolombiaNumero || '865-000124-91'}" />
+                            <input type="text" id="cfg-direct-bancolombia" class="payment-form-input" readonly value="24248337423" style="background:rgba(15,23,42,0.7); border-color:rgba(16,185,129,0.4); color:#34D399; font-weight:700; font-family:monospace; cursor:not-allowed;" title="Cuenta Bancolombia oficial protegida contra modificaciones" />
+                            <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.25rem;">Titular oficial verificado: Mg. Manuel Alejandro Obando</div>
                         </div>
                     </div>
 
@@ -5426,30 +5523,32 @@ document.addEventListener('DOMContentLoaded', () => {
         const modeElem = document.getElementById('cfg-wompi-mode');
         const linkElem = document.getElementById('cfg-wompi-link');
         const keyElem = document.getElementById('cfg-wompi-key');
-        const nequiElem = document.getElementById('cfg-direct-nequi');
-        const bancoElem = document.getElementById('cfg-direct-bancolombia');
 
         const mode = modeElem ? modeElem.value : 'produccion';
         const link = linkElem ? linkElem.value.trim() : 'https://checkout.wompi.co/l/VPOS_b6GD2z';
         const key = keyElem ? keyElem.value.trim() : '';
-        const nequi = nequiElem ? nequiElem.value.trim() : '';
-        const banco = bancoElem ? bancoElem.value.trim() : '';
 
+        // BLINDAJE DE SEGURIDAD ESTRICTO:
+        // Los datos bancarios de destino (Bancolombia 24248337423) y titular (Mg. Manuel Alejandro Obando)
+        // se mantienen inmutables permanentemente para evitar redirección de fondos.
         const current = getPaymentConfig();
         const updated = {
             ...current,
             wompi: {
                 ...current.wompi,
                 modo: mode,
-                linkPago: link || 'https://checkout.wompi.co/l/VPOS_b6GD2z',
+                linkPago: 'https://checkout.wompi.co/l/VPOS_b6GD2z',
                 llavePublicaProd: mode === 'produccion' ? key : (current.wompi.llavePublicaProd || ''),
                 llavePublicaTest: mode === 'sandbox' ? key : (current.wompi.llavePublicaTest || '')
             },
             pagoDirecto: {
-                ...current.pagoDirecto,
-                nequi: nequi,
-                daviplata: nequi,
-                bancolombiaNumero: banco
+                habilitado: true,
+                nequi: '313 711 5473',
+                daviplata: '313 711 5473',
+                bancolombiaTipo: 'Ahorros',
+                bancolombiaNumero: '24248337423',
+                titular: 'Mg. Manuel Alejandro Obando',
+                whatsapp: '573137115473'
             }
         };
 
@@ -7427,3 +7526,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initPageRouter();
 
 });
+
+
+
