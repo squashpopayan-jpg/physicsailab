@@ -3675,35 +3675,105 @@ document.addEventListener('DOMContentLoaded', () => {
         return map[id] || id;
     }
 
-    function renderAdminProfilesHtml(profilesObj, query = '') {
-        const list = Object.values(profilesObj || {});
-        if (list.length === 0) {
+
+    // ========================================================
+    // ANALIZADOR DE CALIDAD DE PERFILES ESTUDIANTILES (REALES VS FALSOS)
+    // ========================================================
+    window.analyzeProfileQuality = function(p) {
+        if (!p) return { isReal: false, reason: 'Sin datos', badgeColor: '#f87171', badgeBg: 'rgba(239,68,68,0.15)', label: 'Sin datos' };
+        const name = (p.name || '').trim();
+        const nameLower = name.toLowerCase();
+
+        // 1. Docente / Administrador
+        if (p.role === 'docente' || nameLower.includes('obando') || nameLower.includes('profesor') || nameLower.includes('docente') || nameLower.includes('admin')) {
+            return { isReal: true, isDocente: true, label: 'Docente / Admin', badgeColor: '#c084fc', badgeBg: 'rgba(192,132,252,0.18)' };
+        }
+
+        // 2. Nombres por defecto sin editar
+        if (!name || name === 'Estudiante Universitario' || name === 'Estudiante' || name === 'Alumno') {
+            return { isReal: false, isDocente: false, reason: 'Nombre genérico por defecto', badgeColor: '#f87171', badgeBg: 'rgba(239,68,68,0.15)', label: '⚠️ Por Defecto / Falso' };
+        }
+
+        // 3. Demasiado corto (< 3 caracteres)
+        if (name.length < 3) {
+            return { isReal: false, isDocente: false, reason: 'Nombre menor a 3 caracteres', badgeColor: '#f87171', badgeBg: 'rgba(239,68,68,0.15)', label: '⚠️ Nombre Inválido' };
+        }
+
+        // 4. Palabras de prueba, relleno o spam
+        const fakeWords = [
+            'test', 'prueba', 'asdf', 'qwerty', '123', 'fake', 'anonimo', 'anónimo',
+            'usuario', 'xxx', 'null', 'undefined', 'demo', 'falso', 'prueba1', 'asd',
+            'hola', 'none', 'nada', 'ninguno', 'aaa', 'zzz', 'qwe', 'zxc'
+        ];
+        for (const w of fakeWords) {
+            if (nameLower === w || nameLower.startsWith(w + ' ') || nameLower.endsWith(' ' + w) || nameLower.includes(w)) {
+                return { isReal: false, isDocente: false, reason: 'Texto de prueba o temporal', badgeColor: '#f87171', badgeBg: 'rgba(239,68,68,0.15)', label: '⚠️ Perfil de Prueba' };
+            }
+        }
+
+        // 5. Caracteres repetidos (ej. "aaaaaa", "111111")
+        if (/^(.)\1{2,}$/.test(nameLower)) {
+            return { isReal: false, isDocente: false, reason: 'Caracteres repetidos sin sentido', badgeColor: '#f87171', badgeBg: 'rgba(239,68,68,0.15)', label: '⚠️ Texto Repetido' };
+        }
+
+        // 6. Sin espacios y muchas consonantes seguidas
+        if (!name.includes(' ') && /[bcdfghjklmnpqrstvwxyz]{5,}/i.test(name)) {
+            return { isReal: false, isDocente: false, reason: 'Nombre aparentemente falso', badgeColor: '#f87171', badgeBg: 'rgba(239,68,68,0.15)', label: '⚠️ Sospechoso' };
+        }
+
+        // 7. Es un perfil real válido
+        return { isReal: true, isDocente: false, label: '🟢 Perfil Real Verificado', badgeColor: '#34d399', badgeBg: 'rgba(16,185,129,0.15)' };
+    };
+
+    function renderAdminProfilesHtml(profilesObj, query = '', qualityFilter = 'all') {
+        const entries = Object.entries(profilesObj || {});
+        if (entries.length === 0) {
             return `
-                <div style="grid-column: 1 / -1; background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px; padding: 2rem; text-align: center; color: var(--text-muted); font-size: 0.9rem;">
-                    <span style="font-size: 2rem; display: block; margin-bottom: 0.5rem;">👥</span>
-                    Cargando perfiles estudiantiles sincronizados desde la nube...
+                <div style="grid-column: 1 / -1; background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px; padding: 2.5rem 1.5rem; text-align: center; color: var(--text-muted); font-size: 0.92rem;">
+                    <span style="font-size: 2.2rem; display: block; margin-bottom: 0.5rem;">👥</span>
+                    No hay perfiles estudiantiles registrados actualmente en la base de datos.
                 </div>
             `;
         }
 
         const q = (query || '').toLowerCase().trim();
-        const filtered = list.filter(p => {
+        const qf = qualityFilter || (window.adminTelemetryCache && window.adminTelemetryCache.profileQualityFilter) || 'all';
+
+        const processedList = entries.map(([key, p]) => {
+            const item = Object.assign({}, p, { _key: key, id: (p && p.id) ? p.id : key });
+            item._quality = window.analyzeProfileQuality(item);
+            return item;
+        });
+
+        const filtered = processedList.filter(p => {
+            // Filtro por calidad (Real vs Falso)
+            if (qf === 'real' && !p._quality.isReal) return false;
+            if (qf === 'fake' && p._quality.isReal) return false;
+
+            // Filtro por término de búsqueda
             if (!q) return true;
             const name = (p.name || '').toLowerCase();
             const career = (p.career || '').toLowerCase();
             const inst = (p.institution || '').toLowerCase();
-            return name.includes(q) || career.includes(q) || inst.includes(q);
+            const id = (p.id || '').toLowerCase();
+            return name.includes(q) || career.includes(q) || inst.includes(q) || id.includes(q);
         });
 
         if (filtered.length === 0) {
+            const filterLabel = qf === 'real' ? 'reales' : (qf === 'fake' ? 'falsos o de prueba' : '');
             return `
-                <div style="grid-column: 1 / -1; background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px; padding: 2rem; text-align: center; color: var(--text-muted); font-size: 0.9rem;">
-                    No se encontraron perfiles que coincidan con "<strong>${query}</strong>".
+                <div style="grid-column: 1 / -1; background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px; padding: 2.5rem 1.5rem; text-align: center; color: var(--text-muted); font-size: 0.92rem;">
+                    No se encontraron perfiles ${filterLabel} que coincidan con la búsqueda.
                 </div>
             `;
         }
 
         filtered.sort((a, b) => {
+            if (a._quality.isDocente && !b._quality.isDocente) return -1;
+            if (!a._quality.isDocente && b._quality.isDocente) return 1;
+            if (a._quality.isReal && !b._quality.isReal) return -1;
+            if (!a._quality.isReal && b._quality.isReal) return 1;
+
             const timeA = new Date(a.lastActive || a.updatedAt || a.createdAt || 0).getTime();
             const timeB = new Date(b.lastActive || b.updatedAt || b.createdAt || 0).getTime();
             return timeB - timeA;
@@ -3711,34 +3781,53 @@ document.addEventListener('DOMContentLoaded', () => {
 
         return filtered.map(p => {
             const enrolled = Array.isArray(p.enrolledCourses) ? p.enrolledCourses : [];
-            const isDocente = p.role === 'docente' || (p.name || '').toLowerCase().includes('obando');
             const lastActiveStr = formatRelativeTime(p.lastActive || p.updatedAt || p.createdAt);
+            const quality = p._quality;
+            const safeName = (p.name || 'Estudiante').replace(/'/g, "\\'");
+            const safeKey = p._key || p.id;
 
             return `
-                <div class="admin-student-card">
+                <div class="admin-student-card" style="background:#0b1120; border:1px solid ${quality.isReal ? 'rgba(56,189,248,0.22)' : 'rgba(239,68,68,0.32)'}; border-radius:12px; padding:1.15rem; display:flex; flex-direction:column; justify-content:space-between; gap:0.85rem; box-shadow:0 4px 15px rgba(0,0,0,0.25);">
                     <div>
-                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
-                            <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                <div class="admin-student-avatar">${p.avatar || '⚛️'}</div>
+                        <!-- Cabecera del Estudiante -->
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.5rem; margin-bottom:0.75rem;">
+                            <div style="display:flex; align-items:center; gap:0.75rem;">
+                                <div class="admin-student-avatar" style="font-size:1.8rem; width:46px; height:46px; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.06); border-radius:10px; border:1px solid rgba(255,255,255,0.1);">
+                                    ${p.avatar || '⚛️'}
+                                </div>
                                 <div>
-                                    <h5 style="color: #fff; font-size: 1rem; margin: 0 0 0.2rem; font-weight: 700; display: flex; align-items: center; gap: 0.4rem;">
-                                        ${p.name || 'Estudiante'}
-                                        ${isDocente ? '<span class="admin-badge" style="font-size:0.65rem; padding:0.1rem 0.4rem;">Docente</span>' : ''}
+                                    <h5 style="color:#ffffff; font-size:1.02rem; margin:0 0 0.25rem; font-weight:700; display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap;">
+                                        ${p.name || 'Estudiante Universitario'}
+                                        ${quality.isDocente ? '<span class="admin-badge" style="font-size:0.65rem; padding:0.15rem 0.45rem;">Docente</span>' : ''}
                                     </h5>
-                                    <div style="font-size: 0.78rem; color: #A5B4FC; font-weight: 600;">${p.career || 'Física / Ingeniería'}</div>
+                                    <div style="display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap;">
+                                        <span class="badge" style="background:${quality.badgeBg}; color:${quality.badgeColor}; border:1px solid ${quality.badgeColor}40; font-size:0.68rem; padding:0.15rem 0.5rem; font-weight:700;">
+                                            ${quality.label}
+                                        </span>
+                                        ${!quality.isReal ? `<span style="font-size:0.72rem; color:#fca5a5;">(${quality.reason})</span>` : ''}
+                                    </div>
                                 </div>
                             </div>
+
+                            <!-- Botón Eliminar Perfil Individual -->
+                            <button type="button" class="btn btn-secondary" onclick="window.adminDeleteStudentProfile('${safeKey}', '${safeName}')" style="font-size:0.75rem; padding:0.35rem 0.65rem; border-color:rgba(239,68,68,0.4); color:#F87171; background:rgba(239,68,68,0.08); font-weight:700; border-radius:6px; cursor:pointer; display:inline-flex; align-items:center; gap:0.3rem;" title="Eliminar este perfil del directorio">
+                                🗑️ Eliminar
+                            </button>
                         </div>
 
-                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.35rem;">
+                        <div style="font-size:0.82rem; color:#cbd5e1; margin-bottom:0.35rem; display:flex; align-items:center; gap:0.4rem;">
+                            <span>🎓</span> <strong style="color:#A5B4FC;">${p.career || 'Física / Ingeniería'}</strong>
+                        </div>
+                        <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:0.75rem; display:flex; align-items:center; gap:0.4rem;">
                             <span>🏛️</span> <span>${p.institution || 'Universidad del Cauca'}</span>
                         </div>
 
-                        <div style="margin-bottom: 0.75rem;">
-                            <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 0.35rem; letter-spacing: 0.4px;">
+                        <!-- Cursos / Materias Inscritas -->
+                        <div style="margin-bottom:0.75rem; background:rgba(255,255,255,0.02); padding:0.6rem; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
+                            <div style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; margin-bottom:0.35rem; letter-spacing:0.4px;">
                                 Materias Desbloqueadas (${enrolled.length}):
                             </div>
-                            <div style="display: flex; flex-wrap: wrap; gap: 0.25rem;">
+                            <div style="display:flex; flex-wrap:wrap; gap:0.25rem;">
                                 ${enrolled.length > 0 ? enrolled.map(cId => `
                                     <span class="admin-student-course-pill" title="${cId}">
                                         ✓ ${getCourseTitleById(cId)}
@@ -3748,16 +3837,17 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     </div>
 
+                    <!-- Footer Métricas y Actividad -->
                     <div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.4rem 0.6rem; font-size: 0.74rem; color: var(--text-muted); margin-bottom: 0.6rem;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:0.4rem 0.6rem; font-size:0.74rem; color:var(--text-muted); margin-bottom:0.6rem;">
                             <span>👁️ <strong>${p.totalVisits || 1}</strong> visitas</span>
                             <span>🎨 <strong>${p.savedComicsCount || 0}</strong> cómics</span>
                             <span>❤️ <strong>${p.totalLikes || 0}</strong> likes</span>
                         </div>
 
-                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.72rem; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 0.5rem;">
-                            <span style="color: var(--text-muted);">${p.device || 'Navegador Web'}</span>
-                            <span style="color: #34D399; font-weight: 600;">⏱️ ${lastActiveStr}</span>
+                        <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.72rem; border-top:1px solid rgba(255,255,255,0.06); padding-top:0.5rem; flex-wrap:wrap; gap:0.3rem;">
+                            <span style="color:var(--text-muted);">${p.device || 'Navegador Web'}</span>
+                            <span style="color:#34D399; font-weight:600;">⏱️ ${lastActiveStr}</span>
                         </div>
                     </div>
                 </div>
@@ -3907,7 +3997,9 @@ document.addEventListener('DOMContentLoaded', () => {
             input.focus();
             return;
         }
-        setQuizPassword(quizId, pin);
+                setQuizPassword(quizId, pin);
+        const pinBadge = document.getElementById(`admin-pin-badge-${quizId}`);
+        if (pinBadge) pinBadge.textContent = pin;
         const qData = window.QUIZZES_DATA;
         const preset = qData ? qData.presets.find(p => p.id === quizId) : null;
         const title = preset ? preset.title : quizId;
@@ -3941,6 +4033,172 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast(`💾 Se guardaron correctamente las contraseñas de las ${updatedCount} evaluaciones.`);
         logRealActivity(`Docente guardó todas las contraseñas de los quizzes (${updatedCount} evaluaciones)`, 'admin');
     };
+
+    
+    // ========================================================
+    // FUNCIONES DE CONTROL DOCENTE DE PERFILES Y QUIZZES
+    // ========================================================
+    window.filterAdminProfileQuality = function(quality, btn) {
+        window.adminTelemetryCache.profileQualityFilter = quality;
+        if (btn && btn.parentElement) {
+            btn.parentElement.querySelectorAll('.admin-btn-action').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+        const container = document.getElementById('admin-student-profiles-container');
+        if (container) {
+            container.innerHTML = renderAdminProfilesHtml(
+                window.adminTelemetryCache.profiles, 
+                window.adminTelemetryCache.studentSearchQuery || '', 
+                quality
+            );
+        }
+    };
+
+    window.updateAdminProfilesView = function() {
+        const profiles = window.adminTelemetryCache.profiles || {};
+        const list = Object.values(profiles);
+        const totalCount = list.length;
+        let realCount = 0;
+        let fakeCount = 0;
+
+        list.forEach(p => {
+            if (window.analyzeProfileQuality(p).isReal) {
+                realCount++;
+            } else {
+                fakeCount++;
+            }
+        });
+
+        const headerCountEl = document.getElementById('admin-profiles-header-count');
+        const kpiProfilesCountEl = document.getElementById('admin-kpi-profiles-count');
+        const tabAllEl = document.getElementById('admin-count-tab-all');
+        const tabRealEl = document.getElementById('admin-count-tab-real');
+        const tabFakeEl = document.getElementById('admin-count-tab-fake');
+
+        if (headerCountEl) headerCountEl.textContent = `(${totalCount})`;
+        if (kpiProfilesCountEl) kpiProfilesCountEl.textContent = totalCount;
+        if (tabAllEl) tabAllEl.textContent = `(${totalCount})`;
+        if (tabRealEl) tabRealEl.textContent = `(${realCount})`;
+        if (tabFakeEl) tabFakeEl.textContent = `(${fakeCount})`;
+
+        const container = document.getElementById('admin-student-profiles-container');
+        if (container) {
+            container.innerHTML = renderAdminProfilesHtml(
+                window.adminTelemetryCache.profiles, 
+                window.adminTelemetryCache.studentSearchQuery || '', 
+                window.adminTelemetryCache.profileQualityFilter || 'all'
+            );
+        }
+    };
+
+    window.adminDeleteStudentProfile = function(studentId, studentName) {
+        if (!studentId) return;
+        const confirmMsg = `¿Estás seguro de eliminar el perfil de "${studentName || 'este estudiante'}"?\n\nEsta acción eliminará su registro de la base de datos y del directorio de la plataforma.`;
+        if (!confirm(confirmMsg)) return;
+
+        fetch(`${FIREBASE_BASE}/profiles/${studentId}.json`, {
+            method: 'DELETE'
+        }).catch(err => console.warn('Cloud delete error:', err));
+
+        if (window.adminTelemetryCache && window.adminTelemetryCache.profiles) {
+            delete window.adminTelemetryCache.profiles[studentId];
+        }
+
+        try {
+            const localId = localStorage.getItem('physicsailab_student_id');
+            if (localId === studentId) {
+                localStorage.removeItem('physicsailab_student_profile');
+            }
+        } catch(e) {}
+
+        window.updateAdminProfilesView();
+        showToast(`🗑️ Perfil de <strong>${studentName || 'Estudiante'}</strong> eliminado exitosamente.`);
+        logRealActivity(`Docente eliminó el perfil de estudiante: ${studentName}`, 'admin');
+    };
+
+    window.adminPurgeFakeProfiles = function() {
+        const profiles = window.adminTelemetryCache.profiles || {};
+        const entries = Object.entries(profiles);
+        const fakeEntries = entries.filter(([key, p]) => {
+            const item = Object.assign({}, p, { _key: key, id: (p && p.id) ? p.id : key });
+            return !window.analyzeProfileQuality(item).isReal;
+        });
+
+        if (fakeEntries.length === 0) {
+            showToast('✅ ¡No hay perfiles falsos o de prueba! Todos los perfiles registrados son reales.');
+            return;
+        }
+
+        const confirmMsg = `¿Deseas eliminar permanentemente los ${fakeEntries.length} perfiles identificados como falsos o de prueba?\n\nEsta acción conservará únicamente los perfiles reales verificados de tus estudiantes.`;
+        if (!confirm(confirmMsg)) return;
+
+        const promises = fakeEntries.map(([key]) => {
+            return fetch(`${FIREBASE_BASE}/profiles/${key}.json`, { method: 'DELETE' }).catch(() => {});
+        });
+
+        Promise.all(promises).then(() => {
+            fakeEntries.forEach(([key]) => {
+                delete window.adminTelemetryCache.profiles[key];
+            });
+            window.updateAdminProfilesView();
+            showToast(`🧹 Se eliminaron ${fakeEntries.length} perfiles falsos/de prueba exitosamente.`);
+            logRealActivity(`Docente purgó ${fakeEntries.length} perfiles falsos/de prueba de la plataforma`, 'admin');
+        });
+    };
+
+    window.adminClearAllProfiles = function() {
+        const profiles = window.adminTelemetryCache.profiles || {};
+        const count = Object.keys(profiles).length;
+        if (count === 0) {
+            showToast('ℹ️ No hay perfiles registrados para eliminar.');
+            return;
+        }
+        if (!confirm(`⚠️ ATENCIÓN: ¿Deseas eliminar TODOS los ${count} perfiles estudiantiles registrados en la plataforma?\n\nEsta acción borrará la base de datos de perfiles por completo.`)) return;
+        if (!confirm(`⚠️ Confirmación final: ¿Realmente deseas proceder con el borrado de TODOS los perfiles?`)) return;
+
+        fetch(`${FIREBASE_BASE}/profiles.json`, {
+            method: 'DELETE'
+        }).catch(() => {});
+
+        window.adminTelemetryCache.profiles = {};
+        window.updateAdminProfilesView();
+        showToast(`🗑️ Se han eliminado todos los perfiles (${count}) del directorio.`);
+        logRealActivity(`Docente eliminó todos los perfiles estudiantiles (${count})`, 'admin');
+    };
+
+    window.adminGenerateRandomPin = function(quizId) {
+        const input = document.getElementById(`admin-pin-${quizId}`);
+        if (!input) return;
+        const prefixes = {
+            'quiz-dcl': 'DCL',
+            'electromagnetismo-10': 'EM',
+            'quiz-cinematica': 'CIN',
+            'quiz-dinamica': 'DIN',
+            'quiz-completo': 'FIS',
+            'quiz-express': 'EXP'
+        };
+        const pfx = prefixes[quizId] || 'QUIZ';
+        const num = Math.floor(100 + Math.random() * 900);
+        const newPin = `${pfx}-${num}`;
+        input.value = newPin;
+        input.focus();
+        input.select();
+        showToast(`🎲 PIN sugerido generado: <strong>${newPin}</strong>. Pulsa "Guardar PIN" para activarlo.`);
+    };
+
+    window.adminCopyOnlyPin = function(quizId) {
+        const pin = getQuizPassword(quizId);
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(pin).then(() => {
+                showToast(`📋 PIN copiado: <strong>${pin}</strong>`);
+            }).catch(() => {
+                prompt('Copia este PIN:', pin);
+            });
+        } else {
+            prompt('Copia este PIN:', pin);
+        }
+    };
+
 
     window.adminCopyWhatsAppForQuiz = function(quizId) {
         const qData = window.QUIZZES_DATA;
@@ -4444,7 +4702,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const publicVisits = BASE_VISITS + realVisits;
         const publicDownloads = BASE_DOWNLOADS + realDownloads;
 
-        const profilesCount = Object.keys(window.adminTelemetryCache.profiles || {}).length;
+        const profilesList = Object.values(window.adminTelemetryCache.profiles || {});
+        const profilesCount = profilesList.length;
+        let realCount = 0;
+        let fakeCount = 0;
+        profilesList.forEach(p => {
+            if (window.analyzeProfileQuality(p).isReal) {
+                realCount++;
+            } else {
+                fakeCount++;
+            }
+        });
 
         const userComments = getStoredComments();
         const baseComments = data.comentarios || [];
@@ -4561,25 +4829,55 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>
 
-                <!-- SECCIÓN 1: Directorio de Perfiles de Estudiantes -->
-                <div style="margin-bottom:2.25rem; background:rgba(255,255,255,0.015); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:1.25rem 1.4rem;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.75rem;">
+                <!-- SECCIÓN 1: Directorio y Administración de Perfiles de Estudiantes -->
+                <div style="margin-bottom:2.25rem; background:rgba(255,255,255,0.015); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:1.35rem 1.45rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1rem; flex-wrap:wrap; gap:0.75rem;">
                         <div>
-                            <h4 style="color:#fff; font-size:1.15rem; margin:0 0 0.25rem; display:flex; align-items:center; gap:0.5rem;">
-                                👥 Directorio de Perfiles de Estudiantes Creados <span id="admin-profiles-header-count" style="font-size:0.92rem; color:#A5B4FC; font-weight:600;">(${profilesCount})</span>
+                            <h4 style="color:#fff; font-size:1.18rem; margin:0 0 0.3rem; display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+                                👥 Directorio y Administración de Perfiles Estudiantiles 
+                                <span id="admin-profiles-header-count" style="font-size:0.92rem; color:#A5B4FC; font-weight:700;">(${profilesCount})</span>
                             </h4>
-                            <p style="font-size:0.82rem; color:var(--text-muted); margin:0;">
-                                Consulta quiénes han personalizado y guardado su perfil en la plataforma, sus carreras, materias inscritas y actividad.
+                            <p style="font-size:0.83rem; color:var(--text-muted); margin:0; line-height:1.45;">
+                                Monitorea quiénes han creado su perfil real en la plataforma, filtra perfiles de prueba o falsos y administra los registros activos.
                             </p>
                         </div>
-                        <div class="admin-search-box">
+
+                        <!-- Botones de Acción de Perfiles (Purgar falsos y Borrar todos) -->
+                        <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+                            <button type="button" class="btn btn-secondary" onclick="window.adminPurgeFakeProfiles()" style="font-size:0.78rem; padding:0.42rem 0.85rem; border-color:rgba(245,158,11,0.5); color:#fbbf24; background:rgba(245,158,11,0.1); font-weight:700; display:inline-flex; align-items:center; gap:0.35rem;" title="Eliminar automáticamente perfiles genéricos, de prueba o sospechosos conservando solo los reales">
+                                🧹 Purgar Perfiles Falsos / De Prueba
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="window.adminClearAllProfiles()" style="font-size:0.78rem; padding:0.42rem 0.85rem; border-color:rgba(239,68,68,0.45); color:#F87171; background:rgba(239,68,68,0.08); font-weight:700; display:inline-flex; align-items:center; gap:0.35rem;" title="Eliminar todos los perfiles de la base de datos">
+                                🗑️ Borrar Todos
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="window.fetchAdminCloudTelemetry(true)" style="font-size:0.78rem; padding:0.42rem 0.85rem; display:inline-flex; align-items:center; gap:0.35rem;" title="Actualizar datos desde la nube">
+                                🔄 Refrescar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Barra de Filtros (Reales vs Falsos vs Todos) y Buscador -->
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.15rem; flex-wrap:gap; gap:0.75rem; background:rgba(0,0,0,0.22); padding:0.65rem 0.85rem; border-radius:10px; border:1px solid rgba(255,255,255,0.06);">
+                        <div style="display:flex; gap:0.4rem; flex-wrap:wrap; align-items:center;" id="admin-profile-filter-tabs">
+                            <button type="button" class="admin-btn-action ${(window.adminTelemetryCache.profileQualityFilter || 'all') === 'all' ? 'active' : ''}" onclick="window.filterAdminProfileQuality('all', this)">
+                                👥 Todos <span id="admin-count-tab-all" style="opacity:0.8;">(${profilesCount})</span>
+                            </button>
+                            <button type="button" class="admin-btn-action ${window.adminTelemetryCache.profileQualityFilter === 'real' ? 'active' : ''}" onclick="window.filterAdminProfileQuality('real', this)" style="border-color:rgba(16,185,129,0.3); color:#34d399;">
+                                🟢 Solo Perfiles Reales <span id="admin-count-tab-real" style="font-weight:700;">(${realCount})</span>
+                            </button>
+                            <button type="button" class="admin-btn-action ${window.adminTelemetryCache.profileQualityFilter === 'fake' ? 'active' : ''}" onclick="window.filterAdminProfileQuality('fake', this)" style="border-color:rgba(239,68,68,0.3); color:#f87171;">
+                                ⚠️ Sospechosos / Falsos <span id="admin-count-tab-fake" style="font-weight:700;">(${fakeCount})</span>
+                            </button>
+                        </div>
+
+                        <div class="admin-search-box" style="margin:0; max-width:320px;">
                             <span class="admin-search-icon">🔍</span>
-                            <input type="text" id="admin-student-search-input" class="admin-search-input" placeholder="Buscar por nombre, carrera o universidad..." oninput="window.filterAdminStudentProfiles(this.value)" value="${window.adminTelemetryCache.studentSearchQuery || ''}">
+                            <input type="text" id="admin-student-search-input" class="admin-search-input" placeholder="Buscar por nombre, carrera, institución o ID..." oninput="window.filterAdminStudentProfiles(this.value)" value="${window.adminTelemetryCache.studentSearchQuery || ''}">
                         </div>
                     </div>
 
                     <div id="admin-student-profiles-container" class="admin-student-grid">
-                        ${renderAdminProfilesHtml(window.adminTelemetryCache.profiles, window.adminTelemetryCache.studentSearchQuery)}
+                        ${renderAdminProfilesHtml(window.adminTelemetryCache.profiles, window.adminTelemetryCache.studentSearchQuery, window.adminTelemetryCache.profileQualityFilter)}
                     </div>
                 </div>
 
@@ -4640,44 +4938,93 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     </div>
 
-                    <!-- Configuración de Contraseñas Individuales por Quiz -->
-                    <div style="margin-bottom:1.5rem; background:rgba(0,0,0,0.28); padding:1.2rem; border-radius:12px; border:1px solid rgba(255,255,255,0.07);">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;">
-                            <span style="font-size:0.85rem; font-weight:700; color:#e2e8f0; text-transform:uppercase; letter-spacing:0.7px;">
-                                🔑 Lista de Evaluaciones y sus Contraseñas de Ingreso:
-                            </span>
-                            <span style="font-size:0.75rem; color:#a78bfa; background:rgba(124,58,237,0.15); padding:0.2rem 0.6rem; border-radius:6px; border:1px solid rgba(124,58,237,0.3);">
-                                5 Quizzes Oficiales Configurados
-                            </span>
+                    <!-- Configuración de Contraseñas Individuales por Quiz (Diseño Espacioso y No Apretado) -->
+                    <div style="margin-bottom:1.75rem; background:rgba(0,0,0,0.32); padding:1.35rem 1.45rem; border-radius:14px; border:1px solid rgba(124,58,237,0.22); box-shadow:0 4px 20px rgba(0,0,0,0.25);">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; flex-wrap:wrap; gap:0.6rem; border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:0.75rem;">
+                            <div>
+                                <h5 style="color:#ffffff; font-size:1.05rem; margin:0 0 0.2rem; display:flex; align-items:center; gap:0.45rem;">
+                                    🔑 Asignación de Contraseñas / PINs de Evaluación
+                                </h5>
+                                <span style="font-size:0.8rem; color:var(--text-muted);">
+                                    Personaliza las claves de acceso para cada quiz, genera códigos aleatorios y comparte invitaciones directas por WhatsApp con tus estudiantes.
+                                </span>
+                            </div>
+                            <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+                                <span style="font-size:0.78rem; color:#c4b5fd; background:rgba(124,58,237,0.18); padding:0.25rem 0.65rem; border-radius:6px; border:1px solid rgba(124,58,237,0.35); font-weight:700;">
+                                    ${(window.QUIZZES_DATA && window.QUIZZES_DATA.presets ? window.QUIZZES_DATA.presets.length : 5)} Evaluaciones Oficiales
+                                </span>
+                                <button type="button" class="btn btn-secondary" onclick="window.adminSaveAllQuizPasswords()" style="font-size:0.78rem; padding:0.35rem 0.75rem; border-color:rgba(124,58,237,0.4); color:#c4b5fd; font-weight:700;" title="Guardar todos los cambios de contraseñas">
+                                    💾 Guardar Todos los PINs
+                                </button>
+                            </div>
                         </div>
 
-                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:0.85rem;">
+                        <!-- Lista Espaciosa y Cómoda de Evaluaciones -->
+                        <div style="display:flex; flex-direction:column; gap:1rem;">
                             ${(window.QUIZZES_DATA && window.QUIZZES_DATA.presets ? window.QUIZZES_DATA.presets : []).map(p => {
                                 const currentPwd = getQuizPassword(p.id);
                                 return `
-                                    <div style="background:#0b1120; border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:0.85rem 1rem; display:flex; flex-direction:column; justify-content:space-between; gap:0.6rem;">
-                                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.5rem;">
+                                    <div style="background:#0b1120; border:1px solid rgba(124,58,237,0.25); border-radius:12px; padding:1.15rem 1.35rem; display:flex; flex-direction:column; gap:0.95rem; box-shadow:0 3px 12px rgba(0,0,0,0.2);">
+                                        <!-- Fila Superior: Título, Metadatos y PIN Activo Actual -->
+                                        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:0.6rem;">
                                             <div>
-                                                <div style="font-size:0.72rem; color:#38bdf8; font-weight:700; text-transform:uppercase;">${p.badge || 'Quiz'}</div>
-                                                <div style="font-weight:700; color:#fff; font-size:0.9rem; line-height:1.3;">${p.title}</div>
-                                                <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">🎯 ${p.totalPreguntas} preguntas · ⏱️ ~${p.tiempoSugeridoMin} min</div>
+                                                <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.3rem;">
+                                                    <span class="badge" style="background:rgba(56,189,248,0.12); color:#38bdf8; border-color:rgba(56,189,248,0.3); font-size:0.72rem; font-weight:700;">
+                                                        ${p.badge || 'FÍSICA EVALUACIÓN'}
+                                                    </span>
+                                                    <span style="font-size:0.75rem; color:var(--text-muted);">
+                                                        ⏱️ Sugerido: ~${p.tiempoSugeridoMin || 25} min
+                                                    </span>
+                                                </div>
+                                                <h4 style="font-weight:700; color:#ffffff; font-size:1.05rem; margin:0 0 0.25rem; line-height:1.35;">
+                                                    ${p.title}
+                                                </h4>
+                                                <div style="font-size:0.8rem; color:#94a3b8; display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+                                                    <span>🎯 <strong>${p.totalPreguntas}</strong> preguntas aleatorias</span>
+                                                    <span>•</span>
+                                                    <span>🔀 Respuestas y orden barajados</span>
+                                                    <span>•</span>
+                                                    <span>🛡️ Protocolo antifraude estricto</span>
+                                                </div>
+                                            </div>
+
+                                            <!-- Indicador Visual Grande del PIN Activo -->
+                                            <div style="display:flex; align-items:center; gap:0.5rem; background:rgba(124,58,237,0.18); border:1px solid rgba(124,58,237,0.4); padding:0.4rem 0.85rem; border-radius:8px;">
+                                                <span style="font-size:0.74rem; color:#c4b5fd; text-transform:uppercase; font-weight:700;">PIN Activo:</span>
+                                                <span id="admin-pin-badge-${p.id}" style="font-family:ui-monospace, monospace; font-size:1.15rem; font-weight:800; color:#38bdf8; letter-spacing:1.5px;">${currentPwd}</span>
                                             </div>
                                         </div>
 
-                                        <div style="display:flex; gap:0.4rem; align-items:center;">
-                                            <div style="flex:1;">
-                                                <label for="admin-pin-${p.id}" style="display:block; font-size:0.68rem; color:var(--text-muted); margin-bottom:0.2rem; text-transform:uppercase;">Contraseña / PIN:</label>
-                                                <input type="text" id="admin-pin-${p.id}" value="${currentPwd}" style="width:100%; font-family:monospace; font-size:0.92rem; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; padding:0.42rem 0.6rem; background:#0f172a; border:1px solid #7c3aed; color:#c4b5fd; border-radius:6px;" maxlength="16">
+                                        <!-- Fila Inferior: Controles Espaciosos para Asignar PIN y Herramientas -->
+                                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.85rem; background:rgba(255,255,255,0.02); padding:0.75rem 0.95rem; border-radius:10px; border:1px solid rgba(255,255,255,0.06);">
+                                            <!-- Grupo de Entrada de PIN -->
+                                            <div style="display:flex; align-items:center; gap:0.55rem; flex-wrap:wrap;">
+                                                <label for="admin-pin-${p.id}" style="font-size:0.82rem; color:#e2e8f0; font-weight:600; white-space:nowrap;">
+                                                    🔑 Nuevo PIN:
+                                                </label>
+                                                <input type="text" id="admin-pin-${p.id}" value="${currentPwd}" 
+                                                       style="width:160px; font-family:ui-monospace, monospace; font-size:1.05rem; font-weight:800; letter-spacing:2px; text-transform:uppercase; padding:0.5rem 0.75rem; background:#070d19; border:1.5px solid #7c3aed; color:#ffffff; border-radius:8px; text-align:center;" 
+                                                       maxlength="16" placeholder="PIN">
+                                                <button type="button" class="btn btn-secondary" onclick="window.adminGenerateRandomPin('${p.id}')" style="font-size:0.8rem; padding:0.5rem 0.75rem; border-color:rgba(124,58,237,0.4); color:#c4b5fd; display:inline-flex; align-items:center; gap:0.3rem;" title="Generar un PIN aleatorio de 6 caracteres para este quiz">
+                                                    🎲 Aleatorio
+                                                </button>
+                                                <button type="button" class="btn btn-primary" onclick="window.adminSaveSingleQuizPassword('${p.id}')" style="font-size:0.82rem; padding:0.52rem 1rem; background:linear-gradient(135deg, #7c3aed, #6d28d9); border:none; font-weight:700; display:inline-flex; align-items:center; gap:0.35rem;" title="Guardar contraseña de este quiz">
+                                                    💾 Guardar PIN
+                                                </button>
                                             </div>
-                                            <button class="btn btn-primary" onclick="window.adminSaveSingleQuizPassword('${p.id}')" style="align-self:flex-end; font-size:0.75rem; padding:0.45rem 0.65rem; background:#7c3aed; border:none; height:34px; font-weight:700;" title="Guardar contraseña de este quiz">
-                                                💾 Guardar
-                                            </button>
-                                            <button class="btn btn-secondary" onclick="window.openAdminQuizPreview('${p.id}')" style="align-self:flex-end; font-size:0.75rem; padding:0.45rem 0.65rem; border:1px solid #38bdf8; color:#38bdf8; height:34px;" title="Ver las preguntas de este quiz (Exclusivo Docente)">
-                                                👁️ Ver
-                                            </button>
-                                            <button class="btn btn-secondary" onclick="window.adminCopyWhatsAppForQuiz('${p.id}')" style="align-self:flex-end; font-size:0.75rem; padding:0.45rem 0.65rem; border:1px solid #22c55e; color:#4ade80; height:34px;" title="Copiar invitación de WhatsApp con este PIN">
-                                                📱 WhatsApp
-                                            </button>
+
+                                            <!-- Grupo de Herramientas Docentes -->
+                                            <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+                                                <button type="button" class="btn btn-secondary" onclick="window.adminCopyWhatsAppForQuiz('${p.id}')" style="font-size:0.8rem; padding:0.5rem 0.85rem; border-color:rgba(34,197,94,0.4); color:#4ade80; background:rgba(34,197,94,0.06); display:inline-flex; align-items:center; gap:0.35rem; font-weight:600;" title="Copiar invitación completa para WhatsApp con este PIN">
+                                                    📱 Copiar para WhatsApp
+                                                </button>
+                                                <button type="button" class="btn btn-secondary" onclick="window.openAdminQuizPreview('${p.id}')" style="font-size:0.8rem; padding:0.5rem 0.85rem; border-color:rgba(56,189,248,0.4); color:#38bdf8; display:inline-flex; align-items:center; gap:0.35rem;" title="Ver las preguntas de este quiz (Exclusivo Docente)">
+                                                    👁️ Ver Preguntas (${p.totalPreguntas})
+                                                </button>
+                                                <button type="button" class="btn btn-secondary" onclick="window.adminCopyOnlyPin('${p.id}')" style="font-size:0.8rem; padding:0.5rem 0.7rem; border-color:rgba(255,255,255,0.15); color:#cbd5e1; display:inline-flex; align-items:center; gap:0.3rem;" title="Copiar únicamente el código PIN al portapapeles">
+                                                    📋 PIN
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 `;
