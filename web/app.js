@@ -1118,7 +1118,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div style="font-size:2.5rem; margin-bottom:0.75rem;">⭐</div>
                     <h3 style="color:#fff; margin-bottom:0.5rem;">No tienes cursos ni simuladores en favoritos</h3>
                     <p style="color:var(--text-muted); font-size:0.88rem; max-width:480px; margin:0 auto 1.25rem;">
-                        Explora los 17 cursos, cuadernos computacionales y laboratorios virtuales. Pulsa el botón <strong>🔖 Guardar</strong> en cualquier materia para tenerla aquí a mano en tus sesiones de estudio.
+                        Explora los 18 cursos, cuadernos computacionales y laboratorios virtuales. Pulsa el botón <strong>🔖 Guardar</strong> en cualquier materia para tenerla aquí a mano en tus sesiones de estudio.
                     </p>
                     <button class="btn btn-primary" onclick="closeStudentProfileModal(); location.href='#cursos';">
                         Explorar Cursos &amp; Labs 🚀
@@ -2406,6 +2406,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div class="card-actions" style="flex-wrap:wrap; gap:0.4rem;">
                         ${c.demoPath ? `<a href="${c.demoPath}" target="_blank" class="btn btn-primary" style="flex:1; justify-content:center;">${openBtnText}</a>` : ''}
+                        ${c.id === 'venturi' ? `<button type="button" class="btn btn-secondary" onclick="openVenturiGroupModal()" style="border-color:rgba(56,189,248,0.5); color:#38bdf8; display:inline-flex; align-items:center; gap:0.35rem;" title="Organizar puestos y asignar bancos para grupos (1 al 24)">👥 Puestos Grupos (1-24)</button>` : ''}
                         ${!courseUnlocked ? `<button class="btn btn-secondary btn-course-key" onclick="openCourseKeyModal('${c.id}')" title="Ingresar clave para ${c.titulo}">🔑 Clave Alumno</button>` : ''}
                         ${!courseUnlocked && c.enlaceCompra ? `<button class="btn btn-secondary" onclick="openPaymentModal('${c.id}')" style="border-color:rgba(0,234,144,0.5); color:#00EA90; display:inline-flex; align-items:center; gap:0.35rem;" title="Comprar en portal oficial Wompi (PSE / Nequi / Bancolombia)"><img src="./wompi-iso-secondary.svg" style="height:14px; width:14px;" />${buyBtnText}</button>` : ''}
                         <button class="btn btn-secondary" onclick="openCourseDetails('${c.id}')">${detailsBtnText}</button>
@@ -2771,6 +2772,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${course.temas.map(t => `<li style="font-size:0.9rem; color:var(--text-muted);"><span style="color:var(--accent-emerald);">✓</span> ${t}</li>`).join('')}
                 </ul>
             </div>
+            ${course.id === 'venturi' ? `
+            <div style="background:linear-gradient(135deg, rgba(15,23,42,0.95), rgba(30,41,59,0.9)); border:1px solid rgba(56,189,248,0.4); border-radius:12px; padding:1.2rem; margin-bottom:1.5rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.6rem;">
+                    <h4 style="color:#38bdf8; margin:0; display:flex; align-items:center; gap:0.45rem; font-size:1.05rem;">
+                        👥 Puestos de Trabajo y Asignación para Grupos (Bancos 1 al 24)
+                    </h4>
+                    <span class="badge" style="background:rgba(56,189,248,0.15); color:#38bdf8; border-color:rgba(56,189,248,0.3);">24 Puestos Únicos</span>
+                </div>
+                <p style="font-size:0.87rem; color:#cbd5e1; margin-bottom:1rem; line-height:1.55;">
+                    Para realizar la práctica de Bernoulli y continuidad, cada equipo de laboratorio debe utilizar un puesto diferente. Cada banco genera automáticamente condiciones físicas únicas (temperatura inicial, calibración propia de rotámetro clase 2.5, burbujas en piezómetros específicos, capilaridad y fugas) para asegurar que cada grupo tome y procese sus propios datos experimentales sin duplicidad.
+                </p>
+                <button type="button" class="btn btn-primary" onclick="closeModal(); openVenturiGroupModal();" style="display:inline-flex; align-items:center; gap:0.4rem; background:linear-gradient(135deg, #0284c7, #38bdf8); color:#fff; font-weight:700; font-size:0.9rem;">
+                    👥 Seleccionar Puesto / Banco de mi Grupo (1-24) 🚀
+                </button>
+            </div>
+            ` : ''}
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
                 <div>
                     <span style="font-size:0.85rem; color:var(--text-muted);">Modalidad:</span>
@@ -2787,6 +2804,151 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.closeModal = function() {
         document.getElementById('course-modal').classList.remove('active');
+    };
+
+    // Modal de Organización y Asignación de Grupos para Laboratorio Venturi
+    window.currentVenturiBanco = 1;
+
+    window.openVenturiGroupModal = function(initialBanco) {
+        if (initialBanco && initialBanco >= 1 && initialBanco <= 24) {
+            window.currentVenturiBanco = initialBanco;
+        }
+        const modal = document.getElementById('venturi-group-modal');
+        if (!modal) return;
+        window.renderVenturiGroupModalContent();
+        modal.classList.add('active');
+    };
+
+    window.closeVenturiGroupModal = function() {
+        const modal = document.getElementById('venturi-group-modal');
+        if (modal) modal.classList.remove('active');
+    };
+
+    window.selectVenturiBanco = function(bancoNum) {
+        window.currentVenturiBanco = Math.max(1, Math.min(24, parseInt(bancoNum, 10) || 1));
+        window.renderVenturiGroupModalContent();
+    };
+
+    window.renderVenturiGroupModalContent = function() {
+        const modalBody = document.getElementById('modal-venturi-group-body');
+        if (!modalBody) return;
+        const b = window.currentVenturiBanco || 1;
+        const savedGroupName = localStorage.getItem('venturi_last_group_name') || '';
+
+        let gridHtml = '';
+        for (let i = 1; i <= 24; i++) {
+            const isSel = (i === b);
+            gridHtml += `
+                <button type="button" 
+                        class="btn-banco-pill ${isSel ? 'active' : ''}" 
+                        onclick="window.selectVenturiBanco(${i})"
+                        style="padding:0.45rem 0.65rem; border-radius:8px; font-size:0.8rem; font-weight:700; cursor:pointer; transition:all 0.2s ease;
+                               background:${isSel ? 'linear-gradient(135deg, #0284c7, #38bdf8)' : 'rgba(255,255,255,0.05)'};
+                               color:${isSel ? '#ffffff' : '#cbd5e1'};
+                               border:1px solid ${isSel ? '#38bdf8' : 'rgba(255,255,255,0.1)'};
+                               box-shadow:${isSel ? '0 0 10px rgba(56,189,248,0.4)' : 'none'};">
+                    ${isSel ? '📍 ' : ''}Banco ${String(i).padStart(2, '0')}
+                </button>
+            `;
+        }
+
+        modalBody.innerHTML = `
+            <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.5rem; flex-wrap:wrap;">
+                <span class="badge" style="background:rgba(56,189,248,0.15); color:#38bdf8; border-color:rgba(56,189,248,0.4); font-size:0.75rem;">
+                    🔬 Física de Fluidos · Universidad del Cauca
+                </span>
+                <span class="badge" style="background:rgba(16,185,129,0.15); color:#34D399; border-color:rgba(16,185,129,0.4); font-size:0.75rem;">
+                    24 Puestos Independientes para Grupos
+                </span>
+            </div>
+
+            <h2 style="font-size:1.65rem; color:#38bdf8; margin-bottom:0.4rem; display:flex; align-items:center; gap:0.5rem;">
+                👥 Banco Hidráulico de Venturi: Asignación de Puestos
+            </h2>
+            <p style="color:#cbd5e1; font-size:0.9rem; line-height:1.5; margin-bottom:1.25rem;">
+                Selecciona el <strong>puesto o banco asignado por el docente</strong> para tu equipo de trabajo. Cada banco modela un equipo físico independiente con calibración propia de rotámetro (Clase 2.5), capilaridad de piezómetros, temperatura del agua y fugas reales.
+            </p>
+
+            <div style="background:rgba(15,23,42,0.7); border:1px solid rgba(56,189,248,0.25); border-radius:12px; padding:1.1rem; margin-bottom:1.25rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
+                    <span style="font-size:0.9rem; font-weight:700; color:#ffffff;">
+                        📍 Puesto Seleccionado: <strong style="color:#38bdf8; font-size:1.05rem;">Banco N.º ${String(b).padStart(2, '0')} (Serie VT-2026-${String(b).padStart(2, '0')})</strong>
+                    </span>
+                    <span style="font-size:0.78rem; color:#94a3b8;">
+                        Pulsa cualquier botón para cambiar de puesto
+                    </span>
+                </div>
+                <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(95px, 1fr)); gap:0.45rem;">
+                    ${gridHtml}
+                </div>
+            </div>
+
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-color); border-radius:12px; padding:1.1rem; margin-bottom:1.25rem;">
+                <div style="margin-bottom:0.85rem;">
+                    <label for="venturi-grupo-input" style="display:block; font-size:0.85rem; font-weight:600; color:#ffffff; margin-bottom:0.35rem;">
+                        👥 Integrantes del Grupo (Opcional):
+                    </label>
+                    <input type="text" id="venturi-grupo-input" value="${savedGroupName}" placeholder="Ej: Valentina Morales, Juan David Díaz, Camilo Muñoz" 
+                           style="width:100%; padding:0.6rem 0.8rem; background:#0f172a; border:1px solid #334155; border-radius:8px; color:#ffffff; font-size:0.9rem;">
+                    <small style="color:#94a3b8; font-size:0.75rem; display:block; margin-top:0.25rem;">
+                        Aparecerá en el encabezado del banco virtual, en la bitácora oficial y en el reporte CSV exportable.
+                    </small>
+                </div>
+
+                <div style="display:flex; gap:0.6rem; flex-wrap:wrap; align-items:center; justify-content:space-between;">
+                    <button type="button" class="btn btn-primary" onclick="window.launchVenturiBanco(${b})" style="flex:1; justify-content:center; padding:0.75rem 1.25rem; font-size:0.95rem; font-weight:700; background:linear-gradient(135deg, #0284c7, #38bdf8);">
+                        🚀 Entrar a mi Banco de Trabajo (Puesto ${String(b).padStart(2, '0')})
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="window.copyVenturiGroupLink(${b})" style="border-color:rgba(56,189,248,0.4); color:#38bdf8; display:inline-flex; align-items:center; gap:0.4rem; padding:0.75rem 1rem; font-size:0.88rem;">
+                        📋 Copiar Enlace para el Grupo
+                    </button>
+                </div>
+            </div>
+
+            <div style="background:rgba(124,58,237,0.08); border:1px solid rgba(124,58,237,0.3); border-radius:12px; padding:1rem; font-size:0.85rem; color:#cbd5e1; line-height:1.5;">
+                <strong style="color:#c4b5fd; display:flex; align-items:center; gap:0.4rem; font-size:0.9rem; margin-bottom:0.35rem;">
+                    🎓 Guía para el Docente:
+                </strong>
+                <p style="margin:0 0 0.5rem 0;">
+                    • <strong>Asignación:</strong> Asigne a cada grupo un número entre el 1 y el 24. Cada banco genera parámetros únicos de instrumentación, por lo que los resultados de alturas manométricas y coeficientes de descarga son específicos para cada grupo.
+                </p>
+                <p style="margin:0;">
+                    • <strong>Validación y Calificación:</strong> Dentro del laboratorio, en la pestaña <em>Guía → «Para el docente»</em>, puede ingresar la clave <code>OBANDO-ADMIN-2026</code> o <code>bernoulli-unicauca</code> para ver la tabla completa de referencia con los valores esperados de caudal, alturas, Reynolds y Cd para cada uno de los 24 bancos.
+                </p>
+            </div>
+        `;
+    };
+
+    window.launchVenturiBanco = function(bancoNum) {
+        const inp = document.getElementById('venturi-grupo-input');
+        const grupo = inp ? inp.value.trim() : '';
+        if (grupo) {
+            localStorage.setItem('venturi_last_group_name', grupo);
+        }
+        const b = bancoNum || window.currentVenturiBanco || 1;
+        const targetUrl = `/material/1_cursos/venturi/dist/Laboratorio_Venturi.html?banco=${b}${grupo ? '&grupo=' + encodeURIComponent(grupo) : ''}`;
+        window.open(targetUrl, '_blank');
+    };
+
+    window.copyVenturiGroupLink = function(bancoNum) {
+        const inp = document.getElementById('venturi-grupo-input');
+        const grupo = inp ? inp.value.trim() : '';
+        if (grupo) {
+            localStorage.setItem('venturi_last_group_name', grupo);
+        }
+        const b = bancoNum || window.currentVenturiBanco || 1;
+        const origin = window.location.origin && window.location.origin !== 'null' ? window.location.origin : 'https://physicsailab.com';
+        const fullUrl = `${origin}/material/1_cursos/venturi/dist/Laboratorio_Venturi.html?banco=${b}${grupo ? '&grupo=' + encodeURIComponent(grupo) : ''}`;
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(fullUrl).then(() => {
+                showToast(`📋 Enlace del Banco N.º ${String(b).padStart(2, '0')} copiado. ¡Listo para compartir con tu grupo!`);
+            }).catch(() => {
+                prompt('Copia este enlace directo para tu grupo:', fullUrl);
+            });
+        } else {
+            prompt('Copia este enlace directo para tu grupo:', fullUrl);
+        }
     };
 
     // 5. Renderizar Artículos de Squash & Física del Deporte

@@ -1,0 +1,314 @@
+<header class="top">
+  <a class="brand" href="#banco" aria-label="Tubo de Venturi, inicio">
+    <svg width="40" height="26" viewBox="0 0 40 26" aria-hidden="true"><path d="M1 5h9l8 6h4l8-6h9v16h-9l-8-6h-4l-8 6H1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M5 1v4M20 1v10M35 1v4" stroke="currentColor" stroke-width="2"/></svg>
+    <span>Tubo de Venturi<small>Laboratorio virtual · Física de Fluidos</small></span>
+  </a>
+  <nav class="nav" aria-label="Secciones">
+    <a href="#banco" data-tab="banco">Banco</a>
+    <a href="#cuaderno" data-tab="cuaderno">Cuaderno</a>
+    <a href="#guia" data-tab="guia">Guía</a>
+  </nav>
+  <div class="top-chip" id="topChip">Banco N.º <b id="topBanco">01</b><span id="topGrupo"></span></div>
+</header>
+
+<main class="main">
+  <!-- ================= BANCO ================= -->
+  <section id="v-banco" class="view" aria-labelledby="hBanco">
+    <div class="intro intro-banco">
+      <div>
+        <p class="eyebrow">Práctica · Principio de Bernoulli y ecuación de continuidad</p>
+        <h1 id="hBanco">Banco hidráulico con medidor de Venturi</h1>
+        <p>Las columnas oscilan, el flotador baila, hay burbujas por purgar y cada banco trae sus propios errores de instrumento. Mida con la lupa y anote lo que ve.</p>
+      </div>
+      <form class="setup panel" id="setupForm" autocomplete="off">
+        <label for="selBanco">Banco<select id="selBanco"></select></label>
+        <label for="inpGrupo" class="grow">Integrantes del grupo<input type="text" id="inpGrupo" placeholder="Nombres y apellidos"></label>
+        <button class="btn primary" type="submit" id="btnSetup">Usar este banco</button>
+        <p class="small muted" id="setupNota">El docente asigna el número de banco. Cambiarlo reinicia el equipo.</p>
+      </form>
+    </div>
+
+    <div class="bench-grid">
+      <div class="bench-main">
+        <div class="panel stage">
+          <div class="stage-wrap"><canvas id="bench" role="img" aria-label="Banco hidráulico: bomba, válvula de regulación, tubo de Venturi con ocho tomas conectadas al tablero de piezómetros, rotámetro y tanque volumétrico"></canvas><div class="stage-tip" id="stageTip" hidden></div></div>
+          <p class="stage-hint small">Toque un tubo del tablero, el rotámetro o la mirilla del tanque para verlos en la lupa. La válvula se gira arrastrando el volante en círculo.</p>
+        </div>
+
+        <div class="controls">
+          <section class="ctl" aria-labelledby="hBomba">
+            <h3 id="hBomba">Bomba</h3>
+            <div class="ctl-row"><button class="btn switch" id="btnBomba" aria-pressed="false">Encender la bomba</button><span class="pill off" id="bombaInfo">Apagada</span></div>
+            <p class="small muted">Antes de medir, purgue: válvula abierta del todo durante unos 2 minutos.</p>
+          </section>
+          <section class="ctl ctl-valv" aria-labelledby="hValv">
+            <h3 id="hValv">Válvula de regulación</h3>
+            <p class="valv-info" id="valvInfo">Apertura: cerrada</p>
+            <div class="valv-btns" role="group" aria-label="Girar la válvula">
+              <button class="btn small" data-dv="-1" title="Cerrar una vuelta">−1</button>
+              <button class="btn small" data-dv="-0.125" title="Cerrar un octavo de vuelta">−⅛</button>
+              <button class="btn small" data-dv="-0.03125" title="Cerrar 1/32 de vuelta">−¹⁄₃₂</button>
+              <button class="btn small" data-dv="0.03125" title="Abrir 1/32 de vuelta">+¹⁄₃₂</button>
+              <button class="btn small" data-dv="0.125" title="Abrir un octavo de vuelta">+⅛</button>
+              <button class="btn small" data-dv="1" title="Abrir una vuelta">+1</button>
+            </div>
+            <div class="ctl-row"><button class="btn small quiet" data-dv="cerrar">Cerrar del todo</button><button class="btn small quiet" data-dv="abrir">Abrir del todo</button></div>
+          </section>
+          <section class="ctl" aria-labelledby="hMang">
+            <h3 id="hMang">Mangueras y uniones</h3>
+            <p class="small muted">Golpecitos para soltar burbujas atrapadas:</p>
+            <div class="hose-btns" role="group" aria-label="Golpear manguera">
+              <button class="btn small" data-golpe="0">A</button><button class="btn small" data-golpe="1">B</button><button class="btn small" data-golpe="2">C</button><button class="btn small" data-golpe="3">D</button><button class="btn small" data-golpe="4">E</button><button class="btn small" data-golpe="5">F</button><button class="btn small" data-golpe="6">G</button><button class="btn small" data-golpe="7">H</button>
+            </div>
+            <button class="btn small" id="btnApretar">Apretar la unión de salida</button>
+          </section>
+          <section class="ctl" aria-labelledby="hTq">
+            <h3 id="hTq">Tanque volumétrico</h3>
+            <div class="ctl-row"><button class="btn small" id="btnVaciado">Abrir el vaciado</button></div>
+            <p class="small muted" id="vaciadoInfo">Vaciado cerrado: el tanque acumula el agua</p>
+            <div class="crono"><output id="crono" class="crono-d" aria-live="off">00:00,00</output><button class="btn small" id="cronoGo">Iniciar</button><button class="btn small quiet" id="cronoReset">Reiniciar</button></div>
+          </section>
+        </div>
+        <section class="panel registro" aria-labelledby="hReg">
+          <div class="panel-head"><h3 id="hReg">Medición en curso</h3><span class="small muted" id="regN">Medición N.º 1</span></div>
+          <form id="regForm" class="reg-form" autocomplete="off">
+            <div class="reg-grid">
+              <label for="regQ">Q<sub>rot</sub> [L/min]<input type="text" inputmode="decimal" id="regQ"></label>
+              <label for="regh0">h<sub>A</sub> [mm]<input type="text" inputmode="decimal" id="regh0" data-i="0"></label>
+              <label for="regh1">h<sub>B</sub><input type="text" inputmode="decimal" id="regh1" data-i="1"></label>
+              <label for="regh2">h<sub>C</sub><input type="text" inputmode="decimal" id="regh2" data-i="2"></label>
+              <label for="regh3">h<sub>D</sub><input type="text" inputmode="decimal" id="regh3" data-i="3"></label>
+              <label for="regh4">h<sub>E</sub><input type="text" inputmode="decimal" id="regh4" data-i="4"></label>
+              <label for="regh5">h<sub>F</sub><input type="text" inputmode="decimal" id="regh5" data-i="5"></label>
+              <label for="regh6">h<sub>G</sub><input type="text" inputmode="decimal" id="regh6" data-i="6"></label>
+              <label for="regh7">h<sub>H</sub><input type="text" inputmode="decimal" id="regh7" data-i="7"></label>
+            </div>
+            <div class="reg-foot"><p class="small muted">Al tocar una casilla, la lupa pasa a ese tubo o al rotámetro.</p><div class="button-row"><button class="btn small quiet" type="button" id="regCero">Guardar como verificación del cero</button><button class="btn primary" type="submit">Guardar en la tabla 4</button></div></div>
+          </form>
+        </section>
+      </div>
+
+      <aside class="bench-side" aria-label="Lupas, instrumentos y registro">
+        <section class="panel lupa" aria-labelledby="hLupaM">
+          <div class="panel-head"><h3 id="hLupaM">Lupa · Piezómetros</h3>
+            <div class="seg" role="group" aria-label="Tubo">
+              <button data-tubo="0">A</button><button data-tubo="1">B</button><button data-tubo="2">C</button><button data-tubo="3">D</button><button data-tubo="4">E</button><button data-tubo="5">F</button><button data-tubo="6">G</button><button data-tubo="7">H</button>
+            </div>
+          </div>
+          <div class="lupa-body"><canvas id="lupaM" class="lupa-cv" tabindex="0" aria-label="Vista ampliada del tubo piezométrico. Arrastre o use las flechas para mover la vista"></canvas><canvas id="miniM" class="mini-cv" aria-label="Tubo completo: toque para mover la vista"></canvas></div>
+          <div class="lupa-ctl"><span class="small muted">Mover la vista</span><button class="btn small" data-mover="m:5">▲ 5 mm</button><button class="btn small" data-mover="m:1">▲ 1</button><button class="btn small" data-mover="m:-1">▼ 1</button><button class="btn small" data-mover="m:-5">▼ 5 mm</button></div>
+          <p class="small muted lupa-nota">Lea el <b>fondo del menisco</b> con el menisco entre las marcas ◂ ▸ (altura del ojo). Si queda arriba o abajo de ellas, la lectura tiene paralaje.</p>
+        </section>
+
+        <section class="panel lupa" aria-labelledby="hLupaR">
+          <div class="panel-head"><h3 id="hLupaR">Lupa</h3>
+            <div class="seg" role="group" aria-label="Instrumento"><button data-l2="rot">Rotámetro</button><button data-l2="tanque">Tanque</button></div>
+          </div>
+          <div class="lupa-body"><canvas id="lupaR" class="lupa-cv" tabindex="0" aria-label="Vista ampliada del rotámetro o de la mirilla del tanque"></canvas><canvas id="miniR" class="mini-cv" aria-label="Instrumento completo: toque para mover la vista"></canvas></div>
+          <div class="lupa-ctl"><span class="small muted">Mover la vista</span><button class="btn small" data-mover="r:5">▲▲</button><button class="btn small" data-mover="r:1">▲</button><button class="btn small" data-mover="r:-1">▼</button><button class="btn small" data-mover="r:-5">▼▼</button></div>
+          <p class="small muted lupa-nota" id="notaL2">Rotámetro: lea en la <b>arista superior</b> del flotador (su parte más ancha).</p>
+        </section>
+
+        <section class="panel inst" aria-labelledby="hInst">
+          <h3 id="hInst">Instrumentos</h3>
+          <dl class="inst-grid">
+            <div><dt>Agua del tanque</dt><dd class="lcd" id="dispT">—</dd></div>
+            <div><dt>Temperatura ambiente</dt><dd class="lcd" id="dispAmb">—</dd></div>
+            <div><dt>Presión atmosférica</dt><dd class="lcd" id="dispP">—</dd></div>
+            <div><dt>Humedad relativa</dt><dd class="lcd" id="dispHR">—</dd></div>
+          </dl>
+          <p class="small muted">Gravedad local (Popayán, 1 738 m s. n. m.): <b>g = 9,777 m/s²</b>.</p>
+        </section>
+
+
+      </aside>
+    </div>
+
+    <div class="two-col">
+      <section class="panel placa-wrap" aria-labelledby="hPlaca">
+        <div class="placa">
+          <div class="placa-top"><span id="hPlaca">Medidor de Venturi didáctico · 8 tomas</span><span>Serie <b id="placaSerie">VT-2026-01</b></span></div>
+          <div class="table-wrap"><table class="placa-tab">
+            <thead><tr><th>Toma</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th><th>H</th></tr></thead>
+            <tbody><tr><th>Posición x [mm]</th><td>0</td><td>18</td><td>34</td><td>49</td><td>66</td><td>81</td><td>101</td><td>126</td></tr>
+              <tr><th>Diámetro [mm]</th><td>25,0</td><td>22,0</td><td>16,0</td><td>13,0</td><td>15,0</td><td>18,0</td><td>22,0</td><td>25,0</td></tr></tbody>
+          </table></div>
+          <ul class="placa-datos">
+            <li>Convergente 21°, garganta 14 mm de largo, difusor 11,4°. Tolerancia de diámetros ±0,05 mm.</li>
+            <li>Piezómetros: tubos de vidrio Ø int. 8 mm, escala 0–500 mm, división 1 mm.</li>
+            <li>Rotámetro: 2–20 L/min de agua a 20 °C, división 0,5 L/min, clase 2,5 (VDI/VDE 3513).</li>
+            <li>Termómetro digital: resolución 0,1 °C, exactitud ±0,3 °C.</li>
+          </ul>
+        </div>
+      </section>
+      <section class="panel" aria-labelledby="hLog">
+        <div class="panel-head"><h3 id="hLog">Bitácora del banco</h3><span class="small muted">Se exporta con el cuaderno</span></div>
+        <ul class="log" id="logList"></ul>
+      </section>
+    </div>
+  </section>
+
+  <!-- ================= CUADERNO ================= -->
+  <section id="v-cuaderno" class="view" aria-labelledby="hCuad" hidden>
+    <div class="intro">
+      <div>
+        <p class="eyebrow">Tablas 2, 3 y 4 de la guía</p>
+        <h1 id="hCuad">Cuaderno de laboratorio</h1>
+        <p>Lo que escribe aquí se guarda en este navegador. Exporte el CSV para trabajar los cálculos y las gráficas en su hoja de cálculo, y entregue también la bitácora.</p>
+      </div>
+      <div class="button-row">
+        <button class="btn primary" id="btnCSV">Exportar CSV</button>
+        <button class="btn" id="btnJSON">Guardar respaldo</button>
+        <label class="btn file-btn" for="fileJSON">Cargar respaldo<input type="file" id="fileJSON" accept=".json,application/json" class="sr"></label>
+        <button class="btn danger quiet" id="btnBorrar">Borrar cuaderno</button>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <section class="panel panel-pad" aria-labelledby="hT2">
+        <h2 id="hT2">Tabla 2 · Dimensiones del tubo de Venturi</h2>
+        <div class="table-wrap"><table class="nb">
+          <thead><tr><th>Parámetro</th><th>Símbolo</th><th>Valor</th></tr></thead>
+          <tbody id="tbDim"></tbody>
+        </table></div>
+      </section>
+      <section class="panel panel-pad" aria-labelledby="hT3">
+        <h2 id="hT3">Tabla 3 · Condiciones ambientales</h2>
+        <div class="table-wrap"><table class="nb">
+          <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
+          <tbody id="tbAmb"></tbody>
+        </table></div>
+      </section>
+    </div>
+
+    <section class="panel panel-pad" aria-labelledby="hT4">
+      <div class="row-head"><h2 id="hT4">Tabla 4 · Alturas manométricas h<sub>i</sub> [mm] para cada caudal</h2><button class="btn small" id="addMed">Agregar fila</button></div>
+      <div class="table-wrap"><table class="nb nb-wide">
+        <thead><tr><th>N.º</th><th>Q<sub>rot</sub> [L/min]</th><th>h<sub>A</sub></th><th>h<sub>B</sub></th><th>h<sub>C</sub></th><th>h<sub>D</sub></th><th>h<sub>E</sub></th><th>h<sub>F</sub></th><th>h<sub>G</sub></th><th>h<sub>H</sub></th><th>Hora</th><th><span class="sr">Quitar</span></th></tr></thead>
+        <tbody id="tbMed"></tbody>
+      </table></div>
+      <div class="ident">
+        <label for="tomaAncha">Toma de la sección ancha <input type="text" id="tomaAncha" maxlength="3"></label>
+        <label for="tomaGarg">Toma de la garganta <input type="text" id="tomaGarg" maxlength="3"></label>
+      </div>
+    </section>
+
+    <div class="two-col">
+      <section class="panel panel-pad" aria-labelledby="hCero">
+        <h2 id="hCero">Verificación del cero (sin caudal)</h2>
+        <p class="small muted">Con la válvula cerrada todas las columnas deberían quedar al mismo nivel. Las diferencias revelan burbujas o capilaridad distinta entre tubos.</p>
+        <div class="table-wrap"><table class="nb">
+          <thead><tr><th>h<sub>A</sub></th><th>h<sub>B</sub></th><th>h<sub>C</sub></th><th>h<sub>D</sub></th><th>h<sub>E</sub></th><th>h<sub>F</sub></th><th>h<sub>G</sub></th><th>h<sub>H</sub></th></tr></thead>
+          <tbody id="tbCero"></tbody>
+        </table></div>
+      </section>
+      <section class="panel panel-pad" aria-labelledby="hVol">
+        <div class="row-head"><h2 id="hVol">Extensión · Calibración volumétrica</h2><button class="btn small" id="addVol">Agregar fila</button></div>
+        <p class="small muted">Opcional. Con el vaciado cerrado, cronometre el llenado del tanque y compare con el rotámetro.</p>
+        <div class="table-wrap"><table class="nb">
+          <thead><tr><th>Q<sub>rot</sub> [L/min]</th><th>V<sub>inicial</sub> [L]</th><th>V<sub>final</sub> [L]</th><th>t [s]</th><th><span class="sr">Quitar</span></th></tr></thead>
+          <tbody id="tbVol"></tbody>
+        </table></div>
+      </section>
+    </div>
+
+    <section class="panel panel-pad" aria-labelledby="hObs">
+      <h2 id="hObs">Observaciones</h2>
+      <textarea id="obs" rows="5" placeholder="Burbujas encontradas, fugas, oscilaciones, cualquier cosa que afecte las lecturas."></textarea>
+    </section>
+  </section>
+
+  <!-- ================= GUÍA ================= -->
+  <section id="v-guia" class="view" aria-labelledby="hGuia" hidden>
+    <div class="intro"><div>
+      <p class="eyebrow">Guía de laboratorio · Tubo de Venturi</p>
+      <h1 id="hGuia">Cómo hacer la práctica en el banco virtual</h1>
+      <p>Siga la guía impresa del curso. Aquí está cómo se hace cada paso en este banco, cómo se leen los instrumentos y qué incertidumbre tiene cada uno.</p>
+    </div></div>
+
+    <div class="guia-grid">
+      <article class="panel panel-pad prose">
+        <h2>Procedimiento</h2>
+        <h3>4.1 Preparación del equipo</h3>
+        <ol class="checks" id="checks1"></ol>
+        <h3>4.2 Toma de datos</h3>
+        <ol class="checks" id="checks2"></ol>
+        <div class="callout"><h3>Al terminar</h3><p>Cierre la válvula lentamente y apague la bomba. Exporte el CSV desde el Cuaderno: incluye sus tablas y la bitácora con la hora de cada acción.</p></div>
+      </article>
+
+      <div>
+        <article class="panel panel-pad prose">
+          <h2>Cómo leer los instrumentos</h2>
+          <figure class="fig-menisco">
+            <svg viewBox="0 0 320 150" role="img" aria-label="Menisco cóncavo en un tubo de vidrio: la lectura se toma en el fondo del menisco con el ojo a la misma altura">
+              <rect class="m-board" x="0" y="0" width="320" height="150"/>
+              <g class="m-ticks"><line x1="60" y1="110" x2="100" y2="110" stroke-width="2"/><line x1="82" y1="102" x2="100" y2="102"/><line x1="82" y1="94" x2="100" y2="94"/><line x1="82" y1="86" x2="100" y2="86"/><line x1="82" y1="78" x2="100" y2="78"/><line x1="70" y1="70" x2="100" y2="70"/><line x1="82" y1="62" x2="100" y2="62"/><line x1="82" y1="54" x2="100" y2="54"/><line x1="82" y1="46" x2="100" y2="46"/><line x1="82" y1="38" x2="100" y2="38"/><line x1="60" y1="30" x2="100" y2="30" stroke-width="2"/></g>
+              <text class="m-num" x="54" y="35" text-anchor="end">240</text>
+              <text class="m-num" x="54" y="115" text-anchor="end">230</text>
+              <rect class="m-glass" x="108" y="10" width="64" height="130"/>
+              <path class="m-water" d="M110 52 C 116 67, 128 70, 140 70 C 152 70, 164 67, 170 52 L170 140 L110 140 Z"/>
+              <path class="m-men" d="M110 52 C 116 67, 128 70, 140 70 C 152 70, 164 67, 170 52"/>
+              <line class="m-eye" x1="176" y1="70" x2="292" y2="70"/>
+              <circle class="m-eye" cx="300" cy="70" r="7"/><circle class="m-pupil" cx="302" cy="70" r="2.5"/>
+              <text class="m-txt" x="188" y="60">fondo del menisco</text>
+              <text class="m-txt" x="188" y="92">lectura: 235 mm</text>
+            </svg>
+          </figure>
+          <ul>
+            <li><b>Piezómetros.</b> Lleve el menisco a la altura de las marcas ◂ ▸ de la lupa (su línea de visión) y lea el fondo de la curva. La escala está unos milímetros detrás del tubo: si lee con el menisco lejos de las marcas, comete error de paralaje. Las columnas oscilan; estime el valor medio durante unos segundos.</li>
+            <li><b>Rotámetro.</b> El flotador sube con el caudal. La lectura se toma en su arista superior. La escala va de 2 a 20 L/min con divisiones de 0,5 L/min; interpole hasta 0,1 L/min si puede.</li>
+            <li><b>Termómetro.</b> La sonda está en el tanque del banco. El agua se calienta un poco mientras la bomba trabaja: registre la temperatura al empezar y al terminar.</li>
+            <li><b>Tanque y cronómetro.</b> Cierre el vaciado, anote el volumen inicial en la mirilla, arranque el cronómetro y deténgalo al llegar a un volumen final. Recoja al menos 10 L para que su tiempo de reacción pese poco.</li>
+          </ul>
+        </article>
+        <article class="panel panel-pad prose">
+          <h2>Incertidumbre de cada instrumento</h2>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Instrumento</th><th>Resolución</th><th>Exactitud declarada</th></tr></thead>
+            <tbody>
+              <tr><td>Piezómetros</td><td class="num">1 mm</td><td>Lectura ±0,5 mm más la oscilación que observe</td></tr>
+              <tr><td>Rotámetro</td><td class="num">0,5 L/min</td><td>Clase 2,5: ±(1,875 % de la lectura + 0,125 L/min)</td></tr>
+              <tr><td>Diámetros (placa)</td><td class="num">0,1 mm</td><td>±0,05 mm</td></tr>
+              <tr><td>Termómetro</td><td class="num">0,1 °C</td><td>±0,3 °C</td></tr>
+              <tr><td>Mirilla del tanque</td><td class="num">0,5 L</td><td>±0,25 L por lectura</td></tr>
+              <tr><td>Cronómetro</td><td class="num">0,01 s</td><td>Tiempo de reacción ≈ 0,2 s por pulsación</td></tr>
+            </tbody>
+          </table></div>
+          <p class="small muted">La clase 2,5 de VDI/VDE 3513 combina el 2,5 % de ¾ de la lectura con el 2,5 % de ¼ del fondo de escala (20 L/min).</p>
+        </article>
+      </div>
+    </div>
+
+    <section class="panel panel-pad docente" aria-labelledby="hDoc">
+      <h2 id="hDoc">Para el docente</h2>
+      <p>Cada número de banco (1 a 24) tiene su propia temperatura de agua, error de rotámetro, capilaridad de cada tubo, burbujas iniciales y, en la mitad de los bancos, una fuga en la unión de salida. Así los datos no se pueden copiar entre grupos. Para adaptar el equipo al del laboratorio (diámetros, posiciones de las tomas, rango del rotámetro), edite el objeto <code>EQUIPO</code> al inicio de <code>src/engine.js</code> y recompile con <code>node build.js</code>.</p>
+      <form id="docForm" class="doc-form" autocomplete="off">
+        <label for="docClave">Clave del docente<input type="password" id="docClave"></label>
+        <button class="btn" type="submit">Ver tabla de referencia</button>
+        <p class="error-text" id="docError" hidden>Clave incorrecta.</p>
+      </form>
+      <div id="docTabla" hidden></div>
+    </section>
+  </section>
+</main>
+
+<footer class="pie">
+  <p>Elaborado por Mg. Manuel Alejandro Obando · Departamento de Física, Universidad del Cauca · Popayán 2026</p>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<div class="modal" id="confirmBox" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+    <h3 id="confirmTitle">¿Seguro?</h3>
+    <p id="confirmText"></p>
+    <div class="button-row end"><button class="btn" id="confirmNo">Cancelar</button><button class="btn danger-fill" id="confirmYes">Sí, continuar</button></div>
+  </div>
+</div>
+<div class="modal" id="copyBox" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="copyTitle">
+    <h3 id="copyTitle">Copie el contenido de <span id="copyName"></span></h3>
+    <p class="small muted">Esta vista no permite descargar archivos. Copie el texto y péguelo en un archivo nuevo.</p>
+    <textarea id="copyText" rows="10" readonly></textarea>
+    <div class="button-row end"><button class="btn" id="copyBtn">Copiar</button><button class="btn primary" id="copyClose">Cerrar</button></div>
+  </div>
+</div>
