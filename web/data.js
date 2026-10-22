@@ -54,7 +54,7 @@ window.PLATFORM_DATA = {
             modo: "produccion", // 'produccion' para pagos reales con Wompi Bancolombia
             linkPago: "https://checkout.wompi.co/l/VPOS_b6GD2z",
             llavePublicaTest: "pub_test_Q5yDA9xoKdePzhSGeVe9HAez7HgGObCi",
-            llavePublicaProd: "",
+            llavePublicaProd: "pub_prod_PsVFtQF7GAP3fAFjIViWAfzz30ZUaI0c",
             moneda: "COP"
         },
         pagoDirecto: {
@@ -1879,5 +1879,6 @@ window.PLATFORM_DATA = {
         }
     ]
 };
+
 
 

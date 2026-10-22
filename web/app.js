@@ -3069,7 +3069,7 @@ document.addEventListener('DOMContentLoaded', () => {
             modo: 'produccion',
             linkPago: 'https://checkout.wompi.co/l/VPOS_b6GD2z',
             llavePublicaTest: 'pub_test_Q5yDA9xoKdePzhSGeVe9HAez7HgGObCi',
-            llavePublicaProd: '',
+            llavePublicaProd: 'pub_prod_PsVFtQF7GAP3fAFjIViWAfzz30ZUaI0c',
             moneda: 'COP'
         }),
         pagoDirecto: Object.freeze({
@@ -7344,6 +7344,118 @@ document.addEventListener('DOMContentLoaded', () => {
         renderPhysicsFacts(currentFactFilter);
     });
 
+    // ========================================================
+    // DETECCIÓN Y PROCESAMIENTO AUTOMÁTICO DE RETORNO WOMPI
+    // ========================================================
+    window.closeWompiApprovalModal = function() {
+        const modal = document.getElementById('wompi-approval-modal');
+        if (modal) modal.classList.remove('active');
+    };
+
+    window.showWompiApprovalModal = function(info) {
+        const modal = document.getElementById('wompi-approval-modal');
+        const body = document.getElementById('modal-wompi-approval-body');
+        if (!modal || !body) return;
+
+        body.innerHTML = `
+            <div style="font-size:3rem; margin-bottom:0.35rem;">🎉</div>
+            <span class="badge" style="background:rgba(16,185,129,0.2); color:#34D399; border-color:rgba(16,185,129,0.4); margin-bottom:0.75rem;">
+                ✓ Pago Aprobado por Wompi Bancolombia
+            </span>
+            <h2 style="color:#fff; font-size:1.4rem; margin:0 0 0.5rem 0;">¡Felicitaciones!</h2>
+            <p style="font-size:0.9rem; color:var(--text-muted); margin:0 0 1.25rem 0; line-height:1.45;">
+                Tu acceso a <strong style="color:#38BDF8;">«${info.cursoTitulo}»</strong> ha sido activado de por vida.
+            </p>
+
+            <div style="background:linear-gradient(135deg, rgba(99,102,241,0.12), rgba(30,41,59,0.7)); border:2px dashed #6366F1; border-radius:12px; padding:1.25rem; margin-bottom:1.25rem;">
+                <div style="font-size:0.75rem; color:#A5B4FC; text-transform:uppercase; font-weight:700; letter-spacing:1px; margin-bottom:0.35rem;">
+                    🔑 Tu Contraseña Única Asignada:
+                </div>
+                <div style="font-size:1.55rem; font-weight:800; color:#fff; font-family:monospace; letter-spacing:2px; background:#0F172A; padding:0.5rem 1rem; border-radius:8px; border:1px solid #4338CA; display:inline-block;">
+                    ${info.codigo}
+                </div>
+                <div style="margin-top:0.65rem;">
+                    <button class="btn btn-secondary" onclick="copiarDatoPago('${info.codigo}', this)" style="font-size:0.8rem; padding:0.35rem 0.85rem;">
+                        📋 Copiar Contraseña
+                    </button>
+                </div>
+            </div>
+
+            <div style="background:rgba(239,68,68,0.08); border-left:4px solid #EF4444; border-radius:6px; padding:0.75rem 0.9rem; text-align:left; margin-bottom:1.25rem;">
+                <div style="color:#F87171; font-weight:700; font-size:0.78rem; margin-bottom:0.2rem;">
+                    ⚠️ AVISO DE SEGURIDAD: CONTRASEÑA ÚNICA
+                </div>
+                <div style="color:#FCA5A5; font-size:0.78rem; line-height:1.4;">
+                    Esta contraseña es <strong>personal, única e intransferible</strong>. El sistema ha registrado la firma digital de este navegador y te hemos enviado una copia oficial de respaldo a tu correo <strong>${info.email}</strong> desde <em>profesor@physicsailab.com</em>.
+                </div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:0.65rem;">
+                <button class="btn btn-primary" onclick="closeWompiApprovalModal(); window.navigateToSection('cursos', true);" style="justify-content:center; padding:0.75rem; font-size:0.95rem; font-weight:700;">
+                    🚀 Entrar al Curso Desbloqueado
+                </button>
+                <a href="https://wa.me/573137115473?text=${encodeURIComponent('Hola profesor Manuel Obando, acabo de pagar mi curso «' + info.cursoTitulo + '» en Wompi con clave «' + info.codigo + '». ¡Muchas gracias!')}" target="_blank" class="btn btn-secondary" style="justify-content:center; font-size:0.82rem; padding:0.55rem; border-color:rgba(16,185,129,0.3); color:#34D399;">
+                    💬 Escribir al docente por WhatsApp
+                </a>
+            </div>
+        `;
+
+        modal.classList.add('active');
+    };
+
+    async function checkWompiRedirectApproval() {
+        try {
+            const urlParams = new URLSearchParams(window.location.search);
+            const txId = urlParams.get('id');
+            if (!txId) return;
+
+            // Limpiar la URL para evitar reprocesar si el usuario recarga
+            const cleanUrl = window.location.origin + window.location.pathname + (window.location.hash || '');
+            window.history.replaceState({}, document.title, cleanUrl);
+
+            showToast('🔄 Verificando transacción de Wompi Bancolombia...');
+
+            // Consultar a la API pública oficial de transacciones Wompi
+            const res = await fetch(`https://production.wompi.co/v1/transactions/${txId}`);
+            if (!res.ok) return;
+            const dataRes = await res.json();
+            const tx = dataRes && dataRes.data;
+
+            if (tx && tx.status === 'APPROVED') {
+                // Notificar al Webhook Serverless para asegurar la emisión de la licencia y el envío del correo oficial
+                fetch('/api/wompi-webhook', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ event: 'transaction.updated', data: { transaction: tx } })
+                }).catch(() => {});
+
+                // Sincronizar licencias y desbloquear el curso
+                setTimeout(() => {
+                    syncLicensesFromCloud((licenses) => {
+                        const lic = (licenses || []).find(l => l.transaccionId === txId);
+                        const courseId = lic ? lic.cursoId : 'mecanica';
+                        const targetCourse = (data.cursos || []).find(c => c.id === courseId) || { titulo: 'Curso Adquirido' };
+                        const assignedKey = lic ? lic.codigo : 'VERIFICANDO...';
+
+                        unlockCourse(courseId);
+
+                        showWompiApprovalModal({
+                            cursoTitulo: targetCourse.titulo,
+                            codigo: assignedKey,
+                            email: tx.customer_email || 'tu correo registrado',
+                            transaccionId: txId
+                        });
+                    });
+                }, 1200);
+            }
+        } catch(e) {
+            console.error('[Wompi Redirect Handler Error]:', e);
+        }
+    }
+
+    // Ejecutar verificación de retorno Wompi al cargar
+    setTimeout(checkWompiRedirectApproval, 400);
+
     // Abrir checkout directo si la URL viene con ?buy=cursoId
     try {
         const urlParams = new URLSearchParams(window.location.search);
@@ -7526,6 +7638,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initPageRouter();
 
 });
+
 
 
 
