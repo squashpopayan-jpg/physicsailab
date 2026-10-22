@@ -1,0 +1,465 @@
+<!-- ==========================================================================
+     PLANTILLA HTML PRINCIPAL (SHELL) · LABORATORIO DE PÉNDULO SIMPLE
+     Mg. Manuel Alejandro Obando · Departamento de Física, Universidad del Cauca
+     ========================================================================== -->
+
+<header class="top">
+  <a class="brand" href="#banco" aria-label="Péndulo Simple, inicio">
+    <div class="brand-icon">⏱️</div>
+    <div>
+      <span>Péndulo Simple &amp; Gravedad (g)</span>
+      <small>Laboratorio Virtual · Física Fundamental · Universidad del Cauca</small>
+    </div>
+  </a>
+
+  <nav class="nav" aria-label="Pestañas de Navegación">
+    <a href="#banco" class="active" data-tab="banco">🔬 Banco &amp; Simulación</a>
+    <a href="#cuaderno" data-tab="cuaderno">📓 Cuaderno &amp; Errores</a>
+    <a href="#matematico" data-tab="matematico">📐 Péndulo Matemático</a>
+    <a href="#guia" data-tab="guia">📖 Guía de Práctica</a>
+  </nav>
+
+  <div class="top-chip" id="topChip">
+    Puesto N.º <b id="topBanco">01</b>
+    <span id="topGrupo">Sin asignar</span>
+  </div>
+
+  <button type="button" class="theme-toggle" id="btnThemeToggle" title="Cambiar tema oscuro / claro">
+    🌓
+  </button>
+</header>
+
+<main class="main">
+
+  <!-- ====================================================================
+       PESTAÑA 1: BANCO DE TRABAJO & SIMULACIÓN VIRTUAL
+       ==================================================================== -->
+  <section id="tab-banco" class="view-panel active">
+    <div class="intro">
+      <div>
+        <p class="eyebrow">Práctica Experimental · Medición de la Aceleración de la Gravedad Local</p>
+        <h1>Banco de Ensayo: Péndulo Simple</h1>
+        <p>
+          Ajusta la longitud de la cuerda hasta el centro de masa de la plomada, suelta desde ángulos pequeños (≤ 10°) y cronometra 10 oscilaciones completas para minimizar la incertidumbre del tiempo de reacción humano.
+        </p>
+      </div>
+
+      <!-- Configuración del puesto y grupo -->
+      <div class="setup-panel">
+        <label for="selBanco">
+          Puesto de Trabajo
+          <select id="selBanco"></select>
+        </label>
+        <label for="inpGrupo">
+          Integrantes del Grupo
+          <input type="text" id="inpGrupo" placeholder="Ej: Diana Valencia, Carlos Pérez">
+        </label>
+        <button type="button" class="btn primary small" id="btnAplicarGrupo">Guardar</button>
+      </div>
+    </div>
+
+    <div class="bench-grid">
+      <!-- Columna Izquierda: Escenario Canvas del Péndulo -->
+      <div class="panel">
+        <div class="stage-wrap">
+          <canvas id="pendulumCanvas" role="img" aria-label="Simulación física del péndulo simple oscilando en un soporte universal con transportador y fotocompuerta"></canvas>
+          
+          <div class="stage-overlay">
+            <div class="hud-tag">Ángulo actual: <b id="hudAngle">0.0°</b></div>
+            <div class="hud-tag">Periodo teórico T₀: <b id="hudPeriod">1.80 s</b></div>
+            <div class="hud-tag">Oscilaciones (Fotocompuerta): <b id="hudOscCount">0 / 10</b></div>
+          </div>
+        </div>
+
+        <div class="stage-controls-bar">
+          <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+            <button type="button" class="btn primary" id="btnStart" title="Soltar el péndulo para iniciar oscilación">▶ Soltar / Iniciar</button>
+            <button type="button" class="btn" id="btnPause" title="Pausar o reanudar el movimiento">⏸ Pausar</button>
+            <button type="button" class="btn" id="btnReset" title="Regresar al ángulo inicial y reiniciar contadores">↺ Reiniciar</button>
+          </div>
+
+          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <label style="font-size:12px; color:var(--sub); display:flex; align-items:center; gap:4px;">
+              Velocidad:
+              <select id="selSpeed" style="background:var(--soft); border:1px solid var(--line); border-radius:4px; padding:2px 6px; font-size:12px;">
+                <option value="1.0">1.0× (Real)</option>
+                <option value="0.5">0.5× (Cámara Lenta)</option>
+                <option value="0.25">0.25× (Precisión)</option>
+              </select>
+            </label>
+
+            <button type="button" class="btn small" id="btnToggleVectors" title="Mostrar u ocultar vectores de velocidad y fuerza">🎯 Vectores</button>
+            <button type="button" class="btn small" id="btnTogglePhotogate" title="Activar u ocultar sensor de fotocompuerta">⚡ Fotocompuerta</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Columna Derecha: Parámetros e Instrumentos de Medición -->
+      <div class="controls-panel">
+        
+        <!-- Cronómetro Digital de Mano -->
+        <div class="stopwatch-box">
+          <div style="font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:var(--sub); margin-bottom:4px;">
+            Cronómetro Digital de Laboratorio (0.01 s)
+          </div>
+          <div class="stopwatch-display" id="stopwatchDisplay">00:00.00</div>
+          
+          <div class="stopwatch-laps">
+            <span>Oscilación: <b id="stopwatchLapCount">0</b> / 10</span>
+            <span>Promedio por osc: <b id="stopwatchTUnit">0.00 s</b></span>
+          </div>
+
+          <div class="stopwatch-actions">
+            <button type="button" class="btn primary" id="btnSwStart">⏱ Iniciar / Detener</button>
+            <button type="button" class="btn" id="btnSwLap">🏷 Marcar Oscilación</button>
+            <button type="button" class="btn quiet" id="btnSwReset">↺ Poner a Cero</button>
+          </div>
+
+          <button type="button" class="btn success" id="btnSendToNotebook" style="width:100%; margin-top:12px; font-weight:700;">
+            📥 Enviar Tiempo Actual a la Fila del Cuaderno
+          </button>
+        </div>
+
+        <!-- Control de Longitud de Cuerda -->
+        <div class="ctl-group">
+          <h4>Longitud del Péndulo (L) <span id="valLength">0.80 m (80.0 cm)</span></h4>
+          <div class="slider-row">
+            <input type="range" id="rngLength" min="0.20" max="1.50" step="0.01" value="0.80">
+            <span class="val" id="valLengthShort">0.80 m</span>
+          </div>
+          <div class="preset-btns">
+            <span style="font-size:11px; color:var(--sub); margin-right:4px;">Valores Guía:</span>
+            <button type="button" class="btn small quiet preset-l" data-l="0.30">0.30 m</button>
+            <button type="button" class="btn small quiet preset-l" data-l="0.50">0.50 m</button>
+            <button type="button" class="btn small quiet preset-l" data-l="0.70">0.70 m</button>
+            <button type="button" class="btn small quiet preset-l" data-l="0.90">0.90 m</button>
+            <button type="button" class="btn small quiet preset-l" data-l="1.10">1.10 m</button>
+            <button type="button" class="btn small quiet preset-l" data-l="1.30">1.30 m</button>
+          </div>
+          <small style="color:var(--sub); font-size:11px; display:block; margin-top:6px;">
+            Medida desde el borde inferior de la pinza de suspensión hasta el centro de masa de la plomada.
+          </small>
+        </div>
+
+        <!-- Control de Ángulo Inicial -->
+        <div class="ctl-group">
+          <h4>Ángulo Inicial (θ₀) <span id="valAngle0">10.0°</span></h4>
+          <div class="slider-row">
+            <input type="range" id="rngAngle0" min="2" max="45" step="0.5" value="10">
+            <span class="val" id="valAngle0Short">10°</span>
+          </div>
+          <div id="angleWarning" style="font-size:11px; color:var(--signal); display:none; margin-top:4px;">
+            ⚠️ <strong>Amplitud grande (&gt; 10°):</strong> La aproximación armónica lineal pierde validez (T &gt; 2π√(L/g)).
+          </div>
+        </div>
+
+        <!-- Control de Masa y Gravedad -->
+        <div class="ctl-group">
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+            <div>
+              <h4 style="margin-bottom:6px;">Masa (m) <span id="valMass">50 g</span></h4>
+              <input type="range" id="rngMass" min="0.02" max="0.20" step="0.01" value="0.05" style="width:100%;">
+              <small style="color:var(--sub); font-size:10px;">Comprobar independencia de T.</small>
+            </div>
+            <div>
+              <h4 style="margin-bottom:6px;">Entorno Gravitacional</h4>
+              <select id="selGravity" style="width:100%; background:var(--soft); border:1px solid var(--line); border-radius:6px; padding:4px 6px; font-size:12px; color:var(--ink);">
+                <option value="popayan" selected>Popayán (9.776 m/s²)</option>
+                <option value="bogota">Bogotá (9.774 m/s²)</option>
+                <option value="medellin">Medellín (9.780 m/s²)</option>
+                <option value="cali">Cali (9.781 m/s²)</option>
+                <option value="barranquilla">Barranquilla (9.782 m/s²)</option>
+                <option value="estandar">Nivel del mar (9.807 m/s²)</option>
+                <option value="luna">La Luna (1.622 m/s²)</option>
+                <option value="marte">Marte (3.721 m/s²)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       PESTAÑA 2: CUADERNO DIGITAL & TRATAMIENTO DE ERRORES
+       ==================================================================== -->
+  <section id="tab-cuaderno" class="view-panel" hidden>
+    <div class="intro">
+      <div>
+        <p class="eyebrow">Registro Metrológico Oficial · GUM / Mínimos Cuadrados</p>
+        <h2>Cuaderno Digital de Datos &amp; Propagación de Errores</h2>
+        <p>
+          Registra las longitudes y los tres ensayos de tiempo para 10 oscilaciones. El sistema calcula automáticamente los periodos promedio, las desviaciones estándar, el ajuste lineal $T^2 = m \cdot L + c$, el valor experimental de la aceleración de la gravedad ($g = 4\pi^2 / m$), su incertidumbre propagada y la prueba de compatibilidad $Z$-score.
+        </p>
+      </div>
+
+      <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+        <button type="button" class="btn" id="btnAutoFillGroupData" title="Llenar con las mediciones reales generadas para este banco">🎲 Autollenar con Datos del Banco</button>
+        <button type="button" class="btn" id="btnExportCSV" title="Descargar archivo CSV compatible con Excel y Python">📥 Exportar CSV</button>
+        <button type="button" class="btn quiet" id="btnClearTable" title="Limpiar todas las filas">🗑️ Vaciar Tabla</button>
+      </div>
+    </div>
+
+    <div class="cuaderno-grid">
+      <!-- Tabla Principal de Datos -->
+      <div class="table-responsive">
+        <table class="data-table" id="tableData">
+          <thead>
+            <tr>
+              <th title="Número de fila">#</th>
+              <th title="Longitud medida hasta el centro de masa">L (m)</th>
+              <th title="Incertidumbre de la cinta métrica">ΔL (m)</th>
+              <th title="Tiempo de 10 oscilaciones - Ensayo 1">t₁ (s)</th>
+              <th title="Tiempo de 10 oscilaciones - Ensayo 2">t₂ (s)</th>
+              <th title="Tiempo de 10 oscilaciones - Ensayo 3">t₃ (s)</th>
+              <th title="Tiempo promedio de 10 oscilaciones" class="calc-col">t̄₁₀ (s)</th>
+              <th title="Desviación estándar de los tiempos" class="calc-col">s_t (s)</th>
+              <th title="Periodo de 1 oscilación: T = t̄ / 10" class="calc-col">T (s)</th>
+              <th title="Incertidumbre combinada del periodo" class="calc-col">ΔT (s)</th>
+              <th title="Periodo al cuadrado" class="calc-col">T² (s²)</th>
+              <th title="Incertidumbre de T²: 2*T*ΔT" class="calc-col">Δ(T²) (s²)</th>
+              <th title="Gravedad calculada por punto: 4*π²*L / T²" class="calc-col">g_i (m/s²)</th>
+              <th title="Acción">Acción</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <!-- Filas inyectadas por JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <button type="button" class="btn primary small" id="btnAddRow">➕ Añadir Nueva Fila de Medición</button>
+        <span style="font-size:12px; color:var(--sub);">
+          * Las columnas en azul se calculan automáticamente en tiempo real al escribir o capturar tiempos.
+        </span>
+      </div>
+
+      <!-- Tarjetas de Resultados Metrológicos -->
+      <div class="error-cards-grid">
+        <div class="res-card" id="cardGExp">
+          <div class="label">Gravedad Experimental (g_exp)</div>
+          <div class="value" id="resGExp">—</div>
+          <div class="hint" id="resGExpHint">Calculada desde la pendiente: g = 4π² / m</div>
+        </div>
+
+        <div class="res-card" id="cardUG">
+          <div class="label">Incertidumbre Propagada Δg</div>
+          <div class="value" id="resUG">—</div>
+          <div class="hint" id="resUGHint">Δg = g · (Δm / m)</div>
+        </div>
+
+        <div class="res-card" id="cardErrRel">
+          <div class="label">Error Relativo Porcentual (%E)</div>
+          <div class="value" id="resErrRel">—</div>
+          <div class="hint" id="resErrRelHint">Respecto a Popayán (9.776 m/s²)</div>
+        </div>
+
+        <div class="res-card" id="cardR2">
+          <div class="label">Bondad de Ajuste (R²)</div>
+          <div class="value" id="resR2">—</div>
+          <div class="hint" id="resR2Hint">Coeficiente de correlación lineal</div>
+        </div>
+
+        <div class="res-card" id="cardZScore">
+          <div class="label">Compatibilidad Z-Score</div>
+          <div class="value" id="resZScore">—</div>
+          <div class="hint" id="resZScoreHint">Criterio metrológico |g - g_ref| / √(u² + u_ref²)</div>
+        </div>
+      </div>
+
+      <!-- Sección de Gráficas Interactivas -->
+      <div class="chart-box">
+        <div class="chart-header">
+          <div>
+            <h3 style="margin:0 0 4px 0;">Gráfica Experimental y Regresión por Mínimos Cuadrados</h3>
+            <p style="margin:0; font-size:13px; color:var(--sub);" id="chartSubtitle">
+              Linealización: T² en función de L con barras de error e intervalo de ajuste
+            </p>
+          </div>
+
+          <div style="display:flex; gap:6px;">
+            <button type="button" class="btn small active" id="btnChartLinear">📈 Lineal: T² vs L</button>
+            <button type="button" class="btn small" id="btnChartCurve">📉 No Lineal: T vs L</button>
+          </div>
+        </div>
+
+        <div class="svg-chart-wrap" id="chartContainer">
+          <svg id="svgChart" viewBox="0 0 800 360" preserveAspectRatio="none">
+            <!-- Renderizado dinámico en app.js -->
+          </svg>
+        </div>
+
+        <div style="margin-top:12px; font-size:13px; color:var(--sub); display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+          <span id="chartEquationText">Ecuación de la recta: <b>T² = m·L + c</b></span>
+          <span id="chartSlopeText">Pendiente: <b>m = —</b> | Intercepto: <b>c = —</b></span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       PESTAÑA 3: PÉNDULO MATEMÁTICO (ANÁLISIS TEÓRICO RIGUROSO)
+       ==================================================================== -->
+  <section id="tab-matematico" class="view-panel" hidden>
+    <div class="intro">
+      <div>
+        <p class="eyebrow">Marco Teórico &amp; Dinámica Analítica</p>
+        <h2>Deducción del Péndulo Matemático &amp; Amplitudes Grandes</h2>
+        <p>
+          Analiza la formulación matemática rigurosa del sistema, la aproximación de pequeñas oscilaciones (M.A.S.), la divergencia no lineal en ángulos grandes y el balance de energía mecánica.
+        </p>
+      </div>
+    </div>
+
+    <div class="math-section">
+      <!-- Tarjeta 1: Ecuación Diferencial -->
+      <div class="math-card">
+        <h3>1. Deducción Dinámica (Segunda Ley de Newton para Rotación)</h3>
+        <p>
+          Consideremos una masa puntual $m$ suspendida de un hilo inextensible de masa despreciable y longitud $L$. La única fuerza que produce torque respecto al pivote es la componente tangencial del peso:
+        </p>
+
+        <div class="math-formula-box">
+          τ = -m · g · L · sin(θ) = I · α = m · L² · (d²θ / dt²)
+        </div>
+
+        <p>
+          Dividiendo entre el momento de inercia $I = m L^2$, se obtiene la <strong>ecuación diferencial no lineal fundamental del péndulo simple</strong>:
+        </p>
+
+        <div class="math-formula-box" style="border-left-color: var(--ok); color:#38bdf8;">
+          d²θ / dt² + (g / L) · sin(θ) = 0
+        </div>
+      </div>
+
+      <!-- Tarjeta 2: Aproximación Armónica Simple vs No Lineal -->
+      <div class="math-card">
+        <h3>2. Régimen de Pequeñas Oscilaciones (M.A.S.)</h3>
+        <p>
+          Cuando la amplitud es pequeña ($\theta \ll 1\text{ rad}$ o $\theta \le 10^\circ \approx 0.1745\text{ rad}$), podemos aproximar $\sin\theta \approx \theta$ mediante la serie de Taylor ($\sin\theta = \theta - \theta^3/6 + \dots$).
+          La ecuación se linealiza en la forma del Movimiento Armónico Simple:
+        </p>
+
+        <div class="math-formula-box">
+          d²θ / dt² + ω₀² · θ = 0, &nbsp;&nbsp; con ω₀ = √(g / L)
+        </div>
+
+        <p>
+          El periodo fundamental de oscilación $T_0$ es independiente de la amplitud $\theta_0$ y de la masa $m$ (isocronismo de Galileo):
+        </p>
+
+        <div class="math-formula-box" style="border-left-color:#a855f7;">
+          T₀ = 2π / ω₀ = 2π · √(L / g) &nbsp;&implies;&nbsp; T₀² = (4π² / g) · L
+        </div>
+      </div>
+
+      <!-- Tarjeta 3: Comparador Interactivo de Amplitudes Grandes -->
+      <div class="math-card">
+        <h3>3. Análisis de Amplitudes Grandes (Solución Exacta con Series de Legendre)</h3>
+        <p>
+          Para amplitudes mayores a 10°, el periodo deja de ser constante y aumenta en función del ángulo inicial $\theta_0$. La solución analítica exacta requiere integrales elípticas de primera especie $K(k)$, cuya expansión en serie es:
+        </p>
+
+        <div class="math-formula-box">
+          T(θ₀) = T₀ · [ 1 + (1/4)·sin²(θ₀/2) + (9/64)·sin⁴(θ₀/2) + ... ] ≈ T₀ · [ 1 + θ₀² / 16 ]
+        </div>
+
+        <!-- Calculadora Interactiva de Error por Amplitud -->
+        <div class="nonlinear-calculator">
+          <div>
+            <h4 style="margin-bottom:12px; color:var(--accent);">Calculadora de Discrepancia No Lineal</h4>
+            <label style="font-size:13px; font-weight:600; display:block; margin-bottom:6px;">
+              Selecciona el Ángulo Inicial (θ₀): <span id="mathAngleLabel" style="color:var(--accent); font-family:var(--mono);">20.0°</span>
+            </label>
+            <input type="range" id="rngMathAngle" min="1" max="80" step="1" value="20" style="width:100%; margin-bottom:12px;">
+
+            <div style="font-size:13px; line-height:1.6; color:var(--sub);">
+              • Periodo Armónico Lineal (T₀): <strong id="mathT0" style="color:var(--ink);">1.796 s</strong><br>
+              • Periodo No Lineal Exacto T(θ₀): <strong id="mathTExact" style="color:#38bdf8;">1.810 s</strong><br>
+              • Corrección relativa: <strong id="mathDeltaPct" style="color:var(--signal);">+0.76 %</strong><br>
+              • Impacto en cálculo de g: <strong id="mathGDelta" style="color:var(--danger);">-1.52 % de sesgo si no se corrige</strong>
+            </div>
+          </div>
+
+          <div style="background:var(--soft); border-radius:10px; padding:14px; font-size:13px; line-height:1.5;">
+            <strong style="color:var(--ok); display:block; margin-bottom:6px;">💡 Criterio Experimental de Laboratorio:</strong>
+            Al trabajar con $\theta_0 \le 10^\circ$, el error introducido por la no linealidad es inferior al <strong>0.19 %</strong>, un valor significativamente menor que la incertidumbre típica del tiempo de reacción humano (~0.5 % a 1.5 %). Por esto, mantener el péndulo por debajo de 10° es el estándar metrológico en física universitaria.
+          </div>
+        </div>
+      </div>
+
+      <!-- Tarjeta 4: Péndulo Físico vs Matemático -->
+      <div class="math-card">
+        <h3>4. Efecto del Tamaño de la Masa (Péndulo Físico)</h3>
+        <p>
+          En un montaje real, la esfera no es un punto adimensional sino un cuerpo rígido de radio $R$ y masa $m$. Aplicando el Teorema de Ejes Paralelos (Steiner), su momento de inercia es $I = m L^2 + \frac{2}{5} m R^2$. El periodo real del péndulo físico resulta:
+        </p>
+
+        <div class="math-formula-box">
+          T_físico = 2π · √( I / (m·g·L) ) = T₀ · √( 1 + 0.4 · (R / L)² )
+        </div>
+
+        <p>
+          Para una tuerca o esfera de radio $R = 1.2\text{ cm}$ en una cuerda de $L = 80\text{ cm}$, el factor corrector $(R/L)^2 = (0.012/0.80)^2 \approx 0.00022$, lo que representa una desviación de apenas el <strong>0.009 %</strong>, demostrando que la aproximación de masa puntual es plenamente válida.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       PESTAÑA 4: GUÍA DE PRÁCTICA OFICIAL (UNIVERSIDAD DEL CAUCA)
+       ==================================================================== -->
+  <section id="tab-guia" class="view-panel" hidden>
+    <div class="intro">
+      <div>
+        <p class="eyebrow">Documentación Docente Oficial · Práctica F10-03</p>
+        <h2>Guía de Laboratorio: Péndulo Simple y Gravedad Local</h2>
+        <p>
+          Guía estructurada según el modelo didáctico del Mg. Manuel Alejandro Obando, Departamento de Física de la Universidad del Cauca.
+        </p>
+      </div>
+    </div>
+
+    <div class="math-section">
+      <div class="math-card">
+        <h3>🎯 Objetivos de la Práctica</h3>
+        <ul>
+          <li>Identificar experimentalmente las variables físicas de las que depende el periodo de un péndulo simple (longitud, masa, amplitud).</li>
+          <li>Medir el periodo con una incertidumbre menor que el tiempo de reacción humano cronometrando trenes de 10 oscilaciones.</li>
+          <li>Linealizar la relación cuadrática entre periodo y longitud ($T^2$ vs $L$) para obtener la aceleración gravitacional local $g$ con su incertidumbre propagada.</li>
+          <li>Comparar el valor experimental obtenido con el valor geofísico de referencia de Popayán ($g_{\text{ref}} = 9.776\text{ m/s}^2$).</li>
+        </ul>
+      </div>
+
+      <div class="math-card">
+        <h3>📋 Materiales de Montaje (Kits de Bajo Costo)</h3>
+        <ul>
+          <li><strong>Hilo inextensible:</strong> Cuerda fina de nailon de 0.3 a 0.5 mm de 1.5 metros.</li>
+          <li><strong>Cuerpo oscilante:</strong> Masa compacta de plomada, perno o tuerca de 30 a 60 gramos.</li>
+          <li><strong>Punto de suspensión:</strong> Prensa en C con pinza de ropa de madera que fije con nitidez el eje de giro.</li>
+          <li><strong>Instrumentos de medición:</strong> Flexómetro de 2 o 3 metros (resolución 1 mm), cronómetro digital (0.01 s) y transportador de ángulos.</li>
+        </ul>
+      </div>
+
+      <div class="math-card">
+        <h3>⚠️ Fuentes Comunes de Error Experimental y Cómo Evitarlas</h3>
+        <ul>
+          <li><strong>Medir L hasta el nudo:</strong> $L$ debe medirse rigurosamente hasta el centro de masa de la plomada. Medir hasta el nudo acorta $L$ artificialmente y subestima el valor de $g$.</li>
+          <li><strong>Contar «uno» al soltar:</strong> Se debe contar «cero» en el primer paso por la vertical más baja o al iniciar el cronómetro; de lo contrario se miden 9 oscilaciones en vez de 10.</li>
+          <li><strong>Soltar con empujón o trayectoria elíptica:</strong> El péndulo debe soltarse suavemente desde el reposo en un único plano vertical.</li>
+          <li><strong>Amplitudes superiores a 10°:</strong> Se pierde el régimen de pequeñas oscilaciones y el periodo se alarga por efectos no lineales.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="pie">
+  <p>
+    <strong>PhysicsAILab</strong> · Laboratorio de Péndulo Simple &amp; Gravedad · Mg. Manuel Alejandro Obando (Universidad del Cauca) · 2026
+  </p>
+</footer>

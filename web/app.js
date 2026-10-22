@@ -1175,7 +1175,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div style="font-size:2.5rem; margin-bottom:0.75rem;">⭐</div>
                     <h3 style="color:#fff; margin-bottom:0.5rem;">No tienes cursos ni simuladores en favoritos</h3>
                     <p style="color:var(--text-muted); font-size:0.88rem; max-width:480px; margin:0 auto 1.25rem;">
-                        Explora los 18 cursos, cuadernos computacionales y laboratorios virtuales. Pulsa el botón <strong>🔖 Guardar</strong> en cualquier materia para tenerla aquí a mano en tus sesiones de estudio.
+                        Explora los 19 cursos, cuadernos computacionales y laboratorios virtuales. Pulsa el botón <strong>🔖 Guardar</strong> en cualquier materia para tenerla aquí a mano en tus sesiones de estudio.
                     </p>
                     <button class="btn btn-primary" onclick="closeStudentProfileModal(); location.href='#cursos';">
                         Explorar Cursos &amp; Labs 🚀
@@ -2468,6 +2468,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="card-actions" style="flex-wrap:wrap; gap:0.4rem;">
                         ${c.demoPath ? `<a href="${c.demoPath}" target="_blank" class="btn btn-primary" style="flex:1; justify-content:center;">${openBtnText}</a>` : ''}
                         ${c.id === 'venturi' ? `<button type="button" class="btn btn-secondary" onclick="openVenturiGroupModal()" style="border-color:rgba(56,189,248,0.5); color:#38bdf8; display:inline-flex; align-items:center; gap:0.35rem;" title="Organizar puestos y asignar bancos para grupos (1 al 24)">👥 Puestos Grupos (1-24)</button>` : ''}
+                        ${c.id === 'pendulo' ? `<button type="button" class="btn btn-secondary" onclick="openPenduloGroupModal()" style="border-color:rgba(56,189,248,0.5); color:#38bdf8; display:inline-flex; align-items:center; gap:0.35rem;" title="Organizar puestos y asignar bancos para grupos (1 al 24)">👥 Puestos Grupos (1-24)</button>` : ''}
                         ${!courseUnlocked ? `<button class="btn btn-secondary btn-course-key" onclick="openCourseKeyModal('${c.id}')" title="Ingresar clave para ${c.titulo}">🔑 Clave Alumno</button>` : ''}
                         ${!courseUnlocked && c.enlaceCompra ? `<button class="btn btn-secondary" onclick="openPaymentModal('${c.id}')" style="border-color:rgba(0,234,144,0.5); color:#00EA90; display:inline-flex; align-items:center; gap:0.35rem;" title="Comprar en portal oficial Wompi (PSE / Nequi / Bancolombia)"><img src="./wompi-iso-secondary.svg" style="height:14px; width:14px;" />${buyBtnText}</button>` : ''}
                         <button class="btn btn-secondary" onclick="openCourseDetails('${c.id}')">${detailsBtnText}</button>
@@ -2849,6 +2850,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 </button>
             </div>
             ` : ''}
+            ${course.id === 'pendulo' ? `
+            <div style="background:linear-gradient(135deg, rgba(15,23,42,0.95), rgba(30,41,59,0.9)); border:1px solid rgba(56,189,248,0.4); border-radius:12px; padding:1.2rem; margin-bottom:1.5rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.6rem;">
+                    <h4 style="color:#38bdf8; margin:0; display:flex; align-items:center; gap:0.45rem; font-size:1.05rem;">
+                        👥 Puestos de Trabajo y Asignación para Grupos (Bancos 1 al 24)
+                    </h4>
+                    <span class="badge" style="background:rgba(56,189,248,0.15); color:#38bdf8; border-color:rgba(56,189,248,0.3);">24 Puestos Únicos</span>
+                </div>
+                <p style="font-size:0.87rem; color:#cbd5e1; margin-bottom:1rem; line-height:1.55;">
+                    Para la práctica de medición de la aceleración de la gravedad con péndulo simple y tratamiento de errores, cada equipo de laboratorio debe utilizar un puesto diferente. Cada banco genera parámetros únicos de instrumentación (micro-variaciones de longitud de nudo, tiempos de reacción del cronometrista y masa de plomada) para asegurar que cada grupo tome y procese sus propios datos experimentales sin duplicidad.
+                </p>
+                <button type="button" class="btn btn-primary" onclick="closeModal(); openPenduloGroupModal();" style="display:inline-flex; align-items:center; gap:0.4rem; background:linear-gradient(135deg, #0284c7, #38bdf8); color:#fff; font-weight:700; font-size:0.9rem;">
+                    👥 Seleccionar Puesto / Banco de mi Grupo (1-24) 🚀
+                </button>
+            </div>
+            ` : ''}
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
                 <div>
                     <span style="font-size:0.85rem; color:var(--text-muted);">Modalidad:</span>
@@ -3004,6 +3021,153 @@ document.addEventListener('DOMContentLoaded', () => {
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(fullUrl).then(() => {
                 showToast(`📋 Enlace del Banco N.º ${String(b).padStart(2, '0')} copiado. ¡Listo para compartir con tu grupo!`);
+            }).catch(() => {
+                prompt('Copia este enlace directo para tu grupo:', fullUrl);
+            });
+        } else {
+            prompt('Copia este enlace directo para tu grupo:', fullUrl);
+        }
+    };
+
+    // Modal de Organización y Asignación de Grupos para Laboratorio Péndulo Simple
+    window.currentPenduloBanco = 1;
+
+    window.openPenduloGroupModal = function(initialBanco) {
+        if (initialBanco && initialBanco >= 1 && initialBanco <= 24) {
+            window.currentPenduloBanco = initialBanco;
+        }
+        const modal = document.getElementById('pendulo-group-modal');
+        if (!modal) return;
+        window.renderPenduloGroupModalContent();
+        modal.classList.add('active');
+    };
+
+    window.closePenduloGroupModal = function() {
+        const modal = document.getElementById('pendulo-group-modal');
+        if (modal) modal.classList.remove('active');
+    };
+
+    window.selectPenduloBanco = function(bancoNum) {
+        window.currentPenduloBanco = Math.max(1, Math.min(24, parseInt(bancoNum, 10) || 1));
+        window.renderPenduloGroupModalContent();
+    };
+
+    window.renderPenduloGroupModalContent = function() {
+        const modalBody = document.getElementById('modal-pendulo-group-body');
+        if (!modalBody) return;
+        const b = window.currentPenduloBanco || 1;
+        const savedGroupName = localStorage.getItem('pendulo_grupo_banco_' + b) || localStorage.getItem('pendulo_last_group_name') || '';
+
+        let gridHtml = '';
+        for (let i = 1; i <= 24; i++) {
+            const isSel = (i === b);
+            gridHtml += `
+                <button type="button" 
+                        class="btn-banco-pill ${isSel ? 'active' : ''}" 
+                        onclick="window.selectPenduloBanco(${i})"
+                        style="padding:0.45rem 0.65rem; border-radius:8px; font-size:0.8rem; font-weight:700; cursor:pointer; transition:all 0.2s ease;
+                               background:${isSel ? 'linear-gradient(135deg, #0284c7, #38bdf8)' : 'rgba(255,255,255,0.05)'};
+                               color:${isSel ? '#ffffff' : '#cbd5e1'};
+                               border:1px solid ${isSel ? '#38bdf8' : 'rgba(255,255,255,0.1)'};
+                               box-shadow:${isSel ? '0 0 10px rgba(56,189,248,0.4)' : 'none'};">
+                    ${isSel ? '📍 ' : ''}Puesto ${String(i).padStart(2, '0')}
+                </button>
+            `;
+        }
+
+        modalBody.innerHTML = `
+            <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.5rem; flex-wrap:wrap;">
+                <span class="badge" style="background:rgba(56,189,248,0.15); color:#38bdf8; border-color:rgba(56,189,248,0.4); font-size:0.75rem;">
+                    ⏱️ Física Mecánica · Universidad del Cauca
+                </span>
+                <span class="badge" style="background:rgba(16,185,129,0.15); color:#34D399; border-color:rgba(16,185,129,0.4); font-size:0.75rem;">
+                    24 Puestos Independientes para Grupos
+                </span>
+            </div>
+
+            <h2 style="font-size:1.65rem; color:#38bdf8; margin-bottom:0.4rem; display:flex; align-items:center; gap:0.5rem;">
+                👥 Péndulo Simple & Medición de Gravedad: Asignación de Puestos
+            </h2>
+            <p style="color:#cbd5e1; font-size:0.9rem; line-height:1.5; margin-bottom:1.25rem;">
+                Selecciona el <strong>puesto o banco asignado por el docente</strong> para tu equipo de laboratorio. Cada puesto cuenta con una calibración específica de flexómetro, tolerancia de masa en la plomada y tiempo de reacción característico del cronometrista para garantizar la originalidad de cada informe experimental.
+            </p>
+
+            <div style="background:rgba(15,23,42,0.7); border:1px solid rgba(56,189,248,0.25); border-radius:12px; padding:1.1rem; margin-bottom:1.25rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
+                    <span style="font-size:0.9rem; font-weight:700; color:#ffffff;">
+                        📍 Puesto Seleccionado: <strong style="color:#38bdf8; font-size:1.05rem;">Puesto N.º ${String(b).padStart(2, '0')} (Módulo PS-2026-${String(b).padStart(2, '0')})</strong>
+                    </span>
+                    <span style="font-size:0.78rem; color:#94a3b8;">
+                        Pulsa cualquier botón para cambiar de puesto
+                    </span>
+                </div>
+                <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(95px, 1fr)); gap:0.45rem;">
+                    ${gridHtml}
+                </div>
+            </div>
+
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-color); border-radius:12px; padding:1.1rem; margin-bottom:1.25rem;">
+                <div style="margin-bottom:0.85rem;">
+                    <label for="pendulo-grupo-input" style="display:block; font-size:0.85rem; font-weight:600; color:#ffffff; margin-bottom:0.35rem;">
+                        👥 Integrantes del Grupo (Opcional):
+                    </label>
+                    <input type="text" id="pendulo-grupo-input" value="${savedGroupName}" placeholder="Ej: Diana Valencia, Carlos Pérez, Andrés Gómez" 
+                           style="width:100%; padding:0.6rem 0.8rem; background:#0f172a; border:1px solid #334155; border-radius:8px; color:#ffffff; font-size:0.9rem;">
+                    <small style="color:#94a3b8; font-size:0.75rem; display:block; margin-top:0.25rem;">
+                        Aparecerá en el encabezado del laboratorio, en la bitácora oficial y en el archivo CSV exportable.
+                    </small>
+                </div>
+
+                <div style="display:flex; gap:0.6rem; flex-wrap:wrap; align-items:center; justify-content:space-between;">
+                    <button type="button" class="btn btn-primary" onclick="window.launchPenduloBanco(${b})" style="flex:1; justify-content:center; padding:0.75rem 1.25rem; font-size:0.95rem; font-weight:700; background:linear-gradient(135deg, #0284c7, #38bdf8);">
+                        🚀 Entrar a mi Puesto de Trabajo (Banco ${String(b).padStart(2, '0')})
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="window.copyPenduloGroupLink(${b})" style="border-color:rgba(56,189,248,0.4); color:#38bdf8; display:inline-flex; align-items:center; gap:0.4rem; padding:0.75rem 1rem; font-size:0.88rem;">
+                        📋 Copiar Enlace para el Grupo
+                    </button>
+                </div>
+            </div>
+
+            <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.3); border-radius:12px; padding:1rem; font-size:0.85rem; color:#cbd5e1; line-height:1.5;">
+                <strong style="color:#6ee7b7; display:flex; align-items:center; gap:0.4rem; font-size:0.9rem; margin-bottom:0.35rem;">
+                    🎓 Guía de Trabajo Metrológico:
+                </strong>
+                <p style="margin:0 0 0.5rem 0;">
+                    • <strong>Asignación:</strong> El docente asigna un número entre el 1 y el 24. Cada grupo medirá tiempos reales cronometrando 10 oscilaciones completas por cada longitud $L$ asignada.
+                </p>
+                <p style="margin:0;">
+                    • <strong>Validación:</strong> En la pestaña <em>Cuaderno & Errores</em> se evalúa la regresión lineal $T^2$ vs $L$, el cálculo experimental de la aceleración gravitacional $g = 4pi^2/m$ y el criterio metrológico de compatibilidad $Z$-score frente al valor geofísico de Popayán ($9.776\text{ m/s}^2$).
+                </p>
+            </div>
+        `;
+    };
+
+    window.launchPenduloBanco = function(bancoNum) {
+        const inp = document.getElementById('pendulo-grupo-input');
+        const grupo = inp ? inp.value.trim() : '';
+        const b = bancoNum || window.currentPenduloBanco || 1;
+        if (grupo) {
+            localStorage.setItem('pendulo_last_group_name', grupo);
+            localStorage.setItem('pendulo_grupo_banco_' + b, grupo);
+        }
+        const targetUrl = `/material/1_cursos/pendulo/dist/Laboratorio_Pendulo.html?banco=${b}${grupo ? '&grupo=' + encodeURIComponent(grupo) : ''}`;
+        window.open(targetUrl, '_blank');
+    };
+
+    window.copyPenduloGroupLink = function(bancoNum) {
+        const inp = document.getElementById('pendulo-grupo-input');
+        const grupo = inp ? inp.value.trim() : '';
+        const b = bancoNum || window.currentPenduloBanco || 1;
+        if (grupo) {
+            localStorage.setItem('pendulo_last_group_name', grupo);
+            localStorage.setItem('pendulo_grupo_banco_' + b, grupo);
+        }
+        const origin = window.location.origin && window.location.origin !== 'null' ? window.location.origin : 'https://physicsailab.com';
+        const fullUrl = `${origin}/material/1_cursos/pendulo/dist/Laboratorio_Pendulo.html?banco=${b}${grupo ? '&grupo=' + encodeURIComponent(grupo) : ''}`;
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(fullUrl).then(() => {
+                showToast(`📋 Enlace del Puesto N.º ${String(b).padStart(2, '0')} copiado. ¡Listo para compartir con tu grupo!`);
             }).catch(() => {
                 prompt('Copia este enlace directo para tu grupo:', fullUrl);
             });

@@ -1,0 +1,3077 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Laboratorio Virtual: Péndulo Simple y Medición de la Gravedad (g) · PhysicsAILab</title><meta name="description" content="Laboratorio virtual universitario de Péndulo Simple y Medición de la Gravedad con 24 puestos de trabajo para grupos, cronómetro de precisión, fotocompuerta, regresión lineal por mínimos cuadrados y tratamiento riguroso de errores (GUM)."><meta name="author" content="Mg. Manuel Alejandro Obando · Departamento de Física, Universidad del Cauca"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Public+Sans:wght@400;500;600;700&family=Saira+Condensed:wght@500;600;700&display=swap"><style>/* ==========================================================================
+   LABORATORIO VIRTUAL DE PÉNDULO SIMPLE Y MEDICIÓN DE LA GRAVEDAD (g)
+   Mg. Manuel Alejandro Obando · Departamento de Física, Universidad del Cauca
+   ========================================================================== */
+
+:root {
+  --bg: #0b1118;
+  --paper: #131c26;
+  --panel: #172230;
+  --ink: #f0f6fc;
+  --sub: #94a3b8;
+  --line: #263546;
+  --soft: #1e2c3d;
+  --muted: #2d3f54;
+  --accent: #38bdf8;
+  --accent-glow: rgba(56, 189, 248, 0.25);
+  --accent-ink: #031726;
+  --signal: #f59e0b;
+  --ok: #10b981;
+  --danger: #ef4444;
+  --tint: #0f2334;
+  --warnbg: #291d12;
+  --brass: #eab308;
+  --steel: #94a3b8;
+  --wood: #854d0e;
+  --lead: #475569;
+  --glow-cyan: rgba(34, 211, 238, 0.4);
+  --shadow: 0 14px 34px -18px rgba(0, 0, 0, 0.6);
+  --display: "Saira Condensed", "Arial Narrow", system-ui, sans-serif;
+  --body: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+
+[data-theme="light"] {
+  --bg: #f1f5f9;
+  --paper: #ffffff;
+  --panel: #f8fafc;
+  --ink: #0f172a;
+  --sub: #64748b;
+  --line: #cbd5e1;
+  --soft: #e2e8f0;
+  --muted: #cbd5e1;
+  --accent: #0284c7;
+  --accent-glow: rgba(2, 132, 199, 0.15);
+  --accent-ink: #ffffff;
+  --signal: #d97706;
+  --ok: #059669;
+  --danger: #dc2626;
+  --tint: #e0f2fe;
+  --warnbg: #fef3c7;
+  --shadow: 0 10px 25px -10px rgba(15, 23, 42, 0.1);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.55 var(--body);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: 0.45; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+h1, h2, h3, h4 { text-wrap: balance; line-height: 1.2; }
+h1 { font: 700 clamp(28px, 3.2vw, 42px) var(--display); letter-spacing: 0.2px; margin-bottom: 8px; }
+h2 { font: 700 24px var(--display); letter-spacing: 0.3px; margin-bottom: 12px; }
+h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+p { margin-bottom: 12px; }
+code { font-family: var(--mono); font-size: 0.9em; background: var(--soft); padding: 2px 6px; border-radius: 4px; }
+
+/* ENCABEZADO */
+.top {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 10px 24px;
+  background: var(--paper);
+  border-bottom: 1px solid var(--line);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--ink);
+  text-decoration: none;
+  font: 700 20px/1 var(--display);
+  letter-spacing: 0.4px;
+}
+.brand-icon {
+  font-size: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(56, 189, 248, 0.12);
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+.brand small {
+  display: block;
+  font: 500 12px var(--body);
+  letter-spacing: 0.3px;
+  color: var(--sub);
+  margin-top: 3px;
+}
+
+.nav {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.nav a {
+  padding: 8px 14px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--sub);
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.15s ease;
+}
+.nav a:hover {
+  background: var(--soft);
+  color: var(--ink);
+}
+.nav a.active {
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 700;
+  box-shadow: 0 2px 10px var(--accent-glow);
+}
+
+.top-chip {
+  margin-left: auto;
+  font-size: 13px;
+  color: var(--sub);
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  background: var(--soft);
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+}
+.top-chip b {
+  font-family: var(--mono);
+  color: var(--accent);
+}
+.top-chip span {
+  max-width: 25ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.theme-toggle {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--sub);
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+.theme-toggle:hover {
+  background: var(--soft);
+  color: var(--ink);
+}
+
+/* LAYOUT PRINCIPAL */
+.main {
+  flex: 1;
+  padding: 22px 24px 40px;
+  max-width: 1560px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.eyebrow {
+  font: 700 12px/1 var(--display);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+
+.intro {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 20px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+}
+.intro > div { max-width: 760px; }
+.intro p { color: var(--sub); font-size: 15px; }
+
+/* SETUP PUESTO DE GRUPO */
+.setup-panel {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.setup-panel label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sub);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.setup-panel select, .setup-panel input {
+  background: var(--soft);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 6px 10px;
+  color: var(--ink);
+  font-size: 13px;
+}
+.setup-panel input { min-width: 200px; }
+
+/* BOTONES GENERALES */
+.btn {
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--ink);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+.btn:hover:not(:disabled) {
+  background: var(--soft);
+  border-color: var(--accent);
+}
+.btn.primary {
+  background: linear-gradient(135deg, #0284c7, #38bdf8);
+  color: #ffffff;
+  border: none;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
+}
+.btn.primary:hover:not(:disabled) {
+  opacity: 0.92;
+  box-shadow: 0 6px 18px rgba(2, 132, 199, 0.45);
+}
+.btn.success {
+  background: #059669;
+  color: #ffffff;
+  border: none;
+}
+.btn.danger {
+  background: #dc2626;
+  color: #ffffff;
+  border: none;
+}
+.btn.quiet {
+  background: transparent;
+  border-color: transparent;
+  color: var(--sub);
+}
+.btn.quiet:hover:not(:disabled) {
+  background: var(--soft);
+  color: var(--ink);
+}
+.btn.small {
+  padding: 5px 10px;
+  font-size: 12px;
+  border-radius: 6px;
+}
+
+/* GRILLA DEL BANCO */
+.bench-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 20px;
+  align-items: start;
+}
+@media (max-width: 1080px) {
+  .bench-grid { grid-template-columns: 1fr; }
+}
+
+.panel {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px;
+  box-shadow: var(--shadow);
+}
+
+/* STAGE CANVAS DEL PÉNDULO */
+.stage-wrap {
+  position: relative;
+  width: 100%;
+  height: 520px;
+  background: radial-gradient(circle at 50% 20%, #172433 0%, #0d1622 100%);
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  overflow: hidden;
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+canvas#pendulumCanvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: grab;
+}
+canvas#pendulumCanvas:active {
+  cursor: grabbing;
+}
+
+.stage-overlay {
+  position: absolute;
+  top: 12px;
+  left: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  pointer-events: none;
+}
+.hud-tag {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: #e2e8f0;
+}
+.hud-tag b { color: var(--accent); }
+
+.stage-controls-bar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+/* CONTROLES DEL MONTAJE */
+.controls-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ctl-group {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 14px;
+}
+.ctl-group h4 {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--sub);
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.ctl-group h4 span {
+  color: var(--accent);
+  font-family: var(--mono);
+  text-transform: none;
+}
+
+.slider-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.slider-row input[type="range"] {
+  flex: 1;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.slider-row .val {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 700;
+  min-width: 60px;
+  text-align: right;
+  color: var(--ink);
+}
+
+.preset-btns {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+/* CRONÓMETRO DIGITAL */
+.stopwatch-box {
+  background: linear-gradient(135deg, #09121a, #0e1c2a);
+  border: 1px solid #23384c;
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+.stopwatch-display {
+  font-family: var(--mono);
+  font-size: 40px;
+  font-weight: 700;
+  color: #38bdf8;
+  letter-spacing: 2px;
+  text-shadow: 0 0 16px rgba(56, 189, 248, 0.4);
+  margin-bottom: 10px;
+}
+.stopwatch-laps {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--sub);
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-around;
+  border-top: 1px dashed var(--line);
+  padding-top: 8px;
+}
+.stopwatch-laps b { color: var(--ok); }
+.stopwatch-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* CUADERNO Y TABLAS */
+.cuaderno-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 22px;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--paper);
+}
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  text-align: center;
+}
+.data-table th, .data-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+  border-right: 1px solid var(--line);
+  white-space: nowrap;
+}
+.data-table th {
+  background: var(--soft);
+  color: var(--ink);
+  font-weight: 700;
+  font-family: var(--mono);
+  font-size: 12px;
+}
+.data-table td input {
+  width: 72px;
+  text-align: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 4px 2px;
+  color: var(--ink);
+  font-family: var(--mono);
+}
+.data-table td input:focus {
+  background: var(--soft);
+  border-color: var(--accent);
+}
+.data-table tr:hover td {
+  background: rgba(56, 189, 248, 0.04);
+}
+.data-table td.calc-col {
+  font-family: var(--mono);
+  font-weight: 600;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.06);
+}
+
+/* CARDS DE RESULTADOS DE ERRORES */
+.error-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+.res-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 14px;
+  position: relative;
+  overflow: hidden;
+}
+.res-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--accent);
+}
+.res-card.success::before { background: var(--ok); }
+.res-card.warn::before { background: var(--signal); }
+.res-card.danger::before { background: var(--danger); }
+.res-card .label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--sub);
+  margin-bottom: 4px;
+}
+.res-card .value {
+  font-family: var(--mono);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 2px;
+}
+.res-card .hint {
+  font-size: 11px;
+  color: var(--sub);
+  line-height: 1.35;
+}
+
+/* GRÁFICAS SVG INTERACTIVAS */
+.chart-box {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px;
+  position: relative;
+}
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.svg-chart-wrap {
+  width: 100%;
+  height: 360px;
+  background: radial-gradient(circle at center, #111a26 0%, #091018 100%);
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  position: relative;
+}
+.svg-chart-wrap svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* PÉNDULO MATEMÁTICO - SECCIÓN TEÓRICA */
+.math-section {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.math-card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 22px;
+}
+.math-formula-box {
+  background: var(--soft);
+  border-left: 4px solid var(--accent);
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin: 14px 0;
+  font-family: var(--mono);
+  font-size: 15px;
+  line-height: 1.6;
+  overflow-x: auto;
+}
+
+/* COMPARADOR LINEAL VS NO LINEAL */
+.nonlinear-calculator {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 14px;
+}
+@media (max-width: 850px) {
+  .nonlinear-calculator { grid-template-columns: 1fr; }
+}
+
+/* TOAST FLOTANTE */
+.lab-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #0f172a;
+  color: #fff;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  padding: 12px 18px;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 1000;
+  animation: slideInUp 0.3s ease;
+}
+@keyframes slideInUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* PIE DE PÁGINA */
+.pie {
+  margin-top: auto;
+  border-top: 1px solid var(--line);
+  padding: 20px 24px;
+  text-align: center;
+  color: var(--sub);
+  font-size: 13px;
+  background: var(--paper);
+}
+</style>
+</head>
+<body>
+  <!-- ==========================================================================
+     PLANTILLA HTML PRINCIPAL (SHELL) · LABORATORIO DE PÉNDULO SIMPLE
+     Mg. Manuel Alejandro Obando · Departamento de Física, Universidad del Cauca
+     ========================================================================== -->
+
+<header class="top">
+  <a class="brand" href="#banco" aria-label="Péndulo Simple, inicio">
+    <div class="brand-icon">⏱️</div>
+    <div>
+      <span>Péndulo Simple &amp; Gravedad (g)</span>
+      <small>Laboratorio Virtual · Física Fundamental · Universidad del Cauca</small>
+    </div>
+  </a>
+
+  <nav class="nav" aria-label="Pestañas de Navegación">
+    <a href="#banco" class="active" data-tab="banco">🔬 Banco &amp; Simulación</a>
+    <a href="#cuaderno" data-tab="cuaderno">📓 Cuaderno &amp; Errores</a>
+    <a href="#matematico" data-tab="matematico">📐 Péndulo Matemático</a>
+    <a href="#guia" data-tab="guia">📖 Guía de Práctica</a>
+  </nav>
+
+  <div class="top-chip" id="topChip">
+    Puesto N.º <b id="topBanco">01</b>
+    <span id="topGrupo">Sin asignar</span>
+  </div>
+
+  <button type="button" class="theme-toggle" id="btnThemeToggle" title="Cambiar tema oscuro / claro">
+    🌓
+  </button>
+</header>
+
+<main class="main">
+
+  <!-- ====================================================================
+       PESTAÑA 1: BANCO DE TRABAJO & SIMULACIÓN VIRTUAL
+       ==================================================================== -->
+  <section id="tab-banco" class="view-panel active">
+    <div class="intro">
+      <div>
+        <p class="eyebrow">Práctica Experimental · Medición de la Aceleración de la Gravedad Local</p>
+        <h1>Banco de Ensayo: Péndulo Simple</h1>
+        <p>
+          Ajusta la longitud de la cuerda hasta el centro de masa de la plomada, suelta desde ángulos pequeños (≤ 10°) y cronometra 10 oscilaciones completas para minimizar la incertidumbre del tiempo de reacción humano.
+        </p>
+      </div>
+
+      <!-- Configuración del puesto y grupo -->
+      <div class="setup-panel">
+        <label for="selBanco">
+          Puesto de Trabajo
+          <select id="selBanco"></select>
+        </label>
+        <label for="inpGrupo">
+          Integrantes del Grupo
+          <input type="text" id="inpGrupo" placeholder="Ej: Diana Valencia, Carlos Pérez">
+        </label>
+        <button type="button" class="btn primary small" id="btnAplicarGrupo">Guardar</button>
+      </div>
+    </div>
+
+    <div class="bench-grid">
+      <!-- Columna Izquierda: Escenario Canvas del Péndulo -->
+      <div class="panel">
+        <div class="stage-wrap">
+          <canvas id="pendulumCanvas" role="img" aria-label="Simulación física del péndulo simple oscilando en un soporte universal con transportador y fotocompuerta"></canvas>
+          
+          <div class="stage-overlay">
+            <div class="hud-tag">Ángulo actual: <b id="hudAngle">0.0°</b></div>
+            <div class="hud-tag">Periodo teórico T₀: <b id="hudPeriod">1.80 s</b></div>
+            <div class="hud-tag">Oscilaciones (Fotocompuerta): <b id="hudOscCount">0 / 10</b></div>
+          </div>
+        </div>
+
+        <div class="stage-controls-bar">
+          <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+            <button type="button" class="btn primary" id="btnStart" title="Soltar el péndulo para iniciar oscilación">▶ Soltar / Iniciar</button>
+            <button type="button" class="btn" id="btnPause" title="Pausar o reanudar el movimiento">⏸ Pausar</button>
+            <button type="button" class="btn" id="btnReset" title="Regresar al ángulo inicial y reiniciar contadores">↺ Reiniciar</button>
+          </div>
+
+          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <label style="font-size:12px; color:var(--sub); display:flex; align-items:center; gap:4px;">
+              Velocidad:
+              <select id="selSpeed" style="background:var(--soft); border:1px solid var(--line); border-radius:4px; padding:2px 6px; font-size:12px;">
+                <option value="1.0">1.0× (Real)</option>
+                <option value="0.5">0.5× (Cámara Lenta)</option>
+                <option value="0.25">0.25× (Precisión)</option>
+              </select>
+            </label>
+
+            <button type="button" class="btn small" id="btnToggleVectors" title="Mostrar u ocultar vectores de velocidad y fuerza">🎯 Vectores</button>
+            <button type="button" class="btn small" id="btnTogglePhotogate" title="Activar u ocultar sensor de fotocompuerta">⚡ Fotocompuerta</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Columna Derecha: Parámetros e Instrumentos de Medición -->
+      <div class="controls-panel">
+        
+        <!-- Cronómetro Digital de Mano -->
+        <div class="stopwatch-box">
+          <div style="font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:var(--sub); margin-bottom:4px;">
+            Cronómetro Digital de Laboratorio (0.01 s)
+          </div>
+          <div class="stopwatch-display" id="stopwatchDisplay">00:00.00</div>
+          
+          <div class="stopwatch-laps">
+            <span>Oscilación: <b id="stopwatchLapCount">0</b> / 10</span>
+            <span>Promedio por osc: <b id="stopwatchTUnit">0.00 s</b></span>
+          </div>
+
+          <div class="stopwatch-actions">
+            <button type="button" class="btn primary" id="btnSwStart">⏱ Iniciar / Detener</button>
+            <button type="button" class="btn" id="btnSwLap">🏷 Marcar Oscilación</button>
+            <button type="button" class="btn quiet" id="btnSwReset">↺ Poner a Cero</button>
+          </div>
+
+          <button type="button" class="btn success" id="btnSendToNotebook" style="width:100%; margin-top:12px; font-weight:700;">
+            📥 Enviar Tiempo Actual a la Fila del Cuaderno
+          </button>
+        </div>
+
+        <!-- Control de Longitud de Cuerda -->
+        <div class="ctl-group">
+          <h4>Longitud del Péndulo (L) <span id="valLength">0.80 m (80.0 cm)</span></h4>
+          <div class="slider-row">
+            <input type="range" id="rngLength" min="0.20" max="1.50" step="0.01" value="0.80">
+            <span class="val" id="valLengthShort">0.80 m</span>
+          </div>
+          <div class="preset-btns">
+            <span style="font-size:11px; color:var(--sub); margin-right:4px;">Valores Guía:</span>
+            <button type="button" class="btn small quiet preset-l" data-l="0.30">0.30 m</button>
+            <button type="button" class="btn small quiet preset-l" data-l="0.50">0.50 m</button>
+            <button type="button" class="btn small quiet preset-l" data-l="0.70">0.70 m</button>
+            <button type="button" class="btn small quiet preset-l" data-l="0.90">0.90 m</button>
+            <button type="button" class="btn small quiet preset-l" data-l="1.10">1.10 m</button>
+            <button type="button" class="btn small quiet preset-l" data-l="1.30">1.30 m</button>
+          </div>
+          <small style="color:var(--sub); font-size:11px; display:block; margin-top:6px;">
+            Medida desde el borde inferior de la pinza de suspensión hasta el centro de masa de la plomada.
+          </small>
+        </div>
+
+        <!-- Control de Ángulo Inicial -->
+        <div class="ctl-group">
+          <h4>Ángulo Inicial (θ₀) <span id="valAngle0">10.0°</span></h4>
+          <div class="slider-row">
+            <input type="range" id="rngAngle0" min="2" max="45" step="0.5" value="10">
+            <span class="val" id="valAngle0Short">10°</span>
+          </div>
+          <div id="angleWarning" style="font-size:11px; color:var(--signal); display:none; margin-top:4px;">
+            ⚠️ <strong>Amplitud grande (&gt; 10°):</strong> La aproximación armónica lineal pierde validez (T &gt; 2π√(L/g)).
+          </div>
+        </div>
+
+        <!-- Control de Masa y Gravedad -->
+        <div class="ctl-group">
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+            <div>
+              <h4 style="margin-bottom:6px;">Masa (m) <span id="valMass">50 g</span></h4>
+              <input type="range" id="rngMass" min="0.02" max="0.20" step="0.01" value="0.05" style="width:100%;">
+              <small style="color:var(--sub); font-size:10px;">Comprobar independencia de T.</small>
+            </div>
+            <div>
+              <h4 style="margin-bottom:6px;">Entorno Gravitacional</h4>
+              <select id="selGravity" style="width:100%; background:var(--soft); border:1px solid var(--line); border-radius:6px; padding:4px 6px; font-size:12px; color:var(--ink);">
+                <option value="popayan" selected>Popayán (9.776 m/s²)</option>
+                <option value="bogota">Bogotá (9.774 m/s²)</option>
+                <option value="medellin">Medellín (9.780 m/s²)</option>
+                <option value="cali">Cali (9.781 m/s²)</option>
+                <option value="barranquilla">Barranquilla (9.782 m/s²)</option>
+                <option value="estandar">Nivel del mar (9.807 m/s²)</option>
+                <option value="luna">La Luna (1.622 m/s²)</option>
+                <option value="marte">Marte (3.721 m/s²)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       PESTAÑA 2: CUADERNO DIGITAL & TRATAMIENTO DE ERRORES
+       ==================================================================== -->
+  <section id="tab-cuaderno" class="view-panel" hidden>
+    <div class="intro">
+      <div>
+        <p class="eyebrow">Registro Metrológico Oficial · GUM / Mínimos Cuadrados</p>
+        <h2>Cuaderno Digital de Datos &amp; Propagación de Errores</h2>
+        <p>
+          Registra las longitudes y los tres ensayos de tiempo para 10 oscilaciones. El sistema calcula automáticamente los periodos promedio, las desviaciones estándar, el ajuste lineal $T^2 = m \cdot L + c$, el valor experimental de la aceleración de la gravedad ($g = 4\pi^2 / m$), su incertidumbre propagada y la prueba de compatibilidad $Z$-score.
+        </p>
+      </div>
+
+      <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+        <button type="button" class="btn" id="btnAutoFillGroupData" title="Llenar con las mediciones reales generadas para este banco">🎲 Autollenar con Datos del Banco</button>
+        <button type="button" class="btn" id="btnExportCSV" title="Descargar archivo CSV compatible con Excel y Python">📥 Exportar CSV</button>
+        <button type="button" class="btn quiet" id="btnClearTable" title="Limpiar todas las filas">🗑️ Vaciar Tabla</button>
+      </div>
+    </div>
+
+    <div class="cuaderno-grid">
+      <!-- Tabla Principal de Datos -->
+      <div class="table-responsive">
+        <table class="data-table" id="tableData">
+          <thead>
+            <tr>
+              <th title="Número de fila">#</th>
+              <th title="Longitud medida hasta el centro de masa">L (m)</th>
+              <th title="Incertidumbre de la cinta métrica">ΔL (m)</th>
+              <th title="Tiempo de 10 oscilaciones - Ensayo 1">t₁ (s)</th>
+              <th title="Tiempo de 10 oscilaciones - Ensayo 2">t₂ (s)</th>
+              <th title="Tiempo de 10 oscilaciones - Ensayo 3">t₃ (s)</th>
+              <th title="Tiempo promedio de 10 oscilaciones" class="calc-col">t̄₁₀ (s)</th>
+              <th title="Desviación estándar de los tiempos" class="calc-col">s_t (s)</th>
+              <th title="Periodo de 1 oscilación: T = t̄ / 10" class="calc-col">T (s)</th>
+              <th title="Incertidumbre combinada del periodo" class="calc-col">ΔT (s)</th>
+              <th title="Periodo al cuadrado" class="calc-col">T² (s²)</th>
+              <th title="Incertidumbre de T²: 2*T*ΔT" class="calc-col">Δ(T²) (s²)</th>
+              <th title="Gravedad calculada por punto: 4*π²*L / T²" class="calc-col">g_i (m/s²)</th>
+              <th title="Acción">Acción</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <!-- Filas inyectadas por JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <button type="button" class="btn primary small" id="btnAddRow">➕ Añadir Nueva Fila de Medición</button>
+        <span style="font-size:12px; color:var(--sub);">
+          * Las columnas en azul se calculan automáticamente en tiempo real al escribir o capturar tiempos.
+        </span>
+      </div>
+
+      <!-- Tarjetas de Resultados Metrológicos -->
+      <div class="error-cards-grid">
+        <div class="res-card" id="cardGExp">
+          <div class="label">Gravedad Experimental (g_exp)</div>
+          <div class="value" id="resGExp">—</div>
+          <div class="hint" id="resGExpHint">Calculada desde la pendiente: g = 4π² / m</div>
+        </div>
+
+        <div class="res-card" id="cardUG">
+          <div class="label">Incertidumbre Propagada Δg</div>
+          <div class="value" id="resUG">—</div>
+          <div class="hint" id="resUGHint">Δg = g · (Δm / m)</div>
+        </div>
+
+        <div class="res-card" id="cardErrRel">
+          <div class="label">Error Relativo Porcentual (%E)</div>
+          <div class="value" id="resErrRel">—</div>
+          <div class="hint" id="resErrRelHint">Respecto a Popayán (9.776 m/s²)</div>
+        </div>
+
+        <div class="res-card" id="cardR2">
+          <div class="label">Bondad de Ajuste (R²)</div>
+          <div class="value" id="resR2">—</div>
+          <div class="hint" id="resR2Hint">Coeficiente de correlación lineal</div>
+        </div>
+
+        <div class="res-card" id="cardZScore">
+          <div class="label">Compatibilidad Z-Score</div>
+          <div class="value" id="resZScore">—</div>
+          <div class="hint" id="resZScoreHint">Criterio metrológico |g - g_ref| / √(u² + u_ref²)</div>
+        </div>
+      </div>
+
+      <!-- Sección de Gráficas Interactivas -->
+      <div class="chart-box">
+        <div class="chart-header">
+          <div>
+            <h3 style="margin:0 0 4px 0;">Gráfica Experimental y Regresión por Mínimos Cuadrados</h3>
+            <p style="margin:0; font-size:13px; color:var(--sub);" id="chartSubtitle">
+              Linealización: T² en función de L con barras de error e intervalo de ajuste
+            </p>
+          </div>
+
+          <div style="display:flex; gap:6px;">
+            <button type="button" class="btn small active" id="btnChartLinear">📈 Lineal: T² vs L</button>
+            <button type="button" class="btn small" id="btnChartCurve">📉 No Lineal: T vs L</button>
+          </div>
+        </div>
+
+        <div class="svg-chart-wrap" id="chartContainer">
+          <svg id="svgChart" viewBox="0 0 800 360" preserveAspectRatio="none">
+            <!-- Renderizado dinámico en app.js -->
+          </svg>
+        </div>
+
+        <div style="margin-top:12px; font-size:13px; color:var(--sub); display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+          <span id="chartEquationText">Ecuación de la recta: <b>T² = m·L + c</b></span>
+          <span id="chartSlopeText">Pendiente: <b>m = —</b> | Intercepto: <b>c = —</b></span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       PESTAÑA 3: PÉNDULO MATEMÁTICO (ANÁLISIS TEÓRICO RIGUROSO)
+       ==================================================================== -->
+  <section id="tab-matematico" class="view-panel" hidden>
+    <div class="intro">
+      <div>
+        <p class="eyebrow">Marco Teórico &amp; Dinámica Analítica</p>
+        <h2>Deducción del Péndulo Matemático &amp; Amplitudes Grandes</h2>
+        <p>
+          Analiza la formulación matemática rigurosa del sistema, la aproximación de pequeñas oscilaciones (M.A.S.), la divergencia no lineal en ángulos grandes y el balance de energía mecánica.
+        </p>
+      </div>
+    </div>
+
+    <div class="math-section">
+      <!-- Tarjeta 1: Ecuación Diferencial -->
+      <div class="math-card">
+        <h3>1. Deducción Dinámica (Segunda Ley de Newton para Rotación)</h3>
+        <p>
+          Consideremos una masa puntual $m$ suspendida de un hilo inextensible de masa despreciable y longitud $L$. La única fuerza que produce torque respecto al pivote es la componente tangencial del peso:
+        </p>
+
+        <div class="math-formula-box">
+          τ = -m · g · L · sin(θ) = I · α = m · L² · (d²θ / dt²)
+        </div>
+
+        <p>
+          Dividiendo entre el momento de inercia $I = m L^2$, se obtiene la <strong>ecuación diferencial no lineal fundamental del péndulo simple</strong>:
+        </p>
+
+        <div class="math-formula-box" style="border-left-color: var(--ok); color:#38bdf8;">
+          d²θ / dt² + (g / L) · sin(θ) = 0
+        </div>
+      </div>
+
+      <!-- Tarjeta 2: Aproximación Armónica Simple vs No Lineal -->
+      <div class="math-card">
+        <h3>2. Régimen de Pequeñas Oscilaciones (M.A.S.)</h3>
+        <p>
+          Cuando la amplitud es pequeña ($\theta \ll 1\text{ rad}$ o $\theta \le 10^\circ \approx 0.1745\text{ rad}$), podemos aproximar $\sin\theta \approx \theta$ mediante la serie de Taylor ($\sin\theta = \theta - \theta^3/6 + \dots$).
+          La ecuación se linealiza en la forma del Movimiento Armónico Simple:
+        </p>
+
+        <div class="math-formula-box">
+          d²θ / dt² + ω₀² · θ = 0, &nbsp;&nbsp; con ω₀ = √(g / L)
+        </div>
+
+        <p>
+          El periodo fundamental de oscilación $T_0$ es independiente de la amplitud $\theta_0$ y de la masa $m$ (isocronismo de Galileo):
+        </p>
+
+        <div class="math-formula-box" style="border-left-color:#a855f7;">
+          T₀ = 2π / ω₀ = 2π · √(L / g) &nbsp;&implies;&nbsp; T₀² = (4π² / g) · L
+        </div>
+      </div>
+
+      <!-- Tarjeta 3: Comparador Interactivo de Amplitudes Grandes -->
+      <div class="math-card">
+        <h3>3. Análisis de Amplitudes Grandes (Solución Exacta con Series de Legendre)</h3>
+        <p>
+          Para amplitudes mayores a 10°, el periodo deja de ser constante y aumenta en función del ángulo inicial $\theta_0$. La solución analítica exacta requiere integrales elípticas de primera especie $K(k)$, cuya expansión en serie es:
+        </p>
+
+        <div class="math-formula-box">
+          T(θ₀) = T₀ · [ 1 + (1/4)·sin²(θ₀/2) + (9/64)·sin⁴(θ₀/2) + ... ] ≈ T₀ · [ 1 + θ₀² / 16 ]
+        </div>
+
+        <!-- Calculadora Interactiva de Error por Amplitud -->
+        <div class="nonlinear-calculator">
+          <div>
+            <h4 style="margin-bottom:12px; color:var(--accent);">Calculadora de Discrepancia No Lineal</h4>
+            <label style="font-size:13px; font-weight:600; display:block; margin-bottom:6px;">
+              Selecciona el Ángulo Inicial (θ₀): <span id="mathAngleLabel" style="color:var(--accent); font-family:var(--mono);">20.0°</span>
+            </label>
+            <input type="range" id="rngMathAngle" min="1" max="80" step="1" value="20" style="width:100%; margin-bottom:12px;">
+
+            <div style="font-size:13px; line-height:1.6; color:var(--sub);">
+              • Periodo Armónico Lineal (T₀): <strong id="mathT0" style="color:var(--ink);">1.796 s</strong><br>
+              • Periodo No Lineal Exacto T(θ₀): <strong id="mathTExact" style="color:#38bdf8;">1.810 s</strong><br>
+              • Corrección relativa: <strong id="mathDeltaPct" style="color:var(--signal);">+0.76 %</strong><br>
+              • Impacto en cálculo de g: <strong id="mathGDelta" style="color:var(--danger);">-1.52 % de sesgo si no se corrige</strong>
+            </div>
+          </div>
+
+          <div style="background:var(--soft); border-radius:10px; padding:14px; font-size:13px; line-height:1.5;">
+            <strong style="color:var(--ok); display:block; margin-bottom:6px;">💡 Criterio Experimental de Laboratorio:</strong>
+            Al trabajar con $\theta_0 \le 10^\circ$, el error introducido por la no linealidad es inferior al <strong>0.19 %</strong>, un valor significativamente menor que la incertidumbre típica del tiempo de reacción humano (~0.5 % a 1.5 %). Por esto, mantener el péndulo por debajo de 10° es el estándar metrológico en física universitaria.
+          </div>
+        </div>
+      </div>
+
+      <!-- Tarjeta 4: Péndulo Físico vs Matemático -->
+      <div class="math-card">
+        <h3>4. Efecto del Tamaño de la Masa (Péndulo Físico)</h3>
+        <p>
+          En un montaje real, la esfera no es un punto adimensional sino un cuerpo rígido de radio $R$ y masa $m$. Aplicando el Teorema de Ejes Paralelos (Steiner), su momento de inercia es $I = m L^2 + \frac{2}{5} m R^2$. El periodo real del péndulo físico resulta:
+        </p>
+
+        <div class="math-formula-box">
+          T_físico = 2π · √( I / (m·g·L) ) = T₀ · √( 1 + 0.4 · (R / L)² )
+        </div>
+
+        <p>
+          Para una tuerca o esfera de radio $R = 1.2\text{ cm}$ en una cuerda de $L = 80\text{ cm}$, el factor corrector $(R/L)^2 = (0.012/0.80)^2 \approx 0.00022$, lo que representa una desviación de apenas el <strong>0.009 %</strong>, demostrando que la aproximación de masa puntual es plenamente válida.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       PESTAÑA 4: GUÍA DE PRÁCTICA OFICIAL (UNIVERSIDAD DEL CAUCA)
+       ==================================================================== -->
+  <section id="tab-guia" class="view-panel" hidden>
+    <div class="intro">
+      <div>
+        <p class="eyebrow">Documentación Docente Oficial · Práctica F10-03</p>
+        <h2>Guía de Laboratorio: Péndulo Simple y Gravedad Local</h2>
+        <p>
+          Guía estructurada según el modelo didáctico del Mg. Manuel Alejandro Obando, Departamento de Física de la Universidad del Cauca.
+        </p>
+      </div>
+    </div>
+
+    <div class="math-section">
+      <div class="math-card">
+        <h3>🎯 Objetivos de la Práctica</h3>
+        <ul>
+          <li>Identificar experimentalmente las variables físicas de las que depende el periodo de un péndulo simple (longitud, masa, amplitud).</li>
+          <li>Medir el periodo con una incertidumbre menor que el tiempo de reacción humano cronometrando trenes de 10 oscilaciones.</li>
+          <li>Linealizar la relación cuadrática entre periodo y longitud ($T^2$ vs $L$) para obtener la aceleración gravitacional local $g$ con su incertidumbre propagada.</li>
+          <li>Comparar el valor experimental obtenido con el valor geofísico de referencia de Popayán ($g_{\text{ref}} = 9.776\text{ m/s}^2$).</li>
+        </ul>
+      </div>
+
+      <div class="math-card">
+        <h3>📋 Materiales de Montaje (Kits de Bajo Costo)</h3>
+        <ul>
+          <li><strong>Hilo inextensible:</strong> Cuerda fina de nailon de 0.3 a 0.5 mm de 1.5 metros.</li>
+          <li><strong>Cuerpo oscilante:</strong> Masa compacta de plomada, perno o tuerca de 30 a 60 gramos.</li>
+          <li><strong>Punto de suspensión:</strong> Prensa en C con pinza de ropa de madera que fije con nitidez el eje de giro.</li>
+          <li><strong>Instrumentos de medición:</strong> Flexómetro de 2 o 3 metros (resolución 1 mm), cronómetro digital (0.01 s) y transportador de ángulos.</li>
+        </ul>
+      </div>
+
+      <div class="math-card">
+        <h3>⚠️ Fuentes Comunes de Error Experimental y Cómo Evitarlas</h3>
+        <ul>
+          <li><strong>Medir L hasta el nudo:</strong> $L$ debe medirse rigurosamente hasta el centro de masa de la plomada. Medir hasta el nudo acorta $L$ artificialmente y subestima el valor de $g$.</li>
+          <li><strong>Contar «uno» al soltar:</strong> Se debe contar «cero» en el primer paso por la vertical más baja o al iniciar el cronómetro; de lo contrario se miden 9 oscilaciones en vez de 10.</li>
+          <li><strong>Soltar con empujón o trayectoria elíptica:</strong> El péndulo debe soltarse suavemente desde el reposo en un único plano vertical.</li>
+          <li><strong>Amplitudes superiores a 10°:</strong> Se pierde el régimen de pequeñas oscilaciones y el periodo se alarga por efectos no lineales.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="pie">
+  <p>
+    <strong>PhysicsAILab</strong> · Laboratorio de Péndulo Simple &amp; Gravedad · Mg. Manuel Alejandro Obando (Universidad del Cauca) · 2026
+  </p>
+</footer>
+<script>/* ==========================================================================
+   MOTOR FÍSICO, METROLÓGICO Y ESTADÍSTICO · PÉNDULO SIMPLE & GRAVEDAD
+   Mg. Manuel Alejandro Obando · Departamento de Física, Universidad del Cauca
+   ========================================================================== */
+
+(function (window) {
+  'use strict';
+
+  // Gravedades de referencia locales e internacionales (m/s²)
+  const GRAVEDADES_REFERENCIA = {
+    popayan: { nombre: 'Popayán (Unicauca - 1.760 msnm)', g: 9.776, u: 0.004 },
+    bogota: { nombre: 'Bogotá (2.640 msnm)', g: 9.774, u: 0.005 },
+    medellin: { nombre: 'Medellín (1.495 msnm)', g: 9.780, u: 0.005 },
+    cali: { nombre: 'Cali (1.000 msnm)', g: 9.781, u: 0.004 },
+    barranquilla: { nombre: 'Barranquilla (Nivel del mar)', g: 9.782, u: 0.004 },
+    estandar: { nombre: 'Estándar Internacional (Nivel del mar)', g: 9.80665, u: 0.001 },
+    luna: { nombre: 'La Luna (Misión Apolo)', g: 1.622, u: 0.002 },
+    marte: { nombre: 'Marte (Perseverance)', g: 3.721, u: 0.005 },
+    jupiter: { nombre: 'Júpiter (Nivel 1 bar)', g: 24.79, u: 0.02 }
+  };
+
+  // Generador pseudoaleatorio determinístico para los 24 bancos (PRNG xorshift32)
+  function createRng(seed) {
+    let s = Math.abs(Math.sin(seed) * 1e9) | 0 || 123456789;
+    return function () {
+      s ^= s << 13;
+      s ^= s >> 17;
+      s ^= s << 5;
+      return (s >>> 0) / 4294967296;
+    };
+  }
+
+  // Generar parámetros experimentales únicos para el banco asignado (1 a 24)
+  function getBancoParams(bancoNum) {
+    const b = Math.max(1, Math.min(24, parseInt(bancoNum, 10) || 1));
+    const rng = createRng(b * 777 + 101);
+
+    // Variaciones realistas de instrumentación de laboratorio
+    const offsetLongitud = (rng() - 0.5) * 0.004; // ±2 mm por posición de nudo / pinza
+    const tiempoReaccion = 0.12 + rng() * 0.09;   // 0.12s a 0.21s de reacción humana del cronometrista
+    const masaReal = 0.050 + (rng() - 0.5) * 0.008; // 50g ± 4g de masa de plomada
+    const radioEsfera = 0.012 + (rng() - 0.5) * 0.002; // 12 mm de radio
+    const amortiguamientoAire = 0.0018 + rng() * 0.0008; // Coeficiente de arrastre del laboratorio
+    const ruidoCronometro = 0.04 + rng() * 0.04; // Ruido aleatorio por dispersión de clic
+
+    return {
+      banco: b,
+      offsetLongitud,
+      tiempoReaccion,
+      masaReal,
+      radioEsfera,
+      amortiguamientoAire,
+      ruidoCronometro
+    };
+  }
+
+  // Integrador numérico Runge-Kutta 4to orden (RK4) para la ecuación diferencial:
+  // d²θ/dt² + (b/(m*L))*dθ/dt + (g/L)*sin(θ) = 0
+  function pasoRK4(theta, omega, L, m, g, amort, dt) {
+    const f1_omega = omega;
+    const f1_alpha = -(g / L) * Math.sin(theta) - (amort / (m * L)) * omega;
+
+    const th2 = theta + 0.5 * dt * f1_omega;
+    const om2 = omega + 0.5 * dt * f1_alpha;
+    const f2_omega = om2;
+    const f2_alpha = -(g / L) * Math.sin(th2) - (amort / (m * L)) * om2;
+
+    const th3 = theta + 0.5 * dt * f2_omega;
+    const om3 = omega + 0.5 * dt * f2_alpha;
+    const f3_omega = om3;
+    const f3_alpha = -(g / L) * Math.sin(th3) - (amort / (m * L)) * om3;
+
+    const th4 = theta + dt * f3_omega;
+    const om4 = omega + dt * f3_alpha;
+    const f4_omega = om4;
+    const f4_alpha = -(g / L) * Math.sin(th4) - (amort / (m * L)) * om4;
+
+    const nuevoTheta = theta + (dt / 6) * (f1_omega + 2 * f2_omega + 2 * f3_omega + f4_omega);
+    const nuevoOmega = omega + (dt / 6) * (f1_alpha + 2 * f2_alpha + 2 * f3_alpha + f4_alpha);
+
+    return { theta: nuevoTheta, omega: nuevoOmega };
+  }
+
+  // Cálculo del periodo teórico exacto considerando amplitudes finitas (Serie de Legendre / Borda)
+  function calcularPeriodoTeorico(L, g, theta0Rad) {
+    if (L <= 0 || g <= 0) return 0;
+    const T0 = 2 * Math.PI * Math.sqrt(L / g);
+    if (!theta0Rad || Math.abs(theta0Rad) < 1e-4) return T0;
+
+    const k = Math.sin(theta0Rad / 2);
+    // Aproximación de orden 4 en sin(theta0/2)
+    const factorNoLineal = 1 + 0.25 * (k * k) + (9 / 64) * Math.pow(k, 4);
+    return T0 * factorNoLineal;
+  }
+
+  // Cálculo del periodo para péndulo físico con masa esférica de radio R:
+  // T_fisico = T0 * sqrt(1 + (2/5)*(R/L)^2)
+  function calcularPeriodoFisico(L, g, radio) {
+    const T0 = 2 * Math.PI * Math.sqrt(L / g);
+    if (!radio || radio <= 0) return T0;
+    const ratio = radio / L;
+    return T0 * Math.sqrt(1 + 0.4 * ratio * ratio);
+  }
+
+  // Cálculos de Energía del Péndulo
+  function calcularEnergias(theta, omega, L, m, g) {
+    const v = L * omega;
+    const Ec = 0.5 * m * v * v;
+    const h = L * (1 - Math.cos(theta));
+    const Ep = m * g * h;
+    const Et = Ec + Ep;
+    return { Ec, Ep, Et, h, v };
+  }
+
+  // ==========================================================================
+  // METROLOGÍA Y REGRESIÓN LINEAL POR MÍNIMOS CUADRADOS
+  // ==========================================================================
+
+  // Promedio aritmético
+  function promedio(arr) {
+    if (!arr || arr.length === 0) return 0;
+    return arr.reduce((acc, val) => acc + val, 0) / arr.length;
+  }
+
+  // Desviación estándar muestral (s)
+  function desviacionEstandar(arr, prom) {
+    if (!arr || arr.length < 2) return 0;
+    const mean = prom !== undefined ? prom : promedio(arr);
+    const sumSq = arr.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0);
+    return Math.sqrt(sumSq / (arr.length - 1));
+  }
+
+  // Ajuste por Mínimos Cuadrados: Y = m*X + c
+  // donde X = L (longitud), Y = T² (periodo al cuadrado)
+  // Pendiente teórica: m = 4*pi² / g => g = 4*pi² / m
+  function regresionLineal(puntos) {
+    // puntos: [{ x: L, y: T2, uy: deltaT2 }]
+    const n = puntos.length;
+    if (n < 2) {
+      return { valido: false, error: 'Se requieren al menos 2 longitudes distintas.' };
+    }
+
+    let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0, sumY2 = 0;
+    for (let i = 0; i < n; i++) {
+      const p = puntos[i];
+      sumX += p.x;
+      sumY += p.y;
+      sumXY += p.x * p.y;
+      sumX2 += p.x * p.x;
+      sumY2 += p.y * p.y;
+    }
+
+    const denom = n * sumX2 - sumX * sumX;
+    if (Math.abs(denom) < 1e-12) {
+      return { valido: false, error: 'Las longitudes deben ser distintas.' };
+    }
+
+    const m = (n * sumXY - sumX * sumY) / denom;
+    const c = (sumY - m * sumX) / n;
+
+    // Coeficiente de correlación R²
+    const rNumerador = n * sumXY - sumX * sumY;
+    const rDenom = Math.sqrt((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY));
+    const r = rDenom !== 0 ? rNumerador / rDenom : 0;
+    const r2 = r * r;
+
+    // Desviación estándar de los residuales (Syx)
+    let sResiduales = 0;
+    for (let i = 0; i < n; i++) {
+      const yAjustado = m * puntos[i].x + c;
+      sResiduales += Math.pow(puntos[i].y - yAjustado, 2);
+    }
+    const syx = n > 2 ? Math.sqrt(sResiduales / (n - 2)) : Math.sqrt(sResiduales);
+
+    // Incertidumbre de la pendiente u(m) y del intercepto u(c)
+    const sxx = sumX2 - (sumX * sumX) / n;
+    const u_m = sxx > 0 ? syx / Math.sqrt(sxx) : 0;
+    const u_c = sxx > 0 ? syx * Math.sqrt(sumX2 / (n * sxx)) : 0;
+
+    // Gravedad experimental obtenida de la pendiente:
+    // m = 4*pi²/g => g_exp = 4*pi² / m
+    const g_exp = m > 0 ? (4 * Math.PI * Math.PI) / m : 0;
+
+    // Propagación de incertidumbre:
+    // u(g) = g * (u(m) / m)
+    const u_g = (m > 0 && u_m > 0) ? g_exp * (u_m / m) : 0;
+
+    return {
+      valido: true,
+      n,
+      m,
+      c,
+      r2,
+      syx,
+      u_m,
+      u_c,
+      g_exp,
+      u_g
+    };
+  }
+
+  // Evaluación de Compatibilidad Metrológica y Z-score
+  function evaluarCompatibilidad(g_exp, u_g, g_ref, u_ref) {
+    if (!g_exp || g_exp <= 0) return null;
+    const ref = g_ref || 9.776;
+    const uR = u_ref || 0.004;
+
+    const errorAbsoluto = Math.abs(g_exp - ref);
+    const errorRelativoPct = (errorAbsoluto / ref) * 100;
+
+    const denomZ = Math.sqrt(u_g * u_g + uR * uR);
+    const zScore = denomZ > 0 ? errorAbsoluto / denomZ : 0;
+
+    let veredicto = '';
+    let clase = '';
+    if (zScore <= 1.0) {
+      veredicto = 'Excelente compatibilidad (Z ≤ 1.0). Tu medición concuerda con la gravedad de referencia.';
+      clase = 'success';
+    } else if (zScore <= 2.0) {
+      veredicto = 'Compatibilidad aceptable (Z ≤ 2.0). Dentro del intervalo de confianza del 95%.';
+      clase = 'success';
+    } else if (zScore <= 3.0) {
+      veredicto = 'Dudoso / Advertencia (2 < Z ≤ 3). Posible sesgo en longitud de centro de masa o reacción.';
+      clase = 'warn';
+    } else {
+      veredicto = 'Incompatible (Z > 3.0). Revisa posibles errores de conteo de oscilaciones o amplitud inicial.';
+      clase = 'danger';
+    }
+
+    return {
+      errorAbsoluto,
+      errorRelativoPct,
+      zScore,
+      veredicto,
+      clase
+    };
+  }
+
+  // Exportar al objeto global
+  window.PenduloEngine = {
+    GRAVEDADES_REFERENCIA,
+    createRng,
+    getBancoParams,
+    pasoRK4,
+    calcularPeriodoTeorico,
+    calcularPeriodoFisico,
+    calcularEnergias,
+    promedio,
+    desviacionEstandar,
+    regresionLineal,
+    evaluarCompatibilidad
+  };
+
+})(window);
+
+
+/* ==========================================================================
+   INTERFAZ Y RENDERIZADO DEL BANCO DE PÉNDULO (CANVAS 2D & INTERACCIÓN)
+   Mg. Manuel Alejandro Obando · Departamento de Física, Universidad del Cauca
+   ========================================================================== */
+
+(function (window) {
+  'use strict';
+
+  class PenduloBench {
+    constructor(canvasId, options = {}) {
+      this.canvas = document.getElementById(canvasId);
+      if (!this.canvas) return;
+      this.ctx = this.canvas.getContext('2d');
+
+      this.options = Object.assign({
+        onStateChange: () => {},
+        onLapComplete: () => {}
+      }, options);
+
+      // Estado físico actual
+      this.L = 0.80; // metros (0.20m a 1.50m)
+      this.m = 0.050; // kg (50g)
+      this.g = 9.776; // m/s² (Popayán)
+      this.theta0 = 10 * (Math.PI / 180); // 10 grados en rad
+      this.theta = this.theta0;
+      this.omega = 0;
+      this.amort = 0.002; // amortiguamiento aire
+
+      // Estado de simulación
+      this.running = false;
+      this.paused = false;
+      this.timeSpeed = 1.0; // 1.0 = tiempo real, 0.5 = slow-mo
+      this.showVectors = false;
+      this.showPhotogate = true;
+      this.showProtractor = true;
+      this.showCenterOfMass = true;
+
+      // Fotocompuerta y conteo de oscilaciones
+      this.oscillationCount = 0;
+      this.prevTheta = this.theta;
+      this.direction = 0; // +1 o -1
+      this.passCount = 0;
+      this.lastZeroCrossTime = null;
+      this.photogateTriggered = false;
+      this.photogateLedTimer = 0;
+
+      // Cronómetro manual integrado
+      this.stopwatchRunning = false;
+      this.stopwatchStartTime = 0;
+      this.stopwatchElapsed = 0;
+      this.stopwatchLaps = [];
+      this.stopwatchAnimId = null;
+
+      // Interacción de arrastre
+      this.isDragging = false;
+      this.pivotX = 0;
+      this.pivotY = 70;
+      this.pixelsPerMeter = 280;
+
+      // Loop de animación
+      this.lastTimestamp = performance.now();
+      this.initEvents();
+      this.resize();
+      this.animate(this.lastTimestamp);
+    }
+
+    resize() {
+      const rect = this.canvas.parentElement.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      this.canvas.width = rect.width * dpr;
+      this.canvas.height = rect.height * dpr;
+      this.ctx.resetTransform();
+      this.ctx.scale(dpr, dpr);
+      this.width = rect.width;
+      this.height = rect.height;
+      this.pivotX = this.width / 2;
+      this.pivotY = 65;
+
+      // Ajustar escala visual de metros a píxeles según altura del canvas
+      const maxVisualLength = this.height - 130;
+      this.pixelsPerMeter = maxVisualLength / 1.50; // máximo 1.5m
+    }
+
+    initEvents() {
+      window.addEventListener('resize', () => this.resize());
+
+      // Arrastre con ratón o touch
+      const getPos = (e) => {
+        const rect = this.canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+          x: clientX - rect.left,
+          y: clientY - rect.top
+        };
+      };
+
+      const bobPos = () => {
+        const visualLen = this.L * this.pixelsPerMeter;
+        return {
+          x: this.pivotX + Math.sin(this.theta) * visualLen,
+          y: this.pivotY + Math.cos(this.theta) * visualLen
+        };
+      };
+
+      const isNearBob = (pos) => {
+        const b = bobPos();
+        const dist = Math.hypot(pos.x - b.x, pos.y - b.y);
+        return dist < 36; // radio de tolerancia de toque
+      };
+
+      const startDrag = (e) => {
+        const pos = getPos(e);
+        if (isNearBob(pos) || pos.y > this.pivotY) {
+          this.isDragging = true;
+          this.running = false;
+          this.omega = 0;
+          this.updateAngleFromPos(pos);
+          if (e.cancelable) e.preventDefault();
+        }
+      };
+
+      const moveDrag = (e) => {
+        if (!this.isDragging) return;
+        const pos = getPos(e);
+        this.updateAngleFromPos(pos);
+        if (e.cancelable) e.preventDefault();
+      };
+
+      const endDrag = () => {
+        if (this.isDragging) {
+          this.isDragging = false;
+          this.theta0 = this.theta;
+          this.running = true;
+          this.resetOscillationCounter();
+        }
+      };
+
+      this.canvas.addEventListener('mousedown', startDrag);
+      window.addEventListener('mousemove', moveDrag);
+      window.addEventListener('mouseup', endDrag);
+
+      this.canvas.addEventListener('touchstart', startDrag, { passive: false });
+      window.addEventListener('touchmove', moveDrag, { passive: false });
+      window.addEventListener('touchend', endDrag);
+    }
+
+    updateAngleFromPos(pos) {
+      const dx = pos.x - this.pivotX;
+      const dy = pos.y - this.pivotY;
+      let angle = Math.atan2(dx, dy);
+
+      // Limitar ángulo máximo a ±60 grados para fidelidad experimental
+      const maxAngle = 60 * (Math.PI / 180);
+      angle = Math.max(-maxAngle, Math.min(maxAngle, angle));
+
+      this.theta = angle;
+      this.omega = 0;
+      this.theta0 = angle;
+      this.resetOscillationCounter();
+      this.options.onStateChange(this.getState());
+    }
+
+    setParameters({ L, m, g, amort, theta0Deg }) {
+      if (L !== undefined) this.L = Math.max(0.20, Math.min(1.50, L));
+      if (m !== undefined) this.m = Math.max(0.01, Math.min(0.50, m));
+      if (g !== undefined) this.g = Math.max(1.0, Math.min(30.0, g));
+      if (amort !== undefined) this.amort = amort;
+      if (theta0Deg !== undefined) {
+        this.theta0 = theta0Deg * (Math.PI / 180);
+        this.theta = this.theta0;
+        this.omega = 0;
+        this.resetOscillationCounter();
+      }
+      this.options.onStateChange(this.getState());
+    }
+
+    start() {
+      this.running = true;
+      this.paused = false;
+      this.resetOscillationCounter();
+    }
+
+    pause() {
+      this.paused = !this.paused;
+    }
+
+    reset() {
+      this.running = false;
+      this.paused = false;
+      this.theta = this.theta0;
+      this.omega = 0;
+      this.resetOscillationCounter();
+      this.stopwatchReset();
+      this.options.onStateChange(this.getState());
+    }
+
+    resetOscillationCounter() {
+      this.oscillationCount = 0;
+      this.passCount = 0;
+      this.prevTheta = this.theta;
+      this.photogateTriggered = false;
+    }
+
+    // Cronómetro manual
+    stopwatchStart() {
+      if (!this.stopwatchRunning) {
+        this.stopwatchRunning = true;
+        this.stopwatchStartTime = performance.now() - this.stopwatchElapsed;
+      }
+    }
+
+    stopwatchPause() {
+      if (this.stopwatchRunning) {
+        this.stopwatchRunning = false;
+        this.stopwatchElapsed = performance.now() - this.stopwatchStartTime;
+      }
+    }
+
+    stopwatchToggle() {
+      if (this.stopwatchRunning) {
+        this.stopwatchPause();
+      } else {
+        this.stopwatchStart();
+      }
+    }
+
+    stopwatchLap() {
+      if (this.stopwatchRunning || this.stopwatchElapsed > 0) {
+        const currentMs = this.stopwatchRunning ? performance.now() - this.stopwatchStartTime : this.stopwatchElapsed;
+        this.stopwatchLaps.push(currentMs);
+        this.options.onLapComplete(this.stopwatchLaps);
+      }
+    }
+
+    stopwatchReset() {
+      this.stopwatchRunning = false;
+      this.stopwatchStartTime = 0;
+      this.stopwatchElapsed = 0;
+      this.stopwatchLaps = [];
+      this.options.onLapComplete([]);
+    }
+
+    getStopwatchTime() {
+      return this.stopwatchRunning ? performance.now() - this.stopwatchStartTime : this.stopwatchElapsed;
+    }
+
+    getState() {
+      const deg = this.theta * (180 / Math.PI);
+      const T_teorico = window.PenduloEngine.calcularPeriodoTeorico(this.L, this.g, this.theta0);
+      const energias = window.PenduloEngine.calcularEnergias(this.theta, this.omega, this.L, this.m, this.g);
+      return {
+        L: this.L,
+        m: this.m,
+        g: this.g,
+        thetaDeg: deg,
+        theta0Deg: this.theta0 * (180 / Math.PI),
+        omega: this.omega,
+        T_teorico,
+        running: this.running,
+        paused: this.paused,
+        oscillationCount: this.oscillationCount,
+        energias
+      };
+    }
+
+    // Loop de física y dibujo
+    animate(currentTimestamp) {
+      const dtMs = currentTimestamp - this.lastTimestamp;
+      this.lastTimestamp = currentTimestamp;
+
+      // Limitar dt para evitar inestabilidad si la pestaña estuvo en segundo plano
+      const dt = Math.min(dtMs / 1000, 0.05) * this.timeSpeed;
+
+      if (this.running && !this.paused && !this.isDragging) {
+        // Ejecutar RK4 con micro-pasos para precisión ultra-alta
+        const subSteps = 6;
+        const subDt = dt / subSteps;
+        for (let i = 0; i < subSteps; i++) {
+          const res = window.PenduloEngine.pasoRK4(
+            this.theta,
+            this.omega,
+            this.L,
+            this.m,
+            this.g,
+            this.amort,
+            subDt
+          );
+          this.theta = res.theta;
+          this.omega = res.omega;
+
+          // Detección de paso por la posición de equilibrio (cero) para fotocompuerta
+          if ((this.prevTheta < 0 && this.theta >= 0) || (this.prevTheta > 0 && this.theta <= 0)) {
+            this.passCount++;
+            this.photogateLedTimer = 0.15; // LED brilla 150ms
+
+            // Una oscilación completa = 2 cruces por el cero en la misma dirección
+            if (this.passCount % 2 === 0) {
+              this.oscillationCount++;
+              if (this.oscillationCount <= 10) {
+                // Notificar al oyente si está activo
+                this.options.onStateChange(this.getState());
+              }
+            }
+          }
+          this.prevTheta = this.theta;
+        }
+      }
+
+      if (this.photogateLedTimer > 0) {
+        this.photogateLedTimer -= dt;
+      }
+
+      this.render();
+      requestAnimationFrame((t) => this.animate(t));
+    }
+
+    // Dibujo en Canvas
+    render() {
+      const ctx = this.ctx;
+      const w = this.width;
+      const h = this.height;
+
+      ctx.clearRect(0, 0, w, h);
+
+      // 1. Fondo de cuadrícula milimétrica de laboratorio
+      this.drawBackgroundGrid(ctx, w, h);
+
+      // 2. Soporte universal con varilla vertical y base de fundición
+      this.drawStand(ctx);
+
+      // 3. Transportador semicircular de precisión
+      if (this.showProtractor) {
+        this.drawProtractor(ctx);
+      }
+
+      // 4. Fotocompuerta infrarroja en el punto más bajo
+      if (this.showPhotogate) {
+        this.drawPhotogate(ctx);
+      }
+
+      // 5. Cuerda, suspensión y esfera (bob)
+      this.drawPendulum(ctx);
+
+      // 6. Vectores físicos dinámicos (velocidad, fuerzas)
+      if (this.showVectors) {
+        this.drawVectors(ctx);
+      }
+    }
+
+    drawBackgroundGrid(ctx, w, h) {
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+      ctx.lineWidth = 1;
+      const gridSize = 25;
+      for (let x = 0; x < w; x += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, h);
+        ctx.stroke();
+      }
+      for (let y = 0; y < h; y += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(w, y);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    drawStand(ctx) {
+      const px = this.pivotX;
+      const py = this.pivotY;
+
+      ctx.save();
+      // Varilla vertical del soporte universal (lado izquierdo)
+      const standX = px - 110;
+      const baseW = 160;
+      const baseY = this.height - 30;
+
+      // Base pesada de hierro colado con relieve
+      ctx.fillStyle = '#263445';
+      ctx.strokeStyle = '#435569';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(standX - baseW / 2, baseY, baseW, 20, [4, 4, 2, 2]);
+      ctx.fill();
+      ctx.stroke();
+
+      // Varilla vertical cilíndrica de acero inoxidable con brillo
+      const gradRod = ctx.createLinearGradient(standX - 7, 0, standX + 7, 0);
+      gradRod.addColorStop(0, '#64748b');
+      gradRod.addColorStop(0.5, '#cbd5e1');
+      gradRod.addColorStop(1, '#475569');
+      ctx.fillStyle = gradRod;
+      ctx.fillRect(standX - 7, py - 20, 14, baseY - (py - 20));
+
+      // Nuez doble de apriete
+      ctx.fillStyle = '#1e293b';
+      ctx.strokeStyle = '#64748b';
+      ctx.lineWidth = 1.5;
+      ctx.fillRect(standX - 12, py - 12, 24, 24);
+      ctx.strokeRect(standX - 12, py - 12, 24, 24);
+
+      // Brazo horizontal que se proyecta hasta el centro
+      const gradArm = ctx.createLinearGradient(0, py - 5, 0, py + 5);
+      gradArm.addColorStop(0, '#94a3b8');
+      gradArm.addColorStop(0.5, '#e2e8f0');
+      gradArm.addColorStop(1, '#64748b');
+      ctx.fillStyle = gradArm;
+      ctx.fillRect(standX, py - 5, px - standX + 16, 10);
+
+      // Pinza o mordaza de ropa de madera / fijación que define el punto exacto de giro
+      ctx.fillStyle = '#a16207';
+      ctx.strokeStyle = '#d97706';
+      ctx.lineWidth = 1;
+      ctx.fillRect(px - 14, py - 10, 28, 14);
+      ctx.strokeRect(px - 14, py - 10, 28, 14);
+
+      // Tornillo de presión en el pivote
+      ctx.fillStyle = '#f59e0b';
+      ctx.beginPath();
+      ctx.arc(px, py, 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    drawProtractor(ctx) {
+      const px = this.pivotX;
+      const py = this.pivotY;
+      const radius = 95;
+
+      ctx.save();
+      ctx.translate(px, py);
+
+      // Fondo semitransparente del transportador
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.7)';
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      // Arco desde 30° hasta 150° (es decir, ±60° respecto a la vertical)
+      const startAngle = Math.PI / 2 - (65 * Math.PI) / 180;
+      const endAngle = Math.PI / 2 + (65 * Math.PI) / 180;
+      ctx.arc(0, 0, radius, startAngle, endAngle);
+      ctx.stroke();
+
+      // Graduaciones cada 5° y números cada 10°
+      ctx.font = '9px var(--mono)';
+      ctx.fillStyle = '#94a3b8';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      for (let a = -60; a <= 60; a += 5) {
+        const rad = Math.PI / 2 + (a * Math.PI) / 180;
+        const cos = Math.cos(rad);
+        const sin = Math.sin(rad);
+
+        const isTen = a % 10 === 0;
+        const isTenDegZone = Math.abs(a) <= 10;
+        const tickLen = isTen ? 12 : 7;
+
+        ctx.strokeStyle = isTenDegZone ? '#38bdf8' : 'rgba(255, 255, 255, 0.3)';
+        ctx.lineWidth = isTen ? 1.5 : 1;
+
+        ctx.beginPath();
+        ctx.moveTo(cos * (radius - tickLen), sin * (radius - tickLen));
+        ctx.lineTo(cos * radius, sin * radius);
+        ctx.stroke();
+
+        if (isTen && Math.abs(a) <= 50) {
+          const textDist = radius - 22;
+          ctx.fillStyle = isTenDegZone ? '#38bdf8' : '#64748b';
+          ctx.fillText(`${Math.abs(a)}°`, cos * textDist, sin * textDist);
+        }
+      }
+
+      // Zona resaltada recomendada para pequeñas oscilaciones (≤ 10°)
+      ctx.strokeStyle = 'rgba(16, 185, 129, 0.6)';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      const a10_start = Math.PI / 2 - (10 * Math.PI) / 180;
+      const a10_end = Math.PI / 2 + (10 * Math.PI) / 180;
+      ctx.arc(0, 0, radius + 3, a10_start, a10_end);
+      ctx.stroke();
+
+      // Línea de referencia vertical central (0°)
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(0, this.height - py - 20);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.restore();
+    }
+
+    drawPhotogate(ctx) {
+      const px = this.pivotX;
+      const visualLen = this.L * this.pixelsPerMeter;
+      const py = this.pivotY + visualLen;
+
+      ctx.save();
+      // Bloque en forma de U de la fotocompuerta infrarroja
+      const uWidth = 54;
+      const uHeight = 36;
+      const gx = px - uWidth / 2;
+      const gy = py - uHeight / 2;
+
+      ctx.fillStyle = '#1e293b';
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(gx, gy, uWidth, uHeight, 6);
+      ctx.fill();
+      ctx.stroke();
+
+      // Hueco central por donde cruza la esfera
+      ctx.clearRect(px - 16, gy - 2, 32, uHeight + 4);
+
+      // Haz infrarrojo (línea roja delgada)
+      const isBeamBroken = Math.abs(this.theta * visualLen) < 14;
+      ctx.strokeStyle = isBeamBroken ? '#ef4444' : 'rgba(239, 68, 68, 0.35)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(px - 16, py);
+      ctx.lineTo(px + 16, py);
+      ctx.stroke();
+
+      // LED indicador óptico
+      const ledColor = this.photogateLedTimer > 0 ? '#10b981' : '#64748b';
+      ctx.fillStyle = ledColor;
+      ctx.shadowColor = ledColor;
+      ctx.shadowBlur = this.photogateLedTimer > 0 ? 10 : 0;
+      ctx.beginPath();
+      ctx.arc(gx + 10, gy + 10, 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Soporte metálico lateral de la fotocompuerta
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(gx - 20, py - 4, 20, 8);
+
+      ctx.restore();
+    }
+
+    drawPendulum(ctx) {
+      const px = this.pivotX;
+      const py = this.pivotY;
+      const visualLen = this.L * this.pixelsPerMeter;
+
+      const bobX = px + Math.sin(this.theta) * visualLen;
+      const bobY = py + Math.cos(this.theta) * visualLen;
+
+      ctx.save();
+
+      // 1. Cuerda / Hilo de nailon con textura sutil
+      ctx.strokeStyle = '#f8fafc';
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(px, py);
+      ctx.lineTo(bobX, bobY);
+      ctx.stroke();
+
+      // 2. Marcas métricas en la cuerda cada 10 cm si la longitud lo permite
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.6)';
+      ctx.lineWidth = 1;
+      const numTicks = Math.floor(this.L / 0.10);
+      for (let i = 1; i <= numTicks; i++) {
+        const frac = (i * 0.10) / this.L;
+        const tx = px + Math.sin(this.theta) * visualLen * frac;
+        const ty = py + Math.cos(this.theta) * visualLen * frac;
+        const perpX = Math.cos(this.theta) * 3;
+        const perpY = -Math.sin(this.theta) * 3;
+        ctx.beginPath();
+        ctx.moveTo(tx - perpX, ty - perpY);
+        ctx.lineTo(tx + perpX, ty + perpY);
+        ctx.stroke();
+      }
+
+      // 3. Gancho / Nudo en la plomada
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(bobX, bobY - 14, 3, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // 4. Plomada / Esfera metálica con gradiente esférico 3D realista
+      const bobRadius = 15 + (this.m - 0.02) * 20; // 15px a 25px según masa
+      const gradSphere = ctx.createRadialGradient(
+        bobX - bobRadius * 0.35,
+        bobY - bobRadius * 0.35,
+        bobRadius * 0.1,
+        bobX,
+        bobY,
+        bobRadius
+      );
+      gradSphere.addColorStop(0, '#f8fafc');
+      gradSphere.addColorStop(0.3, '#94a3b8');
+      gradSphere.addColorStop(0.8, '#334155');
+      gradSphere.addColorStop(1, '#0f172a');
+
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+      ctx.shadowBlur = 12;
+      ctx.shadowOffsetY = 6;
+
+      ctx.fillStyle = gradSphere;
+      ctx.beginPath();
+      ctx.arc(bobX, bobY, bobRadius, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.shadowColor = 'transparent';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+
+      // 5. Cruz de Centro de Masa (CM) en el centro geométrico
+      if (this.showCenterOfMass) {
+        ctx.strokeStyle = '#ef4444';
+        ctx.lineWidth = 1.5;
+        const cLen = 5;
+        ctx.beginPath();
+        ctx.moveTo(bobX - cLen, bobY);
+        ctx.lineTo(bobX + cLen, bobY);
+        ctx.moveTo(bobX, bobY - cLen);
+        ctx.lineTo(bobX, bobY + cLen);
+        ctx.stroke();
+
+        ctx.fillStyle = '#ef4444';
+        ctx.beginPath();
+        ctx.arc(bobX, bobY, 1.8, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Etiqueta flotante mientras se arrastra
+      if (this.isDragging) {
+        const deg = Math.abs(this.theta * (180 / Math.PI)).toFixed(1);
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.roundRect(bobX + 24, bobY - 14, 76, 26, 6);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.font = 'bold 12px var(--mono)';
+        ctx.fillStyle = '#38bdf8';
+        ctx.textAlign = 'center';
+        ctx.fillText(`θ = ${deg}°`, bobX + 62, bobY + 3);
+      }
+
+      ctx.restore();
+    }
+
+    drawVectors(ctx) {
+      const px = this.pivotX;
+      const py = this.pivotY;
+      const visualLen = this.L * this.pixelsPerMeter;
+
+      const bobX = px + Math.sin(this.theta) * visualLen;
+      const bobY = py + Math.cos(this.theta) * visualLen;
+
+      ctx.save();
+      ctx.translate(bobX, bobY);
+
+      // Vector Velocidad (Tangencial) v = L * omega (Cian)
+      const v = this.L * this.omega;
+      const vScale = 35; // factor visual
+      const vx = Math.cos(this.theta) * v * vScale;
+      const vy = -Math.sin(this.theta) * v * vScale;
+
+      if (Math.hypot(vx, vy) > 2) {
+        this.drawArrow(ctx, 0, 0, vx, vy, '#22d3ee', 'v');
+      }
+
+      // Vector Fuerza Recuperadora Tangencial F_t = -m * g * sin(theta) (Naranja)
+      const Ft = -this.m * this.g * Math.sin(this.theta);
+      const fScale = 120;
+      const fx = Math.cos(this.theta) * Ft * fScale;
+      const fy = -Math.sin(this.theta) * Ft * fScale;
+
+      if (Math.hypot(fx, fy) > 2) {
+        this.drawArrow(ctx, 0, 0, fx, fy, '#f59e0b', 'F_t');
+      }
+
+      ctx.restore();
+    }
+
+    drawArrow(ctx, fromX, fromY, toX, toY, color, label) {
+      const headlen = 8;
+      const angle = Math.atan2(toY - fromY, toX - fromX);
+
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = 2.5;
+
+      ctx.beginPath();
+      ctx.moveTo(fromX, fromY);
+      ctx.lineTo(toX, toY);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(toX, toY);
+      ctx.lineTo(toX - headlen * Math.cos(angle - Math.PI / 6), toY - headlen * Math.sin(angle - Math.PI / 6));
+      ctx.lineTo(toX - headlen * Math.cos(angle + Math.PI / 6), toY - headlen * Math.sin(angle + Math.PI / 6));
+      ctx.closePath();
+      ctx.fill();
+
+      if (label) {
+        ctx.font = 'bold 11px var(--mono)';
+        ctx.fillText(label, toX + 6 * Math.cos(angle), toY + 6 * Math.sin(angle));
+      }
+    }
+  }
+
+  window.PenduloBench = PenduloBench;
+
+})(window);
+
+
+/* ==========================================================================
+   LÓGICA DE APLICACIÓN, CUADERNO DIGITAL & GRÁFICAS SVG · PÉNDULO SIMPLE
+   Mg. Manuel Alejandro Obando · Departamento de Física, Universidad del Cauca
+   ========================================================================== */
+
+(function (window, document) {
+  'use strict';
+
+  // Estado global del cuaderno y la aplicación
+  const AppState = {
+    banco: 1,
+    grupo: '',
+    gravedadRefKey: 'popayan',
+    chartMode: 'linear', // 'linear' (T² vs L) o 'curve' (T vs L)
+    activeRowIndex: 0,
+    datos: [
+      { id: 1, L: 0.30, dL: 0.001, t1: 11.02, t2: 10.98, t3: 11.05 },
+      { id: 2, L: 0.50, dL: 0.001, t1: 14.21, t2: 14.18, t3: 14.25 },
+      { id: 3, L: 0.70, dL: 0.001, t1: 16.82, t2: 16.78, t3: 16.85 },
+      { id: 4, L: 0.90, dL: 0.001, t1: 19.06, t2: 19.12, t3: 19.02 },
+      { id: 5, L: 1.10, dL: 0.001, t1: 21.08, t2: 21.01, t3: 21.14 },
+      { id: 6, L: 1.30, dL: 0.001, t1: 22.92, t2: 22.88, t3: 22.96 }
+    ]
+  };
+
+  let bench = null;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    initUrlParams();
+    initTheme();
+    initTabs();
+    initBench();
+    initSetupPanel();
+    initControls();
+    initStopwatchUI();
+    initNotebookTable();
+    initChartControls();
+    initNonlinearCalculator();
+    recalcularTodo();
+  });
+
+  // 1. Lectura de parámetros en URL (?banco=X&grupo=Y)
+  function initUrlParams() {
+    const params = new URLSearchParams(window.location.search);
+    const b = parseInt(params.get('banco'), 10);
+    if (b >= 1 && b <= 24) {
+      AppState.banco = b;
+    }
+    const g = params.get('grupo');
+    if (g) {
+      AppState.grupo = decodeURIComponent(g);
+    } else {
+      AppState.grupo = localStorage.getItem(`pendulo_grupo_banco_${AppState.banco}`) || '';
+    }
+  }
+
+  // 2. Control de Tema Oscuro / Claro
+  function initTheme() {
+    const btn = document.getElementById('btnThemeToggle');
+    const savedTheme = localStorage.getItem('pendulo_theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+
+    if (btn) {
+      btn.textContent = savedTheme === 'light' ? '🌙' : '☀️';
+      btn.addEventListener('click', () => {
+        const cur = document.documentElement.getAttribute('data-theme') || 'dark';
+        const next = cur === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('pendulo_theme', next);
+        btn.textContent = next === 'light' ? '🌙' : '☀️';
+        if (bench) bench.render();
+        renderChart();
+      });
+    }
+  }
+
+  // 3. Navegación entre Pestañas
+  function initTabs() {
+    const navLinks = document.querySelectorAll('.nav a[data-tab]');
+    navLinks.forEach((link) => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const tabId = link.getAttribute('data-tab');
+        switchTab(tabId);
+      });
+    });
+
+    window.addEventListener('hashchange', () => {
+      const hash = window.location.hash.replace('#', '');
+      if (['banco', 'cuaderno', 'matematico', 'guia'].includes(hash)) {
+        switchTab(hash);
+      }
+    });
+
+    if (window.location.hash) {
+      const hash = window.location.hash.replace('#', '');
+      if (['banco', 'cuaderno', 'matematico', 'guia'].includes(hash)) {
+        switchTab(hash);
+      }
+    }
+  }
+
+  function switchTab(tabId) {
+    document.querySelectorAll('.nav a[data-tab]').forEach((a) => {
+      a.classList.toggle('active', a.getAttribute('data-tab') === tabId);
+    });
+
+    document.querySelectorAll('.view-panel').forEach((panel) => {
+      const isTarget = panel.id === `tab-${tabId}`;
+      panel.hidden = !isTarget;
+      panel.classList.toggle('active', isTarget);
+    });
+
+    if (tabId === 'banco' && bench) {
+      setTimeout(() => bench.resize(), 50);
+    } else if (tabId === 'cuaderno') {
+      setTimeout(() => renderChart(), 50);
+    }
+  }
+
+  // 4. Inicialización del Banco de Simulación
+  function initBench() {
+    bench = new window.PenduloBench('pendulumCanvas', {
+      onStateChange: (st) => updateHUD(st),
+      onLapComplete: (laps) => updateLapDisplay(laps)
+    });
+
+    // Cargar parámetros específicos del banco determinístico
+    aplicarParametrosBanco();
+  }
+
+  function updateHUD(st) {
+    const elAngle = document.getElementById('hudAngle');
+    const elPeriod = document.getElementById('hudPeriod');
+    const elOsc = document.getElementById('hudOscCount');
+
+    if (elAngle) elAngle.textContent = `${st.thetaDeg.toFixed(1)}°`;
+    if (elPeriod) elPeriod.textContent = `${st.T_teorico.toFixed(2)} s`;
+    if (elOsc) elOsc.textContent = `${st.oscillationCount} / 10`;
+
+    // Si llega a 10 oscilaciones y el cronómetro de la fotocompuerta estaba activo
+    if (st.oscillationCount === 10 && bench.running) {
+      showToast('✓ ¡10 oscilaciones completadas por la fotocompuerta!');
+    }
+  }
+
+  function updateLapDisplay(laps) {
+    const elLapCount = document.getElementById('stopwatchLapCount');
+    const elTUnit = document.getElementById('stopwatchTUnit');
+    if (elLapCount) elLapCount.textContent = laps.length;
+
+    if (laps.length > 0 && elTUnit) {
+      const totalSec = laps[laps.length - 1] / 1000;
+      const unitT = totalSec / laps.length;
+      elTUnit.textContent = `${unitT.toFixed(2)} s`;
+    } else if (elTUnit) {
+      elTUnit.textContent = '0.00 s';
+    }
+  }
+
+  // 5. Configuración de Puesto (1 a 24) y Grupo
+  function initSetupPanel() {
+    const selBanco = document.getElementById('selBanco');
+    const inpGrupo = document.getElementById('inpGrupo');
+    const btnGuardar = document.getElementById('btnAplicarGrupo');
+
+    if (selBanco) {
+      selBanco.innerHTML = '';
+      for (let i = 1; i <= 24; i++) {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = `Puesto N.º ${String(i).padStart(2, '0')}`;
+        if (i === AppState.banco) opt.selected = true;
+        selBanco.appendChild(opt);
+      }
+
+      selBanco.addEventListener('change', () => {
+        AppState.banco = parseInt(selBanco.value, 10);
+        AppState.grupo = localStorage.getItem(`pendulo_grupo_banco_${AppState.banco}`) || '';
+        if (inpGrupo) inpGrupo.value = AppState.grupo;
+        aplicarParametrosBanco();
+        actualizarTopChip();
+        showToast(`📍 Puesto N.º ${String(AppState.banco).padStart(2, '0')} activado.`);
+      });
+    }
+
+    if (inpGrupo) {
+      inpGrupo.value = AppState.grupo;
+    }
+
+    if (btnGuardar) {
+      btnGuardar.addEventListener('click', () => {
+        if (inpGrupo) {
+          AppState.grupo = inpGrupo.value.trim();
+          localStorage.setItem(`pendulo_grupo_banco_${AppState.banco}`, AppState.grupo);
+          actualizarTopChip();
+          showToast('✓ Integrantes del grupo guardados.');
+        }
+      });
+    }
+
+    actualizarTopChip();
+  }
+
+  function actualizarTopChip() {
+    const elBanco = document.getElementById('topBanco');
+    const elGrupo = document.getElementById('topGrupo');
+    if (elBanco) elBanco.textContent = String(AppState.banco).padStart(2, '0');
+    if (elGrupo) elGrupo.textContent = AppState.grupo || 'Sin asignar';
+  }
+
+  function aplicarParametrosBanco() {
+    const bParams = window.PenduloEngine.getBancoParams(AppState.banco);
+    const gRef = window.PenduloEngine.GRAVEDADES_REFERENCIA[AppState.gravedadRefKey].g;
+
+    bench.setParameters({
+      g: gRef,
+      m: bParams.masaReal,
+      amort: bParams.amortiguamientoAire
+    });
+  }
+
+  // 6. Controles del Banco de Simulación
+  function initControls() {
+    // Botones de simulación
+    const btnStart = document.getElementById('btnStart');
+    const btnPause = document.getElementById('btnPause');
+    const btnReset = document.getElementById('btnReset');
+    const selSpeed = document.getElementById('selSpeed');
+    const btnVectors = document.getElementById('btnToggleVectors');
+    const btnPhotogate = document.getElementById('btnTogglePhotogate');
+
+    if (btnStart) btnStart.addEventListener('click', () => bench.start());
+    if (btnPause) {
+      btnPause.addEventListener('click', () => {
+        bench.pause();
+        btnPause.textContent = bench.paused ? '▶ Reanudar' : '⏸ Pausar';
+      });
+    }
+    if (btnReset) {
+      btnReset.addEventListener('click', () => {
+        bench.reset();
+        if (btnPause) btnPause.textContent = '⏸ Pausar';
+      });
+    }
+
+    if (selSpeed) {
+      selSpeed.addEventListener('change', () => {
+        bench.timeSpeed = parseFloat(selSpeed.value);
+      });
+    }
+
+    if (btnVectors) {
+      btnVectors.addEventListener('click', () => {
+        bench.showVectors = !bench.showVectors;
+        btnVectors.classList.toggle('primary', bench.showVectors);
+      });
+    }
+
+    if (btnPhotogate) {
+      btnPhotogate.classList.add('primary');
+      btnPhotogate.addEventListener('click', () => {
+        bench.showPhotogate = !bench.showPhotogate;
+        btnPhotogate.classList.toggle('primary', bench.showPhotogate);
+      });
+    }
+
+    // Slider de Longitud (L)
+    const rngLength = document.getElementById('rngLength');
+    const valLength = document.getElementById('valLength');
+    const valLengthShort = document.getElementById('valLengthShort');
+
+    if (rngLength) {
+      rngLength.addEventListener('input', () => {
+        const val = parseFloat(rngLength.value);
+        bench.setParameters({ L: val });
+        if (valLength) valLength.textContent = `${val.toFixed(2)} m (${(val * 100).toFixed(1)} cm)`;
+        if (valLengthShort) valLengthShort.textContent = `${val.toFixed(2)} m`;
+      });
+    }
+
+    // Botones preset de longitud
+    document.querySelectorAll('.preset-l').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const lVal = parseFloat(btn.getAttribute('data-l'));
+        if (rngLength) rngLength.value = lVal;
+        bench.setParameters({ L: lVal });
+        if (valLength) valLength.textContent = `${lVal.toFixed(2)} m (${(lVal * 100).toFixed(1)} cm)`;
+        if (valLengthShort) valLengthShort.textContent = `${lVal.toFixed(2)} m`;
+      });
+    });
+
+    // Slider de Ángulo Inicial (θ₀)
+    const rngAngle0 = document.getElementById('rngAngle0');
+    const valAngle0 = document.getElementById('valAngle0');
+    const valAngle0Short = document.getElementById('valAngle0Short');
+    const angleWarning = document.getElementById('angleWarning');
+
+    if (rngAngle0) {
+      rngAngle0.addEventListener('input', () => {
+        const val = parseFloat(rngAngle0.value);
+        bench.setParameters({ theta0Deg: val });
+        if (valAngle0) valAngle0.textContent = `${val.toFixed(1)}°`;
+        if (valAngle0Short) valAngle0Short.textContent = `${val.toFixed(0)}°`;
+        if (angleWarning) angleWarning.style.display = val > 10 ? 'block' : 'none';
+      });
+    }
+
+    // Slider de Masa (m)
+    const rngMass = document.getElementById('rngMass');
+    const valMass = document.getElementById('valMass');
+    if (rngMass) {
+      rngMass.addEventListener('input', () => {
+        const val = parseFloat(rngMass.value);
+        bench.setParameters({ m: val });
+        if (valMass) valMass.textContent = `${Math.round(val * 1000)} g`;
+      });
+    }
+
+    // Selector de Entorno Gravitacional
+    const selGravity = document.getElementById('selGravity');
+    if (selGravity) {
+      selGravity.addEventListener('change', () => {
+        AppState.gravedadRefKey = selGravity.value;
+        const gVal = window.PenduloEngine.GRAVEDADES_REFERENCIA[AppState.gravedadRefKey].g;
+        bench.setParameters({ g: gVal });
+        recalcularTodo();
+      });
+    }
+  }
+
+  // 7. Interfaz del Cronómetro Digital
+  function initStopwatchUI() {
+    const elDisplay = document.getElementById('stopwatchDisplay');
+    const btnStart = document.getElementById('btnSwStart');
+    const btnLap = document.getElementById('btnSwLap');
+    const btnReset = document.getElementById('btnSwReset');
+    const btnSend = document.getElementById('btnSendToNotebook');
+
+    function updateDisplayLoop() {
+      if (bench) {
+        const ms = bench.getStopwatchTime();
+        if (elDisplay) elDisplay.textContent = formatStopwatchTime(ms);
+      }
+      requestAnimationFrame(updateDisplayLoop);
+    }
+    requestAnimationFrame(updateDisplayLoop);
+
+    if (btnStart) {
+      btnStart.addEventListener('click', () => {
+        bench.stopwatchToggle();
+        btnStart.textContent = bench.stopwatchRunning ? '⏸ Detener' : '⏱ Iniciar';
+      });
+    }
+
+    if (btnLap) {
+      btnLap.addEventListener('click', () => {
+        bench.stopwatchLap();
+      });
+    }
+
+    if (btnReset) {
+      btnReset.addEventListener('click', () => {
+        bench.stopwatchReset();
+        if (btnStart) btnStart.textContent = '⏱ Iniciar / Detener';
+      });
+    }
+
+    if (btnSend) {
+      btnSend.addEventListener('click', () => {
+        const totalMs = bench.getStopwatchTime();
+        if (totalMs <= 0) {
+          showToast('⚠️ El cronómetro está en cero. Mide primero el tiempo.');
+          return;
+        }
+
+        const sec = parseFloat((totalMs / 1000).toFixed(2));
+        enviarTiempoACuaderno(sec);
+      });
+    }
+  }
+
+  function formatStopwatchTime(ms) {
+    const totalCentis = Math.floor(ms / 10);
+    const centis = totalCentis % 100;
+    const totalSec = Math.floor(totalCentis / 100);
+    const sec = totalSec % 60;
+    const min = Math.floor(totalSec / 60);
+
+    return `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}.${String(centis).padStart(2, '0')}`;
+  }
+
+  function enviarTiempoACuaderno(tiempoSec) {
+    // Buscar la primera celda de t1, t2 o t3 que esté vacía o en cero
+    let insertado = false;
+    for (let i = 0; i < AppState.datos.length; i++) {
+      const row = AppState.datos[i];
+      if (!row.t1) {
+        row.t1 = tiempoSec;
+        insertado = true;
+        break;
+      } else if (!row.t2) {
+        row.t2 = tiempoSec;
+        insertado = true;
+        break;
+      } else if (!row.t3) {
+        row.t3 = tiempoSec;
+        insertado = true;
+        break;
+      }
+    }
+
+    // Si todas las celdas de las filas existentes están llenas, añadir una nueva fila
+    if (!insertado) {
+      const currentL = bench ? bench.L : 0.80;
+      AppState.datos.push({
+        id: AppState.datos.length + 1,
+        L: currentL,
+        dL: 0.001,
+        t1: tiempoSec,
+        t2: null,
+        t3: null
+      });
+    }
+
+    reconstruirTablaHTML();
+    recalcularTodo();
+    showToast(`✓ Tiempo ${tiempoSec} s transferido al Cuaderno.`);
+  }
+
+  // 8. Construcción y Lógica de la Tabla del Cuaderno
+  function initNotebookTable() {
+    const btnAdd = document.getElementById('btnAddRow');
+    const btnAuto = document.getElementById('btnAutoFillGroupData');
+    const btnClear = document.getElementById('btnClearTable');
+    const btnExport = document.getElementById('btnExportCSV');
+
+    if (btnAdd) {
+      btnAdd.addEventListener('click', () => {
+        const lastL = AppState.datos.length > 0 ? AppState.datos[AppState.datos.length - 1].L : 0.20;
+        const newL = parseFloat((lastL + 0.15).toFixed(2));
+        AppState.datos.push({
+          id: Date.now(),
+          L: Math.min(1.50, newL),
+          dL: 0.001,
+          t1: null,
+          t2: null,
+          t3: null
+        });
+        reconstruirTablaHTML();
+        recalcularTodo();
+      });
+    }
+
+    if (btnAuto) {
+      btnAuto.addEventListener('click', () => {
+        generarDatosDeterministasBanco();
+      });
+    }
+
+    if (btnClear) {
+      btnClear.addEventListener('click', () => {
+        if (confirm('¿Deseas vaciar la tabla de mediciones?')) {
+          AppState.datos = [];
+          reconstruirTablaHTML();
+          recalcularTodo();
+        }
+      });
+    }
+
+    if (btnExport) {
+      btnExport.addEventListener('click', () => exportarCSV());
+    }
+
+    reconstruirTablaHTML();
+  }
+
+  function reconstruirTablaHTML() {
+    const tbody = document.getElementById('tableBody');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+
+    if (AppState.datos.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="14" style="padding:24px; color:var(--sub);">No hay mediciones registradas. Pulsa "Añadir Nueva Fila" o "Autollenar con Datos del Banco".</td></tr>`;
+      return;
+    }
+
+    AppState.datos.forEach((row, idx) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${idx + 1}</td>
+        <td><input type="number" step="0.01" min="0.10" max="2.00" value="${row.L !== null ? row.L : ''}" data-idx="${idx}" data-field="L"></td>
+        <td><input type="number" step="0.0005" min="0.0001" value="${row.dL !== null ? row.dL : 0.001}" data-idx="${idx}" data-field="dL"></td>
+        <td><input type="number" step="0.01" value="${row.t1 !== null ? row.t1 : ''}" placeholder="—" data-idx="${idx}" data-field="t1"></td>
+        <td><input type="number" step="0.01" value="${row.t2 !== null ? row.t2 : ''}" placeholder="—" data-idx="${idx}" data-field="t2"></td>
+        <td><input type="number" step="0.01" value="${row.t3 !== null ? row.t3 : ''}" placeholder="—" data-idx="${idx}" data-field="t3"></td>
+        <td class="calc-col" id="col-prom-${idx}">—</td>
+        <td class="calc-col" id="col-st-${idx}">—</td>
+        <td class="calc-col" id="col-T-${idx}">—</td>
+        <td class="calc-col" id="col-dT-${idx}">—</td>
+        <td class="calc-col" id="col-T2-${idx}">—</td>
+        <td class="calc-col" id="col-dT2-${idx}">—</td>
+        <td class="calc-col" id="col-gi-${idx}">—</td>
+        <td>
+          <button type="button" class="btn small quiet btn-del-row" data-idx="${idx}" title="Eliminar fila">✕</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    // Eventos de inputs
+    tbody.querySelectorAll('input').forEach((inp) => {
+      inp.addEventListener('input', (e) => {
+        const i = parseInt(e.target.getAttribute('data-idx'), 10);
+        const f = e.target.getAttribute('data-field');
+        const v = e.target.value.trim() !== '' ? parseFloat(e.target.value) : null;
+        AppState.datos[i][f] = v;
+        recalcularTodo();
+      });
+    });
+
+    tbody.querySelectorAll('.btn-del-row').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        const i = parseInt(btn.getAttribute('data-idx'), 10);
+        AppState.datos.splice(i, 1);
+        reconstruirTablaHTML();
+        recalcularTodo();
+      });
+    });
+  }
+
+  // 9. Cálculos Metrológicos Completos y Actualización de Tarjetas
+  function recalcularTodo() {
+    const gRefObj = window.PenduloEngine.GRAVEDADES_REFERENCIA[AppState.gravedadRefKey];
+    const gRef = gRefObj.g;
+    const uRef = gRefObj.u;
+
+    const puntosValidos = [];
+
+    AppState.datos.forEach((row, idx) => {
+      const elProm = document.getElementById(`col-prom-${idx}`);
+      const elSt = document.getElementById(`col-st-${idx}`);
+      const elT = document.getElementById(`col-T-${idx}`);
+      const elDT = document.getElementById(`col-dT-${idx}`);
+      const elT2 = document.getElementById(`col-T2-${idx}`);
+      const elDT2 = document.getElementById(`col-dT2-${idx}`);
+      const elGi = document.getElementById(`col-gi-${idx}`);
+
+      const tiempos = [row.t1, row.t2, row.t3].filter((t) => typeof t === 'number' && !isNaN(t) && t > 0);
+
+      if (tiempos.length > 0 && typeof row.L === 'number' && row.L > 0) {
+        const prom10 = window.PenduloEngine.promedio(tiempos);
+        const st = tiempos.length > 1 ? window.PenduloEngine.desviacionEstandar(tiempos, prom10) : 0.05;
+
+        // Periodo de 1 oscilación: T = prom10 / 10
+        const T = prom10 / 10;
+
+        // Incertidumbre combinada del tiempo:
+        // uA = st / sqrt(N), uB = 0.10s (tiempo de reacción de cronometrista), uC = sqrt(uA² + uB²)
+        const uA = st / Math.sqrt(tiempos.length);
+        const uB = 0.10;
+        const uC_10 = Math.sqrt(uA * uA + uB * uB);
+        const deltaT = uC_10 / 10; // incertidumbre en el periodo individual
+
+        const T2 = T * T;
+        const deltaT2 = 2 * T * deltaT;
+
+        // g_i puntual = 4*pi²*L / T²
+        const gi = (4 * Math.PI * Math.PI * row.L) / T2;
+
+        if (elProm) elProm.textContent = prom10.toFixed(2);
+        if (elSt) elSt.textContent = st.toFixed(2);
+        if (elT) elT.textContent = T.toFixed(3);
+        if (elDT) elDT.textContent = `±${deltaT.toFixed(3)}`;
+        if (elT2) elT2.textContent = T2.toFixed(3);
+        if (elDT2) elDT2.textContent = `±${deltaT2.toFixed(3)}`;
+        if (elGi) elGi.textContent = gi.toFixed(2);
+
+        puntosValidos.push({
+          x: row.L,
+          dx: row.dL || 0.001,
+          y: T2,
+          dy: deltaT2,
+          T: T,
+          dT: deltaT
+        });
+      } else {
+        if (elProm) elProm.textContent = '—';
+        if (elSt) elSt.textContent = '—';
+        if (elT) elT.textContent = '—';
+        if (elDT) elDT.textContent = '—';
+        if (elT2) elT2.textContent = '—';
+        if (elDT2) elDT2.textContent = '—';
+        if (elGi) elGi.textContent = '—';
+      }
+    });
+
+    // Ejecutar regresión lineal
+    if (puntosValidos.length >= 2) {
+      const reg = window.PenduloEngine.regresionLineal(puntosValidos);
+      const comp = window.PenduloEngine.evaluarCompatibilidad(reg.g_exp, reg.u_g, gRef, uRef);
+
+      actualizarCardsResultados(reg, comp);
+      AppState.ultimaRegresion = reg;
+    } else {
+      resetCardsResultados();
+      AppState.ultimaRegresion = null;
+    }
+
+    renderChart();
+  }
+
+  function actualizarCardsResultados(reg, comp) {
+    const elGExp = document.getElementById('resGExp');
+    const elUG = document.getElementById('resUG');
+    const elErrRel = document.getElementById('resErrRel');
+    const elR2 = document.getElementById('resR2');
+    const elZScore = document.getElementById('resZScore');
+    const elZHint = document.getElementById('resZScoreHint');
+
+    const cardGExp = document.getElementById('cardGExp');
+    const cardZScore = document.getElementById('cardZScore');
+
+    if (elGExp) elGExp.textContent = `${reg.g_exp.toFixed(3)} m/s²`;
+    if (elUG) elUG.textContent = `± ${reg.u_g.toFixed(3)} m/s²`;
+    if (elErrRel) elErrRel.textContent = `${comp.errorRelativoPct.toFixed(2)} %`;
+    if (elR2) elR2.textContent = reg.r2.toFixed(4);
+
+    if (elZScore) elZScore.textContent = `Z = ${comp.zScore.toFixed(2)}`;
+    if (elZHint) elZHint.textContent = comp.veredicto;
+
+    if (cardZScore) {
+      cardZScore.className = `res-card ${comp.clase}`;
+    }
+    if (cardGExp) {
+      cardGExp.className = `res-card ${comp.clase}`;
+    }
+
+    const eqText = document.getElementById('chartEquationText');
+    const slopeText = document.getElementById('chartSlopeText');
+    if (eqText) eqText.innerHTML = `Ecuación de la recta: <b>T² = (${reg.m.toFixed(3)})·L + (${reg.c.toFixed(3)})</b>`;
+    if (slopeText) slopeText.innerHTML = `Pendiente: <b>m = ${reg.m.toFixed(3)} ± ${reg.u_m.toFixed(3)} s²/m</b> | R² = <b>${reg.r2.toFixed(4)}</b>`;
+  }
+
+  function resetCardsResultados() {
+    const elGExp = document.getElementById('resGExp');
+    const elUG = document.getElementById('resUG');
+    const elErrRel = document.getElementById('resErrRel');
+    const elR2 = document.getElementById('resR2');
+    const elZScore = document.getElementById('resZScore');
+    const elZHint = document.getElementById('resZScoreHint');
+
+    if (elGExp) elGExp.textContent = '—';
+    if (elUG) elUG.textContent = '—';
+    if (elErrRel) elErrRel.textContent = '—';
+    if (elR2) elR2.textContent = '—';
+    if (elZScore) elZScore.textContent = '—';
+    if (elZHint) elZHint.textContent = 'Requiere al menos 2 longitudes distintas';
+  }
+
+  // 10. Generador de Datos Deterministas por Banco
+  function generarDatosDeterministasBanco() {
+    const bParams = window.PenduloEngine.getBancoParams(AppState.banco);
+    const gRef = window.PenduloEngine.GRAVEDADES_REFERENCIA[AppState.gravedadRefKey].g;
+    const rng = window.PenduloEngine.createRng(AppState.banco * 999 + 55);
+
+    const longitudes = [0.30, 0.50, 0.70, 0.90, 1.10, 1.30];
+
+    AppState.datos = longitudes.map((lBase, i) => {
+      const L_real = lBase + bParams.offsetLongitud;
+      const T_teorico = 2 * Math.PI * Math.sqrt(L_real / gRef);
+      const t10_base = T_teorico * 10;
+
+      // Ensayos con dispersión humana
+      const t1 = parseFloat((t10_base + (rng() - 0.5) * bParams.ruidoCronometro + bParams.tiempoReaccion * 0.1).toFixed(2));
+      const t2 = parseFloat((t10_base + (rng() - 0.5) * bParams.ruidoCronometro - bParams.tiempoReaccion * 0.08).toFixed(2));
+      const t3 = parseFloat((t10_base + (rng() - 0.5) * bParams.ruidoCronometro + (rng() - 0.5) * 0.05).toFixed(2));
+
+      return {
+        id: i + 1,
+        L: lBase,
+        dL: 0.001,
+        t1,
+        t2,
+        t3
+      };
+    });
+
+    reconstruirTablaHTML();
+    recalcularTodo();
+    showToast(`✓ Datos del Puesto N.º ${String(AppState.banco).padStart(2, '0')} cargados con éxito.`);
+  }
+
+  // 11. Gráficas SVG Interactivas
+  function initChartControls() {
+    const btnLinear = document.getElementById('btnChartLinear');
+    const btnCurve = document.getElementById('btnChartCurve');
+    const subtitle = document.getElementById('chartSubtitle');
+
+    if (btnLinear) {
+      btnLinear.addEventListener('click', () => {
+        AppState.chartMode = 'linear';
+        btnLinear.classList.add('active');
+        if (btnCurve) btnCurve.classList.remove('active');
+        if (subtitle) subtitle.textContent = 'Linealización: T² en función de L con barras de error e intervalo de ajuste';
+        renderChart();
+      });
+    }
+
+    if (btnCurve) {
+      btnCurve.addEventListener('click', () => {
+        AppState.chartMode = 'curve';
+        btnCurve.classList.add('active');
+        if (btnLinear) btnLinear.classList.remove('active');
+        if (subtitle) subtitle.textContent = 'Curva Real: Periodo T en función de la longitud L (Comportamiento Potencial T ∝ √L)';
+        renderChart();
+      });
+    }
+  }
+
+  function renderChart() {
+    const svg = document.getElementById('svgChart');
+    if (!svg) return;
+
+    const w = 800;
+    const h = 360;
+    const padL = 65;
+    const padR = 30;
+    const padT = 25;
+    const padB = 45;
+
+    const chartW = w - padL - padR;
+    const chartH = h - padT - padB;
+
+    const isLinear = AppState.chartMode === 'linear';
+
+    // Extraer puntos con datos completos
+    const puntos = [];
+    AppState.datos.forEach((row) => {
+      const tiempos = [row.t1, row.t2, row.t3].filter((t) => typeof t === 'number' && t > 0);
+      if (tiempos.length > 0 && typeof row.L === 'number' && row.L > 0) {
+        const prom10 = window.PenduloEngine.promedio(tiempos);
+        const T = prom10 / 10;
+        const T2 = T * T;
+        puntos.push({
+          L: row.L,
+          dL: row.dL || 0.001,
+          T: T,
+          T2: T2,
+          dT: 0.015,
+          dT2: 2 * T * 0.015
+        });
+      }
+    });
+
+    if (puntos.length === 0) {
+      svg.innerHTML = `
+        <text x="${w / 2}" y="${h / 2}" fill="#64748b" text-anchor="middle" font-size="14" font-family="var(--body)">
+          Registra al menos 2 mediciones en la tabla para graficar
+        </text>
+      `;
+      return;
+    }
+
+    // Rangos de escala
+    const maxX = Math.max(1.5, ...puntos.map((p) => p.L * 1.15));
+    const minX = 0;
+
+    let maxY = 0;
+    let minY = 0;
+    if (isLinear) {
+      maxY = Math.max(6.0, ...puntos.map((p) => p.T2 * 1.15));
+    } else {
+      maxY = Math.max(2.5, ...puntos.map((p) => p.T * 1.15));
+    }
+
+    const scaleX = (x) => padL + ((x - minX) / (maxX - minX)) * chartW;
+    const scaleY = (y) => padT + chartH - ((y - minY) / (maxY - minY)) * chartH;
+
+    let svgContent = '';
+
+    // Cuadrícula y ejes
+    for (let i = 0; i <= 5; i++) {
+      const yVal = minY + (i / 5) * (maxY - minY);
+      const yPos = scaleY(yVal);
+      svgContent += `
+        <line x1="${padL}" y1="${yPos}" x2="${w - padR}" y2="${yPos}" stroke="rgba(255,255,255,0.08)" stroke-dasharray="3,3" />
+        <text x="${padL - 10}" y="${yPos + 4}" fill="#94a3b8" text-anchor="end" font-size="11" font-family="var(--mono)">
+          ${yVal.toFixed(1)}
+        </text>
+      `;
+    }
+
+    for (let i = 0; i <= 6; i++) {
+      const xVal = minX + (i / 6) * (maxX - minX);
+      const xPos = scaleX(xVal);
+      svgContent += `
+        <line x1="${xPos}" y1="${padT}" x2="${xPos}" y2="${h - padB}" stroke="rgba(255,255,255,0.08)" stroke-dasharray="3,3" />
+        <text x="${xPos}" y="${h - padB + 18}" fill="#94a3b8" text-anchor="middle" font-size="11" font-family="var(--mono)">
+          ${xVal.toFixed(2)}
+        </text>
+      `;
+    }
+
+    // Ejes principales
+    svgContent += `
+      <line x1="${padL}" y1="${h - padB}" x2="${w - padR}" y2="${h - padB}" stroke="#475569" stroke-width="1.5" />
+      <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${h - padB}" stroke="#475569" stroke-width="1.5" />
+      <text x="${w / 2}" y="${h - 8}" fill="#cbd5e1" text-anchor="middle" font-size="12" font-family="var(--mono)" font-weight="bold">
+        Longitud L (m)
+      </text>
+      <text x="18" y="${h / 2}" fill="#cbd5e1" text-anchor="middle" font-size="12" font-family="var(--mono)" font-weight="bold" transform="rotate(-90, 18, ${h / 2})">
+        ${isLinear ? 'Periodo al Cuadrado T² (s²)' : 'Periodo T (s)'}
+      </text>
+    `;
+
+    // Si es lineal y hay regresión, dibujar la recta de ajuste
+    if (isLinear && AppState.ultimaRegresion && AppState.ultimaRegresion.valido) {
+      const reg = AppState.ultimaRegresion;
+      const x1 = 0;
+      const y1 = reg.m * x1 + reg.c;
+      const x2 = maxX;
+      const y2 = reg.m * x2 + reg.c;
+
+      svgContent += `
+        <line x1="${scaleX(x1)}" y1="${scaleY(y1)}" x2="${scaleX(x2)}" y2="${scaleY(y2)}" stroke="#38bdf8" stroke-width="2" stroke-dasharray="6,4" />
+      `;
+    } else if (!isLinear) {
+      // Dibujar la curva teórica T = 2π√(L/g)
+      const gRef = window.PenduloEngine.GRAVEDADES_REFERENCIA[AppState.gravedadRefKey].g;
+      let pathD = '';
+      const steps = 60;
+      for (let s = 0; s <= steps; s++) {
+        const curL = (s / steps) * maxX;
+        const curT = 2 * Math.PI * Math.sqrt(curL / gRef);
+        const px = scaleX(curL);
+        const py = scaleY(curT);
+        pathD += (s === 0 ? `M ${px} ${py}` : ` L ${px} ${py}`);
+      }
+      svgContent += `<path d="${pathD}" fill="none" stroke="#a855f7" stroke-width="2" stroke-dasharray="5,4" />`;
+    }
+
+    // Dibujar puntos experimentales y barras de error
+    puntos.forEach((p) => {
+      const cx = scaleX(p.L);
+      const cy = scaleY(isLinear ? p.T2 : p.T);
+      const dyVal = isLinear ? p.dT2 : p.dT;
+      const cyTop = scaleY((isLinear ? p.T2 : p.T) + dyVal);
+      const cyBot = scaleY((isLinear ? p.T2 : p.T) - dyVal);
+
+      // Barras de error verticales
+      svgContent += `
+        <line x1="${cx}" y1="${cyTop}" x2="${cx}" y2="${cyBot}" stroke="#f59e0b" stroke-width="1.5" />
+        <line x1="${cx - 4}" y1="${cyTop}" x2="${cx + 4}" y2="${cyTop}" stroke="#f59e0b" stroke-width="1.5" />
+        <line x1="${cx - 4}" y1="${cyBot}" x2="${cx + 4}" y2="${cyBot}" stroke="#f59e0b" stroke-width="1.5" />
+      `;
+
+      // Punto experimental
+      svgContent += `
+        <circle cx="${cx}" cy="${cy}" r="5" fill="#38bdf8" stroke="#ffffff" stroke-width="1.5">
+          <title>L: ${p.L} m, ${isLinear ? 'T²: ' + p.T2.toFixed(3) + ' s²' : 'T: ' + p.T.toFixed(3) + ' s'}</title>
+        </circle>
+      `;
+    });
+
+    svg.innerHTML = svgContent;
+  }
+
+  // 12. Calculadora de No Linealidad en Péndulo Matemático
+  function initNonlinearCalculator() {
+    const rng = document.getElementById('rngMathAngle');
+    const lbl = document.getElementById('mathAngleLabel');
+    const elT0 = document.getElementById('mathT0');
+    const elTExact = document.getElementById('mathTExact');
+    const elPct = document.getElementById('mathDeltaPct');
+    const elGDelta = document.getElementById('mathGDelta');
+
+    if (rng) {
+      rng.addEventListener('input', () => {
+        const deg = parseFloat(rng.value);
+        const rad = deg * (Math.PI / 180);
+        const L = 0.80;
+        const g = 9.776;
+
+        const T0 = 2 * Math.PI * Math.sqrt(L / g);
+        const TExact = window.PenduloEngine.calcularPeriodoTeorico(L, g, rad);
+        const deltaPct = ((TExact - T0) / T0) * 100;
+        const gBias = -2 * deltaPct; // porque g ~ 1/T²
+
+        if (lbl) lbl.textContent = `${deg.toFixed(1)}°`;
+        if (elT0) elT0.textContent = `${T0.toFixed(3)} s`;
+        if (elTExact) elTExact.textContent = `${TExact.toFixed(3)} s`;
+        if (elPct) elPct.textContent = `+${deltaPct.toFixed(2)} %`;
+        if (elGDelta) elGDelta.textContent = `${gBias.toFixed(2)} % de sesgo si no se corrige`;
+      });
+    }
+  }
+
+  // 13. Exportación a CSV
+  function exportarCSV() {
+    let csv = '\uFEFF'; // BOM para Excel
+    csv += 'Laboratorio de Pendulo Simple y Medicion de Gravedad - PhysicsAILab\r\n';
+    csv += `Puesto N.o;${AppState.banco};Grupo;${AppState.grupo || 'Sin asignar'};Gravedad Referencia;${AppState.gravedadRefKey}\r\n\r\n`;
+    csv += 'Fila;Longitud_L_m;Delta_L_m;t1_s;t2_s;t3_s;t_prom_10s;st_s;Periodo_T_s;Delta_T_s;T2_s2;Delta_T2_s2;g_puntual_ms2\r\n';
+
+    AppState.datos.forEach((r, i) => {
+      const tiempos = [r.t1, r.t2, r.t3].filter((t) => typeof t === 'number' && t > 0);
+      const prom10 = tiempos.length > 0 ? window.PenduloEngine.promedio(tiempos) : 0;
+      const st = tiempos.length > 1 ? window.PenduloEngine.desviacionEstandar(tiempos, prom10) : 0;
+      const T = prom10 / 10;
+      const dT = 0.015;
+      const T2 = T * T;
+      const dT2 = 2 * T * dT;
+      const gi = T2 > 0 ? (4 * Math.PI * Math.PI * r.L) / T2 : 0;
+
+      csv += `${i + 1};${r.L};${r.dL};${r.t1 || ''};${r.t2 || ''};${r.t3 || ''};${prom10.toFixed(2)};${st.toFixed(2)};${T.toFixed(3)};${dT.toFixed(3)};${T2.toFixed(3)};${dT2.toFixed(3)};${gi.toFixed(2)}\r\n`;
+    });
+
+    if (AppState.ultimaRegresion && AppState.ultimaRegresion.valido) {
+      const reg = AppState.ultimaRegresion;
+      csv += '\r\nResultados de Regresion Lineal (T2 vs L);\r\n';
+      csv += `Pendiente m (s2/m);${reg.m.toFixed(4)};Incertidumbre m;${reg.u_m.toFixed(4)}\r\n`;
+      csv += `Intercepto c (s2);${reg.c.toFixed(4)};Incertidumbre c;${reg.u_c.toFixed(4)}\r\n`;
+      csv += `Coeficiente R2;${reg.r2.toFixed(4)}\r\n`;
+      csv += `Gravedad Experimental g_exp (m/s2);${reg.g_exp.toFixed(3)};Incertidumbre g (m/s2);${reg.u_g.toFixed(3)}\r\n`;
+    }
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Pendulo_Simple_Puesto_${String(AppState.banco).padStart(2, '0')}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('✓ Archivo CSV descargado exitosamente.');
+  }
+
+  // Notificación Toast
+  function showToast(msg) {
+    const prev = document.querySelector('.lab-toast');
+    if (prev) prev.remove();
+
+    const toast = document.createElement('div');
+    toast.className = 'lab-toast';
+    toast.innerHTML = `<span>⚛️</span> <span>${msg}</span>`;
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transition = 'opacity 0.3s ease';
+      setTimeout(() => toast.remove(), 300);
+    }, 3200);
+  }
+
+})(window, document);
+</script>
+</body>
+</html>
