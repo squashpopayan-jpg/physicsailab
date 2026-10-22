@@ -14,7 +14,8 @@
 
   <nav class="nav" aria-label="Pestañas de Navegación">
     <a href="#banco" class="active" data-tab="banco">🔬 Banco &amp; Simulación</a>
-    <a href="#cuaderno" data-tab="cuaderno">📓 Cuaderno &amp; Errores</a>
+    <a href="#real" data-tab="real">🧪 Laboratorio Real (Presencial)</a>
+    <a href="#cuaderno" data-tab="cuaderno">📓 Cuaderno Virtual</a>
     <a href="#matematico" data-tab="matematico">📐 Péndulo Matemático</a>
     <a href="#guia" data-tab="guia">📖 Guía de Práctica</a>
   </nav>
@@ -182,7 +183,203 @@
   </section>
 
   <!-- ====================================================================
-       PESTAÑA 2: CUADERNO DIGITAL & TRATAMIENTO DE ERRORES
+       PESTAÑA 2: LABORATORIO REAL (PRESENCIAL) - ENTRADA DE DATOS FÍSICOS
+       ==================================================================== -->
+  <section id="tab-real" class="view-panel" hidden>
+    <div class="intro">
+      <div>
+        <p class="eyebrow">Datos Físicos Experimentales · Práctica de Laboratorio Presencial</p>
+        <h2>Módulo de Análisis: Datos de Laboratorio Real</h2>
+        <p>
+          Introduce las medidas tomadas físicamente en tu mesa de laboratorio con flexómetro y cronómetro (o fotocompuerta). El sistema calculará el valor experimental de la gravedad local <b>g<sub>exp</sub></b>, realizará la regresión por mínimos cuadrados (<b>T² = m·L + c</b>), evaluará posibles sesgos al centro de masa y determinará la compatibilidad metrológica con el valor geofísico de Popayán (<b>g = 9.776 m/s²</b>).
+        </p>
+      </div>
+
+      <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+        <button type="button" class="btn primary" id="btnToggleRealImport" title="Pegar columnas copiadas desde Excel o Google Sheets">📋 Pegar desde Excel / Sheets</button>
+        <button type="button" class="btn" id="btnLoadSampleRealData" title="Cargar un conjunto de medidas reales típicas de laboratorio para prueba">🎲 Cargar Muestra Experimental</button>
+        <button type="button" class="btn" id="btnExportRealCSV" title="Descargar bitácora en formato CSV">📥 Exportar CSV Real</button>
+        <button type="button" class="btn quiet" id="btnPrintRealReport" title="Imprimir o exportar reporte oficial en PDF">🖨️ Imprimir / Guardar PDF</button>
+        <button type="button" class="btn quiet" id="btnClearRealTable" title="Borrar datos de la tabla real">🗑️ Vaciar Tabla</button>
+      </div>
+    </div>
+
+    <!-- Caja Desplegable para Importar desde Excel / Google Sheets -->
+    <div class="import-box" id="boxRealImport" hidden>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <strong style="color:var(--accent); font-size:13px;">📋 Asistente Rápido: Pegar Columnas desde Excel o Google Sheets</strong>
+        <button type="button" class="btn quiet small" id="btnCloseRealImport">✕ Cerrar</button>
+      </div>
+      <p style="font-size:12px; color:var(--sub); margin:6px 0 0;">
+        Copia tus columnas en Excel (ejemplo: Columna 1 = <code>L (m)</code>, Columna 2 = <code>t₁ (s)</code>, Columna 3 = <code>t₂ (s)</code>, Columna 4 = <code>t₃ (s)</code>) y pégalas aquí. El sistema detecta tabulaciones, comas o espacios automáticamente.
+      </p>
+      <textarea id="txtRealImport" placeholder="Ejemplo:
+0.35	11.90	11.85	11.95
+0.55	14.92	14.88	14.95
+0.75	17.41	17.38	17.46
+0.95	19.62	19.58	19.68
+1.15	21.58	21.52	21.62
+1.35	23.38	23.32	23.44"></textarea>
+      <div style="display:flex; gap:8px; margin-top:8px;">
+        <button type="button" class="btn primary small" id="btnProcessRealImport">📥 Procesar y Cargar en la Tabla Real</button>
+      </div>
+    </div>
+
+    <!-- Configuración del Instrumental Utilizado en el Laboratorio Real -->
+    <div class="real-config-grid">
+      <div class="real-config-item">
+        <label for="selRealLenInst">Instrumento de Longitud</label>
+        <select id="selRealLenInst">
+          <option value="0.001" selected>Flexómetro Metálico (± 1 mm = 0.001 m)</option>
+          <option value="0.0005">Regla de Precisión (± 0.5 mm = 0.0005 m)</option>
+          <option value="0.0001">Calibrador Vernier (± 0.1 mm = 0.0001 m)</option>
+        </select>
+      </div>
+
+      <div class="real-config-item">
+        <label for="selRealTimerInst">Instrumento de Tiempo</label>
+        <select id="selRealTimerInst">
+          <option value="0.15" selected>Cronómetro Manual Celular (± 0.15 s reacc.)</option>
+          <option value="0.05">Cronómetro Digital con Split (± 0.05 s)</option>
+          <option value="0.001">Fotocompuerta Óptica de Lab (± 0.001 s)</option>
+        </select>
+      </div>
+
+      <div class="real-config-item">
+        <label for="selRealOscCount">Oscilaciones Cronometradas (N)</label>
+        <select id="selRealOscCount">
+          <option value="5">5 Oscilaciones</option>
+          <option value="10" selected>10 Oscilaciones (Recomendado)</option>
+          <option value="15">15 Oscilaciones</option>
+          <option value="20">20 Oscilaciones</option>
+        </select>
+      </div>
+
+      <div class="real-config-item">
+        <label for="selRealGravity">Sede / Municipio (g Referencia)</label>
+        <select id="selRealGravity">
+          <option value="popayan" selected>Popayán (Unicauca - 9.776 m/s²)</option>
+          <option value="bogota">Bogotá (9.774 m/s²)</option>
+          <option value="medellin">Medellín (9.780 m/s²)</option>
+          <option value="cali">Cali (9.781 m/s²)</option>
+          <option value="barranquilla">Barranquilla (9.782 m/s²)</option>
+          <option value="estandar">Nivel del Mar Estándar (9.807 m/s²)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Tabla de Mediciones de Laboratorio Real -->
+    <div class="cuaderno-grid">
+      <div class="table-responsive">
+        <table class="data-table" id="tableRealData">
+          <thead>
+            <tr>
+              <th title="Número de fila">#</th>
+              <th title="Longitud física medida en el laboratorio hasta el centro de masa">L (m)</th>
+              <th title="Incertidumbre del instrumento de longitud">ΔL (m)</th>
+              <th title="Tiempo ensayo 1">t₁ (s)</th>
+              <th title="Tiempo ensayo 2">t₂ (s)</th>
+              <th title="Tiempo ensayo 3">t₃ (s)</th>
+              <th title="Tiempo promedio de oscilaciones" class="calc-col">t̄ (s)</th>
+              <th title="Desviación estándar de los tiempos" class="calc-col">s_t (s)</th>
+              <th title="Periodo de 1 oscilación: T = t̄ / N" class="calc-col">T (s)</th>
+              <th title="Incertidumbre combinada del periodo" class="calc-col">ΔT (s)</th>
+              <th title="Periodo al cuadrado" class="calc-col">T² (s²)</th>
+              <th title="Incertidumbre de T²: 2*T*ΔT" class="calc-col">Δ(T²) (s²)</th>
+              <th title="Gravedad calculada por fila: 4*π²*L / T²" class="calc-col">g_i (m/s²)</th>
+              <th title="Acción">Acción</th>
+            </tr>
+          </thead>
+          <tbody id="tableRealBody">
+            <!-- Filas inyectadas por JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <button type="button" class="btn primary small" id="btnAddRealRow">➕ Añadir Nueva Fila de Medición Real</button>
+        <span style="font-size:12px; color:var(--sub);">
+          * Ingresa al menos 3 longitudes distintas para calcular la regresión lineal por mínimos cuadrados.
+        </span>
+      </div>
+
+      <!-- Tarjetas de Resultados Metrológicos de Datos Reales -->
+      <div class="error-cards-grid">
+        <div class="res-card" id="cardRealGExp">
+          <div class="label">Gravedad Experimental Real (g_exp)</div>
+          <div class="value" id="resRealGExp">—</div>
+          <div class="hint" id="resRealGExpHint">Obtenida de la pendiente: g = 4π² / m</div>
+        </div>
+
+        <div class="res-card" id="cardRealUG">
+          <div class="label">Incertidumbre Propagada Δg</div>
+          <div class="value" id="resRealUG">—</div>
+          <div class="hint" id="resRealUGHint">Δg = g · (Δm / m)</div>
+        </div>
+
+        <div class="res-card" id="cardRealErrRel">
+          <div class="label">Error Relativo Porcentual (%E)</div>
+          <div class="value" id="resRealErrRel">—</div>
+          <div class="hint" id="resRealErrRelHint">Respecto a Popayán (9.776 m/s²)</div>
+        </div>
+
+        <div class="res-card" id="cardRealR2">
+          <div class="label">Bondad de Ajuste (R²)</div>
+          <div class="value" id="resRealR2">—</div>
+          <div class="hint" id="resRealR2Hint">Coeficiente de correlación lineal</div>
+        </div>
+
+        <div class="res-card" id="cardRealZScore">
+          <div class="label">Compatibilidad Z-Score</div>
+          <div class="value" id="resRealZScore">—</div>
+          <div class="hint" id="resRealZScoreHint">Criterio GUM |g - g_ref| / √(u² + u_ref²)</div>
+        </div>
+      </div>
+
+      <!-- Panel de Diagnóstico Físico de Errores Reales -->
+      <div class="diagnostic-panel" id="panelRealDiagnostic">
+        <div class="icon">🔬</div>
+        <div class="content">
+          <strong>Diagnóstico Físico &amp; Análisis del Intercepto al Centro de Masa:</strong>
+          <span id="txtRealDiagnostic">
+            Ingresa o pega las mediciones del laboratorio real para analizar si la recta pasa por el origen o si existe un sesgo sistemático en la medición de la longitud al centro de gravedad de la plomada.
+          </span>
+        </div>
+      </div>
+
+      <!-- Sección de Gráfica Experimental de Datos Reales -->
+      <div class="chart-box">
+        <div class="chart-header">
+          <div>
+            <h3 style="margin:0 0 4px 0;">Gráfica Experimental de Laboratorio Presencial</h3>
+            <p style="margin:0; font-size:13px; color:var(--sub);" id="chartRealSubtitle">
+              Linealización con Datos Reales: T² vs L con barras de incertidumbre y recta de ajuste
+            </p>
+          </div>
+
+          <div style="display:flex; gap:6px;">
+            <button type="button" class="btn small active" id="btnRealChartLinear">📈 Lineal: T² vs L</button>
+            <button type="button" class="btn small" id="btnRealChartCurve">📉 No Lineal: T vs L</button>
+          </div>
+        </div>
+
+        <div class="svg-chart-wrap" id="chartRealContainer">
+          <svg id="svgRealChart" viewBox="0 0 800 360" preserveAspectRatio="none">
+            <!-- Renderizado dinámico en app.js -->
+          </svg>
+        </div>
+
+        <div style="margin-top:12px; font-size:13px; color:var(--sub); display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+          <span id="chartRealEquationText">Ecuación de la recta: <b>T² = m·L + c</b></span>
+          <span id="chartRealSlopeText">Pendiente: <b>m = —</b> | Intercepto: <b>c = —</b></span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       PESTAÑA 3: CUADERNO DIGITAL & TRATAMIENTO DE ERRORES (SIMULACIÓN)
        ==================================================================== -->
   <section id="tab-cuaderno" class="view-panel" hidden>
     <div class="intro">
