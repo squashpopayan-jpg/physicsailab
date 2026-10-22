@@ -383,7 +383,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function getUnlockedCourses() {
         try {
-            return JSON.parse(localStorage.getItem('physicsailab_unlocked_courses') || '[]');
+            let list = JSON.parse(localStorage.getItem('physicsailab_unlocked_courses') || '[]');
+            if (!Array.isArray(list)) list = [];
+
+            // 1. Recuperar cursos desbloqueados por bandera directa (unlocked_course_xxx)
+            if (data && data.cursos) {
+                data.cursos.forEach(c => {
+                    if (localStorage.getItem('unlocked_course_' + c.id) === 'true' && !list.includes(c.id)) {
+                        list.push(c.id);
+                    }
+                });
+            }
+
+            // 2. Recuperar cursos vinculados a licencias activas del estudiante
+            try {
+                const licenses = JSON.parse(localStorage.getItem('physicsailab_student_licenses') || '[]');
+                if (Array.isArray(licenses)) {
+                    licenses.forEach(lic => {
+                        if (lic && lic.cursoId && lic.estado !== 'revocado' && !list.includes(lic.cursoId)) {
+                            list.push(lic.cursoId);
+                        }
+                    });
+                }
+            } catch(err) {}
+
+            return list;
         } catch (e) {
             return [];
         }
@@ -1087,7 +1111,11 @@ document.addEventListener('DOMContentLoaded', () => {
         currentProfileTab = initialTab;
         const modal = document.getElementById('student-profile-modal');
         if (!modal) return;
-        renderStudentProfileBody(initialTab);
+        try {
+            renderStudentProfileBody(initialTab);
+        } catch (err) {
+            console.error('[Error al renderizar perfil estudiantil]:', err);
+        }
         modal.classList.add('active');
     };
 
@@ -1417,6 +1445,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const unlockedIds = getUnlockedCourses();
         const adminMode = isAdmin();
         const enrolledCourses = adminMode ? (data.cursos || []) : (data.cursos || []).filter(c => unlockedIds.includes(c.id));
+        const savedCourseIds = getSavedCourses();
         const savedComicIds = getSavedComics();
         const savedPodcastsList = getSavedPodcasts();
         const atomLikesState = getAtomLikesState();
