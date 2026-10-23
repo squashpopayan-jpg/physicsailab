@@ -1,0 +1,40 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Plano Depto. de Física</title>
+<style>body{margin:0;font-family:system-ui,sans-serif;background:#f6f7f9;color:#1b2430}
+h1{font-size:18px;margin:14px 16px 4px}p{margin:0 16px 8px;font-size:13px;color:#566}
+svg{width:100%;height:auto;display:block;background:#fff}
+.w{fill:#fbfcfe;stroke:#2b3a4a;stroke-width:2}.c{fill:#e8eef5}.t{fill:#c9d6e3;stroke:#6b7f93}.d{fill:#fff;stroke:none}
+text{font-size:11px;fill:#1b2430}.n{fill:#fff;font-weight:700;font-size:10px}
+</style></head><body>
+<h1>Departamento de Física — plano del recorrido (borrador v4)</h1>
+<p>Escala: 1 cuadro = 1 paso (≈0,75 m). La Sala de Sistemas abre al pasillo por el mismo lado que los laboratorios, y el pasillo se extiende hacia la derecha. El Pasillo 2 baja hasta la Salida; el punto 10 es la distribución de grupos.</p>
+<svg id="s" viewBox="0 0 940 360"></svg>
+<script>
+const K=11,ox=20,oy=30,N="http://www.w3.org/2000/svg",s=document.getElementById('s');
+function el(t,a,x){const e=document.createElementNS(N,t);for(const k in a)e.setAttribute(k,a[k]);if(x)e.textContent=x;s.appendChild(e);return e}
+const R=(x,y,w,h,c)=>el('rect',{x:ox+x*K,y:oy+y*K,width:w*K,height:h*K,class:c});
+const T=(x,y,t,a)=>el('text',Object.assign({x:ox+x*K,y:oy+y*K,'text-anchor':'middle'},a||{}),t);
+for(let i=0;i<=82;i++)el('line',{x1:ox+i*K,y1:oy-K,x2:ox+i*K,y2:oy+27*K,stroke:'#eef0f3'});
+for(let j=-1;j<=27;j++)el('line',{x1:ox,y1:oy+j*K,x2:ox+82*K,y2:oy+j*K,stroke:'#eef0f3'});
+// pasillos
+R(0,0,82,3,'c');R(64,0,3,25,'c');R(0,0,8,8,'c');
+T(4,1.9,'Entrega');T(36,1.9,'Pasillo 1');T(74,1.9,'Pasillo (extensión)');
+T(65.5,14,'Pasillo 2',{transform:`rotate(-90 ${ox+65.5*K} ${oy+14*K})`});
+// salas
+const sal=['Lab. Mecánica 1','Lab. Mecánica 2','Lab. Fluidos','Lab. Óptica'];
+sal.forEach((n,i)=>{const x=8+i*14;R(x,3,14,14,'w');R(x+6,2.75,2,0.5,'d');
+ T(x+7,16,n,{'font-weight':700});
+ if(i===2){[6,10].forEach(b=>R(x+2.5,b,9,1.8,'t'));}
+ else [[3.5,6.5],[8.5,6.5],[3.5,10.5],[8.5,10.5]].forEach(([a,b])=>R(x+a,b,2.2,1.6,'t'));});
+// Sala de Sistemas: puerta al pasillo, mismo lado que los labs
+R(67,3,12,10,'w');R(72,2.75,2,0.5,'d');T(73,11.5,'Sala de Sistemas',{'font-weight':700});
+// distribución de grupos y salida
+R(64,0,3,3,'c').setAttribute('style','stroke:#e0652b;stroke-dasharray:3 2;fill:#fde9df');
+T(65.5,-0.5,'Distribución de grupos',{'font-weight':700});
+R(63.5,24.7,4,0.5,'t');T(65.5,27,'SALIDA',{'font-weight':700});
+// puntos de captura
+const P=[[4,5],[15,1.5],[15,10],[29,1.5],[29,10],[43,1.5],[43,10],[57,1.5],[57,10],[65.5,1.5],[73,1.5],[73,7],[65.5,12],[65.5,23]];
+const via=[[65.5,1.5],[73,1.5],[73,7],[73,1.5],[65.5,1.5],[65.5,12],[65.5,23]];
+el('polyline',{points:[...P.slice(0,10),...via.slice(1)].map(p=>`${ox+p[0]*K},${oy+p[1]*K}`).join(' '),fill:'none',stroke:'#e0652b','stroke-dasharray':'4 3','stroke-width':1.5});
+P.forEach((p,i)=>{el('circle',{cx:ox+p[0]*K,cy:oy+p[1]*K,r:8,fill:'#e0652b'});T(p[0],p[1]+0.35,i+1,{class:'n'});});
+</script></body></html>

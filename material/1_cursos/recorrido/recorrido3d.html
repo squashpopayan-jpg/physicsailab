@@ -1,0 +1,549 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Recorrido 3D · Depto. de Física</title>
+<style>
+:root{--bg:#0e1319;--pn:rgba(18,26,36,.82);--tx:#eaf0f6;--mu:#9fb0c2;--ac:#e0652b}
+*{box-sizing:border-box}html,body{margin:0;height:100%;background:var(--bg);color:var(--tx);font-family:system-ui,Segoe UI,sans-serif;overflow:hidden;touch-action:none}
+#c{position:fixed;inset:0;width:100%;height:100%;display:block}
+.pn{position:fixed;background:var(--pn);backdrop-filter:blur(6px);border:1px solid #2a3948;border-radius:10px}
+#top{top:10px;left:10px;padding:8px 12px;max-width:min(420px,calc(100% - 20px))}
+#top b{font-size:15px}#top small{display:block;color:var(--mu);font-size:12px;margin-top:2px}
+#loc{margin-top:6px;font-size:13px;color:var(--ac);font-weight:600}
+#map{top:10px;right:10px;padding:6px}#map canvas{display:block;width:230px;height:auto;border-radius:6px}
+#tp{bottom:10px;left:10px;right:10px;padding:8px;display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+button{background:#1d2a38;color:var(--tx);border:1px solid #324559;border-radius:7px;padding:7px 10px;font-size:12.5px;cursor:pointer}
+button:hover{background:#27384a}button.on{background:var(--ac);border-color:var(--ac);color:#fff}
+#help{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(8,12,17,.78);z-index:5}
+#help div{background:#14202c;border:1px solid #2f4256;border-radius:14px;padding:22px 26px;max-width:460px;text-align:center}
+#help h2{margin:0 0 8px;font-size:20px}#help p{color:var(--mu);font-size:14px;line-height:1.5;margin:6px 0}
+#help button{background:var(--ac);border-color:var(--ac);color:#fff;font-size:15px;padding:10px 22px;margin-top:10px}
+kbd{background:#223244;border:1px solid #3a5068;border-radius:4px;padding:1px 6px;font-size:12px}
+#cred{position:fixed;right:12px;bottom:66px;font-size:11px;color:#6f8296}
+#act{top:204px;right:10px;width:262px;padding:8px 10px;font-size:12.5px;max-height:calc(100% - 280px);overflow:auto}
+#act .ah{display:flex;justify-content:space-between;align-items:center;gap:6px}#act .ah button{padding:2px 8px}
+#act .clk{font-size:26px;font-weight:700;margin-top:4px}#act #clkt{font-size:14px;color:var(--mu);font-weight:400}
+#act .ph{color:var(--ac);font-weight:600;margin:2px 0 6px;min-height:16px}
+#act input[type=range]{width:100%}#act .row{display:flex;gap:5px;flex-wrap:wrap;margin:6px 0}#act select{background:#1d2a38;color:var(--tx);border:1px solid #324559;border-radius:7px;padding:5px;font-size:12px}
+#act table{width:100%;border-collapse:collapse;margin:4px 0}#act td{padding:3px 4px;border-top:1px solid #2a3948;vertical-align:middle}#act .rm{text-align:right;font-variant-numeric:tabular-nums;color:var(--mu)}
+#act .chip{display:inline-block;width:20px;height:20px;border-radius:50%;text-align:center;line-height:20px;font-weight:700;color:#111}
+#act .cfg{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:6px 0}#act .cfg label{display:flex;flex-direction:column;font-size:11px;color:var(--mu)}#act .cfg input{width:100%;background:#1d2a38;color:var(--tx);border:1px solid #324559;border-radius:6px;padding:4px}
+#act summary{cursor:pointer;color:var(--mu);margin-top:4px}
+#act .tabs{display:flex;gap:4px;margin:6px 0 4px}#act .tabs button{flex:1;padding:5px 4px}#act .tabs button.on{background:var(--ac);border-color:var(--ac);color:#fff}
+#act .st{margin:4px 0 2px;color:var(--tx)}#act .sd{color:var(--mu);line-height:1.45;margin-bottom:4px}#act .sd b{color:var(--tx)}#act .sd.mu{color:var(--ac)}
+#act ol{margin:6px 0 0;padding:0;list-style:none}#act ol li{padding:4px 6px;border-radius:6px;cursor:pointer;color:var(--mu);display:flex;gap:6px}#act ol li span{font-variant-numeric:tabular-nums;color:#6f8296;min-width:38px}
+#act ol li:hover{background:#1d2a38}#act ol li.on{background:#27384a;color:var(--tx);outline:1px solid var(--ac)}
+#act .rl{padding:5px 0;border-top:1px solid #2a3948}#act .rl:first-child{border-top:0}#act .rh{display:flex;align-items:center;gap:6px}#act .rc{margin-left:auto;color:var(--mu)}
+#act .sw{display:inline-flex;gap:2px}#act .sw i{display:inline-block;width:14px;height:14px;border-radius:4px}
+#act .rd{color:var(--mu);line-height:1.4;font-size:12px;margin-top:2px}#act .pcard{margin-top:6px;padding:8px;border:1px dashed #3a5068;border-radius:8px;color:var(--mu)}
+#act .pcard .rs{margin-top:6px;color:var(--tx);line-height:1.5}
+@media(max-width:700px){#map canvas{width:150px}#cred{display:none}#act{top:auto;bottom:70px;right:10px;left:10px;width:auto;max-height:45%}}
+</style></head><body>
+<canvas id="c"></canvas>
+<div class="pn" id="top"><b>Departamento de Física · recorrido 3D</b><small>Universidad del Cauca · maqueta a escala del plano</small><div id="loc">Entrega</div></div>
+<div class="pn" id="map"><canvas id="mm" width="230" height="172"></canvas></div>
+<div class="pn" id="act"></div>
+<div class="pn" id="tp"></div>
+<div id="cred">Mg. Manuel Alejandro Obando · Depto. de Física · Unicauca</div>
+<div id="help"><div>
+<h2>Bienvenido al Departamento de Física</h2>
+<p>Camine por el pasillo, entre a los laboratorios, suba por las gradas hacia el segundo piso o salga al patio.</p>
+<p><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> o flechas para moverse · <kbd>Shift</kbd> correr · arrastre el mouse para mirar (doble clic captura el cursor, <kbd>Esc</kbd> lo suelta).</p>
+<p>En celular: arrastre con el dedo izquierdo para caminar y con el derecho para mirar.</p>
+<button id="go">Comenzar</button>
+</div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ===== Geometría (unidad = 1 paso ≈ 0,75 m; x→este, z→sur del plano) =====
+const H=4, EYE=2.2, R=0.5;
+const CW=5;                       // ancho de los pasillos
+const C2a=64, C2b=C2a+CW;         // Pasillo 2 en x
+const ZEND=CW+22, XEND=84;
+const GY=-1.6;                    // nivel del patio/terreno (el edificio está elevado)
+const FL2=4.4;                    // nivel del segundo piso
+const TR=.55, NST=11, RISE=(FL2-GY)/NST;   // gradas exteriores: huella, escalones y alzada (desde el patio)
+const labs=[['Lab. de Mecánica 1',8],['Lab. de Mecánica 2',22],['Lab. de Fluidos',36],['Lab. de Óptica',50]];
+const SIS={x:C2b,z:CW,w:12,d:10};
+const DOOR={z0:2.5,z1:5.5};
+// gradas EXTERIORES rectas al 2.º piso, pegadas al muro norte, suben hacia el este desde el patio; el muro se abre para entrar desde el pasillo
+const GE={x0:10,x1:10+NST*TR,xl:10+NST*TR+3,lead:0};                 // Entrega: empiezan en el primer ventanal
+const GD={x0:SIS.x,x1:SIS.x+NST*TR,xl:SIS.x+NST*TR+3,lead:0};        // Distribución: empiezan donde empieza la Sala de Sistemas
+const SZ0=-2.1,SZ1=-.3;                                         // franja (z) de las gradas
+const WZ=SZ0-.05;                                               // la pared de la Entrega pasa al norte, a la altura del pasamanos
+const OPEN=[[GE.x0,GE.xl],[C2a,GD.xl]];                          // tramos del muro norte abiertos (gradas de la Entrega; pasillo norte + gradas de Distribución)
+const walk=[
+ [0,0,XEND,CW-.3],[C2a+.3,0,C2b-.3,ZEND-.3],[0,0,7.7,7.7],
+ [GE.x0-GE.lead,SZ0,GE.xl-.3,SZ1],[GD.x0-GD.lead,SZ0,GD.xl-.3,SZ1],[0,WZ,GE.x0,.6],      // gradas (con tramo de acceso a nivel del patio) y descanso
+ ...OPEN.map(o=>[o[0],-.4,o[1],.6]),                              // paso por la abertura
+ // puerta de la Entrega (gradas de frente hacia el patio) y patios
+ [-3.6,2.6,.5,5.4],[-10,-9,-3.0,9],[-10,-9,14,-2.2],[60,-9,C2a-.2,-2.2],[C2b+.2,-9,XEND,-2.2],[C2a+.3,-49.7,C2b-.3,.6],
+ ...labs.map(([n,x])=>[x+.3,CW+.3,x+13.7,CW+13.7]),
+ ...labs.map(([n,x])=>[x+6,CW-.4,x+8,CW+.4]),
+ [SIS.x+.3,CW+.3,SIS.x+SIS.w-.3,SIS.z+SIS.d-.3],[SIS.x+5,CW-.4,SIS.x+7,CW+.4]];
+function ok(x,z){for(const r of walk)if(x>=r[0]&&x<=r[2]&&z>=r[1]&&z<=r[3])return true;return false}
+function free(x,z){return ok(x+R,z+R)&&ok(x-R,z+R)&&ok(x+R,z-R)&&ok(x-R,z-R)}
+// altura del piso en (x,z)
+function gy(x,z){
+ if(x>=C2a&&x<=C2b&&z<=.6&&z>=-50)return 0;                           // pasillo norte (a nivel del piso)
+ if(z<-2.2)return GY;                                                  // patio, junto a las ventanas
+ if(x<0)return x<=-3.2?GY:-.4*Math.ceil(-x/.8);                         // gradas de la puerta, de frente hacia el oeste
+ if(z<=SZ1+.1)for(const G of [GE,GD])if(x>=G.x0-G.lead&&x<=G.xl)return x<G.x0?GY:x<G.x1?GY+RISE*Math.min(NST,Math.floor((x-G.x0)/TR)+1):FL2;
+ return 0}
+const midC2=(C2a+C2b)/2;
+const places=[
+ ['Entrega',4,3.8,-Math.PI/2],['Mecánica 1',15,CW+6,Math.PI],['Mecánica 2',29,CW+6,Math.PI],
+ ['Fluidos',43,CW+6,Math.PI],['Óptica',57,CW+6,Math.PI],['Distribución de grupos',midC2,3.6,Math.PI],
+ ['Sistemas',SIS.x+6,CW+5,Math.PI],['Salida',midC2,ZEND-2.5,0],['Patio',-7,4,-Math.PI/2],['Pasillo norte',midC2,-18,0]];
+function where(x,z,y){
+ if(x>=C2a&&x<=C2b&&z<0)return"Pasillo norte";
+ if(z<-2.2)return'Patio';
+ if(x<-3.2)return'Patio';
+ if(x<0)return'Gradas de la puerta de entrada';
+ if(y>2)return'Segundo piso (por modelar)';
+ for(const G of [GE,GD])if(z<0&&x>=G.x0&&x<=G.xl)return'Gradas exteriores al 2.º piso ('+(G===GE?'Entrega':'Distribución')+')';
+ if(x>=SIS.x&&x<=SIS.x+SIS.w&&z>=CW&&z<=SIS.z+SIS.d)return'Sala de Sistemas';
+ for(const [n,lx] of labs)if(x>=lx&&x<lx+14&&z>=CW&&z<=CW+14)return n;
+ if(x<8&&z<8)return'Entrega de estudiantes';
+ if(x>=C2a&&x<=C2b&&z<=CW)return'Distribución de grupos';
+ if(x>=C2a&&x<=C2b&&z>CW)return'Pasillo 2';
+ return'Pasillo 1';}
+
+// ===== Escena =====
+const cv=document.getElementById('c');
+const ren=new THREE.WebGLRenderer({canvas:cv,antialias:true});ren.setPixelRatio(Math.min(devicePixelRatio,2));
+const scene=new THREE.Scene();scene.background=new THREE.Color(0xbcd8ee);scene.fog=new THREE.Fog(0xbcd8ee,45,170);
+const cam=new THREE.PerspectiveCamera(72,1,0.1,400);cam.rotation.order='YXZ';
+scene.add(new THREE.HemisphereLight(0xffffff,0x8a8f96,.65));
+const dl=new THREE.DirectionalLight(0xfff4e0,.3);dl.position.set(30,60,-20);scene.add(dl);
+const M=(c)=>new THREE.MeshLambertMaterial({color:c});
+const mWall=M(0xeee9df),mFloorC=M(0xc9ccd0),mFloorL=M(0xd9c7a3),mFloorS=M(0xb9c3cf),mTable=M(0x8a6a45),mTableF=M(0x6f8aa3);
+const mStep=M(0xaeb4ba),mStone=M(0xb9b4a6),mFrame=M(0x39485a);
+const mCeil=new THREE.MeshLambertMaterial({color:0xf2f2ee,side:THREE.DoubleSide});
+const ceil=new THREE.Group();scene.add(ceil);
+function plane(x0,z0,x1,z1,y,mat,grp){const g=new THREE.Mesh(new THREE.PlaneGeometry(x1-x0,z1-z0),mat);g.rotation.x=-Math.PI/2;g.position.set((x0+x1)/2,y,(z0+z1)/2);(grp||scene).add(g);return g}
+function box(w,h,d,x,y,z,mat,grp){const b=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);b.position.set(x,y,z);(grp||scene).add(b);return b}
+function bx(x0,y0,z0,x1,y1,z1,mat,grp){return box(x1-x0,y1-y0,z1-z0,(x0+x1)/2,(y0+y1)/2,(z0+z1)/2,mat,grp)}
+function wall(x1,z1,x2,z2){const t=.3;if(z1===z2)box(Math.abs(x2-x1)+t,H,t,(x1+x2)/2,H/2,z1,mWall);else box(t,H,Math.abs(z2-z1)+t,x1,H/2,(z1+z2)/2,mWall)}
+function rail(a,b){const L=Math.hypot(b[0]-a[0],b[1]-a[1],b[2]-a[2]);const m=new THREE.Mesh(new THREE.BoxGeometry(.1,.1,L),mFrame);
+ m.position.set((a[0]+b[0])/2,(a[1]+b[1])/2,(a[2]+b[2])/2);m.lookAt(new THREE.Vector3(b[0],b[1],b[2]));scene.add(m)}
+function label(txt,w,h,x,y,z,col,ry){
+ const c=document.createElement('canvas');c.width=512;c.height=Math.round(512*h/w);const g=c.getContext('2d');
+ g.fillStyle=col||'rgba(20,32,44,.92)';g.fillRect(0,0,c.width,c.height);g.strokeStyle='#e0652b';g.lineWidth=8;g.strokeRect(4,4,c.width-8,c.height-8);
+ g.fillStyle='#fff';g.font='bold '+Math.round(c.height*.42)+'px system-ui,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(txt,c.width/2,c.height/2+2);
+ const s=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c)}));s.rotation.y=ry||0;s.position.set(x,y,z);scene.add(s)}
+
+// exterior: pasto y árboles (el terreno está en GY)
+plane(-200,-200,300,300,GY-0.03,M(0x5f9a4a));
+let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+const mTrunk=M(0x6b4a2f),greens=[0x2f7d3a,0x3d8f44,0x2a6e35,0x4a9c4f].map(M);
+function tree(x,z,s){box(.5*s,2.4*s,.5*s,x,GY+1.2*s,z,mTrunk);
+ const g=greens[(rnd()*4)|0];
+ const a=new THREE.Mesh(new THREE.IcosahedronGeometry(2.2*s,0),g);a.position.set(x,GY+4.2*s,z);scene.add(a);
+ const b=new THREE.Mesh(new THREE.IcosahedronGeometry(1.6*s,0),g);b.position.set(x+.8*s,GY+5.6*s,z-.3*s);scene.add(b)}
+for(let i=0;i<150;i++){const x=-18+rnd()*125,z=-2.5-Math.pow(rnd(),1.4)*38,s=.9+rnd()*1.1;if(((x>-11&&x<15||x>59&&x<85)&&z>-10)||(x>57&&x<76&&z>-56))continue;tree(x,z,s)} // deja libre el patio
+for(let i=0;i<40;i++){const x=-18+rnd()*125,z=-42-rnd()*40,s=1.8+rnd()*1.3;if(x>57&&x<76&&z>-56)continue;tree(x,z,s)}
+for(let i=0;i<20;i++)tree(-13-rnd()*28,-6+rnd()*22,.9+rnd()*1.1);   // al fondo del patio
+for(let i=0;i<10;i++)tree(-10+rnd()*6,10.5+rnd()*8,.9+rnd()*1);      // costado sur del patio
+// patio y gradas exteriores
+plane(-10,-9,14,-2.2,GY+0.02,mStone);plane(60,-9,XEND,-2.2,GY+0.02,mStone);                // patio al borde de las ventanas
+plane(-10,-2.2,-3.2,9,GY+0.02,mStone);                               // patio frente a la puerta
+for(let i=1;i<=4;i++)bx(-.8*i,GY,2.3,-.8*(i-1),-.4*i,5.7,mStep);    // gradas de la puerta: de frente hacia el patio
+// plintos del edificio
+[[0,WZ,GE.x0,0],[0,0,XEND,CW],[C2a,0,C2b,ZEND],[0,0,8,8],...labs.map(([n,x])=>[x,CW,x+14,CW+14]),[SIS.x,SIS.z,SIS.x+SIS.w,SIS.z+SIS.d]]
+ .forEach(r=>bx(r[0],GY,r[1],r[2],0,r[3],M(0xa7a39a)));
+
+// suelos
+plane(0,WZ,GE.x0,0,0.01,mFloorC);plane(0,0,XEND,CW,0.01,mFloorC);plane(C2a,0,C2b,ZEND,0.01,mFloorC);plane(0,0,8,8,0.01,mFloorC);
+labs.forEach(([n,x])=>plane(x,CW,x+14,CW+14,0.01,mFloorL));plane(SIS.x,SIS.z,SIS.x+SIS.w,SIS.z+SIS.d,0.01,mFloorS);
+plane(C2a,0,C2b,CW,0.03,M(0xf5c9b0));
+plane(C2a-.5,ZEND-.6,C2b+.5,ZEND,0.03,M(0x2fa866));
+// techos (con huecos para las gradas)
+const cr=(x0,z0,x1,z1)=>plane(x0,z0,x1,z1,H,mCeil,ceil);
+cr(0,WZ,GE.x0,0);cr(0,0,XEND,CW);cr(C2a,CW,C2b,ZEND);cr(0,CW,8,8);
+labs.forEach(([n,x])=>cr(x,CW,x+14,CW+14));cr(SIS.x,SIS.z,SIS.x+SIS.w,SIS.z+SIS.d);
+
+// ---- muros ----
+const WIN=[];for(let x=10;x+6.5<=C2a-1;x+=9.5)WIN.push([x,x+6.5]);
+WIN.push([GD.xl+1,GD.xl+4.5]);
+for(let i=WIN.length-1;i>=0;i--){const w=WIN[i];const o=OPEN.find(o=>w[0]<o[1]+.3&&w[1]>o[0]-.3);
+ if(o){if(w[1]-(o[1]+.3)>=2.5)w[0]=o[1]+.3;else WIN.splice(i,1)}}   // sin ventanas donde el muro está abierto
+const wsill=1.0,whead=3.3;
+function northWall(){
+ const t=.3;let cur=0;
+ const solid=(a,b)=>{if(b-a>.01)box(b-a,H,t,(a+b)/2,H/2,b<=GE.x0+.01?WZ:0,mWall)};
+ [...WIN.map(w=>[w[0],w[1],0]),...OPEN.map(o=>[o[0],o[1],1])].sort((a,b)=>a[0]-b[0]).forEach(([a,b,op])=>{solid(cur,a);
+  if(op){box(b-a,.3,.36,(a+b)/2,H-.15,0,mFrame);box(.3,H,.36,a,H/2,0,mFrame);box(.3,H,.36,b,H/2,0,mFrame);cur=b;return}
+  box(b-a,wsill,t,(a+b)/2,wsill/2,0,mWall);box(b-a,H-whead,t,(a+b)/2,(H+whead)/2,0,mWall);
+  box(b-a,.12,.36,(a+b)/2,wsill,0,mFrame);box(b-a,.12,.36,(a+b)/2,whead,0,mFrame);
+  box(.12,whead-wsill,.36,(a+b)/2,(wsill+whead)/2,0,mFrame);
+  box(.12,whead-wsill,.36,a,(wsill+whead)/2,0,mFrame);box(.12,whead-wsill,.36,b,(wsill+whead)/2,0,mFrame);
+  const gl=new THREE.Mesh(new THREE.PlaneGeometry(b-a,whead-wsill),new THREE.MeshBasicMaterial({color:0xaed4ee,transparent:true,opacity:.14}));
+  gl.position.set((a+b)/2,(wsill+whead)/2,0);scene.add(gl);cur=b});
+ solid(cur,XEND)}
+northWall();
+// Entrega: muro oeste con puerta abierta
+wall(0,WZ,0,0);wall(0,0,0,DOOR.z0);wall(0,DOOR.z1,0,8);wall(0,8,8,8);
+box(.34,.55,DOOR.z1-DOOR.z0+.3,0,H-.275,(DOOR.z0+DOOR.z1)/2,mFrame);
+box(.36,H,.2,0,H/2,DOOR.z0,mFrame);box(.36,H,.2,0,H/2,DOOR.z1,mFrame);
+const leaf=box(.12,H-.55,(DOOR.z1-DOOR.z0),0,0,0,M(0x8b5a2b));
+leaf.geometry.translate(0,0,(DOOR.z1-DOOR.z0)/2);leaf.position.set(-.1,(H-.55)/2,DOOR.z0);leaf.rotation.y=-Math.PI*0.56;
+// resto de muros
+wall(XEND,0,XEND,CW);wall(SIS.x+SIS.w,CW,XEND,CW);
+labs.forEach(([n,x])=>{wall(x,CW,x,CW+14);wall(x+14,CW,x+14,CW+14);wall(x,CW+14,x+14,CW+14);wall(x,CW,x+6,CW);wall(x+8,CW,x+14,CW)});
+wall(SIS.x,CW,SIS.x+5,CW);wall(SIS.x+7,CW,SIS.x+SIS.w,CW);wall(SIS.x,CW,SIS.x,CW+SIS.d);wall(SIS.x+SIS.w,CW,SIS.x+SIS.w,CW+SIS.d);wall(SIS.x,CW+SIS.d,SIS.x+SIS.w,CW+SIS.d);
+wall(C2a,CW+14,C2a,ZEND);wall(C2b,CW+SIS.d,C2b,ZEND);
+
+// ---- gradas exteriores rectas al segundo piso (junto al muro, desde el patio) ----
+const mUp=M(0xe6e1d6);
+function xstairs(g){
+ for(let i=1;i<=NST;i++)bx(g.x0+(i-1)*TR,GY,SZ0,g.x0+i*TR,GY+i*RISE,SZ1,mStep);
+ bx(g.x1,GY,SZ0,g.xl,FL2,SZ1,mStep);                                  // descanso (macizo)
+ const zr=SZ0-.05;
+ rail([g.x0,GY+1.1,zr],[g.x1,FL2+1.1,zr]);rail([g.x1,FL2+1.1,zr],[g.xl,FL2+1.1,zr]);
+ rail([g.x0,GY+.55,zr],[g.x1,FL2+.55,zr]);rail([g.x1,FL2+.55,zr],[g.xl,FL2+.55,zr]);
+ bx(g.xl-.1,FL2,SZ0-.1,g.xl+.1,FL2+3.2,SZ1+.1,mUp);                   // cierre del descanso
+ label('Segundo piso · por modelar',3.4,.9,g.xl-.2,FL2+1.7,(SZ0+SZ1)/2,'rgba(20,32,44,.92)',-Math.PI/2);}
+xstairs(GE);xstairs(GD);
+// ---- pasillo norte: sale de la zona de distribución de grupos hacia el norte, 50 pasos ----
+const NL=50;
+bx(C2a,GY,-NL,C2b,0,0,M(0xa7a39a));plane(C2a,-NL,C2b,0,0.01,mFloorC);cr(C2a,-NL,C2b,0);
+function zwall(x,zA,zB,wins){                                   // muro a lo largo de z con ventanas
+ let cur=zA;const sd=(a,b)=>{if(b-a>.01)box(.3,H,b-a,x,H/2,(a+b)/2,mWall)};
+ wins.filter(w=>w[1]<=zB).sort((p,q)=>p[0]-q[0]).forEach(([a,b])=>{sd(cur,a);
+  box(.3,wsill,b-a,x,wsill/2,(a+b)/2,mWall);box(.3,H-whead,b-a,x,(H+whead)/2,(a+b)/2,mWall);
+  box(.36,.12,b-a,x,wsill,(a+b)/2,mFrame);box(.36,.12,b-a,x,whead,(a+b)/2,mFrame);
+  box(.36,whead-wsill,.12,x,(wsill+whead)/2,a,mFrame);box(.36,whead-wsill,.12,x,(wsill+whead)/2,b,mFrame);
+  const gl=new THREE.Mesh(new THREE.PlaneGeometry(b-a,whead-wsill),new THREE.MeshBasicMaterial({color:0xaed4ee,transparent:true,opacity:.14}));
+  gl.rotation.y=Math.PI/2;gl.position.set(x,(wsill+whead)/2,(a+b)/2);scene.add(gl);cur=b});
+ sd(cur,zB)}
+const ZW=[];for(let z=-NL+3;z+6.5<=-12;z+=9.5)ZW.push([z,z+6.5]);
+zwall(C2a,-NL,0,ZW);zwall(C2b,-NL,WZ,ZW);wall(C2a,-NL,C2b,-NL);
+label('Fondo del pasillo',5.2,1.1,midC2,H-1,-NL+.2,'rgba(20,32,44,.92)',0);
+// puertas (dintel) y rótulos
+const mLint=M(0x4b5d70),LZ=CW-.22;
+labs.forEach(([n,x])=>{box(2,.7,.34,x+7,H-.35,CW,mLint);label(n,6.2,1.4,x+7,H-1.35,LZ,null,Math.PI)});
+box(2,.7,.34,SIS.x+6,H-.35,CW,mLint);label('Sala de Sistemas',6.2,1.4,SIS.x+6,H-1.35,LZ,null,Math.PI);
+label('Entrega de estudiantes',6.6,1.1,4,H-1,WZ+.17);
+label('Distribución de grupos',6.6,1.2,midC2,H-.9,3.6,'rgba(160,70,25,.95)',Math.PI);
+label('Distribución de grupos',6.6,1.2,midC2,H-.9,3.58,'rgba(160,70,25,.95)',0);
+label('SALIDA',4.2,1.3,midC2,H-1,ZEND-.2,'rgba(30,125,75,.95)',Math.PI);
+// mobiliario
+labs.forEach(([n,x],i)=>{
+ const bz=CW+13.85;box(8,2.2,.12,x+7,2.6,bz,M(0xf9fafb));box(8.3,.1,.14,x+7,1.45,bz,M(0x555555));
+ if(i===2){[CW+3,CW+7].forEach(z=>{box(9,.1,1.8,x+7,1.12,z+.9,mTableF);[[-4.2,-.7],[4.2,-.7],[-4.2,.7],[4.2,.7]].forEach(([a,b])=>box(.12,1.1,.12,x+7+a,.55,z+.9+b,mTableF))})}
+ else [[3.5,CW+3.5],[8.5,CW+3.5],[3.5,CW+7.5],[8.5,CW+7.5]].forEach(([a,b])=>{box(2.2,.1,1.6,x+a+1.1,1.12,b+.8,mTable);[[-.9,-.6],[.9,-.6],[-.9,.6],[.9,.6]].forEach(([p,q])=>box(.1,1.1,.1,x+a+1.1+p,.55,b+.8+q,mTable))})});
+// ===== Jugador =====
+const P={x:4,z:3.8,y:0,yaw:-Math.PI/2,pitch:0,aerial:false};
+const keys={};let mv={x:0,z:0};
+function place(i){const p=places[i];P.x=p[1];P.z=p[2];P.y=gy(P.x,P.z);P.yaw=p[3];P.pitch=0;setAerial(false)}
+const AER={cx:42,cz:20,h:66},aerBtns=[];            // vista aérea: centro y altura (zoom)
+function setAerial(v){P.aerial=v;ceil.visible=!v;document.getElementById('aer').classList.toggle('on',v);scene.fog.near=v?600:45;scene.fog.far=v?1500:170;aerBtns.forEach(b=>b.style.display=v?'':'none')}
+const tp=document.getElementById('tp');
+places.forEach((p,i)=>{const b=document.createElement('button');b.textContent=p[0];b.onclick=()=>place(i);tp.appendChild(b)});
+const ab=document.createElement('button');ab.id='aer';ab.textContent='Vista aérea';ab.onclick=()=>setAerial(!P.aerial);tp.appendChild(ab);
+const zoom=f=>{AER.h=Math.max(6,Math.min(200,AER.h*f))};
+['＋ Acercar','－ Alejar'].forEach((t,i)=>{const b=document.createElement('button');b.textContent=t;b.style.display='none';b.onclick=()=>zoom(i?1.25:.8);tp.appendChild(b);aerBtns.push(b)});
+addEventListener('keydown',e=>{keys[e.code]=1;if(e.code==='KeyM')setAerial(!P.aerial);if(P.aerial){if(e.key==='+'||e.key==='=')zoom(.8);if(e.key==='-'||e.key==='_')zoom(1.25)}});addEventListener('keyup',e=>keys[e.code]=0);
+window.addEventListener('message',e=>{if(!e.data)return;if(e.data.action==='teleport'&&typeof e.data.index==='number')place(e.data.index);else if(e.data.action==='aerial')setAerial(e.data.value!==undefined?!!e.data.value:!P.aerial);else if(e.data.action==='step'&&typeof e.data.index==='number')gotoStep(e.data.index,true)});
+let drag=false,lx=0,ly=0,moved=0;
+cv.addEventListener('mousedown',e=>{drag=true;lx=e.clientX;ly=e.clientY;moved=0});
+addEventListener('mouseup',e=>{const was=drag;drag=false;if(was&&e.target===cv&&moved<5&&document.pointerLockElement!==cv)pickAt(e.clientX,e.clientY)});
+addEventListener('mousemove',e=>{const locked=document.pointerLockElement===cv;
+ if(locked){P.yaw-=e.movementX*.003;P.pitch=Math.max(-1.3,Math.min(1.3,P.pitch-e.movementY*.003))}
+ else if(drag){moved+=Math.abs(e.clientX-lx)+Math.abs(e.clientY-ly);
+  if(P.aerial){const s=AER.h*.0016;AER.cx-=(e.clientX-lx)*s;AER.cz-=(e.clientY-ly)*s*1.2}
+  else{P.yaw-=(e.clientX-lx)*.004;P.pitch=Math.max(-1.3,Math.min(1.3,P.pitch-(e.clientY-ly)*.004))}
+  lx=e.clientX;ly=e.clientY}});
+cv.addEventListener('wheel',e=>{if(!P.aerial)return;e.preventDefault();zoom(Math.exp(e.deltaY*.0012))},{passive:false});
+cv.addEventListener('dblclick',()=>{if(!P.aerial){try{cv.requestPointerLock()}catch(e){}}});
+const T={};let pinch=0;
+cv.addEventListener('touchstart',e=>{for(const t of e.changedTouches)T[t.identifier]={x:t.clientX,y:t.clientY,sx:t.clientX,sy:t.clientY,left:t.clientX<innerWidth/2};
+ if(e.touches.length===2)pinch=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY)},{passive:true});
+cv.addEventListener('touchmove',e=>{
+ if(P.aerial){
+  if(e.touches.length===2){const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);if(pinch)zoom(pinch/d);pinch=d}
+  else for(const t of e.changedTouches){const s=T[t.identifier];if(!s)continue;const k=AER.h*.0016;AER.cx-=(t.clientX-s.x)*k;AER.cz-=(t.clientY-s.y)*k*1.2;s.x=t.clientX;s.y=t.clientY}
+  return}
+ for(const t of e.changedTouches){const s=T[t.identifier];if(!s)continue;
+ if(s.left){mv.x=Math.max(-1,Math.min(1,(t.clientX-s.sx)/50));mv.z=Math.max(-1,Math.min(1,(t.clientY-s.sy)/50))}
+ else{P.yaw-=(t.clientX-s.x)*.006;P.pitch=Math.max(-1.3,Math.min(1.3,P.pitch-(t.clientY-s.y)*.006));s.x=t.clientX;s.y=t.clientY}}},{passive:true});
+const tend=e=>{for(const t of e.changedTouches){const s=T[t.identifier];if(s){if(s.left)mv={x:0,z:0};if(Math.hypot(t.clientX-s.sx,t.clientY-s.sy)<8&&e.touches.length===0)pickAt(t.clientX,t.clientY)}delete T[t.identifier]}if(e.touches.length<2)pinch=0};
+cv.addEventListener('touchend',tend);cv.addEventListener('touchcancel',tend);
+document.getElementById('go').onclick=()=>{document.getElementById('help').style.display='none'};
+// ===== Minimapa =====
+const mm=document.getElementById('mm'),g=mm.getContext('2d'),K=2.0,ox=26,oz=108;
+function drawMap(){g.clearRect(0,0,230,172);
+ const fr=(r,c)=>{g.fillStyle=c;g.fillRect(ox+r[0]*K,oz+r[1]*K,(r[2]-r[0])*K,(r[3]-r[1])*K)};
+  fr([C2a,-NL,C2b,0],'#4a5b6d');fr([-10,-5,14,-2.2],'#7b8a5a');fr([-10,-2.2,-3.2,9],'#7b8a5a');fr([-3.2,2.5,0,5.5],'#9aa28a');
+ fr([0,0,XEND,CW],'#4a5b6d');fr([C2a,0,C2b,ZEND],'#4a5b6d');fr([0,0,8,8],'#4a5b6d');fr([C2a,0,C2b,CW],'#a8572f');
+ fr([60,-5,XEND,-2.2],'#7b8a5a');fr([GE.x0,SZ0,GE.xl,SZ1],'#c8d0d8');fr([GD.x0,SZ0,GD.xl,SZ1],'#c8d0d8');
+ labs.forEach(([n,x])=>fr([x,CW,x+14,CW+14],'#6f7f6a'));fr([SIS.x,SIS.z,SIS.x+SIS.w,SIS.z+SIS.d],'#5f7088');
+ g.strokeStyle='#cfd8e2';g.lineWidth=1;labs.forEach(([n,x])=>g.strokeRect(ox+x*K,oz+CW*K,14*K,14*K));g.strokeRect(ox+SIS.x*K,oz+SIS.z*K,SIS.w*K,SIS.d*K);
+ const px=ox+P.x*K,pz=oz+P.z*K;g.save();g.translate(px,pz);g.rotate(-P.yaw+Math.PI);
+ g.fillStyle='#ffd23f';g.beginPath();g.moveTo(0,-6);g.lineTo(4.5,5);g.lineTo(-4.5,5);g.closePath();g.fill();g.restore()}
+// ===== Simulación de la actividad: rotación simultánea de 4 grupos por 4 estaciones =====
+const STN=[{name:'Pasillo Sistemas',short:'Pasillo Sistemas'},{name:'Sala 1 · Mecánica 1',short:'Sala 1',x0:8},{name:'Sala 2 · Mecánica 2',short:'Sala 2',x0:22},{name:'Sala 3 · Fluidos',short:'Sala 3',x0:36}];
+const GRP=[{n:'A',c:0xe53935,css:'#e53935'},{n:'B',c:0x1e88e5,css:'#1e88e5'},{n:'C',c:0x43a047,css:'#43a047'},{n:'D',c:0xfdd835,css:'#fdd835'}];
+const CFG={S:8,T:1.25,D1:1.5,F:1.5};                 // minutos: estación, traslado, reunión inicial, regreso final
+(function(){const m=/t=([\d.,]+)/.exec(location.hash);if(m){const v=m[1].split(',').map(Number);if(v.length===4&&v.every(x=>x>0)){CFG.S=v[0];CFG.T=v[1];CFG.D1=v[2];CFG.F=v[3]}}})();
+const NSTU=12, SPD=1.7;                              // estudiantes por grupo; velocidad al caminar (pasos/s)
+// ---- roles (cada uno con su color) ----
+const ROLES={
+ divisor:{name:'Divisor de grupos',c:0x8e24aa,css:'#8e24aa',txt:'#fff'},
+ guia:{name:'Guía',c:0x1a237e,css:'#3949ab',txt:'#fff'},
+ encargado:{name:'Encargado de estación',c:0xfb8c00,css:'#fb8c00',txt:'#1b1b1b'},
+ expositor:{name:'Expositor',c:0x00acc1,css:'#00acc1',txt:'#10242a'},
+ estudiante:{name:'Estudiante',c:null,css:'#cfd8dc',txt:'#1b1b1b'}};
+const roleDesc=k=>({
+ divisor:'Recibe a los estudiantes que llegan por la Salida y entran a la zona de distribución, los divide en 4 grupos de '+NSTU+' y entrega cada grupo a su guía. Desde ahí empieza el recorrido.',
+ guia:'Lleva a su grupo por las estaciones en orden (Pasillo Sistemas → Sala 1 → Sala 2 → Sala 3), lo conduce entre mesas y al final lo regresa al punto de Entrega.',
+ encargado:'Controla los '+CFG.S+' minutos de su estación y da la señal de cambio. Uno en el Pasillo Sistemas y uno en cada sala (1, 2 y 3).',
+ expositor:'Atiende una mesa de su sala y explica el experimento al grupo que la visita. Salas 1 y 2: 4 mesas; Sala 3 (Fluidos): 2 mesas largas.',
+ estudiante:NSTU+' por grupo (A rojo, B azul, C verde, D amarillo). Recorren las 4 estaciones en el orden del ciclo.'}[k]);
+const laneZ=g=>1.2+.8*g;
+const DANC=[[65.2,1.0],[67.8,1.0],[65.2,3.6],[67.8,3.6]];      // dónde espera cada grupo en la zona de distribución
+const EANC=[[2.2,1.2],[5.2,1.2],[2.2,3.6],[5.2,3.6]];          // dónde termina cada grupo (Entrega)
+const PSX=75.5;                                      // estación del Pasillo Sistemas (frente a la Sala de Sistemas)
+const OFFS=[];for(let r=0;r<3;r++)for(let c=0;c<4;c++)OFFS.push([(c-1.5)*.55,(r-1)*.55]);
+const stAnchors=st=>{
+ if(st===0)return[{x:PSX,z:2.5,f:Math.PI/2}];
+ const x0=STN[st].x0,z=CW+6.3;
+ if(st<3)return[{x:x0+4.6,z,f:Math.PI},{x:x0+9.6,z,f:Math.PI},{x:x0+9.6,z,f:0},{x:x0+4.6,z,f:0}];   // mesas: delante-izq., delante-der., fondo-der., fondo-izq.
+ return[{x:x0+7,z:CW+5.9,f:Math.PI},{x:x0+7,z:CW+5.9,f:0}];                                           // Fluidos: 2 mesas largas
+};
+const anchorOf=(pl,g,k)=>pl.t==='D'?DANC[g]:pl.t==='E'?EANC[g]:(()=>{const a=stAnchors(pl.st)[k||0];return[a.x,a.z]})();
+const exitPts=(pl,g,a)=>{                            // del ancla al carril del pasillo
+ if(pl.t==='D'||pl.t==='E')return[[a[0],a[1]],[a[0],laneZ(g)]];
+ if(pl.st===0)return[[a[0],a[1]],[PSX,laneZ(g)]];
+ const x0=STN[pl.st].x0,d=x0+7;
+ if(pl.st<3)return[[a[0],a[1]],[d,a[1]],[d,CW+1.5],[d,CW-.2],[d,laneZ(g)]];
+ return[[a[0],a[1]],[x0+1.3,a[1]],[x0+1.3,CW+1.5],[d,CW+1.5],[d,CW-.2],[d,laneZ(g)]];
+};
+const route=(from,to,g,fromK)=>[...exitPts(from,g,anchorOf(from,g,fromK)),...exitPts(to,g,anchorOf(to,g,0)).reverse()];
+const stOf=(g,i)=>(g+i)%4;
+function groupKF(g){
+ const kf=[],D1=CFG.D1*60,T=CFG.T*60,S=CFG.S*60;
+ const P2=(t,x,z,f)=>{const l=kf[kf.length-1];if(l&&t<=l.t)t=l.t+.001;kf.push({t,x,z,f})};
+ const walk=(t0,pts)=>{let t=t0;pts.forEach((p,i)=>{if(i>0)t+=Math.hypot(p[0]-pts[i-1][0],p[1]-pts[i-1][1])/SPD;P2(t,p[0],p[1])})};
+ P2(0,DANC[g][0],DANC[g][1],Math.PI/2);P2(D1,DANC[g][0],DANC[g][1],Math.PI/2);
+ let cur={t:'D'},curK=0;
+ for(let i=0;i<4;i++){
+  const t0=D1+i*(T+S),to={t:'S',st:stOf(g,i)},an=stAnchors(to.st),n=an.length;
+  walk(t0,route(cur,to,g,curK));
+  const s0=t0+T;P2(Math.max(s0,kf[kf.length-1].t),an[0].x,an[0].z,an[0].f);
+  for(let k=1;k<n;k++){const tk=s0+k*S/n;P2(tk,an[k-1].x,an[k-1].z,an[k-1].f);walk(tk,[[an[k-1].x,an[k-1].z],[an[k].x,an[k].z]]);P2(kf[kf.length-1].t+.5,an[k].x,an[k].z,an[k].f)}
+  P2(s0+S,an[n-1].x,an[n-1].z,an[n-1].f);
+  cur=to;curK=n-1;
+ }
+ const tF=D1+4*(T+S);walk(tF,route(cur,{t:'E'},g,curK));
+ const l=kf[kf.length-1];P2(l.t+.5,l.x,l.z,Math.PI/2);
+ return kf;
+}
+// ---- figuras: cada rol con su color (cuerpo, gorra y aro en el piso) ----
+const gBody=new THREE.CylinderGeometry(.24,.3,1.5,9),gHead=new THREE.SphereGeometry(.26,10,8),gPole=new THREE.CylinderGeometry(.03,.03,1.3,5),gFlag=new THREE.BoxGeometry(.7,.45,.04);
+const gCap=new THREE.CylinderGeometry(.28,.28,.13,10),gSash=new THREE.CylinderGeometry(.325,.325,.24,9),gRing=new THREE.RingGeometry(.62,.82,24);
+const mSkin=M(0xe9c3a0);
+function figure(col,scale,o){o=o||{};
+ const f=new THREE.Group();
+ const b=new THREE.Mesh(gBody,M(col));b.position.y=.75;f.add(b);
+ const h=new THREE.Mesh(gHead,mSkin);h.position.y=1.78;f.add(h);
+ if(o.cap!==undefined){const c=new THREE.Mesh(gCap,M(o.cap));c.position.y=2.0;f.add(c)}
+ if(o.sash!==undefined){const s=new THREE.Mesh(gSash,M(o.sash));s.position.y=1.15;f.add(s)}
+ if(o.flag!==undefined){const p=new THREE.Mesh(gPole,mFrame);p.position.set(.38,2.45,0);f.add(p);
+  const fl=new THREE.Mesh(gFlag,new THREE.MeshBasicMaterial({color:o.flag,side:THREE.DoubleSide}));fl.position.set(.74,2.85,0);f.add(fl)}
+ if(o.ring!==undefined){const r=new THREE.Mesh(gRing,new THREE.MeshBasicMaterial({color:o.ring,side:THREE.DoubleSide}));r.rotation.x=-Math.PI/2;r.position.y=.04;f.add(r)}
+ f.scale.setScalar(scale||1);scene.add(f);return f}
+function nameTag(text,key,y){
+ const c=document.createElement('canvas');c.width=300;c.height=64;const x=c.getContext('2d'),R2=ROLES[key];
+ x.fillStyle=R2.css;x.beginPath();x.roundRect?x.roundRect(4,4,292,56,14):x.rect(4,4,292,56);x.fill();
+ x.fillStyle=R2.txt;x.font='bold 30px system-ui,sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(text,150,34);
+ const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true}));s.scale.set(2.9,.62,1);s.position.set(0,y,0);return s}
+const AG=[];
+function addAgent(role,fig,o){const a=Object.assign({role,fig,i:0,face:0,ph:rnd()*6},o);fig.userData.a=a;AG.push(a);return a}
+function addStatic(role,x,z,f,scale,tag,o){
+ const R2=ROLES[role];const fig=figure(R2.c,scale,{cap:R2.c,ring:R2.c});fig.position.set(x,0,z);fig.rotation.y=f;
+ const sp=nameTag(tag,role,2.85);fig.add(sp);sp.scale.multiplyScalar(1/scale);sp.position.y=2.85;
+ return addStatic.last=addAgent(role,fig,Object.assign({static:true,x,z,mini:R2.css,tag,sp},o))}
+// ---- grupos: estudiantes + guía ----
+GRP.forEach((G,g)=>{
+ const gk=groupKF(g),D1=CFG.D1*60,R2=ROLES.guia;
+ const gfig=figure(R2.c,1.12,{cap:R2.c,sash:G.c,flag:G.c,ring:0x3949ab});
+ const sp=nameTag('Guía '+G.n,'guia',2.7);gfig.add(sp);sp.scale.multiplyScalar(1/1.12);sp.position.y=2.6;
+ addAgent('guia',gfig,{g,kf:gk.map(k=>({...k,x:k.x-1.7,z:k.z})),mini:R2.css,tag:'Guía '+G.n,sp});
+ for(let s=0;s<NSTU;s++){
+  const o=OFFS[s],d=s*.22,slot=[DANC[g][0]+o[0],DANC[g][1]+o[1]];
+  const s0=[64.9+rnd()*3.2,ZEND-3+rnd()*2],spot=[66.5+(rnd()-.5)*2.8,1.6+rnd()*2.4],t0=rnd()*10;     // llegan por la Salida
+  const kf=[{t:0,x:s0[0],z:s0[1],f:Math.PI/2},{t:t0,x:s0[0],z:s0[1]}];
+  let t=t0;const pts=[s0,[s0[0],9],spot];                                                      // suben por el Pasillo 2 hasta distribución
+  for(let i=1;i<pts.length;i++){t+=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1])/SPD;kf.push({t,x:pts[i][0],z:pts[i][1]})}
+  const dist=Math.hypot(slot[0]-spot[0],slot[1]-spot[1])/SPD,ts=Math.max(t+1,D1-25);
+  kf.push({t:ts,x:spot[0],z:spot[1]});kf.push({t:ts+dist,x:slot[0],z:slot[1],f:Math.PI/2});
+  gk.forEach(k=>{if(k.t>=D1)kf.push({t:Math.max(k.t+d,kf[kf.length-1].t+.001),x:k.x+o[0],z:k.z+o[1],f:k.f})});
+  addAgent('estudiante',figure(G.c,1),{g,kf,mini:G.css,idx:s+1});
+ }
+});
+// ---- personal fijo ----
+addStatic('divisor',66.5,2.3,Math.PI/2,1.1,'Divisor de grupos');
+const ENC=[[PSX+2.8,3.9,-Math.PI/2],[19.5,CW+1.3,0],[33.5,CW+1.3,0],[47.5,CW+1.3,0]];
+ENC.forEach((e,i)=>addStatic('encargado',e[0],e[1],e[2],1.1,'Encargado · '+STN[i].short,{st:i}));
+[[1,[[4.6,CW+2.7,0],[9.6,CW+2.7,0],[9.6,CW+9.9,Math.PI],[4.6,CW+9.9,Math.PI]]],
+ [2,[[4.6,CW+2.7,0],[9.6,CW+2.7,0],[9.6,CW+9.9,Math.PI],[4.6,CW+9.9,Math.PI]]],
+ [3,[[7,CW+2.5,0],[7,CW+9.5,Math.PI]]]].forEach(([st,list])=>list.forEach((p,k)=>
+ addStatic('expositor',STN[st].x0+p[0],p[1],p[2],1.05,'Expositor · S'+st+' mesa '+(k+1),{st,mesa:k})));
+// ---- reloj de las estaciones (letreros sobre los encargados) ----
+const sprites=STN.map((s,i)=>{const c=document.createElement('canvas');c.width=320;c.height=110;
+ const tx=new THREE.CanvasTexture(c);const m=new THREE.Mesh(new THREE.PlaneGeometry(3.6,1.24),new THREE.MeshBasicMaterial({map:tx,transparent:true,side:THREE.DoubleSide}));
+ m.position.set(ENC[i][0],3.5,ENC[i][1]);m.rotation.y=i===0?-Math.PI/2:0;scene.add(m);return{c,tx,last:''}});
+// ---- tiempos y estado ----
+const SIM={t:0,play:false,speed:20,target:null};
+const totalSec=()=>(CFG.D1+4*(CFG.T+CFG.S)+CFG.F)*60;
+const mmss=s=>{s=Math.max(0,Math.round(s));return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')};
+function groupState(g,t){
+ const D1=CFG.D1*60,T=CFG.T*60,S=CFG.S*60,F=CFG.F*60,per=T+S;
+ if(t<D1)return{txt:'Reunión y división en distribución',rem:D1-t};
+ const u=t-D1,i=Math.floor(u/per);
+ if(i<4){const w=u-i*per,st=stOf(g,i);
+  if(w<T)return{txt:'Traslado → '+STN[st].short,rem:T-w,st:-1};
+  const an=stAnchors(st),k=Math.min(an.length-1,Math.floor((w-T)/(S/an.length)));
+  return{txt:STN[st].short+(an.length>1?' · mesa '+(k+1)+'/'+an.length:''),rem:S-(w-T),st,mesa:k}}
+ const v=u-4*per;if(v<F)return{txt:'Traslado final → Entrega',rem:F-v};
+ return{txt:'En Entrega · terminó',rem:0};
+}
+function groupAt(st,t){                             // qué grupo está en la estación st (o null)
+ const D1=CFG.D1*60,T=CFG.T*60,S=CFG.S*60,per=T+S,u=t-D1,i=Math.floor(u/per);
+ if(u<0||i>=4)return null;const w=u-i*per;if(w<T)return null;
+ const an=stAnchors(st);return{g:((st-i)%4+4)%4,rem:S-(w-T),mesa:Math.min(an.length-1,Math.floor((w-T)/(S/an.length)))}}
+function drawSprites(t){
+ sprites.forEach((sp,st)=>{let line1=STN[st].short,line2='—',col='#37474f';
+  const ga=groupAt(st,t),D1=CFG.D1*60;
+  if(ga){line2='Grupo '+GRP[ga.g].n+' · '+mmss(ga.rem);col=GRP[ga.g].css}else if(t>=D1&&t<D1+4*(CFG.T+CFG.S)*60)line2='cambio de estación';
+  const key=line1+line2;if(key===sp.last)return;sp.last=key;
+  const g2=sp.c.getContext('2d');g2.clearRect(0,0,320,110);g2.fillStyle='rgba(20,32,44,.9)';g2.fillRect(0,0,320,110);g2.strokeStyle=col==='#37474f'?'#e0652b':col;g2.lineWidth=7;g2.strokeRect(3,3,314,104);
+  g2.fillStyle='#fff';g2.textAlign='center';g2.font='bold 34px system-ui,sans-serif';g2.fillText(line1,160,46);g2.fillStyle=col==='#37474f'?'#cfd8dc':col;g2.font='bold 36px system-ui,sans-serif';g2.fillText(line2,160,90);sp.tx.needsUpdate=true})}
+function evalAgent(a,t){
+ const k=a.kf;let i=a.i;while(i<k.length-2&&t>k[i+1].t)i++;while(i>0&&t<k[i].t)i--;a.i=i;
+ const A=k[i],B=k[Math.min(i+1,k.length-1)];
+ const u=t<=A.t?0:t>=B.t?1:(t-A.t)/(B.t-A.t);
+ a.x=A.x+(B.x-A.x)*u;a.z=A.z+(B.z-A.z)*u;
+ const dx=B.x-A.x,dz=B.z-A.z,mov=u>0&&u<1&&Math.hypot(dx,dz)>1e-3;a.mov=mov;
+ const tgt=mov?Math.atan2(dx,dz):(B.f!==undefined?B.f:(A.f!==undefined?A.f:a.face));
+ let d=tgt-a.face;d=Math.atan2(Math.sin(d),Math.cos(d));a.face+=d*.25;
+ a.fig.position.set(a.x,mov?Math.abs(Math.sin(t*6+a.ph))*.07:0,a.z);a.fig.rotation.y=a.face}
+// ---- secuencia paso a paso ----
+const chip=G=>'<span class="chip" style="background:'+G.css+'">'+G.n+'</span>';
+function buildSteps(){
+ const D1=CFG.D1*60,T=CFG.T*60,S=CFG.S*60,per=T+S,F=CFG.F*60,st=[];
+ const assign=i=>GRP.map((G,g)=>chip(G)+' '+STN[stOf(g,i)].short).join('<br>');
+ const moves=i=>GRP.map((G,g)=>chip(G)+' '+STN[stOf(g,i-1)].short+' → <b>'+STN[stOf(g,i)].short+'</b>').join('<br>');
+ st.push({t:0,anim:false,title:'Llegada por la Salida',detail:'Los '+(4*NSTU)+' estudiantes llegan por la <b>Salida</b> (extremo del Pasillo 2) y suben hasta la zona de <b>Distribución de grupos</b>, donde los recibe el divisor.'});
+ st.push({t:D1,anim:true,title:'División en 4 grupos',detail:'El <b>divisor</b> reparte a los estudiantes en los grupos A–D ('+NSTU+' cada uno) y los entrega a sus <b>guías</b>. Salen hacia su primera estación:<br>'+assign(0)});
+ st.push({t:D1+T,anim:true,title:'Ronda 1 · grupos en estación',detail:'Los grupos llegan. Cada <b>encargado</b> inicia el cronómetro de '+CFG.S+' min y los <b>expositores</b> reciben al grupo en sus mesas.<br>'+assign(0)});
+ for(let i=1;i<4;i++){
+  st.push({t:D1+i*per,anim:false,title:'Cambio de estación → ronda '+(i+1),detail:'Suena el cambio: los encargados cierran la ronda y los guías mueven a su grupo a la siguiente estación.<br>'+moves(i)});
+  st.push({t:D1+i*per+T,anim:true,title:'Ronda '+(i+1)+' · grupos en estación',detail:'Los grupos llegan y empieza un nuevo cronómetro de '+CFG.S+' min.<br>'+assign(i)});
+ }
+ st.push({t:D1+4*per,anim:false,title:'Traslado final',detail:'Termina la cuarta ronda. Los guías llevan a los 4 grupos al punto de <b>Entrega</b>, donde pasan a otra dependencia.'});
+ st.push({t:D1+4*per+F,anim:true,title:'Fin de la actividad',detail:'Los 4 grupos están en el punto de Entrega, listos para pasar a la siguiente dependencia. Duración total: '+mmss(totalSec())+' min.'});
+ return st}
+const STEPS=buildSteps();
+const stepIdx=t=>{let k=0;STEPS.forEach((s,i)=>{if(t>=s.t-.001)k=i});return k};
+function gotoStep(j,animate){j=Math.max(0,Math.min(STEPS.length-1,j));const s=STEPS[j];
+ if(animate&&s.t>SIM.t){SIM.target=s.t;SIM.play=true}else{SIM.t=s.t;SIM.play=false;SIM.target=null;AG.forEach(a=>a.i=0)}
+ syncPlay()}
+// ---- panel ----
+let camFollow=-1,SEL=null,lastStep=-1,lastCard='';
+const act=document.getElementById('act');
+act.innerHTML='<div class="ah"><b>Actividad · rotación simultánea</b><button id="actx" title="Ocultar">–</button></div>'+
+'<div id="abody"><div class="clk"><span id="clkn">00:00</span><span id="clkt"> / 40:00</span></div><div id="phase" class="ph"></div>'+
+'<input type="range" id="seek" min="0" max="2400" step="1" value="0">'+
+'<div class="row"><button id="play">▶ Iniciar</button><button id="rst">⟲</button><select id="spd"><option value="10">×10</option><option value="20" selected>×20</option><option value="60">×60</option><option value="120">×120</option></select><select id="cam"><option value="-1">Cámara libre</option><option value="0">Seguir Guía A</option><option value="1">Seguir Guía B</option><option value="2">Seguir Guía C</option><option value="3">Seguir Guía D</option></select></div>'+
+'<div class="tabs"><button data-tab="g" class="on">Grupos</button><button data-tab="p">Pasos</button><button data-tab="r">Roles</button></div>'+
+'<div id="tab-g" class="tab"><table id="gt"></table>'+
+'<details><summary>Tiempos (min)</summary><div class="cfg"><label>Estación<input id="cS" type="number" step=".25" min=".5"></label><label>Traslado<input id="cT" type="number" step=".25" min=".25"></label><label>Inicial<input id="cD" type="number" step=".25" min=".25"></label><label>Final<input id="cF" type="number" step=".25" min=".25"></label></div><button id="apl">Aplicar</button> <span id="tot"></span></details></div>'+
+'<div id="tab-p" class="tab" style="display:none"><div class="row"><button id="prv">◀ Anterior</button><button id="nxt">Siguiente ▶</button></div><div id="stepbox"></div><ol id="steplist"></ol></div>'+
+'<div id="tab-r" class="tab" style="display:none"><div id="legend"></div><div id="pcard" class="pcard">Haga clic en una persona del modelo para ver su rol y qué está haciendo.</div></div></div>';
+const $=id=>document.getElementById(id);
+$('gt').innerHTML=GRP.map((G,g)=>'<tr><td>'+chip(G)+'</td><td id="gs'+g+'"></td><td id="gr'+g+'" class="rm"></td></tr>').join('');
+const cnt=k=>AG.filter(a=>a.role===k).length;
+$('legend').innerHTML=['divisor','guia','encargado','expositor','estudiante'].map(k=>{const R2=ROLES[k];
+ const sw=k==='estudiante'?GRP.map(G=>'<i style="background:'+G.css+'"></i>').join(''):'<i style="background:'+R2.css+'"></i>';
+ return '<div class="rl"><div class="rh"><span class="sw">'+sw+'</span><b>'+R2.name+'</b><span class="rc">×'+cnt(k)+'</span></div><div class="rd">'+roleDesc(k)+'</div></div>'}).join('');
+$('steplist').innerHTML=STEPS.map((s,i)=>'<li data-i="'+i+'"><span>'+mmss(s.t)+'</span> '+s.title+'</li>').join('');
+$('steplist').onclick=e=>{const li=e.target.closest('li');if(li)gotoStep(+li.dataset.i,false)};
+function syncPlay(){$('play').textContent=SIM.play?'⏸ Pausa':(SIM.t>=totalSec()-1?'▶ Repetir':(SIM.t>0?'▶ Seguir':'▶ Iniciar'))}
+$('play').onclick=()=>{if(SIM.t>=totalSec()-1){SIM.t=0;AG.forEach(a=>a.i=0)}SIM.target=null;SIM.play=!SIM.play;syncPlay()};
+$('rst').onclick=()=>{SIM.t=0;SIM.play=false;SIM.target=null;AG.forEach(a=>a.i=0);syncPlay()};
+$('spd').onchange=e=>SIM.speed=+e.target.value;
+$('cam').onchange=e=>{camFollow=+e.target.value};
+$('seek').oninput=e=>{SIM.t=+e.target.value;SIM.target=null;AG.forEach(a=>a.i=0);syncPlay()};
+$('prv').onclick=()=>{const i=stepIdx(SIM.t);gotoStep(SIM.t-STEPS[i].t>2?i:i-1,false)};
+$('nxt').onclick=()=>{const i=SIM.target!=null?stepIdx(SIM.target):stepIdx(SIM.t);gotoStep(i+1,STEPS[Math.min(i+1,STEPS.length-1)].anim)};
+function showTab(k){['g','p','r'].forEach(x=>{$('tab-'+x).style.display=x===k?'':'none'});act.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===k))}
+act.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+$('actx').onclick=()=>{const b=$('abody');const h=b.style.display==='none';b.style.display=h?'':'none';$('actx').textContent=h?'–':'+'};
+if(innerWidth<700){$('abody').style.display='none';$('actx').textContent='+'}
+$('apl').onclick=()=>{location.hash='t='+[+$('cS').value,+$('cT').value,+$('cD').value,+$('cF').value].join(',');location.reload()};
+$('cS').value=CFG.S;$('cT').value=CFG.T;$('cD').value=CFG.D1;$('cF').value=CFG.F;
+$('tot').textContent='Total: '+mmss(totalSec())+' min';
+$('seek').max=Math.round(totalSec());$('clkt').textContent=' / '+mmss(totalSec());
+// ---- selección de personas (clic en el modelo) ----
+const RC=new THREE.Raycaster(),selRing=new THREE.Mesh(new THREE.RingGeometry(.95,1.15,32),new THREE.MeshBasicMaterial({color:0xffffff,side:THREE.DoubleSide,depthTest:false}));
+selRing.rotation.x=-Math.PI/2;selRing.visible=false;selRing.renderOrder=5;scene.add(selRing);
+function pickAt(cx,cy){const r=cv.getBoundingClientRect();
+ RC.setFromCamera(new THREE.Vector2(((cx-r.left)/r.width)*2-1,-((cy-r.top)/r.height)*2+1),cam);
+ const hit=RC.intersectObjects(AG.map(a=>a.fig),true)[0];if(!hit)return;
+ let o=hit.object;while(o&&!(o.userData&&o.userData.a))o=o.parent;if(o){SEL=o.userData.a;lastCard='';showTab('r');if($('abody').style.display==='none'){$('abody').style.display='';$('actx').textContent='–'}}}
+function cardHTML(a,t){
+ const R2=ROLES[a.role];let h='<div class="rh"><span class="sw"><i style="background:'+(a.role==='estudiante'?GRP[a.g].css:R2.css)+'"></i></span><b>'+R2.name+(a.role==='estudiante'?' · Grupo '+GRP[a.g].n+' (n.º '+a.idx+')':a.role==='guia'?' · Grupo '+GRP[a.g].n:'')+'</b></div><div class="rd">'+roleDesc(a.role)+'</div>';
+ let est='';
+ if(a.g!==undefined){const s=groupState(a.g,t);est='<b>Ahora:</b> '+s.txt+(s.rem>0?' · quedan '+mmss(s.rem):'')}
+ else if(a.role==='encargado'){const ga=groupAt(a.st,t);est='<b>Estación:</b> '+STN[a.st].name+'<br>'+(ga?'Cronometra al grupo '+chip(GRP[ga.g])+' · quedan '+mmss(ga.rem):'Sin grupo en este momento')}
+ else if(a.role==='expositor'){const ga=groupAt(a.st,t);const n=stAnchors(a.st).length;est='<b>Sala '+a.st+'</b> · mesa '+(a.mesa+1)+' de '+(a.st===3?2:4)+'<br>'+(ga&&ga.mesa===a.mesa?'Atiende al grupo '+chip(GRP[ga.g])+' · quedan '+mmss(ga.rem)+' en la ronda':'Sin visita en su mesa en este momento')}
+ else if(a.role==='divisor'){est=t<CFG.D1*60?'<b>Ahora:</b> recibiendo y dividiendo a los estudiantes':'<b>Ahora:</b> esperando; su tarea terminó'}
+ return h+'<div class="rs">'+est+'</div>'}
+// ---- paso a paso en el bucle ----
+function simStep(dt){
+ if(SIM.play){SIM.t=Math.min(totalSec(),SIM.t+dt*SIM.speed);
+  if(SIM.target!=null&&SIM.t>=SIM.target){SIM.t=SIM.target;SIM.target=null;SIM.play=false;syncPlay()}
+  else if(SIM.t>=totalSec()){SIM.play=false;syncPlay()}}
+ const t=SIM.t;AG.forEach(a=>{if(!a.static)evalAgent(a,t)});
+ $('clkn').textContent=mmss(t);$('seek').value=Math.round(t);
+ GRP.forEach((G,g)=>{const s=groupState(g,t);$('gs'+g).textContent=s.txt;$('gr'+g).textContent=s.rem>0?mmss(s.rem):''});
+ const D1=CFG.D1*60,T=CFG.T*60,per=T+CFG.S*60;let ph='';
+ if(t<D1)ph='Los estudiantes llegan por la Salida y el divisor los divide en 4 grupos';else{const u=t-D1,i=Math.floor(u/per);ph=i>=4?(u-4*per<CFG.F*60?'Los guías llevan a los grupos a la Entrega':'Actividad terminada'):((u-i*per<T)?'Traslado antes de la ronda '+(i+1)+' de 4':'Ronda '+(i+1)+' de 4')}
+ $('phase').textContent=ph;drawSprites(t);
+ // pasos
+ const si=stepIdx(t),tgt=SIM.target!=null?stepIdx(SIM.target):-1,key=si+'/'+tgt;
+ if(key!==lastStep){lastStep=key;const s=STEPS[si];
+  $('stepbox').innerHTML='<div class="st"><b>Paso '+(si+1)+' de '+STEPS.length+' · '+s.title+'</b></div><div class="sd">'+s.detail+'</div>'+(tgt>si?'<div class="sd mu">Avanzando hacia: '+STEPS[tgt].title+'…</div>':'');
+  $('steplist').querySelectorAll('li').forEach((li,i)=>li.classList.toggle('on',i===si))}
+ // etiquetas y selección
+ const cx=cam.position.x,cz=cam.position.z;
+ AG.forEach(a=>{if(a.sp){const f=a.fig.position;a.sp.visible=P.aerial?AER.h<70:Math.hypot(f.x-cx,f.z-cz)<26}});
+ if(SEL){selRing.visible=true;selRing.position.set(SEL.fig.position.x,.08,SEL.fig.position.z);selRing.material.color.setHSL((performance.now()/1500)%1,.9,.6);
+  const c=cardHTML(SEL,t);if(c!==lastCard){lastCard=c;$('pcard').innerHTML=c}}else selRing.visible=false}
+function followCam(){const a=AG.find(a=>a.role==='guia'&&a.g===camFollow);if(!a)return;
+ const bx=a.x-Math.sin(a.face)*5,bz=a.z-Math.cos(a.face)*5;
+ cam.position.lerp(new THREE.Vector3(bx,a.fig.position.y+3.6,bz),.12);cam.lookAt(a.x,1.4,a.z)}
+function drawAgents(){AG.forEach(a=>{if(a.x===undefined)return;
+ g.fillStyle=a.mini;g.beginPath();g.arc(ox+a.x*K,oz+a.z*K,a.role==='guia'?2.8:a.role==='estudiante'?1.5:2.4,0,7);g.fill()})}
+// ===== Bucle =====
+function resize(){const w=innerWidth,h=innerHeight;ren.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix()}
+addEventListener('resize',resize);resize();
+let last=performance.now(),locEl=document.getElementById('loc');
+function frame(t){const dt=Math.min(.05,(t-last)/1000);last=t;
+ if(!P.aerial){
+  let f=(keys.KeyW||keys.ArrowUp?1:0)-(keys.KeyS||keys.ArrowDown?1:0)-mv.z;
+  let s=(keys.KeyD?1:0)-(keys.KeyA?1:0)+mv.x;
+  if(keys.ArrowLeft)P.yaw+=1.8*dt;if(keys.ArrowRight)P.yaw-=1.8*dt;
+  const sp=(keys.ShiftLeft||keys.ShiftRight?6.5:3.4)*dt,n=Math.hypot(f,s)||1;f/=Math.max(1,n);s/=Math.max(1,n);
+  const dx=(-Math.sin(P.yaw)*f+Math.cos(P.yaw)*s)*sp,dz=(-Math.cos(P.yaw)*f-Math.sin(P.yaw)*s)*sp;
+  const can=(nx,nz)=>free(nx,nz)&&Math.abs(gy(nx,nz)-gy(P.x,P.z))<=.9;   // no se sube de un salto a un nivel superior
+  if(can(P.x+dx,P.z))P.x+=dx;if(can(P.x,P.z+dz))P.z+=dz;
+  P.y+=(gy(P.x,P.z)-P.y)*Math.min(1,dt*14);
+  cam.position.set(P.x,P.y+EYE,P.z);cam.rotation.set(P.pitch,P.yaw,0);
+ }else{cam.position.set(AER.cx,AER.h,AER.cz+AER.h*.2);cam.rotation.set(-1.35,0,0)}
+ simStep(dt);if(camFollow>=0&&!P.aerial)followCam();
+ locEl.textContent=where(P.x,P.z,P.y);drawMap();drawAgents();ren.render(scene,cam);requestAnimationFrame(frame)}
+requestAnimationFrame(frame);
+window.__P=P;window.__free=free;window.__gy=gy;window.__SIM=SIM;window.__AG=AG;window.__groupState=groupState;window.__AER=AER;window.__STEPS=STEPS;window.__gotoStep=gotoStep;
+</script></body></html>

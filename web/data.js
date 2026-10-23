@@ -45,7 +45,8 @@ window.PLATFORM_DATA = {
         "venturi": ["VENTURI-2026", "BERNOULLI-VENTURI-26", "OBANDO-VENTURI-26", "BERNOULLI-2026"],
         "pendulo": ["PENDULO-2026", "GRAVEDAD-26", "OBANDO-PENDULO-26", "FISICA-10-26"],
         "guias": ["GUIAS-2026", "MONTAJES-26", "LAB-MONTAJES-26"],
-        "ingles": ["INGLES-2026", "QUANTUM-ENGLISH-26", "LEAP-2026"]
+        "ingles": ["INGLES-2026", "QUANTUM-ENGLISH-26", "LEAP-2026"],
+        "recorrido": ["RECORRIDO-2026", "DEPTO-FISICA-26", "OBANDO-RECORRIDO-26", "UNICAUCA-26"]
     },
 
     // Configuración oficial de Pasarelas de Pago (Wompi PSE, Bancolombia, Nequi y Hotmart)
@@ -879,6 +880,34 @@ window.PLATFORM_DATA = {
             descuentoTag: "Nuevo Lanzamiento 2026",
             enlaceCompra: "https://hotmart.com",
             enlaceWompi: "https://checkout.wompi.co/l/VPOS_b6GD2z"
+        },
+        {
+            id: "recorrido",
+            titulo: "Recorrido Virtual 3D & Gemelo Digital: Depto. de Física",
+            nivel: "Universitario / Estudiantes / Comunidad Científica",
+            modulos: "Maqueta 3D Interactiva + Simulación de Rotación por Estaciones + Plano 2D",
+            categoria: "Laboratorio Virtual",
+            categoriaFiltro: "materiales",
+            descripcion: "Gemelo digital tridimensional y maqueta interactiva a escala real (1 paso ≈ 0.75 m) del Departamento de Física de la Universidad del Cauca. Permite caminar en primera persona por los pasillos, acceder a los laboratorios de Mecánica 1, Mecánica 2, Fluidos, Óptica y Sala de Sistemas, subir las gradas exteriores al segundo piso, explorar los patios y experimentar la simulación pedagógica de rotación simultánea de grupos con reloj de estaciones y roles (divisor, guías, encargados y expositores).",
+            temas: [
+                "01. Vista en Primera Persona: Caminar por Pasillos, Patios y Salas",
+                "02. Vista Aérea / Modo Maqueta 3D con Zoom y Desplazamiento",
+                "03. Laboratorio de Mecánica 1: Mesas Experimentales y Pizarras",
+                "04. Laboratorio de Mecánica 2: Bancos de Trabajo y DCL",
+                "05. Laboratorio de Fluidos: Mesas Hidráulicas e Instalaciones",
+                "06. Laboratorio de Óptica: Bancos Ópticos y Zonas de Luz",
+                "07. Sala de Sistemas y Zona de Distribución de Grupos",
+                "08. Simulación Pedagógica: Rotación de 4 Grupos, Cronómetro y Roles",
+                "09. Plano Arquitectónico 2D SVG a Escala con 14 Puntos de Captura"
+            ],
+            destacado: true,
+            tipo: "Simulador 3D WebGL / Three.js",
+            demoPath: "/material/1_cursos/recorrido/recorrido3d.html",
+            precioEstimado: "Acceso Libre / Abierto",
+            precioCOP: 0,
+            precioUSD: 0,
+            esLaboratorio: true,
+            accesoLibre: true
         }
     ],
 

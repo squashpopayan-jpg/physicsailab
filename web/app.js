@@ -415,6 +415,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function isCourseUnlocked(courseId) {
         if (isAdmin()) return true;
+        const c = (data.cursos || []).find(x => x.id === courseId);
+        if (c && (c.accesoLibre || c.precioCOP === 0 || c.id === 'recorrido')) return true;
+        if (isAdmin()) return true;
         const list = getUnlockedCourses();
         if (list.includes(courseId)) return true;
         if (localStorage.getItem('unlocked_course_' + courseId) === 'true') return true;
@@ -8116,6 +8119,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'inicio',
         'cursos',
         'tienda',
+        'recorrido',
         'quizzes',
         'juegos',
         'comics',
@@ -8360,3 +8364,57 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
+
+
+    // ==========================================================================
+    // RECORRIDO VIRTUAL 3D Y GEMELO DIGITAL (UNICAUCA)
+    // ==========================================================================
+    window.switchRecorridoView = function(mode) {
+        const iframe = document.getElementById('recorrido-iframe');
+        const tab3d = document.getElementById('tab-recorrido-3d');
+        const tab2d = document.getElementById('tab-recorrido-2d');
+        const directLink = document.getElementById('recorrido-direct-link');
+        if (!iframe) return;
+
+        if (mode === '2d') {
+            iframe.src = '/material/1_cursos/recorrido/plano.html';
+            if (tab3d) tab3d.classList.remove('active');
+            if (tab2d) tab2d.classList.add('active');
+            if (directLink) directLink.href = '/material/1_cursos/recorrido/plano.html';
+        } else {
+            iframe.src = '/material/1_cursos/recorrido/recorrido3d.html';
+            if (tab3d) tab3d.classList.add('active');
+            if (tab2d) tab2d.classList.remove('active');
+            if (directLink) directLink.href = '/material/1_cursos/recorrido/recorrido3d.html';
+        }
+    };
+
+    window.toggleRecorridoFullscreen = function() {
+        const wrapper = document.getElementById('recorrido-frame-wrapper');
+        if (!wrapper) return;
+        if (!document.fullscreenElement) {
+            wrapper.requestFullscreen().catch(err => {
+                alert(`Pantalla completa: ${err.message}`);
+            });
+        } else {
+            document.exitFullscreen();
+        }
+    };
+
+    window.teleportRecorrido = function(index) {
+        const iframe = document.getElementById('recorrido-iframe');
+        const tab3d = document.getElementById('tab-recorrido-3d');
+        const wrapper = document.getElementById('recorrido-frame-wrapper');
+
+        if (tab3d && !tab3d.classList.contains('active')) {
+            switchRecorridoView('3d');
+        }
+
+        if (wrapper) {
+            wrapper.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        if (iframe && iframe.contentWindow) {
+            iframe.contentWindow.postMessage({ action: 'teleport', index: index }, '*');
+        }
+    };
