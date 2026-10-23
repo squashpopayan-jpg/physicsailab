@@ -1,7 +1,8 @@
 /**
- * PhysicsAILab — Course Access Guard & Paywall
- * Control de acceso freemium: Vista previa de capítulos iniciales y bloqueo del contenido restante.
- * Desbloqueo mediante clave de clase estudiantil o compra de licencia.
+ * PhysicsAILab — Universal Course Access Guard & Paywall
+ * Control de acceso freemium: Vista previa de módulos/capítulos iniciales liberada
+ * y bloqueo con candados (🔒) para todo el contenido restante.
+ * Desbloqueo mediante clave de clase estudiantil, código de licencia personal o administrador.
  * Autor: Mg. Manuel Alejandro Obando — Universidad del Cauca
  */
 (function() {
@@ -19,38 +20,99 @@
         "cuantica": ["CUANTICA-2026", "MODERNA-26"],
         "retie": ["RETIE-2026", "NORMA-RETIE-26"],
         "squash_sim": ["SQUASH-PRO-2026", "MANU-SQUASH-26"],
-        "finanzas": ["FINANZAS-2026", "CUENTAS-CLARAS-26"]
+        "finanzas": ["FINANZAS-2026", "CUENTAS-CLARAS-26"],
+        "termo": ["TERMO-2026", "CALOR-TERMO-26", "OBANDO-TERMO-26"],
+        "torneos": ["TORNEOS-2026", "SQUASH-POPAYAN-26", "SQUASH-TORNEOS-26"],
+        "laboratorio": ["LAB-PROYECTO-2026", "PROYECTO-LAB-26", "OBANDO-LAB-26"],
+        "fluidos": ["FLUIDOS-2026", "BERNOULLI-26", "OBANDO-FLUIDOS-26"],
+        "venturi": ["VENTURI-2026", "BERNOULLI-VENTURI-26", "OBANDO-VENTURI-26", "BERNOULLI-2026"],
+        "pendulo": ["PENDULO-2026", "GRAVEDAD-26", "OBANDO-PENDULO-26", "FISICA-10-26"],
+        "guias": ["GUIAS-2026", "MONTAJES-26", "LAB-MONTAJES-26"],
+        "ingles": ["INGLES-2026", "QUANTUM-ENGLISH-26", "LEAP-2026"],
+        "recorrido": ["RECORRIDO-2026", "DEPTO-FISICA-26", "OBANDO-RECORRIDO-26", "UNICAUCA-26"],
+        "optica": ["OPTICA-2026", "FOTON-26", "OBANDO-OPTICA-26", "LUZ-RAYO-26", "MAXWELL-OPTICA-26"]
     };
 
     function getCurrentCourseId() {
-        const p = location.pathname.toLowerCase();
+        const p = decodeURIComponent(location.pathname.toLowerCase());
         const m = p.match(/1_cursos\/([^\/]+)/);
-        if (m && m[1]) return m[1];
+        if (m && m[1]) {
+            const raw = m[1];
+            if (raw === 'squash' || raw === 'squash-sim') return 'squash_sim';
+            return raw;
+        }
+
+        if (p.includes('optica')) return 'optica';
         if (p.includes('mecanica')) return 'mecanica';
+        if (p.includes('pendulo')) return 'pendulo';
+        if (p.includes('venturi')) return 'venturi';
         if (p.includes('transformador')) return 'transformadores';
-        if (p.includes('onda')) return 'ondas';
+        if (p.includes('onda') || p.includes('vibraci')) return 'ondas';
         if (p.includes('material')) return 'materiales';
         if (p.includes('electro')) return 'electromagnetismo';
         if (p.includes('cuantica')) return 'cuantica';
-        if (p.includes('retie')) return 'retie';
+        if (p.includes('retie') || p.includes('cableado')) return 'retie';
+        if (p.includes('squash')) return 'squash_sim';
+        if (p.includes('finanzas') || p.includes('cuentas-claras')) return 'finanzas';
+        if (p.includes('termo')) return 'termo';
+        if (p.includes('torneo')) return 'torneos';
+        if (p.includes('bolsillo') || p.includes('laboratorio-bolsillo') || p.includes('/laboratorio/')) return 'laboratorio';
+        if (p.includes('fluido')) return 'fluidos';
+        if (p.includes('guia') || p.includes('montaje')) return 'guias';
+        if (p.includes('ingles') || p.includes('english')) return 'ingles';
+        if (p.includes('recorrido')) return 'recorrido';
         if (p.includes('/ml/')) return 'ml';
         if (p.includes('/neuro/')) return 'neuro';
-        if (p.includes('squash')) return 'squash_sim';
-        if (p.includes('finanzas')) return 'finanzas';
+
+        const t = (document.title || '').toLowerCase();
+        if (t.includes('óptica') || t.includes('optica')) return 'optica';
+        if (t.includes('mecánica') || t.includes('mecanica')) return 'mecanica';
+        if (t.includes('péndulo') || t.includes('pendulo')) return 'pendulo';
+        if (t.includes('venturi')) return 'venturi';
+        if (t.includes('transformador')) return 'transformadores';
+        if (t.includes('onda') || t.includes('vibraci')) return 'ondas';
+        if (t.includes('material')) return 'materiales';
+        if (t.includes('electro')) return 'electromagnetismo';
+        if (t.includes('cuántica') || t.includes('cuantica')) return 'cuantica';
+        if (t.includes('retie') || t.includes('cableado')) return 'retie';
+        if (t.includes('squash')) return 'squash_sim';
+        if (t.includes('finanzas') || t.includes('cuentas claras')) return 'finanzas';
+        if (t.includes('termodin') || t.includes('termo')) return 'termo';
+        if (t.includes('torneo')) return 'torneos';
+        if (t.includes('bolsillo')) return 'laboratorio';
+        if (t.includes('fluido')) return 'fluidos';
+        if (t.includes('guía') || t.includes('guia')) return 'guias';
+        if (t.includes('english') || t.includes('inglés')) return 'ingles';
+        if (t.includes('recorrido')) return 'recorrido';
+
         return 'general';
     }
 
     function isUnlocked() {
+        const cId = getCurrentCourseId();
+        // El recorrido 3D es de acceso libre y abierto
+        if (cId === 'recorrido') return true;
+
         try {
             // 1. Modo Administrador General (Profesor Obando): todo liberado
             if (localStorage.getItem('physicsailab_admin') === 'true') return true;
             if (localStorage.getItem('physicsailab_unlocked_all') === 'true') return true;
 
             // 2. Desbloqueo específico para este curso
-            const cId = getCurrentCourseId();
             const unlockedList = JSON.parse(localStorage.getItem('physicsailab_unlocked_courses') || '[]');
             if (unlockedList.includes(cId)) return true;
             if (localStorage.getItem('unlocked_course_' + cId) === 'true') return true;
+
+            // 3. Revisar licencias activas emitidas al estudiante
+            const licenses = JSON.parse(localStorage.getItem('physicsailab_student_licenses') || '[]');
+            if (Array.isArray(licenses)) {
+                const hasActive = licenses.some(lic => {
+                    const matchCourse = lic.cursoId === cId || lic.cursoId === 'todos' || lic.curso === cId;
+                    const isActive = !lic.estado || lic.estado === 'activo' || lic.estado === 'aprobado';
+                    return matchCourse && isActive;
+                });
+                if (hasActive) return true;
+            }
 
             return false;
         } catch(e) {
@@ -79,17 +141,103 @@
         setCourseUnlocked(cId, val);
     }
 
-    // Identificar curso y tipo
-    const isTransformadores = !!document.querySelector('#benchSvg') || 
-                             location.pathname.toLowerCase().includes('transformadores') ||
-                             document.title.toLowerCase().includes('transformador');
-    const isSquash = !!document.querySelector('#courtTop') ||
-                     location.pathname.toLowerCase().includes('squash') ||
-                     document.title.toLowerCase().includes('squash');
+    // Identificar tipo de curso
+    const courseId = getCurrentCourseId();
+    const isTransformadores = courseId === 'transformadores' || !!document.querySelector('#benchSvg');
+    const isSquash = courseId === 'squash_sim' || !!document.querySelector('#courtTop');
+    const isVenturi = courseId === 'venturi';
+    const isPendulo = courseId === 'pendulo' || !!document.querySelector('nav a[data-tab="matematico"]');
+    const isIngles = courseId === 'ingles' || !!document.querySelector('.stepper');
+    const isTorneos = courseId === 'torneos';
+    const isRecorrido = courseId === 'recorrido';
 
-    // Inyectar estilos CSS del modal y candados
+    // Inyectar estilos CSS del modal, candados y barras
     const css = `
-        /* Squash Demo Banner y Controles Bloqueados */
+        /* Candados y tags en navegación */
+        .pg-lock-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.82rem;
+            line-height: 1;
+            margin-left: auto;
+            opacity: 0.9;
+            filter: drop-shadow(0 1px 3px rgba(0,0,0,0.4));
+            transition: transform 0.2s;
+            pointer-events: none;
+        }
+        .toc a.pg-locked, #toc a.pg-locked {
+            position: relative;
+            opacity: 0.85;
+            padding-right: 28px !important;
+        }
+        .toc a.pg-locked .pg-lock-pill, #toc a.pg-locked .pg-lock-pill {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .toc a.pg-locked:hover, #toc a.pg-locked:hover {
+            opacity: 1;
+            background: rgba(245, 158, 11, 0.08) !important;
+        }
+        .toc a.pg-locked:hover .pg-lock-pill, #toc a.pg-locked:hover .pg-lock-pill {
+            transform: translateY(-50%) scale(1.25);
+        }
+
+        /* Home cards bloqueadas */
+        .home-card.pg-locked {
+            position: relative;
+            border-color: rgba(245, 158, 11, 0.25) !important;
+            opacity: 0.9;
+        }
+        .home-card.pg-locked:hover {
+            border-color: #F59E0B !important;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.12);
+        }
+        .home-card-lock-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(245, 158, 11, 0.18);
+            border: 1px solid rgba(245, 158, 11, 0.45);
+            color: #F59E0B;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 9999px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            pointer-events: none;
+            line-height: 1.2;
+            letter-spacing: 0.3px;
+        }
+
+        /* Botón siguiente bloqueado */
+        .ch-nav a.pg-locked, nav.ch-nav a.pg-locked {
+            opacity: 0.85;
+            border-color: rgba(245, 158, 11, 0.3) !important;
+        }
+        .ch-nav a.pg-locked .pg-lock-pill {
+            margin-left: 6px;
+        }
+
+        /* Pestañas de laboratorio bloqueadas */
+        .nav a.pg-locked-tab, nav a.pg-locked-tab {
+            opacity: 0.85;
+            position: relative;
+        }
+        .nav a.pg-locked-tab .pg-lock-pill, nav a.pg-locked-tab .pg-lock-pill {
+            margin-left: 5px;
+            font-size: 0.78rem;
+        }
+        .nav a.pg-locked-tab:hover, nav a.pg-locked-tab:hover {
+            color: #F59E0B;
+        }
+
+        /* Squash y controles especiales */
         .pg-squash-demo-banner {
             background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(15, 23, 42, 0.9));
             border: 1px solid rgba(245, 158, 11, 0.4);
@@ -104,9 +252,7 @@
             color: #F1F5F9;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
-        .pg-squash-demo-banner strong {
-            color: #F59E0B;
-        }
+        .pg-squash-demo-banner strong { color: #F59E0B; }
         .pg-squash-demo-banner button {
             background: linear-gradient(135deg, #F59E0B, #D97706);
             color: #0A0E17;
@@ -119,85 +265,68 @@
             white-space: nowrap;
             transition: opacity 0.2s;
         }
-        .pg-squash-demo-banner button:hover {
-            opacity: 0.85;
-        }
+        .pg-squash-demo-banner button:hover { opacity: 0.85; }
         .pg-locked-control {
             position: relative;
             cursor: not-allowed !important;
             opacity: 0.55 !important;
         }
 
-        /* Candados y tags en navegación */
-        .pg-lock-pill {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.75rem;
-            margin-left: auto;
-            opacity: 0.75;
-            transition: transform 0.2s;
-        }
-        .pg-locked-tab .pg-lock-pill {
-            margin-left: 0.35rem;
-        }
-        .pg-locked a, a.pg-locked {
-            opacity: 0.85;
-        }
-        .pg-locked a:hover .pg-lock-pill, a.pg-locked:hover .pg-lock-pill {
-            transform: scale(1.2);
-            opacity: 1;
-        }
-
-        /* Banner superior flotante de estado */
+        /* Floating Top Bar */
         .pg-top-bar {
             position: fixed;
-            bottom: 16px;
-            right: 16px;
-            z-index: 99999;
-            background: rgba(15, 23, 42, 0.92);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(56, 189, 248, 0.3);
-            border-radius: 9999px;
-            padding: 0.45rem 0.95rem;
+            top: 10px;
+            right: 14px;
+            z-index: 999999;
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: 0.6rem;
+            padding: 0.35rem 0.85rem;
+            background: rgba(15, 23, 42, 0.88);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(245, 158, 11, 0.45);
+            border-radius: 9999px;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            font-size: 0.82rem;
-            color: #F1F5F9;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            transition: all 0.25s ease;
+            font-size: 0.8rem;
+            color: #F8FAFC;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.35);
+            transition: all 0.3s;
         }
         .pg-top-bar.unlocked {
-            border-color: rgba(16, 185, 129, 0.4);
-            background: rgba(6, 78, 59, 0.9);
-            color: #A7F3D0;
+            border-color: rgba(16, 185, 129, 0.45);
+            background: rgba(6, 78, 59, 0.88);
+        }
+        .pg-top-bar strong {
+            color: #F59E0B;
+        }
+        .pg-top-bar.unlocked strong {
+            color: #34D399;
         }
         .pg-top-bar button {
-            background: linear-gradient(135deg, #38BDF8, #818CF8);
-            border: none;
+            background: linear-gradient(135deg, #F59E0B, #D97706);
             color: #0A0E17;
             font-weight: 700;
-            font-size: 0.78rem;
-            padding: 0.3rem 0.75rem;
+            font-size: 0.76rem;
+            border: none;
+            padding: 0.28rem 0.7rem;
             border-radius: 9999px;
             cursor: pointer;
             transition: opacity 0.2s;
         }
+        .pg-top-bar button:hover { opacity: 0.9; }
         .pg-top-bar.unlocked button {
-            background: rgba(255,255,255,0.15);
+            background: rgba(255, 255, 255, 0.15);
             color: #fff;
-            font-weight: 500;
-        }
-        .pg-top-bar button:hover {
-            opacity: 0.85;
+            border: 1px solid rgba(255, 255, 255, 0.25);
         }
 
-        /* Modal Overlay Paywall */
+        /* Modal Paywall Overlay */
         .pg-overlay {
             position: fixed;
-            inset: 0;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             z-index: 1000000;
             background: rgba(10, 14, 23, 0.85);
             backdrop-filter: blur(10px);
@@ -206,17 +335,17 @@
             justify-content: center;
             padding: 1rem;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            animation: pgFadeIn 0.25s ease forwards;
+            animation: pgFadeIn 0.22s ease forwards;
         }
         @keyframes pgFadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
         }
         .pg-modal {
             background: linear-gradient(160deg, #111827 0%, #0F172A 100%);
             border: 1px solid rgba(56, 189, 248, 0.35);
             border-radius: 20px;
-            max-width: 540px;
+            max-width: 550px;
             width: 100%;
             padding: 2rem;
             color: #F3F4F6;
@@ -255,7 +384,7 @@
             margin-bottom: 0.75rem;
         }
         .pg-title {
-            font-size: 1.5rem;
+            font-size: 1.45rem;
             font-weight: 800;
             color: #fff;
             margin-bottom: 0.5rem;
@@ -263,9 +392,9 @@
         }
         .pg-desc {
             color: #94A3B8;
-            font-size: 0.92rem;
+            font-size: 0.9rem;
             line-height: 1.5;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.35rem;
         }
 
         /* Sección Estudiante */
@@ -273,11 +402,11 @@
             background: rgba(16, 185, 129, 0.08);
             border: 1px solid rgba(16, 185, 129, 0.3);
             border-radius: 14px;
-            padding: 1.25rem;
-            margin-bottom: 1.25rem;
+            padding: 1.15rem;
+            margin-bottom: 1.15rem;
         }
         .pg-card-student h4 {
-            font-size: 0.98rem;
+            font-size: 0.95rem;
             color: #34D399;
             margin-bottom: 0.35rem;
             display: flex;
@@ -288,6 +417,7 @@
             font-size: 0.82rem;
             color: #94A3B8;
             margin-bottom: 0.75rem;
+            line-height: 1.4;
         }
         .pg-input-group {
             display: flex;
@@ -321,16 +451,16 @@
         }
         .pg-btn-unlock:hover { opacity: 0.9; }
 
-        /* Sección Compra */
+        /* Sección Compra / Cupones */
         .pg-card-buy {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 14px;
-            padding: 1.25rem;
-            margin-bottom: 1.25rem;
+            padding: 1.15rem;
+            margin-bottom: 1.15rem;
         }
         .pg-card-buy h4 {
-            font-size: 0.98rem;
+            font-size: 0.95rem;
             color: #F1F5F9;
             margin-bottom: 0.35rem;
             display: flex;
@@ -340,6 +470,20 @@
         .pg-card-buy p {
             font-size: 0.82rem;
             color: #94A3B8;
+            margin-bottom: 0.75rem;
+            line-height: 1.4;
+        }
+        .pg-coupon-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            background: rgba(245, 158, 11, 0.12);
+            border: 1px dashed rgba(245, 158, 11, 0.4);
+            color: #FBBF24;
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 0.35rem 0.75rem;
+            border-radius: 8px;
             margin-bottom: 0.85rem;
         }
         .pg-buy-actions {
@@ -399,14 +543,9 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.6);
             animation: pgFadeIn 0.2s ease;
         }
-        .pg-toast.success {
-            border-color: #10B981;
-            color: #A7F3D0;
-        }
-        .pg-toast.error {
-            border-color: #EF4444;
-            color: #FCA5A5;
-        }
+        .pg-toast.success { border-color: #10B981; color: #A7F3D0; }
+        .pg-toast.error { border-color: #EF4444; color: #FCA5A5; }
+        .pg-toast.info { border-color: #38BDF8; color: #BAE6FD; }
     `;
 
     const styleEl = document.createElement('style');
@@ -417,7 +556,7 @@
     function showToast(msg, type = 'info') {
         const toast = document.createElement('div');
         toast.className = `pg-toast ${type}`;
-        toast.textContent = msg;
+        toast.innerHTML = msg;
         document.body.appendChild(toast);
         setTimeout(() => toast.remove(), 4000);
     }
@@ -427,17 +566,18 @@
     function openPaywall(attemptedTarget = '') {
         if (activeModal) activeModal.remove();
 
-        const courseTitle = document.title.split('·')[0].trim() || 'Curso Interactivo';
-        const isLab = isTransformadores;
+        const curCourse = getCurrentCourseId();
+        const courseTitle = document.title.split('·')[0].split('—')[0].trim() || 'Curso Interactivo';
         const targetLabel = attemptedTarget ? ` el acceso a «${attemptedTarget}»` : ' este módulo completo';
 
         let modalTitle = 'Contenido Premium Bloqueado';
-        let modalDesc = `Has llegado al límite de la demostración gratuita. Para desbloquear${targetLabel}, los motores de simulación numérica, la totalidad de los capítulos interactivos y la autoevaluación, ingresa tu clave de estudiante o adquiere la licencia completa.`;
+        let modalDesc = `Has llegado al límite de la vista previa gratuita. Para desbloquear${targetLabel}, los motores de simulación numérica, los ejercicios interactivos y la totalidad de los capítulos, ingresa tu clave de estudiante o adquiere la licencia completa.`;
         let buyEntityName = 'Curso';
 
-        if (isLab) {
+        if (isTransformadores || isVenturi || isPendulo) {
             modalTitle = 'Laboratorio Completo Bloqueado';
             buyEntityName = 'Laboratorio';
+            modalDesc = `Has llegado al límite de la demostración gratuita. Para registrar datos experimentales en el cuaderno virtual, realizar regresiones lineales, tratamiento riguroso de errores y acceder a las prácticas avanzadas, ingresa tu clave de estudiante o adquiere tu licencia.`;
         } else if (isSquash) {
             modalTitle = 'Controles & Suite de Squash Bloqueados';
             modalDesc = `Has llegado al límite de la vista previa de rutinas pre-generadas. Para manipular los controles en tiempo real, personalizar velocidades y trayectorias, crear rutinas propias en el editor, exportar datos y acceder a la suite completa de biomecánica y análisis muscular, ingresa tu clave de estudiante o adquiere la licencia completa.`;
@@ -449,38 +589,41 @@
         overlay.innerHTML = `
             <div class="pg-modal">
                 <button class="pg-close" aria-label="Cerrar">✕</button>
-                <span class="pg-badge">🔒 Vista Previa Gratuita Finalizada</span>
+                <span class="pg-badge">🔒 Vista Previa Gratuita</span>
                 <h3 class="pg-title">${modalTitle}</h3>
                 <p class="pg-desc">
                     ${modalDesc}
                 </p>
 
-                <!-- Opción 1: Clave Estudiante Aula -->
+                <!-- Opción 1: Clave Estudiante Aula o Licencia -->
                 <div class="pg-card-student">
-                    <h4>🎓 ¿Eres estudiante de la Universidad?</h4>
-                    <p>Ingresa la clave de clase que dio el profesor en el aula para desbloquear el acceso completo sin costo durante este semestre.</p>
+                    <h4>🎓 ¿Eres estudiante o ya compraste tu licencia?</h4>
+                    <p>Ingresa la clave de clase proporcionada por el docente en el aula o el código de tu licencia personal para desbloquear el acceso completo permanente.</p>
                     <div class="pg-input-group">
-                        <input type="text" class="pg-input" id="pg-student-code-input" placeholder="Ingresa la clave de clase..." />
+                        <input type="text" class="pg-input" id="pg-student-code-input" placeholder="Ingresa clave o código de licencia..." />
                         <button class="pg-btn-unlock" id="pg-btn-do-unlock">Desbloquear 🔓</button>
                     </div>
                 </div>
 
-                <!-- Opción 2: Adquisición / Compra -->
+                <!-- Opción 2: Adquisición / Compra con Cupones -->
                 <div class="pg-card-buy">
                     <h4>🛒 Adquirir Licencia del ${buyEntityName}</h4>
-                    <p>Acceso permanente de por vida · Sin mensualidades · Certificación y soporte de autor (Mg. Manuel Alejandro Obando).</p>
+                    <div class="pg-coupon-pill">
+                        🏷️ Cupón de Descuento: <strong>30% y 40% OFF</strong> disponible en tienda
+                    </div>
+                    <p>Acceso permanente de por vida · Sin mensualidades · Certificación y soporte directo de autor (Mg. Manuel Alejandro Obando — Universidad del Cauca).</p>
                     <div class="pg-buy-actions">
-                        <a href="/?buy=${currentCourse}#cursos" target="_blank" class="pg-btn-buy">
-                            ⚡ Pagar con PSE / Tarjeta / Nequi en PhysicsAILab
+                        <a href="/?buy=${curCourse}#tienda" target="_blank" class="pg-btn-buy">
+                            ⚡ Comprar con Descuento en PhysicsAILab (Wompi / PSE / Nequi)
                         </a>
-                        <a href="https://wa.me/?text=${encodeURIComponent('Hola Mg. Manuel Obando, me interesa adquirir la licencia completa para: ' + courseTitle + ' en PhysicsAILab.com')}" target="_blank" class="pg-btn-whatsapp">
-                            💬 Consultar al Docente por WhatsApp / Nequi
+                        <a href="https://wa.me/573137115473?text=${encodeURIComponent('Hola profesor Manuel Alejandro Obando, deseo adquirir la licencia completa para el ' + buyEntityName + ' «' + courseTitle + '» con cupón de descuento en PhysicsAILab.com')}" target="_blank" class="pg-btn-whatsapp">
+                            💬 Consultar al Docente por WhatsApp (Nequi / Bancolombia)
                         </a>
                     </div>
                 </div>
 
                 <div style="text-align:center; margin-top:0.5rem;">
-                    <button class="pg-close-btn" style="background:none; border:none; color:#64748B; font-size:0.82rem; cursor:pointer; text-decoration:underline;">
+                    <button class="pg-close-btn" style="background:none; border:none; color:#94A3B8; font-size:0.84rem; cursor:pointer; text-decoration:underline;">
                         ← Continuar explorando la vista previa gratuita
                     </button>
                 </div>
@@ -513,20 +656,17 @@
             const val = (codeInput.value || '').trim().toUpperCase();
             const currentCourse = getCurrentCourseId();
 
+            if (!val) {
+                showToast('⚠️ Por favor ingresa una clave o código.', 'error');
+                return;
+            }
+
             // 1. Clave Maestra de Administrador (Profesor Obando)
             if (val === ADMIN_MASTER_KEY || val === 'OBANDO-MASTER-ADMIN') {
                 localStorage.setItem('physicsailab_admin', 'true');
                 closeModal();
                 showToast('👑 ¡Sesión de Administrador Activada! Acceso total liberado a toda la plataforma.', 'success');
                 updateGuardState();
-                if (attemptedTarget) {
-                    if (isTransformadores) {
-                        const tabLink = document.querySelector(`.nav a[href="#${attemptedTarget}"]`);
-                        if (tabLink) tabLink.click();
-                    } else {
-                        location.hash = attemptedTarget;
-                    }
-                }
                 return;
             }
 
@@ -537,28 +677,40 @@
                 if (customMap[currentCourse]) {
                     validKeys = validKeys.concat(customMap[currentCourse]);
                 }
+                if (window.PLATFORM_DATA && window.PLATFORM_DATA.clavesCursos && window.PLATFORM_DATA.clavesCursos[currentCourse]) {
+                    validKeys = validKeys.concat(window.PLATFORM_DATA.clavesCursos[currentCourse]);
+                }
             } catch(e) {}
+
+            validKeys = validKeys.map(k => (k || '').toUpperCase());
 
             if (validKeys.includes(val)) {
                 setCourseUnlocked(currentCourse, true);
                 closeModal();
                 showToast(`🎉 ¡Clave válida! Curso desbloqueado exitosamente para este periodo.`, 'success');
                 updateGuardState();
-                if (attemptedTarget) {
-                    if (isTransformadores) {
-                        const tabLink = document.querySelector(`.nav a[href="#${attemptedTarget}"]`);
-                        if (tabLink) tabLink.click();
-                    } else {
-                        location.hash = attemptedTarget;
-                    }
-                }
                 return;
             }
 
-            // 3. Comprobar si la clave pertenece a otra materia
+            // 3. Revisar si es un código de licencia personal emitido en compras
+            try {
+                const licenses = JSON.parse(localStorage.getItem('physicsailab_student_licenses') || '[]');
+                if (Array.isArray(licenses)) {
+                    const matchLic = licenses.find(l => (l.codigo || '').toUpperCase() === val);
+                    if (matchLic) {
+                        setCourseUnlocked(currentCourse, true);
+                        closeModal();
+                        showToast(`🎉 ¡Licencia personal «${val}» activada con éxito!`, 'success');
+                        updateGuardState();
+                        return;
+                    }
+                }
+            } catch(e) {}
+
+            // 4. Comprobar si la clave pertenece a otra materia
             let otherCourse = null;
             for (const [cId, keys] of Object.entries(DEFAULT_COURSE_KEYS)) {
-                if (keys.includes(val)) {
+                if (keys.some(k => k.toUpperCase() === val)) {
                     otherCourse = cId;
                     break;
                 }
@@ -582,6 +734,7 @@
     // Floating bar
     let topBar = null;
     function renderTopBar() {
+        if (isRecorrido) return; // Tour 3D liberado
         if (!topBar) {
             topBar = document.createElement('div');
             document.body.appendChild(topBar);
@@ -592,9 +745,9 @@
         if (unlocked) {
             topBar.className = 'pg-top-bar unlocked';
             topBar.innerHTML = isAdmin
-                ? `<span>👑 <strong>Modo Administrador Activo</strong> (Profesor Obando) · Acceso Maestro Total</span>
+                ? `<span>👑 <strong>Modo Administrador</strong> (Profesor Obando)</span>
                    <button type="button" id="pg-lock-again-btn" title="Cerrar sesión de administrador">Bloquear 🔒</button>`
-                : `<span>🎓 <strong>Modo Estudiante Activo</strong> · Acceso a esta Materia</span>
+                : `<span>🎓 <strong>Modo Estudiante Activo</strong></span>
                    <button type="button" id="pg-lock-again-btn" title="Cerrar sesión de estudiante en esta materia">Bloquear 🔒</button>`;
             const lockBtn = topBar.querySelector('#pg-lock-again-btn');
             if (lockBtn) {
@@ -621,29 +774,57 @@
         }
     }
 
-    // Intercepción en Cuadernos Interactivos (Mecánica, Electromagnetismo, Cuántica, RETIE)
+    // ----------------------------------------------------
+    // Intercepción en Cuadernos Interactivos (Notebooks)
+    // ----------------------------------------------------
+    let cachedFirstThematicId = null;
+
+    function getFirstThematicId() {
+        if (cachedFirstThematicId) return cachedFirstThematicId;
+
+        // 1. Buscar en templates
+        const tmpls = Array.from(document.querySelectorAll('template.chapter-src'));
+        for (const t of tmpls) {
+            const dId = t.dataset.id;
+            const dHome = t.dataset.home === 'true' || t.dataset.home === '';
+            if (dId && dId !== 'inicio' && !dHome) {
+                cachedFirstThematicId = dId;
+                return cachedFirstThematicId;
+            }
+        }
+
+        // 2. Buscar en #toc > a
+        const tocLinks = Array.from(document.querySelectorAll('#toc > a, .toc > a'));
+        for (const a of tocLinks) {
+            const href = a.getAttribute('href') || '';
+            const id = a.dataset.id || href.replace(/^#/, '').split('.')[0];
+            if (id && id !== 'inicio') {
+                cachedFirstThematicId = id;
+                return cachedFirstThematicId;
+            }
+        }
+
+        return cachedFirstThematicId;
+    }
+
     function applyNotebookGuard() {
         const unlocked = isUnlocked();
-        const tocLinks = document.querySelectorAll('#toc a, .toc a, .home-card');
+        const firstThematic = getFirstThematicId();
 
-        // Determinar qué capítulos son libres en la demo:
-        // Capítulo 0 (inicio / portada) y el primer capítulo temático son libres.
-        // Capítulos con num >= 2 o después del primero quedan bloqueados.
-        let firstThematicId = null;
-
+        // 1. Sidebar TOC links (#toc a)
+        const tocLinks = document.querySelectorAll('#toc a, .toc a');
         tocLinks.forEach((a) => {
             const href = a.getAttribute('href') || '';
-            const id = (a.dataset && a.dataset.id) || href.replace(/^#/, '').split('.')[0];
-            
-            // Ignorar inicio o vacío
-            if (!id || id === 'inicio') return;
-
-            if (!firstThematicId) {
-                firstThematicId = id; // Primer capítulo temático es libre
+            const id = a.dataset.id || href.replace(/^#/, '').split('.')[0];
+            if (!id || id === 'inicio' || (firstThematic && id === firstThematic)) {
+                // Portada y primer capítulo temático son 100% libres en la preview
+                a.classList.remove('pg-locked');
+                const p = a.querySelector('.pg-lock-pill');
+                if (p) p.remove();
                 return;
             }
 
-            // Capítulos subsiguientes son bloqueados en preview
+            // Capítulos 2..N están bloqueados con candado
             const existingPill = a.querySelector('.pg-lock-pill');
             if (!unlocked) {
                 a.classList.add('pg-locked');
@@ -659,12 +840,66 @@
             }
         });
 
-        // Interceptar clics en enlaces bloqueados
+        // 2. Welcome cards (.home-card)
+        const homeCards = document.querySelectorAll('.home-card');
+        homeCards.forEach((card) => {
+            const href = card.getAttribute('href') || '';
+            const id = card.dataset.id || href.replace(/^#/, '').split('.')[0];
+            if (!id || id === 'inicio' || (firstThematic && id === firstThematic)) {
+                card.classList.remove('pg-locked');
+                const b = card.querySelector('.home-card-lock-badge');
+                if (b) b.remove();
+                return;
+            }
+
+            const existingBadge = card.querySelector('.home-card-lock-badge');
+            if (!unlocked) {
+                card.classList.add('pg-locked');
+                if (!existingBadge) {
+                    const badge = document.createElement('span');
+                    badge.className = 'home-card-lock-badge';
+                    badge.textContent = '🔒 Premium';
+                    card.appendChild(badge);
+                }
+            } else {
+                card.classList.remove('pg-locked');
+                if (existingBadge) existingBadge.remove();
+            }
+        });
+
+        // 3. Bottom next chapter button (.ch-nav a.next)
+        const nextButtons = document.querySelectorAll('.ch-nav a.next, nav.ch-nav a.next');
+        nextButtons.forEach((btn) => {
+            const href = btn.getAttribute('href') || '';
+            const id = href.replace(/^#/, '').split('.')[0];
+            if (!id || id === 'inicio' || (firstThematic && id === firstThematic)) {
+                btn.classList.remove('pg-locked');
+                const p = btn.querySelector('.pg-lock-pill');
+                if (p) p.remove();
+                return;
+            }
+
+            const existingPill = btn.querySelector('.pg-lock-pill');
+            if (!unlocked) {
+                btn.classList.add('pg-locked');
+                if (!existingPill) {
+                    const pill = document.createElement('span');
+                    pill.className = 'pg-lock-pill';
+                    pill.textContent = '🔒';
+                    btn.appendChild(pill);
+                }
+            } else {
+                btn.classList.remove('pg-locked');
+                if (existingPill) existingPill.remove();
+            }
+        });
+
+        // Intercepción global de clics en enlaces
         document.removeEventListener('click', handleNotebookClick, true);
         document.addEventListener('click', handleNotebookClick, true);
 
-        // Comprobar hash actual al cargar o cambiar
-        checkCurrentHash(firstThematicId);
+        // Validar hash actual
+        checkCurrentNotebookHash(firstThematic);
     }
 
     function handleNotebookClick(e) {
@@ -675,35 +910,153 @@
         const href = targetA.getAttribute('href') || '';
         if (!href.startsWith('#')) return;
 
-        const id = href.replace(/^#/, '').split('.')[0];
+        const id = (targetA.dataset && targetA.dataset.id) || href.replace(/^#/, '').split('.')[0];
         if (!id || id === 'inicio') return;
 
-        // Comprobar si es un enlace bloqueado
-        if (targetA.classList.contains('pg-locked') || targetA.querySelector('.pg-lock-pill')) {
-            e.preventDefault();
-            e.stopPropagation();
-            const title = targetA.textContent.replace('🔒', '').trim();
-            openPaywall(title);
-        }
+        const firstThematic = getFirstThematicId();
+        if (firstThematic && id === firstThematic) return;
+
+        // Cualquier otro capítulo está bloqueado en preview
+        e.preventDefault();
+        e.stopPropagation();
+        const title = targetA.textContent.replace('🔒', '').replace('Premium', '').trim() || id;
+        openPaywall(title);
     }
 
-    function checkCurrentHash(firstThematicId) {
+    function checkCurrentNotebookHash(firstThematic) {
         if (isUnlocked()) return;
         const h = decodeURIComponent(location.hash.replace(/^#/, '')).split('.')[0];
-        if (!h || h === 'inicio' || h === firstThematicId) return;
+        if (!h || h === 'inicio') return;
+        if (firstThematic && h === firstThematic) return;
 
-        // Si el usuario intentó acceder directamente por hash a un capítulo bloqueado
-        const lockedLink = document.querySelector(`#toc a[href^="#${h}"].pg-locked, .toc a[href^="#${h}"].pg-locked`);
-        if (lockedLink) {
-            // Revertir a primer capítulo temático o portada
+        // Intentó entrar por hash directamente a un capítulo bloqueado
+        setTimeout(() => {
+            location.hash = firstThematic ? '#' + firstThematic : '#inicio';
+            openPaywall(h);
+        }, 150);
+    }
+
+    // ----------------------------------------------------
+    // Intercepción en Laboratorio de Péndulo Simple
+    // ----------------------------------------------------
+    function applyPenduloGuard() {
+        const unlocked = isUnlocked();
+        // Tabs libres: 'banco' (simulador virtual de péndulo)
+        // Tabs bloqueadas: 'real' (toma de datos reales), 'cuaderno' (cálculos y errores), 'matematico' (análisis no lineal), 'guia' (guía de práctica)
+        const lockedTabs = ['real', 'cuaderno', 'matematico', 'guia'];
+
+        lockedTabs.forEach((tabId) => {
+            const navLink = document.querySelector(`.nav a[href="#${tabId}"], .nav a[data-tab="${tabId}"]`);
+            if (navLink) {
+                const existingPill = navLink.querySelector('.pg-lock-pill');
+                if (!unlocked) {
+                    navLink.classList.add('pg-locked-tab');
+                    if (!existingPill) {
+                        const pill = document.createElement('span');
+                        pill.className = 'pg-lock-pill';
+                        pill.textContent = '🔒';
+                        navLink.appendChild(pill);
+                    }
+                } else {
+                    navLink.classList.remove('pg-locked-tab');
+                    if (existingPill) existingPill.remove();
+                }
+            }
+        });
+
+        document.removeEventListener('click', handlePenduloClick, true);
+        document.addEventListener('click', handlePenduloClick, true);
+
+        const currentHash = location.hash.replace(/^#/, '');
+        if (!unlocked && lockedTabs.includes(currentHash)) {
             setTimeout(() => {
-                location.hash = firstThematicId ? '#' + firstThematicId : '#inicio';
-                openPaywall(h);
-            }, 300);
+                const bLink = document.querySelector('.nav a[href="#banco"], .nav a[data-tab="banco"]');
+                if (bLink) bLink.click();
+                else location.hash = '#banco';
+                openPaywall(currentHash);
+            }, 200);
         }
     }
 
+    function handlePenduloClick(e) {
+        if (isUnlocked()) return;
+        const targetA = e.target.closest('.nav a');
+        if (!targetA) return;
+
+        const href = targetA.getAttribute('href') || '';
+        const tabId = (targetA.dataset && targetA.dataset.tab) || href.replace(/^#/, '');
+        const lockedTabs = ['real', 'cuaderno', 'matematico', 'guia'];
+
+        if (lockedTabs.includes(tabId)) {
+            e.preventDefault();
+            e.stopPropagation();
+            const tabName = targetA.textContent.replace('🔒', '').trim();
+            openPaywall(tabName);
+        }
+    }
+
+    // ----------------------------------------------------
+    // Intercepción en Laboratorio de Venturi
+    // ----------------------------------------------------
+    function applyVenturiGuard() {
+        const unlocked = isUnlocked();
+        // Tabs libres: 'banco' (simulador tubo Venturi)
+        // Tabs bloqueadas: 'cuaderno' (registro de datos y cálculo de caudal), 'guia' (guía de laboratorio)
+        const lockedTabs = ['cuaderno', 'guia'];
+
+        lockedTabs.forEach((tabId) => {
+            const navLink = document.querySelector(`.nav a[href="#${tabId}"], .nav a[data-tab="${tabId}"]`);
+            if (navLink) {
+                const existingPill = navLink.querySelector('.pg-lock-pill');
+                if (!unlocked) {
+                    navLink.classList.add('pg-locked-tab');
+                    if (!existingPill) {
+                        const pill = document.createElement('span');
+                        pill.className = 'pg-lock-pill';
+                        pill.textContent = '🔒';
+                        navLink.appendChild(pill);
+                    }
+                } else {
+                    navLink.classList.remove('pg-locked-tab');
+                    if (existingPill) existingPill.remove();
+                }
+            }
+        });
+
+        document.removeEventListener('click', handleVenturiClick, true);
+        document.addEventListener('click', handleVenturiClick, true);
+
+        const currentHash = location.hash.replace(/^#/, '');
+        if (!unlocked && lockedTabs.includes(currentHash)) {
+            setTimeout(() => {
+                const bLink = document.querySelector('.nav a[href="#banco"], .nav a[data-tab="banco"]');
+                if (bLink) bLink.click();
+                else location.hash = '#banco';
+                openPaywall(currentHash);
+            }, 200);
+        }
+    }
+
+    function handleVenturiClick(e) {
+        if (isUnlocked()) return;
+        const targetA = e.target.closest('.nav a');
+        if (!targetA) return;
+
+        const href = targetA.getAttribute('href') || '';
+        const tabId = (targetA.dataset && targetA.dataset.tab) || href.replace(/^#/, '');
+        const lockedTabs = ['cuaderno', 'guia'];
+
+        if (lockedTabs.includes(tabId)) {
+            e.preventDefault();
+            e.stopPropagation();
+            const tabName = targetA.textContent.replace('🔒', '').trim();
+            openPaywall(tabName);
+        }
+    }
+
+    // ----------------------------------------------------
     // Intercepción en Laboratorio de Transformadores
+    // ----------------------------------------------------
     function applyTransformadoresGuard() {
         const unlocked = isUnlocked();
         // Tabs libres: 'banco' (mesa de pruebas) y 'teoria' (fundamento)
@@ -732,13 +1085,12 @@
         document.removeEventListener('click', handleTransformadoresClick, true);
         document.addEventListener('click', handleTransformadoresClick, true);
 
-        // Comprobar si el hash actual es una pestaña bloqueada
         const currentHash = location.hash.replace(/^#/, '');
         if (!unlocked && lockedTabs.includes(currentHash)) {
             setTimeout(() => {
                 location.hash = '#banco';
                 openPaywall(currentHash);
-            }, 300);
+            }, 200);
         }
     }
 
@@ -759,12 +1111,13 @@
         }
     }
 
+    // ----------------------------------------------------
     // Intercepción en Simulador de Squash & Biomecánica
+    // ----------------------------------------------------
     function applySquashGuard() {
         const unlocked = isUnlocked();
         const lockedNavs = ['editor', 'anatomia', 'fisiologia', 'biomecanica', 'lesiones', 'fundamentos'];
 
-        // 1. Candados en botones de navegación
         lockedNavs.forEach((tabId) => {
             const btn = document.querySelector(`.nav button[data-go="${tabId}"]`);
             if (btn) {
@@ -784,7 +1137,6 @@
             }
         });
 
-        // 2. Banner de demostración en panel de simulador
         let demoBanner = document.getElementById('pg-squash-demo-banner');
         const simPanel = document.querySelector('#p-simulador .panel') || document.querySelector('#p-simulador');
         if (!unlocked) {
@@ -806,7 +1158,6 @@
             if (demoBanner) demoBanner.remove();
         }
 
-        // 3. Estilo y estado para controles de edición y exportación
         const restrictedSelectors = [
             '#btnEditThis', '#btnExport', '[data-exp]',
             '#btnPrev', '#btnNext', '#rtSel',
@@ -824,25 +1175,22 @@
             });
         });
 
-        // Intercepción de clics
         document.removeEventListener('click', handleSquashClick, true);
         document.addEventListener('click', handleSquashClick, true);
 
-        // Si intentó ir directamente a una sección bloqueada
         const currentHash = location.hash.replace(/^#/, '');
         if (!unlocked && lockedNavs.includes(currentHash)) {
             setTimeout(() => {
                 const simBtn = document.querySelector('.nav button[data-go="simulador"]');
                 if (simBtn) simBtn.click();
                 openPaywall(currentHash);
-            }, 300);
+            }, 200);
         }
     }
 
     function handleSquashClick(e) {
         if (isUnlocked()) return;
 
-        // Clic en nav button bloqueado
         const navBtn = e.target.closest('.nav button[data-go]');
         if (navBtn) {
             const goTarget = navBtn.getAttribute('data-go');
@@ -856,7 +1204,6 @@
             }
         }
 
-        // Clic en controles bloqueados del simulador
         const lockedCtrl = e.target.closest('#btnEditThis, #btnExport, [data-exp], #rtSel, .pg-locked-control');
         if (lockedCtrl) {
             e.preventDefault();
@@ -866,14 +1213,124 @@
         }
     }
 
-    // Actualización de estado
+    // ----------------------------------------------------
+    // Intercepción en Curso de Inglés (Quantum Leap English)
+    // ----------------------------------------------------
+    function applyInglesGuard() {
+        const unlocked = isUnlocked();
+        // Libre: primera unidad (#u-a1-1 o primer paso) y la ruta
+        // Bloqueado: repaso, frases, recursos, metodo y unidades 2 en adelante
+        const lockedNavs = ['repaso', 'frases', 'recursos', 'metodo'];
+
+        lockedNavs.forEach((tabId) => {
+            const navLink = document.querySelector(`.nav a[href="#${tabId}"], .nav a[data-nav="${tabId}"]`);
+            if (navLink) {
+                const existingPill = navLink.querySelector('.pg-lock-pill');
+                if (!unlocked) {
+                    navLink.classList.add('pg-locked-tab');
+                    if (!existingPill) {
+                        const pill = document.createElement('span');
+                        pill.className = 'pg-lock-pill';
+                        pill.textContent = '🔒';
+                        navLink.appendChild(pill);
+                    }
+                } else {
+                    navLink.classList.remove('pg-locked-tab');
+                    if (existingPill) existingPill.remove();
+                }
+            }
+        });
+
+        // Unidades bloqueadas en la ruta
+        const unitCards = document.querySelectorAll('.unit-card, .unit, [data-unit]');
+        unitCards.forEach((card, idx) => {
+            if (idx === 0) return; // Unidad 1 es libre
+            const existingPill = card.querySelector('.pg-lock-pill');
+            if (!unlocked) {
+                card.classList.add('pg-locked-tab');
+                if (!existingPill) {
+                    const pill = document.createElement('span');
+                    pill.className = 'pg-lock-pill';
+                    pill.textContent = '🔒';
+                    card.appendChild(pill);
+                }
+            } else {
+                card.classList.remove('pg-locked-tab');
+                if (existingPill) existingPill.remove();
+            }
+        });
+
+        document.removeEventListener('click', handleInglesClick, true);
+        document.addEventListener('click', handleInglesClick, true);
+    }
+
+    function handleInglesClick(e) {
+        if (isUnlocked()) return;
+        const targetA = e.target.closest('a');
+        if (!targetA) return;
+
+        const href = targetA.getAttribute('href') || '';
+        const navId = (targetA.dataset && targetA.dataset.nav) || href.replace(/^#/, '');
+        const lockedNavs = ['repaso', 'frases', 'recursos', 'metodo'];
+
+        if (lockedNavs.includes(navId)) {
+            e.preventDefault();
+            e.stopPropagation();
+            openPaywall(targetA.textContent.replace('🔒', '').trim());
+            return;
+        }
+
+        // Si intentó ir a unidad >= 2 (por ejemplo #u-a1-2, etc.)
+        const unitMatch = href.match(/^#u-[a-z0-9]+-(\d+)/i);
+        if (unitMatch && parseInt(unitMatch[1], 10) > 1) {
+            e.preventDefault();
+            e.stopPropagation();
+            openPaywall('Unidad ' + unitMatch[1]);
+        }
+    }
+
+    // ----------------------------------------------------
+    // Intercepción en Torneos Squash Popayán
+    // ----------------------------------------------------
+    function applyTorneosGuard() {
+        const unlocked = isUnlocked();
+        // Libre: vista de cuadros / partidos demo
+        // Bloqueado: creación de torneos, exportación de reportes, sincronización en vivo
+        const restrictedSelectors = ['#btnNewTournament', '#btnSyncFirebase', '#btnExportPdf', '[data-action="admin"]'];
+        restrictedSelectors.forEach(sel => {
+            document.querySelectorAll(sel).forEach(el => {
+                if (!unlocked) {
+                    el.classList.add('pg-locked-control');
+                    el.setAttribute('title', '🔒 Bloqueado en Vista Previa');
+                } else {
+                    el.classList.remove('pg-locked-control');
+                    el.removeAttribute('title');
+                }
+            });
+        });
+    }
+
+    // ----------------------------------------------------
+    // Actualización de estado general
+    // ----------------------------------------------------
     function updateGuardState() {
+        if (isRecorrido) return; // Tour 3D liberado
+
         renderTopBar();
-        if (isTransformadores) {
+        if (isPendulo) {
+            applyPenduloGuard();
+        } else if (isVenturi) {
+            applyVenturiGuard();
+        } else if (isTransformadores) {
             applyTransformadoresGuard();
         } else if (isSquash) {
             applySquashGuard();
+        } else if (isIngles) {
+            applyInglesGuard();
+        } else if (isTorneos) {
+            applyTorneosGuard();
         } else {
+            // Notebook interactivo por defecto (Óptica, Mecánica, Materiales, Ondas, Termo, Fluidos, Cuántica, RETIE, etc.)
             applyNotebookGuard();
         }
     }
@@ -886,7 +1343,7 @@
         setTimeout(updateGuardState, 1200);
 
         // Observar cambios dinámicos en la tabla de contenidos si se construye asíncronamente
-        const tocEl = document.querySelector('#toc, .toc');
+        const tocEl = document.querySelector('#toc, .toc, .nav, nav');
         if (tocEl && window.MutationObserver) {
             const obs = new MutationObserver(() => {
                 updateGuardState();
@@ -895,14 +1352,14 @@
         }
 
         window.addEventListener('hashchange', () => {
-            setTimeout(updateGuardState, 100);
+            setTimeout(updateGuardState, 80);
         });
     }
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {
-        setTimeout(init, 50);
+        setTimeout(init, 30);
     }
 
     // Exportar a window para control manual si se requiere
@@ -910,6 +1367,7 @@
         isUnlocked,
         setUnlocked,
         openPaywall,
-        update: updateGuardState
+        update: updateGuardState,
+        getCurrentCourseId
     };
 })();
