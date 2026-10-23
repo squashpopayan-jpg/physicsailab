@@ -671,7 +671,19 @@ document.addEventListener('DOMContentLoaded', () => {
             if (spinnerDetail) spinnerDetail.textContent = 'Descarga ultraliviana para lectura inmediata';
         }
 
+        window.currentCheckoutCoupon = null;
         modal.classList.add('active');
+
+        const couponToApply = initialCoupon || (window.currentStoreCoupon ? window.currentStoreCoupon.codigo : '');
+        if (couponToApply) {
+            setTimeout(() => {
+                const inp = document.getElementById('checkout-coupon-input');
+                if (inp) {
+                    inp.value = couponToApply;
+                    aplicarCuponEnCheckout(course.id);
+                }
+            }, 60);
+        }
         document.body.style.overflow = 'hidden';
 
         if (currentViewerMode === 'canvas' && window.pdfjsLib) {
@@ -3362,7 +3374,332 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Modal de Checkout / Pasarela de Pagos (Wompi PSE / Nequi / Hotmart)
     // Modal de Checkout / Pasarela de Pagos (Wompi PSE / Nequi / Hotmart)
-    window.openPaymentModal = function(courseId) {
+    
+    // ==========================================================================
+    // MOTOR OFICIAL DE CUPONES DE DESCUENTO (30%, 40%, etc.) & TIENDA DINÁMICA
+    // ==========================================================================
+
+    window.getAllCoupons = function() {
+        const baseCoupons = (data.cuponesDescuento || []).slice();
+        let customCoupons = [];
+        try {
+            customCoupons = JSON.parse(localStorage.getItem('physicsailab_custom_coupons') || '[]');
+        } catch (e) {
+            customCoupons = [];
+        }
+        return [...baseCoupons, ...customCoupons];
+    };
+
+    window.getValidCoupon = function(code, courseId) {
+        if (!code) return { valid: false, message: 'Código de cupón requerido' };
+        const cleanCode = code.trim().toUpperCase();
+        const coupons = getAllCoupons();
+        const found = coupons.find(c => c.codigo.toUpperCase() === cleanCode && c.activo !== false);
+
+        if (!found) {
+            return { valid: false, message: `El cupón «${cleanCode}» no existe o no está activo.` };
+        }
+
+        // Verificar si tiene restricción de curso
+        if (found.cursosAplicables && found.cursosAplicables !== 'todos') {
+            const applicableList = Array.isArray(found.cursosAplicables) ? found.cursosAplicables : [found.cursosAplicables];
+            if (courseId && !applicableList.includes(courseId)) {
+                return { valid: false, message: `Este cupón no aplica para esta materia específica.` };
+            }
+        }
+
+        return { valid: true, coupon: found };
+    };
+
+    // Estado del cupón activo en la tienda y en el checkout
+    window.currentStoreCoupon = null;
+    window.currentCheckoutCoupon = null;
+
+    window.applyStoreCoupon = function(code) {
+        if (!code) return;
+        const res = getValidCoupon(code);
+        const feedback = document.getElementById('sim-feedback-message');
+        const badge = document.getElementById('sim-active-badge');
+        const input = document.getElementById('store-coupon-input');
+        const btnClear = document.getElementById('btn-clear-coupon');
+
+        if (input) input.value = code.toUpperCase();
+
+        if (res.valid) {
+            window.currentStoreCoupon = res.coupon;
+            if (badge) {
+                badge.className = 'sim-status-badge active';
+                badge.innerHTML = `<span>🟢 Cupón ${res.coupon.codigo} Activo (-${res.coupon.descuentoPorcentaje}%)</span>`;
+            }
+            if (btnClear) btnClear.style.display = 'inline-block';
+            if (feedback) {
+                feedback.className = 'sim-feedback-message success';
+                feedback.style.display = 'block';
+                feedback.innerHTML = `
+                    <div style="font-weight:700; margin-bottom:0.25rem;">
+                        🎉 ¡Excelente! Cupón <strong>${res.coupon.codigo}</strong> activado con éxito.
+                    </div>
+                    <div>${res.coupon.descripcion || 'Se ha aplicado el descuento a todo el catálogo.'} Disfrutas de un <strong>${res.coupon.descuentoPorcentaje}% de descuento</strong> inmediato.</div>
+                `;
+            }
+        } else {
+            window.currentStoreCoupon = null;
+            if (badge) {
+                badge.className = 'sim-status-badge';
+                badge.innerHTML = `<span>❌ Cupón no válido</span>`;
+            }
+            if (btnClear) btnClear.style.display = 'none';
+            if (feedback) {
+                feedback.className = 'sim-feedback-message error';
+                feedback.style.display = 'block';
+                feedback.innerHTML = `⚠️ ${res.message}`;
+            }
+        }
+
+        renderStoreCourses();
+    };
+
+    window.submitStoreCoupon = function() {
+        const input = document.getElementById('store-coupon-input');
+        if (!input) return;
+        const val = input.value.trim();
+        if (!val) {
+            const feedback = document.getElementById('sim-feedback-message');
+            if (feedback) {
+                feedback.className = 'sim-feedback-message error';
+                feedback.style.display = 'block';
+                feedback.innerHTML = '⚠️ Por favor escribe un código de cupón (ej: FISICA30, OBANDO40).';
+            }
+            return;
+        }
+        applyStoreCoupon(val);
+    };
+
+    window.clearStoreCoupon = function() {
+        window.currentStoreCoupon = null;
+        const input = document.getElementById('store-coupon-input');
+        const badge = document.getElementById('sim-active-badge');
+        const feedback = document.getElementById('sim-feedback-message');
+        const btnClear = document.getElementById('btn-clear-coupon');
+
+        if (input) input.value = '';
+        if (badge) {
+            badge.className = 'sim-status-badge';
+            badge.innerHTML = `<span>● Sin cupón aplicado</span>`;
+        }
+        if (feedback) feedback.style.display = 'none';
+        if (btnClear) btnClear.style.display = 'none';
+
+        renderStoreCourses();
+    };
+
+    window.renderStoreCourses = function() {
+        const container = document.getElementById('store-courses-grid');
+        if (!container) return;
+
+        const courses = data.cursos || [];
+        const countLabel = document.getElementById('store-courses-count-label');
+        if (countLabel) {
+            countLabel.textContent = `Mostrando ${courses.length} cursos oficiales`;
+        }
+
+        const coupon = window.currentStoreCoupon;
+
+        container.innerHTML = courses.map(c => {
+            const originalCOP = c.precioCOP || 115000;
+            const originalUSD = c.precioUSD || 29;
+            const courseUnlocked = isCourseUnlocked(c.id);
+
+            let priceHtml = '';
+            let buyButtonText = '';
+            let buyAction = '';
+
+            if (coupon) {
+                const discountPct = coupon.descuentoPorcentaje;
+                const discountCOP = Math.round(originalCOP * (discountPct / 100));
+                const finalCOP = originalCOP - discountCOP;
+                const discountUSD = Math.round(originalUSD * (discountPct / 100));
+                const finalUSD = Math.max(1, originalUSD - discountUSD);
+
+                priceHtml = `
+                    <div class="store-price-box">
+                        <div>
+                            <div style="font-size:0.72rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Inversión con Cupón:</div>
+                            <span class="store-price-original-striked">$${originalCOP.toLocaleString('es-ES')} COP</span>
+                            <span class="store-price-discounted">$${finalCOP.toLocaleString('es-ES')} COP</span>
+                            <div style="font-size:0.75rem; color:#38bdf8; margin-top:0.2rem;">($${finalUSD} USD)</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <span class="store-savings-tag">-${discountPct}% ${coupon.codigo}</span>
+                            <div style="font-size:0.72rem; color:#34D399; margin-top:0.35rem; font-weight:700;">
+                                Ahorras $${discountCOP.toLocaleString('es-ES')} COP
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                buyButtonText = `Comprar con ${coupon.codigo} (-${discountPct}%) 🛒`;
+                buyAction = `openPaymentModal('${c.id}', '${coupon.codigo}')`;
+            } else {
+                priceHtml = `
+                    <div class="store-price-box">
+                        <div>
+                            <div style="font-size:0.72rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Inversión Oficial:</div>
+                            <span class="store-price-regular">$${originalCOP.toLocaleString('es-ES')} COP</span>
+                            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">($${originalUSD} USD)</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <span style="font-size:0.72rem; color:#38bdf8; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); padding:0.2rem 0.5rem; border-radius:6px; font-weight:700;">
+                                Cupones hasta 40% OFF
+                            </span>
+                        </div>
+                    </div>
+                `;
+
+                buyButtonText = `Adquirir Licencia Permanente 🛒`;
+                buyAction = `openPaymentModal('${c.id}')`;
+            }
+
+            return `
+                <div class="card course-card ${c.destacado ? 'destacado' : ''}" style="display:flex; flex-direction:column; justify-content:space-between;">
+                    <div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.4rem;">
+                            <span class="badge" style="font-size:0.72rem;">${c.categoria || 'Física'}</span>
+                            <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">${c.modulos}</span>
+                        </div>
+                        <h3 style="font-size:1.18rem; color:#fff; margin-bottom:0.45rem; line-height:1.3;">${c.titulo}</h3>
+                        <p style="font-size:0.84rem; color:var(--text-muted); margin-bottom:0.85rem; line-height:1.45;">
+                            ${(c.descripcion || '').substring(0, 140)}...
+                        </p>
+                    </div>
+
+                    <div>
+                        ${priceHtml}
+
+                        <div style="display:flex; flex-direction:column; gap:0.45rem; margin-top:0.75rem;">
+                            ${courseUnlocked ? `
+                                <div style="text-align:center; padding:0.5rem; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); border-radius:8px; color:#34D399; font-weight:700; font-size:0.82rem;">
+                                    ✓ ¡Ya tienes este curso desbloqueado!
+                                </div>
+                                ${c.demoPath ? `<a href="${c.demoPath}" target="_blank" class="btn btn-primary" style="justify-content:center;">Abrir Cuaderno Computacional 🚀</a>` : ''}
+                            ` : `
+                                <button type="button" class="btn btn-primary" onclick="${buyAction}" style="justify-content:center; font-weight:800; background:linear-gradient(135deg, #10b981, #059669); border:none; box-shadow:0 6px 18px rgba(16,185,129,0.35);">
+                                    ${buyButtonText}
+                                </button>
+                            `}
+                            <div style="display:flex; gap:0.4rem;">
+                                <button type="button" class="btn btn-secondary" onclick="openCourseDetails('${c.id}')" style="flex:1; justify-content:center; font-size:0.8rem; padding:0.45rem;">
+                                    Ver Temario
+                                </button>
+                                <button type="button" class="btn btn-secondary" onclick="openCourseKeyModal('${c.id}')" style="flex:1; justify-content:center; font-size:0.8rem; padding:0.45rem; border-color:var(--accent-amber); color:var(--accent-amber);" title="Si ya compraste y tienes tu clave">
+                                    🔑 Tengo Clave
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    };
+
+    window.aplicarCuponEnCheckout = function(courseId) {
+        const course = (data.cursos || []).find(c => c.id === courseId);
+        if (!course) return;
+
+        const inp = document.getElementById('checkout-coupon-input');
+        const fb = document.getElementById('checkout-coupon-feedback');
+        const tag = document.getElementById('checkout-coupon-tag');
+        const box = document.getElementById('checkout-coupon-box');
+        const code = (inp ? inp.value.trim().toUpperCase() : '');
+
+        if (!code) {
+            if (fb) fb.innerHTML = '<span style="color:#f87171;">⚠️ Por favor ingresa un código de cupón.</span>';
+            return;
+        }
+
+        const res = getValidCoupon(code, courseId);
+        if (!res || !res.valid) {
+            window.currentCheckoutCoupon = null;
+            if (box) box.classList.remove('applied');
+            if (tag) tag.style.display = 'none';
+            if (fb) fb.innerHTML = `<span style="color:#f87171;">❌ ${res ? res.message : 'El cupón no es válido o ya caducó.'}</span>`;
+            return;
+        }
+
+        const coupon = res.coupon;
+        const discountPct = coupon.descuentoPorcentaje;
+        const originalCOP = course.precioCOP || 115000;
+        const originalUSD = course.precioUSD || 29;
+
+        const discountCOP = Math.round(originalCOP * (discountPct / 100));
+        const finalCOP = originalCOP - discountCOP;
+        const discountUSD = Math.round(originalUSD * (discountPct / 100));
+        const finalUSD = Math.max(1, originalUSD - discountUSD);
+
+        window.currentCheckoutCoupon = {
+            codigo: coupon.codigo,
+            porcentaje: discountPct,
+            finalCOP: finalCOP,
+            discountCOP: discountCOP,
+            finalUSD: finalUSD,
+            originalCOP: originalCOP,
+            originalUSD: originalUSD
+        };
+
+        if (box) box.classList.add('applied');
+        if (tag) {
+            tag.style.display = 'inline-block';
+            tag.style.background = 'rgba(0, 234, 144, 0.18)';
+            tag.style.color = '#00EA90';
+            tag.style.border = '1px solid rgba(0, 234, 144, 0.35)';
+            tag.textContent = `-${discountPct}% ACTIVO`;
+        }
+
+        if (fb) {
+            fb.innerHTML = `
+                <div style="color:#34D399; font-weight:700; display:flex; align-items:center; gap:0.35rem;">
+                    <span>🎉</span> ¡Cupón ${coupon.codigo} aplicado! Ahorras $${discountCOP.toLocaleString('es-ES')} COP (-${discountPct}%)
+                </div>
+            `;
+        }
+
+        // Actualizar precio COP en el Resumen
+        const copEl = document.querySelector('.payment-price-cop');
+        if (copEl) {
+            copEl.innerHTML = `
+                <span style="text-decoration:line-through; font-size:0.9rem; color:var(--text-muted); margin-right:0.4rem;">$${originalCOP.toLocaleString('es-ES')} COP</span>
+                <span style="color:#00EA90;">$${finalCOP.toLocaleString('es-ES')} COP</span>
+            `;
+        }
+
+        // Actualizar precio USD
+        const usdEl = document.querySelector('.payment-price-usd');
+        if (usdEl) {
+            usdEl.innerHTML = `
+                <span style="text-decoration:line-through; font-size:0.75rem; color:var(--text-muted); margin-right:0.25rem;">$${originalUSD} USD</span>
+                <span style="color:#38BDF8;">$${finalUSD} USD</span>
+            `;
+        }
+
+        // Actualizar botón oficial de Wompi
+        const wompiBtnSpan = document.querySelector('.btn-wompi-pay span');
+        if (wompiBtnSpan) {
+            wompiBtnSpan.textContent = `Pagar $${finalCOP.toLocaleString('es-ES')} COP con Wompi Oficial (-${discountPct}%)`;
+        }
+
+        // Actualizar mensaje de WhatsApp en pago directo
+        const directoWhatsappBtn = document.querySelector('#tab-directo a.btn');
+        if (directoWhatsappBtn) {
+            const cfg = getPaymentConfig();
+            const directo = cfg.pagoDirecto || {};
+            const msg = encodeURIComponent(
+                `Hola profesor Manuel Alejandro Obando, acabo de realizar la transferencia de $${finalCOP.toLocaleString('es-ES')} COP aplicando mi cupón «${coupon.codigo}» (-${discountPct}% de descuento) para adquirir la licencia permanente de «${course.titulo}» en PhysicsAILab.com. Adjunto mi comprobante para recibir mi clave única.`
+            );
+            directoWhatsappBtn.href = `https://wa.me/${directo.whatsapp || '573137115473'}?text=${msg}`;
+        }
+    };
+
+    window.openPaymentModal = function(courseId, initialCoupon) {
         const course = (data.cursos || []).find(c => c.id === courseId);
         if (!course) return;
 
@@ -3377,7 +3714,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const directo = cfg.pagoDirecto || {};
         const hotmart = cfg.hotmart || {};
 
-        const priceCOPFormatted = '$' + (course.precioCOP || 115000).toLocaleString('es-ES') + ' COP';
+        const priceCOPFormatted = '$' + amountCOPToPay.toLocaleString('es-ES') + ' COP' + (couponDiscountText ? (' ' + couponDiscountText) : '');
         const priceUSDFormatted = '$' + (course.precioUSD || 29) + ' USD';
         const isSandbox = wompi.modo !== 'produccion';
         const wompiLink = course.enlaceWompi || wompi.linkPago || 'https://checkout.wompi.co/l/VPOS_b6GD2z';
@@ -3429,6 +3766,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="payment-method-badge">Visa / MasterCard</span>
                     <span class="payment-method-badge">PayPal</span>
                 </div>
+            </div>
+
+            <!-- Caja de Cupón de Descuento (30%, 40%, etc.) -->
+            <div class="checkout-coupon-box" id="checkout-coupon-box">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.45rem; flex-wrap:wrap; gap:0.4rem;">
+                    <label style="font-size:0.8rem; font-weight:700; color:#fff; display:flex; align-items:center; gap:0.35rem;">
+                        <span>🏷️</span> ¿Tienes un Cupón de Descuento? (ej: FISICA30, OBANDO40)
+                    </label>
+                    <span id="checkout-coupon-tag" style="display:none; font-size:0.72rem; font-weight:800; padding:0.15rem 0.55rem; border-radius:6px;"></span>
+                </div>
+                <div style="display:flex; gap:0.5rem;">
+                    <input type="text" id="checkout-coupon-input" class="payment-form-input" placeholder="Ingresa tu cupón aquí" style="text-transform:uppercase; font-weight:700; letter-spacing:1px; flex:1;" value="${initialCoupon || (window.currentStoreCoupon ? window.currentStoreCoupon.codigo : '')}" />
+                    <button type="button" class="btn btn-secondary" onclick="aplicarCuponEnCheckout('${course.id}')" style="border-color:rgba(52,211,153,0.5); color:#34d399; font-weight:700; padding:0.5rem 1.1rem;">
+                        Aplicar
+                    </button>
+                </div>
+                <div id="checkout-coupon-feedback" style="margin-top:0.45rem; font-size:0.78rem;"></div>
             </div>
 
             <!-- Selector de Métodos de Pago (Tabs) -->
@@ -3568,7 +3922,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const wompi = cfg.wompi || {};
         const isSandbox = wompi.modo !== 'produccion';
         const publicKey = (isSandbox ? wompi.llavePublicaTest : wompi.llavePublicaProd) || '';
-        const amountInCents = (course.precioCOP || 115000) * 100;
+        let amountCOPToPay = course.precioCOP || 115000;
+        let couponDiscountText = '';
+        if (window.currentCheckoutCoupon && window.currentCheckoutCoupon.finalCOP) {
+            amountCOPToPay = window.currentCheckoutCoupon.finalCOP;
+            couponDiscountText = ` [Cupón: ${window.currentCheckoutCoupon.codigo} -${window.currentCheckoutCoupon.porcentaje}%]`;
+        }
+        const amountInCents = amountCOPToPay * 100;
         const reference = 'PHYSICSAILAB-' + course.id.toUpperCase() + '-' + Date.now();
         const wompiLink = course.enlaceWompi || wompi.linkPago || 'https://checkout.wompi.co/l/VPOS_b6GD2z';
         const directo = cfg.pagoDirecto || {};
@@ -5562,6 +5922,94 @@ document.addEventListener('DOMContentLoaded', () => {
                         <button class="btn btn-secondary" onclick="openPaymentModal('mecanica')" style="font-size:0.85rem; padding:0.55rem 0.95rem;">
                             🧪 Probar Checkout como Estudiante
                         </button>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN DE GESTIÓN Y CREACIÓN DE CUPONES DE DESCUENTO (30%, 40%, ETC.) -->
+                <div class="admin-payment-config-box" style="margin-top:1.5rem; margin-bottom:1.5rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.85rem; flex-wrap:wrap; gap:0.5rem;">
+                        <div>
+                            <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:0.25rem;">
+                                <span style="font-size:1.4rem;">🏷️</span>
+                                <h4 style="color:#fff; font-size:1.1rem; margin:0;">
+                                    Gestor y Generador de Cupones de Descuento
+                                </h4>
+                            </div>
+                            <div style="font-size:0.8rem; color:var(--text-muted);">
+                                Crea códigos de 30%, 40% u otro porcentaje para entregar a estudiantes en clase, eventos o promociones especiales.
+                            </div>
+                        </div>
+                        <span class="badge" style="background:rgba(52,211,153,0.18); color:#34D399; border-color:rgba(52,211,153,0.4); font-size:0.75rem;">
+                            🏷️ ${getAllCoupons().length} Cupones Activos
+                        </span>
+                    </div>
+
+                    <!-- Formulario para crear nuevo cupón -->
+                    <div style="background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:1.15rem; margin-bottom:1.25rem;">
+                        <div style="font-size:0.85rem; font-weight:700; color:#38bdf8; margin-bottom:0.75rem;">
+                            ➕ Crear Nuevo Cupón Promocional:
+                        </div>
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:0.85rem; margin-bottom:0.85rem;">
+                            <div>
+                                <label style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; display:block; margin-bottom:0.35rem;">
+                                    Código del Cupón (Ej: UNICAUCA40):
+                                </label>
+                                <input type="text" id="admin-new-coupon-code" class="payment-form-input" placeholder="PROMO40" style="text-transform:uppercase; font-weight:700; letter-spacing:1px; font-family:monospace;" />
+                            </div>
+                            <div>
+                                <label style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; display:block; margin-bottom:0.35rem;">
+                                    Porcentaje de Descuento:
+                                </label>
+                                <select id="admin-new-coupon-pct" class="payment-form-input">
+                                    <option value="20">20% de descuento</option>
+                                    <option value="30" selected>30% de descuento</option>
+                                    <option value="35">35% de descuento</option>
+                                    <option value="40">40% de descuento</option>
+                                    <option value="50">50% de descuento (Media Beca)</option>
+                                    <option value="60">60% de descuento</option>
+                                    <option value="70">70% de descuento</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; display:block; margin-bottom:0.35rem;">
+                                    Descripción / Motivo:
+                                </label>
+                                <input type="text" id="admin-new-coupon-desc" class="payment-form-input" placeholder="Beca Estudiantes Semestre 2026" />
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-primary" onclick="adminCrearNuevoCupon()" style="font-size:0.85rem; padding:0.5rem 1.15rem; background:linear-gradient(135deg, #10b981, #059669); border:none;">
+                            💾 Guardar y Habilitar Cupón
+                        </button>
+                    </div>
+
+                    <!-- Lista de cupones actuales -->
+                    <div style="font-size:0.82rem; font-weight:700; color:#fff; margin-bottom:0.6rem;">
+                        📋 Directorio de Cupones Habilitados en la Web:
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:0.5rem; max-height:220px; overflow-y:auto;">
+                        ${getAllCoupons().map(cp => `
+                            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:8px; padding:0.65rem 0.95rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+                                <div style="display:flex; align-items:center; gap:0.6rem;">
+                                    <span style="font-family:monospace; font-weight:800; font-size:0.95rem; color:#38BDF8; background:rgba(56,189,248,0.12); padding:0.2rem 0.5rem; border-radius:5px;">
+                                        ${cp.codigo}
+                                    </span>
+                                    <span class="badge" style="background:rgba(52,211,153,0.15); color:#34D399; border-color:rgba(52,211,153,0.3); font-size:0.75rem;">
+                                        -${cp.descuentoPorcentaje}% OFF
+                                    </span>
+                                    <span style="font-size:0.78rem; color:var(--text-muted);">${cp.descripcion || ''}</span>
+                                </div>
+                                <div style="display:flex; gap:0.4rem;">
+                                    <button class="admin-btn-action" onclick="copiarDatoPago('${cp.codigo}', this)" title="Copiar código para enviar por WhatsApp">
+                                        📋 Copiar
+                                    </button>
+                                    ${cp.origen === 'custom' ? `
+                                        <button class="admin-btn-action" onclick="adminEliminarCupon('${cp.codigo}')" style="border-color:rgba(239,68,68,0.4); color:#f87171;" title="Eliminar este cupón personalizado">
+                                            🗑️
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        `).join('')}
                     </div>
                 </div>
 
@@ -7667,6 +8115,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const ALL_PAGE_SECTIONS = [
         'inicio',
         'cursos',
+        'tienda',
         'quizzes',
         'juegos',
         'comics',
@@ -7680,6 +8129,11 @@ document.addEventListener('DOMContentLoaded', () => {
     window.navigateToSection = function(sectionId, pushToHistory = true) {
         if (!sectionId) sectionId = 'inicio';
         sectionId = sectionId.replace(/^#/, '');
+
+        // Soporte de alias para cupones -> tienda
+        if (sectionId === 'cupones') {
+            sectionId = 'tienda';
+        }
 
         // Si la sección solicitada es mis-cursos, redirigir a cursos y hacer scroll
         if (sectionId === 'mis-cursos') {
@@ -7719,6 +8173,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         });
+
+        if (sectionId === 'tienda') {
+            setTimeout(() => {
+                if (typeof window.renderStoreCourses === 'function') {
+                    window.renderStoreCourses();
+                }
+            }, 60);
+        }
 
         // Actualizar historial del navegador (back/forward button)
         if (pushToHistory) {
@@ -7829,6 +8291,69 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     initPageRouter();
+    try {
+        if (typeof window.renderStoreCourses === 'function') {
+            window.renderStoreCourses();
+        }
+    } catch (e) {}
+
+    window.adminCrearNuevoCupon = function() {
+        const codeInp = document.getElementById('admin-new-coupon-code');
+        const pctInp = document.getElementById('admin-new-coupon-pct');
+        const descInp = document.getElementById('admin-new-coupon-desc');
+
+        const codeVal = (codeInp ? codeInp.value.trim().toUpperCase() : '');
+        const pctVal = parseInt(pctInp ? pctInp.value : '30', 10);
+        const descVal = (descInp ? descInp.value.trim() : '') || `Descuento especial del ${pctVal}%`;
+
+        if (!codeVal || codeVal.length < 3) {
+            alert('⚠️ Por favor ingresa un código válido de al menos 3 caracteres (ej: FISICA40).');
+            return;
+        }
+
+        let customList = [];
+        try {
+            customList = JSON.parse(localStorage.getItem('physicsailab_custom_coupons') || '[]');
+        } catch (e) {
+            customList = [];
+        }
+
+        // Evitar duplicados
+        if (customList.some(c => c.codigo === codeVal)) {
+            alert(`⚠️ El cupón «${codeVal}» ya existe en tus cupones creados.`);
+            return;
+        }
+
+        customList.push({
+            codigo: codeVal,
+            descuentoPorcentaje: pctVal,
+            descripcion: descVal,
+            cursosAplicables: 'todos',
+            activo: true,
+            origen: 'custom',
+            fechaCreacion: new Date().toISOString()
+        });
+
+        localStorage.setItem('physicsailab_custom_coupons', JSON.stringify(customList));
+        alert(`✅ ¡Cupón «${codeVal}» con -${pctVal}% creado y habilitado con éxito!`);
+        renderAdminDashboardContent();
+        renderStoreCourses();
+    };
+
+    window.adminEliminarCupon = function(codigo) {
+        if (!confirm(`¿Estás seguro de eliminar el cupón «${codigo}»?`)) return;
+        let customList = [];
+        try {
+            customList = JSON.parse(localStorage.getItem('physicsailab_custom_coupons') || '[]');
+        } catch (e) {
+            customList = [];
+        }
+        customList = customList.filter(c => c.codigo !== codigo);
+        localStorage.setItem('physicsailab_custom_coupons', JSON.stringify(customList));
+        renderAdminDashboardContent();
+        renderStoreCourses();
+    };
+
 
 });
 

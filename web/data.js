@@ -73,6 +73,138 @@ window.PLATFORM_DATA = {
             urlBase: "https://hotmart.com"
         }
     },
+    // Sistema Oficial de Cupones de Descuento (30%, 40%, etc. generables dinámicamente)
+    cuponesDescuento: [
+        {
+            codigo: "FISICA30",
+            descuentoPorcentaje: 30,
+            descripcion: "Cupón Oficial Física - 30% de Descuento Especial",
+            cursosAplicables: "todos",
+            activo: true,
+            origen: "plataforma"
+        },
+        {
+            codigo: "OBANDO40",
+            descuentoPorcentaje: 40,
+            descripcion: "Beca de Descuento Obando - 40% OFF en todos los cursos",
+            cursosAplicables: "todos",
+            activo: true,
+            origen: "docente"
+        },
+        {
+            codigo: "CIENCIA50",
+            descuentoPorcentaje: 50,
+            descripcion: "Media Beca Científica - 50% de Descuento Especial",
+            cursosAplicables: "todos",
+            activo: true,
+            origen: "promocion"
+        },
+        {
+            codigo: "EINSTEIN30",
+            descuentoPorcentaje: 30,
+            descripcion: "Mentor Albert Einstein - 30% OFF en Laboratorios y Cuadernos",
+            cursosAplicables: "todos",
+            activo: true,
+            origen: "mentor"
+        },
+        {
+            codigo: "FEYNMAN40",
+            descuentoPorcentaje: 40,
+            descripcion: "Mentor Richard Feynman - 40% OFF en Simulación y Física Computacional",
+            cursosAplicables: "todos",
+            activo: true,
+            origen: "mentor"
+        },
+        {
+            codigo: "BOHR35",
+            descuentoPorcentaje: 35,
+            descripcion: "Mentor Niels Bohr - 35% OFF Cuántico Especial",
+            cursosAplicables: "todos",
+            activo: true,
+            origen: "mentor"
+        },
+        {
+            codigo: "MAXWELL40",
+            descuentoPorcentaje: 40,
+            descripcion: "Mentor James Clerk Maxwell - 40% OFF en Electromagnetismo y Transformadores",
+            cursosAplicables: "todos",
+            activo: true,
+            origen: "mentor"
+        },
+        {
+            codigo: "HAWKING40",
+            descuentoPorcentaje: 40,
+            descripcion: "Mentor Stephen Hawking - 40% OFF en Astrofísica y Cursos",
+            cursosAplicables: "todos",
+            activo: true,
+            origen: "mentor"
+        }
+    ],
+
+    // Personajes Históricos de la Física (Integración Visual Dinámica sin QR)
+    personajesCientificos: [
+        {
+            id: "einstein",
+            nombre: "Albert Einstein",
+            titulo: "Padre de la Relatividad & Efecto Fotoeléctrico (Nobel 1921)",
+            avatar: "./assets/personajes/einstein-avatar.png",
+            pizarra: "./assets/personajes/einstein-pizarra.png",
+            frase: "«La imaginación es más importante que el conocimiento. El conocimiento es limitado; la imaginación rodea al universo.»",
+            area: "Relatividad Especial & Cuántica",
+            cuponRecomendado: "EINSTEIN30",
+            descuentoPct: 30,
+            colorTema: "#38bdf8"
+        },
+        {
+            id: "feynman",
+            nombre: "Richard Feynman",
+            titulo: "Pionero de la Electrodinámica Cuántica & Gran Divulgador (Nobel 1965)",
+            avatar: "./assets/personajes/feynman-avatar.png",
+            pizarra: "./assets/personajes/feynman-pizarra.png",
+            frase: "«Lo que no puedo crear, no lo entiendo. Aprende experimentando con cada simulación hasta dominar el fenómeno.»",
+            area: "QED & Computación Cuántica",
+            cuponRecomendado: "FEYNMAN40",
+            descuentoPct: 40,
+            colorTema: "#fb7185"
+        },
+        {
+            id: "bohr",
+            nombre: "Niels Bohr",
+            titulo: "Fundador de la Física Cuántica & Modelo Atómico (Nobel 1922)",
+            avatar: "./assets/personajes/bohr-avatar.png",
+            pizarra: "./assets/personajes/bohr-pizarra.png",
+            frase: "«Cualquiera que no quede impresionado con la teoría cuántica es que no la ha entendido. Lo opuesto a una gran verdad es otra verdad.»",
+            area: "Estructura Atómica & Ondas",
+            cuponRecomendado: "BOHR35",
+            descuentoPct: 35,
+            colorTema: "#a78bfa"
+        },
+        {
+            id: "maxwell",
+            nombre: "James Clerk Maxwell",
+            titulo: "Unificador del Electromagnetismo y la Luz (Ecuaciones de Maxwell)",
+            avatar: "./assets/personajes/maxwell-avatar.png",
+            pizarra: "./assets/personajes/maxwell-pizarra.png",
+            frase: "«Y Dios dijo: Div D = ρ, Div B = 0, Curl E = -∂B/∂t, Curl H = J + ∂D/∂t... y se hizo la luz.»",
+            area: "Campos Electromagnéticos & Óptica",
+            cuponRecomendado: "MAXWELL40",
+            descuentoPct: 40,
+            colorTema: "#34d399"
+        },
+        {
+            id: "hawking",
+            nombre: "Stephen Hawking",
+            titulo: "Genio de la Cosmología, Agujeros Negros y el Espacio-Tiempo",
+            avatar: "./assets/personajes/hawking-avatar.png",
+            pizarra: "./assets/personajes/hawking-pizarra.png",
+            frase: "«La inteligencia es la capacidad de adaptarse al cambio. Recuerda siempre mirar a las estrellas y no a tus pies.»",
+            area: "Cosmología & Gravedad Cuántica",
+            cuponRecomendado: "HAWKING40",
+            descuentoPct: 40,
+            colorTema: "#fbbf24"
+        }
+    ],
+
 
     cursos: [
         {
