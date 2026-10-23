@@ -1,0 +1,75 @@
+<template class="chapter-src" data-id="multiples" data-num="15" data-title="Interferencia de haces múltiples" data-part="Parte III · Interferencia" data-short="Reflexiones múltiples y la función de Airy, finura, rango espectral libre y poder resolutivo del interferómetro de Fabry–Pérot, el método de matrices para multicapas, recubrimientos antirreflejantes, espejos dieléctricos de Bragg, filtros interferenciales y colores estructurales">
+<p class="lead">Si las caras de una lámina reflejan mucho, la luz rebota decenas de veces antes de salir, y todos esos haces interfieren. El resultado ya no son franjas suaves de coseno sino picos estrechísimos de transmisión: el interferómetro de Fabry–Pérot, el instrumento de mayor poder resolutivo de la espectroscopía y el corazón de todo láser. Con varias capas apiladas se fabrican superficies que no reflejan nada, espejos que reflejan el 99.99 % y filtros que dejan pasar un solo color.</p>
+
+<section>
+<h2>Reflexiones múltiples y la función de Airy</h2>
+<p>Una lámina de espesor \(d\) e índice \(n\), con caras de reflectancia \(R\), recibe una onda. En cada ida y vuelta la onda transmitida pierde un factor \(R\) de intensidad y gana una fase</p>
+<div class="eq">\[\delta=\frac{4\pi nd\cos\theta}{\lambda}\]</div>
+<p>(más los desfases de reflexión, que solo corren el patrón). Sumando la serie geométrica de todas las amplitudes transmitidas, para una lámina sin absorción se obtiene la <span class="term">función de Airy</span>:</p>
+<div class="eq key" data-name="Función de Airy">\[T=\frac{1}{1+F\sen^2(\delta/2)},\qquad F=\frac{4R}{(1-R)^2}.\]</div>
+<p>La transmisión es total cuando \(\delta=2\pi m\), sea cual sea \(R\): las ondas reflejadas se cancelan exactamente. Entre los picos cae a \(1/(1+F)\). Con \(R=0.04\) (vidrio sin tratar) la modulación es débil, pero con \(R=0.9\) los picos son estrechos y profundos. La <span class="term">finura</span> mide su agudeza: es el cociente entre la separación de los picos y su ancho a media altura,</p>
+<div class="eq key" data-name="Finura">\[\mathcal F=\frac{\pi\sqrt R}{1-R}:\]</div>
+<p>4.4 con \(R=0.5\), 30 con \(R=0.9\) y 313 con \(R=0.99\). El método de matrices de la sección sobre multicapas reproduce la función de Airy al pie de la letra, y así se valida en este curso.</p>
+</section>
+
+<section>
+<h2>El interferómetro de Fabry–Pérot</h2>
+<p>Charles Fabry y Alfred Pérot construyeron en 1899 un interferómetro con dos espejos semiplateados paralelos. En frecuencia los picos de transmisión están separados por el <span class="term">rango espectral libre</span> \(\Delta\nu_{FSR}=c/2nd\), y cada pico tiene un ancho \(\Delta\nu_{FSR}/\mathcal F\). Con espejos separados 5 mm, el rango libre es de 30 GHz (0.035 nm en la luz del sodio). Iluminado con una fuente extensa, produce anillos muy finos de igual inclinación. Su <span class="term">poder resolutivo</span> es el orden de interferencia por la finura, \(\lambda/\Delta\lambda=m\mathcal F\): con \(d=5\) mm y \(R=0.9\), unas 500 000, quinientas veces lo necesario para separar el doblete del sodio. Por eso se usa para estudiar la estructura fina de las líneas espectrales, medir anchos de línea de láseres y seleccionar un solo modo dentro de una cavidad. Una lámina sólida de caras paralelas que actúa así se llama <span class="term">étalon</span>.</p>
+<div class="sim" data-sim="fabry-perot" data-title="Fabry–Pérot: picos de transmisión y anillos"></div>
+<div class="sim-guide"><ul>
+<li>Suba la reflectancia de los espejos: los picos se afinan y el fondo se oscurece. Los anillos se vuelven líneas delgadas.</li>
+<li>Con dos líneas espectrales próximas (el doblete del sodio) cada anillo se desdobla si la finura es suficiente.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Multicapas y recubrimientos antirreflejantes</h2>
+<p>Una superficie de vidrio sin tratar refleja el 4.2 % de la luz (N-BK7); un objetivo con 16 superficies perdería así la mitad de la luz y sus imágenes se llenarían de reflejos. Una capa delgada de índice \(n_1\) y espesor óptico \(\lambda_0/4\) hace que la reflexión de su cara superior y la de su cara inferior lleguen en oposición. Si además ambas son iguales, se anulan. La reflectancia a la longitud de onda de diseño es</p>
+<div class="eq key" data-name="Antirreflejante de un cuarto de onda">\[R=\left(\frac{n_0n_s-n_1^2}{n_0n_s+n_1^2}\right)^2,\]</div>
+<p>que se anula con \(n_1=\sqrt{n_0n_s}=1.23\). No hay un material sólido y durable con ese índice; el fluoruro de magnesio (\(n=1.38\)) deja un 1.3 % en el centro y un 1.4 % en promedio en el visible, tres veces menos que el vidrio desnudo. Con dos capas de un cuarto de onda (MgF₂ sobre Al₂O₃) la reflexión baja al 0.18 % en el diseño (recubrimiento en V), y con cuatro a seis capas se consigue menos de 0.5 % en todo el visible: es el reflejo violáceo o verdoso de las gafas y los objetivos modernos. Los ojos de las polillas tienen una superficie con protuberancias más pequeñas que la longitud de onda, que equivale a un índice que crece gradualmente: un antirreflejante natural que hoy se imita en paneles solares.</p>
+<p>Para calcular cualquier pila de capas se usa el <span class="term">método de las matrices de transferencia</span>: cada interfaz y cada capa son una matriz de 2×2 que relaciona las amplitudes de las ondas que avanzan y retroceden, y el producto da la reflexión y la transmisión exactas, con cualquier ángulo, polarización y absorción. Este curso lo implementa con el algoritmo de S. Byrnes y lo compara con su biblioteca <code>tmm</code> en 276 comprobaciones.</p>
+<div class="sim" data-sim="antirreflejo" data-title="Recubrimientos antirreflejantes sobre vidrio"></div>
+<div class="sim-guide"><ul>
+<li>Compare el vidrio desnudo, una capa de MgF₂, el recubrimiento en V y uno de banda ancha de cuatro capas. La muestra de color es el reflejo residual bajo luz de día.</li>
+<li>Incline la luz: el mínimo se corre hacia el azul porque el camino \(2nd\cos\theta_t\) se acorta.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Espejos dieléctricos</h2>
+<p>Si en lugar de una capa de índice bajo se alternan capas de índice alto \(n_H\) y bajo \(n_L\), todas de un cuarto de onda, las reflexiones de todas las interfaces llegan en fase y se refuerzan. Una pila \((HL)^NH\) sobre un sustrato de índice \(n_s\) tiene, en la longitud de onda de diseño,</p>
+<div class="eq key" data-name="Espejo de Bragg">\[R=\left(\frac{n_0-Y}{n_0+Y}\right)^2,\qquad Y=\left(\frac{n_H}{n_L}\right)^{2N}\frac{n_H^2}{n_s}.\]</div>
+<p>Con dióxido de titanio (2.35) y sílice (1.46), dos pares reflejan el 85 %, cuatro el 97.6 % y ocho el 99.95 %, sin la absorción de un metal. La reflexión alta ocupa una <span class="term">banda prohibida</span> de ancho relativo en frecuencia \(\frac4\pi\arcsen\frac{n_H-n_L}{n_H+n_L}\), un 30 % con esos materiales (unos 165 nm alrededor de 550 nm). Es el mismo fenómeno que la reflexión de Bragg de los rayos X en un cristal y que la banda prohibida de los electrones en un semiconductor: un <span class="term">cristal fotónico</span> unidimensional. Los espejos de los láseres, de los detectores de ondas gravitacionales y los espejos fríos de las lámparas dicroicas, que reflejan el visible y dejan pasar el infrarrojo, son de este tipo. Las plumas de los colibríes, las alas de la mariposa <i>Morpho</i> y los ópalos deben su color a estructuras periódicas parecidas: son <span class="term">colores estructurales</span>.</p>
+<div class="sim" data-sim="bragg" data-title="Espejo dieléctrico de cuarto de onda"></div>
+<div class="sim-guide"><ul>
+<li>Agregue pares de capas: la reflectancia en el centro se acerca a 1 y los bordes de la banda se hacen abruptos. El ancho de la banda depende solo del contraste de índices.</li>
+<li>La línea discontinua es la fórmula de admitancia en \(\lambda_0\); la curva continua, el cálculo con matrices.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Filtros interferenciales</h2>
+<p>Dos espejos de Bragg separados por una capa de media onda forman un Fabry–Pérot de estado sólido: un <span class="term">filtro interferencial</span>. Deja pasar una banda de 1 a 10 nm alrededor de la longitud de onda de diseño y refleja el resto de la banda prohibida. Se usan en fluorescencia, astronomía (filtros de hidrógeno alfa) y telecomunicaciones, donde separan canales espaciados 0.8 nm en una misma fibra. Como todos los dispositivos de capas, se desplazan hacia el azul al inclinarlos, lo que permite sintonizarlos.</p>
+<div class="sim" data-sim="filtro" data-title="Filtro interferencial de banda estrecha"></div>
+<div class="sim-guide"><ul>
+<li>El número de pares de cada espejo controla el ancho de la banda transmitida. Incline el filtro para correr el pico hacia longitudes de onda menores.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Qué espesor físico debe tener una capa de MgF₂ (\(n=1.38\)) para ser antirreflejante en 550 nm?
+<details><summary>Respuesta</summary><p>\(d=\lambda/4n=99.6\) nm.</p></details></li>
+<li><span class="lvl">Básico</span>Calcule la finura y el coeficiente \(F\) de un Fabry–Pérot con espejos de \(R=0.95\).
+<details><summary>Respuesta</summary><p>\(\mathcal F=\pi\sqrt{0.95}/0.05=61.2\); \(F=4(0.95)/0.05^2=1520\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Un étalon de sílice (\(n=1.46\)) de 1 mm de espesor, ¿qué rango espectral libre tiene en frecuencia y en longitud de onda a 1550 nm?
+<details><summary>Respuesta</summary><p>\(c/2nd=103\) GHz; \(\lambda^2/2nd=0.82\) nm.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Cuántos pares de TiO₂/SiO₂ (pila \((HL)^NH\) sobre vidrio de 1.52) hacen falta para reflejar más del 99.9 %?
+<details><summary>Respuesta</summary><p>Con \(N=7\), \(R=0.99859\); con \(N=8\), \(0.99946\). Hacen falta 8 pares.</p></details></li>
+<li><span class="lvl">Avanzado</span>Deduzca la función de Airy sumando la serie de las amplitudes transmitidas \(t_1t_2\sum_k(r^2\ee^{\ii\delta})^k\) y usando \(R=\abs{r}^2\), \(T=\abs{t_1t_2}=1-R\).
+<details><summary>Respuesta</summary><p>La suma es \(t_1t_2/(1-R\ee^{\ii\delta})\); su módulo al cuadrado es \((1-R)^2/(1+R^2-2R\cos\delta)\). Con \(1-\cos\delta=2\sen^2(\delta/2)\) sale \(1/(1+F\sen^2(\delta/2))\).</p></details></li>
+</ol>
+<div class="box note"><h4>Para profundizar</h4><p>C. Fabry y A. Pérot, «Théorie et applications d'une nouvelle méthode de spectroscopie interférentielle», <em>Ann. Chim. Phys.</em> 16, 115 (1899). H. A. Macleod, <em>Thin-Film Optical Filters</em>, 5.ª ed., CRC, 2018. S. J. Byrnes, «Multilayer optical calculations», arXiv:1603.02720. P. Vukusic y J. R. Sambles, «Photonic structures in biology», <em>Nature</em> 424, 852 (2003). J. M. Vaughan, <em>The Fabry–Perot Interferometer</em>, Adam Hilger, 1989.</p></div>
+</section>
+</template>

@@ -46,7 +46,8 @@ window.PLATFORM_DATA = {
         "pendulo": ["PENDULO-2026", "GRAVEDAD-26", "OBANDO-PENDULO-26", "FISICA-10-26"],
         "guias": ["GUIAS-2026", "MONTAJES-26", "LAB-MONTAJES-26"],
         "ingles": ["INGLES-2026", "QUANTUM-ENGLISH-26", "LEAP-2026"],
-        "recorrido": ["RECORRIDO-2026", "DEPTO-FISICA-26", "OBANDO-RECORRIDO-26", "UNICAUCA-26"]
+        "recorrido": ["RECORRIDO-2026", "DEPTO-FISICA-26", "OBANDO-RECORRIDO-26", "UNICAUCA-26"],
+        "optica": ["OPTICA-2026", "FOTON-26", "OBANDO-OPTICA-26", "LUZ-RAYO-26", "MAXWELL-OPTICA-26"]
     },
 
     // Configuración oficial de Pasarelas de Pago (Wompi PSE, Bancolombia, Nequi y Hotmart)
@@ -908,6 +909,56 @@ window.PLATFORM_DATA = {
             precioUSD: 0,
             esLaboratorio: true,
             accesoLibre: true
+        },
+        {
+            id: "optica",
+            titulo: "Óptica: del Rayo al Fotón (Curso Completo & Simulador)",
+            nivel: "Universitario / Física / Ingeniería Física & Telecomunicaciones",
+            modulos: "28 Capítulos Interactivos + Formulario + Suite de Simulaciones en Tiempo Real",
+            categoria: "Física Fundamental",
+            categoriaFiltro: "fundamental",
+            descripcion: "Curso computacional riguroso e interactivo de óptica clásica y moderna por el Mg. Manuel Alejandro Obando (Universidad del Cauca). Abarca desde la naturaleza de la luz, óptica geométrica, ley de Snell, prismas, lentes y matrices ABCD, hasta coherencia, interferencia de Young, películas delgadas, difracción de Fraunhofer y Fresnel, óptica de Fourier, polarización, ecuaciones de Fresnel, birrefringencia, dispersión en la materia, física del láser, haces gaussianos, fibras ópticas, óptica no lineal y fotones individuales. Incluye trazado exacto de rayos, catálogos Schott/Sellmeier, tablas oficiales CIE y más de 800 pruebas validadas con SciPy y SymPy.",
+            temas: [
+                "01. Naturaleza y Propagación de la Luz: Del Rayo a la Onda",
+                "02. Ondas Electromagnéticas, Ecuaciones de Maxwell y Vector de Poynting",
+                "03. Radiometría y Fotometría: Flujo, Intensidad, Irradiancia y Luminancia",
+                "04. Reflexión y Refracción: Ley de Snell y Reflexión Total Interna",
+                "05. Dispersión Cromática, Prismas y Fórmulas de Sellmeier (Vidrios Schott)",
+                "06. Óptica Geométrica: Espejos Planos, Esféricos y Trazado de Rayos",
+                "07. Lentes Delgadas y Gruesas: Fórmula del Fabricante y Dioptrías",
+                "08. Óptica Matricial: Matrices de Rayos ABCD y Sistemas Ópticos Compuestos",
+                "09. Aberraciones Ópticas: Esférica, Coma, Astigmatismo, Curvatura y Cromática",
+                "10. El Ojo Humano, Visión y Colorimetría Oficial de la CIE (Espacios XYZ/RGB)",
+                "11. Instrumentos Ópticos: Cámaras, Oculares, Microscopios y Telescopios",
+                "12. Coherencia Óptica Temporal y Espacial, y Visibilidad de Franjas",
+                "13. Interferencia de Dos Ondas: Experimento de la Doble Rendija de Young",
+                "14. Interferencia en Películas Delgadas y Recubrimientos Antirreflejantes",
+                "15. Interferencia de Múltiples Ondas, Cavidades Fabry-Pérot y Espejos Dieléctricos",
+                "16. Difracción de Fraunhofer: Rendijas, Aberturas Circulares y Discos de Airy",
+                "17. Redes de Difracción, Espectrometría y Límite de Resolución de Rayleigh",
+                "18. Difracción de Fresnel, Espiral de Cornu y Placas de Zona",
+                "19. Óptica de Fourier, Transformada 2D y Filtrado Espacial de Frecuencias",
+                "20. Polarización de la Luz: Estados Lineal, Circular, Elíptico y Esfera de Poincaré",
+                "21. Ecuaciones de Fresnel, Coeficientes r/t y Ángulo de Brewster",
+                "22. Birrefringencia, Cristales Anisótropos, Retardadores λ/2 y λ/4",
+                "23. Dispersión y Luz en la Materia: Rayleigh, Mie y el Cielo de Popayán (1760 m)",
+                "24. Física del Láser: Emisión Estimulada, Inversión de Población y Cavidades",
+                "25. Haces Gaussianos: Cintura, Parámetro Confocal, Divergencia y Modos TEM",
+                "26. Fibras Ópticas: Apertura Numérica, Modos Guiados, Dispersión y Atenuación",
+                "27. Óptica No Lineal: Generación de Segundo Armónico (SHG), Efecto Kerr y Solitones",
+                "28. Óptica Cuántica: El Fotón Individual, Experimento de Taylor y Detectores",
+                "Formulario Interactivo Completo & Validación Numérica contra SciPy"
+            ],
+            destacado: true,
+            tipo: "Cuaderno Interactivo HTML5/JS",
+            demoPath: "/material/1_cursos/optica/dist/index.html",
+            precioEstimado: "$35 USD (~$140.000 COP)",
+            precioCOP: 140000,
+            precioUSD: 35,
+            valorReal: "$59 USD",
+            descuentoTag: "Estreno Exclusivo 2026",
+            enlaceCompra: "https://hotmart.com",
+            enlaceWompi: "https://checkout.wompi.co/l/VPOS_b6GD2z"
         }
     ],
 

@@ -1,0 +1,81 @@
+<template class="chapter-src" data-id="fourier" data-num="19" data-title="Óptica de Fourier y holografía" data-part="Parte IV · Difracción" data-short="El patrón de Fraunhofer como transformada de Fourier, la lente como procesador de Fourier, frecuencias espaciales y espectro angular, ondas evanescentes, el efecto Talbot, el sistema 4f y el filtrado espacial, la teoría de Abbe de la imagen y el contraste de fase, funciones de transferencia y MTF, y la holografía">
+<p class="lead">La difracción de Fraunhofer tiene una estructura matemática sencilla: el patrón es la transformada de Fourier de la abertura. Esa observación, desarrollada en los años cincuenta por Duffieux, Maréchal y Goodman, convirtió la óptica en una rama del procesamiento de señales. Permite entender cómo forma imágenes un microscopio, cómo se limpia un haz láser, qué mide la «nitidez» de un objetivo y cómo un holograma guarda la fase de la luz.</p>
+
+<section>
+<h2>La transformada de Fourier óptica</h2>
+<p>En la aproximación de Fraunhofer el campo lejano en la dirección \(\theta_x,\theta_y\) es</p>
+<div class="eq key" data-name="Fraunhofer como transformada de Fourier">\[U(f_x,f_y)\propto\iint U_0(\xi,\eta)\,\ee^{-2\pi\ii(f_x\xi+f_y\eta)}\dd\xi\,\dd\eta,\qquad f_x=\frac{\sen\theta_x}{\lambda},\ f_y=\frac{\sen\theta_y}{\lambda}:\]</div>
+<p>la transformada de Fourier bidimensional de la abertura, evaluada en las <span class="term">frecuencias espaciales</span> \(f_x,f_y\). Una lente de focal \(f\) lleva cada dirección a un punto de su plano focal, \(x=\lambda f f_x\): en el plano focal posterior aparece la transformada de Fourier del objeto colocado en el plano focal anterior, calculada a la velocidad de la luz. Con \(f=100\) mm y luz de 633 nm, un punto a 1 mm del eje del plano focal corresponde a una frecuencia de 15.8 líneas/mm en el objeto.</p>
+<p>Leída al revés, la fórmula dice que cualquier campo en un plano es una superposición de ondas planas, una por cada frecuencia espacial, que viajan en direcciones \(\sen\theta=\lambda f\): es el <span class="term">espectro angular</span>. Las frecuencias mayores que \(1/\lambda\) no corresponden a ninguna dirección real: son <span class="term">ondas evanescentes</span> que decaen en una distancia del orden de \(\lambda\). Los detalles menores que media longitud de onda viajan en ellas y no llegan lejos: es el origen profundo del límite de difracción, que solo esquivan los microscopios de campo cercano.</p>
+<div class="sim" data-sim="fft-abertura" data-title="Patrones de difracción por transformada de Fourier"></div>
+<div class="sim-guide"><ul>
+<li>Elija una abertura: el patrón (escala logarítmica) es el módulo al cuadrado de su transformada de Fourier, calculada con la FFT. La FFT del curso se valida contra NumPy.</li>
+<li>Observe las reglas: lo estrecho se vuelve ancho, una red da puntos, un triángulo da una estrella de seis brazos y el patrón siempre es centrosimétrico.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Propagación del espectro angular y el efecto Talbot</h2>
+<p>Como cada onda plana avanza una distancia \(z\) multiplicándose por \(\ee^{\ii k_zz}\), con \(k_z=\sqrt{k^2-4\pi^2(f_x^2+f_y^2)}\), la difracción a cualquier distancia se calcula exactamente con dos transformadas de Fourier: descomponer, propagar cada componente y volver a sumar. Es el método del <span class="term">espectro angular</span>, que este curso valida contra las integrales de Fresnel del borde recto.</p>
+<p>Un caso notable lo vio Henry Fox Talbot en 1836: detrás de una red periódica de período \(d\) iluminada con luz monocromática, la imagen de la red reaparece, sin lente alguna, a distancias múltiplos de</p>
+<div class="eq key" data-name="Longitud de Talbot">\[z_T=\frac{2d^2}{\lambda}.\]</div>
+<p>La red solo contiene frecuencias múltiplos de \(1/d\); en la aproximación paraxial sus fases a la distancia \(z_T\) son múltiplos de \(2\pi\) y el campo se reconstruye. A \(z_T/2\) aparece desplazada medio período, y a fracciones racionales de \(z_T\), copias más finas: la «alfombra de Talbot». Una red de 50 µm con luz roja se autorreproduce cada 7.9 mm. El efecto se usa en interferómetros de rayos X, en litografía sin máscara y en átomos fríos.</p>
+<div class="sim" data-sim="talbot" data-title="La alfombra de Talbot"></div>
+<div class="sim-guide"><ul>
+<li>La imagen muestra la intensidad detrás de la red (horizontal) en función de la distancia (vertical), calculada con el espectro angular exacto.</li>
+<li>Busque las autoimágenes en \(z_T\), la imagen desplazada en \(z_T/2\) y las de período mitad en \(z_T/4\).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El sistema 4f y el filtrado espacial</h2>
+<p>Dos lentes de focal \(f\) separadas \(2f\) forman un <span class="term">sistema 4f</span>: la primera hace la transformada de Fourier del objeto en el plano central, y la segunda la deshace y forma una imagen invertida. En el plano central, el <span class="term">plano de Fourier</span>, se puede manipular el espectro con máscaras. Un agujero pequeño deja pasar solo las frecuencias bajas y borra el ruido de alta frecuencia: así se limpia un haz láser con un objetivo de microscopio y un agujero de unas 10 µm (filtro espacial). Un pequeño disco que tapa el centro elimina las frecuencias bajas y realza los bordes. Una rendija elimina las frecuencias en una dirección y borra, por ejemplo, las líneas de barrido de una imagen.</p>
+<div class="sim" data-sim="filtrado-4f" data-title="Filtrado espacial en un sistema 4f"></div>
+<div class="sim-guide"><ul>
+<li>El panel central es el espectro de Fourier de la imagen (lo que se vería en el plano de Fourier); la máscara en blanco indica lo que pasa.</li>
+<li>Pruebe el pasabajos (desenfoca), el pasaaltos (deja los bordes) y la rendija (elimina las rayas de una dirección).</li>
+</ul></div>
+<p>Ernst Abbe explicó así en 1873 la formación de imágenes en el microscopio. Un objeto periódico de período \(d\) iluminado de frente difracta órdenes en \(\sen\theta=m\lambda/d\). Si el objetivo no recoge al menos el orden cero y los primeros órdenes, la imagen no contiene la periodicidad: el detalle no se ve, por grande que sea el aumento. Con iluminación axial el período mínimo resuelto es \(\lambda/\text{AN}\), y con iluminación oblicua \(\lambda/(2\,\text{AN})\): 390 nm con un objetivo de inmersión en luz verde. Frits Zernike aprovechó el plano de Fourier para ver objetos transparentes, como las células vivas, que solo cambian la fase de la luz: una lámina que retrasa un cuarto de onda el orden cero convierte las diferencias de fase en diferencias de intensidad. Por el <span class="term">contraste de fase</span> recibió el Nobel de Física de 1953.</p>
+</section>
+
+<section>
+<h2>Funciones de transferencia</h2>
+<p>Con luz incoherente, como la de cualquier escena natural, lo que se suma son intensidades, y un sistema óptico se describe por cómo transmite el contraste de patrones sinusoidales de cada frecuencia: la <span class="term">función de transferencia de modulación</span> (MTF). Es el módulo de la autocorrelación de la pupila. Para una pupila circular sin aberraciones,</p>
+<div class="eq key" data-name="MTF limitada por difracción">\[\text{MTF}(\nu)=\frac2\pi\left[\arccos\nu-\nu\sqrt{1-\nu^2}\right],\qquad\nu=\frac{f}{f_c},\quad f_c=\frac{1}{\lambda N}.\]</div>
+<p>Ningún detalle más fino que la frecuencia de corte \(f_c\) llega a la imagen: 455 líneas/mm a f/4 en luz verde y 227 a f/8. Las aberraciones y el desenfoque bajan la MTF por debajo de este límite. Es la forma en que los fabricantes describen la nitidez de sus objetivos.</p>
+<div class="sim" data-sim="mtf" data-title="MTF de un sistema limitado por difracción y con desenfoque"></div>
+<div class="sim-guide"><ul>
+<li>La MTF se calcula numéricamente: pupila → PSF por FFT → transformada de la PSF. Sin desenfoque coincide con la fórmula analítica.</li>
+<li>Con un desenfoque de un cuarto de onda (criterio de Rayleigh) la MTF todavía es buena; con una onda aparecen frecuencias de contraste nulo o invertido.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Holografía</h2>
+<p>Una fotografía registra la intensidad y pierde la fase. Dennis Gabor propuso en 1948 registrar también la fase haciendo interferir la luz del objeto con una onda de referencia coherente: el patrón de franjas, el <span class="term">holograma</span>, guarda en su contraste la amplitud y en la posición de las franjas la fase de la onda del objeto. Al iluminarlo de nuevo con la referencia, el holograma difracta y reconstruye la onda original: el observador ve el objeto en tres dimensiones, con paralaje. Si \(O\) y \(R\) son las ondas,</p>
+<div class="eq">\[I=\abs{O+R}^2=\abs O^2+\abs R^2+O R^*+O^*R,\qquad I\,R=\left(\abs O^2+\abs R^2\right)R+O\abs R^2+O^*R^2.\]</div>
+<p>El tercer término reproduce la onda del objeto; el cuarto, su conjugada, una imagen «gemela» real. En el montaje de Gabor las tres ondas se superponían; Emmett Leith y Juris Upatnieks (1962) inclinaron la referencia para separarlas, y con el láser la holografía se volvió práctica. Gabor recibió el Nobel de 1971. Hoy los hologramas protegen billetes y tarjetas, y la holografía digital registra el holograma con una cámara y lo reconstruye por computador con una FFT, como en la simulación.</p>
+<div class="sim" data-sim="holograma" data-title="Holograma de Fourier: registro y reconstrucción"></div>
+<div class="sim-guide"><ul>
+<li>A la izquierda, el objeto; en el centro, el holograma registrado (franjas finas de la interferencia con la referencia inclinada); a la derecha, la reconstrucción: el orden cero en el centro, el objeto y su gemelo invertido a los lados.</li>
+<li>Reduzca la inclinación de la referencia: las imágenes se superponen con el orden cero, como en el montaje original de Gabor.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿A qué distancia del eje, en el plano focal de una lente de 200 mm, aparece la frecuencia de 20 líneas/mm de un objeto iluminado con 633 nm?
+<details><summary>Respuesta</summary><p>\(x=\lambda f f_x=633\times10^{-9}\times0.2\times2\times10^4=2.53\) mm.</p></details></li>
+<li><span class="lvl">Básico</span>¿Cuál es la longitud de Talbot de una red de 100 µm con luz de 532 nm?
+<details><summary>Respuesta</summary><p>\(z_T=2d^2/\lambda=3.76\) cm.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Qué apertura numérica necesita un objetivo para resolver, con iluminación axial, una red de 0.8 µm con luz de 500 nm?
+<details><summary>Respuesta</summary><p>El primer orden sale a \(\sen\theta=\lambda/d=0.625\): hace falta AN ≥ 0.625.</p></details></li>
+<li><span class="lvl">Intermedio</span>Un objetivo trabaja a f/5.6 con luz de 550 nm. ¿Cuál es su frecuencia de corte y qué MTF tiene a 100 líneas/mm si está limitado por difracción?
+<details><summary>Respuesta</summary><p>\(f_c=1/(0.55\times10^{-3}\times5.6)=325\) líneas/mm; \(\nu=0.308\): MTF = 0.61.</p></details></li>
+<li><span class="lvl">Avanzado</span>Demuestre que en la autoimagen de Talbot paraxial todas las componentes \(f=m/d\) de la red acumulan una fase \(\pi\lambda zm^2/d^2\) respecto del orden cero, y que en \(z_T\) esa fase es múltiplo de \(2\pi\).
+<details><summary>Respuesta</summary><p>\(k_z\approx k-\pi\lambda f^2\); la fase relativa es \(-\pi\lambda zm^2/d^2\). En \(z=2d^2/\lambda\) vale \(-2\pi m^2\).</p></details></li>
+</ol>
+<div class="box note"><h4>Para profundizar</h4><p>E. Abbe, «Beiträge zur Theorie des Mikroskops und der mikroskopischen Wahrnehmung», <em>Arch. Mikrosk. Anat.</em> 9, 413 (1873). F. Zernike, «How I discovered phase contrast», <em>Science</em> 121, 345 (1955). D. Gabor, «A new microscopic principle», <em>Nature</em> 161, 777 (1948). E. N. Leith y J. Upatnieks, «Reconstructed wavefronts and communication theory», <em>J. Opt. Soc. Am.</em> 52, 1123 (1962). J. W. Goodman, <em>Introduction to Fourier Optics</em>, 4.ª ed., 2017. H. F. Talbot, «Facts relating to optical science, No. IV», <em>Phil. Mag.</em> 9, 401 (1836).</p></div>
+</section>
+</template>

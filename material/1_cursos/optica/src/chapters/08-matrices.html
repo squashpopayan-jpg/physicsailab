@@ -1,0 +1,73 @@
+<template class="chapter-src" data-id="matrices" data-num="8" data-title="Óptica matricial y sistemas" data-part="Parte II · Óptica geométrica" data-short="Matrices de transferencia de rayos (ABCD), la matriz de un sistema y sus puntos cardinales, el teleobjetivo y el retrofoco, diafragmas de abertura y de campo, pupilas, rayo principal y marginal, número f y exposición, caída de iluminación en cos⁴θ y profundidad de campo">
+<p class="lead">Un objetivo fotográfico tiene diez o veinte superficies. Trazar sus imágenes de una en una con la ecuación de Gauss es tedioso; en la aproximación paraxial cada superficie y cada tramo de aire es una transformación lineal del rayo, y el sistema entero se reduce al producto de matrices de dos por dos. Este capítulo construye ese formalismo, encuentra los puntos cardinales de cualquier sistema y estudia los diafragmas, que deciden cuánta luz entra, qué parte del campo se ve y qué profundidad queda nítida.</p>
+
+<section>
+<h2>Rayos como vectores</h2>
+<p>En un plano perpendicular al eje, un rayo meridional queda definido por su altura \(y\) y su ángulo \(\theta\) con el eje. En la aproximación paraxial, al avanzar una distancia \(d\) la altura cambia en \(d\,\theta\) y el ángulo no cambia; al refractarse en una superficie de radio \(R\) la altura no cambia y el ángulo salta según la ley de Snell linealizada. Ambas operaciones son matriciales:</p>
+<div class="eq key" data-name="Matrices de transferencia">\[\begin{pmatrix}y_2\\\theta_2\end{pmatrix}=\begin{pmatrix}A&amp;B\\C&amp;D\end{pmatrix}\begin{pmatrix}y_1\\\theta_1\end{pmatrix},\qquad T(d)=\begin{pmatrix}1&amp;d\\0&amp;1\end{pmatrix},\qquad \mathcal R=\begin{pmatrix}1&amp;0\\\frac{n_1-n_2}{n_2R}&amp;\frac{n_1}{n_2}\end{pmatrix}.\]</div>
+<p>Una lente delgada es \(\begin{pmatrix}1&amp;0\\-1/f&amp;1\end{pmatrix}\) y un espejo de radio \(R\), \(\begin{pmatrix}1&amp;0\\-2/R&amp;1\end{pmatrix}\) (\(R&gt;0\) cóncavo). La matriz de un sistema es el producto de las matrices de sus elementos <b>en orden inverso al recorrido</b> de la luz: \(M=M_N\cdots M_2M_1\). Su determinante es \(n_1/n_2\), el cociente de los índices de entrada y de salida; en un sistema en aire vale 1. Este curso usa la convención de <code>sympy.physics.optics</code>, con la que se validan sus cálculos.</p>
+</section>
+
+<section>
+<h2>Puntos cardinales de un sistema</h2>
+<p>De los cuatro elementos de la matriz entre el plano de entrada y el de salida salen todas las propiedades paraxiales. Un rayo que entra paralelo (\(\theta_1=0\)) sale con \(y_2=Ay_1\) y \(\theta_2=Cy_1\): cruza el eje a una distancia \(-A/C\) del plano de salida (la distancia focal posterior) y el plano donde su prolongación alcanza la altura de entrada es el plano principal imagen, a \((1-A)/C\). Así,</p>
+<div class="eq key" data-name="Puntos cardinales">\[f'=-\frac1C,\qquad \text{BFD}=-\frac AC,\qquad z_{H'}=\frac{1-A}{C},\qquad \text{FFD}=\frac DC,\qquad z_H=\frac{D-\det M}{C}.\]</div>
+<p>Un sistema es <span class="term">afocal</span> si \(C=0\): rayos paralelos salen paralelos, como en un telescopio. Si además los medios de entrada y salida son iguales, los <span class="term">puntos nodales</span> (por donde un rayo sale paralelo a como entró) coinciden con los principales. Con los seis puntos cardinales, \(F\), \(F'\), \(H\), \(H'\), \(N\), \(N'\), cualquier sistema se trata como una lente delgada.</p>
+<div class="sim" data-sim="abcd" data-title="Matriz de un sistema de dos lentes y sus puntos cardinales"></div>
+<div class="sim-guide"><ul>
+<li>Elija un sistema de ejemplo o ajuste las focales y la separación. La matriz se calcula como \(T(d_2)\,L_2\,T(d)\,L_1\) y de ella salen \(F'\), \(H'\) y la focal equivalente.</li>
+<li>En el teleobjetivo el plano principal \(H'\) queda delante de la primera lente: el sistema mide la mitad de su focal. En el retrofoco ocurre lo contrario, y queda espacio detrás de la última lente para el espejo de una cámara réflex.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Diafragmas y pupilas</h2>
+<p>Todo sistema tiene un borde que limita el haz que llega desde un punto del eje: el <span class="term">diafragma de abertura</span>. Puede ser un iris o el borde de una lente. Su imagen formada por las lentes que lo preceden es la <span class="term">pupila de entrada</span>, el círculo que se ve al mirar el objetivo desde el frente; su imagen formada por las que le siguen es la <span class="term">pupila de salida</span>. Dos rayos describen el haz: el <span class="term">rayo marginal</span>, que sale del punto axial del objeto y roza el borde del diafragma, y el <span class="term">rayo principal</span>, que sale del borde del campo y pasa por el centro del diafragma (y, por tanto, por el centro de las pupilas). Otro borde, el <span class="term">diafragma de campo</span>, recorta la extensión del objeto que se ve, como el marco del sensor de una cámara. Si un borde distinto del diafragma recorta parte del haz de los puntos de fuera del eje, la imagen se oscurece hacia las esquinas: el <span class="term">viñeteo</span>.</p>
+<div class="sim" data-sim="pupilas" data-title="Diafragma, pupila de entrada y rayo principal"></div>
+<div class="sim-guide"><ul>
+<li>Mueva el diafragma delante o detrás de la lente. La pupila de entrada (en morado) es la imagen del diafragma vista desde el objeto; el rayo principal apunta a su centro.</li>
+<li>Aumente el tamaño del objeto: cuando el borde de la lente empieza a recortar el haz oblicuo, la lectura de viñeteo deja de ser 0 %.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Número f, exposición y caída hacia las esquinas</h2>
+<p>La irradiancia de la imagen de un objeto lejano es proporcional al área de la pupila de entrada e inversamente proporcional al área de la imagen, que crece como \(f^2\). Ambos se combinan en el <span class="term">número f</span>,</p>
+<div class="eq key" data-name="Número f">\[N=\frac{f}{D_{EP}},\qquad E_{imagen}\propto\frac{L}{N^2},\]</div>
+<p>donde \(D_{EP}\) es el diámetro de la pupila de entrada y \(L\) la radiancia del objeto. La serie de números f grabada en los objetivos, 1.4, 2, 2.8, 4, 5.6, 8, 11, 16, avanza en factores \(\sqrt2\): cada paso reduce la luz a la mitad. Un punto de la imagen fuera del eje, a un ángulo de campo \(\theta\), recibe menos luz aunque nada recorte el haz: la pupila se ve oblicua (\(\cos\theta\)), está más lejos (\(\cos^2\theta\)) y la luz llega inclinada al sensor (\(\cos\theta\)). Es la ley del <span class="term">cos⁴θ</span>: un gran angular con 40° de semicampo pierde el 66 % de la luz en las esquinas, y los diseñadores lo compensan con distorsión de la pupila o en el procesamiento de la imagen.</p>
+<div class="sim" data-sim="cos4" data-title="Iluminación relativa en el sensor"></div>
+<div class="sim-guide"><ul>
+<li>El mapa muestra la iluminación de un sensor bajo una escena uniforme. Aumente el semicampo (focales más cortas para el mismo sensor) y aparece la caída en \(\cos^4\theta\).</li>
+<li>Cambie el número f: la exposición total escala como \(1/N^2\) en todo el sensor.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Profundidad de campo</h2>
+<p>Una cámara enfocada a una distancia \(s\) forma imágenes nítidas solo de los objetos a esa distancia. Los demás producen en el sensor un pequeño círculo de desenfoque. Si su diámetro no supera un <span class="term">círculo de confusión</span> \(c\) aceptable (por convención 0.03 mm para el formato de 35 mm), el objeto se ve nítido. Los límites de la zona nítida dependen de la <span class="term">distancia hiperfocal</span>:</p>
+<div class="eq key" data-name="Profundidad de campo">\[H=\frac{f^2}{Nc}+f,\qquad s_{cerca}=\frac{s(H-f)}{H+s-2f},\qquad s_{lejos}=\frac{s(H-f)}{H-s}.\]</div>
+<p>Enfocando a la hiperfocal, todo lo que está entre \(H/2\) y el infinito queda nítido. Un objetivo de 50 mm a f/8 enfocado a 3 m deja nítido de 2.34 a 4.19 m; a f/1.8, solo de 2.82 a 3.20 m, y el fondo se difumina. La cámara de un celular, con \(f\approx6\) mm, f/1.8 y píxeles diminutos (\(c\approx2.5\) µm), tiene una hiperfocal de 8 m: casi todo queda nítido, y el desenfoque del modo retrato se simula con software.</p>
+<div class="sim" data-sim="profundidad-campo" data-title="Profundidad de campo de una cámara"></div>
+<div class="sim-guide"><ul>
+<li>La curva es el diámetro del círculo de desenfoque en el sensor en función de la distancia del objeto; la banda sombreada es la zona nítida, donde no supera \(c\).</li>
+<li>Cierre el diafragma o acorte la focal: la profundidad de campo crece. Enfoque a la hiperfocal y la banda llega al infinito.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Escriba la matriz de una lente delgada de \(f=50\) mm seguida de 50 mm de aire y aplíquela a un rayo que entra paralelo a 5 mm del eje.
+<details><summary>Respuesta</summary><p>\(M=\begin{pmatrix}0&amp;50\\-0.02&amp;1\end{pmatrix}\); \((5,0)\to(0,-0.1)\): el rayo cruza el eje en el foco con −0.1 rad.</p></details></li>
+<li><span class="lvl">Básico</span>Un objetivo de 85 mm tiene una pupila de entrada de 30 mm. ¿Cuál es su número f? ¿Cuánta luz pierde al cerrarlo a f/5.6?
+<details><summary>Respuesta</summary><p>\(N=2.83\approx\) f/2.8; a f/5.6 recibe \((2.8/5.6)^2=1/4\) de la luz (dos pasos).</p></details></li>
+<li><span class="lvl">Intermedio</span>Un teleobjetivo tiene una lente de +100 mm y otra de −50 mm separadas 60 mm. Halle su focal, su distancia focal posterior y su longitud total.
+<details><summary>Respuesta</summary><p>\(1/f=1/100-1/50+60/5000\Rightarrow f=500\) mm. BFD \(=200\) mm; longitud total 260 mm, la mitad aproximada de la focal.</p></details></li>
+<li><span class="lvl">Intermedio</span>Calcule la profundidad de campo de un objetivo de 35 mm a f/4 enfocado a 5 m (\(c=0.03\) mm).
+<details><summary>Respuesta</summary><p>\(H=35^2/(4\times0.03)+35=10.24\) m; cerca \(=3.36\) m, lejos \(=9.73\) m.</p></details></li>
+<li><span class="lvl">Avanzado</span>Demuestre que el determinante de la matriz de refracción es \(n_1/n_2\) y que, por eso, en un sistema con el mismo medio a la entrada y a la salida la distancia focal objeto e imagen son iguales.
+<details><summary>Respuesta</summary><p>\(\det\mathcal R=n_1/n_2\); el de \(T\) es 1. El producto de una cadena da \(n_{entrada}/n_{salida}\). Como \(f=-\det M/C\) y \(f'=-1/C\), \(f/f'=\det M=1\) si los medios coinciden.</p></details></li>
+</ol>
+<div class="box note"><h4>Para profundizar</h4><p>A. Gerrard y J. M. Burch, <em>Introduction to Matrix Methods in Optics</em>, Wiley, 1975 (Dover, 1994). E. Hecht, <em>Optics</em>, 5.ª ed., cap. 6. R. Kingslake y R. B. Johnson, <em>Lens Design Fundamentals</em>, 2.ª ed., Academic Press, 2010. S. F. Ray, <em>Applied Photographic Optics</em>, 3.ª ed., Focal Press, 2002.</p></div>
+</section>
+</template>

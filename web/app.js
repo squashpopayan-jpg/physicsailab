@@ -8119,7 +8119,6 @@ document.addEventListener('DOMContentLoaded', () => {
         'inicio',
         'cursos',
         'tienda',
-        'recorrido',
         'quizzes',
         'juegos',
         'comics',
@@ -8127,6 +8126,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'articulos',
         'curiosidades',
         'profesor',
+        'recorrido',
         'comentarios'
     ];
 

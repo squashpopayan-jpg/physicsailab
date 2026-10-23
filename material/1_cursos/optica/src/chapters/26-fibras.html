@@ -1,0 +1,71 @@
+<template class="chapter-src" data-id="fibras" data-num="26" data-title="Fibras ópticas y guías de onda" data-part="Parte VI · Óptica moderna" data-short="La guía plana y sus modos, el número V y la condición monomodo, la fibra de salto de índice y los modos LP, el diámetro de campo modal, la atenuación de la sílice y las ventanas de telecomunicaciones, la dispersión modal, material y de guía, y el ensanchamiento de los pulsos">
+<p class="lead">Casi toda la información que cruza el planeta viaja como pulsos de luz infrarroja dentro de hilos de vidrio más delgados que un cabello. Una fibra óptica moderna pierde la mitad de la luz cada 15 km y transporta decenas de terabits por segundo. Este capítulo pasa del modelo de rayos del capítulo 4 al de ondas: las fibras solo guían ciertos patrones de campo, los modos, y la física de esos modos decide cuánta información cabe en ellas.</p>
+
+<section>
+<h2>La guía plana y sus modos</h2>
+<p>Una lámina de índice \(n_1\) y espesor \(d\) entre dos medios de índice \(n_2&lt;n_1\) guía la luz por reflexión total. En el modelo de rayos cualquier ángulo mayor que el crítico serviría; pero el rayo es una onda plana que va y viene, y después de dos reflexiones su fase debe coincidir con la de partida. Esa condición de autoconsistencia, con los desfases de la reflexión total (capítulo 21), solo la cumplen algunos ángulos. Para los modos TE de una guía simétrica,</p>
+<div class="eq key" data-name="Modos de una guía plana">\[\frac{\kappa d}{2}-\frac{m\pi}{2}=\arctan\frac{\gamma}{\kappa},\qquad\kappa=k_0\sqrt{n_1^2-n_{ef}^2},\quad\gamma=k_0\sqrt{n_{ef}^2-n_2^2},\]</div>
+<p>donde \(n_{ef}=\beta/k_0\) es el <span class="term">índice efectivo</span> del modo, entre \(n_2\) y \(n_1\). Dentro del núcleo el campo es sinusoidal, con \(m\) ceros; fuera decae como \(\ee^{-\gamma\abs x}\): parte de la energía viaja en el revestimiento. El número de modos lo fija el parámetro</p>
+<div class="eq key" data-name="Número V">\[V=\frac{k_0d}{2}\sqrt{n_1^2-n_2^2}=\frac{\pi d}{\lambda}\,\text{AN},\]</div>
+<p>y hay \(\lceil V/(\pi/2)\rceil\) modos TE: una guía de 4 µm con \(n_1=1.5\) y \(n_2=1.45\) tiene \(V=3.11\) a 1550 nm y guía dos modos, con índices efectivos 1.4929 y 1.4728. Si \(V&lt;\pi/2\) la guía es <span class="term">monomodo</span>.</p>
+<div class="sim" data-sim="guia-plana" data-title="Modos TE de una guía plana"></div>
+<div class="sim-guide"><ul>
+<li>A la izquierda, la solución gráfica: los modos son los cruces de \(\tan\) con \(\sqrt{V^2-u^2}/u\). A la derecha, sus perfiles de campo.</li>
+<li>Reduzca el espesor o el contraste de índices hasta que quede un solo modo. Los índices efectivos se validan contra SciPy.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>La fibra de salto de índice</h2>
+<p>En una fibra de núcleo cilíndrico de radio \(a\), con \(V=(2\pi a/\lambda)\text{AN}\), los modos de una fibra de contraste pequeño (débilmente guiante) se agrupan en los modos <span class="term">LP</span>\(_{lm}\) de Gloge (1971). El campo es \(J_l(ur/a)\) dentro y \(K_l(wr/a)\) fuera, con \(u^2+w^2=V^2\) y</p>
+<div class="eq key" data-name="Modos LP">\[\frac{uJ_{l-1}(u)}{J_l(u)}=-\frac{wK_{l-1}(w)}{K_l(w)}.\]</div>
+<p>El modo fundamental LP₀₁ existe siempre; el siguiente, LP₁₁, aparece cuando \(V\) supera el primer cero de \(J_0\), 2.405. Por eso una fibra es <span class="term">monomodo</span> si</p>
+<div class="eq">\[V&lt;2.405\quad\Longleftrightarrow\quad\lambda&gt;\lambda_c=\frac{2\pi a\,\text{AN}}{2.405}.\]</div>
+<p>La fibra estándar de telecomunicaciones (ITU-T G.652) tiene un núcleo de 8.2 µm y AN 0.12: su longitud de onda de corte es de 1.29 µm, y a 1550 nm tiene \(V=1.99\). Su modo fundamental es casi gaussiano, con un diámetro de campo modal de 10.4 µm según la fórmula de Marcuse: más ancho que el núcleo, porque una parte de la luz va por el revestimiento. Las fibras multimodo, con núcleos de 50 o 62.5 µm, guían cientos de modos y se usan en distancias cortas.</p>
+<div class="sim" data-sim="fibra-lp" data-title="Modos LP de una fibra y su número V"></div>
+<div class="sim-guide"><ul>
+<li>Las curvas \(b(V)\) del índice efectivo normalizado se calculan resolviendo la ecuación con funciones de Bessel \(J\) y \(K\) (validadas con SciPy). Cada modo aparece en su corte.</li>
+<li>Con el radio y la longitud de onda de la fibra estándar, \(V&lt;2.405\): solo el LP₀₁. A 850 nm la misma fibra ya guía también el LP₁₁.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Atenuación y ventanas</h2>
+<p>La sílice ultrapura es el material más transparente que se fabrica. Su atenuación tiene tres causas: el <span class="term">esparcimiento de Rayleigh</span> por fluctuaciones de densidad congeladas en el vidrio, que cae como \(\lambda^{-4}\); la absorción infrarroja de los enlaces Si–O, que crece rápidamente más allá de 1.6 µm; y las impurezas, sobre todo los iones OH⁻, con un pico en 1383 nm. Entre ellas quedan las <span class="term">ventanas</span> de las telecomunicaciones: 850 nm (unos 2 dB/km, con fuentes baratas), 1310 nm (0.3 dB/km, dispersión casi nula) y 1550 nm (0.16–0.2 dB/km, el mínimo). Con 0.2 dB/km, tras 100 km queda el 1 % de la luz, y los amplificadores de fibra dopada con erbio, que amplifican justamente en 1550 nm, la reponen sin convertirla en electricidad.</p>
+<div class="sim" data-sim="atenuacion" data-title="Atenuación de una fibra de sílice"></div>
+<div class="sim-guide"><ul>
+<li>El modelo suma las tres contribuciones con parámetros típicos (ilustrativo, no de una fibra particular). Quite el pico de OH para ver una fibra de «pico de agua bajo».</li>
+<li>Elija una longitud de enlace y lea la potencia que llega.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Dispersión y ensanchamiento de los pulsos</h2>
+<p>Un pulso se ensancha al propagarse y los pulsos vecinos terminan solapándose: eso limita la velocidad de transmisión. En una fibra multimodo cada modo recorre un camino distinto: la <span class="term">dispersión modal</span> de una fibra de salto de índice es \(\Delta t/L\approx n_1\Delta/c\), con \(\Delta=(n_1-n_2)/n_1\): 67 ns por kilómetro con 1.48 y 1.46. Las fibras de índice gradual, cuyo índice disminuye parabólicamente hacia afuera, igualan los tiempos de los modos y la reducen cien veces.</p>
+<p>En una fibra monomodo queda la <span class="term">dispersión cromática</span>: cada componente del espectro del pulso viaja con su propia velocidad de grupo. Se mide con el parámetro</p>
+<div class="eq key" data-name="Parámetro de dispersión">\[D=-\frac{\lambda}{c}\frac{\dd^2n}{\dd\lambda^2},\qquad\Delta\tau=\abs{D}\,L\,\Delta\lambda.\]</div>
+<p>La dispersión del material de la sílice, calculada con la fórmula de Sellmeier de Malitson, se anula en 1.273 µm y vale +21.9 ps/(nm·km) en 1550 nm. La guía añade una dispersión negativa y la fibra estándar queda con unos 17 ps/(nm·km): un pulso con 0.1 nm de ancho espectral se ensancha 170 ps en 100 km. Las fibras de dispersión desplazada mueven el cero a 1550 nm, y en los enlaces modernos la dispersión acumulada se compensa electrónicamente.</p>
+<div class="sim" data-sim="dispersion-fibra" data-title="Dispersión de la sílice y ensanchamiento de un pulso"></div>
+<div class="sim-guide"><ul>
+<li>La curva \(D(\lambda)\) sale de las derivadas analíticas de la fórmula de Sellmeier (validadas con derivadas numéricas de mpmath). Mueva la longitud de onda y vea el pulso después de la distancia elegida.</li>
+<li>En 1273 nm el ensanchamiento casi desaparece: la dispersión de segundo orden se anula.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Cuál es la apertura numérica de una fibra con \(n_1=1.4504\) y \(n_2=1.4447\)? ¿Qué ángulo de aceptación tiene?
+<details><summary>Respuesta</summary><p>\(\text{AN}=0.128\); \(\theta=7.4°\).</p></details></li>
+<li><span class="lvl">Básico</span>Un enlace de 60 km tiene 0.22 dB/km y 3 dB de conectores. Si entra 1 mW, ¿cuánta potencia llega?
+<details><summary>Respuesta</summary><p>Pérdida total \(13.2+3=16.2\) dB: \(10^{-1.62}=24\) µW.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Hasta qué longitud de onda es monomodo una fibra de 4.5 µm de radio y AN 0.11?
+<details><summary>Respuesta</summary><p>\(\lambda_c=2\pi(4.5)(0.11)/2.405=1.29\) µm: monomodo por encima de 1.29 µm.</p></details></li>
+<li><span class="lvl">Intermedio</span>Un láser de 1550 nm con 0.05 nm de ancho envía pulsos por 80 km de fibra con \(D=17\) ps/(nm·km). ¿Cuánto se ensancha cada pulso? ¿Limita a 10 Gb/s (pulsos de 100 ps)?
+<details><summary>Respuesta</summary><p>\(\Delta\tau=17\times80\times0.05=68\) ps, comparable al bit: hace falta compensar la dispersión.</p></details></li>
+<li><span class="lvl">Avanzado</span>Demuestre que en una fibra multimodo de salto de índice el rayo más lento (en el ángulo crítico) tarda \(Ln_1^2/(cn_2)\) y el más rápido \(Ln_1/c\), y deduzca \(\Delta t\approx Ln_1\Delta/c\).
+<details><summary>Respuesta</summary><p>El rayo en el ángulo crítico recorre \(L/\sen\theta_c=Ln_1/n_2\) a velocidad \(c/n_1\). La diferencia es \(\frac{Ln_1}{c}\left(\frac{n_1}{n_2}-1\right)\approx\frac{Ln_1\Delta}{c}\).</p></details></li>
+</ol>
+<div class="box note"><h4>Para profundizar</h4><p>C. K. Kao y G. A. Hockham, «Dielectric-fibre surface waveguides for optical frequencies», <em>Proc. IEE</em> 113, 1151 (1966) (Nobel 2009). D. Gloge, «Weakly guiding fibers», <em>Appl. Opt.</em> 10, 2252 (1971). D. Marcuse, «Loss analysis of single-mode fiber splices», <em>Bell Syst. Tech. J.</em> 56, 703 (1977). G. P. Agrawal, <em>Fiber-Optic Communication Systems</em>, 5.ª ed., Wiley, 2021. ITU-T G.652, <em>Characteristics of a single-mode optical fibre and cable</em>.</p></div>
+</section>
+</template>

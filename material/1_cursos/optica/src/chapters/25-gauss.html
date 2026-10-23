@@ -1,0 +1,71 @@
+<template class="chapter-src" data-id="gauss" data-num="25" data-title="Haces gaussianos" data-part="Parte VI · Óptica moderna" data-short="La ecuación paraxial de ondas, el haz gaussiano: cintura, longitud de Rayleigh, radio de curvatura, divergencia y fase de Gouy, el parámetro complejo q y la ley ABCD, enfoque de un haz con una lente, cavidades estables y sus modos, modos de Hermite–Gauss y Laguerre–Gauss, y la calidad de haz M²">
+<p class="lead">La luz de un láser no es un rayo ni una onda plana: es un haz de anchura finita que se estrecha hasta una cintura y luego se abre, con la mínima divergencia que permite la difracción. Su perfil es una campana de Gauss que conserva su forma al propagarse, y por eso es el modo natural de las cavidades láser. Este capítulo describe ese haz, muestra cómo lo transforman las lentes con las mismas matrices ABCD de los rayos y estudia qué cavidades lo sostienen.</p>
+
+<section>
+<h2>El haz gaussiano</h2>
+<p>Un haz que avanza casi paralelo al eje \(z\) se escribe \(E=A(x,y,z)\ee^{\ii(kz-\omega t)}\), con una envolvente \(A\) que cambia despacio. Llevado a la ecuación de onda, despreciando \(\partial^2A/\partial z^2\), da la <span class="term">ecuación paraxial</span> \(\nabla_\perp^2A+2\ii k\,\partial A/\partial z=0\). Su solución más simple es el <span class="term">haz gaussiano</span>:</p>
+<div class="eq key" data-name="Haz gaussiano">\[A(r,z)=A_0\frac{w_0}{w(z)}\exp\!\left(-\frac{r^2}{w^2(z)}\right)\exp\!\left(\ii\frac{kr^2}{2R(z)}\right)\ee^{-\ii\zeta(z)},\]</div>
+<div class="eq">\[w(z)=w_0\sqrt{1+\left(\frac z{z_R}\right)^2},\quad R(z)=z\left[1+\left(\frac{z_R}z\right)^2\right],\quad\zeta(z)=\arctan\frac z{z_R},\quad z_R=\frac{\pi w_0^2}{\lambda}.\]</div>
+<p>\(w\) es el radio donde la intensidad cae a \(1/\ee^2\); \(w_0\), la <span class="term">cintura</span>; \(z_R\), la <span class="term">longitud de Rayleigh</span>, la distancia en que el área del haz se duplica. Lejos de la cintura el haz se abre con un semiángulo \(\theta=\lambda/\pi w_0\): un láser de He–Ne con 0.4 mm de cintura tiene \(z_R=0.79\) m y diverge 0.5 mrad; a 10 m mide 5 mm de radio y en la Luna, 190 km. Para hacer más estrecho un haz lejano hay que ensancharlo primero: con un telescopio de 1 m de diámetro el haz de los experimentos de distancia lunar llega a la Luna con unos 130 m de radio. Los frentes de onda son planos en la cintura y esféricos lejos de ella, con el mínimo radio de curvatura en \(z=z_R\). La fase de Gouy \(\zeta\) es un desfase adicional de \(\pi\) al atravesar el foco, que existe en todo haz enfocado.</p>
+<div class="sim" data-sim="gauss" data-title="Anchura, curvatura y fase de Gouy de un haz gaussiano"></div>
+<div class="sim-guide"><ul>
+<li>El mapa es la intensidad del haz; las líneas, los frentes de onda. Cambie la cintura: un haz más estrecho diverge más.</li>
+<li>Las curvas dan \(w(z)\), \(R(z)\) y \(\zeta(z)\); el radio de curvatura es mínimo en \(\pm z_R\).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El parámetro q y la ley ABCD</h2>
+<p>Toda la información de un haz gaussiano en un plano está en un número complejo, el <span class="term">parámetro q</span>:</p>
+<div class="eq key" data-name="Parámetro complejo del haz">\[\frac1q=\frac1R-\ii\frac{\lambda}{\pi w^2},\qquad q=z+\ii z_R.\]</div>
+<p>Herwig Kogelnik mostró en 1965 que un sistema óptico paraxial con matriz \(\begin{pmatrix}A&amp;B\\C&amp;D\end{pmatrix}\) (capítulo 8) transforma el parámetro con la <span class="term">ley ABCD</span>:</p>
+<div class="eq key" data-name="Ley ABCD">\[q_2=\frac{Aq_1+B}{Cq_1+D}.\]</div>
+<p>Una lente de focal \(f\) que recibe un haz colimado de radio \(w\) lo enfoca en una cintura de radio \(w_0'\approx\lambda f/\pi w\) cerca del foco: un haz de 1064 nm con 1 mm de radio enfocado por una lente de 50 mm da una cintura de 16.9 µm. Para enfocar más fino hay que usar haces anchos y focales cortas, es decir, aperturas numéricas grandes. La cintura no queda exactamente en el foco geométrico: se corre hacia la lente cuando \(z_R\) del haz incidente no es mucho mayor que \(f\). Este curso valida su implementación de la ley con <code>sympy.physics.optics</code> y con la fórmula de Self (1983).</p>
+<div class="sim" data-sim="enfoque" data-title="Enfoque de un haz gaussiano con una lente"></div>
+<div class="sim-guide"><ul>
+<li>Cambie la distancia de la cintura de entrada a la lente y la focal: la nueva cintura y su posición se calculan con la ley ABCD.</li>
+<li>Cuando el haz incidente se enfoca en el foco objeto de la lente, la cintura de salida queda en el foco imagen: una propiedad que no tiene la óptica geométrica.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Cavidades estables</h2>
+<p>Un haz gaussiano es un modo de una cavidad de dos espejos esféricos si sus frentes de onda coinciden con las superficies de los espejos. Eso es posible si la cavidad es <span class="term">estable</span>: con \(g_i=1-L/R_i\),</p>
+<div class="eq key" data-name="Estabilidad de una cavidad">\[0\le g_1g_2\le1.\]</div>
+<p>En una cavidad estable un rayo que rebota entre los espejos queda confinado cerca del eje; en una inestable se escapa tras unas pocas idas y vueltas. La cintura del modo es</p>
+<div class="eq">\[w_0^2=\frac{\lambda L}{\pi}\sqrt{\frac{g_1g_2(1-g_1g_2)}{(g_1+g_2-2g_1g_2)^2}}.\]</div>
+<p>Con dos espejos de 1 m a 50 cm (\(g_1=g_2=0.5\)) y luz de 633 nm, la cintura mide 0.30 mm, en el centro. La cavidad confocal (\(R=L\)) y la plano-paralela están en el borde de la estabilidad: la primera es muy tolerante a desalineaciones de los espejos y la segunda, muy sensible.</p>
+<div class="sim" data-sim="estabilidad" data-title="Diagrama de estabilidad y modo de la cavidad"></div>
+<div class="sim-guide"><ul>
+<li>El punto en el plano \((g_1,g_2)\) debe caer en la región sombreada. El modo dibujado en la cavidad se calcula con la fórmula cerrada y se valida con el autovector de la matriz de ida y vuelta.</li>
+<li>Pruebe una cavidad hemiesférica (un espejo plano y otro de radio algo mayor que \(L\)): la cintura queda sobre el espejo plano.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Modos de orden superior y calidad del haz</h2>
+<p>La ecuación paraxial admite otras soluciones con la misma envolvente: los modos de <span class="term">Hermite–Gauss</span> \(\text{TEM}_{mn}\), con perfiles \(H_m(\sqrt2x/w)H_n(\sqrt2y/w)\ee^{-r^2/w^2}\) y \(m\) y \(n\) ceros en cada dirección, y los de <span class="term">Laguerre–Gauss</span> \(\text{LG}_{pl}\), con anillos y una fase helicoidal \(\ee^{\ii l\phi}\) que lleva un momento angular orbital \(l\hbar\) por fotón. Todos tienen una fase de Gouy \((N+1)\zeta\), con \(N=m+n\) o \(2p+|l|\), y por eso sus frecuencias de resonancia en una cavidad están corridas: los láseres que oscilan en varios modos transversales tienen frecuencias adicionales.</p>
+<p>Un haz real no es perfectamente gaussiano. Su <span class="term">calidad</span> se mide con el factor \(M^2\): el producto de su cintura por su divergencia es \(M^2\) veces el de un haz gaussiano ideal, \(w_0\theta=M^2\lambda/\pi\). Un láser de He–Ne tiene \(M^2&lt;1.1\); un diodo de potencia, decenas.</p>
+<div class="sim" data-sim="modos-hg" data-title="Modos transversales de Hermite–Gauss y Laguerre–Gauss"></div>
+<div class="sim-guide"><ul>
+<li>Elija la familia y los índices. Los modos de Hermite–Gauss tienen \(m\) y \(n\) líneas nodales; los de Laguerre–Gauss, \(p\) anillos oscuros y un hueco central si \(l\ne0\).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un láser verde (532 nm) tiene una cintura de 0.5 mm. ¿Cuál es su longitud de Rayleigh y su divergencia?
+<details><summary>Respuesta</summary><p>\(z_R=\pi w_0^2/\lambda=1.48\) m; \(\theta=\lambda/\pi w_0=0.34\) mrad.</p></details></li>
+<li><span class="lvl">Básico</span>¿Es estable una cavidad con un espejo plano y otro de 50 cm de radio separados 60 cm?
+<details><summary>Respuesta</summary><p>\(g_1=1\), \(g_2=1-60/50=-0.2\): \(g_1g_2=-0.2&lt;0\), inestable.</p></details></li>
+<li><span class="lvl">Intermedio</span>Un haz de 633 nm con \(w=2\) mm en una lente de \(f=100\) mm (cintura en la lente). ¿Qué cintura se forma y qué longitud de Rayleigh tiene?
+<details><summary>Respuesta</summary><p>\(w_0'\approx\lambda f/\pi w=10.1\) µm; \(z_R'=\pi w_0'^2/\lambda=0.50\) mm.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Cuál es la separación de frecuencia entre modos transversales vecinos en la cavidad simétrica de 50 cm con espejos de 1 m?
+<details><summary>Respuesta</summary><p>\(\Delta\nu_T=\frac{c}{2L}\frac{\arccos\sqrt{g_1g_2}}{\pi}=300\text{ MHz}\times\frac13=100\) MHz.</p></details></li>
+<li><span class="lvl">Avanzado</span>Demuestre con la ley ABCD que la propagación libre en una distancia \(d\) transforma \(q\) en \(q+d\), y que una lente transforma \(1/q\) en \(1/q-1/f\). Interprete ambos resultados.
+<details><summary>Respuesta</summary><p>Con \(A=D=1\), \(B=d\), \(C=0\): \(q_2=q_1+d\), la cintura se aleja. Con \(A=D=1\), \(B=0\), \(C=-1/f\): \(1/q_2=(Cq_1+1)/q_1=1/q_1-1/f\); la lente cambia la curvatura del frente (\(1/R\)) en \(-1/f\) sin cambiar el tamaño \(w\).</p></details></li>
+</ol>
+<div class="box note"><h4>Para profundizar</h4><p>H. Kogelnik y T. Li, «Laser beams and resonators», <em>Appl. Opt.</em> 5, 1550 (1966). S. A. Self, «Focusing of spherical Gaussian beams», <em>Appl. Opt.</em> 22, 658 (1983). A. E. Siegman, <em>Lasers</em>, caps. 16–21. L. Allen et al., «Orbital angular momentum of light and the transformation of Laguerre–Gaussian laser modes», <em>Phys. Rev. A</em> 45, 8185 (1992). B. E. A. Saleh y M. C. Teich, <em>Fundamentals of Photonics</em>, 3.ª ed., Wiley, 2019, cap. 3.</p></div>
+</section>
+</template>

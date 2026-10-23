@@ -1,0 +1,78 @@
+<template class="chapter-src" data-id="polarizacion" data-num="20" data-title="Polarización" data-part="Parte V · Polarización y materia" data-short="Estados de polarización lineal, circular y elíptica, la elipse de polarización y su sentido de giro, polarizadores dicroicos y de rejilla, la ley de Malus y la paradoja de los tres polarizadores, el cálculo de Jones, los parámetros de Stokes, la esfera de Poincaré, la luz parcialmente polarizada y la polarización en la naturaleza">
+<p class="lead">La luz es una onda transversal: su campo eléctrico oscila perpendicular a la dirección de propagación, y la manera en que lo hace es la polarización. El ojo humano casi no la percibe, pero las abejas se orientan con ella, los fotógrafos la usan para quitar reflejos y oscurecer el cielo, las pantallas de cristal líquido la necesitan para funcionar y el cine en tres dimensiones envía una imagen distinta a cada ojo con ella.</p>
+
+<section>
+<h2>Estados de polarización</h2>
+<p>Para una onda que avanza según \(z\), el campo eléctrico tiene dos componentes,</p>
+<div class="eq">\[E_x=E_{0x}\cos(kz-\omega t),\qquad E_y=E_{0y}\cos(kz-\omega t+\delta).\]</div>
+<p>En un plano fijo la punta del vector \(\vb E\) recorre, en general, una elipse: la <span class="term">elipse de polarización</span>. Si \(\delta=0\) o \(\pi\), la elipse degenera en un segmento: la luz está <span class="term">linealmente polarizada</span>, con un ángulo \(\arctan(E_{0y}/E_{0x})\). Si \(E_{0x}=E_{0y}\) y \(\delta=\pm\pi/2\), es un círculo: <span class="term">polarización circular</span>. La elipse queda descrita por su orientación \(\psi\) y su elipticidad \(\chi\) (\(\tan\chi\) es el cociente de los semiejes, con signo según el sentido de giro):</p>
+<div class="eq">\[\tan2\psi=\frac{2E_{0x}E_{0y}\cos\delta}{E_{0x}^2-E_{0y}^2},\qquad\sen2\chi=\frac{2E_{0x}E_{0y}\sen\delta}{E_{0x}^2+E_{0y}^2}.\]</div>
+<div class="box warn"><h4>¿Derecha o izquierda?</h4><p>No hay un convenio único. En óptica (Born y Wolf, Hecht) la luz es «circular derecha» si, para un observador que mira hacia la fuente, el campo gira en sentido horario; en ingeniería (IEEE) se usa el sentido opuesto. Este curso dice explícitamente «horario» o «antihorario visto por quien recibe la luz» y usa los signos de <code>sympy.physics.optics</code>: \(S_3&gt;0\) corresponde al giro antihorario.</p></div>
+<div class="sim" data-sim="elipse" data-title="La elipse de polarización"></div>
+<div class="sim-guide"><ul>
+<li>Cambie las amplitudes y el desfase: la punta del campo (punto rojo) recorre la elipse en el sentido que indica la flecha.</li>
+<li>Con \(\delta=90°\) y amplitudes iguales, la luz es circular; con \(\delta=0°\), lineal.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Polarizadores y la ley de Malus</h2>
+<p>Un <span class="term">polarizador</span> transmite solo la componente del campo paralela a su eje. Los láminas Polaroid, inventadas por Edwin Land en 1938, son polímeros estirados y teñidos con yodo que absorben el campo paralelo a sus cadenas; las rejillas de alambres metálicos finos hacen lo mismo con microondas e infrarrojo; los prismas de calcita separan las dos polarizaciones por birrefringencia (capítulo 22). Si luz linealmente polarizada llega a un polarizador cuyo eje forma un ángulo \(\theta\) con su polarización, pasa la componente \(E_0\cos\theta\) y la intensidad es</p>
+<div class="eq key" data-name="Ley de Malus">\[I=I_0\cos^2\theta.\]</div>
+<p>Étienne-Louis Malus la descubrió en 1809 mirando a través de un cristal de calcita el reflejo del Sol en las ventanas del Palacio de Luxemburgo. La luz natural, con polarización aleatoria, pierde la mitad al pasar por cualquier polarizador. Dos polarizadores cruzados no dejan pasar nada; pero si entre ellos se pone un tercero a 45°, pasa un octavo de la luz: el polarizador intermedio no «filtra» sino que proyecta el campo sobre un eje nuevo. Con \(N\) polarizadores girados de a \(90°/N\) la transmisión es \(\cos^{2N}(\pi/2N)\), que tiende a 1: con 100 láminas, el 97.6 % de la luz polarizada gira 90°.</p>
+<div class="sim" data-sim="malus" data-title="Polarizadores en serie"></div>
+<div class="sim-guide"><ul>
+<li>Con dos polarizadores, gire el segundo: la intensidad sigue \(\cos^2\theta\). Cruzados, no pasa luz.</li>
+<li>Añada el tercero entre ellos: con 45° pasa el 12.5 % de la luz natural. Con el modo de \(N\) láminas, la luz gira 90° casi sin pérdidas.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El cálculo de Jones</h2>
+<p>R. Clark Jones propuso en 1941 representar la luz totalmente polarizada por el vector de sus amplitudes complejas, \(\vb J=(E_x,E_y)^T\), y cada elemento óptico por una matriz de 2×2. Algunos vectores normalizados:</p>
+<div class="eq">\[\text{lineal horizontal }\begin{pmatrix}1\\0\end{pmatrix},\quad\text{lineal a }45°\ \tfrac1{\sqrt2}\begin{pmatrix}1\\1\end{pmatrix},\quad\text{circular }\tfrac1{\sqrt2}\begin{pmatrix}1\\\pm\ii\end{pmatrix}.\]</div>
+<p>Un polarizador con eje a un ángulo \(\theta\) y un retardador que adelanta una componente \(\delta\) respecto de la otra (lámina de onda, capítulo 22) son</p>
+<div class="eq key" data-name="Matrices de Jones">\[P(\theta)=\begin{pmatrix}\cos^2\theta&amp;\sen\theta\cos\theta\\\sen\theta\cos\theta&amp;\sen^2\theta\end{pmatrix},\qquad W(0,\delta)=\begin{pmatrix}\ee^{-\ii\delta/2}&amp;0\\0&amp;\ee^{\ii\delta/2}\end{pmatrix},\]</div>
+<p>y un retardador girado \(\theta\) es \(R(-\theta)W(0,\delta)R(\theta)\). Un sistema de varios elementos se describe con el producto de sus matrices en orden inverso. Una lámina de cuarto de onda (\(\delta=\pi/2\)) con el eje a 45° de una polarización lineal la convierte en circular; una de media onda (\(\delta=\pi\)) gira la polarización lineal el doble del ángulo entre ambos.</p>
+<div class="sim" data-sim="jones" data-title="Cálculo de Jones: polarizadores y láminas de onda"></div>
+<div class="sim-guide"><ul>
+<li>Elija el estado de entrada y la cadena de elementos. El panel muestra la elipse de entrada y la de salida, y las lecturas dan el vector de Jones y la intensidad.</li>
+<li>Pruebe: lineal a 0° → lámina λ/4 a 45° → circular. Luego una segunda λ/4 a 45°: lineal a 90°.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Parámetros de Stokes y esfera de Poincaré</h2>
+<p>La luz real casi nunca está totalmente polarizada. George Gabriel Stokes describió en 1852 cualquier estado con cuatro intensidades medibles:</p>
+<div class="eq key" data-name="Parámetros de Stokes">\[S_0=\abs{E_x}^2+\abs{E_y}^2,\quad S_1=\abs{E_x}^2-\abs{E_y}^2,\quad S_2=2\Rea(E_xE_y^*),\quad S_3=-2\Ima(E_xE_y^*),\]</div>
+<p>promediadas en el tiempo. \(S_1\) mide la preferencia horizontal frente a vertical; \(S_2\), la de +45° frente a −45°; \(S_3\), la circular en un sentido frente al otro. Se miden con un polarizador y una lámina de cuarto de onda. El <span class="term">grado de polarización</span> es \(P=\sqrt{S_1^2+S_2^2+S_3^2}/S_0\): 1 para luz totalmente polarizada, 0 para luz natural. Los elementos ópticos actúan sobre el vector de Stokes con matrices de 4×4, las <span class="term">matrices de Mueller</span>, que también describen la despolarización.</p>
+<p>Henri Poincaré (1892) representó los estados de polarización como puntos de una esfera de radio \(S_0\): las coordenadas \((S_1,S_2,S_3)\) son \(S_0\) por \((\cos2\chi\cos2\psi,\ \cos2\chi\sen2\psi,\ \sen2\chi)\). El ecuador contiene las polarizaciones lineales; los polos, las circulares; los hemisferios, las elípticas de cada sentido. Los estados parcialmente polarizados quedan dentro, a una distancia \(P\) del centro. Un retardador es una rotación de la esfera alrededor de su eje rápido: la trayectoria de la polarización al girar una lámina se ve como una curva sobre la esfera.</p>
+<div class="sim" data-sim="poincare" data-title="La esfera de Poincaré"></div>
+<div class="sim-guide"><ul>
+<li>Mueva la orientación y la elipticidad: el punto recorre la esfera. Gire la vista arrastrando sobre ella.</li>
+<li>Active el retardador: la luz de entrada recorre un arco alrededor del eje rápido de la lámina al aumentar el retardo.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Polarización en la naturaleza</h2>
+<p>La luz del cielo está polarizada, casi totalmente a 90° del Sol, porque el dipolo que la reemite no radia a lo largo de su eje (capítulos 2 y 23); un filtro polarizador oscurece el cielo en esa dirección. La luz reflejada en el agua o en el asfalto está polarizada horizontalmente cerca del ángulo de Brewster (53° en el agua, capítulo 21), y las gafas de sol polarizadas, con el eje vertical, eliminan ese brillo. Las abejas y muchas aves detectan la polarización del cielo y se orientan con ella aun con el Sol oculto. El cine en tres dimensiones proyecta las dos imágenes con polarizaciones circulares opuestas, y cada lente de las gafas deja pasar una. Las pantallas de cristal líquido controlan la luz de cada píxel girando su polarización entre dos polarizadores cruzados (capítulo 22).</p>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Luz natural de 100 W/m² pasa por dos polarizadores con los ejes a 30°. ¿Qué intensidad sale?
+<details><summary>Respuesta</summary><p>\(50\cos^230°=37.5\) W/m².</p></details></li>
+<li><span class="lvl">Básico</span>Escriba el vector de Jones normalizado de la luz lineal a 60° y su vector de Stokes.
+<details><summary>Respuesta</summary><p>\((\cos60°,\sen60°)=(0.5,0.866)\); \(S=(1,-0.5,0.866,0)\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Luz lineal a 0° atraviesa una lámina de media onda con el eje rápido a 20°. ¿Qué polarización sale?
+<details><summary>Respuesta</summary><p>Lineal a 40°: la lámina refleja la polarización respecto de su eje.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Qué fracción de luz natural atraviesa 4 polarizadores sucesivos girados de a 30° (de 0° a 90°)?
+<details><summary>Respuesta</summary><p>\(\tfrac12(\cos^230°)^3=0.211\).</p></details></li>
+<li><span class="lvl">Avanzado</span>Demuestre con matrices de Jones que una lámina de cuarto de onda a 45° convierte luz lineal horizontal en circular, y calcule \(S_3\) con la convención de este curso.
+<details><summary>Respuesta</summary><p>Con la matriz de <code>sympy</code>, \(W(45°,\pi/2)(1,0)^T=(1,-\ii)/\sqrt2\): componentes iguales desfasadas \(\pi/2\), luz circular. \(E_xE_y^*=\tfrac12\ii\), así que \(S_3=-2\Ima(E_xE_y^*)=-1\): gira en sentido horario visto por quien recibe la luz. Con la lámina a −45° se obtiene el sentido contrario.</p></details></li>
+</ol>
+<div class="box note"><h4>Para profundizar</h4><p>E. L. Malus, «Sur une propriété de la lumière réfléchie», <em>Mém. Soc. Arcueil</em> 2, 143 (1809). G. G. Stokes, «On the composition and resolution of streams of polarized light», <em>Trans. Camb. Phil. Soc.</em> 9, 399 (1852). R. C. Jones, «A new calculus for the treatment of optical systems», <em>J. Opt. Soc. Am.</em> 31, 488 (1941). E. Collett, <em>Field Guide to Polarization</em>, SPIE, 2005. G. Horváth y D. Varjú, <em>Polarized Light in Animal Vision</em>, Springer, 2004.</p></div>
+</section>
+</template>
