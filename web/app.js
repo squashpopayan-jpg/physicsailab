@@ -674,19 +674,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (spinnerDetail) spinnerDetail.textContent = 'Descarga ultraliviana para lectura inmediata';
         }
 
-        window.currentCheckoutCoupon = null;
         modal.classList.add('active');
-
-        const couponToApply = initialCoupon || (window.currentStoreCoupon ? window.currentStoreCoupon.codigo : '');
-        if (couponToApply) {
-            setTimeout(() => {
-                const inp = document.getElementById('checkout-coupon-input');
-                if (inp) {
-                    inp.value = couponToApply;
-                    aplicarCuponEnCheckout(course.id);
-                }
-            }, 60);
-        }
         document.body.style.overflow = 'hidden';
 
         if (currentViewerMode === 'canvas' && window.pdfjsLib) {
@@ -3394,20 +3382,25 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     window.getValidCoupon = function(code, courseId) {
-        if (!code) return { valid: false, message: 'Código de cupón requerido' };
+        if (!code) return { valid: false, message: 'Por favor ingresa un código de cupón.' };
         const cleanCode = code.trim().toUpperCase();
-        const coupons = getAllCoupons();
-        const found = coupons.find(c => c.codigo.toUpperCase() === cleanCode && c.activo !== false);
+        const coupons = (typeof window.getAllCoupons === "function" ? window.getAllCoupons() : (data.cuponesDescuento || []));
+        const found = coupons.find(c => c.codigo.toUpperCase() === cleanCode);
 
-        if (!found) {
-            return { valid: false, message: `El cupón «${cleanCode}» no existe o no está activo.` };
+        // Por política del docente, ningún cupón está habilitado automáticamente
+        if (!found || found.activo === false || found.habilitado === false) {
+            return {
+                valid: false,
+                disabled: true,
+                message: 'Este cupón no está habilitado, comunícate con el profesor Manuel Obando para habilitarlo'
+            };
         }
 
         // Verificar si tiene restricción de curso
         if (found.cursosAplicables && found.cursosAplicables !== 'todos') {
             const applicableList = Array.isArray(found.cursosAplicables) ? found.cursosAplicables : [found.cursosAplicables];
             if (courseId && !applicableList.includes(courseId)) {
-                return { valid: false, message: `Este cupón no aplica para esta materia específica.` };
+                return { valid: false, message: 'Este cupón no aplica para esta materia específica.' };
             }
         }
 
@@ -3420,7 +3413,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.applyStoreCoupon = function(code) {
         if (!code) return;
-        const res = getValidCoupon(code);
+        const res = (typeof window.getValidCoupon === "function" ? window.getValidCoupon(code) : getValidCoupon(code));
         const feedback = document.getElementById('sim-feedback-message');
         const badge = document.getElementById('sim-active-badge');
         const input = document.getElementById('store-coupon-input');
@@ -3449,13 +3442,31 @@ document.addEventListener('DOMContentLoaded', () => {
             window.currentStoreCoupon = null;
             if (badge) {
                 badge.className = 'sim-status-badge';
-                badge.innerHTML = `<span>❌ Cupón no válido</span>`;
+                badge.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+                badge.style.background = 'rgba(239, 68, 68, 0.12)';
+                badge.style.color = '#f87171';
+                badge.innerHTML = `<span>⚠️ Cupón no habilitado</span>`;
             }
             if (btnClear) btnClear.style.display = 'none';
             if (feedback) {
                 feedback.className = 'sim-feedback-message error';
                 feedback.style.display = 'block';
-                feedback.innerHTML = `⚠️ ${res.message}`;
+                const whatsappMsg = encodeURIComponent('Hola profesor Manuel Obando, me interesa adquirir un curso en la plataforma de física y quisiera solicitar la habilitación del cupón «' + code.toUpperCase() + '».');
+                feedback.innerHTML = `
+                    <div style="display:flex; flex-direction:column; gap:0.5rem; text-align:left;">
+                        <div style="font-weight:700; font-size:0.92rem; color:#fca5a5; display:flex; align-items:center; gap:0.4rem;">
+                            <span>⚠️</span> Este cupón no está habilitado, comunícate con el profesor Manuel Obando para habilitarlo
+                        </div>
+                        <div style="font-size:0.8rem; color:#cbd5e1; line-height:1.45;">
+                            Los cupones promocionales están inhabilitados para venta automática. Para acceder al precio especial de estudiante o beca académica, solicita la activación directamente al docente:
+                        </div>
+                        <div style="margin-top:0.25rem;">
+                            <a href="https://wa.me/573137115473?text=${whatsappMsg}" target="_blank" class="btn" style="background:#25D366; color:#fff; font-size:0.82rem; padding:0.45rem 0.95rem; border-radius:6px; display:inline-flex; align-items:center; gap:0.4rem; text-decoration:none; font-weight:700; border:none; cursor:pointer;">
+                                💬 Contactar al Profesor Manuel Obando por WhatsApp
+                            </a>
+                        </div>
+                    </div>
+                `;
             }
         }
 
@@ -3651,12 +3662,36 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const res = getValidCoupon(code, courseId);
+        const res = (typeof window.getValidCoupon === "function" ? window.getValidCoupon(code, courseId) : getValidCoupon(code, courseId));
         if (!res || !res.valid) {
             window.currentCheckoutCoupon = null;
             if (box) box.classList.remove('applied');
             if (tag) tag.style.display = 'none';
-            if (fb) fb.innerHTML = `<span style="color:#f87171;">❌ ${res ? res.message : 'El cupón no es válido o ya caducó.'}</span>`;
+            const originalCOP = course.precioCOP || 115000;
+            const originalUSD = course.precioUSD || 29;
+            const whatsappMsg = encodeURIComponent('Hola profesor Manuel Obando, deseo solicitar la habilitación del cupón «' + code + '» para el curso «' + course.titulo + '» en PhysicsAILab.');
+            if (fb) {
+                fb.innerHTML = `
+                    <div style="background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.35); border-radius:8px; padding:0.65rem 0.85rem; margin-top:0.45rem; color:#fca5a5;">
+                        <div style="font-weight:700; font-size:0.85rem; display:flex; align-items:center; gap:0.35rem; margin-bottom:0.35rem;">
+                            <span>⚠️</span> Este cupón no está habilitado, comunícate con el profesor Manuel Obando para habilitarlo
+                        </div>
+                        <div style="margin-top:0.25rem;">
+                            <a href="https://wa.me/573137115473?text=${whatsappMsg}" target="_blank" class="btn" style="background:#25D366; color:#fff; font-size:0.76rem; padding:0.35rem 0.75rem; border-radius:6px; display:inline-flex; align-items:center; gap:0.35rem; text-decoration:none; font-weight:700; border:none; cursor:pointer;">
+                                💬 Solicitar cupón al Prof. Manuel Obando por WhatsApp
+                            </a>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Mantener precio pleno oficial
+            const copEl = document.querySelector('.payment-price-cop');
+            if (copEl) copEl.innerHTML = `$${originalCOP.toLocaleString('es-ES')} COP`;
+            const usdEl = document.querySelector('.payment-price-usd');
+            if (usdEl) usdEl.innerHTML = `$${originalUSD} USD`;
+            const wompiBtnSpan = document.querySelector('.btn-wompi-pay span');
+            if (wompiBtnSpan) wompiBtnSpan.textContent = `Pagar $${originalCOP.toLocaleString('es-ES')} COP con Wompi Oficial`;
             return;
         }
 
@@ -3748,8 +3783,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const directo = cfg.pagoDirecto || {};
         const hotmart = cfg.hotmart || {};
 
+        const originalCOP = course.precioCOP || 115000;
+        const originalUSD = course.precioUSD || 29;
+        let amountCOPToPay = originalCOP;
+        let couponDiscountText = '';
+
         const priceCOPFormatted = '$' + amountCOPToPay.toLocaleString('es-ES') + ' COP' + (couponDiscountText ? (' ' + couponDiscountText) : '');
-        const priceUSDFormatted = '$' + (course.precioUSD || 29) + ' USD';
+        const priceUSDFormatted = '$' + originalUSD + ' USD';
         const isSandbox = wompi.modo !== 'produccion';
         const wompiLink = course.enlaceWompi || wompi.linkPago || 'https://checkout.wompi.co/l/VPOS_b6GD2z';
 
@@ -3938,6 +3978,19 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
 
         modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+
+        window.currentCheckoutCoupon = null;
+        const couponToApply = initialCoupon || (window.currentStoreCoupon ? window.currentStoreCoupon.codigo : '');
+        if (couponToApply) {
+            setTimeout(() => {
+                const inp = document.getElementById('checkout-coupon-input');
+                if (inp) {
+                    inp.value = couponToApply;
+                    aplicarCuponEnCheckout(course.id);
+                }
+            }, 60);
+        }
     };
 
     window.iniciarPagoWompi = function(courseId) {
@@ -5974,7 +6027,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>
                         </div>
                         <span class="badge" style="background:rgba(52,211,153,0.18); color:#34D399; border-color:rgba(52,211,153,0.4); font-size:0.75rem;">
-                            🏷️ ${getAllCoupons().length} Cupones Activos
+                            🏷️ ${(typeof window.getAllCoupons === "function" ? window.getAllCoupons() : []).length} Cupones Activos
                         </span>
                     </div>
 
@@ -6021,7 +6074,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         📋 Directorio de Cupones Habilitados en la Web:
                     </div>
                     <div style="display:flex; flex-direction:column; gap:0.5rem; max-height:220px; overflow-y:auto;">
-                        ${getAllCoupons().map(cp => `
+                        ${(typeof window.getAllCoupons === "function" ? window.getAllCoupons() : []).map(cp => `
                             <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:8px; padding:0.65rem 0.95rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
                                 <div style="display:flex; align-items:center; gap:0.6rem;">
                                     <span style="font-family:monospace; font-weight:800; font-size:0.95rem; color:#38BDF8; background:rgba(56,189,248,0.12); padding:0.2rem 0.5rem; border-radius:5px;">

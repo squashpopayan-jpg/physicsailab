@@ -80,33 +80,46 @@ window.PLATFORM_DATA = {
         {
             codigo: "FISICA30",
             descuentoPorcentaje: 30,
-            descripcion: "Cupón Oficial Física - 30% de Descuento Especial",
+            descripcion: "Cupón Oficial Física - 30% de Descuento",
             cursosAplicables: "todos",
-            activo: true,
+            activo: false,
+            habilitado: false,
             origen: "plataforma"
         },
         {
             codigo: "OBANDO40",
             descuentoPorcentaje: 40,
-            descripcion: "Beca de Descuento Obando - 40% OFF en todos los cursos",
+            descripcion: "Beca de Descuento Obando - 40% OFF",
             cursosAplicables: "todos",
-            activo: true,
+            activo: false,
+            habilitado: false,
             origen: "docente"
         },
         {
             codigo: "CIENCIA50",
             descuentoPorcentaje: 50,
-            descripcion: "Media Beca Científica - 50% de Descuento Especial",
+            descripcion: "Media Beca Científica - 50% de Descuento",
             cursosAplicables: "todos",
-            activo: true,
+            activo: false,
+            habilitado: false,
             origen: "promocion"
+        },
+        {
+            codigo: "PLANCK30",
+            descuentoPorcentaje: 30,
+            descripcion: "Mentor Max Planck - 30% OFF Cuántico",
+            cursosAplicables: "todos",
+            activo: false,
+            habilitado: false,
+            origen: "mentor"
         },
         {
             codigo: "EINSTEIN30",
             descuentoPorcentaje: 30,
-            descripcion: "Mentor Albert Einstein - 30% OFF en Laboratorios y Cuadernos",
+            descripcion: "Mentor Max Planck - 30% OFF",
             cursosAplicables: "todos",
-            activo: true,
+            activo: false,
+            habilitado: false,
             origen: "mentor"
         },
         {
@@ -114,7 +127,8 @@ window.PLATFORM_DATA = {
             descuentoPorcentaje: 40,
             descripcion: "Mentor Richard Feynman - 40% OFF en Simulación y Física Computacional",
             cursosAplicables: "todos",
-            activo: true,
+            activo: false,
+            habilitado: false,
             origen: "mentor"
         },
         {
@@ -122,23 +136,26 @@ window.PLATFORM_DATA = {
             descuentoPorcentaje: 35,
             descripcion: "Mentor Niels Bohr - 35% OFF Cuántico Especial",
             cursosAplicables: "todos",
-            activo: true,
+            activo: false,
+            habilitado: false,
             origen: "mentor"
         },
         {
             codigo: "MAXWELL40",
             descuentoPorcentaje: 40,
-            descripcion: "Mentor James Clerk Maxwell - 40% OFF en Electromagnetismo y Transformadores",
+            descripcion: "Mentor James Clerk Maxwell - 40% OFF en Electromagnetismo",
             cursosAplicables: "todos",
-            activo: true,
+            activo: false,
+            habilitado: false,
             origen: "mentor"
         },
         {
             codigo: "HAWKING40",
             descuentoPorcentaje: 40,
-            descripcion: "Mentor Stephen Hawking - 40% OFF en Astrofísica y Cursos",
+            descripcion: "Mentor Stephen Hawking - 40% OFF en Astrofísica",
             cursosAplicables: "todos",
-            activo: true,
+            activo: false,
+            habilitado: false,
             origen: "mentor"
         }
     ],
@@ -146,14 +163,14 @@ window.PLATFORM_DATA = {
     // Personajes Históricos de la Física (Integración Visual Dinámica sin QR)
     personajesCientificos: [
         {
-            id: "einstein",
-            nombre: "Albert Einstein",
-            titulo: "Padre de la Relatividad & Efecto Fotoeléctrico (Nobel 1921)",
+            id: "planck",
+            nombre: "Max Planck",
+            titulo: "Padre de la Física Cuántica & Constante de Planck (Premio Nobel 1918)",
             avatar: "./assets/personajes/einstein-avatar.png",
             pizarra: "./assets/personajes/einstein-pizarra.png",
-            frase: "«La imaginación es más importante que el conocimiento. El conocimiento es limitado; la imaginación rodea al universo.»",
-            area: "Relatividad Especial & Cuántica",
-            cuponRecomendado: "EINSTEIN30",
+            frase: "«La ciencia no puede resolver el misterio final de la naturaleza porque nosotros mismos somos parte del misterio que estamos tratando de resolver.»",
+            area: "Física Cuántica & Radiación de Cuerpo Negro",
+            cuponRecomendado: "PLANCK30",
             descuentoPct: 30,
             colorTema: "#38bdf8"
         },
