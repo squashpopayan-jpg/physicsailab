@@ -8205,6 +8205,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'tienda',
         'quizzes',
         'trivia',
+        'trivia-squash',
         'juegos',
         'comics',
         'podcasts',
@@ -8275,6 +8276,14 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
                 if (window.TRIVIA_ENGINE && typeof window.TRIVIA_ENGINE.init === 'function') {
                     window.TRIVIA_ENGINE.init();
+                }
+            }, 50);
+        }
+
+        if (sectionId === 'trivia-squash') {
+            setTimeout(() => {
+                if (window.TRIVIA_SQUASH_ENGINE && typeof window.TRIVIA_SQUASH_ENGINE.init === 'function') {
+                    window.TRIVIA_SQUASH_ENGINE.init();
                 }
             }, 50);
         }
