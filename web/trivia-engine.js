@@ -1,7 +1,8 @@
 // ==========================================================================
-// MOTOR GAMIFICADO DE LA GRAN TRIVIA DE FÍSICA (1.000 PREGUNTAS)
+// MOTOR GAMIFICADO DE LA GRAN TRIVIA DE FÍSICA
 // PhysicsAILab · "¿Qué tanto sabes sobre física?"
 // Diseñado para evaluación progresiva honesta sin apuntes ni IA.
+// Reglas: 3 vidas, recuperación por racha de 10 aciertos, preguntas barajadas aleatoriamente.
 // ==========================================================================
 
 (function() {
@@ -15,16 +16,55 @@
             score: 0,
             streak: 0,
             maxStreak: 0,
+            lives: 3,
+            maxLives: 3,
             correctCount: 0,
             wrongCount: 0,
             answered: false,
+            shuffledQuestions: [],
             currentView: 'welcome' // 'welcome' | 'game' | 'ranking'
         },
+
+        gameOverTimeout: null,
 
         // Inicialización
         init: function() {
             this.loadSavedUser();
             this.updateWelcomeUI();
+        },
+
+        // Algoritmo Fisher-Yates para barajar aleatoriamente las preguntas
+        shuffleArray: function(array) {
+            const copy = [...array];
+            for (let i = copy.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                const temp = copy[i];
+                copy[i] = copy[j];
+                copy[j] = temp;
+            }
+            return copy;
+        },
+
+        // Helper para renderizar los iconos de vidas
+        getLivesHearts: function() {
+            const l = Math.max(0, Math.min(3, this.state.lives !== undefined ? this.state.lives : 3));
+            return '❤️'.repeat(l) + '🖤'.repeat(3 - l);
+        },
+
+        // Renderizar vidas en la UI
+        renderLives: function() {
+            const livesValEl = document.getElementById('trivia-lives-val');
+            const livesPill = document.getElementById('trivia-lives-pill');
+            if (livesValEl) {
+                livesValEl.textContent = this.getLivesHearts();
+            }
+            if (livesPill) {
+                if (this.state.lives === 1) {
+                    livesPill.classList.add('danger');
+                } else {
+                    livesPill.classList.remove('danger');
+                }
+            }
         },
 
         // Cargar usuario y progreso guardado
@@ -37,6 +77,7 @@
                     this.state.currentIndex = saved.lastIndex || 0;
                     this.state.score = saved.score || 0;
                     this.state.maxStreak = saved.maxStreak || 0;
+                    this.state.lives = (typeof saved.lives === 'number' && saved.lives > 0) ? saved.lives : 3;
                 } else {
                     // Si no hay perfil de trivia pero sí de estudiante general
                     const student = JSON.parse(localStorage.getItem('physicsailab_student_profile') || 'null');
@@ -64,10 +105,10 @@
                 if (instInput && this.state.user.institution) instInput.value = this.state.user.institution;
             }
 
-            if (this.state.currentIndex > 0 && resumeBox) {
+            if (this.state.currentIndex > 0 && this.state.lives > 0 && resumeBox) {
                 resumeBox.style.display = 'block';
                 if (resumeBtn) {
-                    resumeBtn.innerHTML = `▶️ Continuar Desafío (Pregunta #${this.state.currentIndex + 1} · ${this.state.score} pts)`;
+                    resumeBtn.innerHTML = `▶️ Continuar Desafío (Pregunta #${this.state.currentIndex + 1} · ${this.state.score} pts · ${this.getLivesHearts()})`;
                 }
             } else if (resumeBox) {
                 resumeBox.style.display = 'none';
@@ -94,8 +135,13 @@
             }
         },
 
-        // Iniciar nuevo juego o registrar jugador
+        // Iniciar nuevo juego con preguntas barajadas aleatoriamente y 3 vidas
         start: function(resetProgress) {
+            if (this.gameOverTimeout) {
+                clearTimeout(this.gameOverTimeout);
+                this.gameOverTimeout = null;
+            }
+
             const nameInput = document.getElementById('trivia-player-name');
             const instInput = document.getElementById('trivia-player-inst');
 
@@ -110,15 +156,32 @@
 
             this.state.user = { name, institution: inst };
 
-            if (resetProgress) {
-                this.state.currentIndex = 0;
-                this.state.score = 0;
-                this.state.streak = 0;
-                this.state.correctCount = 0;
-                this.state.wrongCount = 0;
-            }
+            // Barajar siempre las preguntas para que cada sesión tenga un orden único y diferente
+            const allQuestions = window.TRIVIA_QUESTIONS || [];
+            this.state.shuffledQuestions = this.shuffleArray(allQuestions);
+
+            this.state.currentIndex = 0;
+            this.state.score = 0;
+            this.state.streak = 0;
+            this.state.lives = 3;
+            this.state.maxLives = 3;
+            this.state.correctCount = 0;
+            this.state.wrongCount = 0;
 
             this.saveProfile();
+            this.switchView('game');
+            this.renderQuestion();
+        },
+
+        // Continuar partida existente
+        resume: function() {
+            if (this.state.lives <= 0) {
+                this.start(true);
+                return;
+            }
+            if (!this.state.shuffledQuestions || !this.state.shuffledQuestions.length) {
+                this.state.shuffledQuestions = this.shuffleArray(window.TRIVIA_QUESTIONS || []);
+            }
             this.switchView('game');
             this.renderQuestion();
         },
@@ -132,6 +195,7 @@
                     lastIndex: this.state.currentIndex,
                     score: this.state.score,
                     maxStreak: this.state.maxStreak,
+                    lives: this.state.lives,
                     updatedAt: new Date().toISOString()
                 };
                 localStorage.setItem('physicsailab_trivia_profile', JSON.stringify(dataToSave));
@@ -158,14 +222,17 @@
 
             // Scroll suave hacia la sección
             const triviaSec = document.getElementById('trivia');
-            if (triviaSec) {
+            if (triviaSec && typeof triviaSec.scrollIntoView === 'function') {
                 triviaSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         },
 
         // Renderizar la pregunta actual
         renderQuestion: function() {
-            const questions = window.TRIVIA_QUESTIONS || [];
+            if (!this.state.shuffledQuestions || !this.state.shuffledQuestions.length) {
+                this.state.shuffledQuestions = this.shuffleArray(window.TRIVIA_QUESTIONS || []);
+            }
+            const questions = this.state.shuffledQuestions;
             if (!questions.length) {
                 alert('⚠️ El banco de preguntas no se ha cargado correctamente.');
                 return;
@@ -191,7 +258,7 @@
             const feedbackCard = document.getElementById('trivia-feedback-card');
             const nextBtn = document.getElementById('trivia-next-btn');
 
-            if (qNumEl) qNumEl.textContent = `Pregunta ${q.id} de ${questions.length}`;
+            if (qNumEl) qNumEl.textContent = `Pregunta ${this.state.currentIndex + 1}`;
             if (areaBadgeEl) areaBadgeEl.textContent = q.area || 'Física';
             if (difficultyBadgeEl) {
                 difficultyBadgeEl.textContent = `Nivel ${q.nivel}: ${q.dificultad || 'Intermedio'}`;
@@ -202,13 +269,16 @@
                 else difficultyBadgeEl.style.color = '#f87171';
             }
 
-            const progressPct = ((q.id / questions.length) * 100).toFixed(1);
+            const progressPct = Math.min(100, (((this.state.currentIndex + 1) / questions.length) * 100)).toFixed(1);
             if (progressBar) progressBar.style.width = `${progressPct}%`;
 
             if (scoreEl) scoreEl.textContent = `${this.state.score.toLocaleString('es-ES')} pts`;
             if (streakEl) {
                 streakEl.innerHTML = `🔥 ${this.state.streak} <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">(Máx: ${this.state.maxStreak})</span>`;
             }
+
+            // Renderizar vidas
+            this.renderLives();
 
             if (textEl) textEl.textContent = q.pregunta;
 
@@ -232,7 +302,7 @@
             if (this.state.answered) return;
             this.state.answered = true;
 
-            const questions = window.TRIVIA_QUESTIONS || [];
+            const questions = this.state.shuffledQuestions;
             const q = questions[this.state.currentIndex];
             if (!q) return;
 
@@ -267,28 +337,122 @@
                 const pointsEarned = 100 + streakBonus;
                 this.state.score += pointsEarned;
 
+                // REGLA: Si tiene una racha de 10 preguntas acertadas seguidas, recupera 1 vida (máx 3)
+                let lifeRecovered = false;
+                if (this.state.streak > 0 && this.state.streak % 10 === 0) {
+                    if (this.state.lives < 3) {
+                        this.state.lives = Math.min(3, this.state.lives + 1);
+                        lifeRecovered = true;
+                        this.renderLives();
+                        const pill = document.getElementById('trivia-lives-pill');
+                        if (pill) {
+                            pill.classList.remove('trivia-lives-pulse');
+                            void pill.offsetWidth;
+                            pill.classList.add('trivia-lives-pulse');
+                        }
+                    }
+                }
+
                 if (feedbackCard) {
                     feedbackCard.className = 'trivia-feedback-card correct';
                     feedbackCard.style.display = 'block';
                 }
                 if (feedbackTitle) {
-                    feedbackTitle.innerHTML = `🎉 ¡Correcto! <span style="font-size:0.85rem; color:#34d399; font-weight:normal;">(+${pointsEarned} pts ${streakBonus > 0 ? `· Bono Racha 🔥` : ''})</span>`;
+                    if (lifeRecovered) {
+                        feedbackTitle.innerHTML = `🎉 ¡Correcto! ¡Racha de 10 Aciertos! <span style="font-size:0.85rem; color:#f43f5e; font-weight:bold;">(+1 ❤️ Vida Recuperada · ${this.state.lives}/3)</span>`;
+                    } else {
+                        feedbackTitle.innerHTML = `🎉 ¡Correcto! <span style="font-size:0.85rem; color:#34d399; font-weight:normal;">(+${pointsEarned} pts ${streakBonus > 0 ? `· Bono Racha 🔥` : ''})</span>`;
+                    }
+                }
+                if (feedbackText) {
+                    const recoveryNotice = lifeRecovered
+                        ? `<div style="background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.35); border-radius:6px; padding:0.45rem 0.75rem; margin-bottom:0.6rem; color:#fca5a5; font-weight:700;">
+                            💖 ¡Racha impecable de 10 aciertos seguidos! Has recuperado una vida perdida (${this.getLivesHearts()}).
+                           </div>`
+                        : '';
+                    feedbackText.innerHTML = `${recoveryNotice}<strong>💡 Principio Físico:</strong> ${q.explicacion}`;
+                }
+
+                // Configurar botón siguiente
+                if (nextBtn) {
+                    nextBtn.innerHTML = `Siguiente Pregunta ➔`;
+                    nextBtn.className = 'btn btn-primary btn-next-trivia';
+                    nextBtn.style.background = '';
+                    nextBtn.onclick = () => { window.TRIVIA_ENGINE.nextQuestion(); };
+                    nextBtn.style.display = 'inline-flex';
+                    if (typeof nextBtn.focus === 'function') nextBtn.focus();
                 }
             } else {
+                // RESPUESTA INCORRECTA -> Restar 1 vida y reiniciar racha
                 this.state.streak = 0;
                 this.state.wrongCount++;
+                this.state.lives = Math.max(0, this.state.lives - 1);
+                this.renderLives();
 
-                if (feedbackCard) {
-                    feedbackCard.className = 'trivia-feedback-card wrong';
-                    feedbackCard.style.display = 'block';
-                }
-                if (feedbackTitle) {
-                    feedbackTitle.innerHTML = `❌ Respuesta Incorrecta <span style="font-size:0.85rem; color:#f87171; font-weight:normal;">(Racha reiniciada)</span>`;
-                }
-            }
+                if (this.state.lives > 0) {
+                    // Todavía tiene vidas restantes
+                    if (feedbackCard) {
+                        feedbackCard.className = 'trivia-feedback-card wrong';
+                        feedbackCard.style.display = 'block';
+                    }
+                    if (feedbackTitle) {
+                        feedbackTitle.innerHTML = `❌ Respuesta Incorrecta <span style="font-size:0.85rem; color:#f87171; font-weight:normal;">(-1 ❤️ Vida · ${this.state.lives} / 3 restantes)</span>`;
+                    }
+                    if (feedbackText) {
+                        feedbackText.innerHTML = `
+                            <div style="margin-bottom:0.45rem; color:#fca5a5; font-weight:600;">
+                                Te quedan <strong>${this.state.lives}</strong> vida${this.state.lives > 1 ? 's' : ''} (${this.getLivesHearts()}). ¡No te rindas!
+                            </div>
+                            <strong>💡 Principio Físico:</strong> ${q.explicacion}
+                        `;
+                    }
+                    if (nextBtn) {
+                        nextBtn.innerHTML = `Siguiente Pregunta ➔`;
+                        nextBtn.className = 'btn btn-primary btn-next-trivia';
+                        nextBtn.style.background = '';
+                        nextBtn.onclick = () => { window.TRIVIA_ENGINE.nextQuestion(); };
+                        nextBtn.style.display = 'inline-flex';
+                        if (typeof nextBtn.focus === 'function') nextBtn.focus();
+                    }
+                } else {
+                    // REGLA: GAME OVER AL AGOTAR LAS 3 VIDAS -> El sistema lo saca y lo ubica en el Ranking
+                    if (feedbackCard) {
+                        feedbackCard.className = 'trivia-feedback-card wrong';
+                        feedbackCard.style.display = 'block';
+                    }
+                    if (feedbackTitle) {
+                        feedbackTitle.innerHTML = `💔 ¡Te has quedado sin vidas! <span style="font-size:0.85rem; color:#f87171; font-weight:normal;">(3 errores cometidos · Fin de partida)</span>`;
+                    }
+                    if (feedbackText) {
+                        feedbackText.innerHTML = `
+                            <div style="background:rgba(239,68,68,0.2); border:1px solid rgba(239,68,68,0.45); padding:0.75rem 1rem; border-radius:8px; margin-bottom:0.8rem; color:#fecaca;">
+                                <strong style="display:block; font-size:0.95rem; margin-bottom:0.25rem;">🚨 Has agotado tus 3 vidas (${this.getLivesHearts()}).</strong>
+                                Tu puntuación final (<strong>${this.state.score.toLocaleString('es-ES')} pts</strong>) ha sido registrada y el sistema te ubicará en la tabla oficial de Ranking.
+                            </div>
+                            <strong>💡 Principio Físico:</strong> ${q.explicacion}
+                        `;
+                    }
+                    if (nextBtn) {
+                        nextBtn.innerHTML = `🏆 Ver mi Posición en el Ranking ➔`;
+                        nextBtn.className = 'btn btn-primary btn-next-trivia';
+                        nextBtn.style.background = 'linear-gradient(135deg, #ef4444, #b91c1c)';
+                        nextBtn.onclick = () => {
+                            if (this.gameOverTimeout) clearTimeout(this.gameOverTimeout);
+                            this.finishAndShowRanking();
+                        };
+                        nextBtn.style.display = 'inline-flex';
+                        if (typeof nextBtn.focus === 'function') nextBtn.focus();
+                    }
 
-            if (feedbackText) {
-                feedbackText.innerHTML = `<strong>💡 Principio Físico:</strong> ${q.explicacion}`;
+                    // Guardar resultado y redirigir automáticamente al ranking tras pausa pedagógica
+                    this.saveProfile();
+                    if (this.gameOverTimeout) clearTimeout(this.gameOverTimeout);
+                    this.gameOverTimeout = setTimeout(() => {
+                        if (this.state.currentView === 'game') {
+                            this.finishAndShowRanking();
+                        }
+                    }, 3600);
+                }
             }
 
             // Actualizar contadores superiores
@@ -297,12 +461,6 @@
             if (scoreEl) scoreEl.textContent = `${this.state.score.toLocaleString('es-ES')} pts`;
             if (streakEl) {
                 streakEl.innerHTML = `🔥 ${this.state.streak} <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">(Máx: ${this.state.maxStreak})</span>`;
-            }
-
-            // Mostrar botón siguiente
-            if (nextBtn) {
-                nextBtn.style.display = 'inline-flex';
-                nextBtn.focus();
             }
 
             // Guardar progreso continuamente
@@ -316,20 +474,24 @@
             this.renderQuestion();
         },
 
-        // Pantalla de finalización o pausa
+        // Pantalla de finalización o pausa -> ir al ranking
         finishAndShowRanking: function() {
+            if (this.gameOverTimeout) {
+                clearTimeout(this.gameOverTimeout);
+                this.gameOverTimeout = null;
+            }
             this.saveProfile();
             this.switchView('ranking');
         },
 
-        // Pantalla de juego completado (las 1.000 preguntas)
+        // Pantalla de juego completado
         renderCompleted: function() {
             const container = document.getElementById('trivia-game-body');
             if (container) {
                 container.innerHTML = `
                     <div style="text-align:center; padding:2.5rem 1rem;">
                         <span style="font-size:4rem; display:block; margin-bottom:1rem;">🏆 ⚛️ 🥇</span>
-                        <h3 style="font-size:1.8rem; color:#fff; margin-bottom:0.5rem;">¡HAZ COMPLETADO LAS 1.000 PREGUNTAS!</h3>
+                        <h3 style="font-size:1.8rem; color:#fff; margin-bottom:0.5rem;">¡HAS COMPLETADO EL GRAN DESAFÍO DE FÍSICA!</h3>
                         <p style="color:var(--text-muted); max-width:600px; margin:0 auto 1.5rem; line-height:1.5;">
                             Increíble hazaña científica. Has recorrido todos los campos de la física: desde metrología elemental hasta mecánica cuántica y astrofísica sin consultar apuntes ni IA.
                         </p>
@@ -341,6 +503,10 @@
                             <div>
                                 <span style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase;">Racha Récord:</span>
                                 <strong style="font-size:1.6rem; color:#fbbf24; display:block;">🔥 ${this.state.maxStreak}</strong>
+                            </div>
+                            <div>
+                                <span style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase;">Vidas Finales:</span>
+                                <strong style="font-size:1.4rem; color:#ef4444; display:block;">${this.getLivesHearts()}</strong>
                             </div>
                         </div>
                         <div>
@@ -428,6 +594,18 @@
                 ? ranking.filter(r => r.name.toLowerCase().includes(query) || (r.institution || '').toLowerCase().includes(query))
                 : ranking;
 
+            // Actualizar botón de acción en cabecera de ranking
+            const playBtn = document.getElementById('trivia-ranking-play-btn');
+            if (playBtn) {
+                if (this.state.lives <= 0) {
+                    playBtn.innerHTML = `🎮 Nueva Partida (3 Vidas ❤️)`;
+                    playBtn.onclick = () => { TRIVIA_ENGINE.start(true); };
+                } else {
+                    playBtn.innerHTML = `🚀 Continuar Partida (${this.getLivesHearts()})`;
+                    playBtn.onclick = () => { TRIVIA_ENGINE.switchView('game'); };
+                }
+            }
+
             // Podio Top 3 (solo si no hay búsqueda activa)
             if (podiumEl && !query) {
                 podiumEl.style.display = 'grid';
@@ -506,7 +684,7 @@
                                     ${item.score.toLocaleString('es-ES')} pts
                                 </td>
                                 <td style="text-align:center; font-family:monospace; font-size:0.85rem;">
-                                    Q#${item.highestQuestion || 1} / 1000
+                                    Q#${item.highestQuestion || 1}
                                 </td>
                                 <td style="text-align:center; font-size:0.85rem; color:#fbbf24; font-weight:700;">
                                     🔥 ${item.maxStreak || 0}
@@ -530,8 +708,9 @@
 
             const text = encodeURIComponent(
                 `🧠 ¡Acabo de registrar ${score.toLocaleString('es-ES')} puntos en la Gran Trivia de Física de PhysicsAILab!\n` +
-                `🎯 Nivel alcanzado: Pregunta #${qNum} de 1.000\n` +
+                `🎯 Nivel alcanzado: Pregunta #${qNum}\n` +
                 `🔥 Mejor racha consecutiva: ${streak} aciertos seguidos\n` +
+                `❤️ Vidas finales: ${this.getLivesHearts()}\n` +
                 `¿Qué tanto sabes sobre física? Pon a prueba tus propios conocimientos sin ayuda de la IA: https://www.physicsailab.com/#trivia`
             );
 
