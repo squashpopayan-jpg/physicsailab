@@ -904,13 +904,12 @@ window.PLATFORM_DATA = {
             destacado: true,
             tipo: "Simulador 3D WebGL / Three.js",
             demoPath: "/material/1_cursos/recorrido/recorrido3d.html",
-            precioEstimado: "$29 USD (~$115.000 COP)",
-            precioCOP: 115000,
-            precioUSD: 29,
-            valorReal: "$59 USD",
-            descuentoTag: "Gemelo Digital 3D",
-            enlaceCompra: "https://hotmart.com",
-            enlaceWompi: "https://checkout.wompi.co/l/VPOS_b6GD2z"
+            precioEstimado: "Acceso Libre / Abierto",
+            precioCOP: 0,
+            precioUSD: 0,
+            esLaboratorio: true,
+            accesoLibre: true,
+            descuentoTag: "Acceso Libre 100% Gratuito"
         },
         {
             id: "optica",

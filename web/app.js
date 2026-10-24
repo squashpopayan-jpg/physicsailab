@@ -416,7 +416,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function isCourseUnlocked(courseId) {
         if (isAdmin()) return true;
         const c = (data.cursos || []).find(x => x.id === courseId);
-        if (c && (c.accesoLibre || c.precioCOP === 0)) return true;
+        if (c && (c.accesoLibre || c.precioCOP === 0 || c.id === 'recorrido')) return true;
         if (isAdmin()) return true;
         const list = getUnlockedCourses();
         if (list.includes(courseId)) return true;
@@ -3511,7 +3511,7 @@ document.addEventListener('DOMContentLoaded', () => {
         container.innerHTML = courses.map(c => {
             const originalCOP = c.precioCOP || 115000;
             const originalUSD = c.precioUSD || 29;
-            const isFreeLab = c.accesoLibre || c.precioCOP === 0;
+            const isFreeLab = c.accesoLibre || c.precioCOP === 0 || c.id === 'recorrido';
             const courseUnlocked = isCourseUnlocked(c.id);
 
             let priceHtml = '';
