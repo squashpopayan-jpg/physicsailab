@@ -8204,6 +8204,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'cursos',
         'tienda',
         'quizzes',
+        'trivia',
         'juegos',
         'comics',
         'podcasts',
@@ -8268,6 +8269,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     window.renderStoreCourses();
                 }
             }, 60);
+        }
+
+        if (sectionId === 'trivia') {
+            setTimeout(() => {
+                if (window.TRIVIA_ENGINE && typeof window.TRIVIA_ENGINE.init === 'function') {
+                    window.TRIVIA_ENGINE.init();
+                }
+            }, 50);
         }
 
         // Actualizar historial del navegador (back/forward button)
