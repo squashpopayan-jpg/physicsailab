@@ -12,10 +12,7 @@
     const LAB_COURSE_IDS = [
         "transformadores",
         "pendulo",
-        "venturi",
-        "laboratorio",
-        "guias",
-        "recorrido"
+        "venturi"
     ];
     const DEFAULT_COURSE_KEYS = {
         "mecanica": ["MECANICA-2026", "OBANDO-MEC-26"],
@@ -742,7 +739,7 @@
     // Floating bar
     let topBar = null;
     function renderTopBar() {
-        if (isRecorrido) return; // Tour 3D liberado
+        // Recorrido sujeto a clave
         if (!topBar) {
             topBar = document.createElement('div');
             document.body.appendChild(topBar);
@@ -1329,7 +1326,7 @@
     // Actualización de estado general
     // ----------------------------------------------------
     function updateGuardState() {
-        if (isRecorrido) return; // Tour 3D liberado
+        // Recorrido sujeto a clave
 
         renderTopBar();
         if (isPendulo) {

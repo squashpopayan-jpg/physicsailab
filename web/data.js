@@ -682,11 +682,11 @@ window.PLATFORM_DATA = {
             tipo: "Laboratorio Virtual & Cuaderno Experimental",
             esLaboratorio: true,
             demoPath: "/material/1_cursos/laboratorio/dist/index.html",
-            precioEstimado: "Acceso Libre / Abierto",
-            precioCOP: 0,
-            precioUSD: 0,
-            accesoLibre: true,
-            descuentoTag: "Laboratorio Abierto 100% Libre",
+            precioEstimado: "$35 USD (~$140.000 COP)",
+            precioCOP: 140000,
+            precioUSD: 35,
+            valorReal: "$79 USD",
+            descuentoTag: "Nuevo · 38 Prácticas",
             enlaceCompra: "https://hotmart.com",
             enlaceWompi: "https://checkout.wompi.co/l/VPOS_b6GD2z"
         },
@@ -838,11 +838,11 @@ window.PLATFORM_DATA = {
             esLaboratorio: true,
             tipo: "Cuaderno Interactivo + Generador Word",
             demoPath: "/material/1_cursos/guias/dist/index.html",
-            precioEstimado: "Acceso Libre / Abierto",
-            precioCOP: 0,
-            precioUSD: 0,
-            accesoLibre: true,
-            descuentoTag: "Laboratorio Abierto 100% Libre",
+            precioEstimado: "$29 USD (~$115.000 COP)",
+            precioCOP: 115000,
+            precioUSD: 29,
+            valorReal: "$59 USD",
+            descuentoTag: "Nuevo Lanzamiento 2026",
             enlaceCompra: "https://hotmart.com",
             enlaceWompi: "https://checkout.wompi.co/l/VPOS_b6GD2z"
         },
@@ -904,11 +904,13 @@ window.PLATFORM_DATA = {
             destacado: true,
             tipo: "Simulador 3D WebGL / Three.js",
             demoPath: "/material/1_cursos/recorrido/recorrido3d.html",
-            precioEstimado: "Acceso Libre / Abierto",
-            precioCOP: 0,
-            precioUSD: 0,
-            esLaboratorio: true,
-            accesoLibre: true
+            precioEstimado: "$29 USD (~$115.000 COP)",
+            precioCOP: 115000,
+            precioUSD: 29,
+            valorReal: "$59 USD",
+            descuentoTag: "Gemelo Digital 3D",
+            enlaceCompra: "https://hotmart.com",
+            enlaceWompi: "https://checkout.wompi.co/l/VPOS_b6GD2z"
         },
         {
             id: "optica",
@@ -962,7 +964,7 @@ window.PLATFORM_DATA = {
         }
     ],
 
-    // Canales Oficiales en Spotify (Investigación publicada en Revista Góndola)
+    // Canales Oficiales en Spotify (Proyectos de estudiantes - Universidad del Cauca)
     canalesSpotify: [
         {
             id: "sp-1",
