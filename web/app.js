@@ -3511,13 +3511,29 @@ document.addEventListener('DOMContentLoaded', () => {
         container.innerHTML = courses.map(c => {
             const originalCOP = c.precioCOP || 115000;
             const originalUSD = c.precioUSD || 29;
+            const isFreeLab = c.accesoLibre || c.precioCOP === 0 || c.id === 'recorrido';
             const courseUnlocked = isCourseUnlocked(c.id);
 
             let priceHtml = '';
             let buyButtonText = '';
             let buyAction = '';
 
-            if (coupon) {
+            if (isFreeLab) {
+                priceHtml = `
+                    <div class="store-price-box" style="background:rgba(16,185,129,0.08); border-color:rgba(16,185,129,0.32);">
+                        <div>
+                            <div style="font-size:0.72rem; text-transform:uppercase; color:#34D399; font-weight:700;">Laboratorio Virtual:</div>
+                            <span class="store-price-regular" style="color:#34D399; font-size:1.15rem;">Acceso 100% Libre</span>
+                            <div style="font-size:0.75rem; color:#A7F3D0; margin-top:0.2rem;">Disponible para toda la comunidad</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <span style="font-size:0.72rem; color:#10B981; background:rgba(16,185,129,0.2); border:1px solid rgba(16,185,129,0.4); padding:0.2rem 0.5rem; border-radius:6px; font-weight:700;">
+                                🔬 Sin Restricción
+                            </span>
+                        </div>
+                    </div>
+                `;
+            } else if (coupon) {
                 const discountPct = coupon.descuentoPorcentaje;
                 const discountCOP = Math.round(originalCOP * (discountPct / 100));
                 const finalCOP = originalCOP - discountCOP;
@@ -3580,24 +3596,39 @@ document.addEventListener('DOMContentLoaded', () => {
                         ${priceHtml}
 
                         <div style="display:flex; flex-direction:column; gap:0.45rem; margin-top:0.75rem;">
-                            ${courseUnlocked ? `
+                            ${isFreeLab ? `
+                                <div style="text-align:center; padding:0.45rem; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); border-radius:8px; color:#34D399; font-weight:700; font-size:0.82rem;">
+                                    🔬 Laboratorio Virtual 100% Libre y Gratuito
+                                </div>
+                                ${c.demoPath ? `<a href="${c.demoPath}" target="_blank" class="btn btn-primary" style="justify-content:center; background:linear-gradient(135deg, #10b981, #059669); border:none; box-shadow:0 6px 18px rgba(16,185,129,0.35); font-weight:800;">Abrir Laboratorio Virtual 🔬</a>` : ''}
+                                <div style="display:flex; gap:0.4rem;">
+                                    <button type="button" class="btn btn-secondary" onclick="openCourseDetails('${c.id}')" style="flex:1; justify-content:center; font-size:0.8rem; padding:0.45rem;">
+                                        Ver Temario y Prácticas
+                                    </button>
+                                </div>
+                            ` : courseUnlocked ? `
                                 <div style="text-align:center; padding:0.5rem; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); border-radius:8px; color:#34D399; font-weight:700; font-size:0.82rem;">
                                     ✓ ¡Ya tienes este curso desbloqueado!
                                 </div>
                                 ${c.demoPath ? `<a href="${c.demoPath}" target="_blank" class="btn btn-primary" style="justify-content:center;">Abrir Cuaderno Computacional 🚀</a>` : ''}
+                                <div style="display:flex; gap:0.4rem;">
+                                    <button type="button" class="btn btn-secondary" onclick="openCourseDetails('${c.id}')" style="flex:1; justify-content:center; font-size:0.8rem; padding:0.45rem;">
+                                        Ver Temario
+                                    </button>
+                                </div>
                             ` : `
                                 <button type="button" class="btn btn-primary" onclick="${buyAction}" style="justify-content:center; font-weight:800; background:linear-gradient(135deg, #10b981, #059669); border:none; box-shadow:0 6px 18px rgba(16,185,129,0.35);">
                                     ${buyButtonText}
                                 </button>
+                                <div style="display:flex; gap:0.4rem;">
+                                    <button type="button" class="btn btn-secondary" onclick="openCourseDetails('${c.id}')" style="flex:1; justify-content:center; font-size:0.8rem; padding:0.45rem;">
+                                        Ver Temario
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" onclick="openCourseKeyModal('${c.id}')" style="flex:1; justify-content:center; font-size:0.8rem; padding:0.45rem; border-color:var(--accent-amber); color:var(--accent-amber);" title="Si ya compraste y tienes tu clave">
+                                        🔑 Tengo Clave
+                                    </button>
+                                </div>
                             `}
-                            <div style="display:flex; gap:0.4rem;">
-                                <button type="button" class="btn btn-secondary" onclick="openCourseDetails('${c.id}')" style="flex:1; justify-content:center; font-size:0.8rem; padding:0.45rem;">
-                                    Ver Temario
-                                </button>
-                                <button type="button" class="btn btn-secondary" onclick="openCourseKeyModal('${c.id}')" style="flex:1; justify-content:center; font-size:0.8rem; padding:0.45rem; border-color:var(--accent-amber); color:var(--accent-amber);" title="Si ya compraste y tienes tu clave">
-                                    🔑 Tengo Clave
-                                </button>
-                            </div>
                         </div>
                     </div>
                 </div>

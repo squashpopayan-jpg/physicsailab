@@ -9,6 +9,14 @@
     'use strict';
 
     const ADMIN_MASTER_KEY = "OBANDO-ADMIN-2026";
+    const LAB_COURSE_IDS = [
+        "transformadores",
+        "pendulo",
+        "venturi",
+        "laboratorio",
+        "guias",
+        "recorrido"
+    ];
     const DEFAULT_COURSE_KEYS = {
         "mecanica": ["MECANICA-2026", "OBANDO-MEC-26"],
         "materiales": ["MATERIALES-2026", "SOLIDOS-UFOP-26"],
@@ -90,8 +98,8 @@
 
     function isUnlocked() {
         const cId = getCurrentCourseId();
-        // El recorrido 3D es de acceso libre y abierto
-        if (cId === 'recorrido') return true;
+        // Todos los Laboratorios de física están 100% liberados para el público general:
+        if (LAB_COURSE_IDS.includes(cId)) return true;
 
         try {
             // 1. Modo Administrador General (Profesor Obando): todo liberado
@@ -609,7 +617,7 @@
                 <div class="pg-card-buy">
                     <h4>🛒 Adquirir Licencia del ${buyEntityName}</h4>
                     <div class="pg-coupon-pill">
-                        🏷️ Cupón de Descuento: <strong>30% y 40% OFF</strong> disponible en tienda
+                        🏷️ Cupón de Descuento: <strong>Solicita tu código de 30% o 40% al Profesor</strong>
                     </div>
                     <p>Acceso permanente de por vida · Sin mensualidades · Certificación y soporte directo de autor (Mg. Manuel Alejandro Obando — Universidad del Cauca).</p>
                     <div class="pg-buy-actions">
@@ -738,6 +746,13 @@
         if (!topBar) {
             topBar = document.createElement('div');
             document.body.appendChild(topBar);
+        }
+
+        const curCourse = getCurrentCourseId();
+        if (LAB_COURSE_IDS.includes(curCourse)) {
+            topBar.className = 'pg-top-bar unlocked';
+            topBar.innerHTML = `<span>🔬 <strong>Laboratorio Virtual Abierto</strong> · Acceso Libre al Público</span>`;
+            return;
         }
 
         const unlocked = isUnlocked();

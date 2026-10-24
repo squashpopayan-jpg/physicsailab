@@ -97,6 +97,8 @@
         animId: null,
         angle: 45,
         v0: 38,
+        cannonX: 40,
+        showTrajectory: true,
         gravityKey: 'earth',
         gravities: {
             earth: { name: '🌍 Tierra', g: 9.8, color: '#38bdf8' },
@@ -114,6 +116,52 @@
         trajectoryTrail: [],
         particles: [],
         isAiming: false,
+
+        toggleTrajectory() {
+            this.showTrajectory = !this.showTrajectory;
+            playSound('click');
+            const btn = document.getElementById('btn-toggle-traj');
+            if (btn) {
+                if (this.showTrajectory) {
+                    btn.classList.add('active');
+                    btn.classList.remove('hidden-traj');
+                    btn.innerHTML = '👁️ Trayectoria: <strong>Visible</strong>';
+                } else {
+                    btn.classList.remove('active');
+                    btn.classList.add('hidden-traj');
+                    btn.innerHTML = '🙈 Trayectoria: <strong>Oculta</strong>';
+                }
+            }
+        },
+
+        setCannonX(val) {
+            const maxCannonX = Math.min(Math.floor(this.w * 0.42), 220);
+            this.cannonX = Math.max(15, Math.min(maxCannonX, Math.round(val)));
+            const rng = document.getElementById('rng-cannon-x');
+            const lbl = document.getElementById('lbl-cannon-x');
+            if (rng) rng.value = this.cannonX;
+            if (lbl) lbl.textContent = this.cannonX + ' m';
+            this.updateTelemetry();
+        },
+
+        nudgeCannonX(delta) {
+            this.setCannonX(this.cannonX + delta);
+        },
+
+        setTargetX(val) {
+            const minTargetX = Math.max(this.cannonX + 45, Math.floor(this.w * 0.35));
+            const maxTargetX = Math.floor(this.w - 30);
+            this.target.x = Math.max(minTargetX, Math.min(maxTargetX, Math.round(val)));
+            const rng = document.getElementById('rng-target-x');
+            const lbl = document.getElementById('lbl-target-x');
+            if (rng) rng.value = Math.round(this.target.x);
+            if (lbl) lbl.textContent = Math.round(this.target.x) + ' m';
+            this.updateTelemetry();
+        },
+
+        nudgeTargetX(delta) {
+            this.setTargetX(this.target.x + delta);
+        },
 
         nudgeAngle(delta) {
             const rngA = document.getElementById('rng-angle');
@@ -159,10 +207,11 @@
                                 <canvas id="cannon-canvas"></canvas>
                             </div>
 
-                            <!-- Barra de Telemetría Dinámica (FUERA del canvas para no tapar el cañón ni el blanco) -->
+                            <!-- Barra de Telemetría Dinámica -->
                             <div class="game-telemetry-bar" id="cannon-telemetry">
                                 <span>📐 θ = <strong id="t-angle">45°</strong></span>
                                 <span>🚀 v₀ = <strong id="t-v0">38 m/s</strong></span>
+                                <span>📏 ΔX = <strong id="t-dist">220 m</strong></span>
                                 <span>⏱️ T_vuelo = <strong id="t-time">---</strong></span>
                                 <span>⛰️ H_max = <strong id="t-hmax">---</strong></span>
                                 <span>🎯 R_teórico = <strong id="t-range">---</strong></span>
@@ -173,8 +222,11 @@
                                 <button type="button" class="btn-game-primary btn-fire-large" id="btn-fire" onclick="window.CannonGame.fire()">
                                     🚀 ¡DISPARAR CAÑÓN!
                                 </button>
+                                <button type="button" class="btn-game-toggle ${this.showTrajectory ? 'active' : 'hidden-traj'}" id="btn-toggle-traj" onclick="window.CannonGame.toggleTrajectory()" title="Ocultar o mostrar la guía y estela del tiro">
+                                    ${this.showTrajectory ? '👁️ Trayectoria: <strong>Visible</strong>' : '🙈 Trayectoria: <strong>Oculta</strong>'}
+                                </button>
                                 <button type="button" class="btn-game-secondary" onclick="window.CannonGame.resetTarget()" title="Generar un nuevo objetivo a diferente distancia">
-                                    🎯 Nuevo Blanco
+                                    🎯 Blanco Aleatorio
                                 </button>
                             </div>
                         </div>
@@ -182,6 +234,7 @@
                         <!-- Columna de Controles e Instrumentación -->
                         <div class="game-controls-col">
                             <div class="game-controls-panel">
+                                <!-- Ángulo -->
                                 <div class="ctrl-group">
                                     <div class="ctrl-header-row">
                                         <label>📐 Ángulo de Tiro (θ): <strong id="lbl-angle">45°</strong></label>
@@ -194,6 +247,7 @@
                                     </div>
                                 </div>
 
+                                <!-- Rapidez inicial -->
                                 <div class="ctrl-group">
                                     <div class="ctrl-header-row">
                                         <label>🚀 Rapidez Inicial (v₀): <strong id="lbl-v0">38 m/s</strong></label>
@@ -206,6 +260,33 @@
                                     </div>
                                 </div>
 
+                                <!-- Cañón Móvil X0 -->
+                                <div class="ctrl-group">
+                                    <div class="ctrl-header-row">
+                                        <label>🚀 Posición Cañón (X₀): <strong id="lbl-cannon-x">40 m</strong></label>
+                                        <span class="ctrl-badge" style="background:rgba(168,85,247,0.15); color:#c084fc;">Lanzamiento</span>
+                                    </div>
+                                    <div class="slider-with-nudge">
+                                        <button type="button" class="btn-nudge" onclick="window.CannonGame.nudgeCannonX(-5)" title="Retroceder cañón 5m">−5m</button>
+                                        <input type="range" id="rng-cannon-x" min="15" max="180" value="40" class="game-slider" aria-label="Posición inicial X del cañón">
+                                        <button type="button" class="btn-nudge" onclick="window.CannonGame.nudgeCannonX(+5)" title="Avanzar cañón 5m">+5m</button>
+                                    </div>
+                                </div>
+
+                                <!-- Blanco Móvil X -->
+                                <div class="ctrl-group">
+                                    <div class="ctrl-header-row">
+                                        <label>🎯 Posición Blanco (X): <strong id="lbl-target-x">260 m</strong></label>
+                                        <span class="ctrl-badge" style="background:rgba(239,68,68,0.15); color:#f87171;">Objetivo</span>
+                                    </div>
+                                    <div class="slider-with-nudge">
+                                        <button type="button" class="btn-nudge" onclick="window.CannonGame.nudgeTargetX(-10)" title="Mover blanco 10m a la izquierda">−10m</button>
+                                        <input type="range" id="rng-target-x" min="70" max="420" value="260" class="game-slider" aria-label="Posición X del blanco">
+                                        <button type="button" class="btn-nudge" onclick="window.CannonGame.nudgeTargetX(+10)" title="Mover blanco 10m a la derecha">+10m</button>
+                                    </div>
+                                </div>
+
+                                <!-- Entorno Gravitacional -->
                                 <div class="ctrl-group">
                                     <span class="ctrl-sublabel">🪐 Gravedad Planetaria:</span>
                                     <div class="btn-group-row">
@@ -222,11 +303,11 @@
                     <div class="game-physics-note">
                         <span class="note-icon">💡</span>
                         <div class="note-content">
-                            <strong>Ecuaciones de Cinemática en 2D:</strong>
+                            <strong>Ecuaciones de Cinemática en 2D & Tiro de Precisión:</strong>
                             <p>
-                                Posición horizontal: <code>x(t) = v₀·cos(θ)·t + ½·a_viento·t²</code> &nbsp;|&nbsp;
+                                Posición horizontal: <code>x(t) = X₀ + v₀·cos(θ)·t + ½·a_viento·t²</code> &nbsp;|&nbsp;
                                 Posición vertical: <code>y(t) = v₀·sin(θ)·t - ½·g·t²</code> &nbsp;|&nbsp;
-                                Alcance teórico ideal: <code>R = (v₀²·sin(2θ)) / g</code>
+                                Distancia al objetivo: <code>ΔX = X_blanco - X₀</code>
                             </p>
                         </div>
                     </div>
@@ -250,17 +331,31 @@
             this.ctx = s.ctx;
             this.w = w;
             this.h = h;
+
+            // Update bounds for sliders
+            const rngT = document.getElementById('rng-target-x');
+            if (rngT) {
+                rngT.max = Math.floor(w - 30);
+            }
+            const rngC = document.getElementById('rng-cannon-x');
+            if (rngC) {
+                rngC.max = Math.min(Math.floor(w * 0.42), 220);
+            }
         },
 
         bindEvents() {
             const rngA = document.getElementById('rng-angle');
             const rngV = document.getElementById('rng-v0');
+            const rngC = document.getElementById('rng-cannon-x');
+            const rngT = document.getElementById('rng-target-x');
 
             if (rngA) {
                 rngA.addEventListener('input', (e) => {
                     this.angle = parseInt(e.target.value, 10);
-                    document.getElementById('lbl-angle').textContent = this.angle + '°';
-                    document.getElementById('t-angle').textContent = this.angle + '°';
+                    const lblA = document.getElementById('lbl-angle');
+                    const tA = document.getElementById('t-angle');
+                    if (lblA) lblA.textContent = this.angle + '°';
+                    if (tA) tA.textContent = this.angle + '°';
                     this.updateTelemetry();
                 });
             }
@@ -268,19 +363,38 @@
             if (rngV) {
                 rngV.addEventListener('input', (e) => {
                     this.v0 = parseInt(e.target.value, 10);
-                    document.getElementById('lbl-v0').textContent = this.v0 + ' m/s';
-                    document.getElementById('t-v0').textContent = this.v0 + ' m/s';
+                    const lblV = document.getElementById('lbl-v0');
+                    const tV = document.getElementById('t-v0');
+                    if (lblV) lblV.textContent = this.v0 + ' m/s';
+                    if (tV) tV.textContent = this.v0 + ' m/s';
                     this.updateTelemetry();
                 });
             }
 
-            // Touch drag on canvas to aim
-            const onPointerMove = (clientX, clientY) => {
-                if (!this.isAiming) return;
+            if (rngC) {
+                rngC.addEventListener('input', (e) => {
+                    this.setCannonX(parseInt(e.target.value, 10));
+                });
+            }
+
+            if (rngT) {
+                rngT.addEventListener('input', (e) => {
+                    this.setTargetX(parseInt(e.target.value, 10));
+                });
+            }
+
+            let dragMode = null; // null | 'aim' | 'cannon' | 'target'
+
+            const getCanvasPos = (clientX, clientY) => {
                 const r = this.canvas.getBoundingClientRect();
-                const x = clientX - r.left;
-                const y = clientY - r.top;
-                const originX = 40;
+                return {
+                    x: clientX - r.left,
+                    y: clientY - r.top
+                };
+            };
+
+            const aimAt = (x, y) => {
+                const originX = this.cannonX;
                 const originY = this.h - 35;
                 const dx = x - originX;
                 const dy = originY - y;
@@ -294,22 +408,71 @@
 
                     if (rngA) rngA.value = clampedAng;
                     if (rngV) rngV.value = v;
-                    document.getElementById('lbl-angle').textContent = clampedAng + '°';
-                    document.getElementById('t-angle').textContent = clampedAng + '°';
-                    document.getElementById('lbl-v0').textContent = v + ' m/s';
-                    document.getElementById('t-v0').textContent = v + ' m/s';
+                    const lblA = document.getElementById('lbl-angle');
+                    const tA = document.getElementById('t-angle');
+                    const lblV = document.getElementById('lbl-v0');
+                    const tV = document.getElementById('t-v0');
+                    if (lblA) lblA.textContent = clampedAng + '°';
+                    if (tA) tA.textContent = clampedAng + '°';
+                    if (lblV) lblV.textContent = v + ' m/s';
+                    if (tV) tV.textContent = v + ' m/s';
                     this.updateTelemetry();
                 }
             };
 
-            this.canvas.addEventListener('mousedown', (e) => { this.isAiming = true; onPointerMove(e.clientX, e.clientY); });
+            const onPointerDown = (clientX, clientY) => {
+                const pos = getCanvasPos(clientX, clientY);
+                const groundY = this.h - 32;
+                const dTarget = Math.hypot(pos.x - this.target.x, pos.y - this.target.y);
+                const dCannon = Math.hypot(pos.x - this.cannonX, pos.y - groundY);
+
+                if (dTarget <= this.target.r + 14) {
+                    dragMode = 'target';
+                } else if (dCannon <= 32) {
+                    dragMode = 'cannon';
+                } else {
+                    dragMode = 'aim';
+                    this.isAiming = true;
+                    aimAt(pos.x, pos.y);
+                }
+            };
+
+            const onPointerMove = (clientX, clientY) => {
+                const pos = getCanvasPos(clientX, clientY);
+
+                if (dragMode === 'target') {
+                    this.setTargetX(pos.x);
+                } else if (dragMode === 'cannon') {
+                    this.setCannonX(pos.x);
+                } else if (dragMode === 'aim' && this.isAiming) {
+                    aimAt(pos.x, pos.y);
+                } else if (!dragMode) {
+                    // Update hover cursor
+                    const groundY = this.h - 32;
+                    const dTarget = Math.hypot(pos.x - this.target.x, pos.y - this.target.y);
+                    const dCannon = Math.hypot(pos.x - this.cannonX, pos.y - groundY);
+                    if (dTarget <= this.target.r + 14) {
+                        this.canvas.style.cursor = 'grab';
+                    } else if (dCannon <= 32) {
+                        this.canvas.style.cursor = 'ew-resize';
+                    } else {
+                        this.canvas.style.cursor = 'crosshair';
+                    }
+                }
+            };
+
+            const onPointerUp = () => {
+                dragMode = null;
+                this.isAiming = false;
+            };
+
+            this.canvas.addEventListener('mousedown', (e) => onPointerDown(e.clientX, e.clientY));
             window.addEventListener('mousemove', (e) => onPointerMove(e.clientX, e.clientY));
-            window.addEventListener('mouseup', () => { this.isAiming = false; });
+            window.addEventListener('mouseup', onPointerUp);
 
             this.canvas.addEventListener('touchstart', (e) => {
                 if (e.touches && e.touches[0]) {
-                    this.isAiming = true;
-                    onPointerMove(e.touches[0].clientX, e.touches[0].clientY);
+                    onPointerDown(e.touches[0].clientX, e.touches[0].clientY);
                 }
             }, { passive: true });
 
@@ -319,7 +482,7 @@
                 }
             }, { passive: true });
 
-            this.canvas.addEventListener('touchend', () => { this.isAiming = false; });
+            this.canvas.addEventListener('touchend', onPointerUp);
         },
 
         setGravity(k) {
@@ -338,7 +501,7 @@
         },
 
         resetTarget() {
-            const minX = Math.floor(this.w * 0.45);
+            const minX = Math.max(this.cannonX + 55, Math.floor(this.w * 0.45));
             const maxX = Math.floor(this.w * 0.90);
             this.target.x = minX + Math.random() * (maxX - minX);
             this.target.minY = Math.floor(this.h * 0.25);
@@ -347,6 +510,11 @@
             this.target.r = Math.max(16, Math.min(26, Math.floor(this.w * 0.035)));
             this.target.vy = (Math.random() > 0.5 ? 1 : -1) * (0.4 + Math.random() * 0.6);
 
+            const rngT = document.getElementById('rng-target-x');
+            const lblT = document.getElementById('lbl-target-x');
+            if (rngT) rngT.value = Math.round(this.target.x);
+            if (lblT) lblT.textContent = Math.round(this.target.x) + ' m';
+
             // Random wind: between -10 and +10 m/s
             this.wind = Math.round((Math.random() - 0.5) * 16);
             const windEl = document.getElementById('c-wind');
@@ -354,6 +522,7 @@
                 windEl.textContent = (this.wind > 0 ? `+${this.wind}` : `${this.wind}`) + ' m/s';
                 windEl.style.color = this.wind > 0 ? '#34d399' : (this.wind < 0 ? '#f87171' : '#94a3b8');
             }
+            this.updateTelemetry();
         },
 
         updateTelemetry() {
@@ -363,14 +532,17 @@
             const tFlight = (2 * vy) / g;
             const hMax = (vy * vy) / (2 * g);
             const rIdeal = (this.v0 * this.v0 * Math.sin(2 * rad)) / g;
+            const deltaX = Math.round(this.target.x - this.cannonX);
 
             const tTime = document.getElementById('t-time');
             const tHmax = document.getElementById('t-hmax');
             const tRange = document.getElementById('t-range');
+            const tDist = document.getElementById('t-dist');
 
             if (tTime) tTime.textContent = tFlight.toFixed(2) + ' s';
             if (tHmax) tHmax.textContent = hMax.toFixed(1) + ' m';
             if (tRange) tRange.textContent = rIdeal.toFixed(1) + ' m';
+            if (tDist) tDist.textContent = deltaX + ' m';
         },
 
         fire() {
@@ -382,10 +554,11 @@
             const scale = this.w / 280; // Escala mundo -> pantalla
             const vx = this.v0 * Math.cos(rad) * scale * 0.28;
             const vy = -this.v0 * Math.sin(rad) * scale * 0.28;
+            const groundY = this.h - 32;
 
             this.projectile = {
-                x: 40 + Math.cos(rad) * 32,
-                y: (this.h - 35) - Math.sin(rad) * 32,
+                x: this.cannonX + Math.cos(rad) * 32,
+                y: groundY - Math.sin(rad) * 32,
                 vx: vx,
                 vy: vy,
                 t: 0
@@ -536,46 +709,49 @@
                 ctx.fillText(`${x}m`, x - 10, groundY + 18);
             }
 
-            // Trajectory trail of fired shot
-            if (this.trajectoryTrail.length > 1) {
+            // Trajectory trail & Theoretical Aiming Arc (if enabled)
+            if (this.showTrajectory) {
+                // Trajectory trail of fired shot
+                if (this.trajectoryTrail.length > 1) {
+                    ctx.beginPath();
+                    ctx.strokeStyle = '#38bdf8';
+                    ctx.lineWidth = 2.5;
+                    ctx.setLineDash([4, 4]);
+                    ctx.moveTo(this.trajectoryTrail[0].x, this.trajectoryTrail[0].y);
+                    for (let i = 1; i < this.trajectoryTrail.length; i++) {
+                        ctx.lineTo(this.trajectoryTrail[i].x, this.trajectoryTrail[i].y);
+                    }
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+
+                // Theoretical Aiming Arc (Dotted line preview)
+                const rad = (this.angle * Math.PI) / 180;
+                const scale = w / 280;
+                const g = this.gravities[this.gravityKey].g;
+                const gPix = (g * 0.009) * scale;
+                const windPix = (this.wind * 0.003) * scale;
+                let simVx = this.v0 * Math.cos(rad) * scale * 0.28;
+                let simVy = -this.v0 * Math.sin(rad) * scale * 0.28;
+                let simX = this.cannonX + Math.cos(rad) * 32;
+                let simY = groundY - Math.sin(rad) * 32;
+
                 ctx.beginPath();
-                ctx.strokeStyle = '#38bdf8';
-                ctx.lineWidth = 2.5;
-                ctx.setLineDash([4, 4]);
-                ctx.moveTo(this.trajectoryTrail[0].x, this.trajectoryTrail[0].y);
-                for (let i = 1; i < this.trajectoryTrail.length; i++) {
-                    ctx.lineTo(this.trajectoryTrail[i].x, this.trajectoryTrail[i].y);
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.28)';
+                ctx.lineWidth = 1.5;
+                ctx.setLineDash([2, 5]);
+                ctx.moveTo(simX, simY);
+                for (let step = 0; step < 35; step++) {
+                    simVx += windPix;
+                    simVy += gPix;
+                    simX += simVx;
+                    simY += simVy;
+                    if (simY > groundY) break;
+                    ctx.lineTo(simX, simY);
                 }
                 ctx.stroke();
                 ctx.setLineDash([]);
             }
-
-            // Theoretical Aiming Arc (Dotted line preview)
-            const rad = (this.angle * Math.PI) / 180;
-            const scale = w / 280;
-            const g = this.gravities[this.gravityKey].g;
-            const gPix = (g * 0.009) * scale;
-            const windPix = (this.wind * 0.003) * scale;
-            let simVx = this.v0 * Math.cos(rad) * scale * 0.28;
-            let simVy = -this.v0 * Math.sin(rad) * scale * 0.28;
-            let simX = 40 + Math.cos(rad) * 32;
-            let simY = groundY - Math.sin(rad) * 32;
-
-            ctx.beginPath();
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.28)';
-            ctx.lineWidth = 1.5;
-            ctx.setLineDash([2, 5]);
-            ctx.moveTo(simX, simY);
-            for (let step = 0; step < 35; step++) {
-                simVx += windPix;
-                simVy += gPix;
-                simX += simVx;
-                simY += simVy;
-                if (simY > groundY) break;
-                ctx.lineTo(simX, simY);
-            }
-            ctx.stroke();
-            ctx.setLineDash([]);
 
             // Draw Target (Moving Bullseye)
             ctx.save();
@@ -598,16 +774,18 @@
             ctx.arc(0, 0, this.target.r * 0.32, 0, Math.PI * 2);
             ctx.fillStyle = '#ef4444';
             ctx.fill();
-            // Floating target altitude indicator
+            // Floating target altitude and distance indicator
             ctx.fillStyle = '#38bdf8';
             ctx.font = 'bold 10px monospace';
             ctx.textAlign = 'center';
-            ctx.fillText(`h=${Math.round(groundY - this.target.y)}m`, 0, -this.target.r - 6);
+            const deltaX = Math.round(this.target.x - this.cannonX);
+            ctx.fillText(`ΔX=${deltaX}m · h=${Math.round(groundY - this.target.y)}m`, 0, -this.target.r - 6);
             ctx.restore();
 
             // Draw Cannon Base & Barrel
+            const rad = (this.angle * Math.PI) / 180;
             ctx.save();
-            ctx.translate(40, groundY);
+            ctx.translate(this.cannonX, groundY);
             // Rotating barrel
             ctx.save();
             ctx.rotate(-rad);
@@ -635,6 +813,12 @@
             ctx.arc(0, 0, 5, 0, Math.PI * 2);
             ctx.fillStyle = '#f8fafc';
             ctx.fill();
+
+            // Cannon base label
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '9px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(`X₀=${this.cannonX}m`, 0, 16);
             ctx.restore();
 
             // Projectile if in flight
