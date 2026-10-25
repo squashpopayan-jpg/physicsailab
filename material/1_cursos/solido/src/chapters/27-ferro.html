@@ -1,0 +1,74 @@
+<template class="chapter-src" data-id="ferro" data-num="27" data-title="Ferromagnetismo" data-part="Parte VI · Magnetismo" data-short="Magnetización espontánea y temperatura de Curie, interacción de intercambio y hamiltoniano de Heisenberg, campo medio de Weiss, solución autoconsistente y ley de Curie–Weiss, exponentes críticos, modelo de Ising y simulación de Monte Carlo frente a la solución de Onsager, ferromagnetismo itinerante y criterio de Stoner">
+<p class="lead">El hierro, el cobalto y el níquel están magnetizados espontáneamente aunque no haya campo aplicado. Las fuerzas entre dipolos magnéticos son demasiado débiles para explicarlo: alinearían los momentos solo por debajo de un kelvin, y el hierro sigue magnetizado hasta 1043 K. La causa es cuántica, una consecuencia del principio de Pauli y de la repulsión entre electrones: la interacción de intercambio. Este capítulo la presenta y estudia la transición ferromagnética con la teoría de campo medio y con simulaciones de Monte Carlo del modelo de Ising.</p>
+
+<section>
+<h2>Magnetización espontánea</h2>
+<p>Un ferromagneto tiene magnetización espontánea \(M_s(T)\) por debajo de la <span class="term">temperatura de Curie</span> \(T_C\); por encima es paramagnético con una susceptibilidad que sigue la <span class="term">ley de Curie–Weiss</span>, \(\chi=C/(T-\theta)\), con \(\theta\approx T_C\). En una pieza macroscópica la magnetización está dividida en dominios (capítulo 28) y la magnetización neta puede ser nula; la espontánea es la de cada dominio.</p>
+<div class="tablewrap"><table>
+<tr><th>Material</th><th class="c">\(M_s\) a 0 K (G)</th><th class="c">\(n_B\) (\(\mu_B\)/átomo o fórmula)</th><th class="c">\(T_C\) (K)</th></tr>
+<tr><td>Fe</td><td class="c">1752</td><td class="c">2.22</td><td class="c">1043</td></tr>
+<tr><td>Co</td><td class="c">1446</td><td class="c">1.72</td><td class="c">1388</td></tr>
+<tr><td>Ni</td><td class="c">510</td><td class="c">0.606</td><td class="c">627</td></tr>
+<tr><td>Gd</td><td class="c">2060</td><td class="c">7.63</td><td class="c">292</td></tr>
+<tr><td>CrO₂</td><td class="c">515</td><td class="c">2.03</td><td class="c">386</td></tr>
+<tr><td>Fe₃O₄ (ferrimagneto)</td><td class="c">480</td><td class="c">4.1</td><td class="c">858</td></tr>
+</table></div>
+<p>Los momentos no enteros del Fe, Co y Ni (2.22, 1.72, 0.606 \(\mu_B\)) muestran que el magnetismo de los metales de transición lo llevan electrones de banda, no momentos atómicos localizados; el gadolinio, en cambio, tiene casi los 7 \(\mu_B\) de su capa 4f más la polarización de los electrones de conducción.</p>
+</section>
+
+<section>
+<h2>La interacción de intercambio</h2>
+<p>Dos electrones con espines paralelos tienen una función de onda espacial antisimétrica, que se anula cuando coinciden: se evitan y su repulsión de Coulomb es menor. Con espines opuestos la parte espacial es simétrica y se acercan más. La diferencia de energía entre el estado triplete y el singlete se escribe, para espines localizados, con el <span class="term">hamiltoniano de Heisenberg</span> (1928):</p>
+<div class="eq key" data-name="Hamiltoniano de Heisenberg">\[H=-2\sum_{\langle ij\rangle}J_{ij}\,\vb S_i\cdot\vb S_j ,\]</div>
+<p>con la integral de intercambio \(J\). Si \(J>0\) los espines prefieren alinearse (ferromagnetismo); si \(J<0\), antialinearse (antiferromagnetismo, capítulo 28). Las energías de intercambio son electrostáticas, del orden de 10–100 meV, mil veces mayores que las dipolares. En los óxidos aislantes el intercambio entre iones magnéticos lejanos pasa a través del oxígeno intermedio (<span class="term">superintercambio</span>, Kramers y Anderson); en los metales de tierras raras lo transmiten los electrones de conducción (interacción RKKY), con signo oscilante según la distancia.</p>
+</section>
+
+<section>
+<h2>La teoría del campo medio de Weiss</h2>
+<p>Pierre Weiss propuso en 1907, antes de conocerse el origen cuántico, que cada momento siente un <span class="term">campo molecular</span> proporcional a la magnetización, \(B_E=\lambda M\). Con la magnetización paramagnética de Brillouin del capítulo 26, la magnetización debe ser autoconsistente:</p>
+<div class="eq key" data-name="Campo medio de Weiss">\[m=B_J\!\left(\frac{3J}{J+1}\frac{m}{t}+\frac{g\mu_BJB}{k_BT}\right),\qquad m=\frac M{M_s},\quad t=\frac T{T_C},\quad T_C=\frac{g\mu_B(J+1)\lambda M_s}{3k_B}.\]</div>
+<p>Sin campo externo la ecuación tiene solución no nula solo si \(t<1\): la recta \(m\) corta a la curva de Brillouin fuera del origen. Cerca de \(T_C\), \(m\approx\sqrt3\,(1-t)^{1/2}\) (para \(J=1/2\)) y por encima resulta la ley de Curie–Weiss con \(\theta=T_C\). En el hierro el campo molecular equivalente es \(k_BT_C/(n_B\mu_B)\approx700\) T, mucho más que cualquier imán de laboratorio: su origen no es magnético sino el intercambio.</p>
+<p>El campo medio reproduce la forma general de \(M_s(T)\) pero falla en los detalles: cerca de \(T_C\) la magnetización real cae como \((1-t)^\beta\) con \(\beta\approx0.33\) en tres dimensiones (no 0.5), y a baja temperatura disminuye como \(T^{3/2}\) (ondas de espín, capítulo 28), no exponencialmente. Las fluctuaciones, que el campo medio ignora, dominan la física crítica.</p>
+<div class="sim" data-sim="weiss" data-title="Solución gráfica del campo medio de Weiss"></div>
+<div class="sim-guide"><ul>
+<li>Izquierda: la función de Brillouin y la recta del campo molecular; su intersección es la magnetización espontánea. Derecha: \(m(t)\) para \(J=1/2\), \(J=7/2\) y \(J\to\infty\), con la solución exacta de Onsager para el Ising bidimensional como contraste.</li>
+<li>Por encima de \(t=1\) la única intersección es \(m=0\). La inversa de la susceptibilidad (escala de la derecha) es una recta de Curie–Weiss.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El modelo de Ising</h2>
+<p>El modelo más simple con una transición de fase real es el de Ising: espines \(s_i=\pm1\) en una red, con energía \(E=-J\sum_{\langle ij\rangle}s_is_j-h\sum_is_i\). Ernst Ising mostró en 1925 que en una dimensión no hay orden a temperatura finita; Rudolf Peierls argumentó en 1936 que en dos dimensiones sí lo hay, y Lars Onsager lo resolvió exactamente en 1944:</p>
+<div class="eq key" data-name="Solución de Onsager">\[k_BT_C=\frac{2J}{\ln(1+\sqrt2)}=2.269\,J,\qquad m=\left[1-\senh^{-4}\!\left(\frac{2J}{k_BT}\right)\right]^{1/8}\ \ (T<T_C).\]</div>
+<p>El exponente \(\beta=1/8\) es muy distinto del 1/2 del campo medio, que además predice \(T_C=4J/k_B\), un 76 % por encima. El método de <span class="term">Monte Carlo</span> de Metropolis (1953) simula el modelo: se elige un espín al azar, se calcula el cambio de energía \(\Delta E\) si se invierte, y se acepta la inversión con probabilidad \(\min(1,\ee^{-\Delta E/k_BT})\). Repitiendo, la red visita las configuraciones con los pesos de Boltzmann. Cerca de \(T_C\) aparecen dominios de todos los tamaños y las fluctuaciones crecen: es el comportamiento crítico, universal, que comparten el agua en su punto crítico y los ferromagnetos.</p>
+<div class="sim" data-sim="ising" data-title="Modelo de Ising bidimensional por Monte Carlo"></div>
+<div class="sim-guide"><ul>
+<li>Red de 128×128 espines actualizada con el algoritmo de Metropolis. La gráfica acumula la magnetización media frente a la temperatura y la compara con la curva exacta de Onsager.</li>
+<li>Baje la temperatura por debajo de 2.27: se forman dominios que crecen hasta que gana uno. Con un campo pequeño se elige la orientación. La validación del curso compara la magnetización simulada a \(T=1.8\) con la de Onsager.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Ferromagnetismo itinerante</h2>
+<p>En los metales de transición los electrones d son itinerantes. Edmund Stoner (1938) describió su ferromagnetismo con bandas desplazadas para cada espín: si se trasladan electrones de la banda de espín abajo a la de espín arriba, la energía cinética sube, pero la de intercambio, proporcional a un parámetro \(I\), baja. La polarización espontánea aparece si</p>
+<div class="eq key" data-name="Criterio de Stoner">\[I\,g(E_F)>1,\]</div>
+<p>con \(g(E_F)\) la densidad de estados por espín y por átomo. Solo los metales con una densidad de estados alta en el nivel de Fermi lo cumplen: Fe, Co y Ni. El paladio y el platino quedan cerca, con un paramagnetismo de Pauli muy reforzado. El modelo explica los momentos no enteros y el ferromagnetismo «débil» de compuestos como ZrZn₂.</p>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Estime el campo molecular del níquel con \(T_C=627\) K y \(n_B=0.606\).
+<details><summary>Respuesta</summary><p>\(B_E\approx k_BT_C/(n_B\mu_B)=1540\) T.</p></details></li>
+<li><span class="lvl">Básico</span>¿Por qué el campo dipolar no puede explicar el ferromagnetismo del hierro?
+<details><summary>Respuesta</summary><p>El campo de un dipolo de 2 \(\mu_B\) a 2.5 Å es \(\mu_0m/(4\pi r^3)\approx0.1\) T; la energía \(\mu_BB\approx6\) µeV corresponde a 0.07 K, no a 1000 K.</p></details></li>
+<li><span class="lvl">Intermedio</span>Demuestre que por encima de \(T_C\) el campo medio da \(\chi=C/(T-T_C)\).
+<details><summary>Respuesta</summary><p>Con \(M=(C/\mu_0T)(B+\lambda\mu_0M)\) (ley de Curie con el campo total) se despeja \(M=CB/[\mu_0(T-C\lambda)]\): \(\chi=C/(T-T_C)\) con \(T_C=C\lambda\).</p></details></li>
+<li><span class="lvl">Intermedio</span>En el modelo de Ising bidimensional, ¿cuánto vale la magnetización exacta a \(T=0.9T_C\)? ¿Y la del campo medio con \(J=1/2\)?
+<details><summary>Respuesta</summary><p>Onsager: 0.896. Campo medio: 0.525. Las fluctuaciones bidimensionales son tan fuertes que el campo medio falla mucho, pero el exponente pequeño (1/8) hace que la curva exacta se mantenga plana casi hasta \(T_C\).</p></details></li>
+<li><span class="lvl">Avanzado</span>Muestre que en el algoritmo de Metropolis para el Ising bidimensional sin campo solo pueden aparecer \(\Delta E\in\{-8J,-4J,0,4J,8J\}\) y que basta con precalcular dos exponenciales.
+<details><summary>Respuesta</summary><p>\(\Delta E=2Js_i\sum_{vecinos}s_j\), y la suma de cuatro vecinos vale \(-4,-2,0,2,4\). Solo los casos positivos necesitan \(\ee^{-4J/k_BT}\) y \(\ee^{-8J/k_BT}\).</p></details></li>
+</ol>
+<div class="box note"><h4>Para profundizar</h4><p>Kittel, cap. 12; Ashcroft y Mermin, cap. 32 y 33. P. Weiss, «L'hypothèse du champ moléculaire et la propriété ferromagnétique», <em>J. Phys. Theor. Appl.</em> 6, 661 (1907). L. Onsager, «Crystal statistics. I. A two-dimensional model with an order–disorder transition», <em>Phys. Rev.</em> 65, 117 (1944). N. Metropolis et al., «Equation of state calculations by fast computing machines», <em>J. Chem. Phys.</em> 21, 1087 (1953).</p></div>
+</section>
+</template>

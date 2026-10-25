@@ -1,0 +1,63 @@
+<template class="chapter-src" data-id="union" data-num="21" data-title="La unión p–n" data-part="Parte IV · Semiconductores" data-short="Formación de la zona de carga espacial, potencial de contacto, aproximación de agotamiento frente a la solución exacta de Poisson–Boltzmann, polarización directa e inversa, capacitancia y gráfica de Mott–Schottky, ecuación del diodo de Shockley, corrientes de generación y recombinación, ruptura Zener y por avalancha">
+<p class="lead">Juntar un semiconductor tipo p con uno tipo n produce el dispositivo más importante de la electrónica: la unión p–n. Deja pasar la corriente en un sentido y la bloquea en el otro, emite luz si el material es directo, convierte la luz en electricidad y es el bloque con el que se construyen los transistores. Todo su comportamiento sale de las herramientas de los capítulos anteriores: neutralidad, deriva, difusión, recombinación y la ecuación de Poisson.</p>
+
+<section>
+<h2>La zona de carga espacial</h2>
+<p>Al poner en contacto las dos regiones, los electrones del lado n difunden hacia el lado p y los huecos al revés. Al irse dejan atrás los iones fijos de las impurezas: donadores positivos en el lado n, aceptores negativos en el lado p. Esa doble capa de carga, la <span class="term">zona de carga espacial</span> o de agotamiento, crea un campo eléctrico que frena la difusión. En equilibrio el nivel de Fermi es el mismo a ambos lados y las bandas se curvan en la diferencia de los niveles de Fermi originales: el <span class="term">potencial de contacto</span></p>
+<div class="eq key" data-name="Potencial de contacto">\[V_{bi}=\frac{k_BT}e\ln\frac{N_aN_d}{n_i^2}.\]</div>
+<p>Para el silicio con \(N_a=N_d=10^{16}\) cm⁻³ a 300 K, \(V_{bi}=0.71\) V. No puede medirse con un voltímetro, porque los potenciales de contacto con los cables metálicos lo compensan exactamente.</p>
+</section>
+
+<section>
+<h2>Aproximación de agotamiento y solución exacta</h2>
+<p>La ecuación de Poisson es \(\dd^2\psi/\dd x^2=-\rho/\varepsilon\) con \(\rho=e(p-n+N_d^+-N_a^-)\) y las concentraciones dependientes de \(\psi\) a través de la estadística de Boltzmann: una ecuación no lineal. La <span class="term">aproximación de agotamiento</span> supone que la zona \(-x_p<x<x_n\) está completamente vacía de portadores y que fuera de ella hay neutralidad. Integrando dos veces y con \(N_ax_p=N_dx_n\),</p>
+<div class="eq key" data-name="Ancho de la zona de agotamiento">\[W=x_n+x_p=\sqrt{\frac{2\varepsilon(V_{bi}-V)}{e}\left(\frac1{N_a}+\frac1{N_d}\right)},\qquad E_{max}=\frac{eN_dx_n}{\varepsilon},\]</div>
+<p>con \(V\) la polarización aplicada (positiva en directa). En el ejemplo simétrico \(W=0.43\) µm y \(E_{max}=33\) kV/cm. En una unión asimétrica casi toda la zona está en el lado menos dopado: con \(N_a=10^{18}\) y \(N_d=10^{15}\) cm⁻³, \(W=1.0\) µm, de los cuales solo 10 Å en el lado p.</p>
+<p>El curso resuelve también la ecuación de Poisson–Boltzmann completa por el método de Newton en una malla no uniforme, y la valida contra la solución exacta por la primera integral calculada con SciPy. El resultado muestra los límites de la aproximación: el campo máximo exacto de la unión simétrica es 31.9 kV/cm, un 4 % menor, porque los bordes de la zona no son abruptos (se extienden unas longitudes de Debye, \(L_D=\sqrt{\varepsilon k_BT/e^2N}\)). Con la corrección \(V_{bi}-V-2k_BT/e\) ambos resultados coinciden en 0.01 %. En uniones muy asimétricas la cola de huecos del lado fuertemente dopado penetra en el otro y la aproximación falla más.</p>
+<div class="sim" data-sim="union-poisson" data-title="Unión p–n: Poisson–Boltzmann exacto frente a la aproximación de agotamiento"></div>
+<div class="sim-guide"><ul>
+<li>Cuatro paneles: bandas con el nivel de Fermi (o cuasi-niveles con polarización), densidad de carga, campo eléctrico y concentraciones de portadores (escala logarítmica). La curva continua es la solución numérica; la discontinua, la aproximación de agotamiento.</li>
+<li>Aplique polarización inversa: la zona se ensancha y el campo crece. En directa se angosta y los portadores inundan la unión.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Capacitancia de la unión</h2>
+<p>Al cambiar la tensión cambia la carga almacenada en la zona de agotamiento, \(Q=eN_dx_nA\). La unión se comporta como un condensador de placas separadas \(W\):</p>
+<div class="eq key" data-name="Capacitancia de agotamiento">\[C=\frac{\varepsilon A}{W},\qquad \frac1{C^2}=\frac{2(V_{bi}-V)}{e\varepsilon A^2}\left(\frac1{N_a}+\frac1{N_d}\right).\]</div>
+<p>Una gráfica de \(1/C^2\) frente a \(V\) (de Mott–Schottky) es una recta: la pendiente da el dopaje del lado menos dopado y la intersección con el eje, \(V_{bi}\). Es la medida estándar de perfiles de dopaje. La dependencia de \(C\) con \(V\) se aprovecha en los diodos varactores que sintonizan los osciladores de radio.</p>
+<div class="sim" data-sim="cv" data-title="Capacitancia frente a tensión y gráfica de Mott–Schottky"></div>
+<div class="sim-guide"><ul>
+<li>Capacitancia por unidad de área de una unión abrupta y \(1/C^2\) frente a \(V\). La lectura obtiene el dopaje de la pendiente.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>La ecuación del diodo</h2>
+<p>En polarización directa la barrera baja en \(eV\) y la concentración de minoritarios en los bordes de la zona de agotamiento crece como \(\ee^{eV/k_BT}\): por ejemplo, \(p(x_n)=p_{n0}\ee^{eV/k_BT}\) con \(p_{n0}=n_i^2/N_d\). Esos minoritarios inyectados difunden y se recombinan en una longitud \(L_p\). La corriente de difusión en el borde, sumada para electrones y huecos, da la <span class="term">ecuación de Shockley</span> (1949):</p>
+<div class="eq key" data-name="Diodo de Shockley">\[J=J_0\left(\ee^{eV/k_BT}-1\right),\qquad J_0=en_i^2\left(\frac{D_n}{L_nN_a}+\frac{D_p}{L_pN_d}\right).\]</div>
+<p>En inversa la corriente se satura en \(-J_0\): en el ejemplo con tiempos de vida de 1 µs, \(J_0=1.6\times10^{-11}\) A/cm², y con 0.6 V en directa la corriente es 0.19 A/cm²: cada 60 mV la corriente se multiplica por diez. Como \(J_0\propto n_i^2\propto\ee^{-E_g/k_BT}\), la tensión de un diodo de silicio a corriente fija baja unos 2 mV/K: un termómetro de precisión. En los diodos reales hay además una corriente de generación–recombinación en la zona de agotamiento, \(\propto n_i\ee^{eV/2k_BT}\), que domina a corrientes bajas (factor de idealidad \(n=2\)), y una resistencia en serie que curva la característica a corrientes altas. En inversa fuerte el campo arranca electrones de los enlaces (ruptura <span class="term">Zener</span>, por efecto túnel, en uniones muy dopadas) o los acelera hasta que ionizan por impacto (ruptura por <span class="term">avalancha</span>).</p>
+<div class="sim" data-sim="diodo" data-title="Característica corriente–tensión de un diodo de silicio"></div>
+<div class="sim-guide"><ul>
+<li>Corriente total con la componente de difusión de Shockley, la de recombinación en la zona de agotamiento y la resistencia en serie. En escala logarítmica las pendientes son 60 mV/década (\(n=1\)) y 120 mV/década (\(n=2\)).</li>
+<li>Caliente el diodo: a corriente fija la tensión baja unos 2 mV/K.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Calcule \(V_{bi}\) de una unión de Si con \(N_a=10^{18}\) y \(N_d=10^{15}\) cm⁻³ a 300 K.
+<details><summary>Respuesta</summary><p>\(V_{bi}=0.02585\ln(10^{33}/1.14\times10^{20})=0.77\) V.</p></details></li>
+<li><span class="lvl">Básico</span>¿Cuántas veces cambia la corriente de un diodo ideal al aumentar la tensión en 0.1 V a 300 K?
+<details><summary>Respuesta</summary><p>\(\ee^{0.1/0.02585}=48\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Deduzca la expresión de \(W\) integrando la ecuación de Poisson con densidad de carga constante a cada lado.
+<details><summary>Respuesta</summary><p>\(E(0)=eN_dx_n/\varepsilon=eN_ax_p/\varepsilon\); la caída de potencial es el área bajo el triángulo, \(V_{bi}-V=\tfrac12E_{max}W\). Eliminando \(x_n,x_p\) se obtiene la fórmula.</p></details></li>
+<li><span class="lvl">Intermedio</span>Una gráfica de \(1/C^2\) de un diodo p⁺–n de 1 mm² tiene pendiente \(-2.0\times10^{21}\) F⁻²/V. ¿Cuál es \(N_d\)?
+<details><summary>Respuesta</summary><p>\(N_d=2/(e\varepsilon A^2|\text{pendiente}|)=2/(1.6\times10^{-19}\times1.04\times10^{-10}\times10^{-12}\times2\times10^{21})=6.0\times10^{19}\) m⁻³ \(=6.0\times10^{13}\) cm⁻³.</p></details></li>
+<li><span class="lvl">Avanzado</span>Demuestre que \(\dd V/\dd T\) a corriente constante vale aproximadamente \(-(E_g/e-V)/T-3k_B/e\) para un diodo ideal.
+<details><summary>Respuesta</summary><p>\(V=(k_BT/e)\ln(J/J_0)\) con \(J_0\propto T^3\ee^{-E_g/k_BT}\). Derivando a \(J\) fijo: \(\dd V/\dd T=V/T-(k_BT/e)(3/T+E_g/k_BT^2)=-(E_g/e-V)/T-3k_B/e\approx-2\) mV/K.</p></details></li>
+</ol>
+<div class="box note"><h4>Para profundizar</h4><p>Sze y Ng, cap. 2; Kittel, cap. 19. W. Shockley, «The theory of p–n junctions in semiconductors and p–n junction transistors», <em>Bell Syst. Tech. J.</em> 28, 435 (1949). C.-T. Sah, R. N. Noyce y W. Shockley, «Carrier generation and recombination in p–n junctions», <em>Proc. IRE</em> 45, 1228 (1957).</p></div>
+</section>
+</template>

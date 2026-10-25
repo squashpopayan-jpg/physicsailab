@@ -1,0 +1,611 @@
+<title>Faro · pods de reacción</title>
+<meta name="author" content="Mg. Manuel Alejandro Obando · Departamento de Física, Universidad del Cauca">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,600..800&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&display=swap">
+<style>{{css}}</style>
+
+<div class="indice-movil">
+  <details>
+    <summary>Faro · índice</summary>
+    <ol>{{indice}}</ol>
+  </details>
+</div>
+
+<div class="armazon">
+<nav class="indice" aria-label="Índice">
+  <div class="marca">
+    <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><circle cx="15" cy="15" r="13" fill="none" stroke="var(--glow)" stroke-width="3"/><circle cx="15" cy="15" r="6" fill="var(--glow)" opacity=".35"/></svg>
+    <b>Faro</b>
+  </div>
+  <ol>{{indice}}</ol>
+  <p class="credito">Elaborado por Mg. Manuel Alejandro Obando · Departamento de Física, Universidad del Cauca</p>
+</nav>
+
+<main class="principal">
+
+<!-- ================================================================ -->
+<header class="portada" id="inicio">
+  <div>
+    <span class="etiqueta">Manual de construcción · v1.0</span>
+    <h1>Faro</h1>
+    <p class="bajada">Pods de reacción que se encienden en colores y responden al golpe, al toque y a la cercanía de la mano.</p>
+    <div class="ficha">
+      <div><b>Ø 100 × 34 mm</b><span>impreso en 3D, 4 piezas</span></div>
+      <div><b>16 LED RGB</b><span>11 colores con nombre o cualquier RGB</span></div>
+      <div><b>4 sensores</b><span>golpe, toque, cercanía y distancia láser</span></div>
+      <div><b>≤ 10 ms</b><span>de retraso del sensor; el pod cronometra con su reloj</span></div>
+      <div><b>5–7 h</b><span>de ejercicio con 1100 mAh</span></div>
+      <div><b>≈ US$ 25</b><span>por pod en módulos comunes</span></div>
+    </div>
+    <p class="credito-portada">Elaborado por Mg. Manuel Alejandro Obando · Departamento de Física, Universidad del Cauca</p>
+  </div>
+  <div class="juego">
+    <svg id="juego-pod" viewBox="0 0 320 320" role="button" tabindex="0" aria-label="Pod de prueba: toca cuando se encienda">
+      <defs><radialGradient id="jg"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs>
+      <circle class="borde-pod" cx="160" cy="160" r="150"/>
+      <circle id="juego-resplandor" class="resplandor" cx="160" cy="160" r="146" fill="#22b8f0"/>
+      <circle class="domo-pod" cx="160" cy="160" r="140" fill-opacity=".72"/>
+      <g id="juego-leds"></g>
+      <circle cx="160" cy="160" r="66" fill="var(--panel-2)" stroke="var(--line)"/>
+      <text id="juego-lectura" class="lectura" x="160" y="168" text-anchor="middle">—</text>
+      <text id="juego-sub" class="lectura-sub" x="160" y="192" text-anchor="middle">pulsa «Probar»</text>
+    </svg>
+    <div class="controles"><button class="boton" id="juego-empezar">Probar mis reflejos</button></div>
+    <div class="historial" id="juego-historial">Toca el pod (o pulsa la barra espaciadora) cuando se encienda.</div>
+  </div>
+</header>
+
+<!-- ================================================================ -->
+<section class="cap" id="que-es">
+  <span class="etiqueta">Capítulo 1</span>
+  <h2>Qué es un pod de reacción y qué vamos a construir</h2>
+  <p>Un pod de reacción es una lámpara que se enciende sin aviso; el deportista tiene que apagarla lo antes posible golpeándola, tocándola o acercando la mano. El sistema registra cuántos milisegundos pasaron entre la luz y la respuesta. Con varios pods repartidos en el espacio se entrena la velocidad de reacción, la coordinación ojo‑mano, el desplazamiento y la toma de decisiones (por ejemplo, tocar solo los verdes e ignorar los rojos).</p>
+  <p>Faro reproduce esa idea con módulos que se consiguen en cualquier tienda de electrónica y una carcasa impresa en 3D. Cada pod lleva:</p>
+  <ul>
+    <li>un <b>anillo de 16 LED RGB</b> bajo un domo translúcido que difunde la luz;</li>
+    <li>un <b>acelerómetro</b> que reconoce golpes con la mano, el pie, una pelota o la raqueta;</li>
+    <li>un <b>electrodo capacitivo</b> de cobre, debajo del domo, que nota el toque de la piel y también la mano que se acerca a pocos centímetros, sin contacto;</li>
+    <li>opcionalmente, un <b>sensor láser de distancia</b> que detecta la mano o la raqueta que pasa por encima a la distancia que elijas (de 3 cm a cerca de un metro);</li>
+    <li>un <b>ESP32‑S3</b> que mide el tiempo, controla la luz y habla por radio con un <b>hub</b>, el cual coordina los ejercicios y conversa con el computador o el celular.</li>
+  </ul>
+  <div class="nota"><b>Una decisión de diseño que importa</b>El tiempo de reacción lo cronometra cada pod con su propio reloj, desde el instante en que termina de encender el anillo hasta el instante en que el sensor detecta la respuesta. La radio solo transporta el resultado. Por eso la latencia del Bluetooth o del Wi‑Fi no altera la medida.</div>
+
+  <h3>Comparación con un pod comercial</h3>
+  <div class="tabla"><table>
+    <thead><tr><th>Característica</th><th>Pods comerciales típicos</th><th>Faro</th></tr></thead>
+    <tbody>
+      <tr><td>Luz</td><td>LED RGB, unos 8 colores</td><td>16 LED RGB, 11 colores con nombre y cualquier RGB</td></tr>
+      <tr><td>Detección</td><td>toque o golpe sobre el pod</td><td>golpe, toque, cercanía capacitiva y distancia láser, combinables por ejercicio</td></tr>
+      <tr><td>Conexión</td><td>Bluetooth LE a una app</td><td>ESP‑NOW entre pods y hub; el hub habla por USB y Bluetooth LE</td></tr>
+      <tr><td>Batería</td><td>recargable, del orden de 8 h</td><td>LiPo 1000–1200 mAh, 5–7 h de ejercicio y meses en reposo</td></tr>
+      <tr><td>Sin celular</td><td>depende de la app</td><td>modo solo en cada pod y ejercicios en el hub con su botón</td></tr>
+      <tr><td>Modificable</td><td>no</td><td>todo: carcasa paramétrica, firmware y protocolo abiertos</td></tr>
+    </tbody>
+  </table></div>
+  <p class="tenue">Faro no es una copia de ningún producto: usa la misma idea de entrenamiento con piezas, carcasa y programa propios.</p>
+</section>
+
+<!-- ================================================================ -->
+<section class="cap" id="sistema">
+  <span class="etiqueta">Capítulo 2</span>
+  <h2>Cómo funciona el sistema</h2>
+  <p>Los pods no se conectan directamente al celular. Se comunican con un <b>hub</b> por <b>ESP‑NOW</b>, un protocolo de Espressif que envía mensajes cortos entre placas ESP32 sin router ni contraseña, en el canal 1 de 2,4 GHz y con latencias de pocos milisegundos. El hub puede ser otra ESP32‑S3 Super Mini conectada al computador por USB o alimentada con una batería externa.</p>
+  <figure class="diagrama">
+    <svg viewBox="0 0 760 270" role="img" aria-label="Arquitectura: pods, hub y app">
+      <defs><marker id="pn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 Z" class="punta"/></marker></defs>
+      <g font-size="13">
+        <rect class="caja" x="20" y="22" width="150" height="58" rx="10"/><text x="95" y="48" text-anchor="middle" font-weight="700">Pod 1</text><text class="t2" x="95" y="66" text-anchor="middle" font-size="11.5">luz · golpe · toque · láser</text>
+        <rect class="caja" x="20" y="106" width="150" height="58" rx="10"/><text x="95" y="132" text-anchor="middle" font-weight="700">Pod 2</text><text class="t2" x="95" y="150" text-anchor="middle" font-size="11.5">mide su tiempo de reacción</text>
+        <rect class="caja" x="20" y="190" width="150" height="58" rx="10"/><text x="95" y="216" text-anchor="middle" font-weight="700">Pod n (hasta 12)</text><text class="t2" x="95" y="234" text-anchor="middle" font-size="11.5">duerme si no se usa</text>
+        <rect class="caja-ac" x="300" y="86" width="170" height="98" rx="12"/><text x="385" y="114" text-anchor="middle" font-weight="700">Hub</text><text class="t2" x="385" y="134" text-anchor="middle" font-size="11.5">ESP32 · ejercicios</text><text class="t2" x="385" y="151" text-anchor="middle" font-size="11.5">botón: empezar / parar</text><text class="t2" x="385" y="168" text-anchor="middle" font-size="11.5">órdenes de texto, JSON</text>
+        <rect class="caja" x="590" y="40" width="150" height="70" rx="10"/><text x="665" y="68" text-anchor="middle" font-weight="700">Computador</text><text class="t2" x="665" y="88" text-anchor="middle" font-size="11.5">Monitor Serie, USB</text>
+        <rect class="caja" x="590" y="160" width="150" height="70" rx="10"/><text x="665" y="188" text-anchor="middle" font-weight="700">Celular</text><text class="t2" x="665" y="208" text-anchor="middle" font-size="11.5">Bluetooth LE · app futura</text>
+        <path class="flecha" d="M172,51 C240,51 240,120 296,124" marker-end="url(#pn)"/>
+        <path class="flecha" d="M172,135 L296,135" marker-end="url(#pn)"/>
+        <path class="flecha" d="M172,219 C240,219 240,150 296,146" marker-end="url(#pn)"/>
+        <text x="234" y="110" text-anchor="middle" font-size="11.5" class="t2">ESP‑NOW</text>
+        <path class="flecha2" d="M472,118 L586,80"/><text x="528" y="88" text-anchor="middle" font-size="11.5" class="t2">USB</text>
+        <path class="flecha2" d="M472,152 L586,190"/><text x="528" y="190" text-anchor="middle" font-size="11.5" class="t2">BLE</text>
+      </g>
+    </svg>
+    <figcaption><b>Figura 2.1.</b> El hub envía a cada pod «enciende este color y espera estos estímulos»; el pod responde con el tipo de estímulo y su tiempo de reacción.</figcaption>
+  </figure>
+  <h3>Una ronda, paso a paso</h3>
+  <ol>
+    <li>El hub elige un pod y le envía <code>ENCENDER</code> con el color, los sensores válidos y el tiempo máximo de espera.</li>
+    <li>El pod enciende el anillo y anota el instante t<sub>0</sub> con su reloj de microsegundos.</li>
+    <li>Cuando un sensor válido se dispara, el pod anota t<sub>1</sub>, calcula t<sub>r</sub> = t<sub>1</sub> − t<sub>0</sub>, apaga la luz con un destello blanco y envía un <code>EVENTO</code>. Si se agota el tiempo, envía un evento de tipo «tiempo».</li>
+    <li>El hub registra el resultado, lo publica como una línea JSON y, tras una pausa aleatoria, lanza la siguiente ronda.</li>
+  </ol>
+  <p>Si la mano ya estaba sobre el pod cuando se encendió, el pod exige que se aleje antes de aceptar la respuesta; así no se cuentan tiempos falsos de cero milisegundos.</p>
+</section>
+
+<!-- ================================================================ -->
+<section class="cap" id="sensores">
+  <span class="etiqueta">Capítulo 3</span>
+  <h2>Los sensores y su física</h2>
+
+  <h3>Golpe: acelerómetro ADXL345</h3>
+  <p>El ADXL345 mide aceleración en tres ejes hasta ±16 g, 800 veces por segundo. Trae una lógica de «tap» que levanta una interrupción cuando la aceleración supera un umbral (<code>THRESH_TAP</code>, 62,5 mg por unidad) durante menos de un tiempo máximo (<code>DUR</code>, 625 µs por unidad). Faro usa 1,5 g y 15 ms: un golpe seco pasa la prueba y un empujón lento no. La interrupción llega al GPIO 7 y el ESP32 guarda el instante en microsegundos dentro de la rutina de interrupción.</p>
+  <p>El chip avisa cuando el pico termina, unos 3 a 10 ms después del contacto; ese retraso es casi constante y pequeño frente a reacciones humanas de 200 a 600 ms. El pod también lee los 32 últimos datos de la memoria FIFO del sensor y envía el pico de aceleración en mg, que sirve para comparar la fuerza de los golpes. El mismo chip, en modo de bajo consumo (≈ 50 µA), despierta al pod cuando alguien lo mueve o lo golpea.</p>
+
+  <h3>Toque y cercanía: electrodo capacitivo</h3>
+  <p>El disco de cobre bajo el domo forma un condensador con su entorno. El periférico táctil del ESP32‑S3 lo carga y descarga continuamente y entrega un número que crece con la capacitancia. Una mano añade capacitancia por dos caminos en serie: entre la mano y el electrodo (C<sub>mano</sub>) y entre el cuerpo y la tierra del propio pod (C<sub>tierra</sub>, porque el pod funciona con batería y no está conectado a tierra). El cambio relativo es</p>
+  <p style="text-align:center;font-family:var(--f-mono)">ΔC / C₀ = [C<sub>mano</sub> · C<sub>tierra</sub> / (C<sub>mano</sub> + C<sub>tierra</sub>)] / C₀,  con C<sub>mano</sub> ≈ ε₀ A / d<sub>ef</sub></p>
+  <p>El firmware no usa la lectura cruda: sigue una línea base lenta y trabaja con el cambio en tanto por mil (‰). Hay dos umbrales con histéresis: <b>cercanía</b> (pequeño) y <b>toque</b> (grande). El modelo siguiente da el orden de magnitud; los umbrales reales salen del comando <code>calibrar</code> de cada pod.</p>
+  <div class="instrumento">
+    <div class="controles">
+      <div class="control"><label for="cap-d">Diámetro del electrodo</label><output id="cap-d-v"></output><input id="cap-d" type="range" min="20" max="60" value="39"></div>
+      <div class="control"><label for="cap-c0">Capacitancia propia C₀</label><output id="cap-c0-v"></output><input id="cap-c0" type="range" min="10" max="60" value="20"></div>
+      <div class="control"><label for="cap-cg">Acople a tierra C<sub>tierra</sub></label><output id="cap-cg-v"></output><input id="cap-cg" type="range" min="5" max="60" value="14"></div>
+      <div class="control"><label for="cap-toque">Umbral de toque</label><output id="cap-toque-v"></output><input id="cap-toque" type="range" min="10" max="300" value="124"></div>
+      <div class="control"><label for="cap-cerca">Umbral de cercanía</label><output id="cap-cerca-v"></output><input id="cap-cerca" type="range" min="2" max="100" value="30"></div>
+    </div>
+    <div>
+      <svg id="graf-cap" class="graf" viewBox="0 0 420 240" role="img" aria-label="Cambio de la lectura capacitiva en función de la distancia"></svg>
+      <p id="cap-res" class="num" style="font-size:.9rem;margin:.4rem 0 0"></p>
+    </div>
+  </div>
+  <p class="tenue" style="font-size:.88rem">Modelo de placas paralelas con un término de borde, domo de PETG (1,8 mm, ε<sub>r</sub> ≈ 2,8) y 0,8 mm de aire sobre el electrodo. Con un pod en una mesa metálica o sostenido en la mano, C<sub>tierra</sub> crece y el sensor se vuelve más sensible: calibra en el lugar de uso.</p>
+  <div class="nota cuidado"><b>Sudor y agua</b>Una gota grande sobre el domo también cambia la capacitancia. Si algo deja el sensor activado más de 20 s, el pod rehace su línea base. Para ejercicios con mucho sudor usa golpe o láser.</div>
+
+  <h3>Distancia: láser VL53L0X (opcional)</h3>
+  <p>El VL53L0X emite pulsos infrarrojos de 940 nm desde un diodo láser de clase 1 y mide cuánto tardan en volver: d = c·t/2. Con un presupuesto de 20 ms por medida entrega unas 50 distancias por segundo, con alcance práctico de 1 a 1,2 m sobre una mano. El pod lo enciende solo durante las rondas que lo piden y considera «estímulo» dos medidas seguidas por debajo del umbral (120 mm por defecto). Mira hacia arriba por una ventana de acrílico transparente en el centro del domo.</p>
+  <div class="nota"><b>Por qué una ventana</b>El plástico translúcido del domo dispersa el infrarrojo y devolvería un falso eco. La ventana de acrílico va pegada casi contra el sensor (0,3 mm) para que su propio reflejo no confunda la medida.</div>
+
+  <h3>Resumen</h3>
+  <div class="tabla"><table>
+    <thead><tr><th>Sensor</th><th>Detecta</th><th>Alcance</th><th>Retraso típico</th><th>Cuándo usarlo</th></tr></thead>
+    <tbody>
+      <tr><td>Golpe</td><td>impacto de mano, pie, pelota o raqueta</td><td>contacto</td><td>3–10 ms</td><td>pods en el piso o la pared, golpes con implemento</td></tr>
+      <tr><td>Toque</td><td>piel sobre el domo</td><td>contacto o pocos mm</td><td>3–5 ms</td><td>toques suaves sin golpear</td></tr>
+      <tr><td>Cercanía</td><td>mano a pocos cm</td><td>1–4 cm (según calibración)</td><td>3–5 ms</td><td>«apagar sin tocar», higiene, menos impacto</td></tr>
+      <tr><td>Distancia</td><td>cualquier objeto encima</td><td>3–100 cm (ajustable)</td><td>20–40 ms</td><td>pasar la raqueta por encima, pods altos, pies</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ================================================================ -->
+<section class="cap" id="materiales">
+  <span class="etiqueta">Capítulo 4</span>
+  <h2>Lista de materiales</h2>
+  <p>Precios orientativos en dólares para compras en línea o en tiendas de electrónica de Colombia; cambian con la tienda y el volumen. Comprar para 6 pods abarata las resistencias, la cinta de cobre y los tornillos.</p>
+  {{bom}}
+  <h3>Herramientas</h3>
+  <ul>
+    <li>Impresora 3D (cama de 120 × 120 mm o más) con PETG, PLA y TPU.</li>
+    <li>Cautín de 40–60 W con punta fina y una punta para insertos térmicos, estaño con fundente, malla desoldadora.</li>
+    <li>Multímetro, pinzas, pelacables, termorretráctil, pistola de silicona.</li>
+    <li>Destornilladores Phillips pequeños y hexagonal de 2 mm para los tornillos M3 avellanados.</li>
+    <li>Computador con Arduino IDE 2 y un cable USB‑C de datos.</li>
+  </ul>
+</section>
+
+<!-- ================================================================ -->
+<section class="cap ancho" id="electronica">
+  <div style="max-width:780px">
+  <span class="etiqueta">Capítulo 5</span>
+  <h2>Electrónica</h2>
+  <p>El circuito usa módulos de bajo costo unidos sobre una placa perforada pequeña. Está dividido en cinco bloques: carga y alimentación, medición, microcontrolador, anillo de LED con su interruptor electrónico, y sensores.</p>
+  </div>
+  <figure>
+    <div class="esquema">{{esquema}}</div>
+    <figcaption><b>Figura 5.1.</b> Esquema eléctrico completo. Las etiquetas iguales están unidas aunque no se dibuje el cable. Desplázate horizontalmente en el teléfono.</figcaption>
+  </figure>
+  <div style="max-width:780px">
+  <h3>Conexiones, pin por pin</h3>
+  <p>Los GPIO 1 a 9 existen en los bordes de la ESP32‑S3 Super Mini y de la Seeed XIAO ESP32‑S3, así que el mismo firmware sirve para ambas.</p>
+  <div class="tabla"><table>
+    <thead><tr><th>GPIO</th><th>XIAO</th><th>Señal</th><th>Va a</th><th>Detalle</th></tr></thead>
+    <tbody>
+      <tr><td class="n">1</td><td>D0</td><td><code>TOUCH</code></td><td>electrodo de cobre</td><td>canal táctil T1, con R2 = 470 Ω en serie</td></tr>
+      <tr><td class="n">2</td><td>D1</td><td><code>VBAT_ADC</code></td><td>divisor R3/R4</td><td>batería ÷ 2, de 1,5 a 2,1 V</td></tr>
+      <tr><td class="n">3</td><td>D2</td><td><code>VUSB_ADC</code></td><td>divisor R5/R6</td><td>3,0 V con el cargador conectado; también despierta al pod</td></tr>
+      <tr><td class="n">4</td><td>D3</td><td><code>LED_DIN</code></td><td>DIN del anillo</td><td>a través de R1 = 330 Ω</td></tr>
+      <tr><td class="n">5</td><td>D4</td><td><code>SDA</code></td><td>ADXL345 y VL53L0X</td><td>bus I²C a 400 kHz</td></tr>
+      <tr><td class="n">6</td><td>D5</td><td><code>SCL</code></td><td>ADXL345 y VL53L0X</td><td></td></tr>
+      <tr><td class="n">7</td><td>D8</td><td><code>ACC_INT</code></td><td>INT1 del ADXL345</td><td>golpe y despertar</td></tr>
+      <tr><td class="n">8</td><td>D9</td><td><code>LED_ON</code></td><td>R9 → base de Q2</td><td>alto = anillo alimentado</td></tr>
+      <tr><td class="n">9</td><td>D10</td><td><code>TOF_XSHUT</code></td><td>XSHUT del VL53L0X</td><td>bajo = sensor apagado</td></tr>
+      <tr><td>5V</td><td>5V</td><td><code>VBAT_SW</code></td><td>salida del interruptor</td><td>3,3–4,2 V de la batería al regulador de la placa</td></tr>
+      <tr><td>3V3</td><td>3V3</td><td><code>3V3</code></td><td>sensores, CS del ADXL345</td><td></td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Por qué cada pieza</h3>
+  <h4>Carga (U1, J1)</h4>
+  <p>El módulo TP4056 carga la LiPo a 4,2 V con 1 A (R<sub>PROG</sub> = 1,2 kΩ) y su DW01A la protege contra sobredescarga y cortocircuito. El conector USB‑C de panel lleva la energía desde la pared de la carcasa hasta las entradas IN+ e IN−. Si tu batería tiene menos de 1000 mAh, cambia R<sub>PROG</sub> a 2,4 kΩ (500 mA).</p>
+  <h4>Alimentación de la ESP32</h4>
+  <p>La batería (3,3–4,2 V) entra por el pin «5V» de la placa, cuyo regulador LDO entrega 3,3 V. Con la batería por encima de 3,45 V el regulador mantiene más de 3,2 V incluso en los picos de la radio. El firmware avisa con un parpadeo rojo bajo 3,45 V y duerme el pod bajo 3,30 V para proteger la celda.</p>
+  <h4>Interruptor del anillo (Q1, Q2)</h4>
+  <p>Cada WS2812B consume unos 0,6 mA aun apagado: 16 LED gastarían 10 mA durante el sueño y vaciarían la batería en cinco días. Q1 (MOSFET canal P) corta su alimentación. Como la puerta debe subir hasta la tensión de batería (4,2 V) y el GPIO solo da 3,3 V, Q2 (NPN) hace de intermediario: GPIO 8 alto → Q2 conduce → la puerta de Q1 baja a 0 V → V<sub>GS</sub> ≈ −4 V y el anillo se enciende. R10 mantiene el anillo apagado mientras la ESP32 arranca.</p>
+  <h4>Datos del anillo</h4>
+  <p>Con la batería a 4,2 V el WS2812B pide al menos 0,7 · V<sub>DD</sub> = 2,94 V para leer un «1»; los 3,3 V del GPIO alcanzan. R1 (330 Ω) amortigua los rebotes de la línea y C1 (470 µF) junto con C2 absorben los picos de corriente al encender todos los LED.</p>
+  <h4>Divisores de tensión</h4>
+  <p>R3/R4 dividen la batería entre 2 (máximo 2,1 V, dentro del rango del ADC con atenuación de 11 dB) y gastan 21 µA. R5/R6 convierten los 5 V del cargador en 3,0 V: suficiente para que el GPIO 3 lo lea como «1» y despierte al pod del sueño profundo.</p>
+
+  <h3>Consumo y autonomía</h3>
+  <div class="tabla"><table>
+    <thead><tr><th>Bloque</th><th>Estado</th><th class="n">Corriente</th></tr></thead>
+    <tbody>
+      <tr><td>ESP32‑S3 con la radio escuchando (ESP‑NOW)</td><td>despierto</td><td class="n">80–100 mA</td></tr>
+      <tr><td>Anillo alimentado, LED apagados</td><td>despierto</td><td class="n">≈ 10 mA</td></tr>
+      <tr><td>Anillo con un color a brillo 160/255</td><td>luz encendida</td><td class="n">≈ 120 mA</td></tr>
+      <tr><td>VL53L0X midiendo</td><td>solo en rondas con láser</td><td class="n">≈ 19 mA</td></tr>
+      <tr><td>ADXL345 a 800 Hz</td><td>despierto</td><td class="n">0,14 mA</td></tr>
+      <tr><td>Todo el pod dormido (sin el LED rojo de la placa)</td><td>sueño profundo</td><td class="n">0,1–0,2 mA</td></tr>
+    </tbody>
+  </table></div>
+  <div class="instrumento" id="calc-bateria">
+    <div class="controles">
+      <div class="control"><label for="cb-cap">Batería</label><output id="cb-cap-v"></output><input id="cb-cap" type="range" min="500" max="2000" step="50" value="1100"></div>
+      <div class="control"><label for="cb-brillo">Brillo del anillo</label><output id="cb-brillo-v"></output><input id="cb-brillo" type="range" min="20" max="255" value="160"></div>
+      <div class="control"><label for="cb-enc">Tiempo con la luz encendida</label><output id="cb-enc-v"></output><input id="cb-enc" type="range" min="5" max="100" value="40"></div>
+      <div class="control"><label for="cb-tof" style="display:flex;gap:8px;align-items:center"><input id="cb-tof" type="checkbox"> Láser activo en las rondas</label><output id="cb-tof-v"></output></div>
+    </div>
+    <div style="display:grid;gap:10px;align-content:center">
+      <div class="resultado" id="cb-horas"></div>
+      <svg viewBox="0 0 300 18" preserveAspectRatio="xMinYMid meet" style="width:100%;height:18px" role="img" aria-label="Reparto del consumo" id="cb-barra"></svg>
+      <p id="cb-detalle" class="num" style="font-size:.88rem;margin:0"></p>
+      <p class="tenue" style="font-size:.82rem;margin:0">Autonomía = 85 % de la capacidad ÷ corriente media. Un color usa un canal de cada LED (≈ 12 mA a brillo máximo); el blanco gasta el triple.</p>
+    </div>
+  </div>
+  <p>Dormido, el pod gasta unos 0,15 mA: una batería de 1100 mAh aguanta más de seis meses. Para llegar a esa cifra hay que retirar con el cautín el LED rojo de encendido de la Super Mini, que por sí solo consume 1–3 mA.</p>
+
+  <h3>Placa principal</h3>
+  <p>Recorta una placa perforada de doble cara a 41 × 33 mm (16 × 13 pasos de 2,54 mm). La ESP32 va arriba a la izquierda con su USB‑C hacia el borde, el ADXL345 arriba a la derecha y abajo una franja de 9 mm para Q1, Q2, las resistencias y C1 acostado. La hoja 5 de los planos da la posición exacta dentro del pod.</p>
+  <ul>
+    <li>Suelda la ESP32 y el ADXL345 con pines macho cortos: el acelerómetro debe quedar <b>rígido</b>. Con cinta espumosa los golpes llegan amortiguados y el umbral deja de servir.</li>
+    <li>En el GY‑291 une <b>CS a 3V3</b> (modo I²C) y <b>SDO a GND</b> (dirección 0x53).</li>
+    <li>Q1 (SOT‑23) se suelda en un adaptador SOT‑23 a DIP; si nunca has soldado montaje superficial, practica primero con una pieza de repuesto.</li>
+    <li>Deja salir con cables de silicona: batería y TP4056 (22 AWG), anillo (3 hilos), electrodo (1 hilo, el más corto posible y lejos del cable de datos del anillo) y VL53L0X (5 hilos).</li>
+  </ul>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<section class="cap ancho" id="carcasa">
+  <div style="max-width:780px">
+  <span class="etiqueta">Capítulo 6</span>
+  <h2>Carcasa</h2>
+  <p>La carcasa tiene cuatro piezas impresas: la <b>base</b> opaca que guarda la batería y la electrónica, el <b>soporte</b> blanco que sostiene el anillo de LED y el pedestal del electrodo, el <b>domo</b> translúcido que difunde la luz y el <b>anillo de TPU</b> que evita que el pod resbale. Todo está modelado en OpenSCAD con parámetros; los planos y los STL salen del mismo archivo.</p>
+  </div>
+  <div class="visor">
+    <div class="lienzo" id="visor3d"><span class="aviso3d">Arrastra para girar · rueda o pellizco para acercar</span></div>
+    <div class="panel">
+      <div class="control"><label for="v-explo">Explosionado</label><input id="v-explo" type="range" min="0" max="100" value="0"></div>
+      <label><input type="checkbox" id="v-corte"> Corte por la mitad</label>
+      <label><input type="checkbox" checked data-grupo="domo"><span class="muestra" style="background:#dfefff"></span> Domo y ventana</label>
+      <label><input type="checkbox" checked data-grupo="sensores"><span class="muestra" style="background:#c87533"></span> Electrodo y láser</label>
+      <label><input type="checkbox" checked data-grupo="anillo"><span class="muestra" style="background:#1b1b1b"></span> Anillo de LED</label>
+      <label><input type="checkbox" checked data-grupo="soporte"><span class="muestra" style="background:#f2f2f2"></span> Soporte</label>
+      <label><input type="checkbox" checked data-grupo="electronica"><span class="muestra" style="background:#3a6fd8"></span> Electrónica</label>
+      <label><input type="checkbox" checked data-grupo="base"><span class="muestra" style="background:#2b2f36"></span> Base y TPU</label>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="copiar" data-led="azul">azul</button><button class="copiar" data-led="rojo">rojo</button><button class="copiar" data-led="verde">verde</button><button class="copiar" data-led="amarillo">amarillo</button><button class="copiar" data-led="apagado">apagado</button>
+      </div>
+    </div>
+  </div>
+  <div id="visor-respaldo" hidden><figure class="render"><img src="{{img:explosionado}}" alt="Vista explosionada del pod"></figure></div>
+  <div class="renders" style="margin-top:18px">
+    <figure><div class="render"><img src="{{img:ensamble}}" alt="Pod ensamblado"></div><figcaption><b>Ensamble.</b> Domo translúcido sobre la base.</figcaption></figure>
+    <figure><div class="render"><img src="{{img:corte}}" alt="Corte del pod por el puerto USB"></div><figcaption><b>Corte A–A.</b> Pedestal, sensor láser bajo la ventana y placa sobre el piso.</figcaption></figure>
+    <figure><div class="render"><img src="{{img:interior}}" alt="Interior de la base vista desde arriba"></div><figcaption><b>Interior.</b> Batería, placa, cargador, USB‑C e interruptor.</figcaption></figure>
+  </div>
+
+  <div style="max-width:780px">
+  <h3>Planos</h3>
+  <p>Cinco láminas A4 a escala 1:1, generadas desde el modelo. Imprímelas al 100 % (sin «ajustar a la página») y comprueba con una regla que la barra de control mida 50 mm: así sirven como plantillas para el electrodo y la ventana. Toca una lámina para verla en grande.</p>
+  </div>
+  <div class="laminas">
+    {{planos}}
+  </div>
+  <p class="tenue" style="max-width:780px;margin-top:14px">Antes de exportar, el modelo pasa una comprobación automática: se intersecan las 16 piezas y componentes de dos en dos (120 pares) y ninguno se solapa.</p>
+
+  <div style="max-width:780px">
+  <h3>Impresión</h3>
+  <div class="tabla"><table>
+    <thead><tr><th>Pieza</th><th>Material y color</th><th>Orientación</th><th>Ajustes</th><th class="n">Volumen</th></tr></thead>
+    <tbody>{{piezas}}</tbody>
+  </table></div>
+  <ul>
+    <li>Ninguna pieza necesita soportes: el domo se imprime boca abajo y todos sus voladizos están a 45° o menos.</li>
+    <li>Para el domo prueba antes un cuadrado de 1,8 mm del mismo filamento: si se ven los LED como puntos, usa un blanco más opaco o lija el interior con papel 240.</li>
+    <li>El pedestal del soporte va con relleno (no hueco): sostiene el techo del domo si alguien pisa el pod.</li>
+    <li>Instala los tres insertos M3 en los tetones del domo con el cautín a 220 °C, empujando en línea recta hasta que queden a ras de la falda.</li>
+  </ul>
+
+  <h3>Cambiar medidas</h3>
+  <p>Abre <code>carcasa/faro.scad</code> en OpenSCAD, muestra el Personalizador (Ventana → Personalizador), cambia los valores y exporta con F6 y F7. Los parámetros más útiles:</p>
+  <div class="tabla"><table>
+    <thead><tr><th>Parámetro</th><th class="n">Valor</th><th>Para qué</th></tr></thead>
+    <tbody>
+      <tr><td><code>con_tof</code></td><td class="n">true</td><td>false quita la ventana y el bolsillo del sensor láser</td></tr>
+      <tr><td><code>anillo_d_ext</code>, <code>anillo_d_int</code></td><td class="n">68, 50</td><td>mide tu anillo con calibrador; uno de 24 LED mide unos 86 mm</td></tr>
+      <tr><td><code>bat</code></td><td class="n">[42, 31, 10]</td><td>tamaño de la batería (largo, ancho, alto)</td></tr>
+      <tr><td><code>usb_hueco</code></td><td class="n">[9,4, 3,8]</td><td>ranura del conector USB‑C de panel</td></tr>
+      <tr><td><code>tof_pcb</code></td><td class="n">[13,3, 10,5, 1]</td><td>tamaño de tu módulo VL53L0X</td></tr>
+      <tr><td><code>holgura</code></td><td class="n">0,2</td><td>juego entre domo y base; súbelo a 0,3 si entra muy justo</td></tr>
+      <tr><td><code>texto_fondo</code></td><td class="n">"FARO"</td><td>texto en bajorrelieve bajo el pod</td></tr>
+    </tbody>
+  </table></div>
+  <p>Si cambias medidas, corre <code>python tools/carcasa.py todo</code> en la carpeta del proyecto: vuelve a revisar los choques, exporta los STL y regenera las secciones de los planos (y <code>python tools/planos.py</code> redibuja las láminas).</p>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<section class="cap" id="montaje">
+  <span class="etiqueta">Capítulo 7</span>
+  <h2>Montaje paso a paso</h2>
+  <p>Arma y prueba un pod completo antes de fabricar los demás. Calcula unas tres horas para el primero y la mitad para los siguientes.</p>
+  <ol class="pasos">
+    <li><h4>Imprime las cuatro piezas</h4><p>Base en PETG negro, domo en blanco translúcido, soporte en blanco y anillo en TPU. Retira los bordes de primera capa con una cuchilla.</p></li>
+    <li><h4>Pon los insertos y prueba el cierre</h4><p>Inserta los tres insertos M3 en el domo. Coloca el domo sobre la base sin nada dentro y atornilla los tres M3×8 avellanados: deben entrar sin forzar y quedar a ras.</p></li>
+    <li><h4>Prepara los módulos</h4><ul><li>Retira el LED rojo de encendido de la Super Mini.</li><li>En el GY‑291 une CS con 3V3 y SDO con GND.</li><li>Si tu TP4056 tiene USB propio, déjalo; usarás sus pads IN+ e IN−.</li></ul></li>
+    <li><h4>Suelda la placa principal</h4><p>Sigue el esquema bloque por bloque. Revisa con el multímetro que no haya cortos entre VBAT_SW, 3V3 y GND antes de seguir.</p></li>
+    <li><h4>Programa y prueba en la mesa</h4><p>Con el interruptor en OFF conecta la ESP32 por USB, carga <code>faro_pod</code> (capítulo 8) y escribe <code>info</code> en el Monitor Serie. Debe decir «golpe sí · táctil sí» (y «distancia sí» si pusiste el láser). Con <code>prueba</code> ves en vivo el táctil, la aceleración y la distancia.</p></li>
+    <li><h4>Monta la parte baja</h4><p>Pega el conector USB‑C en su ranura desde dentro (epoxi o silicona caliente) con la cara a ras de la pared. Pega el interruptor detrás de su ranura. Fija la batería con cinta doble faz en su cuna, el TP4056 entre sus topes y la placa con cuatro tornillos M2×6.</p></li>
+    <li><h4>Prepara el soporte</h4><p>Recorta el electrodo con la plantilla de la hoja 4 y pégalo sobre el pedestal; suelda el cable del electrodo a la cinta y pásalo por su agujero. Pega el VL53L0X en su bolsillo con el sensor hacia arriba y pasa sus cables por el canal central. Coloca el anillo de LED dentro del labio, sus pads sobre la ranura de cables.</p></li>
+    <li><h4>Cierra el soporte</h4><p>Conecta anillo, electrodo y láser a la placa, acomoda los cables y atornilla el soporte a los tres postes con los autorroscantes 2,5×8.</p></li>
+    <li><h4>Calibra</h4><p>Pasa el interruptor a ON. El pod muestra su número y su batería. Por USB escribe <code>id 1</code> (2, 3… en los demás) y luego <code>calibrar</code> con el domo puesto pero sin atornillar.</p></li>
+    <li><h4>Cierra el domo y pega el TPU</h4><p>Pega la ventana de acrílico en su rebaje con pegamento UV o cianoacrilato en gel (poco, por el borde). Atornilla el domo y pega el anillo de TPU en el rebaje del fondo.</p></li>
+  </ol>
+</section>
+
+<!-- ================================================================ -->
+<section class="cap" id="firmware">
+  <span class="etiqueta">Capítulo 8</span>
+  <h2>Firmware</h2>
+  <h3>Preparar Arduino IDE</h3>
+  <ol>
+    <li>Instala Arduino IDE 2. En Archivo → Preferencias agrega la URL de placas de Espressif: <code>https://espressif.github.io/arduino-esp32/package_esp32_index.json</code></li>
+    <li>En el Gestor de placas instala «esp32» de Espressif, versión 3.1 o posterior (el código se compiló con la 3.3.2).</li>
+    <li>En el Gestor de librerías instala <b>Adafruit NeoPixel</b> y <b>VL53L0X</b> de Pololu.</li>
+    <li>Elige la placa «ESP32S3 Dev Module» con <b>USB CDC On Boot: Enabled</b> y Flash Size 4MB (o «XIAO_ESP32S3»).</li>
+    <li>Abre <code>firmware/faro_pod/faro_pod.ino</code> y súbelo con el interruptor del pod en OFF. Si el puerto no aparece, mantén BOOT al conectar el cable.</li>
+  </ol>
+  <p>Los dos programas compilan sin advertencias con el núcleo 3.3.2: el del pod ocupa 966 kB y el del hub 1,1 MB de los 1,3 MB de la partición por defecto. Si algún día el hub no cabe, elige el esquema de partición «Huge APP».</p>
+
+  <h3>Qué hace el pod</h3>
+  <figure class="diagrama">
+    <svg viewBox="0 0 760 300" role="img" aria-label="Estados del firmware del pod">
+      <defs><marker id="pe" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 Z" class="punta"/></marker></defs>
+      <g font-size="12.5">
+        <rect class="caja-ac" x="250" y="110" width="150" height="62" rx="12"/><text x="325" y="137" text-anchor="middle" font-weight="700">REPOSO</text><text class="t2" x="325" y="155" text-anchor="middle" font-size="11">latido · busca hub · carga</text>
+        <rect class="caja" x="520" y="30" width="190" height="62" rx="12"/><text x="615" y="57" text-anchor="middle" font-weight="700">ARMADO</text><text class="t2" x="615" y="75" text-anchor="middle" font-size="11">luz encendida, mide t_r</text>
+        <rect class="caja" x="520" y="200" width="190" height="62" rx="12"/><text x="615" y="227" text-anchor="middle" font-weight="700">MODO SOLO</text><text class="t2" x="615" y="245" text-anchor="middle" font-size="11">10 rondas sin hub</text>
+        <rect class="caja" x="20" y="30" width="170" height="62" rx="12"/><text x="105" y="57" text-anchor="middle" font-weight="700">SUEÑO</text><text class="t2" x="105" y="75" text-anchor="middle" font-size="11">0,15 mA · despierta al golpe</text>
+        <rect class="caja" x="20" y="200" width="170" height="62" rx="12"/><text x="105" y="227" text-anchor="middle" font-weight="700">MODO CARGA</text><text class="t2" x="105" y="245" text-anchor="middle" font-size="11">muestra la carga cada 20 s</text>
+        <path class="flecha" d="M402,126 C470,110 470,70 516,64" marker-end="url(#pe)"/><text x="462" y="92" text-anchor="middle" class="t2" font-size="11">ENCENDER</text>
+        <path class="flecha" d="M520,82 C470,120 450,150 404,152" marker-end="url(#pe)"/><text x="490" y="140" text-anchor="middle" class="t2" font-size="11">estímulo o tiempo → EVENTO</text>
+        <path class="flecha" d="M402,162 C470,190 480,226 516,230" marker-end="url(#pe)"/><text x="440" y="214" text-anchor="middle" class="t2" font-size="11">doble golpe</text>
+        <path class="flecha" d="M250,124 C210,110 210,80 194,70" marker-end="url(#pe)"/><text x="228" y="98" text-anchor="end" class="t2" font-size="11">10 min sin uso · DORMIR · batería baja</text>
+        <path class="flecha2" d="M110,96 C150,120 200,140 246,142" marker-end="url(#pe)"/><text x="160" y="150" class="t2" font-size="11">golpe → reinicia</text>
+        <path class="flecha2" d="M105,96 L105,196" marker-end="url(#pe)"/><text x="112" y="182" class="t2" font-size="11">cargador</text>
+      </g>
+    </svg>
+    <figcaption><b>Figura 8.1.</b> Estados del pod. El sueño profundo apaga radio, anillo y láser; el ADXL345 queda vigilando.</figcaption>
+  </figure>
+  <h4>Lo que muestra la luz</h4>
+  <div class="tabla"><table>
+    <thead><tr><th>Señal</th><th>Significado</th></tr></thead>
+    <tbody>
+      <tr><td>LED blancos al arrancar</td><td>el número del pod (n LED; si pasa de 16, decenas en rojo)</td></tr>
+      <tr><td>barra verde, ámbar o roja</td><td>nivel de batería (≥ 50 %, 20–50 %, &lt; 20 %)</td></tr>
+      <tr><td>punto azul que gira</td><td>buscando el hub</td></tr>
+      <tr><td>destello suave cada 3 s</td><td>conectado y listo, en el color propio del pod</td></tr>
+      <tr><td>barra que respira</td><td>cargando (verde al llegar al 97 %)</td></tr>
+      <tr><td>parpadeo rojo cada 2 s</td><td>batería baja</td></tr>
+      <tr><td>destello blanco</td><td>estímulo aceptado</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Órdenes del pod por USB</h3>
+  <p>Monitor Serie a 115200 baudios, fin de línea «Nueva línea».</p>
+  <div class="tabla"><table>
+    <thead><tr><th>Orden</th><th>Qué hace</th></tr></thead>
+    <tbody>
+      <tr><td><code>info</code></td><td>número, MAC, batería, sensores encontrados, umbrales y estado del hub</td></tr>
+      <tr><td><code>id 3</code></td><td>asigna el número del pod (1–99) y lo guarda</td></tr>
+      <tr><td><code>grupo 1</code></td><td>juego de pods (0–9); el hub debe tener el mismo</td></tr>
+      <tr><td><code>calibrar</code></td><td>mide la línea base sin manos y luego el toque de la palma; fija toque = 50 % y cercanía = 12 % del pico</td></tr>
+      <tr><td><code>prueba</code></td><td>20 s de lecturas en vivo: táctil en ‰, |a| en mg y distancia en mm; el anillo hace de barra</td></tr>
+      <tr><td><code>umbral golpe=1.5 toque=120 cerca=30 dist=150 brillo=160</code></td><td>cambia uno o varios ajustes y los guarda</td></tr>
+      <tr><td><code>colores</code></td><td>recorre la paleta</td></tr>
+      <tr><td><code>solo</code></td><td>empieza 10 rondas de práctica (también con un doble golpe en reposo)</td></tr>
+      <tr><td><code>dormir</code> · <code>fabrica</code></td><td>sueño profundo · borra los ajustes y reinicia</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Protocolo de radio</h3>
+  <p>Mensajes binarios en ESP‑NOW, little‑endian, con una cabecera común de 6 bytes: <code>magia 0xFA</code>, <code>versión 1</code>, <code>tipo</code>, <code>pod</code> (destino u origen; 0xFF = todos) y <code>seq</code> (uint16). Los envíos esperan el acuse de la radio y los eventos se reintentan hasta seis veces; el receptor descarta repeticiones por el número de ronda.</p>
+  <div class="tabla"><table>
+    <thead><tr><th class="n">Tipo</th><th>Mensaje</th><th>Sentido</th><th>Campos tras la cabecera</th><th class="n">Bytes</th></tr></thead>
+    <tbody>
+      <tr><td class="n">1</td><td>BALIZA</td><td>hub → todos</td><td>grupo u8, activo u8, t_ms u32</td><td class="n">12</td></tr>
+      <tr><td class="n">2</td><td>HOLA</td><td>pod → hub</td><td>grupo, vbat_mV u16, carga_pct, flags, sensores, estado, golpe_dg, toque_pm u16, cerca_pm u16, dist_mm u16, brillo, fw char[8]</td><td class="n">29</td></tr>
+      <tr><td class="n">3</td><td>ENCENDER</td><td>hub → pod</td><td>ronda u16, r, g, b, sensores, espera_ms u16, retardo_ms u16, fin</td><td class="n">17</td></tr>
+      <tr><td class="n">4</td><td>APAGAR</td><td>hub → pod</td><td>—</td><td class="n">6</td></tr>
+      <tr><td class="n">5</td><td>CONFIG</td><td>hub → pod</td><td>golpe_dg, toque_pm u16, cerca_pm u16, dist_mm u16, brillo (0xFF/0xFFFF = sin cambio)</td><td class="n">14</td></tr>
+      <tr><td class="n">6</td><td>IDENTIFICAR</td><td>hub → pod</td><td>r, g, b</td><td class="n">9</td></tr>
+      <tr><td class="n">7</td><td>DORMIR</td><td>hub → pod</td><td>—</td><td class="n">6</td></tr>
+      <tr><td class="n">8</td><td>CALIBRAR</td><td>hub → pod</td><td>—</td><td class="n">6</td></tr>
+      <tr><td class="n">9</td><td>EVENTO</td><td>pod → hub</td><td>ronda u16, tipo, tr_us u32, intensidad u16</td><td class="n">15</td></tr>
+    </tbody>
+  </table></div>
+  <p>Sensores (máscara): golpe = 1, toque = 2, cercanía = 4, distancia = 8. Tipo de evento: el bit del sensor que disparó, o 0 si se agotó el tiempo. Intensidad: pico en mg (golpe), cambio en ‰ (táctil) o distancia en mm (láser).</p>
+
+  <h3>El hub</h3>
+  <p>Carga <code>firmware/faro_hub/faro_hub.ino</code> en otra ESP32 con Bluetooth LE; se compiló para ESP32‑S3 (1,1 MB) y ESP32‑C3 (1,2 MB) y no necesita librerías externas. Recibe órdenes de texto por USB o por Bluetooth LE con el nombre <b>Faro-Hub</b> (servicio UART de Nordic) y responde con una línea JSON por evento. Mientras no exista la app, la app gratuita «Serial Bluetooth Terminal» de Android sirve para mandar órdenes desde el celular.</p>
+  <div class="tabla"><table>
+    <thead><tr><th>Orden</th><th>Qué hace</th></tr></thead>
+    <tbody>
+      <tr><td><code>pods</code></td><td>lista los pods conectados con batería, señal y sensores</td></tr>
+      <tr><td><code>ident *</code></td><td>cada pod muestra su número (también con pulsación larga del botón BOOT)</td></tr>
+      <tr><td><code>enc 3 verde espera=2000</code></td><td>enciende un pod a mano y reporta su evento</td></tr>
+      <tr><td><code>apa *</code> · <code>dormir *</code> · <code>calibrar 2</code></td><td>apaga, duerme o recalibra uno o todos</td></tr>
+      <tr><td><code>config * toque=120 cerca=30 dist=200 brillo=120</code></td><td>cambia umbrales en los pods</td></tr>
+      <tr><td><code>aleatorio n=20 color=azul sensores=golpe,toque espera=3000 pausa=600-1800</code></td><td>un pod al azar cada vez (nunca el mismo dos veces seguidas)</td></tr>
+      <tr><td><code>todos n=5 color=verde</code></td><td>se encienden todos; la ronda termina cuando se apaga el último</td></tr>
+      <tr><td><code>gonogo n=20 si=verde no=rojo prob=70 esperano=1500</code></td><td>toca los verdes, ignora los rojos; cuenta errores e inhibiciones</td></tr>
+      <tr><td><code>secuencia n=3 pausa=0</code></td><td>recorre los pods en orden de número, n vueltas</td></tr>
+      <tr><td><code>alto</code></td><td>detiene el ejercicio</td></tr>
+    </tbody>
+  </table></div>
+  <p>Todos los ejercicios aceptan <code>t=60</code> (duración en segundos en vez de cantidad), <code>pods=1,3,5</code> (solo esos pods) y <code>fin=apagar|destello|mantener</code>. Colores: rojo, verde, azul, amarillo, cian, magenta, blanco, naranja, morado, rosa, lima, aleatorio o <code>#RRGGBB</code>.</p>
+  <div class="colores">
+    <span><i style="color:#ff0000;background:#ff0000"></i>rojo</span><span><i style="color:#00ff00;background:#00ff00"></i>verde</span><span><i style="color:#003cff;background:#003cff"></i>azul</span><span><i style="color:#ffaa00;background:#ffaa00"></i>amarillo</span><span><i style="color:#00ffff;background:#00ffff"></i>cian</span><span><i style="color:#ff00ff;background:#ff00ff"></i>magenta</span><span><i style="color:#ffffff;background:#ffffff"></i>blanco</span><span><i style="color:#ff4600;background:#ff4600"></i>naranja</span><span><i style="color:#8200ff;background:#8200ff"></i>morado</span><span><i style="color:#ff286e;background:#ff286e"></i>rosa</span><span><i style="color:#82ff00;background:#82ff00"></i>lima</span>
+  </div>
+  <h4>Lo que responde el hub</h4>
+  <figure><pre class="consola" data-lang="json">{"ev":"conectado","pod":2,"bat":3.94,"pct":73,"usb":false,"rssi":-51,"sensores":"golpe,toque,cerca,distancia","fw":"1.0.0","golpe":1.5,"toque":124,"cerca":30,"dist":120,"brillo":160}
+{"ev":"inicio","ej":"aleatorio","pods":4,"n":20,"t":0.0,"sensores":"golpe,toque,cerca,distancia"}
+{"ev":"estimulo","ej":"aleatorio","k":1,"pod":3,"go":true,"tipo":"cerca","tr":412.7,"int":41,"res":"acierto"}
+{"ev":"estimulo","ej":"aleatorio","k":2,"pod":1,"go":true,"tipo":"golpe","tr":356.0,"int":2310,"res":"acierto"}
+{"ev":"fin","ej":"aleatorio","interrumpido":false,"estimulos":20,"aciertos":19,"omisiones":1,"errores":0,"inhibidos":0,"media":381.4,"mejor":298.2,"peor":540.9,"seg":46.3}</pre><figcaption><b>Ejemplo.</b> Una línea por evento: la app futura solo tiene que leer líneas y convertirlas con <code>JSON.parse</code>.</figcaption></figure>
+  <p>Botón BOOT del hub: pulsación corta = empieza o detiene «aleatorio» con valores por defecto; pulsación larga = todos los pods muestran su número. Su LED RGB parpadea naranja sin pods, cian con pods, azul con Bluetooth conectado y verde durante un ejercicio.</p>
+
+  <h3>Código fuente</h3>
+  <p>El código completo está en la carpeta <code>faro/firmware</code>. Aquí puedes leerlo y copiarlo archivo por archivo.</p>
+  {{codigo_pod}}
+  {{codigo_hub}}
+</section>
+
+<!-- ================================================================ -->
+<section class="cap" id="puesta">
+  <span class="etiqueta">Capítulo 9</span>
+  <h2>Puesta en marcha y calibración</h2>
+  <ol>
+    <li>Conecta el hub al computador y abre el Monitor Serie: verás <code>{"ev":"hub",…}</code> y la lista de órdenes.</li>
+    <li>Enciende los pods. Cada uno pasa del punto azul que gira al destello suave y el hub escribe <code>{"ev":"conectado",…}</code>.</li>
+    <li>Escribe <code>ident *</code> y verifica que cada pod muestre un número distinto. Si dos coinciden, cambia uno por USB con <code>id</code>.</li>
+    <li>Recalibra en el lugar de entrenamiento: <code>calibrar *</code> con nadie cerca de los pods. Para el umbral de toque calibra cada pod por USB una vez, con <code>calibrar</code>.</li>
+    <li>Ajusta la sensibilidad al golpe según la superficie: piso de madera 1,2–1,5 g, pared 1,5–2 g, si golpean con raqueta o pie 2,5–4 g (<code>config * golpe=2.5</code>).</li>
+    <li>Prueba con <code>aleatorio n=10</code>.</li>
+  </ol>
+  <div class="tabla"><table>
+    <thead><tr><th>Ajuste</th><th class="n">Por defecto</th><th>Súbelo si…</th><th>Bájalo si…</th></tr></thead>
+    <tbody>
+      <tr><td>golpe (g)</td><td class="n">1,5</td><td>se dispara al caminar cerca o con vibraciones</td><td>no reconoce toques suaves</td></tr>
+      <tr><td>toque (‰)</td><td class="n">50 (calibrar)</td><td>se activa antes de tocar</td><td>no reconoce el toque con guantes</td></tr>
+      <tr><td>cerca (‰)</td><td class="n">10 (calibrar)</td><td>se activa con la mano lejos o con sudor</td><td>hay que acercarse demasiado</td></tr>
+      <tr><td>dist (mm)</td><td class="n">120</td><td>quieres que reaccione más lejos</td><td>lo activa el techo, una cuerda o la propia raqueta en reposo</td></tr>
+      <tr><td>brillo (0–255)</td><td class="n">160</td><td>al aire libre o con mucha luz</td><td>quieres más horas de batería</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ================================================================ -->
+<section class="cap" id="entrenar">
+  <span class="etiqueta">Capítulo 10</span>
+  <h2>Ejercicios para empezar</h2>
+  <h3>Squash: desplazamiento a las esquinas (ghosting)</h3>
+  <p>Seis pods en el piso: dos en las esquinas delanteras, dos a la altura de las voleas junto a las paredes laterales y dos en las esquinas traseras. El jugador parte de la T, va al pod que se enciende, lo apaga con la raqueta o la mano y vuelve.</p>
+  <pre class="consola" data-lang="txt">aleatorio t=60 sensores=golpe,dist espera=4000 pausa=1200-2000</pre>
+  <p>Con el láser en <code>dist=250</code> basta con pasar la raqueta a 25 cm por encima del pod, sin golpearlo. Para entrenar decisión, usa <code>gonogo</code>: el verde se apaga, el rojo se deja pasar.</p>
+  <h3>Reacción pura</h3>
+  <pre class="consola" data-lang="txt">aleatorio n=20 sensores=toque,cerca pausa=1500-4000</pre>
+  <p>Cuatro pods frente al deportista, a un brazo de distancia. Las pausas largas y variables evitan que anticipe.</p>
+  <h3>Velocidad con todos</h3>
+  <pre class="consola" data-lang="txt">todos n=8 color=amarillo sensores=golpe,toque</pre>
+  <p>Se encienden todos a la vez y se cronometra cuánto tarda en apagarlos. El hub reporta el tiempo de cada pod y el de la ronda.</p>
+  <h3>Circuito</h3>
+  <pre class="consola" data-lang="txt">secuencia n=4 color=cian pausa=0</pre>
+  <p>Los pods se encienden en orden de número: útil para circuitos fijos y para comparar vueltas.</p>
+  <div class="nota"><b>Sin computador ni celular</b>Pulsa el botón BOOT del hub: empieza «aleatorio» con 20 estímulos y todos los sensores. Y si solo tienes un pod, dale dos golpes seguidos para el modo solo: diez rondas con resultado en colores (verde &lt; 350 ms, ámbar &lt; 550 ms).</div>
+</section>
+
+<!-- ================================================================ -->
+<section class="cap" id="problemas">
+  <span class="etiqueta">Capítulo 11</span>
+  <h2>Solución de problemas</h2>
+  <div class="tabla"><table>
+    <thead><tr><th>Síntoma</th><th>Causa probable</th><th>Qué hacer</th></tr></thead>
+    <tbody>
+      <tr><td>No enciende con el interruptor</td><td>protección de la batería disparada o cable de batería suelto</td><td>conecta el cargador unos segundos para rearmar el DW01; revisa B+ y B−</td></tr>
+      <tr><td>Arranca pero el anillo no prende</td><td>Q1/Q2 mal conectados o DIN invertido con DOUT</td><td>con el pod despierto mide VLED: debe estar cerca de la tensión de batería</td></tr>
+      <tr><td><code>info</code> dice «golpe NO»</td><td>el ADXL345 no responde por I²C</td><td>CS a 3V3, SDO a GND, SDA en GPIO 5 y SCL en GPIO 6</td></tr>
+      <tr><td>Golpes que nadie dio</td><td>umbral bajo, superficie que vibra</td><td><code>config * golpe=2.5</code></td></tr>
+      <tr><td>El táctil se dispara solo</td><td>agua o sudor en el domo, cable del electrodo junto al de datos</td><td>seca el domo, separa los cables, <code>calibrar</code></td></tr>
+      <tr><td>El táctil no responde</td><td>electrodo sin soldar o umbrales altos</td><td><code>prueba</code>: al tocar el valor en ‰ debe saltar</td></tr>
+      <tr><td>El láser marca menos de 100 mm sin nada encima</td><td>reflejo de la ventana</td><td>la ventana debe quedar casi contra el sensor y limpia</td></tr>
+      <tr><td>Punto azul que gira sin parar</td><td>el hub está apagado, en otro canal o en otro grupo</td><td>revisa <code>CANAL_WIFI</code> y <code>GRUPO</code> en ambos programas</td></tr>
+      <tr><td>No despierta al golpearlo</td><td>INT1 del ADXL345 no llega al GPIO 7</td><td>revisa ese cable; el interruptor OFF/ON siempre lo reinicia</td></tr>
+      <tr><td>Un cargador USB‑C a C no carga</td><td>el conector de panel no tiene las resistencias de 5,1 k en CC</td><td>usa un cable USB‑A a C o un conector con esas resistencias</td></tr>
+      <tr><td>El IDE no encuentra el puerto</td><td>USB CDC On Boot desactivado o cable solo de carga</td><td>actívalo, cambia el cable y mantén BOOT al conectar</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ================================================================ -->
+<section class="cap" id="seguridad">
+  <span class="etiqueta">Capítulo 12</span>
+  <h2>Seguridad y cuidado</h2>
+  <div class="nota peligro"><b>Baterías de litio</b>Usa celdas con su placa de protección y cables de origen. No las perfores, no las dobles al cerrar la base y no las cargues si están hinchadas. Las primeras cargas hazlas a la vista y sobre una superficie que no arda. No dejes los pods al sol dentro de un carro.</div>
+  <ul>
+    <li>Para guardarlos varias semanas, déjalos con media carga (barra ámbar) y el interruptor en OFF.</li>
+    <li>El sensor láser es de clase 1 (seguro a la vista), pero no lo mires de cerca con instrumentos ópticos.</li>
+    <li>El domo resiste pisadas porque se apoya en el pedestal; no está pensado para saltar sobre él.</li>
+    <li>La carcasa resiste salpicaduras y sudor, pero no es impermeable: no la laves bajo el chorro.</li>
+    <li>Limpia el domo con un paño apenas húmedo y recalibra si cambias de lugar.</li>
+  </ul>
+</section>
+
+<!-- ================================================================ -->
+<section class="cap" id="siguiente">
+  <span class="etiqueta">Capítulo 13</span>
+  <h2>Lo que sigue: la aplicación</h2>
+  <p>El hub ya expone todo lo que necesita una app: órdenes de texto en una característica de escritura y eventos JSON por notificaciones, sobre el servicio UART de Nordic (<code>6E400001-B5A3-F393-E0A9-E50E24DCCA9E</code>). Una aplicación web progresiva puede conectarse con Web Bluetooth desde Chrome en Android o en el computador, sin instalar nada, y vivir junto a Squash Lab.</p>
+  <ul>
+    <li><b>Pantalla de pods:</b> batería, señal y número de cada uno; identificar y calibrar con un toque.</li>
+    <li><b>Diseñador de ejercicios:</b> colores, sensores, tiempos, distractores y duración; guardar plantillas.</li>
+    <li><b>Sesión en vivo:</b> cronómetro, aciertos, tiempos por pod y mapa de calor de la cancha.</li>
+    <li><b>Historial por deportista:</b> evolución de la media, del mejor tiempo y de los errores de go/no‑go.</li>
+  </ul>
+  <p>Safari en iPhone no admite Web Bluetooth; para iOS habría que añadir al hub un punto de acceso Wi‑Fi con WebSocket, o empaquetar la app.</p>
+  <h3>Mejoras de hardware posibles</h3>
+  <ul>
+    <li>Placa de circuito propia con el ESP32‑S3‑MINI, el cargador y el acelerómetro: menos cables y montaje en minutos.</li>
+    <li>Carga inalámbrica Qi: un receptor de 5 V bajo el piso y una base con varias bobinas, sin ranura USB.</li>
+    <li>Actualización del firmware por Wi‑Fi (OTA) para no abrir los pods.</li>
+    <li>Juntas de TPU entre domo y base para mejorar la resistencia al agua.</li>
+  </ul>
+</section>
+
+<!-- ================================================================ -->
+<section class="cap" id="archivos">
+  <span class="etiqueta">Apéndice</span>
+  <h2>Archivos del proyecto</h2>
+  <pre class="consola" data-lang="txt">faro/
+├── carcasa/
+│   ├── faro.scad                 modelo paramétrico (OpenSCAD)
+│   ├── stl/                      base, domo (con y sin ToF), soporte (con y sin ToF), anillo_tpu
+│   ├── electrodo_con_tof.svg     plantillas 1:1
+│   ├── electrodo_sin_tof.svg
+│   ├── ventana_acrilico.svg
+│   └── render/                   vistas para el manual
+├── electronica/
+│   ├── esquema.svg               esquema eléctrico
+│   └── materiales.csv            lista de materiales (abre en Excel)
+├── firmware/
+│   ├── faro_pod/                 faro_pod.ino + config.h, protocolo.h, luces.h, acelerometro.h,
+│   │                             tactil.h, distancia.h, red.h, energia.h
+│   └── faro_hub/                 faro_hub.ino + config.h, protocolo.h, salida.h, radio.h,
+│                                 texto.h, ejercicios.h, ordenes.h
+├── planos/                       01_conjunto … 05_disposicion (A4, escala 1:1)
+├── tools/                        carcasa.py, planos.py, esquema.py, manual.py
+└── manual/                       este documento</pre>
+  <h3>Modelo de la carcasa</h3>
+  {{codigo_scad}}
+</section>
+
+<footer class="pie">
+  <p><b>Faro · pods de reacción</b> — manual de construcción, versión 1.0, octubre de 2026.</p>
+  <p>Elaborado por Mg. Manuel Alejandro Obando · Departamento de Física, Universidad del Cauca.</p>
+</footer>
+</main>
+</div>
+
+<script>{{modelo}}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>{{js}}</script>

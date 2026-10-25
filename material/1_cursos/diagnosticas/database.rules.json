@@ -1,0 +1,108 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "admins": {
+      "$uid": { ".read": "auth != null && auth.uid === $uid" }
+    },
+
+    "bancos": {
+      ".read": "auth != null && root.child('admins').child(auth.uid).val() === true",
+      ".write": "auth != null && root.child('admins').child(auth.uid).val() === true"
+    },
+
+    "catalogo": {
+      ".read": "auth != null && root.child('admins').child(auth.uid).val() === true",
+      ".write": "auth != null && root.child('admins').child(auth.uid).val() === true"
+    },
+
+    "sesiones": {
+      ".read": "auth != null && root.child('admins').child(auth.uid).val() === true",
+      ".write": "auth != null && root.child('admins').child(auth.uid).val() === true"
+    },
+
+    "publico": {
+      ".write": "auth != null && root.child('admins').child(auth.uid).val() === true",
+      "$sid": {
+        ".read": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('uids').child(auth.uid).child('sid').val() === $sid)"
+      }
+    },
+
+    "accesos": {
+      ".indexOn": ["sid"],
+      ".read": "auth != null && root.child('admins').child(auth.uid).val() === true",
+      ".write": "auth != null && root.child('admins').child(auth.uid).val() === true",
+      "$code": {
+        ".read": "auth != null",
+        "uid": {
+          ".write": "auth != null && !data.exists() && newData.val() === auth.uid"
+        }
+      }
+    },
+
+    "uids": {
+      ".read": "auth != null && root.child('admins').child(auth.uid).val() === true",
+      ".write": "auth != null && root.child('admins').child(auth.uid).val() === true",
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid && newData.exists() && newData.child('code').isString() && newData.parent().parent().child('accesos').child(newData.child('code').val()).child('uid').val() === auth.uid && newData.parent().parent().child('accesos').child(newData.child('code').val()).child('sid').val() === newData.child('sid').val()",
+        ".validate": "newData.hasChildren(['code', 'sid'])"
+      }
+    },
+
+    "respuestas": {
+      ".read": "auth != null && root.child('admins').child(auth.uid).val() === true",
+      ".write": "auth != null && root.child('admins').child(auth.uid).val() === true",
+      "$sid": {
+        "$code": {
+          ".read": "auth != null && root.child('accesos').child($code).child('uid').val() === auth.uid",
+          "r": {
+            "$q": {
+              ".write": "auth != null && root.child('accesos').child($code).child('uid').val() === auth.uid && root.child('accesos').child($code).child('sid').val() === $sid && root.child('publico').child($sid).child('estado').val() === 'abierta' && !root.child('respuestas').child($sid).child($code).child('entregado').exists() && now <= root.child('publico').child($sid).child('fin').val() + root.child('accesos').child($code).child('extraMin').val() * 60000 + 120000",
+              ".validate": "!newData.exists() || (newData.isNumber() && newData.val() >= 0 && newData.val() <= 4)"
+            }
+          },
+          "inicio": {
+            ".write": "auth != null && root.child('accesos').child($code).child('uid').val() === auth.uid && root.child('accesos').child($code).child('sid').val() === $sid && !data.exists()",
+            ".validate": "newData.val() === now"
+          },
+          "entregado": {
+            ".write": "auth != null && root.child('accesos').child($code).child('uid').val() === auth.uid && root.child('accesos').child($code).child('sid').val() === $sid && !data.exists()",
+            ".validate": "newData.val() === now"
+          }
+        }
+      }
+    },
+
+    "presencia": {
+      ".read": "auth != null && root.child('admins').child(auth.uid).val() === true",
+      ".write": "auth != null && root.child('admins').child(auth.uid).val() === true",
+      "$sid": {
+        "$code": {
+          ".write": "auth != null && root.child('accesos').child($code).child('uid').val() === auth.uid && root.child('accesos').child($code).child('sid').val() === $sid",
+          ".validate": "newData.hasChildren(['hb'])",
+          "hb": { ".validate": "newData.val() === now" },
+          "n": { ".validate": "newData.isNumber()" },
+          "vista": { ".validate": "newData.isNumber()" },
+          "salidas": { ".validate": "newData.isNumber()" },
+          "fuera": { ".validate": "newData.isBoolean()" },
+          "estado": { ".validate": "newData.isString() && newData.val().length < 20" },
+          "disp": { ".validate": "newData.isString() && newData.val().length < 60" },
+          "$otro": { ".validate": false }
+        }
+      }
+    },
+
+    "boletines": {
+      ".write": "auth != null && root.child('admins').child(auth.uid).val() === true",
+      "$k": { ".read": "auth != null" }
+    },
+
+    "informes": {
+      ".read": "auth != null && root.child('admins').child(auth.uid).val() === true",
+      ".write": "auth != null && root.child('admins').child(auth.uid).val() === true",
+      "$t": { ".read": "auth != null" }
+    }
+  }
+}

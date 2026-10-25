@@ -1,0 +1,64 @@
+<template class="chapter-src" data-id="dopado" data-num="19" data-title="Semiconductores dopados" data-part="Parte IV · Semiconductores" data-short="Donadores y aceptores, modelo hidrogenoide y corrección de celda central, estadística de ocupación de impurezas, neutralidad de carga y nivel de Fermi, congelamiento, saturación y régimen intrínseco, compensación, dopaje degenerado y transición de Mott">
+<p class="lead">El silicio de un chip no es puro: contiene átomos de fósforo, arsénico o boro en proporciones de una parte en un millón o en mil millones, colocados a propósito. Cada átomo de fósforo aporta un electrón casi libre; cada átomo de boro, un hueco. Con esas impurezas se controla la conductividad del material en diez órdenes de magnitud y se elige el signo de los portadores. Este capítulo explica por qué las impurezas se ionizan tan fácilmente y cómo se calcula el número de portadores en función de la temperatura.</p>
+
+<section>
+<h2>Donadores y aceptores</h2>
+<p>El fósforo tiene cinco electrones de valencia. Al reemplazar a un átomo de silicio, cuatro forman los enlaces covalentes y el quinto queda ligado débilmente al ion P⁺. Ese electrón se mueve en el cristal, con masa efectiva \(m^*\), atraído por una carga \(+e\) apantallada por la constante dieléctrica \(\varepsilon_r\) del silicio: un átomo de hidrógeno «diluido». Su energía de enlace y su radio son los de Bohr reescalados:</p>
+<div class="eq key" data-name="Modelo hidrogenoide">\[E_d=\frac{m^*/m}{\varepsilon_r^2}\times13.6\ \text{eV},\qquad a_d=\frac{\varepsilon_r}{m^*/m}\,a_0 .\]</div>
+<p>Con \(m^*=0.26\,m\) y \(\varepsilon_r=11.7\) se obtiene \(E_d=26\) meV y \(a_d=24\) Å, nueve distancias interatómicas: el electrón está repartido sobre unos mil átomos, y la aproximación de masa efectiva y de dieléctrico continuo se justifica. A temperatura ambiente (\(k_BT=26\) meV) casi todos los donadores están ionizados. Las energías medidas son algo mayores (45 meV para el P, 54 para el As) porque cerca del ion el potencial no está apantallado: es la <span class="term">corrección de celda central</span>, distinta para cada impureza. En el GaAs, con \(m^*=0.067\,m\), el modelo da 5.5 meV y la medición 5.8 meV.</p>
+<p>Del mismo modo el boro, con tres electrones, deja un enlace incompleto que captura un electrón de la banda de valencia: crea un hueco ligado al ion B⁻, con energía de ionización de 45 meV. Los elementos del grupo V son <span class="term">donadores</span> (semiconductor tipo n) y los del grupo III, <span class="term">aceptores</span> (tipo p). En los III-V el silicio puede actuar como donador o aceptor según el sitio que ocupe (anfótero).</p>
+<div class="tablewrap"><table>
+<tr><th>Impureza en Si</th><th class="c">P</th><th class="c">As</th><th class="c">Sb</th><th class="c">B</th><th class="c">Al</th><th class="c">Ga</th><th class="c">In</th></tr>
+<tr><td>Energía de ionización (meV)</td><td class="c">45</td><td class="c">54</td><td class="c">43</td><td class="c">45</td><td class="c">57</td><td class="c">65</td><td class="c">157</td></tr>
+</table></div>
+<div class="sim" data-sim="donador" data-title="El donador hidrogenoide sobre la red del cristal"></div>
+<div class="sim-guide"><ul>
+<li>La densidad del electrón ligado (orbital 1s de radio \(a_d\)) sobre los átomos de un plano del cristal, a escala. Compare Si, Ge y GaAs: en el GaAs la órbita abarca decenas de miles de átomos.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Nivel de Fermi y neutralidad de carga</h2>
+<p>Un nivel donador puede alojar un electrón con cualquiera de los dos espines, pero no dos (la repulsión los excluye). La probabilidad de que esté ionizado es</p>
+<div class="eq key" data-name="Ionización de impurezas">\[N_d^+=\frac{N_d}{1+g_d\,\ee^{(E_F-E_d)/k_BT}},\qquad N_a^-=\frac{N_a}{1+g_a\,\ee^{(E_a-E_F)/k_BT}},\]</div>
+<p>con factores de degeneración \(g_d=2\) y \(g_a=4\) (por la doble degeneración de la banda de valencia). El nivel de Fermi queda fijado por la <span class="term">neutralidad de carga</span>:</p>
+<div class="eq key" data-name="Neutralidad de carga">\[n+N_a^-=p+N_d^+ ,\]</div>
+<p>con \(n\) y \(p\) dados por las integrales de Fermi–Dirac. Es una ecuación para una sola incógnita, \(E_F\), que el curso resuelve numéricamente (y valida contra SciPy). En el silicio con \(10^{16}\) cm⁻³ de fósforo a 300 K, \(E_F\) queda 0.21 eV por debajo de \(E_c\), el 99.6 % de los donadores están ionizados y \(n=9.96\times10^{15}\) cm⁻³, mientras que los huecos se reducen a \(n_i^2/n=1.1\times10^4\) cm⁻³.</p>
+<div class="sim" data-sim="nivel-fermi" data-title="Nivel de Fermi de un semiconductor dopado"></div>
+<div class="sim-guide"><ul>
+<li>Diagrama de bandas del silicio con el nivel donador y el aceptor, y el nivel de Fermi que resuelve la neutralidad. Cambie la temperatura y las concentraciones: con dopaje tipo n el nivel de Fermi sube hacia \(E_c\); al calentar regresa al centro.</li>
+<li>Con dopajes superiores a \(10^{19}\) cm⁻³ el nivel de Fermi entra en la banda: el semiconductor es degenerado.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Tres regímenes de temperatura</h2>
+<p>La concentración de electrones de un semiconductor tipo n atraviesa tres regímenes. A baja temperatura los electrones vuelven a los donadores (<span class="term">congelamiento</span>): \(n\approx\sqrt{N_cN_d/2}\,\ee^{-E_d/2k_BT}\), y a 50 K solo el 5 % de los donadores del ejemplo está ionizado. A temperaturas intermedias todos están ionizados y \(n\approx N_d\) (<span class="term">saturación</span> o régimen extrínseco), una meseta que en el silicio va de unos 150 a 450 K y es la zona de trabajo de los dispositivos. A temperatura alta \(n_i\) supera a \(N_d\) y el material se vuelve <span class="term">intrínseco</span>: el dopaje deja de importar. Por eso los dispositivos de silicio fallan por encima de unos 200 °C, y para electrónica de potencia y alta temperatura se usan SiC y GaN.</p>
+<div class="sim" data-sim="n-T" data-title="Concentración de electrones frente a la temperatura"></div>
+<div class="sim-guide"><ul>
+<li>Gráfica de Arrhenius de \(n\) para varios dopajes de fósforo en silicio, resuelta con neutralidad de carga exacta. Las pendientes son \(-E_d/2k_B\) en el congelamiento y \(-E_g/2k_B\) en el régimen intrínseco.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Compensación, dopaje fuerte y transición de Mott</h2>
+<p>Si hay donadores y aceptores a la vez, los electrones de los donadores llenan primero los aceptores: el material es tipo n con \(n\approx N_d-N_a\) si \(N_d>N_a\). Es la <span class="term">compensación</span>, que se usa para fabricar zonas p dentro de material n y viceversa, y que explica por qué un material muy compensado puede tener muy pocos portadores pese a estar muy dopado. Cuando la distancia entre donadores se vuelve comparable al radio \(a_d\), las órbitas se superponen y forman una banda de impurezas que se une con la de conducción. Nevill Mott estimó que la transición de aislante a metal ocurre cuando \(n_c^{1/3}a_d\approx0.26\). Para el GaAs (\(a_d=10\) nm) esto da \(n_c\approx2\times10^{16}\) cm⁻³, como se mide; en el Si:P la transición se observa en \(3.7\times10^{18}\) cm⁻³. Por encima el semiconductor es <span class="term">degenerado</span> y conduce como un metal incluso a temperatura cero: así se dopan los contactos óhmicos y los emisores de los transistores.</p>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Estime la energía de enlace y el radio del donador en el germanio (\(m^*=0.12\), \(\varepsilon_r=16.2\)).
+<details><summary>Respuesta</summary><p>\(E_d=6.2\) meV y \(a_d=71\) Å (medido: 9.6–12.7 meV según la impureza).</p></details></li>
+<li><span class="lvl">Básico</span>Un silicio tiene \(N_d=10^{17}\) cm⁻³ ionizados a 300 K. ¿Cuánto valen \(n\), \(p\) y \(E_c-E_F\)?
+<details><summary>Respuesta</summary><p>\(n=10^{17}\), \(p=n_i^2/n=1.1\times10^3\) cm⁻³, \(E_c-E_F=k_BT\ln(N_c/n)=0.146\) eV.</p></details></li>
+<li><span class="lvl">Intermedio</span>Demuestre que en el régimen de congelamiento \(n\approx\sqrt{N_cN_d/2}\,\ee^{-E_d/2k_BT}\).
+<details><summary>Respuesta</summary><p>Con \(n=N_d^+\ll N_d\): \(n\approx N_d\ee^{-(E_F-E_d)/k_BT}/2\) y \(n=N_c\ee^{-(E_c-E_F)/k_BT}\); multiplicando, \(n^2=\tfrac12N_cN_d\ee^{-(E_c-E_d)/k_BT}\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Un silicio tiene \(N_d=5\times10^{16}\) y \(N_a=2\times10^{16}\) cm⁻³. ¿De qué tipo es y cuántos portadores mayoritarios tiene a 300 K?
+<details><summary>Respuesta</summary><p>Tipo n con \(n\approx3\times10^{16}\) cm⁻³.</p></details></li>
+<li><span class="lvl">Avanzado</span>¿A qué temperatura un silicio con \(N_d=10^{15}\) cm⁻³ tiene \(n_i=N_d\)? (Use \(n_i(T)\) con \(E_g\) de Varshni.)
+<details><summary>Respuesta</summary><p>Resolviendo numéricamente, cerca de 545 K (unos 270 °C).</p></details></li>
+</ol>
+<div class="box note"><h4>Para profundizar</h4><p>Kittel, cap. 8; Ashcroft y Mermin, cap. 28; Sze y Ng, cap. 1. W. Kohn y J. M. Luttinger, «Theory of donor states in silicon», <em>Phys. Rev.</em> 98, 915 (1955). N. F. Mott, <em>Metal–Insulator Transitions</em>, 2.ª ed., Taylor &amp; Francis, 1990.</p></div>
+</section>
+</template>

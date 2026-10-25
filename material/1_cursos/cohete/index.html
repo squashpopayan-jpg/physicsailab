@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1116">
+<meta name="author" content="Mg. Manuel Alejandro Obando · Departamento de Física, Universidad del Cauca">
+<meta name="description" content="Mide la altura de un cohete con la cámara y los sensores del celular y la deja grabada en el video.">
+<title>Apogeo</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-logo" viewBox="0 0 48 48"><path d="M6 42 L42 42" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none" opacity=".45"/><path d="M14 42 C 18 14, 30 8, 40 30" stroke="currentColor" stroke-width="3" stroke-linecap="round" fill="none" stroke-dasharray="1 5.5"/><path d="M6 42 L26 12" stroke="#7fe0ff" stroke-width="2.5" stroke-linecap="round"/><path d="M13 42 A 7 7 0 0 0 10.2 36.3" stroke="#7fe0ff" stroke-width="2.5" fill="none"/><circle cx="26" cy="12" r="4.5" fill="#ff8a3d"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M19.4 13.5a7.6 7.6 0 0 0 0-3l2-1.6-2-3.4-2.4 1a7.5 7.5 0 0 0-2.6-1.5L14 2.5h-4l-.4 2.5A7.5 7.5 0 0 0 7 6.5l-2.4-1-2 3.4 2 1.6a7.6 7.6 0 0 0 0 3l-2 1.6 2 3.4 2.4-1a7.5 7.5 0 0 0 2.6 1.5l.4 2.5h4l.4-2.5a7.5 7.5 0 0 0 2.6-1.5l2.4 1 2-3.4Z"/></symbol>
+  <symbol id="i-base" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M12 3v9M8 21l4-9 4 9M5 21h14"/><circle cx="12" cy="3.5" r="1.6" fill="currentColor"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M3 20h18M4 18c3-12 9-14 16-2"/><circle cx="11.5" cy="7" r="1.8" fill="currentColor"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M6 6l12 12M18 6 6 18"/></symbol>
+</svg>
+
+<div id="app">
+  <header id="top">
+    <div class="brand"><svg class="logo"><use href="#i-logo"/></svg><span>Apogeo</span></div>
+    <div class="chips" id="chips">
+      <button class="chip" id="chipD" type="button">d —</button>
+      <button class="chip" id="chipBase" type="button">sin base</button>
+      <button class="chip" id="chipLens" type="button">lente</button>
+      <button class="chip" id="chipMode" type="button">trípode</button>
+    </div>
+    <button class="icon-btn" id="btnSetup" type="button" aria-label="Preparación"><svg><use href="#i-gear"/></svg></button>
+  </header>
+
+  <div id="task" hidden>
+    <p id="taskText"></p>
+    <div class="task-actions">
+      <button id="taskMain" type="button" class="primary small"></button>
+      <button id="taskAlt" type="button" class="secondary small" hidden></button>
+      <button id="taskCancel" type="button" class="ghost small">Cancelar</button>
+    </div>
+  </div>
+
+  <main id="stage">
+    <canvas id="view" aria-label="Imagen de la cámara con la medición"></canvas>
+    <p id="hint" hidden></p>
+    <div id="countdown" hidden></div>
+  </main>
+
+  <footer id="controls">
+    <button id="btnBase" class="ctl" type="button"><svg><use href="#i-base"/></svg><span>Base</span></button>
+    <button id="btnRec" class="rec" type="button" aria-label="Grabar"><span class="dot"></span></button>
+    <button id="btnResults" class="ctl" type="button"><svg><use href="#i-chart"/></svg><span>Resultados</span></button>
+  </footer>
+</div>
+
+<!-- Pantalla inicial -->
+<section id="intro" class="screen">
+  <div class="intro-inner">
+    <svg class="logo-big"><use href="#i-logo"/></svg>
+    <h1>Apogeo</h1>
+    <p class="lead">Mide la altura de un cohete con tu celular y la deja grabada en el video.</p>
+    <div class="intro-actions">
+      <button id="btnStartCam" type="button" class="primary">Usar la cámara</button>
+      <button id="btnStartDemo" type="button" class="secondary">Ver la demostración</button>
+    </div>
+    <p id="introWarn" class="warn" hidden></p>
+    <ol class="steps">
+      <li><b>Mide la distancia</b> horizontal desde tu puesto hasta la rampa. Lo ideal: parecida a la altura que esperas.</li>
+      <li><b>Ponte de lado al viento</b> y fija el celular en un trípode, en vertical, apuntando por encima de la rampa.</li>
+      <li><b>Toca la base</b> del cohete en la imagen. Aparece una regla de alturas encima de la rampa.</li>
+      <li><b>Graba.</b> La app detecta el despegue, sigue al cohete, calcula la altura y la deja en el video.</li>
+    </ol>
+    <button id="btnLast" type="button" class="link" hidden>Ver el último lanzamiento</button>
+    <p class="credit">Elaborado por Mg. Manuel Alejandro Obando · Departamento de Física, Universidad del Cauca</p>
+  </div>
+</section>
+
+<!-- Preparación -->
+<section id="setup" class="sheet" hidden aria-label="Preparación">
+  <header class="sheet-head">
+    <h2>Preparación</h2>
+    <button class="icon-btn" type="button" data-close="setup" aria-label="Cerrar"><svg><use href="#i-close"/></svg></button>
+  </header>
+  <div class="sheet-body">
+    <section class="group">
+      <h3><span class="n">1</span>Distancia horizontal a la rampa</h3>
+      <div class="row">
+        <label class="num big"><input id="inD" type="number" inputmode="decimal" step="0.1" min="2" max="1000"><span>m</span></label>
+        <label class="num"><span>±</span><input id="inSigD" type="number" inputmode="decimal" step="0.1" min="0" max="50"><span>m</span></label>
+      </div>
+      <p class="help">Mídela con cinta métrica por el suelo, desde el pie del trípode hasta la base de la rampa. Cada 1 % de error en la distancia es 1 % de error en la altura. Cada carril de la pista mide 1.22 m.</p>
+      <details>
+        <summary>Medirla con el GPS</summary>
+        <p class="help">Menos precisa (±3 a ±8 m). Sirve si no tienes cinta o la distancia es grande.</p>
+        <div class="row wrap">
+          <button id="gpsPad" type="button" class="secondary small">1 · Estoy en la rampa</button>
+          <span class="gps-info" id="gpsPadInfo"></span>
+        </div>
+        <div class="row wrap">
+          <button id="gpsObs" type="button" class="secondary small">2 · Estoy en mi puesto</button>
+          <span class="gps-info" id="gpsObsInfo"></span>
+        </div>
+        <p id="gpsResult" class="result-line"></p>
+        <button id="gpsUse" type="button" class="primary small" hidden>Usar esta distancia</button>
+      </details>
+      <details>
+        <summary>Calcularla con mi altura sobre la rampa</summary>
+        <p class="help">Si estás en un balcón o una tribuna y conoces tu altura sobre la base de la rampa (por ejemplo, con una cuerda), la app la convierte en distancia usando el ángulo de la base. Funciona bien si miras la rampa al menos 5° hacia abajo.</p>
+        <div class="row wrap">
+          <label class="num"><span>altura</span><input id="inHobs" type="number" inputmode="decimal" step="0.1" min="0.5"><span>m</span></label>
+          <button id="btnHobs" type="button" class="secondary small">Calcular d</button>
+        </div>
+        <p id="hobsResult" class="result-line"></p>
+      </details>
+    </section>
+
+    <section class="group">
+      <h3><span class="n">2</span>Cómo vas a sostener el celular</h3>
+      <div class="seg" role="radiogroup" aria-label="Modo">
+        <button id="modeTripod" type="button" role="radio">Trípode</button>
+        <button id="modeFollow" type="button" role="radio">En la mano</button>
+      </div>
+      <p class="help" id="modeHelp"></p>
+    </section>
+
+    <section class="group">
+      <h3><span class="n">3</span>Lente de la cámara</h3>
+      <p id="lensInfo" class="result-line"></p>
+      <div class="row wrap">
+        <button id="btnLens" type="button" class="secondary small">Calibrar lente</button>
+        <button id="btnLensReset" type="button" class="ghost small">Usar valor típico</button>
+      </div>
+      <p class="help">Hazlo una vez por celular, antes de montarlo en el trípode: apuntas a algo lejano, giras el celular y lo vuelves a tocar. Con el valor típico el error suele ser de 1 a 3 % cuando el cohete no está en el centro de la imagen.</p>
+    </section>
+
+    <section class="group">
+      <h3>Grabación</h3>
+      <label class="field"><span>Nombre del lanzamiento</span><input id="inLabel" type="text" maxlength="40" placeholder="Grupo 3 · cohete azul"></label>
+      <div class="row wrap">
+        <label class="field"><span>Cuenta regresiva</span>
+          <select id="inCountdown"><option value="0">sin cuenta</option><option value="3">3 s</option><option value="5">5 s</option><option value="10">10 s</option></select>
+        </label>
+        <label class="field"><span>Resolución</span>
+          <select id="inRes"><option value="1280x720">720p</option><option value="1920x1080">1080p</option></select>
+        </label>
+      </div>
+      <label class="field"><span>Cámara</span><select id="inCam"><option value="">Trasera principal</option></select></label>
+    </section>
+
+    <details class="group">
+      <summary>Avanzado</summary>
+      <label class="check"><input id="inLateral" type="checkbox"> Corregir la deriva lateral (supone el cohete en el plano que pasa por la rampa, de frente a ti)</label>
+      <label class="check"><input id="inShowRoi" type="checkbox"> Mostrar la ventana donde la app busca el cohete</label>
+      <div class="row wrap">
+        <label class="field"><span>Resolución de análisis</span>
+          <select id="inAna"><option value="480">480 (rápido)</option><option value="640">640</option><option value="960">960 (cohetes lejanos)</option></select>
+        </label>
+        <label class="field"><span>Error del sensor (°)</span><input id="inSigS" type="number" step="0.05" min="0" max="3"></label>
+        <label class="field"><span>Retraso cámara–sensor (ms)</span><input id="inLat" type="number" step="5" min="0" max="300"></label>
+      </div>
+      <p class="help" id="fpsInfo"></p>
+    </details>
+
+    <section class="group" id="demoGroup" hidden>
+      <h3>Demostración</h3>
+      <div class="row wrap">
+        <label class="field"><span>Cohete</span>
+          <select id="demoPreset"><option value="agua">De agua (≈ 36 m)</option><option value="modelo">De modelismo B6-4 (≈ 200 m)</option></select>
+        </label>
+        <label class="field"><span>Viento (m/s)</span><input id="demoWind" type="number" step="0.5" min="0" max="10"></label>
+        <label class="field"><span>Viento hacia</span>
+          <select id="demoWindDir"><option value="90">de lado (→)</option><option value="0">alejándose de mí</option><option value="180">hacia mí</option></select>
+        </label>
+        <label class="field"><span>Mi altura sobre la rampa (m)</span><input id="demoH" type="number" step="0.5" min="0" max="30"></label>
+      </div>
+      <button id="demoRestart" type="button" class="secondary small">Reiniciar la demostración</button>
+    </section>
+
+    <section class="group">
+      <h3>Fuente</h3>
+      <div class="row wrap">
+        <button id="srcCam" type="button" class="secondary small">Cámara</button>
+        <button id="srcDemo" type="button" class="secondary small">Demostración</button>
+      </div>
+    </section>
+    <p class="credit">Elaborado por Mg. Manuel Alejandro Obando · Departamento de Física, Universidad del Cauca</p>
+  </div>
+</section>
+
+<!-- Resultados -->
+<section id="results" class="sheet full" hidden aria-label="Resultados">
+  <header class="sheet-head">
+    <h2 id="rTitle">Resultados</h2>
+    <button class="icon-btn" type="button" data-close="results" aria-label="Cerrar"><svg><use href="#i-close"/></svg></button>
+  </header>
+  <div class="sheet-body">
+    <div class="res-hero">
+      <span class="eyebrow">Apogeo sobre la rampa</span>
+      <div class="res-value" id="rApo">—</div>
+      <p class="res-sig" id="rApoSig"></p>
+      <p class="warn" id="rClip" hidden>El cohete salió del cuadro por arriba, así que subió más de lo medido: este valor es solo un mínimo. La próxima vez aleja el trípode o inclínalo más hacia arriba hasta que «el cuadro cubre» supere la altura esperada.</p>
+      <p class="res-note" id="rDrift"></p>
+      <p class="res-truth" id="rTruth" hidden></p>
+    </div>
+    <dl class="stats" id="rStats"></dl>
+    <div class="chart-wrap"><canvas id="rChart"></canvas></div>
+    <p class="legend"><span class="sw auto"></span>seguido por la app <span class="sw cruz"></span>cruz (en la mano) <span class="sw manual"></span>marcado por ti <span class="sw fit"></span>ajuste del apogeo</p>
+
+    <div class="row wrap redo">
+      <label class="num"><span>d usada</span><input id="rD" type="number" inputmode="decimal" step="0.1" min="1"><span>m</span></label>
+      <label class="num"><span>±</span><input id="rSigD" type="number" inputmode="decimal" step="0.1" min="0"><span>m</span></label>
+    </div>
+    <p class="help">Si mediste la distancia después del lanzamiento, cámbiala aquí: la altura se recalcula con los ángulos guardados.</p>
+
+    <div class="actions">
+      <button id="rSaveVid" type="button" class="primary">Guardar video</button>
+      <button id="rShareVid" type="button" class="secondary">Compartir video</button>
+      <button id="rCSV" type="button" class="secondary">Guardar datos (CSV)</button>
+      <button id="rPNG" type="button" class="secondary">Guardar gráfica</button>
+    </div>
+
+    <button id="rReview" type="button" class="secondary wide">Revisar el video cuadro a cuadro</button>
+    <div id="review" hidden>
+      <div class="rv-stage"><video id="rv" playsinline muted preload="auto"></video><canvas id="rvOver"></canvas></div>
+      <p id="rvInfo" class="result-line"></p>
+      <div class="rv-ctl">
+        <button id="rvPrev10" type="button" class="secondary small" aria-label="Retroceder 10 cuadros">−10</button>
+        <button id="rvPrev" type="button" class="secondary small" aria-label="Cuadro anterior">−1</button>
+        <button id="rvPlay" type="button" class="secondary small">▶</button>
+        <button id="rvNext" type="button" class="secondary small" aria-label="Cuadro siguiente">+1</button>
+        <button id="rvNext10" type="button" class="secondary small" aria-label="Avanzar 10 cuadros">+10</button>
+      </div>
+      <input id="rvSlider" type="range" min="0" max="1000" value="0" aria-label="Posición en el video">
+      <div class="rv-ctl">
+        <button id="rvDel" type="button" class="ghost small">Quitar el punto de este cuadro</button>
+        <button id="rvLaunch" type="button" class="ghost small">El despegue es aquí</button>
+        <button id="rvBase" type="button" class="ghost small">Volver a tocar la base</button>
+      </div>
+      <p class="help">Toca el cohete en la imagen para marcarlo en ese cuadro (amarillo). Los puntos que marques reemplazan a los automáticos y la altura se recalcula al instante.</p>
+    </div>
+    <p class="help method" id="rMethod"></p>
+  </div>
+</section>
+
+<div id="toast" role="status" hidden></div>
+<video id="cam" playsinline muted hidden></video>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

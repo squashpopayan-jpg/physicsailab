@@ -2086,6 +2086,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         <button class="btn btn-primary" style="font-size:0.82rem; padding:0.45rem 0.95rem; background:linear-gradient(135deg, #6366F1, #8B5CF6); border:none;" onclick="openAdminPanel()">
                             ⚙️ Abrir Panel Docente
                         </button>
+                        <a href="/material/1_cursos/hBN-MC/index.html" target="_blank" class="btn btn-secondary" style="font-size:0.82rem; padding:0.45rem 0.85rem; border-color:rgba(168, 85, 247, 0.45); color:#c084fc; display:inline-flex; align-items:center; gap:0.35rem;" title="Abrir mi simulador científico privado MC hBN">
+                            🔬 MC hBN
+                        </a>
+                        <a href="/material/1_cursos/diagnosticas/dist/public/panel.html" target="_blank" class="btn btn-secondary" style="font-size:0.82rem; padding:0.45rem 0.85rem; border-color:rgba(56, 189, 248, 0.45); color:#38bdf8; display:inline-flex; align-items:center; gap:0.35rem;" title="Abrir panel docente de pruebas diagnósticas">
+                            📊 Panel Pruebas
+                        </a>
                         <a href="/garmin/" class="btn btn-secondary" style="font-size:0.82rem; padding:0.45rem 0.85rem; border-color:rgba(34, 211, 238, 0.45); color:#22d3ee; display:inline-flex; align-items:center; gap:0.35rem;" title="Abrir mi monitor personal Garmin AI Pro">
                             ⌚ Garmin Pro
                         </a>
@@ -2469,7 +2475,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     </div>
                     <div class="card-actions" style="flex-wrap:wrap; gap:0.4rem;">
-                        ${c.demoPath ? `<a href="${c.demoPath}" target="_blank" class="btn btn-primary" style="flex:1; justify-content:center;">${openBtnText}</a>` : ''}
+                        ${c.demoPath ? (isPrivado && !adminMode ? `<button type="button" class="btn btn-secondary" onclick="openAdminPanel()" style="flex:1; justify-content:center; border-color:rgba(168,85,247,0.4); color:#c084fc;">${openBtnText}</button>` : `<a href="${c.demoPath}" target="_blank" class="btn btn-primary" style="flex:1; justify-content:center; ${isPrivado ? "background:linear-gradient(135deg, #a855f7, #6366f1); border:none;" : ""}">${openBtnText}</a>`) : ''}
+                        ${(isDiagnosticas && adminMode) ? `<a href="/material/1_cursos/diagnosticas/dist/public/panel.html" target="_blank" class="btn btn-secondary" style="border-color:rgba(56,189,248,0.5); color:#38bdf8; display:inline-flex; align-items:center; gap:0.35rem;" title="Abrir panel docente de pruebas">📊 Panel Docente</a>` : ''}
                         ${c.id === 'venturi' ? `<button type="button" class="btn btn-secondary" onclick="openVenturiGroupModal()" style="border-color:rgba(56,189,248,0.5); color:#38bdf8; display:inline-flex; align-items:center; gap:0.35rem;" title="Organizar puestos y asignar bancos para grupos (1 al 24)">👥 Puestos Grupos (1-24)</button>` : ''}
                         ${c.id === 'pendulo' ? `<button type="button" class="btn btn-secondary" onclick="openPenduloGroupModal()" style="border-color:rgba(56,189,248,0.5); color:#38bdf8; display:inline-flex; align-items:center; gap:0.35rem;" title="Organizar puestos y asignar bancos para grupos (1 al 24)">👥 Puestos Grupos (1-24)</button>` : ''}
                         ${!courseUnlocked ? `<button class="btn btn-secondary btn-course-key" onclick="openCourseKeyModal('${c.id}')" title="Ingresar clave para ${c.titulo}">🔑 Clave Alumno</button>` : ''}
@@ -5853,6 +5860,97 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     <div class="admin-table-container" style="max-height:300px; overflow-y:auto;" id="admin-licenses-table-container">
                         ${renderStudentLicensesTableHtml(getStudentLicenses())}
+                    </div>
+                </div>
+
+                
+                <!-- Proyectos Especiales & Herramientas Docentes Exclusivas (MC hBN, Pruebas Diagnósticas, Faro & Apogeo) -->
+                <div style="background:rgba(99, 102, 241, 0.08); border:1px solid rgba(99, 102, 241, 0.25); border-radius:12px; padding:1.25rem; margin-bottom:1.75rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.85rem; flex-wrap:wrap; gap:0.5rem;">
+                        <div>
+                            <h4 style="color:#fff; font-size:1.1rem; margin:0 0 0.25rem; display:flex; align-items:center; gap:0.5rem;">
+                                🔬 Espacio Docente: Proyectos Especiales & Herramientas de Investigación
+                            </h4>
+                            <div style="font-size:0.8rem; color:var(--text-muted);">
+                                Acceso directo exclusivo para el Mg. Manuel Alejandro Obando a simuladores de tesis, plataforma institucional de evaluación y proyectos de física aplicada.
+                            </div>
+                        </div>
+                        <span class="unlocked-tag admin-badge" style="font-size:0.72rem;">👑 Acceso Maestro</span>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:1rem;">
+                        <!-- Card 1: MC hBN -->
+                        <div style="background:rgba(15,23,42,0.65); border:1px solid rgba(168,85,247,0.3); border-radius:10px; padding:1rem; display:flex; flex-direction:column; justify-content:space-between;">
+                            <div>
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+                                    <span style="font-size:0.75rem; color:#c084fc; font-weight:700; text-transform:uppercase;">Investigación DFT / UFOP</span>
+                                    <span class="badge" style="font-size:0.65rem; background:rgba(168,85,247,0.2); color:#c084fc; border-color:rgba(168,85,247,0.4);">Privado</span>
+                                </div>
+                                <h5 style="color:#fff; font-size:0.98rem; margin:0 0 0.4rem;">hBN-MC: Simulador Monte Carlo</h5>
+                                <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 0.85rem; line-height:1.4;">
+                                    Nanoporos en nitruro de boro hexagonal y heteroestructuras h-BNC. Basado en cálculos DFT (SIESTA) y modelo de enlaces de tu maestría.
+                                </p>
+                            </div>
+                            <a href="/material/1_cursos/hBN-MC/index.html" target="_blank" class="btn btn-primary" style="font-size:0.82rem; padding:0.45rem 0.85rem; background:linear-gradient(135deg, #a855f7, #6366f1); border:none; justify-content:center;">
+                                🚀 Abrir Simulador Científico
+                            </a>
+                        </div>
+
+                        <!-- Card 2: Pruebas Diagnósticas Panel -->
+                        <div style="background:rgba(15,23,42,0.65); border:1px solid rgba(56,189,248,0.3); border-radius:10px; padding:1rem; display:flex; flex-direction:column; justify-content:space-between;">
+                            <div>
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+                                    <span style="font-size:0.75rem; color:#38bdf8; font-weight:700; text-transform:uppercase;">Servicio Institucional</span>
+                                    <span class="badge" style="font-size:0.65rem; background:rgba(56,189,248,0.2); color:#38bdf8; border-color:rgba(56,189,248,0.4);">Panel Docente</span>
+                                </div>
+                                <h5 style="color:#fff; font-size:0.98rem; margin:0 0 0.4rem;">Pruebas Diagnósticas (Colegios/Univ.)</h5>
+                                <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 0.85rem; line-height:1.4;">
+                                    Control en vivo, emisión de códigos individuales por cohorte, monitoreo de estudiantes y generación de informes psicométricos institucionales.
+                                </p>
+                            </div>
+                            <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+                                <a href="/material/1_cursos/diagnosticas/dist/public/panel.html" target="_blank" class="btn btn-primary" style="flex:1; font-size:0.82rem; padding:0.45rem 0.85rem; justify-content:center;">
+                                    📊 Panel de Control
+                                </a>
+                                <a href="/material/1_cursos/diagnosticas/dist/public/index.html" target="_blank" class="btn btn-secondary" style="font-size:0.82rem; padding:0.45rem 0.65rem;" title="Ver presentación comercial para colegios">
+                                    👁️
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Card 3: Faro Pods de Reacción -->
+                        <div style="background:rgba(15,23,42,0.65); border:1px solid rgba(251,191,36,0.3); border-radius:10px; padding:1rem; display:flex; flex-direction:column; justify-content:space-between;">
+                            <div>
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+                                    <span style="font-size:0.75rem; color:#fbbf24; font-weight:700; text-transform:uppercase;">Hardware & Deporte</span>
+                                    <span class="badge" style="font-size:0.65rem; background:rgba(251,191,36,0.2); color:#fbbf24; border-color:rgba(251,191,36,0.4);">En Venta</span>
+                                </div>
+                                <h5 style="color:#fff; font-size:0.98rem; margin:0 0 0.4rem;">Faro: Pods de Reacción Deportiva</h5>
+                                <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 0.85rem; line-height:1.4;">
+                                    Pods ToF ESP32-S3 para entrenamiento físico y squash. Manual de taller interactivo, despiece 3D, código de pods/hub y planos 1:1.
+                                </p>
+                            </div>
+                            <a href="/material/1_cursos/faro/manual/dist/index.html" target="_blank" class="btn btn-secondary" style="font-size:0.82rem; padding:0.45rem 0.85rem; justify-content:center; border-color:rgba(251,191,36,0.5); color:#fbbf24;">
+                                💡 Abrir Taller & Manual 3D
+                            </a>
+                        </div>
+
+                        <!-- Card 4: Apogeo Cohetes -->
+                        <div style="background:rgba(15,23,42,0.65); border:1px solid rgba(34,197,94,0.3); border-radius:10px; padding:1rem; display:flex; flex-direction:column; justify-content:space-between;">
+                            <div>
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+                                    <span style="font-size:0.75rem; color:#4ade80; font-weight:700; text-transform:uppercase;">Física Experimental</span>
+                                    <span class="badge" style="font-size:0.65rem; background:rgba(34,197,94,0.2); color:#4ade80; border-color:rgba(34,197,94,0.4);">Cámara & IA</span>
+                                </div>
+                                <h5 style="color:#fff; font-size:0.98rem; margin:0 0 0.4rem;">Apogeo: Altimetría de Cohetes</h5>
+                                <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 0.85rem; line-height:1.4;">
+                                    Aplicación para celular Android: seguimiento visual por cámara, cálculo en vivo de altura máxima, curva CSV y tarjeta de apogeo.
+                                </p>
+                            </div>
+                            <a href="/material/1_cursos/cohete/index.html" target="_blank" class="btn btn-secondary" style="font-size:0.82rem; padding:0.45rem 0.85rem; justify-content:center; border-color:rgba(34,197,94,0.5); color:#4ade80;">
+                                🚀 Abrir App Apogeo
+                            </a>
+                        </div>
                     </div>
                 </div>
 

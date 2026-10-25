@@ -36,7 +36,10 @@
         "guias": ["GUIAS-2026", "MONTAJES-26", "LAB-MONTAJES-26"],
         "ingles": ["INGLES-2026", "QUANTUM-ENGLISH-26", "LEAP-2026"],
         "recorrido": ["RECORRIDO-2026", "DEPTO-FISICA-26", "OBANDO-RECORRIDO-26", "UNICAUCA-26"],
-        "optica": ["OPTICA-2026", "FOTON-26", "OBANDO-OPTICA-26", "LUZ-RAYO-26", "MAXWELL-OPTICA-26"]
+        "optica": ["OPTICA-2026", "FOTON-26", "OBANDO-OPTICA-26", "LUZ-RAYO-26", "MAXWELL-OPTICA-26"],
+        "solido": ["SOLIDO-2026", "ESTADO-SOLIDO-26", "SOLIDOS-UFOP-26", "OBANDO-SOLIDO-26"],
+        "faro": ["FARO-2026", "PODS-REACCION-26", "LUZ-FARO-26", "OBANDO-FARO-26"],
+        "diagnosticas": ["DIAGNOSTICAS-2026", "PRUEBAS-26", "OBANDO-DIAG-26"]
     };
 
     function getCurrentCourseId() {
@@ -48,6 +51,9 @@
             return raw;
         }
 
+        if (p.includes('solido') || p.includes('estado-solido')) return 'solido';
+        if (p.includes('faro')) return 'faro';
+        if (p.includes('diagnostica')) return 'diagnosticas';
         if (p.includes('optica')) return 'optica';
         if (p.includes('mecanica')) return 'mecanica';
         if (p.includes('pendulo')) return 'pendulo';
@@ -71,6 +77,9 @@
         if (p.includes('/neuro/')) return 'neuro';
 
         const t = (document.title || '').toLowerCase();
+        if (t.includes('sólido') || t.includes('solido')) return 'solido';
+        if (t.includes('faro')) return 'faro';
+        if (t.includes('diagnostica')) return 'diagnosticas';
         if (t.includes('óptica') || t.includes('optica')) return 'optica';
         if (t.includes('mecánica') || t.includes('mecanica')) return 'mecanica';
         if (t.includes('péndulo') || t.includes('pendulo')) return 'pendulo';
@@ -155,6 +164,7 @@
     const isPendulo = courseId === 'pendulo' || !!document.querySelector('nav a[data-tab="matematico"]');
     const isIngles = courseId === 'ingles' || !!document.querySelector('.stepper');
     const isTorneos = courseId === 'torneos';
+    const isFaro = courseId === 'faro' || !!document.querySelector('.indice');
     const isRecorrido = courseId === 'recorrido';
 
     // Inyectar estilos CSS del modal, candados y barras
@@ -1305,6 +1315,50 @@
     // ----------------------------------------------------
     // Intercepción en Torneos Squash Popayán
     // ----------------------------------------------------
+    
+    function applyFaroGuard() {
+        const unlocked = isUnlocked();
+        const freeHrefs = ['#que-es', '#sistema'];
+        const links = document.querySelectorAll('nav.indice a, .indice a');
+        links.forEach((a) => {
+            const href = a.getAttribute('href') || '';
+            if (freeHrefs.includes(href)) {
+                a.classList.remove('pg-locked');
+                const p = a.querySelector('.pg-lock-pill');
+                if (p) p.remove();
+                return;
+            }
+            const existingPill = a.querySelector('.pg-lock-pill');
+            if (!unlocked) {
+                a.classList.add('pg-locked');
+                if (!existingPill) {
+                    const pill = document.createElement('span');
+                    pill.className = 'pg-lock-pill';
+                    pill.textContent = '🔒';
+                    a.appendChild(pill);
+                }
+            } else {
+                a.classList.remove('pg-locked');
+                if (existingPill) existingPill.remove();
+            }
+        });
+
+        if (!window.__faroGuardBound) {
+            window.__faroGuardBound = true;
+            document.addEventListener('click', (e) => {
+                if (isUnlocked()) return;
+                const a = e.target.closest('nav.indice a, .indice a');
+                if (!a) return;
+                const href = a.getAttribute('href') || '';
+                if (!freeHrefs.includes(href)) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openPaywall('faro');
+                }
+            }, true);
+        }
+    }
+
     function applyTorneosGuard() {
         const unlocked = isUnlocked();
         // Libre: vista de cuadros / partidos demo

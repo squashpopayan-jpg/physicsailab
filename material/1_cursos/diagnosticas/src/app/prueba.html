@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Presentar prueba diagnóstica</title>
+<link rel="stylesheet" href="estilos.css">
+<style>
+  body { padding-bottom: 90px; }
+  .screen { padding: 28px 0; }
+  .qbar { position: sticky; top: 0; z-index: 20; background: var(--card); border-bottom: 1px solid var(--line); }
+  .qbar .wrap { display: flex; align-items: center; gap: 12px; min-height: 56px; flex-wrap: wrap; padding-top: 6px; padding-bottom: 6px; }
+  .timer { font-size: 1.25rem; font-weight: 700; font-variant-numeric: tabular-nums; padding: 2px 12px; border-radius: 8px; background: var(--soft); }
+  .timer.warn { background: var(--warn-soft); color: var(--warn); }
+  .timer.bad { background: var(--bad-soft); color: var(--bad); }
+  .prog { flex: 1; min-width: 120px; }
+  .layout { display: grid; grid-template-columns: 1fr 260px; gap: 18px; align-items: start; padding-top: 18px; }
+  @media (max-width: 860px) { .layout { grid-template-columns: 1fr; } .side { order: 2; } }
+  .qtxt { font-size: 1.08rem; user-select: none; -webkit-user-select: none; }
+  .ops { display: grid; gap: 10px; margin-top: 14px; }
+  .op { justify-content: flex-start; text-align: left; width: 100%; padding: 12px 14px; min-height: 52px; border-width: 2px; user-select: none; -webkit-user-select: none; }
+  .op .letra { flex: none; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--soft); font-weight: 700; }
+  .op.sel { border-color: var(--acc); background: var(--acc-soft); }
+  .op.sel .letra { background: var(--acc); color: var(--acc-ink); }
+  .nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--line); z-index: 20; }
+  .nav .wrap { display: flex; gap: 10px; padding-top: 10px; padding-bottom: 10px; align-items: center; }
+  .mapa { display: grid; grid-template-columns: repeat(auto-fill, minmax(38px, 1fr)); gap: 6px; }
+  .mapa button { min-height: 36px; padding: 0; justify-content: center; font-size: .85rem; border-radius: 8px; }
+  .mapa .r { background: var(--acc-soft); border-color: var(--acc); }
+  .mapa .m { box-shadow: inset 0 -4px 0 var(--warn); }
+  .mapa .act { outline: 3px solid var(--acc); outline-offset: 1px; }
+  .estado-red { font-size: .8rem; }
+  .overlay { position: fixed; inset: 0; background: var(--bg); z-index: 40; display: grid; place-items: center; padding: 16px; text-align: center; }
+  .marcada { color: var(--warn); font-weight: 600; }
+  .nav button { white-space: nowrap; }
+  @media (max-width: 520px) { .nav button { padding: 8px 12px; } .qbar .wrap { gap: 8px; } }
+</style>
+</head>
+<body>
+<header class="top" id="topbar"><div class="wrap"><a class="brand" href="index.html"><span class="logo">∑</span><span id="marca">Pruebas Diagnósticas</span></a></div></header>
+
+<!-- 1. Código -->
+<main id="s-codigo" class="screen wrap narrow hidden">
+  <div class="card stack">
+    <h1>Ingresar a la prueba</h1>
+    <p class="muted">Escribe el código de acceso que te llegó al correo electrónico.</p>
+    <div><label for="codigo">Código de acceso</label><input id="codigo" class="code-input" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="12" placeholder="XXXX-XXXX"></div>
+    <div id="err-codigo" class="notice bad hidden" role="alert"></div>
+    <button id="btn-ingresar" class="primary" style="width:100%;justify-content:center">Ingresar</button>
+    <p class="small muted">¿Ya presentaste la prueba? <a href="resultado.html">Consulta tu resultado</a>.</p>
+  </div>
+</main>
+
+<!-- 2. Confirmar identidad -->
+<main id="s-confirmar" class="screen wrap narrow hidden">
+  <div class="card stack">
+    <h1>Hola, <span id="c-nombre"></span></h1>
+    <div class="notice"><b id="c-prueba"></b><br><span id="c-inst" class="small"></span></div>
+    <label class="check"><input type="checkbox" id="chk-yo"> <span>Confirmo que soy <b id="c-nombre2"></b> y que presentaré la prueba de forma individual, sin ayuda de otras personas, calculadora ni internet.</span></label>
+    <label class="check"><input type="checkbox" id="chk-datos"> <span>Autorizo el uso de mis datos (nombre, identificación, correo y respuestas) solo para generar mi diagnóstico y el informe de mi institución, según la <a href="privacidad.html" target="_blank">política de tratamiento de datos</a>.</span></label>
+    <div id="err-conf" class="notice bad hidden" role="alert"></div>
+    <div class="row"><button id="btn-noyo" class="ghost">No soy yo</button><span class="spacer"></span><button id="btn-confirmar" class="primary" disabled>Continuar</button></div>
+  </div>
+</main>
+
+<!-- 3. Espera -->
+<main id="s-espera" class="screen wrap narrow hidden">
+  <div class="card stack" style="text-align:center">
+    <h1>Todo listo, <span class="w-nombre"></span></h1>
+    <p id="espera-msg">La prueba aún no ha comenzado. Cuando el docente la abra, aparecerá aquí automáticamente.</p>
+    <div class="notice small" id="instrucciones"></div>
+    <p class="small muted">No cierres esta página. <span class="estado-red"></span></p>
+  </div>
+</main>
+
+<!-- 4. Prueba -->
+<div id="s-prueba" class="hidden">
+  <div class="qbar"><div class="wrap">
+    <b id="p-titulo" class="small"></b>
+    <div class="prog"><div class="bar"><i id="p-bar" style="width:0"></i></div><div class="small muted"><span id="p-n">0</span> de <span id="p-tot">50</span> respondidas · <span class="estado-red"></span></div></div>
+    <span class="timer" id="p-timer" title="Tiempo restante">--:--</span>
+  </div></div>
+  <div id="aviso-salida" class="wrap hidden" style="padding-top:12px"><div class="notice warn small" role="alert"></div></div>
+  <div class="wrap layout">
+    <section class="card" aria-live="polite">
+      <div class="row small muted"><span id="q-num"></span><span class="spacer"></span><span id="q-marca" class="marcada hidden">⚑ Marcada para revisar</span></div>
+      <div id="q-txt" class="qtxt" style="margin-top:8px"></div>
+      <div id="q-fig" class="fig"></div>
+      <div id="q-ops" class="ops" role="radiogroup"></div>
+      <div id="q-guardado" class="small muted" style="margin-top:10px">&nbsp;</div>
+    </section>
+    <aside class="side card stack">
+      <h3>Preguntas</h3>
+      <div id="mapa" class="mapa"></div>
+      <p class="small muted">Azul: respondida · Línea naranja: marcada para revisar.</p>
+      <button id="btn-entregar" class="primary" style="width:100%;justify-content:center">Entregar prueba</button>
+    </aside>
+  </div>
+  <nav class="nav"><div class="wrap">
+    <button id="btn-ant">← Anterior</button>
+    <button id="btn-marcar" class="ghost">⚑ Marcar</button>
+    <span class="spacer"></span>
+    <button id="btn-sig" class="primary">Siguiente →</button>
+  </div></nav>
+</div>
+
+<!-- 5. Fin -->
+<main id="s-fin" class="screen wrap narrow hidden">
+  <div class="card stack" style="text-align:center">
+    <h1>Prueba entregada</h1>
+    <p>Gracias, <b class="w-nombre"></b>. Respondiste <b id="f-n"></b> de <b id="f-tot"></b> preguntas.</p>
+    <div id="f-pend" class="notice warn hidden">Hay respuestas pendientes de enviar porque no hay conexión. <b>No cierres esta página</b> hasta que este aviso desaparezca.</div>
+    <p class="muted">Cuando el docente publique los resultados podrás ver tu diagnóstico individual en <a href="resultado.html">Consultar resultado</a>, con tu código y tu número de identificación.</p>
+  </div>
+</main>
+
+<!-- Mensajes -->
+<main id="s-msg" class="screen wrap narrow hidden"><div class="card stack" style="text-align:center"><h1 id="m-tit"></h1><p id="m-txt"></p><button onclick="location.reload()">Volver a intentar</button></div></main>
+
+<div id="pausa" class="overlay hidden"><div class="card stack narrow"><h1>Prueba en pausa</h1><p>El docente pausó la prueba. El tiempo está detenido y tus respuestas están guardadas. Espera la indicación para continuar.</p></div></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+<script src="config.js"></script>
+<script src="core.js"></script>
+<script src="analisis.js"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = CORE.$, $$ = CORE.$$, esc = CORE.esc, A = window.ANALISIS;
+  var S = { uid: null, code: null, acc: null, sid: null, preguntas: [], orden: [], vistaOps: {}, i: 0, resp: {}, pend: {}, marcadas: {},
+    estado: null, fin: null, pausadaEn: null, extraMin: 0, entregado: false, salidas: 0, fuera: false, iniciado: false, avisos: {} };
+  $('#marca').textContent = CONFIG.marca;
+
+  function pantalla(id) {
+    ['s-codigo', 's-confirmar', 's-espera', 's-prueba', 's-fin', 's-msg'].forEach(function (s) { $('#' + s).classList.toggle('hidden', s !== id); });
+    $('#topbar').classList.toggle('hidden', id === 's-prueba');
+  }
+  function mensaje(t, txt) { $('#m-tit').textContent = t; $('#m-txt').textContent = txt; pantalla('s-msg'); }
+  function errorCodigo(t) { var e = $('#err-codigo'); e.textContent = t; e.classList.toggle('hidden', !t); }
+
+  /* ---------- Copia local (por si se recarga la página sin conexión) ---------- */
+  function clave() { return 'diag:' + S.sid + ':' + S.code; }
+  function guardarLocal() {
+    try { localStorage.setItem(clave(), JSON.stringify({ resp: S.resp, pend: S.pend, marcadas: S.marcadas, i: S.i, salidas: S.salidas })); } catch (e) { /* almacenamiento no disponible */ }
+  }
+  function leerLocal() {
+    try { return JSON.parse(localStorage.getItem(clave()) || 'null'); } catch (e) { return null; }
+  }
+
+  /* ---------- Inicio ---------- */
+  try { CORE.init('estudiante'); } catch (e) { mensaje('Servicio no disponible', e.message); return; }
+  document.addEventListener('conexion', function () { pintarRed(); if (CORE.conectado) reenviarPendientes(); });
+  var url = new URLSearchParams(location.search);
+  if (url.get('c')) $('#codigo').value = CORE.verCodigo(CORE.normCodigo(url.get('c')));
+  CORE.auth.onAuthStateChanged(function (u) {
+    if (u) { S.uid = u.uid; if (!S.code) pantalla('s-codigo'); return; }
+    CORE.auth.signInAnonymously().catch(function (e) { mensaje('No se pudo conectar', 'Revisa la conexión a internet. (' + e.code + ')'); });
+  });
+
+  $('#codigo').addEventListener('input', function () {
+    var c = CORE.normCodigo(this.value).slice(0, 8);
+    this.value = c.length > 4 ? CORE.verCodigo(c) : c;
+  });
+  $('#codigo').addEventListener('keydown', function (e) { if (e.key === 'Enter') ingresar(); });
+  $('#btn-ingresar').onclick = ingresar;
+
+  function ingresar() {
+    var c = CORE.normCodigo($('#codigo').value);
+    errorCodigo('');
+    if (c.length !== 8) return errorCodigo('El código tiene 8 caracteres (letras y números).');
+    if (!S.uid) return errorCodigo('Conectando… intenta de nuevo en unos segundos.');
+    $('#btn-ingresar').disabled = true;
+    CORE.ref('accesos/' + c).get().then(function (s) {
+      $('#btn-ingresar').disabled = false;
+      var a = s.val();
+      if (!a) return errorCodigo('Ese código no existe. Revísalo en tu correo (no confundas letras con números).');
+      if (a.uid && a.uid !== S.uid) return errorCodigo('Este código ya se está usando en otro dispositivo. Si cambiaste de equipo, pide al docente que libere tu acceso.');
+      S.code = c; S.acc = a; S.sid = a.sid;
+      if (a.uid === S.uid) return cargar();
+      $('#c-nombre').textContent = a.nombre; $('#c-nombre2').textContent = a.nombre;
+      $('#c-prueba').textContent = a.prueba || 'Prueba diagnóstica';
+      $('#c-inst').textContent = [a.institucion, a.grupo].filter(Boolean).join(' · ');
+      pantalla('s-confirmar');
+    }).catch(function (e) { $('#btn-ingresar').disabled = false; errorCodigo('No se pudo verificar el código (' + (e.code || e.message) + '). Revisa la conexión.'); });
+  }
+  function chkConf() { $('#btn-confirmar').disabled = !($('#chk-yo').checked && $('#chk-datos').checked); }
+  $('#chk-yo').onchange = chkConf; $('#chk-datos').onchange = chkConf;
+  $('#btn-noyo').onclick = function () { S.code = null; $('#codigo').value = ''; pantalla('s-codigo'); errorCodigo('Si el nombre no es el tuyo, revisa el código o avisa al docente.'); };
+  $('#btn-confirmar').onclick = function () {
+    var u = {};
+    u['accesos/' + S.code + '/uid'] = S.uid;
+    u['uids/' + S.uid] = { code: S.code, sid: S.sid };
+    $('#btn-confirmar').disabled = true;
+    CORE.ref().update(u).then(cargar).catch(function () {
+      $('#btn-confirmar').disabled = false;
+      var e = $('#err-conf'); e.textContent = 'No se pudo activar el acceso. Es posible que el código se esté usando en otro dispositivo.'; e.classList.remove('hidden');
+    });
+  };
+
+  /* ---------- Carga de la sesión ---------- */
+  function cargar() {
+    $$('.w-nombre').forEach(function (e) { e.textContent = S.acc.nombre; });
+    Promise.all([CORE.ref('publico/' + S.sid).get(), CORE.ref('respuestas/' + S.sid + '/' + S.code).get()]).then(function (r) {
+      var pub = r[0].val() || {}, mias = r[1].val() || {};
+      S.preguntas = pub.preguntas || [];
+      S.titulo = pub.titulo; S.temas = pub.temas || {};
+      $('#p-titulo').textContent = pub.titulo || '';
+      $('#instrucciones').textContent = pub.instrucciones || '';
+      $('#p-tot').textContent = S.preguntas.length; $('#f-tot').textContent = S.preguntas.length;
+      var rnd = A.rng('orden:' + S.code);
+      S.orden = A.barajar(S.preguntas.map(function (_, k) { return k; }), rnd);
+      S.preguntas.forEach(function (q) {
+        var idx = q.ops.map(function (_, k) { return k; });
+        S.vistaOps[q.id] = q.fijo ? idx : A.barajar(idx, A.rng('ops:' + S.code + ':' + q.id));
+      });
+      S.resp = mias.r || {};
+      S.entregado = !!mias.entregado;
+      S.iniciado = !!mias.inicio;
+      var loc = leerLocal();
+      if (loc) {
+        Object.keys(loc.pend || {}).forEach(function (q) { if (q in loc.resp) { S.resp[q] = loc.resp[q]; S.pend[q] = 1; } });
+        S.marcadas = loc.marcadas || {}; S.i = loc.i || 0; S.salidas = loc.salidas || 0;
+      }
+      escuchar();
+      setInterval(tic, 500);
+      setInterval(latido, 15000);
+      reenviarPendientes();
+    }).catch(function (e) { mensaje('No se pudo cargar la prueba', 'Recarga la página. (' + (e.code || e.message) + ')'); });
+  }
+
+  function escuchar() {
+    var p = 'publico/' + S.sid + '/';
+    CORE.ref(p + 'estado').on('value', function (s) { S.estado = s.val(); render(); });
+    CORE.ref(p + 'fin').on('value', function (s) { S.fin = s.val(); });
+    CORE.ref(p + 'pausadaEn').on('value', function (s) { S.pausadaEn = s.val(); });
+    CORE.ref('accesos/' + S.code).on('value', function (s) {
+      var a = s.val();
+      if (!a || a.uid !== S.uid) { CORE.db.goOffline(); mensaje('Acceso liberado', 'El docente liberó tu código para usarlo en otro dispositivo. Continúa la prueba desde allí.'); return; }
+      S.extraMin = a.extraMin || 0;
+    });
+  }
+
+  function render() {
+    if (S.entregado) { fin(); return; }
+    $('#pausa').classList.toggle('hidden', S.estado !== 'pausada');
+    if (S.estado === 'abierta' || S.estado === 'pausada') {
+      if (!S.iniciado && S.estado === 'abierta') { S.iniciado = true; CORE.ref('respuestas/' + S.sid + '/' + S.code + '/inicio').set(CORE.TS).catch(function () {}); }
+      pantalla('s-prueba'); pintarMapa(); mostrar(S.i);
+      if (S.estado === 'abierta') reenviarPendientes();
+    } else if (S.estado === 'cerrada') {
+      entregar(true);
+    } else {
+      pantalla('s-espera');
+    }
+    latido();
+  }
+
+  /* ---------- Tiempo ---------- */
+  function restante() {
+    if (!S.fin) return null;
+    var ref = S.estado === 'pausada' && S.pausadaEn ? S.pausadaEn : CORE.ahora();
+    return S.fin + S.extraMin * 60000 - ref;
+  }
+  function tic() {
+    if (S.entregado || !S.fin) return;
+    var r = restante(), t = $('#p-timer');
+    t.textContent = CORE.mmss(r);
+    t.className = 'timer' + (r < 5 * 60000 ? ' bad' : r < 10 * 60000 ? ' warn' : '');
+    if (S.estado === 'abierta') {
+      if (r < 10 * 60000 && r > 9 * 60000 && !S.avisos.diez) { S.avisos.diez = 1; CORE.toast('Quedan 10 minutos.'); }
+      if (r < 60000 && r > 0 && !S.avisos.uno) { S.avisos.uno = 1; CORE.toast('Queda 1 minuto. La prueba se entregará sola al terminar el tiempo.'); }
+      if (r <= 0) entregar(true);
+    }
+  }
+
+  /* ---------- Preguntas ---------- */
+  function mostrar(i) {
+    if (!S.preguntas.length) return;
+    S.i = Math.max(0, Math.min(S.preguntas.length - 1, i));
+    var q = S.preguntas[S.orden[S.i]];
+    $('#q-num').textContent = 'Pregunta ' + (S.i + 1) + ' de ' + S.preguntas.length + (S.temas[q.tema] ? ' · ' + S.temas[q.tema].nombre : '');
+    $('#q-txt').innerHTML = q.txt;
+    $('#q-fig').innerHTML = q.fig || '';
+    $('#q-fig').classList.toggle('hidden', !q.fig);
+    $('#q-ops').innerHTML = S.vistaOps[q.id].map(function (k, pos) {
+      var sel = S.resp[q.id] === k;
+      return '<button class="op' + (sel ? ' sel' : '') + '" role="radio" aria-checked="' + sel + '" data-k="' + k + '"><span class="letra">' + 'ABCDE'[pos] + '</span><span>' + esc(q.ops[k]) + '</span></button>';
+    }).join('');
+    $('#q-marca').classList.toggle('hidden', !S.marcadas[q.id]);
+    $('#btn-marcar').textContent = S.marcadas[q.id] ? '⚑ Quitar marca' : '⚑ Marcar';
+    $('#btn-ant').disabled = S.i === 0;
+    $('#btn-sig').textContent = S.i === S.preguntas.length - 1 ? 'Revisar y entregar' : 'Siguiente →';
+    pintarGuardado(q.id);
+    pintarMapa();
+    guardarLocal();
+  }
+  $('#q-ops').addEventListener('click', function (e) {
+    var b = e.target.closest('.op'); if (!b) return;
+    responder(S.preguntas[S.orden[S.i]].id, +b.dataset.k);
+  });
+  function responder(qid, k) {
+    if (S.estado !== 'abierta' || S.entregado) return;
+    S.resp[qid] = k; S.pend[qid] = 1;
+    guardarLocal(); mostrar(S.i); latido();
+    enviar(qid);
+  }
+  function enviar(qid) {
+    var k = S.resp[qid];
+    CORE.ref('respuestas/' + S.sid + '/' + S.code + '/r/' + qid).set(k).then(function () {
+      if (S.resp[qid] === k) delete S.pend[qid];
+      guardarLocal(); pintarGuardado(qid); pintarRed();
+    }).catch(function (e) {
+      CORE.toast(e && /permission/i.test(e.code || e.message) ? 'La prueba no acepta respuestas en este momento (pausada o sin tiempo).' : 'No se pudo guardar la respuesta.', 'err');
+    });
+  }
+  function reenviarPendientes() { if (S.code && S.estado === 'abierta') Object.keys(S.pend).forEach(enviar); }
+  function pintarGuardado(qid) {
+    if (S.preguntas[S.orden[S.i]] && S.preguntas[S.orden[S.i]].id !== qid) return;
+    var g = $('#q-guardado');
+    if (!(qid in S.resp)) g.innerHTML = '&nbsp;';
+    else g.textContent = S.pend[qid] ? (CORE.conectado ? 'Guardando…' : 'Guardada en este equipo; se enviará al volver la conexión.') : '✓ Respuesta guardada';
+  }
+  function respondidas() { return S.preguntas.filter(function (q) { return q.id in S.resp; }).length; }
+  function pintarMapa() {
+    var n = respondidas();
+    $('#p-n').textContent = n; $('#p-bar').style.width = (100 * n / (S.preguntas.length || 1)) + '%';
+    $('#mapa').innerHTML = S.orden.map(function (k, pos) {
+      var q = S.preguntas[k];
+      return '<button class="' + (q.id in S.resp ? 'r ' : '') + (S.marcadas[q.id] ? 'm ' : '') + (pos === S.i ? 'act' : '') + '" data-i="' + pos + '" aria-label="Pregunta ' + (pos + 1) + '">' + (pos + 1) + '</button>';
+    }).join('');
+  }
+  $('#mapa').addEventListener('click', function (e) { var b = e.target.closest('[data-i]'); if (b) mostrar(+b.dataset.i); });
+  $('#btn-ant').onclick = function () { mostrar(S.i - 1); };
+  $('#btn-sig').onclick = function () { if (S.i === S.preguntas.length - 1) pedirEntrega(); else mostrar(S.i + 1); };
+  $('#btn-marcar').onclick = function () { var q = S.preguntas[S.orden[S.i]]; if (S.marcadas[q.id]) delete S.marcadas[q.id]; else S.marcadas[q.id] = 1; mostrar(S.i); };
+  $('#btn-entregar').onclick = pedirEntrega;
+  document.addEventListener('keydown', function (e) {
+    if ($('#s-prueba').classList.contains('hidden') || document.querySelector('.modal-bg') || /INPUT|TEXTAREA/.test(e.target.tagName)) return;
+    var m = { a: 0, b: 1, c: 2, d: 3, 1: 0, 2: 1, 3: 2, 4: 3 }[e.key.toLowerCase()];
+    if (m !== undefined) { var q = S.preguntas[S.orden[S.i]]; if (S.vistaOps[q.id][m] !== undefined) responder(q.id, S.vistaOps[q.id][m]); }
+    if (e.key === 'ArrowRight') mostrar(S.i + 1);
+    if (e.key === 'ArrowLeft') mostrar(S.i - 1);
+  });
+
+  function pedirEntrega() {
+    var n = respondidas(), tot = S.preguntas.length, marc = Object.keys(S.marcadas).length;
+    var html = '<p>Respondiste <b>' + n + ' de ' + tot + '</b> preguntas.</p>' +
+      (n < tot ? '<div class="notice warn">Te faltan ' + (tot - n) + ' preguntas. Las preguntas sin responder cuentan como no acertadas.</div>' : '') +
+      (marc ? '<p class="small">Tienes ' + marc + ' pregunta(s) marcada(s) para revisar.</p>' : '') +
+      '<p class="small muted">Después de entregar no podrás cambiar tus respuestas.</p>';
+    CORE.confirmar('¿Entregar la prueba?', html, 'Entregar').then(function (si) { if (si) entregar(false); });
+  }
+  function entregar(auto) {
+    if (S.entregado) return fin();
+    S.entregado = true;
+    Object.keys(S.pend).forEach(enviar);
+    CORE.ref('respuestas/' + S.sid + '/' + S.code + '/entregado').set(CORE.TS).catch(function () {});
+    latido();
+    if (auto) CORE.toast(S.estado === 'cerrada' ? 'El docente cerró la prueba. Tus respuestas quedaron guardadas.' : 'Se terminó el tiempo. Tu prueba se entregó automáticamente.');
+    fin();
+  }
+  function fin() {
+    $('#pausa').classList.add('hidden');
+    $('#f-n').textContent = respondidas();
+    $('#f-pend').classList.toggle('hidden', !Object.keys(S.pend).length);
+    pantalla('s-fin');
+  }
+
+  /* ---------- Presencia para el panel en vivo ---------- */
+  function latido() {
+    if (!S.code || !S.sid) return;
+    var est = S.entregado ? 'entregado' : S.estado === 'abierta' ? 'respondiendo' : S.estado === 'pausada' ? 'pausa' : 'esperando';
+    CORE.ref('presencia/' + S.sid + '/' + S.code).set({ hb: CORE.TS, n: respondidas(), vista: S.i + 1, salidas: S.salidas, fuera: S.fuera, estado: est, disp: CORE.dispositivo() }).catch(function () {});
+    if (S.entregado) $('#f-pend').classList.toggle('hidden', !Object.keys(S.pend).length);
+  }
+  document.addEventListener('visibilitychange', function () {
+    if (S.estado !== 'abierta' || S.entregado) return;
+    if (document.hidden) { S.salidas++; S.fuera = true; guardarLocal(); }
+    else {
+      S.fuera = false;
+      if (!S.salidas) return latido();
+      var a = $('#aviso-salida'); a.classList.remove('hidden');
+      a.firstElementChild.textContent = 'Saliste de la prueba ' + S.salidas + (S.salidas === 1 ? ' vez' : ' veces') + '. El docente ve cada salida en su panel.';
+    }
+    latido();
+  });
+  document.addEventListener('contextmenu', function (e) { if (!$('#s-prueba').classList.contains('hidden')) e.preventDefault(); });
+  document.addEventListener('copy', function (e) { if (!$('#s-prueba').classList.contains('hidden')) e.preventDefault(); });
+  function pintarRed() {
+    var pend = Object.keys(S.pend).length;
+    $$('.estado-red').forEach(function (e) { e.textContent = CORE.conectado ? (pend ? 'enviando ' + pend + '…' : 'conectado') : 'sin conexión: tus respuestas se guardan en el equipo'; e.style.color = CORE.conectado ? '' : 'var(--bad)'; });
+    if (S.entregado) $('#f-pend').classList.toggle('hidden', !pend);
+  }
+})();
+</script>
+</body>
+</html>

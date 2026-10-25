@@ -1,0 +1,65 @@
+<template class="chapter-src" data-id="dispositivos" data-num="22" data-title="Dispositivos semiconductores" data-part="Parte IV · Semiconductores" data-short="Celda solar: fotocorriente, tensión de circuito abierto, factor de llenado y límite de Shockley–Queisser; LED y láser semiconductor; transistor bipolar; capacitor MOS, tensión umbral y característica del MOSFET; escalamiento de los circuitos integrados">
+<p class="lead">Con la unión p–n se construyen dispositivos que convierten luz en electricidad y electricidad en luz, y con una variante, la estructura metal–óxido–semiconductor, el interruptor que se repite cien mil millones de veces en un procesador. Este capítulo recorre los principales con los modelos de los capítulos anteriores, que bastan para entender sus números esenciales.</p>
+
+<section>
+<h2>La celda solar</h2>
+<p>Un fotón con energía mayor que la brecha crea un par electrón–hueco. Si se genera dentro de una longitud de difusión de la unión, el campo de la zona de agotamiento separa el par: el electrón va al lado n y el hueco al p. Bajo iluminación la característica del diodo se desplaza en una <span class="term">fotocorriente</span> \(J_L\):</p>
+<div class="eq key" data-name="Celda solar">\[J=J_0\left(\ee^{eV/k_BT}-1\right)-J_L,\qquad V_{oc}=\frac{k_BT}e\ln\!\left(1+\frac{J_L}{J_0}\right),\qquad \eta=\frac{FF\cdot V_{oc}J_{sc}}{P_{in}}.\]</div>
+<p>El punto de potencia máxima define el <span class="term">factor de llenado</span> \(FF\) (cerca de 0.8–0.87). Una celda de silicio comercial da \(J_{sc}\approx40\) mA/cm², \(V_{oc}\approx0.7\) V y eficiencias del 20–24 %; el récord de laboratorio para silicio cristalino es del 26.8 %.</p>
+<p>¿Hay un límite? William Shockley y Hans Queisser (1961) lo calcularon con un argumento de balance detallado. Los fotones con \(h\nu<E_g\) no se absorben; los de energía mayor solo aportan \(E_g\) (el exceso se pierde en calor); y la celda, a temperatura \(T_c\), necesariamente emite radiación de cuerpo negro por encima de \(E_g\), que fija la corriente \(J_0\) mínima. Con el Sol como cuerpo negro de 5778 K la eficiencia máxima es del 30–31 % hacia 1.1–1.4 eV, y con el espectro AM1.5 llega al 33.7 % en 1.34 eV. Las celdas en tándem con varias brechas superan el límite (47 % en laboratorio, con concentración).</p>
+<div class="sim" data-sim="celda-solar" data-title="Curva corriente–tensión de una celda solar iluminada"></div>
+<div class="sim-guide"><ul>
+<li>Característica de una celda en el límite radiativo (balance detallado con el Sol como cuerpo negro de 5778 K). Cambie la brecha y la concentración; el punto rojo es el de potencia máxima.</li>
+<li>Con mayor concentración \(V_{oc}\) crece logarítmicamente y la eficiencia aumenta.</li>
+</ul></div>
+<div class="sim" data-sim="sq" data-title="Límite de Shockley–Queisser frente a la brecha"></div>
+<div class="sim-guide"><ul>
+<li>Eficiencia máxima de una unión simple según la brecha, calculada por integración numérica del espectro de cuerpo negro (validada contra SciPy). Se marcan materiales fotovoltaicos.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>LED y láser semiconductor</h2>
+<p>En polarización directa una unión de un semiconductor directo inyecta electrones y huecos que se recombinan emitiendo fotones de energía cercana a \(E_g\). El espectro de emisión espontánea es aproximadamente \(I(h\nu)\propto\sqrt{h\nu-E_g}\,\ee^{-(h\nu-E_g)/k_BT}\): un pico \(k_BT/2\) por encima de la brecha con un ancho de \(1.8k_BT\) (46 meV a temperatura ambiente). Las aleaciones ternarias y cuaternarias ajustan la brecha: AlGaInP para el rojo y el ámbar, InGaN para el verde y el azul. El LED azul eficiente de InGaN (Akasaki, Amano y Nakamura, Premio Nobel 2014) hizo posibles los LED blancos, que combinan el azul con un fósforo amarillo y alcanzan más de 150 lm/W.</p>
+<p>Un <span class="term">láser semiconductor</span> requiere inversión de población: que los cuasi-niveles de Fermi se separen más que la brecha, \(E_{Fn}-E_{Fp}>h\nu>E_g\) (condición de Bernard y Duraffourg), y una cavidad óptica, que en el láser de Fabry–Pérot forman las caras cortadas del cristal. Las heteroestructuras dobles (Alferov y Kroemer, Nobel 2000) confinan a la vez portadores y luz y redujeron la corriente umbral a niveles que permitieron la operación continua a temperatura ambiente en 1970: el origen de las comunicaciones por fibra óptica.</p>
+<div class="sim" data-sim="led" data-title="Espectros de emisión de LED"></div>
+<div class="sim-guide"><ul>
+<li>Espectro de emisión espontánea de cada material con su brecha a 300 K (o ajustada para las aleaciones). Suba la temperatura: el pico se corre al rojo (la brecha baja) y se ensancha.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El transistor bipolar</h2>
+<p>John Bardeen, Walter Brattain y William Shockley inventaron en 1947–1948 el transistor, en Bell Labs. En un transistor n–p–n la unión emisor–base está en directa e inyecta electrones en una base delgada (más corta que la longitud de difusión); casi todos atraviesan la base sin recombinarse y son recogidos por la unión base–colector, en inversa. Una pequeña corriente de base controla una gran corriente de colector: la ganancia \(\beta=I_C/I_B\) es del orden de 100, limitada por la recombinación en la base y la inyección de huecos hacia el emisor (que se reduce dopando más el emisor). El transistor bipolar sigue en uso en amplificadores analógicos y de radiofrecuencia.</p>
+</section>
+
+<section>
+<h2>El MOSFET</h2>
+<p>Un capacitor metal–óxido–semiconductor sobre silicio tipo p tiene tres regímenes según la tensión de la compuerta. Con tensión negativa atrae huecos a la superficie (<span class="term">acumulación</span>); con tensión positiva pequeña los repele y deja una capa de aceptores ionizados (<span class="term">agotamiento</span>); con tensión suficiente las bandas se curvan tanto que la superficie se vuelve tipo n (<span class="term">inversión</span>), con un canal de electrones. El umbral se define cuando el potencial superficial alcanza \(2\phi_F\), con \(\phi_F=(k_BT/e)\ln(N_a/n_i)\):</p>
+<div class="eq key" data-name="Tensión umbral">\[V_T=V_{FB}+2\phi_F+\frac{\sqrt{2\varepsilon_se N_a\,2\phi_F}}{C_{ox}},\qquad C_{ox}=\frac{\varepsilon_{ox}}{t_{ox}}.\]</div>
+<p>En el transistor de efecto de campo MOS (Kahng y Atalla, 1959) el canal une dos regiones n⁺, fuente y drenador. Para \(V_{GS}>V_T\) la corriente sigue el modelo de la ley cuadrática:</p>
+<div class="eq key" data-name="Corriente del MOSFET">\[I_D=\mu_nC_{ox}\frac WL\left[(V_{GS}-V_T)V_{DS}-\tfrac12V_{DS}^2\right]\ \ (V_{DS}<V_{GS}-V_T),\qquad I_D=\tfrac12\mu_nC_{ox}\frac WL(V_{GS}-V_T)^2\ \ \text{(saturación)}.\]</div>
+<p>Con \(N_a=10^{17}\) cm⁻³, 5 nm de óxido y compuerta de polisilicio n⁺ (\(V_{FB}\approx-0.9\) V), \(V_T=0.17\) V. El escalamiento propuesto por Robert Dennard (1974), que reduce todas las dimensiones y tensiones en el mismo factor, sostuvo la ley de Moore durante cuatro décadas. En los transistores actuales, con canales de pocos nanómetros, los portadores viajan a velocidad de saturación, el óxido se reemplazó por dieléctricos de alta permitividad (HfO₂) y el canal se envuelve con la compuerta por tres o cuatro lados (FinFET, GAA) para controlarlo.</p>
+<div class="sim" data-sim="mosfet" data-title="Características de salida de un MOSFET de canal n"></div>
+<div class="sim-guide"><ul>
+<li>Familia \(I_D(V_{DS})\) para varias tensiones de compuerta con el modelo cuadrático; la tensión umbral se calcula con el dopaje y el espesor del óxido. La línea discontinua separa la región lineal de la de saturación.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Una celda tiene \(J_{sc}=40\) mA/cm², \(V_{oc}=0.68\) V y \(FF=0.80\) bajo 100 mW/cm². ¿Cuál es su eficiencia?
+<details><summary>Respuesta</summary><p>\(\eta=0.80\times0.68\times40/100=21.8\) %.</p></details></li>
+<li><span class="lvl">Básico</span>¿Qué brecha debe tener un LED para emitir a 630 nm?
+<details><summary>Respuesta</summary><p>\(E=1240/630=1.97\) eV (menos \(k_BT/2\) para el pico: unos 1.95 eV).</p></details></li>
+<li><span class="lvl">Intermedio</span>Si la fotocorriente se multiplica por 100 (concentración solar), ¿cuánto aumenta \(V_{oc}\) a 300 K?
+<details><summary>Respuesta</summary><p>\(\Delta V_{oc}=(k_BT/e)\ln100=0.119\) V.</p></details></li>
+<li><span class="lvl">Intermedio</span>Calcule \(C_{ox}\) para 2 nm de SiO₂ (\(\varepsilon_r=3.9\)) y la carga de inversión con \(V_{GS}-V_T=0.5\) V.
+<details><summary>Respuesta</summary><p>\(C_{ox}=3.9\times8.85\times10^{-12}/2\times10^{-9}=1.73\times10^{-2}\) F/m² (1.73 µF/cm²); \(Q=C_{ox}(V_{GS}-V_T)=8.6\times10^{-7}\) C/cm², es decir \(5.4\times10^{12}\) electrones/cm².</p></details></li>
+<li><span class="lvl">Avanzado</span>Demuestre que en saturación la transconductancia del MOSFET con la ley cuadrática cumple \(g_m=\partial I_D/\partial V_{GS}=2I_D/(V_{GS}-V_T)\).
+<details><summary>Respuesta</summary><p>\(I_D=\tfrac k2(V_{GS}-V_T)^2\Rightarrow g_m=k(V_{GS}-V_T)=2I_D/(V_{GS}-V_T)\).</p></details></li>
+</ol>
+<div class="box note"><h4>Para profundizar</h4><p>Sze y Ng, cap. 4, 6, 12 y 13. W. Shockley y H. J. Queisser, «Detailed balance limit of efficiency of p–n junction solar cells», <em>J. Appl. Phys.</em> 32, 510 (1961). S. Rühle, «Tabulated values of the Shockley–Queisser limit for single junction solar cells», <em>Solar Energy</em> 130, 139 (2016). R. H. Dennard et al., «Design of ion-implanted MOSFETs with very small physical dimensions», <em>IEEE J. Solid-State Circuits</em> 9, 256 (1974).</p></div>
+</section>
+</template>

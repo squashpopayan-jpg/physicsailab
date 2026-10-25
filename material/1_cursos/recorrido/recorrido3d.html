@@ -19,7 +19,7 @@ button:hover{background:#27384a}button.on{background:var(--ac);border-color:var(
 #help button{background:var(--ac);border-color:var(--ac);color:#fff;font-size:15px;padding:10px 22px;margin-top:10px}
 kbd{background:#223244;border:1px solid #3a5068;border-radius:4px;padding:1px 6px;font-size:12px}
 #cred{position:fixed;right:12px;bottom:66px;font-size:11px;color:#6f8296}
-#act{top:204px;right:10px;width:262px;padding:8px 10px;font-size:12.5px;max-height:calc(100% - 280px);overflow:auto}
+#act{top:204px;right:10px;width:300px;padding:8px 10px;font-size:12.5px;max-height:calc(100% - 280px);overflow:auto}
 #act .ah{display:flex;justify-content:space-between;align-items:center;gap:6px}#act .ah button{padding:2px 8px}
 #act .clk{font-size:26px;font-weight:700;margin-top:4px}#act #clkt{font-size:14px;color:var(--mu);font-weight:400}
 #act .ph{color:var(--ac);font-weight:600;margin:2px 0 6px;min-height:16px}
@@ -28,6 +28,9 @@ kbd{background:#223244;border:1px solid #3a5068;border-radius:4px;padding:1px 6p
 #act .chip{display:inline-block;width:20px;height:20px;border-radius:50%;text-align:center;line-height:20px;font-weight:700;color:#111}
 #act .cfg{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:6px 0}#act .cfg label{display:flex;flex-direction:column;font-size:11px;color:var(--mu)}#act .cfg input{width:100%;background:#1d2a38;color:var(--tx);border:1px solid #324559;border-radius:6px;padding:4px}
 #act summary{cursor:pointer;color:var(--mu);margin-top:4px}
+#act #names label{display:flex;flex-direction:column;font-size:11px;color:var(--mu);margin:4px 0}#act #names input{background:#1d2a38;color:var(--tx);border:1px solid #324559;border-radius:6px;padding:4px 6px;font-size:12px;margin-top:2px}
+#act #names .ex{border-left:3px solid #e0652b;padding-left:6px;margin:6px 0}#act #names .sub{margin-left:8px}#act #names details{border-top:1px solid #2a3948;padding:3px 0}
+#act select{max-width:100%}#act .cfg select{width:100%}
 #act .tabs{display:flex;gap:4px;margin:6px 0 4px}#act .tabs button{flex:1;padding:5px 4px}#act .tabs button.on{background:var(--ac);border-color:var(--ac);color:#fff}
 #act .st{margin:4px 0 2px;color:var(--tx)}#act .sd{color:var(--mu);line-height:1.45;margin-bottom:4px}#act .sd b{color:var(--tx)}#act .sd.mu{color:var(--ac)}
 #act ol{margin:6px 0 0;padding:0;list-style:none}#act ol li{padding:4px 6px;border-radius:6px;cursor:pointer;color:var(--mu);display:flex;gap:6px}#act ol li span{font-variant-numeric:tabular-nums;color:#6f8296;min-width:38px}
@@ -243,7 +246,6 @@ const ab=document.createElement('button');ab.id='aer';ab.textContent='Vista aér
 const zoom=f=>{AER.h=Math.max(6,Math.min(200,AER.h*f))};
 ['＋ Acercar','－ Alejar'].forEach((t,i)=>{const b=document.createElement('button');b.textContent=t;b.style.display='none';b.onclick=()=>zoom(i?1.25:.8);tp.appendChild(b);aerBtns.push(b)});
 addEventListener('keydown',e=>{keys[e.code]=1;if(e.code==='KeyM')setAerial(!P.aerial);if(P.aerial){if(e.key==='+'||e.key==='=')zoom(.8);if(e.key==='-'||e.key==='_')zoom(1.25)}});addEventListener('keyup',e=>keys[e.code]=0);
-window.addEventListener('message',e=>{if(!e.data)return;if(e.data.action==='teleport'&&typeof e.data.index==='number')place(e.data.index);else if(e.data.action==='aerial')setAerial(e.data.value!==undefined?!!e.data.value:!P.aerial);else if(e.data.action==='step'&&typeof e.data.index==='number')gotoStep(e.data.index,true)});
 let drag=false,lx=0,ly=0,moved=0;
 cv.addEventListener('mousedown',e=>{drag=true;lx=e.clientX;ly=e.clientY;moved=0});
 addEventListener('mouseup',e=>{const was=drag;drag=false;if(was&&e.target===cv&&moved<5&&document.pointerLockElement!==cv)pickAt(e.clientX,e.clientY)});
@@ -280,64 +282,121 @@ function drawMap(){g.clearRect(0,0,230,172);
  g.strokeStyle='#cfd8e2';g.lineWidth=1;labs.forEach(([n,x])=>g.strokeRect(ox+x*K,oz+CW*K,14*K,14*K));g.strokeRect(ox+SIS.x*K,oz+SIS.z*K,SIS.w*K,SIS.d*K);
  const px=ox+P.x*K,pz=oz+P.z*K;g.save();g.translate(px,pz);g.rotate(-P.yaw+Math.PI);
  g.fillStyle='#ffd23f';g.beginPath();g.moveTo(0,-6);g.lineTo(4.5,5);g.lineTo(-4.5,5);g.closePath();g.fill();g.restore()}
-// ===== Simulación de la actividad: rotación simultánea de 4 grupos por 4 estaciones =====
-const STN=[{name:'Pasillo Sistemas',short:'Pasillo Sistemas'},{name:'Sala 1 · Mecánica 1',short:'Sala 1',x0:8},{name:'Sala 2 · Mecánica 2',short:'Sala 2',x0:22},{name:'Sala 3 · Fluidos',short:'Sala 3',x0:36}];
+// ===== Simulación de la actividad (v3): 80 estudiantes, 4 grupos, parejas de salas (1–2 y 3–4) =====
+const CFG={N:80,NE:4,PX:2,D1:10,T1:3,S:9,T2:2,F:3,E:4};          // N estudiantes; NE experimentos por sala; PX expositores por experimento; minutos
+try{const c=JSON.parse(localStorage.getItem('fisicaTourCFG')||'null');if(c)Object.keys(CFG).forEach(k=>{if(c[k]>0)CFG[k]=c[k]})}catch(e){}
+CFG.NE=CFG.NE>=5?5:4;CFG.PX=CFG.PX>=2?2:1;CFG.N=Math.max(8,Math.min(160,Math.round(CFG.N)));
+const NG=4,GSZ=g=>Math.floor(CFG.N/NG)+(g<CFG.N%NG?1:0);
+const RN=['Sala 1 · Mecánica 1','Sala 2 · Mecánica 2','Sala 3 · Fluidos','Sala 4 · Óptica'],RSH=['Sala 1','Sala 2','Sala 3','Sala 4'];
 const GRP=[{n:'A',c:0xe53935,css:'#e53935'},{n:'B',c:0x1e88e5,css:'#1e88e5'},{n:'C',c:0x43a047,css:'#43a047'},{n:'D',c:0xfdd835,css:'#fdd835'}];
-const CFG={S:8,T:1.25,D1:1.5,F:1.5};                 // minutos: estación, traslado, reunión inicial, regreso final
-(function(){const m=/t=([\d.,]+)/.exec(location.hash);if(m){const v=m[1].split(',').map(Number);if(v.length===4&&v.every(x=>x>0)){CFG.S=v[0];CFG.T=v[1];CFG.D1=v[2];CFG.F=v[3]}}})();
-const NSTU=12, SPD=1.7;                              // estudiantes por grupo; velocidad al caminar (pasos/s)
+const SPD=1.7;                                       // velocidad al caminar (pasos/s)
+// ---- nombres editables (experimentos y personas) ----
+const mk=()=>({rec:['',''],guia:['','','',''],ctrl:['','','',''],ent:[''],ex:[0,1,2,3].map(()=>['','','','','']),expo:[0,1,2,3].map(()=>[0,1,2,3,4].map(()=>['','']))});
+let NAMES=mk();
+try{const n=JSON.parse(localStorage.getItem('fisicaTourNames')||'null');if(n)Object.keys(NAMES).forEach(k=>{if(n[k])NAMES[k]=n[k]})}catch(e){}
+const nget=p=>p.split('.').reduce((o,k)=>o&&o[k],NAMES);
+const nset=(p,v)=>{const ks=p.split('.'),l=ks.pop();ks.reduce((o,k)=>o[k],NAMES)[l]=v;try{localStorage.setItem('fisicaTourNames',JSON.stringify(NAMES))}catch(e){}};
 // ---- roles (cada uno con su color) ----
 const ROLES={
- divisor:{name:'Divisor de grupos',c:0x8e24aa,css:'#8e24aa',txt:'#fff'},
+ recepcion:{name:'Recepción y reparto',c:0x8e24aa,css:'#8e24aa',txt:'#fff'},
  guia:{name:'Guía',c:0x1a237e,css:'#3949ab',txt:'#fff'},
- encargado:{name:'Encargado de estación',c:0xfb8c00,css:'#fb8c00',txt:'#1b1b1b'},
+ control:{name:'Control de sala',c:0xfb8c00,css:'#fb8c00',txt:'#1b1b1b'},
  expositor:{name:'Expositor',c:0x00acc1,css:'#00acc1',txt:'#10242a'},
+ entrega:{name:'Entrega de estudiantes',c:0xd81b60,css:'#d81b60',txt:'#fff'},
  estudiante:{name:'Estudiante',c:null,css:'#cfd8dc',txt:'#1b1b1b'}};
 const roleDesc=k=>({
- divisor:'Recibe a los estudiantes que llegan por la Salida y entran a la zona de distribución, los divide en 4 grupos de '+NSTU+' y entrega cada grupo a su guía. Desde ahí empieza el recorrido.',
- guia:'Lleva a su grupo por las estaciones en orden (Pasillo Sistemas → Sala 1 → Sala 2 → Sala 3), lo conduce entre mesas y al final lo regresa al punto de Entrega.',
- encargado:'Controla los '+CFG.S+' minutos de su estación y da la señal de cambio. Uno en el Pasillo Sistemas y uno en cada sala (1, 2 y 3).',
- expositor:'Atiende una mesa de su sala y explica el experimento al grupo que la visita. Salas 1 y 2: 4 mesas; Sala 3 (Fluidos): 2 mesas largas.',
- estudiante:NSTU+' por grupo (A rojo, B azul, C verde, D amarillo). Recorren las 4 estaciones en el orden del ciclo.'}[k]);
-const laneZ=g=>1.2+.8*g;
-const DANC=[[65.2,1.0],[67.8,1.0],[65.2,3.6],[67.8,3.6]];      // dónde espera cada grupo en la zona de distribución
-const EANC=[[2.2,1.2],[5.2,1.2],[2.2,3.6],[5.2,3.6]];          // dónde termina cada grupo (Entrega)
-const PSX=75.5;                                      // estación del Pasillo Sistemas (frente a la Sala de Sistemas)
-const OFFS=[];for(let r=0;r<3;r++)for(let c=0;c<4;c++)OFFS.push([(c-1.5)*.55,(r-1)*.55]);
-const stAnchors=st=>{
- if(st===0)return[{x:PSX,z:2.5,f:Math.PI/2}];
- const x0=STN[st].x0,z=CW+6.3;
- if(st<3)return[{x:x0+4.6,z,f:Math.PI},{x:x0+9.6,z,f:Math.PI},{x:x0+9.6,z,f:0},{x:x0+4.6,z,f:0}];   // mesas: delante-izq., delante-der., fondo-der., fondo-izq.
- return[{x:x0+7,z:CW+5.9,f:Math.PI},{x:x0+7,z:CW+5.9,f:0}];                                           // Fluidos: 2 mesas largas
-};
-const anchorOf=(pl,g,k)=>pl.t==='D'?DANC[g]:pl.t==='E'?EANC[g]:(()=>{const a=stAnchors(pl.st)[k||0];return[a.x,a.z]})();
-const exitPts=(pl,g,a)=>{                            // del ancla al carril del pasillo
- if(pl.t==='D'||pl.t==='E')return[[a[0],a[1]],[a[0],laneZ(g)]];
- if(pl.st===0)return[[a[0],a[1]],[PSX,laneZ(g)]];
- const x0=STN[pl.st].x0,d=x0+7;
- if(pl.st<3)return[[a[0],a[1]],[d,a[1]],[d,CW+1.5],[d,CW-.2],[d,laneZ(g)]];
- return[[a[0],a[1]],[x0+1.3,a[1]],[x0+1.3,CW+1.5],[d,CW+1.5],[d,CW-.2],[d,laneZ(g)]];
-};
-const route=(from,to,g,fromK)=>[...exitPts(from,g,anchorOf(from,g,fromK)),...exitPts(to,g,anchorOf(to,g,0)).reverse()];
-const stOf=(g,i)=>(g+i)%4;
-function groupKF(g){
- const kf=[],D1=CFG.D1*60,T=CFG.T*60,S=CFG.S*60;
- const P2=(t,x,z,f)=>{const l=kf[kf.length-1];if(l&&t<=l.t)t=l.t+.001;kf.push({t,x,z,f})};
- const walk=(t0,pts)=>{let t=t0;pts.forEach((p,i)=>{if(i>0)t+=Math.hypot(p[0]-pts[i-1][0],p[1]-pts[i-1][1])/SPD;P2(t,p[0],p[1])})};
- P2(0,DANC[g][0],DANC[g][1],Math.PI/2);P2(D1,DANC[g][0],DANC[g][1],Math.PI/2);
- let cur={t:'D'},curK=0;
- for(let i=0;i<4;i++){
-  const t0=D1+i*(T+S),to={t:'S',st:stOf(g,i)},an=stAnchors(to.st),n=an.length;
-  walk(t0,route(cur,to,g,curK));
-  const s0=t0+T;P2(Math.max(s0,kf[kf.length-1].t),an[0].x,an[0].z,an[0].f);
-  for(let k=1;k<n;k++){const tk=s0+k*S/n;P2(tk,an[k-1].x,an[k-1].z,an[k-1].f);walk(tk,[[an[k-1].x,an[k-1].z],[an[k].x,an[k].z]]);P2(kf[kf.length-1].t+.5,an[k].x,an[k].z,an[k].f)}
-  P2(s0+S,an[n-1].x,an[n-1].z,an[n-1].f);
-  cur=to;curK=n-1;
+ recepcion:'Dos personas: una recibe a los estudiantes que llegan por la Salida y la otra los reparte en la zona de distribución en 4 grupos de ~'+Math.round(CFG.N/NG)+' y los entrega a sus guías.',
+ guia:'Uno por grupo. Lleva a su grupo a la primera sala, lo cambia a la segunda sala de su pareja y al final lo conduce al punto de Entrega.',
+ control:'Uno por sala. Controla los '+CFG.S+' min de la visita, marca la rotación de los estudiantes entre los experimentos y da la señal de cambio de sala.',
+ expositor:'Hasta 2 por experimento ('+CFG.PX+' en esta configuración). Explican el experimento al subgrupo que lo visita.',
+ entrega:'Una persona. Recibe a los 4 grupos en el punto de Entrega y los entrega a la siguiente dependencia.',
+ estudiante:'~'+CFG.N+' en promedio, en 4 grupos (A rojo, B azul, C verde, D amarillo). Cada grupo visita 2 salas y rota por los '+CFG.NE+' experimentos de cada una.'}[k]);
+// ---- tiempos ----
+const TLf=()=>{const D1=CFG.D1*60,T1=CFG.T1*60,S=CFG.S*60,T2=CFG.T2*60,F=CFG.F*60,E=CFG.E*60;
+ const tR1=D1+T1,tR1e=tR1+S,tR2=tR1e+T2,tR2e=tR2+S,tFe=tR2e+F;return{D1,T1,S,T2,F,E,tR1,tR1e,tR2,tR2e,tFe,total:tFe+E,slot:S/CFG.NE}};
+const TL=TLf(),totalSec=()=>TL.total;
+const roomOf=(g,r)=>Math.floor(g/2)*2+((g%2)+r)%2;     // A:1→2, B:2→1, C:3→4, D:4→3
+// ---- geometría de las salas: puestos de experimento ----
+const laneZ=(g,s)=>1.2+.8*g+((s||0)%5-2)*.14;
+const DANC=[[65.2,1.0],[67.8,1.0],[65.2,3.6],[67.8,3.6]];
+const EANC=[[2.4,-.4],[6.4,-.4],[2.4,2.8],[6.4,2.8]];
+const EXITP=[[-6,2.9],[-8.4,2.9],[-6,5.1],[-8.4,5.1]];
+const OFF=(s,n)=>{const rows=Math.ceil(n/5);return[((s%5)-2)*.5,(Math.floor(s/5)-(rows-1)/2)*.5]};
+const RM=[0,1,2,3].map(r=>{const x0=8+14*r,fl=r===2,aisle=fl?CW+5.95:CW+6.3,AE=fl?[x0+1.3,aisle]:[x0+7,aisle];
+ const inPts=[[x0+7,CW-.2],[x0+7,CW+1.5],...(fl?[[x0+1.3,CW+1.5]]:[]),AE];
+ const sp=[];
+ const add=(pos,f,tc,eg,ef,an,pre)=>sp.push({pos,f,tc,eg,ef,an:an||[pos[0],aisle],pre:pre||[pos]});
+ if(!fl){
+  add([x0+4.6,CW+5.8],Math.PI,[x0+4.6,CW+4.3],[x0+4.6,CW+2.7],0);
+  add([x0+9.6,CW+5.8],Math.PI,[x0+9.6,CW+4.3],[x0+9.6,CW+2.7],0);
+  add([x0+9.6,CW+6.9],0,[x0+9.6,CW+8.3],[x0+9.6,CW+9.9],Math.PI);
+  add([x0+4.6,CW+6.9],0,[x0+4.6,CW+8.3],[x0+4.6,CW+9.9],Math.PI);
+  add([x0+7,CW+9.8],0,[x0+7,CW+11.2],[x0+7,CW+12.6],Math.PI,[x0+7,aisle],[[x0+7,CW+9.8]]);
+ }else{
+  add([x0+4.5,CW+5.5],Math.PI,[x0+4.5,CW+3.9],[x0+4.5,CW+2.4],0);
+  add([x0+9.5,CW+5.5],Math.PI,[x0+9.5,CW+3.9],[x0+9.5,CW+2.4],0);
+  add([x0+9.5,CW+6.4],0,[x0+9.5,CW+7.9],[x0+9.5,CW+9.4],Math.PI);
+  add([x0+4.5,CW+6.4],0,[x0+4.5,CW+7.9],[x0+4.5,CW+9.4],Math.PI);
+  add([x0+7,CW+9.9],0,[x0+7,CW+11.3],[x0+7,CW+12.7],Math.PI,AE,[[x0+1.3,CW+9.9],[x0+7,CW+9.9]]);
  }
- const tF=D1+4*(T+S);walk(tF,route(cur,{t:'E'},g,curK));
- const l=kf[kf.length-1];P2(l.t+.5,l.x,l.z,Math.PI/2);
- return kf;
-}
+ return{r,x0,fl,aisle,AE,inPts,spots:sp.slice(0,CFG.NE),gspot:[x0+2.3,CW+1.7],ct:[x0+11.8,CW+1.3]}});
+const dX=r=>RM[r].x0+7;
+const pathRoom=(r,i,j)=>{const A=RM[r].spots[i],B=RM[r].spots[j];return[A.pos,...A.pre.slice(0,-1).reverse(),A.an,B.an,...B.pre]};
+const roomOut=(r,i,lane)=>{const A=RM[r].spots[i];return[A.pos,...A.pre.slice(0,-1).reverse(),A.an,...RM[r].inPts.slice().reverse(),[dX(r),lane]]};
+const roomIn=(r,i,lane)=>{const B=RM[r].spots[i];return[[dX(r),lane],...RM[r].inPts,B.an,...B.pre]};
+const guideIn=(r,lane)=>[[dX(r),lane],[dX(r),CW-.2],[dX(r),CW+1.5],RM[r].gspot];
+const guideOut=(r,lane)=>[RM[r].gspot,[dX(r),CW+1.5],[dX(r),CW-.2],[dX(r),lane]];
+// ---- keyframes ----
+function KF(){const kf=[];
+ const P2=(t,x,z,f)=>{const l=kf[kf.length-1];if(l&&t<=l.t)t=l.t+.001;kf.push({t,x,z,f})};
+ const walk=(t0,pts)=>{let t=t0;pts.forEach((p,i)=>{if(i>0)t+=Math.hypot(p[0]-pts[i-1][0],p[1]-pts[i-1][1])/SPD;P2(t,p[0],p[1])});return t};
+ const hold=(t,f)=>{const l=kf[kf.length-1];P2(Math.max(t,l.t+.001),l.x,l.z,f)};
+ return{kf,P2,walk,hold,last:()=>kf[kf.length-1]}}
+function guideKF(g){
+ const k=KF(),lane=laneZ(g,2),cl=[DANC[g][0]-1.9,DANC[g][1]];
+ k.P2(0,cl[0],cl[1],Math.PI/2);k.hold(TL.D1,Math.PI/2);
+ const r0=roomOf(g,0),r1=roomOf(g,1);
+ k.walk(TL.D1,[cl,[cl[0],lane],...guideIn(r0,lane)]);k.hold(TL.tR1e,0);
+ k.walk(TL.tR1e,[...guideOut(r0,lane),...guideIn(r1,lane)]);k.hold(TL.tR2e,0);
+ const ex=[EANC[g][0]-1.9,EANC[g][1]];
+ k.walk(TL.tR2e,[...guideOut(r1,lane),[ex[0],lane],ex]);k.hold(TL.total,Math.PI/2);
+ return k.kf}
+function studentKF(g,s,n){
+ const k=KF(),lane=laneZ(g,s),off=OFF(s,n),slot=[DANC[g][0]+off[0],DANC[g][1]+off[1]],NE=CFG.NE;
+ const sub=Math.floor(s*NE/n),inSub=s-Math.ceil(sub*n/NE),sizeSub=Math.ceil((sub+1)*n/NE)-Math.ceil(sub*n/NE);
+ const dx=(inSub-(sizeSub-1)/2)*.5;
+ const sx=(spt)=>[spt.pos[0]+dx,spt.pos[1]];            // lugar propio dentro del puesto
+ const shift=pts=>pts.map((p,i)=>i===pts.length-1&&p===undefined?p:p);
+ // llegada por la Salida y subida por el Pasillo 2
+ const s0=[64.9+rnd()*3.2,ZEND-3+rnd()*2],spot=[66.5+(rnd()-.5)*2.8,1.6+rnd()*2.4],t0=rnd()*Math.min(150,TL.D1*.35);
+ k.P2(0,s0[0],s0[1],Math.PI);k.hold(t0);
+ let t=k.walk(t0,[s0,[s0[0],9],spot]);
+ const ts=Math.max(t+1,TL.D1-40);k.hold(ts);k.walk(ts,[spot,slot]);k.hold(TL.D1,Math.PI/2);
+ const d=rnd()*8;
+ const withOff=(pts,spt)=>{const q=pts.slice();q[q.length-1]=sx(spt);return q};
+ const rounds=[roomOf(g,0),roomOf(g,1)],starts=[TL.tR1,TL.tR2],ends=[TL.tR1e,TL.tR2e];
+ for(let rd=0;rd<2;rd++){
+  const r=rounds[rd],R3=RM[r];
+  const first=R3.spots[sub%NE];
+  let from;if(rd===0)from=[slot,[slot[0],lane]];else{from=roomOut(rounds[0],(sub+NE-1)%NE,lane);from[0]=sx(RM[rounds[0]].spots[(sub+NE-1)%NE])}
+  const t1=rd===0?TL.D1:TL.tR1e;
+  k.walk(t1+d,[...from,...roomIn(r,sub%NE,lane)].map((p,i,a)=>i===a.length-1?sx(first):p).filter((p,i,a)=>i===0||p[0]!==a[i-1][0]||p[1]!==a[i-1][1]));
+  k.hold(starts[rd],first.f);
+  for(let m=1;m<NE;m++){const a=R3.spots[(sub+m-1)%NE],b=R3.spots[(sub+m)%NE];
+   const pts=pathRoom(r,(sub+m-1)%NE,(sub+m)%NE).slice();pts[0]=sx(a);pts[pts.length-1]=sx(b);
+   k.hold(starts[rd]+m*TL.slot,a.f);k.walk(starts[rd]+m*TL.slot+d*.3,pts);k.hold(starts[rd]+m*TL.slot+d*.3+6,b.f)}
+  k.hold(ends[rd],R3.spots[(sub+NE-1)%NE].f);
+ }
+ // regreso al punto de Entrega
+ const last=(sub+NE-1)%NE;
+ const eslot=[EANC[g][0]+off[0],EANC[g][1]+off[1]];
+ const out=roomOut(rounds[1],last,lane);out[0]=sx(RM[rounds[1]].spots[last]);
+ k.walk(TL.tR2e+d,[...out,[eslot[0],lane],eslot]);k.hold(TL.tFe,-Math.PI/2);
+ // entrega a la siguiente dependencia: salen por la puerta
+ const tx=TL.tFe+TL.E*(.15+.2*g)+s*.35;
+ const ex=[EXITP[g][0]+off[0],EXITP[g][1]+off[1]];
+ k.hold(tx,Math.PI/2);k.walk(tx,[eslot,[eslot[0],3.9],[.8,3.9],[-1.8,3.9],[ex[0],3.9],ex]);k.hold(TL.total+5,Math.PI/2);
+ return k.kf}
 // ---- figuras: cada rol con su color (cuerpo, gorra y aro en el piso) ----
 const gBody=new THREE.CylinderGeometry(.24,.3,1.5,9),gHead=new THREE.SphereGeometry(.26,10,8),gPole=new THREE.CylinderGeometry(.03,.03,1.3,5),gFlag=new THREE.BoxGeometry(.7,.45,.04);
 const gCap=new THREE.CylinderGeometry(.28,.28,.13,10),gSash=new THREE.CylinderGeometry(.325,.325,.24,9),gRing=new THREE.RingGeometry(.62,.82,24);
@@ -352,73 +411,74 @@ function figure(col,scale,o){o=o||{};
   const fl=new THREE.Mesh(gFlag,new THREE.MeshBasicMaterial({color:o.flag,side:THREE.DoubleSide}));fl.position.set(.74,2.85,0);f.add(fl)}
  if(o.ring!==undefined){const r=new THREE.Mesh(gRing,new THREE.MeshBasicMaterial({color:o.ring,side:THREE.DoubleSide}));r.rotation.x=-Math.PI/2;r.position.y=.04;f.add(r)}
  f.scale.setScalar(scale||1);scene.add(f);return f}
-function nameTag(text,key,y){
- const c=document.createElement('canvas');c.width=300;c.height=64;const x=c.getContext('2d'),R2=ROLES[key];
- x.fillStyle=R2.css;x.beginPath();x.roundRect?x.roundRect(4,4,292,56,14):x.rect(4,4,292,56);x.fill();
- x.fillStyle=R2.txt;x.font='bold 30px system-ui,sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(text,150,34);
- const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true}));s.scale.set(2.9,.62,1);s.position.set(0,y,0);return s}
-const AG=[];
+// ---- letreros con nombre (espacio para nombres de personas y experimentos) ----
+function drawTag(T0,l1,l2){
+ const c=T0.c,x=c.getContext('2d');x.clearRect(0,0,c.width,c.height);
+ x.fillStyle=T0.bg;x.beginPath();x.roundRect?x.roundRect(4,4,c.width-8,c.height-8,16):x.rect(4,4,c.width-8,c.height-8);x.fill();
+ if(T0.border){x.strokeStyle=T0.border;x.lineWidth=6;x.stroke()}
+ x.fillStyle=T0.fg;x.textAlign='center';x.textBaseline='middle';
+ x.globalAlpha=.85;x.font='bold 24px system-ui,sans-serif';x.fillText(l1,c.width/2,30,c.width-24);x.globalAlpha=1;
+ let fs=34;x.font='bold '+fs+'px system-ui,sans-serif';while(x.measureText(l2).width>c.width-30&&fs>16){fs-=2;x.font='bold '+fs+'px system-ui,sans-serif'}
+ x.fillText(l2,c.width/2,70,c.width-24);T0.tex.needsUpdate=true}
+function makeTag(l1,l2,bg,fg,border,w){
+ const c=document.createElement('canvas');c.width=360;c.height=100;
+ const T0={c,tex:new THREE.CanvasTexture(c),bg,fg,border};
+ const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:T0.tex,transparent:true}));sp.scale.set(w||3.4,(w||3.4)*100/360,1);
+ T0.sp=sp;T0.set=(a,b)=>{T0.l1=a;T0.l2=b;drawTag(T0,a,b)};T0.set(l1,l2);return T0}
+const AG=[],TAGS=[];
 function addAgent(role,fig,o){const a=Object.assign({role,fig,i:0,face:0,ph:rnd()*6},o);fig.userData.a=a;AG.push(a);return a}
-function addStatic(role,x,z,f,scale,tag,o){
+function staff(role,x,z,f,scale,nameRef,l1,ph){
  const R2=ROLES[role];const fig=figure(R2.c,scale,{cap:R2.c,ring:R2.c});fig.position.set(x,0,z);fig.rotation.y=f;
- const sp=nameTag(tag,role,2.85);fig.add(sp);sp.scale.multiplyScalar(1/scale);sp.position.y=2.85;
- return addStatic.last=addAgent(role,fig,Object.assign({static:true,x,z,mini:R2.css,tag,sp},o))}
-// ---- grupos: estudiantes + guía ----
-GRP.forEach((G,g)=>{
- const gk=groupKF(g),D1=CFG.D1*60,R2=ROLES.guia;
+ const T0=makeTag(l1,nget(nameRef)||ph,R2.css,R2.txt,null,3.3);T0.sp.position.set(0,2.85,0);T0.sp.scale.multiplyScalar(1/scale);fig.add(T0.sp);
+ T0.ref=nameRef;T0.l1x=l1;T0.ph=ph;TAGS.push(T0);
+ return addAgent(role,fig,{static:true,x,z,mini:R2.css,tag:T0,sp:T0.sp,nameRef})}
+const addTable=(x,z,mat)=>{box(2.2,.1,1.6,x,1.12,z,mat);[[-.9,-.6],[.9,-.6],[-.9,.6],[.9,.6]].forEach(([p,q])=>box(.1,1.1,.1,x+p,.55,z+q,mat))};
+// ---- personas fijas ----
+staff('recepcion',66.5,ZEND-5.5,0,1.1,'rec.0','Recepción · llegada','(nombre)');
+staff('recepcion',66.5,2.3,0,1.1,'rec.1','Reparto de grupos','(nombre)');
+staff('entrega',4.4,1.2,Math.PI/2,1.1,'ent.0','Entrega de estudiantes','(nombre)');
+RM.forEach(R3=>{
+ staff('control',R3.ct[0],R3.ct[1],0,1.1,'ctrl.'+R3.r,'Control · '+RSH[R3.r],'(nombre)');
+ R3.spots.forEach((s,k)=>{
+  if(k===4)addTable(s.tc[0],s.tc[1],R3.fl?mTableF:mTable);
+  const T0=makeTag('Sala '+(R3.r+1)+' · Exp. '+(k+1),nget('ex.'+R3.r+'.'+k)||'(nombre del experimento)','rgba(20,32,44,.94)','#fff','#e0652b',3.8);
+  T0.sp.position.set(s.tc[0],2.75,s.tc[1]);scene.add(T0.sp);T0.ref='ex.'+R3.r+'.'+k;T0.kind='exp';T0.ph='(nombre del experimento)';TAGS.push(T0);
+  const xs=CFG.PX===2?[-.55,.55]:[0];
+  xs.forEach((dx,p)=>staff('expositor',s.eg[0]+dx,s.eg[1],s.ef,1.05,'expo.'+R3.r+'.'+k+'.'+p,'Expositor · Exp. '+(k+1),'(nombre)'))})});
+// ---- grupos: estudiantes y guías ----
+GRP.forEach((G,g)=>{const R2=ROLES.guia;
  const gfig=figure(R2.c,1.12,{cap:R2.c,sash:G.c,flag:G.c,ring:0x3949ab});
- const sp=nameTag('Guía '+G.n,'guia',2.7);gfig.add(sp);sp.scale.multiplyScalar(1/1.12);sp.position.y=2.6;
- addAgent('guia',gfig,{g,kf:gk.map(k=>({...k,x:k.x-1.7,z:k.z})),mini:R2.css,tag:'Guía '+G.n,sp});
- for(let s=0;s<NSTU;s++){
-  const o=OFFS[s],d=s*.22,slot=[DANC[g][0]+o[0],DANC[g][1]+o[1]];
-  const s0=[64.9+rnd()*3.2,ZEND-3+rnd()*2],spot=[66.5+(rnd()-.5)*2.8,1.6+rnd()*2.4],t0=rnd()*10;     // llegan por la Salida
-  const kf=[{t:0,x:s0[0],z:s0[1],f:Math.PI/2},{t:t0,x:s0[0],z:s0[1]}];
-  let t=t0;const pts=[s0,[s0[0],9],spot];                                                      // suben por el Pasillo 2 hasta distribución
-  for(let i=1;i<pts.length;i++){t+=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1])/SPD;kf.push({t,x:pts[i][0],z:pts[i][1]})}
-  const dist=Math.hypot(slot[0]-spot[0],slot[1]-spot[1])/SPD,ts=Math.max(t+1,D1-25);
-  kf.push({t:ts,x:spot[0],z:spot[1]});kf.push({t:ts+dist,x:slot[0],z:slot[1],f:Math.PI/2});
-  gk.forEach(k=>{if(k.t>=D1)kf.push({t:Math.max(k.t+d,kf[kf.length-1].t+.001),x:k.x+o[0],z:k.z+o[1],f:k.f})});
-  addAgent('estudiante',figure(G.c,1),{g,kf,mini:G.css,idx:s+1});
- }
-});
-// ---- personal fijo ----
-addStatic('divisor',66.5,2.3,Math.PI/2,1.1,'Divisor de grupos');
-const ENC=[[PSX+2.8,3.9,-Math.PI/2],[19.5,CW+1.3,0],[33.5,CW+1.3,0],[47.5,CW+1.3,0]];
-ENC.forEach((e,i)=>addStatic('encargado',e[0],e[1],e[2],1.1,'Encargado · '+STN[i].short,{st:i}));
-[[1,[[4.6,CW+2.7,0],[9.6,CW+2.7,0],[9.6,CW+9.9,Math.PI],[4.6,CW+9.9,Math.PI]]],
- [2,[[4.6,CW+2.7,0],[9.6,CW+2.7,0],[9.6,CW+9.9,Math.PI],[4.6,CW+9.9,Math.PI]]],
- [3,[[7,CW+2.5,0],[7,CW+9.5,Math.PI]]]].forEach(([st,list])=>list.forEach((p,k)=>
- addStatic('expositor',STN[st].x0+p[0],p[1],p[2],1.05,'Expositor · S'+st+' mesa '+(k+1),{st,mesa:k})));
-// ---- reloj de las estaciones (letreros sobre los encargados) ----
-const sprites=STN.map((s,i)=>{const c=document.createElement('canvas');c.width=320;c.height=110;
- const tx=new THREE.CanvasTexture(c);const m=new THREE.Mesh(new THREE.PlaneGeometry(3.6,1.24),new THREE.MeshBasicMaterial({map:tx,transparent:true,side:THREE.DoubleSide}));
- m.position.set(ENC[i][0],3.5,ENC[i][1]);m.rotation.y=i===0?-Math.PI/2:0;scene.add(m);return{c,tx,last:''}});
-// ---- tiempos y estado ----
+ const T0=makeTag('Guía '+G.n,nget('guia.'+g)||'(nombre)',R2.css,R2.txt,null,3.3);T0.sp.position.set(0,2.6,0);T0.sp.scale.multiplyScalar(1/1.12);gfig.add(T0.sp);T0.ref='guia.'+g;T0.ph='(nombre)';TAGS.push(T0);
+ addAgent('guia',gfig,{g,kf:guideKF(g),mini:R2.css,sp:T0.sp,tag:T0});
+ const n=GSZ(g);for(let s=0;s<n;s++)addAgent('estudiante',figure(G.c,1),{g,idx:s+1,kf:studentKF(g,s,n),mini:G.css})});
+// ---- letreros de cronómetro en cada sala ----
+const sprites=[0,1,2,3].map(i=>{const c=document.createElement('canvas');c.width=360;c.height=150;
+ const tx=new THREE.CanvasTexture(c);const m=new THREE.Mesh(new THREE.PlaneGeometry(3.8,1.58),new THREE.MeshBasicMaterial({map:tx,transparent:true,side:THREE.DoubleSide}));
+ m.position.set(RM[i].ct[0],3.4,RM[i].ct[1]);scene.add(m);return{c,tx,last:''}});
+// ---- reloj y estado ----
 const SIM={t:0,play:false,speed:20,target:null};
-const totalSec=()=>(CFG.D1+4*(CFG.T+CFG.S)+CFG.F)*60;
 const mmss=s=>{s=Math.max(0,Math.round(s));return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')};
+const roundAt=t=>t>=TL.tR1&&t<TL.tR1e?0:t>=TL.tR2&&t<TL.tR2e?1:-1;
 function groupState(g,t){
- const D1=CFG.D1*60,T=CFG.T*60,S=CFG.S*60,F=CFG.F*60,per=T+S;
- if(t<D1)return{txt:'Reunión y división en distribución',rem:D1-t};
- const u=t-D1,i=Math.floor(u/per);
- if(i<4){const w=u-i*per,st=stOf(g,i);
-  if(w<T)return{txt:'Traslado → '+STN[st].short,rem:T-w,st:-1};
-  const an=stAnchors(st),k=Math.min(an.length-1,Math.floor((w-T)/(S/an.length)));
-  return{txt:STN[st].short+(an.length>1?' · mesa '+(k+1)+'/'+an.length:''),rem:S-(w-T),st,mesa:k}}
- const v=u-4*per;if(v<F)return{txt:'Traslado final → Entrega',rem:F-v};
- return{txt:'En Entrega · terminó',rem:0};
-}
-function groupAt(st,t){                             // qué grupo está en la estación st (o null)
- const D1=CFG.D1*60,T=CFG.T*60,S=CFG.S*60,per=T+S,u=t-D1,i=Math.floor(u/per);
- if(u<0||i>=4)return null;const w=u-i*per;if(w<T)return null;
- const an=stAnchors(st);return{g:((st-i)%4+4)%4,rem:S-(w-T),mesa:Math.min(an.length-1,Math.floor((w-T)/(S/an.length)))}}
+ if(t<TL.D1)return{txt:'Llegada y reparto',rem:TL.D1-t};
+ if(t<TL.tR1)return{txt:'Traslado → '+RSH[roomOf(g,0)],rem:TL.tR1-t};
+ const rd=roundAt(t);
+ if(rd>=0){const w=t-(rd?TL.tR2:TL.tR1),k=Math.min(CFG.NE,Math.floor(w/TL.slot)+1);return{txt:RSH[roomOf(g,rd)]+' · rotación '+k+'/'+CFG.NE,rem:(rd?TL.tR2e:TL.tR1e)-t}}
+ if(t<TL.tR2)return{txt:'Cambio → '+RSH[roomOf(g,1)],rem:TL.tR2-t};
+ if(t<TL.tFe)return{txt:'Traslado al punto de Entrega',rem:TL.tFe-t};
+ if(t<TL.total)return{txt:'Entrega de estudiantes',rem:TL.total-t};
+ return{txt:'Entregado · terminó',rem:0}}
+function roomGroupAt(r,t){const rd=roundAt(t);if(rd<0)return null;const g=[0,1,2,3].find(g=>roomOf(g,rd)===r);const st=rd?TL.tR2:TL.tR1;const w=t-st;
+ return{g,rem:(rd?TL.tR2e:TL.tR1e)-t,k:Math.min(CFG.NE,Math.floor(w/TL.slot)+1),remRot:TL.slot-(w%TL.slot)}}
 function drawSprites(t){
- sprites.forEach((sp,st)=>{let line1=STN[st].short,line2='—',col='#37474f';
-  const ga=groupAt(st,t),D1=CFG.D1*60;
-  if(ga){line2='Grupo '+GRP[ga.g].n+' · '+mmss(ga.rem);col=GRP[ga.g].css}else if(t>=D1&&t<D1+4*(CFG.T+CFG.S)*60)line2='cambio de estación';
-  const key=line1+line2;if(key===sp.last)return;sp.last=key;
-  const g2=sp.c.getContext('2d');g2.clearRect(0,0,320,110);g2.fillStyle='rgba(20,32,44,.9)';g2.fillRect(0,0,320,110);g2.strokeStyle=col==='#37474f'?'#e0652b':col;g2.lineWidth=7;g2.strokeRect(3,3,314,104);
-  g2.fillStyle='#fff';g2.textAlign='center';g2.font='bold 34px system-ui,sans-serif';g2.fillText(line1,160,46);g2.fillStyle=col==='#37474f'?'#cfd8dc':col;g2.font='bold 36px system-ui,sans-serif';g2.fillText(line2,160,90);sp.tx.needsUpdate=true})}
+ sprites.forEach((sp,r)=>{const ga=roomGroupAt(r,t);let l2='—',l3='',col='#37474f';
+  if(ga){l2='Grupo '+GRP[ga.g].n+' · '+mmss(ga.rem);l3='Rotación '+ga.k+'/'+CFG.NE+' · cambio en '+mmss(ga.remRot);col=GRP[ga.g].css}
+  else if(t>=TL.tR1e&&t<TL.tR2)l2='cambio de sala';else if(t>=TL.D1&&t<TL.tR1)l2='llegan los grupos';
+  const key=RSH[r]+l2+l3;if(key===sp.last)return;sp.last=key;
+  const g2=sp.c.getContext('2d');g2.clearRect(0,0,360,150);g2.fillStyle='rgba(20,32,44,.92)';g2.fillRect(0,0,360,150);g2.strokeStyle=col==='#37474f'?'#e0652b':col;g2.lineWidth=7;g2.strokeRect(3,3,354,144);
+  g2.fillStyle='#fff';g2.textAlign='center';g2.font='bold 32px system-ui,sans-serif';g2.fillText(RN[r],180,40,340);
+  g2.fillStyle=col==='#37474f'?'#cfd8dc':col;g2.font='bold 38px system-ui,sans-serif';g2.fillText(l2,180,88,340);
+  g2.fillStyle='#cfd8dc';g2.font='bold 26px system-ui,sans-serif';g2.fillText(l3,180,126,340);sp.tx.needsUpdate=true})}
 function evalAgent(a,t){
  const k=a.kf;let i=a.i;while(i<k.length-2&&t>k[i+1].t)i++;while(i>0&&t<k[i].t)i--;a.i=i;
  const A=k[i],B=k[Math.min(i+1,k.length-1)];
@@ -427,22 +487,22 @@ function evalAgent(a,t){
  const dx=B.x-A.x,dz=B.z-A.z,mov=u>0&&u<1&&Math.hypot(dx,dz)>1e-3;a.mov=mov;
  const tgt=mov?Math.atan2(dx,dz):(B.f!==undefined?B.f:(A.f!==undefined?A.f:a.face));
  let d=tgt-a.face;d=Math.atan2(Math.sin(d),Math.cos(d));a.face+=d*.25;
- a.fig.position.set(a.x,mov?Math.abs(Math.sin(t*6+a.ph))*.07:0,a.z);a.fig.rotation.y=a.face}
+ a.fig.position.set(a.x,gy(a.x,a.z)+(mov?Math.abs(Math.sin(t*6+a.ph))*.07:0),a.z);a.fig.rotation.y=a.face}
 // ---- secuencia paso a paso ----
 const chip=G=>'<span class="chip" style="background:'+G.css+'">'+G.n+'</span>';
-function buildSteps(){
- const D1=CFG.D1*60,T=CFG.T*60,S=CFG.S*60,per=T+S,F=CFG.F*60,st=[];
- const assign=i=>GRP.map((G,g)=>chip(G)+' '+STN[stOf(g,i)].short).join('<br>');
- const moves=i=>GRP.map((G,g)=>chip(G)+' '+STN[stOf(g,i-1)].short+' → <b>'+STN[stOf(g,i)].short+'</b>').join('<br>');
- st.push({t:0,anim:false,title:'Llegada por la Salida',detail:'Los '+(4*NSTU)+' estudiantes llegan por la <b>Salida</b> (extremo del Pasillo 2) y suben hasta la zona de <b>Distribución de grupos</b>, donde los recibe el divisor.'});
- st.push({t:D1,anim:true,title:'División en 4 grupos',detail:'El <b>divisor</b> reparte a los estudiantes en los grupos A–D ('+NSTU+' cada uno) y los entrega a sus <b>guías</b>. Salen hacia su primera estación:<br>'+assign(0)});
- st.push({t:D1+T,anim:true,title:'Ronda 1 · grupos en estación',detail:'Los grupos llegan. Cada <b>encargado</b> inicia el cronómetro de '+CFG.S+' min y los <b>expositores</b> reciben al grupo en sus mesas.<br>'+assign(0)});
- for(let i=1;i<4;i++){
-  st.push({t:D1+i*per,anim:false,title:'Cambio de estación → ronda '+(i+1),detail:'Suena el cambio: los encargados cierran la ronda y los guías mueven a su grupo a la siguiente estación.<br>'+moves(i)});
-  st.push({t:D1+i*per+T,anim:true,title:'Ronda '+(i+1)+' · grupos en estación',detail:'Los grupos llegan y empieza un nuevo cronómetro de '+CFG.S+' min.<br>'+assign(i)});
- }
- st.push({t:D1+4*per,anim:false,title:'Traslado final',detail:'Termina la cuarta ronda. Los guías llevan a los 4 grupos al punto de <b>Entrega</b>, donde pasan a otra dependencia.'});
- st.push({t:D1+4*per+F,anim:true,title:'Fin de la actividad',detail:'Los 4 grupos están en el punto de Entrega, listos para pasar a la siguiente dependencia. Duración total: '+mmss(totalSec())+' min.'});
+function buildSteps(){const st=[],NE=CFG.NE;
+ const assign=rd=>GRP.map((G,g)=>chip(G)+' '+RSH[roomOf(g,rd)]).join(' · ');
+ const moves=GRP.map((G,g)=>chip(G)+' '+RSH[roomOf(g,0)]+' → <b>'+RSH[roomOf(g,1)]+'</b>').join('<br>');
+ st.push({t:0,anim:false,title:'Llegada por la Salida',detail:'Llegan ~'+CFG.N+' estudiantes por la <b>Salida</b> (extremo del Pasillo 2). La persona de <b>recepción</b> los recibe y suben a la zona de Distribución de grupos.'});
+ st.push({t:TL.D1,anim:true,title:'Reparto en 4 grupos',detail:'La persona de <b>reparto</b> divide a los estudiantes en 4 grupos de ~'+Math.round(CFG.N/NG)+' y los entrega a sus <b>guías</b>. Parejas de salas: 1–2 (grupos A y B) y 3–4 (grupos C y D).<br>'+assign(0)});
+ for(let rd=0;rd<2;rd++){
+  const t0=rd?TL.tR2:TL.tR1;
+  st.push({t:t0,anim:true,title:'Ronda '+(rd+1)+' · en sala',detail:'Los grupos llegan a sus salas: '+assign(rd)+'.<br>El <b>control de sala</b> inicia los '+CFG.S+' min y cada subgrupo empieza en su experimento ('+NE+' experimentos, '+CFG.PX+' expositor(es) cada uno).'});
+  for(let m=1;m<NE;m++)st.push({t:t0+m*TL.slot,anim:true,title:'Ronda '+(rd+1)+' · rotación '+(m+1)+'/'+NE,detail:'El control de sala marca la rotación: cada subgrupo pasa al siguiente experimento (cada '+mmss(TL.slot)+' min).'});
+  if(rd===0)st.push({t:TL.tR1e,anim:false,title:'Cambio de sala',detail:'Terminan los '+CFG.S+' min. Los guías cambian a los grupos dentro de su pareja de salas:<br>'+moves})}
+ st.push({t:TL.tR2e,anim:false,title:'Traslado al punto de Entrega',detail:'Termina la segunda sala. Los guías llevan a los 4 grupos al punto de <b>Entrega</b>.'});
+ st.push({t:TL.tFe,anim:true,title:'Entrega de estudiantes',detail:'Los grupos llegan al punto de Entrega. La persona de <b>entrega</b> los recibe y los entrega, grupo por grupo, a la siguiente dependencia.'});
+ st.push({t:TL.total,anim:true,title:'Fin de la actividad',detail:'Los 4 grupos pasaron a la siguiente dependencia. Duración total: '+mmss(totalSec())+' min.'});
  return st}
 const STEPS=buildSteps();
 const stepIdx=t=>{let k=0;STEPS.forEach((s,i)=>{if(t>=s.t-.001)k=i});return k};
@@ -452,21 +512,34 @@ function gotoStep(j,animate){j=Math.max(0,Math.min(STEPS.length-1,j));const s=ST
 // ---- panel ----
 let camFollow=-1,SEL=null,lastStep=-1,lastCard='';
 const act=document.getElementById('act');
-act.innerHTML='<div class="ah"><b>Actividad · rotación simultánea</b><button id="actx" title="Ocultar">–</button></div>'+
+const sel=(id,opts,v)=>'<select id="'+id+'">'+opts.map(o=>'<option value="'+o+'"'+(o==v?' selected':'')+'>'+o+'</option>').join('')+'</select>';
+act.innerHTML='<div class="ah"><b>Actividad · '+CFG.N+' estudiantes, 4 grupos</b><button id="actx" title="Ocultar">–</button></div>'+
 '<div id="abody"><div class="clk"><span id="clkn">00:00</span><span id="clkt"> / 40:00</span></div><div id="phase" class="ph"></div>'+
 '<input type="range" id="seek" min="0" max="2400" step="1" value="0">'+
 '<div class="row"><button id="play">▶ Iniciar</button><button id="rst">⟲</button><select id="spd"><option value="10">×10</option><option value="20" selected>×20</option><option value="60">×60</option><option value="120">×120</option></select><select id="cam"><option value="-1">Cámara libre</option><option value="0">Seguir Guía A</option><option value="1">Seguir Guía B</option><option value="2">Seguir Guía C</option><option value="3">Seguir Guía D</option></select></div>'+
-'<div class="tabs"><button data-tab="g" class="on">Grupos</button><button data-tab="p">Pasos</button><button data-tab="r">Roles</button></div>'+
+'<div class="tabs"><button data-tab="g" class="on">Grupos</button><button data-tab="p">Pasos</button><button data-tab="r">Roles</button><button data-tab="n">Nombres</button></div>'+
 '<div id="tab-g" class="tab"><table id="gt"></table>'+
-'<details><summary>Tiempos (min)</summary><div class="cfg"><label>Estación<input id="cS" type="number" step=".25" min=".5"></label><label>Traslado<input id="cT" type="number" step=".25" min=".25"></label><label>Inicial<input id="cD" type="number" step=".25" min=".25"></label><label>Final<input id="cF" type="number" step=".25" min=".25"></label></div><button id="apl">Aplicar</button> <span id="tot"></span></details></div>'+
+'<details><summary>Configuración</summary><div class="cfg"><label>Estudiantes<input id="cN" type="number" min="8" max="160" step="4"></label><label>Experimentos/sala'+sel('cNE',[4,5],CFG.NE)+'</label><label>Expositores/exp.'+sel('cPX',[1,2],CFG.PX)+'</label><label>Llegada+reparto (min)<input id="cD" type="number" step=".5" min=".5"></label><label>Traslado a sala<input id="cT1" type="number" step=".25" min=".25"></label><label>Tiempo por sala<input id="cS" type="number" step=".5" min="1"></label><label>Cambio de sala<input id="cT2" type="number" step=".25" min=".25"></label><label>Traslado final<input id="cF" type="number" step=".25" min=".25"></label><label>Entrega<input id="cE" type="number" step=".5" min=".5"></label></div><button id="apl">Aplicar</button> <span id="tot"></span></details></div>'+
 '<div id="tab-p" class="tab" style="display:none"><div class="row"><button id="prv">◀ Anterior</button><button id="nxt">Siguiente ▶</button></div><div id="stepbox"></div><ol id="steplist"></ol></div>'+
-'<div id="tab-r" class="tab" style="display:none"><div id="legend"></div><div id="pcard" class="pcard">Haga clic en una persona del modelo para ver su rol y qué está haciendo.</div></div></div>';
+'<div id="tab-r" class="tab" style="display:none"><div id="legend"></div><div id="pcard" class="pcard">Haga clic en una persona del modelo para ver su rol y qué está haciendo.</div></div>'+
+'<div id="tab-n" class="tab" style="display:none"><div class="sd">Escriba los nombres: aparecen en los letreros del modelo y se guardan en este navegador.</div><div id="names"></div><button id="nclr">Borrar todos los nombres</button></div></div>';
 const $=id=>document.getElementById(id);
 $('gt').innerHTML=GRP.map((G,g)=>'<tr><td>'+chip(G)+'</td><td id="gs'+g+'"></td><td id="gr'+g+'" class="rm"></td></tr>').join('');
 const cnt=k=>AG.filter(a=>a.role===k).length;
-$('legend').innerHTML=['divisor','guia','encargado','expositor','estudiante'].map(k=>{const R2=ROLES[k];
+$('legend').innerHTML=['recepcion','guia','control','expositor','entrega','estudiante'].map(k=>{const R2=ROLES[k];
  const sw=k==='estudiante'?GRP.map(G=>'<i style="background:'+G.css+'"></i>').join(''):'<i style="background:'+R2.css+'"></i>';
  return '<div class="rl"><div class="rh"><span class="sw">'+sw+'</span><b>'+R2.name+'</b><span class="rc">×'+cnt(k)+'</span></div><div class="rd">'+roleDesc(k)+'</div></div>'}).join('');
+// campos de nombres
+const nin=(p,ph)=>'<input data-p="'+p+'" placeholder="'+ph+'" value="'+String(nget(p)||'').replace(/"/g,'&quot;')+'">';
+$('names').innerHTML=
+ '<details open><summary>Recepción, guías y entrega</summary><label>Recepción · llegada'+nin('rec.0','nombre')+'</label><label>Reparto de grupos'+nin('rec.1','nombre')+'</label>'+
+ GRP.map((G,g)=>'<label>Guía '+G.n+nin('guia.'+g,'nombre')+'</label>').join('')+'<label>Entrega de estudiantes'+nin('ent.0','nombre')+'</label></details>'+
+ [0,1,2,3].map(r=>'<details><summary>'+RN[r]+'</summary><label>Control de sala'+nin('ctrl.'+r,'nombre')+'</label>'+
+  RM[r].spots.map((s,k)=>'<div class="ex"><label>Experimento '+(k+1)+nin('ex.'+r+'.'+k,'nombre del experimento')+'</label>'+
+   [0,1].slice(0,CFG.PX).map(p=>'<label class="sub">Expositor '+(p+1)+nin('expo.'+r+'.'+k+'.'+p,'nombre')+'</label>').join('')+'</div>').join('')+'</details>').join('');
+function refreshTags(){TAGS.forEach(T0=>{const v=nget(T0.ref)||T0.ph;if(v!==T0.l2)T0.set(T0.l1,v)});lastCard=''}
+$('names').oninput=e=>{const p=e.target.dataset&&e.target.dataset.p;if(!p)return;nset(p,e.target.value);refreshTags()};
+$('nclr').onclick=()=>{NAMES=mk();try{localStorage.removeItem('fisicaTourNames')}catch(e){}$('names').querySelectorAll('input').forEach(i=>i.value='');refreshTags()};
 $('steplist').innerHTML=STEPS.map((s,i)=>'<li data-i="'+i+'"><span>'+mmss(s.t)+'</span> '+s.title+'</li>').join('');
 $('steplist').onclick=e=>{const li=e.target.closest('li');if(li)gotoStep(+li.dataset.i,false)};
 function syncPlay(){$('play').textContent=SIM.play?'⏸ Pausa':(SIM.t>=totalSec()-1?'▶ Repetir':(SIM.t>0?'▶ Seguir':'▶ Iniciar'))}
@@ -477,12 +550,13 @@ $('cam').onchange=e=>{camFollow=+e.target.value};
 $('seek').oninput=e=>{SIM.t=+e.target.value;SIM.target=null;AG.forEach(a=>a.i=0);syncPlay()};
 $('prv').onclick=()=>{const i=stepIdx(SIM.t);gotoStep(SIM.t-STEPS[i].t>2?i:i-1,false)};
 $('nxt').onclick=()=>{const i=SIM.target!=null?stepIdx(SIM.target):stepIdx(SIM.t);gotoStep(i+1,STEPS[Math.min(i+1,STEPS.length-1)].anim)};
-function showTab(k){['g','p','r'].forEach(x=>{$('tab-'+x).style.display=x===k?'':'none'});act.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===k))}
+function showTab(k){['g','p','r','n'].forEach(x=>{$('tab-'+x).style.display=x===k?'':'none'});act.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===k))}
 act.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
 $('actx').onclick=()=>{const b=$('abody');const h=b.style.display==='none';b.style.display=h?'':'none';$('actx').textContent=h?'–':'+'};
 if(innerWidth<700){$('abody').style.display='none';$('actx').textContent='+'}
-$('apl').onclick=()=>{location.hash='t='+[+$('cS').value,+$('cT').value,+$('cD').value,+$('cF').value].join(',');location.reload()};
-$('cS').value=CFG.S;$('cT').value=CFG.T;$('cD').value=CFG.D1;$('cF').value=CFG.F;
+$('cN').value=CFG.N;$('cD').value=CFG.D1;$('cT1').value=CFG.T1;$('cS').value=CFG.S;$('cT2').value=CFG.T2;$('cF').value=CFG.F;$('cE').value=CFG.E;
+$('apl').onclick=()=>{const c={N:+$('cN').value,NE:+$('cNE').value,PX:+$('cPX').value,D1:+$('cD').value,T1:+$('cT1').value,S:+$('cS').value,T2:+$('cT2').value,F:+$('cF').value,E:+$('cE').value};
+ try{localStorage.setItem('fisicaTourCFG',JSON.stringify(c))}catch(e){}location.reload()};
 $('tot').textContent='Total: '+mmss(totalSec())+' min';
 $('seek').max=Math.round(totalSec());$('clkt').textContent=' / '+mmss(totalSec());
 // ---- selección de personas (clic en el modelo) ----
@@ -493,12 +567,16 @@ function pickAt(cx,cy){const r=cv.getBoundingClientRect();
  const hit=RC.intersectObjects(AG.map(a=>a.fig),true)[0];if(!hit)return;
  let o=hit.object;while(o&&!(o.userData&&o.userData.a))o=o.parent;if(o){SEL=o.userData.a;lastCard='';showTab('r');if($('abody').style.display==='none'){$('abody').style.display='';$('actx').textContent='–'}}}
 function cardHTML(a,t){
- const R2=ROLES[a.role];let h='<div class="rh"><span class="sw"><i style="background:'+(a.role==='estudiante'?GRP[a.g].css:R2.css)+'"></i></span><b>'+R2.name+(a.role==='estudiante'?' · Grupo '+GRP[a.g].n+' (n.º '+a.idx+')':a.role==='guia'?' · Grupo '+GRP[a.g].n:'')+'</b></div><div class="rd">'+roleDesc(a.role)+'</div>';
+ const R2=ROLES[a.role],nm=a.nameRef?nget(a.nameRef):(a.tag?nget(a.tag.ref):'');
+ let h='<div class="rh"><span class="sw"><i style="background:'+(a.role==='estudiante'?GRP[a.g].css:R2.css)+'"></i></span><b>'+R2.name+(a.role==='estudiante'?' · Grupo '+GRP[a.g].n+' (n.º '+a.idx+')':a.role==='guia'?' · Grupo '+GRP[a.g].n:'')+'</b></div>'+(nm?'<div class="sd"><b>'+nm+'</b></div>':'')+'<div class="rd">'+roleDesc(a.role)+'</div>';
  let est='';
  if(a.g!==undefined){const s=groupState(a.g,t);est='<b>Ahora:</b> '+s.txt+(s.rem>0?' · quedan '+mmss(s.rem):'')}
- else if(a.role==='encargado'){const ga=groupAt(a.st,t);est='<b>Estación:</b> '+STN[a.st].name+'<br>'+(ga?'Cronometra al grupo '+chip(GRP[ga.g])+' · quedan '+mmss(ga.rem):'Sin grupo en este momento')}
- else if(a.role==='expositor'){const ga=groupAt(a.st,t);const n=stAnchors(a.st).length;est='<b>Sala '+a.st+'</b> · mesa '+(a.mesa+1)+' de '+(a.st===3?2:4)+'<br>'+(ga&&ga.mesa===a.mesa?'Atiende al grupo '+chip(GRP[ga.g])+' · quedan '+mmss(ga.rem)+' en la ronda':'Sin visita en su mesa en este momento')}
- else if(a.role==='divisor'){est=t<CFG.D1*60?'<b>Ahora:</b> recibiendo y dividiendo a los estudiantes':'<b>Ahora:</b> esperando; su tarea terminó'}
+ else if(a.role==='control'){const r=+a.nameRef.split('.')[1],ga=roomGroupAt(r,t);est='<b>'+RN[r]+'</b><br>'+(ga?'Cronometra al grupo '+chip(GRP[ga.g])+' · rotación '+ga.k+'/'+CFG.NE+' · quedan '+mmss(ga.rem):'Sin grupo en este momento')}
+ else if(a.role==='expositor'){const p=a.nameRef.split('.'),r=+p[1],k=+p[2],ga=roomGroupAt(r,t);
+  est='<b>'+RN[r]+' · Experimento '+(k+1)+'</b>'+(nget('ex.'+r+'.'+k)?': '+nget('ex.'+r+'.'+k):'')+'<br>'+(ga?'Recibe subgrupos del grupo '+chip(GRP[ga.g])+' · rotación '+ga.k+'/'+CFG.NE:'Sin visita en este momento')}
+ else if(a.nameRef==='rec.0')est='<b>Ahora:</b> '+(t<TL.D1?'recibiendo a los estudiantes que llegan por la Salida':'tarea terminada')
+ else if(a.nameRef==='rec.1')est='<b>Ahora:</b> '+(t<TL.D1?'repartiendo a los estudiantes en 4 grupos':'tarea terminada')
+ else if(a.role==='entrega')est='<b>Ahora:</b> '+(t<TL.tFe?'esperando a los grupos':t<TL.total?'entregando los grupos a la siguiente dependencia':'tarea terminada');
  return h+'<div class="rs">'+est+'</div>'}
 // ---- paso a paso en el bucle ----
 function simStep(dt){
@@ -508,24 +586,29 @@ function simStep(dt){
  const t=SIM.t;AG.forEach(a=>{if(!a.static)evalAgent(a,t)});
  $('clkn').textContent=mmss(t);$('seek').value=Math.round(t);
  GRP.forEach((G,g)=>{const s=groupState(g,t);$('gs'+g).textContent=s.txt;$('gr'+g).textContent=s.rem>0?mmss(s.rem):''});
- const D1=CFG.D1*60,T=CFG.T*60,per=T+CFG.S*60;let ph='';
- if(t<D1)ph='Los estudiantes llegan por la Salida y el divisor los divide en 4 grupos';else{const u=t-D1,i=Math.floor(u/per);ph=i>=4?(u-4*per<CFG.F*60?'Los guías llevan a los grupos a la Entrega':'Actividad terminada'):((u-i*per<T)?'Traslado antes de la ronda '+(i+1)+' de 4':'Ronda '+(i+1)+' de 4')}
+ let ph='';
+ if(t<TL.D1)ph='Los estudiantes llegan por la Salida y se reparten en 4 grupos';
+ else if(t<TL.tR1)ph='Los guías llevan a los grupos a sus salas';
+ else if(t<TL.tR1e)ph='Ronda 1 de 2 · rotación por los experimentos';
+ else if(t<TL.tR2)ph='Cambio de sala dentro de cada pareja';
+ else if(t<TL.tR2e)ph='Ronda 2 de 2 · rotación por los experimentos';
+ else if(t<TL.tFe)ph='Los guías llevan a los grupos al punto de Entrega';
+ else if(t<TL.total)ph='Entrega de estudiantes a la siguiente dependencia';else ph='Actividad terminada';
  $('phase').textContent=ph;drawSprites(t);
- // pasos
  const si=stepIdx(t),tgt=SIM.target!=null?stepIdx(SIM.target):-1,key=si+'/'+tgt;
  if(key!==lastStep){lastStep=key;const s=STEPS[si];
   $('stepbox').innerHTML='<div class="st"><b>Paso '+(si+1)+' de '+STEPS.length+' · '+s.title+'</b></div><div class="sd">'+s.detail+'</div>'+(tgt>si?'<div class="sd mu">Avanzando hacia: '+STEPS[tgt].title+'…</div>':'');
   $('steplist').querySelectorAll('li').forEach((li,i)=>li.classList.toggle('on',i===si))}
- // etiquetas y selección
  const cx=cam.position.x,cz=cam.position.z;
- AG.forEach(a=>{if(a.sp){const f=a.fig.position;a.sp.visible=P.aerial?AER.h<70:Math.hypot(f.x-cx,f.z-cz)<26}});
- if(SEL){selRing.visible=true;selRing.position.set(SEL.fig.position.x,.08,SEL.fig.position.z);selRing.material.color.setHSL((performance.now()/1500)%1,.9,.6);
+ AG.forEach(a=>{if(a.sp){const f=a.fig.position;a.sp.visible=P.aerial?AER.h<70:Math.hypot(f.x-cx,f.z-cz)<24}});
+ TAGS.forEach(T0=>{if(T0.kind==='exp'){const p=T0.sp.position;T0.sp.visible=P.aerial?AER.h<70:Math.hypot(p.x-cx,p.z-cz)<24}});
+ if(SEL){selRing.visible=true;selRing.position.set(SEL.fig.position.x,SEL.fig.position.y+.08,SEL.fig.position.z);selRing.material.color.setHSL((performance.now()/1500)%1,.9,.6);
   const c=cardHTML(SEL,t);if(c!==lastCard){lastCard=c;$('pcard').innerHTML=c}}else selRing.visible=false}
 function followCam(){const a=AG.find(a=>a.role==='guia'&&a.g===camFollow);if(!a)return;
  const bx=a.x-Math.sin(a.face)*5,bz=a.z-Math.cos(a.face)*5;
  cam.position.lerp(new THREE.Vector3(bx,a.fig.position.y+3.6,bz),.12);cam.lookAt(a.x,1.4,a.z)}
 function drawAgents(){AG.forEach(a=>{if(a.x===undefined)return;
- g.fillStyle=a.mini;g.beginPath();g.arc(ox+a.x*K,oz+a.z*K,a.role==='guia'?2.8:a.role==='estudiante'?1.5:2.4,0,7);g.fill()})}
+ g.fillStyle=a.mini;g.beginPath();g.arc(ox+a.x*K,oz+a.z*K,a.role==='guia'?2.8:a.role==='estudiante'?1.4:2.2,0,7);g.fill()})}
 // ===== Bucle =====
 function resize(){const w=innerWidth,h=innerHeight;ren.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix()}
 addEventListener('resize',resize);resize();

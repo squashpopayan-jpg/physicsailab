@@ -1,0 +1,65 @@
+<template class="chapter-src" data-id="transporte" data-num="20" data-title="Transporte en semiconductores" data-part="Parte IV · Semiconductores" data-short="Movilidad y mecanismos de dispersión, dependencia del dopaje y de la temperatura, resistividad y curvas de Irvin, velocidad de saturación y efecto Gunn, difusión y relación de Einstein, ecuaciones de deriva y difusión, generación y recombinación, longitud de difusión y experimento de Haynes–Shockley">
+<p class="lead">En un semiconductor la corriente tiene dos orígenes: la deriva de los portadores en un campo eléctrico y su difusión desde donde hay muchos hacia donde hay pocos. Ambos procesos están ligados por la temperatura, y ambos compiten con la recombinación de electrones y huecos. Las ecuaciones de deriva y difusión que resultan son la base del diseño de todos los dispositivos de los capítulos siguientes.</p>
+
+<section>
+<h2>Movilidad</h2>
+<p>En un campo débil la velocidad de arrastre es proporcional al campo, \(v_d=\mu E\), con la <span class="term">movilidad</span> \(\mu=e\tau/m^*\) (modelo de Drude con la masa efectiva). La conductividad es \(\sigma=e(n\mu_n+p\mu_p)\). Dos mecanismos dominan la dispersión. Los <b>fonones acústicos</b> dan \(\mu_L\propto T^{-3/2}\) (más fonones y portadores más rápidos al calentar); los ópticos, en los semiconductores polares, se suman a altas temperaturas. Las <b>impurezas ionizadas</b> desvían a los portadores con el campo de Coulomb apantallado; la fórmula de Brooks y Herring da \(\mu_I\propto T^{3/2}/N_I\): los portadores rápidos se desvían menos. Las tasas se suman según la regla de Matthiessen, \(1/\mu=1/\mu_L+1/\mu_I\).</p>
+<p>Para el diseño se usan ajustes empíricos. El de Caughey y Thomas, con los parámetros de Masetti, Severi y Solmi (1983) para el silicio a 300 K, es</p>
+<div class="eq key" data-name="Movilidad de Caughey–Thomas">\[\mu(N)=\mu_{min}+\frac{\mu_{max}-\mu_{min}}{1+(N/N_{ref})^\alpha},\]</div>
+<p>con \(\mu_{max}=1417\) y 470.5 cm²/V·s para electrones y huecos. Con \(10^{17}\) cm⁻³ de fósforo la movilidad de los electrones cae a 730 cm²/V·s, y la resistividad resulta 0.086 Ω·cm, como en las curvas de Irvin de la norma ASTM F723.</p>
+<div class="sim" data-sim="movilidad" data-title="Movilidad del silicio en función del dopaje y de la temperatura"></div>
+<div class="sim-guide"><ul>
+<li>Izquierda: movilidades de electrones y huecos frente al dopaje (Caughey–Thomas con parámetros de Masetti). Derecha: resistividad \(1/(eN\mu)\) y los puntos de la norma ASTM F723.</li>
+<li>Abajo a la derecha, la dependencia con la temperatura por la regla de Matthiessen: con dopaje alto el máximo se desplaza a temperaturas mayores.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Velocidad de saturación y efecto Gunn</h2>
+<p>En campos intensos los portadores ganan tanta energía que emiten fonones ópticos muy seguido y la velocidad deja de crecer: en el silicio se satura en \(v_{sat}\approx10^7\) cm/s por encima de unos 30 kV/cm. Un transistor de 20 nm con 1 V entre fuente y drenador tiene campos de 500 kV/cm: sus portadores viajan a la velocidad de saturación. En el GaAs ocurre algo más curioso: por encima de 3.5 kV/cm los electrones pasan del valle Γ, con \(m^*=0.067m\), a los valles L, con masa mayor, y la velocidad <b>disminuye</b> al aumentar el campo. Esa resistencia diferencial negativa hace inestable la corriente: John Gunn (1963) observó oscilaciones de microondas en una barra de GaAs, el principio de los diodos Gunn de los radares de los automóviles.</p>
+<div class="sim" data-sim="velocidad" data-title="Velocidad de arrastre en campos intensos"></div>
+<div class="sim-guide"><ul>
+<li>Velocidad frente a campo para Si (ajuste de Caughey–Thomas con \(\beta=2\)) y GaAs (modelo con transferencia a los valles L). La pendiente inicial es la movilidad.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Difusión y relación de Einstein</h2>
+<p>Un gradiente de concentración produce una corriente de difusión, \(j_n=eD_n\,\dd n/\dd x\) y \(j_p=-eD_p\,\dd p/\dd x\). En equilibrio no hay corriente neta, y si hay un gradiente de dopaje aparece un campo eléctrico que compensa exactamente la difusión. Imponiendo esa compensación con la distribución de Boltzmann se obtiene la <span class="term">relación de Einstein</span>:</p>
+<div class="eq key" data-name="Relación de Einstein">\[\frac D\mu=\frac{k_BT}e .\]</div>
+<p>En el silicio a 300 K, \(D_n=1417\times0.02585=36.6\) cm²/s. Las corrientes totales son</p>
+<div class="eq key" data-name="Deriva y difusión">\[j_n=en\mu_nE+eD_n\frac{\dd n}{\dd x},\qquad j_p=ep\mu_pE-eD_p\frac{\dd p}{\dd x},\]</div>
+<p>que junto con la ecuación de Poisson y las de continuidad forman el modelo de deriva y difusión de los simuladores de dispositivos.</p>
+</section>
+
+<section>
+<h2>Generación y recombinación</h2>
+<p>Si se inyectan portadores en exceso (con luz o a través de una unión), la ley de acción de masas se rompe y el sistema vuelve al equilibrio recombinando pares. En los semiconductores indirectos domina la recombinación a través de niveles profundos de impurezas o defectos, descrita por Shockley, Read y Hall (1952):</p>
+<div class="eq key" data-name="Recombinación SRH">\[U=\frac{np-n_i^2}{\tau_p(n+n_1)+\tau_n(p+p_1)},\]</div>
+<p>máxima para niveles en la mitad de la brecha (el oro y el hierro en el silicio son «venenos»). En inyección baja en material tipo n, \(U\approx\Delta p/\tau_p\): el exceso de minoritarios decae con un <span class="term">tiempo de vida</span> \(\tau_p\), de nanosegundos a milisegundos según la pureza. En los semiconductores directos domina la recombinación radiativa (\(U=B(np-n_i^2)\)), y con dopajes muy altos la recombinación Auger. Combinando difusión y recombinación, los minoritarios inyectados penetran una <span class="term">longitud de difusión</span> \(L=\sqrt{D\tau}\): 35 µm para huecos en silicio tipo n con \(\tau=1\) µs.</p>
+<p>J. Richard Haynes y William Shockley (1951) midieron directamente la movilidad y la difusión de los portadores minoritarios en germanio: inyectaron un pulso de huecos con una punta metálica, lo arrastraron con un campo y lo detectaron más adelante. El pulso llega con el retraso \(L/(\mu E)\), ensanchado por la difusión (\(\sigma^2=2Dt\)) y atenuado por la recombinación (\(\ee^{-t/\tau}\)). La concentración obedece</p>
+<div class="eq key" data-name="Haynes–Shockley">\[\Delta p(x,t)=\frac{N_0}{\sqrt{4\pi D_pt}}\exp\!\left[-\frac{(x-\mu_pEt)^2}{4D_pt}-\frac t{\tau_p}\right].\]</div>
+<div class="sim" data-sim="haynes-shockley" data-title="Experimento de Haynes–Shockley"></div>
+<div class="sim-guide"><ul>
+<li>Arriba, el pulso de huecos que deriva y se ensancha en la barra; abajo, la señal en el colector frente al tiempo. La lectura deduce \(\mu\) del retraso y \(D\) del ancho, y comprueba la relación de Einstein.</li>
+<li>Invierta el campo o redúzcalo: el pulso llega más tarde, más ancho y más débil por la recombinación.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Qué resistencia tiene una pista de silicio tipo n con \(10^{16}\) cm⁻³, 100 µm de largo, 10 µm de ancho y 1 µm de espesor?
+<details><summary>Respuesta</summary><p>\(\mu_n=1177\) cm²/V·s, \(\rho=0.53\) Ω·cm; \(R=\rho L/(wt)=53\) kΩ.</p></details></li>
+<li><span class="lvl">Básico</span>Calcule \(D_p\) en silicio puro a 300 K y la longitud de difusión con \(\tau_p=10\) µs.
+<details><summary>Respuesta</summary><p>\(D_p=471\times0.02585=12.2\) cm²/s; \(L_p=\sqrt{D_p\tau_p}=110\) µm.</p></details></li>
+<li><span class="lvl">Intermedio</span>Demuestre la relación de Einstein a partir de la condición de corriente nula en un semiconductor con dopaje no uniforme y estadística de Boltzmann.
+<details><summary>Respuesta</summary><p>Con \(n=n_i\ee^{(E_F-E_i)/k_BT}\), \(E_F\) constante y \(\dd E_i/\dd x=eE\): \(\dd n/\dd x=-neE/k_BT\). Corriente nula: \(n\mu E+D(-neE/k_BT)=0\Rightarrow D/\mu=k_BT/e\).</p></details></li>
+<li><span class="lvl">Intermedio</span>En un experimento de Haynes–Shockley el pulso recorre 1 cm en 200 µs con un campo de 2.5 V/cm. ¿Cuál es la movilidad? Si el ancho temporal a media altura es 60 µs, estime \(D\).
+<details><summary>Respuesta</summary><p>\(\mu=v/E=5000/2.5=2000\) cm²/V·s. Ancho espacial \(\Delta x=v\Delta t=0.3\) cm \(=2\sqrt{4D\ln2\,t}\Rightarrow D=\Delta x^2/(16\ln2\,t)=40\) cm²/s (\(D/\mu=0.020\) V, cercano a 0.026).</p></details></li>
+<li><span class="lvl">Avanzado</span>Demuestre que la recombinación SRH es máxima cuando el nivel de la trampa coincide con \(E_i\) (con \(\tau_n=\tau_p\)).
+<details><summary>Respuesta</summary><p>\(n_1=n_i\ee^{(E_t-E_i)/k_BT}\), \(p_1=n_i\ee^{(E_i-E_t)/k_BT}\); el denominador \(\tau(n+p+n_1+p_1)\) es mínimo cuando \(n_1+p_1=2n_i\cosh[(E_t-E_i)/k_BT]\) es mínimo: \(E_t=E_i\).</p></details></li>
+</ol>
+<div class="box note"><h4>Para profundizar</h4><p>Sze y Ng, cap. 1 y 2; Kittel, cap. 8. D. M. Caughey y R. E. Thomas, «Carrier mobilities in silicon empirically related to doping and field», <em>Proc. IEEE</em> 55, 2192 (1967). G. Masetti, M. Severi y S. Solmi, <em>IEEE Trans. Electron Devices</em> 30, 764 (1983). J. R. Haynes y W. Shockley, «The mobility and life of injected holes and electrons in germanium», <em>Phys. Rev.</em> 81, 835 (1951). W. Shockley y W. T. Read, «Statistics of the recombinations of holes and electrons», <em>Phys. Rev.</em> 87, 835 (1952).</p></div>
+</section>
+</template>

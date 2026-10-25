@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Resultado de la prueba diagnóstica</title>
+<link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+<header class="top"><div class="wrap"><a class="brand" href="index.html"><span class="logo">∑</span><span id="marca"></span></a><span class="spacer"></span><button class="sm hidden" id="imprimir" onclick="print()">Imprimir / PDF</button></div></header>
+<main class="wrap" style="padding:24px 16px 40px" id="app">
+  <div class="card narrow stack" id="form" style="margin:20px auto">
+    <h1>Consultar mi resultado</h1>
+    <p class="muted">Escribe el código con el que presentaste la prueba y tu número de identificación.</p>
+    <div><label for="c">Código de acceso</label><input id="c" class="code-input" type="text" autocomplete="off" maxlength="12" placeholder="XXXX-XXXX"></div>
+    <div><label for="d">Número de identificación</label><input id="d" type="text" inputmode="numeric" autocomplete="off"></div>
+    <div id="err" class="notice bad hidden" role="alert"></div>
+    <button id="ver" class="primary">Ver mi diagnóstico</button>
+  </div>
+  <div id="out"></div>
+</main>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+<script src="config.js"></script>
+<script src="core.js"></script>
+<script src="analisis.js"></script>
+<script src="informe.js"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = CORE.$, url = new URLSearchParams(location.search);
+  $('#marca').textContent = CONFIG.marca;
+  CORE.pie();
+  function err(t) { $('#err').textContent = t; $('#err').classList.toggle('hidden', !t); }
+  function listo() {
+    return new Promise(function (res, rej) {
+      var off = CORE.auth.onAuthStateChanged(function (u) { if (u) { off(); res(u); } else CORE.auth.signInAnonymously().catch(rej); });
+    });
+  }
+  if (url.get('demo')) {
+    $('#form').classList.add('hidden');
+    fetch(url.get('demo') === 'boletin' ? 'demo-boletin.json' : 'demo-informe.json').then(function (r) { return r.json(); }).then(function (d) {
+      $('#out').innerHTML = '<div class="notice warn small noprint" style="margin-bottom:14px">Ejemplo con estudiantes simulados. ' + (d.tipo === 'informe' ? 'Los enunciados de las preguntas se omiten para proteger el banco.' : '') + '</div>' +
+        (d.tipo === 'informe' ? INFORME.htmlInforme(d, { integridad: true }) : INFORME.htmlBoletin(d));
+      $('#imprimir').classList.remove('hidden');
+    }).catch(function () { $('#out').innerHTML = '<div class="notice bad">No se encontró el ejemplo.</div>'; });
+    return;
+  }
+  try { CORE.init('estudiante'); } catch (e) { err(e.message); return; }
+
+  if (url.get('i')) {
+    $('#form').classList.add('hidden');
+    $('#out').innerHTML = '<p class="muted">Cargando informe…</p>';
+    listo().then(function () { return CORE.ref('informes/' + url.get('i')).get(); }).then(function (s) {
+      var r = s.val();
+      if (!r) { $('#out').innerHTML = '<div class="notice bad">Este informe no existe o ya no está publicado.</div>'; return; }
+      document.title = 'Informe · ' + r.sesion.institucion;
+      $('#out').innerHTML = INFORME.htmlInforme(r, { integridad: true });
+      $('#imprimir').classList.remove('hidden');
+    }).catch(function (e) { $('#out').innerHTML = '<div class="notice bad">No se pudo cargar el informe (' + CORE.esc(e.code || e.message) + ').</div>'; });
+    return;
+  }
+
+  $('#c').addEventListener('input', function () { var c = CORE.normCodigo(this.value).slice(0, 8); this.value = c.length > 4 ? CORE.verCodigo(c) : c; });
+  $('#d').addEventListener('keydown', function (e) { if (e.key === 'Enter') ver(); });
+  $('#ver').onclick = ver;
+  function ver() {
+    var c = CORE.normCodigo($('#c').value), d = CORE.normDoc($('#d').value);
+    err('');
+    if (c.length !== 8 || !d) return err('Escribe tu código de 8 caracteres y tu identificación.');
+    $('#ver').disabled = true;
+    listo().then(function () { return CORE.claveBoletin(c, d); }).then(function (k) { return CORE.ref('boletines/' + k).get(); }).then(function (s) {
+      $('#ver').disabled = false;
+      var b = s.val();
+      if (!b) return err('No encontramos un resultado con esos datos. Revisa el código y la identificación; si están bien, es posible que el docente aún no haya publicado los resultados.');
+      var html = INFORME.htmlBoletin(b);
+      $('#form').classList.add('hidden');
+      $('#out').innerHTML = html + '<p class="noprint" style="margin-top:16px"><button onclick="location.reload()">Consultar otro resultado</button></p>';
+      $('#imprimir').classList.remove('hidden');
+    }).catch(function (e) { $('#ver').disabled = false; err('No se pudo consultar (' + (e.code || e.message) + ').'); });
+  }
+})();
+</script>
+</body>
+</html>
