@@ -1,0 +1,271 @@
+# hBN-MC v15.0.1 — salida de npm test
+# Fecha: 2026-09-29T00:40:19Z  Node v22.14.0
+
+
+> hbn-mc@15.0.1 test
+> npm run check && npm run test:motor && npm run test:parches && npm run test:investigacion && npm run test:smoke && npm run test:functional && npm run test:pbc
+
+
+> hbn-mc@15.0.1 check
+> node tests/check_release.js
+
+{
+  "ok": true,
+  "version": "15.0.1",
+  "localReferences": 11,
+  "scripts": 10,
+  "blockingExternalScripts": 0,
+  "cssBytes": 12497,
+  "lazyDependencies": {
+    "JSZip": "3.10.1",
+    "Three": "r128"
+  }
+}
+
+> hbn-mc@15.0.1 test:motor
+> node tests/validacion_motor.js
+
+
+M1 · Topología de la red
+------------------------
+  PASS  AC 12×12  ·  {"bad":0,"badDeg":0,"badSym":0,"badAlt":0}
+  PASS  AC 12×20  ·  {"bad":0,"badDeg":0,"badSym":0,"badAlt":0}
+  PASS  AC 20×12  ·  {"bad":0,"badDeg":0,"badSym":0,"badAlt":0}
+  PASS  AC 16×16  ·  {"bad":0,"badDeg":0,"badSym":0,"badAlt":0}
+  PASS  ZZ 12×12  ·  {"bad":0,"badDeg":0,"badSym":0,"badAlt":0}
+  PASS  ZZ 12×20  ·  {"bad":0,"badDeg":0,"badSym":0,"badAlt":0}
+  PASS  ZZ 20×12  ·  {"bad":0,"badDeg":0,"badSym":0,"badAlt":0}
+  PASS  ZZ 16×16  ·  {"bad":0,"badDeg":0,"badSym":0,"badAlt":0}
+
+M2 · calcFullE frente a suma explícita (fuerza bruta)
+-----------------------------------------------------
+  PASS  reservorio=tesis Δμ_H=0  ·  |diff| = 1.46e-11 eV
+  PASS  reservorio=tesis Δμ_H=0.37  ·  |diff| = 3.64e-11 eV
+  PASS  reservorio=H2 Δμ_H=0  ·  |diff| = 5.09e-11 eV
+  PASS  reservorio=H2 Δμ_H=-1.2  ·  |diff| = 0.00e+0 eV
+
+M3/M4 · ΔE incremental frente a recálculo completo
+--------------------------------------------------
+  PASS  local  reservorio=tesis Δμ_H=0 hPass=false  ·  n=982 err_max=1.94e-11 eV
+  PASS  global reservorio=tesis Δμ_H=0 hPass=false  ·  n=951 err_max=2.08e-11 eV
+  PASS  local  reservorio=tesis Δμ_H=0.5 hPass=true  ·  n=973 err_max=1.11e-11 eV
+  PASS  global reservorio=tesis Δμ_H=0.5 hPass=true  ·  n=951 err_max=1.35e-11 eV
+  PASS  local  reservorio=H2 Δμ_H=-0.8 hPass=true  ·  n=973 err_max=1.43e-11 eV
+  PASS  global reservorio=H2 Δμ_H=-0.8 hPass=true  ·  n=951 err_max=1.50e-11 eV
+
+M5 · Deriva de la energía incremental (20 000 pasos)
+----------------------------------------------------
+  PASS  reservorio=tesis Δμ_H=0 hPass=false  ·  deriva=2.18e-11 eV · aceptación 21.50 %
+  PASS  reservorio=tesis Δμ_H=0 hPass=true  ·  deriva=7.28e-12 eV · aceptación 10.02 %
+  PASS  reservorio=H2 Δμ_H=-1 hPass=true  ·  deriva=1.46e-11 eV · aceptación 10.51 %
+
+M6 · Reproducibilidad por semilla
+---------------------------------
+  PASS  misma semilla → misma trayectoria
+  PASS  semilla distinta → trayectoria distinta
+
+M7 · Invariancia traslacional bajo PBC
+--------------------------------------
+  PASS  dispersión de E entre 6 posiciones del mismo poro  ·  0.00e+0 eV
+
+M8 · Protocolos térmicos
+------------------------
+  PASS  recocido lineal  ·  [5000,2750]
+  PASS  isotérmico
+  PASS  3 fases (meseta/rampa/meseta)  ·  [5000,2950,900]
+  PASS  ciclo 2000→20000→2000 K  ·  [2000,11000,20000,11000,2000]
+  PASS  T máxima permite el protocolo del artículo (20 000 K)
+
+M9 · Energía de formación
+-------------------------
+  PASS  h-BN perfecto: E_form = 0  ·  0.00e+0 eV
+  PASS  grafeno perfecto: E_form = 0  ·  0.00e+0 eV
+  PASS  V_B + 3H rico en N = 3(ε_XN − E(NH₃)/3)  ·  -1.0261 eV (penalización H–H aparte: 105.0 eV)
+  PASS  V_N + 3H rico en B = 3(ε_XB − E(BH₃)/3)  ·  -1.0563 eV
+  PASS  V_N independiente de ε_NB (misma escala de μ)
+
+M10 · Energía de borde por H (analítica frente a diferencia finita)
+-------------------------------------------------------------------
+  PASS  reservorio=tesis Δμ_H=0  ·  ΔE/ΔN_H = -8.4586 eV · fórmula = -8.4586 eV
+  PASS  reservorio=H2 Δμ_H=0  ·  ΔE/ΔN_H = -0.9431 eV · fórmula = -0.9431 eV
+  PASS  reservorio=H2 Δμ_H=-1.5  ·  ΔE/ΔN_H = 0.5569 eV · fórmula = 0.5569 eV
+
+M11 · Generadores geométricos 10–14 en todos los tamaños (AC y ZZ)
+------------------------------------------------------------------
+  PASS  AC: 30 poros, un clúster, terminación correcta, triángulos de n² vacancias  ·  4, 16, 25, 64, 100, 121 (triángulo N)
+  PASS  ZZ: 30 poros, un clúster, terminación correcta, triángulos de n² vacancias  ·  4, 16, 25, 64, 100, 121 (triángulo N)
+
+========================================================================
+  MOTOR: TODAS LAS PRUEBAS PASAN
+========================================================================
+
+> hbn-mc@15.0.1 test:parches
+> node tests/validacion_parches.js
+
+==============================================================================
+VALIDACION de los parches v14.7 sobre la API v15
+==============================================================================
+  PASS  D8 eps_XC = -70.41  ·  dE_hidrog(C)=-1.719 eV
+  PASS  D8 monotonia con electronegatividad  ·  B=-1.32 < C=-1.72 < N=-2.12
+  PASS  checkParameterConsistency sin errores  ·  3 aviso(s)
+        aviso esperado (D3): Ventana química vacía para Δμ_H = 0.000 eV: con estas referencias h-BN es inestable frente...
+        aviso esperado (D3): ε_NB = -128.1626 pero ε_XN/ε_XB se derivaron con E(BN)/3 = -128.9067. Desfase de -0.744 eV...
+        aviso esperado (D3): Energía de borde por H en el Monte Carlo = -8.459 eV (<0): con este reservorio los poros t...
+  PASS  D1 mu_B + mu_N = mu_BN  ·  -384.488 = -384.488
+  PASS  D1 mu_B != mu_N (no es reparto 50/50)  ·  mu_B=-101.211 mu_N=-283.277
+  PASS  D1 mu_H = E(H2)/2  ·  -15.0310 eV
+  PASS  D1 ambos ambientes respetan la restriccion
+  PASS  D1 rico en N: mu_N = E(NH3) - 3 mu_H  ·  -283.2770
+  PASS  D1 rico en B: mu_B = E(BH3) - 3 mu_H  ·  -104.7870
+  PASS  D1 ventana vacia a dmu_H=0 detectada  ·  mu_N,max=-283.277 < mu_N,min=-279.701
+
+  D2 — generadores geometricos:
+  PASS  Triangulo borde-N  ·  64 vac · 1 cluster · triangle (comp 0.6046) · bordes N=24 B=0 · 15.1x17.5 A
+  PASS  Triangulo borde-B  ·  64 vac · 1 cluster · triangle (comp 0.6046) · bordes N=0 B=24 · 15.1x17.5 A
+  PASS  Paralelogramo A  ·  32 vac · 1 cluster · parallelogram (comp 0.8031) · bordes N=8 B=8 · 11.5x7.5 A
+  PASS  Paralelogramo B  ·  32 vac · 1 cluster · parallelogram (comp 0.8031) · bordes N=8 B=8 · 7.2x12.5 A
+  PASS  Hexagono NH=BH  ·  42 vac · 1 cluster · hexagon (comp 0.9069) · bordes N=9 B=9 · 11.5x10.0 A
+
+  D4 — clasificador bajo traslacion periodica:
+        posicion 1: hexagon        comp 0.8733 ratio 1.000
+        posicion 2: hexagon        comp 0.8733 ratio 1.000
+        posicion 3: hexagon        comp 0.8733 ratio 1.000
+        posicion 4: hexagon        comp 0.8733 ratio 1.000
+  PASS  D4 clasificacion invariante  ·  dispersion compacidad = 6.66e-16
+
+  D6 — estequiometria de los generadores aleatorios:
+  PASS  D6 opc=3 estequiometria exacta  ·  max |N-B| sobre 40 semillas = 0  (v14.6: 28 y 38)
+  PASS  D6 opc=4 estequiometria exacta  ·  max |N-B| sobre 40 semillas = 0  (v14.6: 28 y 38)
+
+  PASS  D7 dE global con pares vecinos  ·  n=32, err_max=1.11e-11 eV  (v14.6: 1.9e+1)
+  PASS  D7 dE global con pares no vecinos  ·  n=2065, err_max=1.32e-11 eV
+
+==============================================================================
+  TODOS LOS PARCHES VERIFICADOS
+==============================================================================
+
+> hbn-mc@15.0.1 test:investigacion
+> node tests/validacion_investigacion.js
+
+
+I1 · Conjunto de datos de Mazzoni (matriz §5.2 de la tesis)
+-----------------------------------------------------------
+  PASS  20 estructuras
+  PASS  Σ enlaces = 12 en todas
+  PASS  átomos enteros y 8 por celda
+
+I2 · Reproducción de la Tabla 5.8 (valores del Prof. Batista)
+-------------------------------------------------------------
+  PASS  ajuste resuelto
+  PASS  ε_NN: -185.2864 ± 0.303 (tesis -185.29)  ·  Δ = 0.0036 eV
+  PASS  ε_NB: -128.1626 ± 0.070 (tesis -128.1626)  ·  Δ = 0.0000 eV
+  PASS  ε_BB: -67.9148 ± 0.303 (tesis -67.9148)  ·  Δ = 0.0000 eV
+  PASS  ε_CC: -107.3213 ± 0.090 (tesis -107.32)  ·  Δ = -0.0013 eV
+  PASS  ε_CN: -147.0205 ± 0.125 (tesis -147.02)  ·  Δ = -0.0005 eV
+  PASS  ε_CB: -88.0091 ± 0.125 (tesis -88.01)  ·  Δ = 0.0009 eV
+  PASS  RMS = 0.630 eV (0.079 eV/átomo)  ·  RMS=0.6297 · 0.0787 eV/átomo · máx 1.191 eV
+  PASS  R² > 0.9999  ·  R²=0.999961 · RMS LOO=0.9038 eV
+
+I3 · Parámetros fijos y estructuras de usuario (CSV)
+----------------------------------------------------
+  PASS  CSV con alias (nNB, NH, BH, E_eV)  ·  ["NB","XN","XB"]
+  PASS  ajuste con ε_NB fijo recupera ε_XN, ε_XB exactos  ·  XN=-109.79999999999994 XB=-50.30000000000048
+  PASS  detecta conteos que implican átomos no enteros
+
+I4 · Sistema de parámetros
+--------------------------
+  PASS  acepta claves válidas y rechaza inválidas  ·  {"changed":["NB"],"rejected":["ZZZ","CC"],"set1":"personalizado","nb":-128.9067,"set2":"tesis2019","nb2":-128.1626,"xc":-70.41}
+  PASS  marca el conjunto como personalizado
+  PASS  restaurar devuelve la tesis 2019
+
+I5 · Calibración ε_CH con nanocintas (datos sintéticos)
+-------------------------------------------------------
+  PASS  n_CC = (3n_C − n_H)/2
+  PASS  ruta directa recupera ε_XC  ·  -70.40999999999997
+  PASS  ruta indirecta: ΔE_hidrog y ε_XC  ·  ΔE_h=-1.720 ε=-70.411
+  PASS  advierte si 3n_C − n_H es impar (enlaces colgantes)
+
+I6 · Energética de poros por forma
+----------------------------------
+  PASS  10 poros (5 formas × 2 tamaños), un clúster cada uno
+  PASS  triángulo N: solo borde N · triángulo B: solo borde B · hexágono NH = BH
+  PASS  E_form lineal en μ_N con pendiente n_B − n_N
+  PASS  la estructura del usuario no se modifica
+        triN:25vac -5.1/-23.0 eV · triB:25vac -23.2/-5.3 eV · parA:16vac -11.3/-11.3 eV · parB:16vac -11.3/-11.3 eV · hex:24vac -11.3/-11.3 eV
+
+I7 · Escala energética de los movimientos MC
+--------------------------------------------
+  PASS  todos los intercambios B↔N del cristal perfecto cuestan 2(ε_NN+ε_BB) − 4ε_NB  ·  ΔE = 6.2408 eV · n=216
+  PASS  aceptación esperada exp(−ΔE/k_BT)  ·  5000 K: 5.12e-7 · 20000 K: 2.68e-2
+
+I8 · Orden de corto alcance
+---------------------------
+  PASS  segregación → α_C > 0.8  ·  α_C = 0.917
+  PASS  C aislados → α_C < 0  ·  α_C = -0.143
+  PASS  h-BN perfecto: f_BN = 1, α_C indefinido
+
+I9 · Barrido de temperatura e intercambio de réplicas
+-----------------------------------------------------
+  PASS  estado del usuario restaurado (G, E) y RNG sin semilla fija
+  PASS  reproducible con la misma semilla
+  PASS  observables finitos y 20 muestras por réplica
+  PASS  se intentan intercambios entre todas las temperaturas vecinas  ·  aceptación % = 26.7, 20.0, 20.0
+  PASS  ⟨E⟩ no decrece con T (ordenamiento térmico)  ·  -23397.9 < -23393.0 < -23382.7 < -23366.7
+  PASS  CSV del barrido generado  ·  15 líneas
+
+========================================================================
+  INVESTIGACIÓN: TODAS LAS PRUEBAS PASAN
+========================================================================
+
+> hbn-mc@15.0.1 test:smoke
+> node tests/smoke_full_app.js
+
+{
+  "ok": true,
+  "version": "15.0.1",
+  "scriptsLoaded": 10,
+  "requiredFunctions": 38,
+  "initialized": {
+    "Nx": 16,
+    "Ny": 16,
+    "E": -49214.4384,
+    "ready": true,
+    "EPS_XC": -70.41,
+    "paramSet": "tesis2019"
+  },
+  "exercisedCalls": 9,
+  "generatorAPI": true,
+  "cssPresent": true
+}
+
+> hbn-mc@15.0.1 test:functional
+> node tests/functional_subsystems.js
+
+{
+  "ok": true,
+  "importers": [
+    "XYZ",
+    "POSCAR",
+    "SIESTA XV",
+    "LAMMPS DATA",
+    "LAMMPS DUMP"
+  ],
+  "batchStats": true,
+  "pbc": true,
+  "exports": true,
+  "structureGenerator": true,
+  "i18n": true,
+  "viewerFallback": true,
+  "manualVacancyRng": true
+}
+
+> hbn-mc@15.0.1 test:pbc
+> node tests/pbc_stress.js
+
+{
+  "ok": true,
+  "cases": 726,
+  "directedEdges": 109060,
+  "normalized": 390,
+  "fail": 0
+}

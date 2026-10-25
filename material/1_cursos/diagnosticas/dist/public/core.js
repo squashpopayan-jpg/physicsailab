@@ -13,8 +13,17 @@
   C.init = function (nombre) {
     if (C.db) return C;
     if (typeof firebase === 'undefined') throw new Error('No se pudo cargar Firebase. Revisa tu conexión a internet.');
-    var cfg = local ? { apiKey: 'demo-key', projectId: 'demo-diagnosticas', databaseURL: 'http://127.0.0.1:9000?ns=demo-diagnosticas-default-rtdb', authDomain: 'localhost' } : CONFIG.firebase;
-    if (!cfg.databaseURL) throw new Error('El sitio aún no está configurado (falta la base de datos en config.js).');
+    var defaultFb = {
+      apiKey: 'AIzaSyD98yDnsc9WmkFCCT8y2rlR3_g0ceWNq4Q',
+      authDomain: 'squashpopayan-65e33.firebaseapp.com',
+      databaseURL: 'https://squashpopayan-65e33-default-rtdb.firebaseio.com',
+      projectId: 'squashpopayan-65e33',
+      appId: '1:549301287103:web:physicsailab'
+    };
+    var cfg = (window.CONFIG && window.CONFIG.firebase && window.CONFIG.firebase.databaseURL) ? window.CONFIG.firebase : defaultFb;
+    if (local && (!cfg.databaseURL || cfg.databaseURL.includes('127.0.0.1'))) {
+      cfg = { apiKey: 'demo-key', projectId: 'demo-diagnosticas', databaseURL: 'http://127.0.0.1:9000?ns=demo-diagnosticas-default-rtdb', authDomain: 'localhost' };
+    }
     var app = nombre ? firebase.initializeApp(cfg, nombre) : firebase.initializeApp(cfg);
     C.auth = firebase.auth(app);
     C.db = firebase.database(app);

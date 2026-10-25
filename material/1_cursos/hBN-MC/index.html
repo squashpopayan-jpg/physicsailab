@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>hBN-MC v15.0.1 — Mg. M.A. Obando · Unicauca & UFOP</title>
+<meta name="author" content="Mg. Manuel Alejandro Obando">
+<meta name="institution" content="Departamento de Física, Universidad del Cauca, Colombia">
+<meta name="description" content="h-BN Monte Carlo Simulator modular — bond-counting MC for nanopores in h-BN and BNC heterostructures.">
+<link rel="stylesheet" href="assets/css/styles.css?v=15.0.1">
+</head>
+<body>
+
+<div class="app">
+
+<div class="hdr">
+  <div class="logo"><span class="hbn">h-BN</span><span class="sep"> · </span>Monte Carlo <span id="appVersion">v15.0.1</span></div>
+  <div class="pill" id="pill">IDLE</div>
+  <div class="sp"></div>
+  <button id="btnLang"
+      onclick="toggleLang()"
+      style="background:#1e40af;color:#fff;border:none;border-radius:6px;
+             padding:4px 10px;font-size:.72rem;font-weight:700;cursor:pointer;
+             font-family:inherit;letter-spacing:.05em;margin-right:6px;
+             transition:.15s;opacity:.92"
+      onmouseover="this.style.opacity='1'"
+      onmouseout="this.style.opacity='.92'"
+      title="Toggle language / Cambiar idioma" data-i18n="btn_lang">ES→EN</button>
+      <button id="btn3D" onclick="open3D()" style="display:inline-block;font-family:inherit;
+    font-size:.6rem;font-weight:700;padding:4px 10px;border-radius:6px;
+    border:1.5px solid #7c3aed;background:#f5f3ff;color:#7c3aed;cursor:pointer">
+    🔮 Vista 3D
+  </button>
+  <div class="hst">E <b id="hE">—</b> eV</div>
+  <div class="hst">T <b id="hT">—</b> K</div>
+  <div class="hst">paso <b id="hS">0</b></div>
+  <div class="hst">accept <b id="hAcc">—</b>%</div>
+</div>
+
+<div class="body">
+  <div class="cz">
+    <div class="cbar">
+      <div class="dot" id="dot"></div>
+      <span id="cst" style="font-size:.62rem;color:#64748b" id="statusLabel" data-i18n="status_idle" data-status="idle">Listo · presiona INICIAR</span>
+      <div class="sp"></div>
+      <div class="pbar"><div class="pfil" id="pf"></div></div>
+      <span id="pct" style="font-size:.57rem;color:#64748b;min-width:28px;text-align:right">0%</span>
+    </div>
+    <div class="cv-tools"> 
+      <button type="button" onclick="zoom2D(1.2)" title="Acercar vista 2D">＋</button>
+      <button type="button" onclick="zoom2D(1/1.2)" title="Alejar vista 2D">－</button>
+      <button type="button" onclick="reset2DView()" title="Restablecer encuadre">Fit</button>
+      <button type="button" id="btnCaptureStructure" onclick="exportCurrentStructurePNG()" title="Guardar ficha PNG con estructura, enlaces, energía y parámetros">📸 Captura</button>
+      <span class="zlab" id="zoom2DLbl">100%</span>
+      <span class="zhint">rueda = zoom · Shift+arrastrar = mover</span>
+    </div>
+    <canvas id="cv"></canvas>
+    <div class="legbar">
+      <div class="li"><div class="ld" style="background:#2563eb;border:1.5px solid #1d4ed8"></div><span>N</span></div>
+      <div class="li"><div class="ld" style="background:#16a34a;border:1.5px solid #15803d"></div><span>B</span></div>
+      <div class="li"><div class="ld" style="background:#475569;border:1.5px solid #334155"></div><span>C</span></div>
+      <div class="li"><div class="ld" style="background:#f8fafc;border:1.5px solid #94a3b8"></div><span>H</span></div>
+      <div class="li"><div class="ld" style="background:#e2e8f0;border:1.5px dashed #94a3b8"></div><span>Vac</span></div>
+      <div class="li"><div class="lb" style="background:rgba(22,163,74,0.85);height:3px"></div><span>N–B</span></div>
+      <div class="li"><div class="lb" style="background:rgba(37,99,235,0.70);height:3px"></div><span>N–N</span></div>
+      <div class="li"><div class="lb" style="background:rgba(71,85,105,0.80);height:3px"></div><span>C–C</span></div>
+      <div class="li"><div class="lb" style="background:rgba(124,58,237,0.75);height:3px"></div><span>C–N</span></div>
+      <div class="sp"></div>
+      <span id="legE" style="font-weight:700;color:#2563eb">—</span>
+      <span style="margin-left:4px">· click = info</span>
+    </div>
+  </div>
+
+  <div class="side">
+    <div class="tabs">
+      <div class="tab on" data-t="ctrl" data-i18n="tab_ctrl">CTRL</div>
+      <div class="tab" data-t="stat" data-i18n="tab_stat">STAT</div>
+      <div class="tab" data-t="graf" data-i18n="tab_graf">GRAF</div>
+      <div class="tab" data-t="inv" data-i18n="tab_inv">INV</div>
+      <div class="tab" data-t="info" data-i18n="tab_info">INFO</div>
+    </div>
+    <div class="side-tools">
+      <button id="btnExpandCards" type="button" onclick="expandAllCards(false)">▾ Compactar panel</button>
+      <button id="btnCollapseCards" type="button" onclick="expandAllCards(true)">▸ Solo títulos</button>
+    </div>
+    <div class="side-tools" id="saveLocRow" style="align-items:center;gap:6px;">
+      <label style="display:flex;align-items:center;gap:6px;font-size:.72rem;color:#475569;cursor:pointer;" title="Si está activo, cada exportación (informe, XYZ, LAMMPS, POSCAR, sesión, video, etc.) abre el diálogo nativo 'Guardar como' para elegir carpeta y nombre. Si está desactivado, o el navegador no lo soporta, los archivos van a la carpeta de Descargas configurada en el navegador.">
+        <input type="checkbox" id="iAskSaveLoc" checked onchange="ASK_SAVE_LOCATION=this.checked; addLog(this.checked?'Preguntará dónde guardar cada archivo exportado':'Los archivos exportados irán directo a la carpeta de Descargas','i')">
+        <span id="lAskSaveLoc">Elegir carpeta al guardar archivos</span>
+      </label>
+    </div>
+
+    <!-- TAB CTRL -->
+    <div class="tb on" id="t-ctrl">
+      <div class="pcard">
+        <div class="pcard-head">
+          <div>
+            <div class="pcard-step">Paso 1</div>
+            <div class="pcard-title">Estructura base de la red</div>
+          </div>
+          <div class="pcard-badge">Base</div>
+        </div>
+        <div class="pcard-desc">Define el tamaño de la red, la orientación cristalográfica y las condiciones de borde antes de generar o recalcular la estructura.</div>
+
+        <div class="sl" data-i18n="section_lattice">Red h-BN (Nx × Ny)</div>
+        <div class="grid2">
+          <div class="fi">
+            <label>Nx (ancho) <em id="lNx">16</em></label>
+            <input type="range" id="iNx" min="2" max="48" value="16" step="1">
+          </div>
+          <div class="fi">
+            <label>Ny (alto) <em id="lNy">16</em></label>
+            <input type="range" id="iNy" min="2" max="48" value="16" step="1">
+          </div>
+        </div>
+        <div class="fi"><label>Átomos <em id="lAt">256</em></label></div>
+        <div class="fi">
+          <label data-i18n="lbl_orient">Orientación de la red</label>
+          <select id="iOrient" onchange="onOrientChange()">
+            <option value="AC">Armchair horizontal (borde sup/inf = AC)</option>
+            <option value="ZZ">Zigzag horizontal (borde sup/inf = ZZ)</option>
+          </select>
+        </div>
+        <div class="fi">
+          <label data-i18n="lbl_start">Subred inicial visible</label>
+          <select id="iStart" onchange="onLatticeStartChange()">
+            <option value="B" data-i18n="start_b">Boro (como ahora)</option>
+            <option value="N" data-i18n="start_n">Nitrógeno</option>
+          </select>
+        </div>
+        <div id="orientHint" class="soft-note">
+          AC: borde horizontal alterna N-B · ZZ: borde horizontal expone un solo tipo (N o B)
+        </div>
+        <div class="fi">
+          <label>Condición de borde (periodicidad)</label>
+          <select id="iPBC" onchange="onPBCChange()">
+            <option value="XY">Periódico en X e Y (bulk)</option>
+            <option value="X">Periódico solo en X (borde libre ↕)</option>
+            <option value="Y">Periódico solo en Y (borde libre ↔)</option>
+            <option value="none">Bordes abiertos (isla)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="pcard">
+        <div class="pcard-head">
+          <div>
+            <div class="pcard-step">Paso 2</div>
+            <div class="pcard-title">Geometría y composición inicial</div>
+          </div>
+          <div class="pcard-badge">Poro</div>
+        </div>
+        <div class="pcard-desc">Selecciona la familia estructural, el tamaño del poro o de la fita y la fracción inicial de vacancias o carbono.</div>
+
+        <div class="sl" data-i18n="section_pore">Nanoporo</div>
+        <div class="fi">
+          <label data-i18n="lbl_type">Tipo</label>
+          <select id="iPore" onchange="onPoreChange()">
+            <optgroup label="— Fortran original —">
+              <option value="99">99 · Geometría importada (LAMMPS/XYZ/POSCAR/XV)</option>
+              <option value="1">1 · Red perfecta</option>
+              <option value="2">2 · Real + vacancias</option>
+              <option value="3" selected>3 · Aleatoria</option>
+              <option value="4">4 · Aleatoria h-BN + vacancias + C</option>
+              <option value="6">6 · Furo Paralelogramo</option>
+              <option value="7">7 · Furo Triangular</option>
+              <option value="8">8 · Furo Aleatorio</option>
+            </optgroup>
+            <optgroup label="— Geometrías específicas —" data-i18n="group_specific" data-i18n-attr="label">
+              <option value="10">10 · Triángulo — borde N</option>
+              <option value="11">11 · Triángulo — borde B</option>
+              <option value="12">12 · Paralelogramo — orientación A</option>
+              <option value="13">13 · Paralelogramo — orientación B</option>
+              <option value="14">14 · Hexágono (NH = BH)</option>
+            </optgroup>
+            <optgroup label="— Segregación —" data-i18n="group_seg" data-i18n-attr="label">
+              <option value="20">20 · h-BNC aleatorio (C en h-BN, 0–100%)</option>
+            </optgroup>
+            <optgroup label="— Fitas (nanoribbons) —">
+              <option value="30">30 · Fita C horizontal (en h-BN)</option>
+              <option value="31">31 · Fita C vertical (en h-BN)</option>
+              <option value="32">32 · C|hBN — interfaz vertical (fp=% de C)</option>
+              <option value="33">33 · C|hBN|C — franja h-BN en C horizontal</option>
+              <option value="34">34 · C|hBN|C — 3 zonas vertical (33/34/33%)</option>
+            </optgroup>
+            <optgroup label="— Fita rectangular explícita —" data-i18n="group_ribbon" data-i18n-attr="label">
+              <option value="40">40 · Fita C pura (Wx × Wy, sin h-BN)</option>
+              <option value="41">41 · Fita h-BN pura (Wx × Wy, sin C)</option>
+              <option value="42">42 · C|hBN|C — 3 zonas explícitas (fp=% C izq.)</option>
+              <option value="43">43 · Red grafeno pura (toda C)</option>
+              <option value="44">44 · Fita h-BN pura aislada (sin C)</option>
+              <option value="45">45 · 2 fitas C adyacentes (sin separación)</option>
+              <option value="46">46 · 3 fitas C adyacentes (bloque C)</option>
+            </optgroup>
+            <optgroup label="— Nanoribbons pasivadas —">
+              <option value="47">47 · Nanoribbon ZZ-N (borde zigzag-N + H)</option>
+              <option value="48">48 · Nanoribbon ZZ-B (borde zigzag-B + H)</option>
+              <option value="49">49 · Nanoribbon AC (borde armchair + H)</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="fi pszrow" id="pszRow">
+          <label>Tamaño poro (anillos) <em id="lPsz">3</em></label>
+          <input type="range" id="iPsz" min="1" max="6" value="3" step="1">
+        </div>
+        <div class="fi pszrow" id="fitaRow1">
+          <label>Ancho fita (filas/cols) <em id="lFw">3</em></label>
+          <input type="range" id="iFw" min="1" max="24" value="3" step="1">
+        </div>
+        <div class="fi pszrow" id="fitaRow2">
+          <label>Posición (% red) <em id="lFp">50%</em></label>
+          <input type="range" id="iFp" min="0" max="95" value="50" step="5">
+        </div>
+        <div class="fi pszrow" id="fitaRow3">
+          <label data-i18n="lbl_term">Terminación</label>
+          <select id="iFt">
+            <option value="arm">Armchair (mixta)</option>
+            <option value="zN">Zigzag-N</option>
+            <option value="zB">Zigzag-B</option>
+          </select>
+        </div>
+        <div class="pszrow" id="fitaExRow" style="flex-direction:column;gap:3px">
+          <div class="grid2">
+            <div class="fi">
+              <label>Wx (átomos) <em id="lWx">8</em></label>
+              <input type="range" id="iWx" min="1" max="48" value="8" step="1">
+            </div>
+            <div class="fi">
+              <label>Wy (átomos) <em id="lWy">8</em></label>
+              <input type="range" id="iWy" min="1" max="48" value="8" step="1">
+            </div>
+          </div>
+          <div class="fi">
+            <label>Pos X inicio (% red) <em id="lWpos">0%</em></label>
+            <input type="range" id="iWpos" min="0" max="95" value="0" step="5">
+          </div>
+        </div>
+        <div class="fi">
+          <label>Vacantes / C% <em id="lVac">12%</em></label>
+          <input type="range" id="iVac" min="0" max="100" value="12" step="1">
+        </div>
+        <div class="fi pszrow" id="carbRow">
+          <label>Carbono % (sustitucional) <em id="lCarb">15%</em></label>
+          <input type="range" id="iCarb" min="0" max="100" value="15" step="1">
+        </div>
+        <div class="fi">
+          <label data-i18n="lbl_hpass">Pasivación H bordes</label>
+          <select id="iH"><option value="1">Sí</option><option value="0">No</option></select>
+        </div>
+      </div>
+
+      <div class="pcard">
+        <div class="pcard-head">
+          <div>
+            <div class="pcard-step">Paso 3</div>
+            <div class="pcard-title">Protocolo térmico y ejecución</div>
+          </div>
+          <div class="pcard-badge">MC</div>
+        </div>
+        <div class="pcard-desc">Ajusta la rampa térmica, el número de pasos y la estrategia de intercambio antes de lanzar la simulación.</div>
+
+        <div class="sl" data-i18n="lbl_temp">Temperatura</div>
+        <div class="fi">
+          <label>Modo T</label>
+          <select id="iTmode" onchange="onTmodeChange()">
+            <option value="anneal" data-i18n="opt_anneal">Recocido (Ti → Tf)</option>
+            <option value="iso" data-i18n="opt_iso">Isotérmico (Ti = Tf)</option>
+            <option value="3phase" data-i18n="opt_3phase">3 Fases (exp → cool → eq)</option>
+            <option value="cycle" data-i18n="opt_cycle">Ciclo Ti → Tf → Ti (histéresis)</option>
+          </select>
+        </div>
+        <div class="fi">
+          <label>T inicial / T exp (K) <em id="lTi">5000</em></label>
+          <div class="range-num">
+            <input type="range" id="iTi" min="100" max="20000" value="5000" step="10">
+            <input type="number" id="iTiNum" min="100" max="20000" value="5000" step="10" inputmode="numeric" aria-label="Temperatura inicial en Kelvin">
+          </div>
+        </div>
+        <div class="fi" id="rowTf">
+          <label>T final (K) · en ciclo: T máxima <em id="lTf">500</em></label>
+          <div class="range-num">
+            <input type="range" id="iTf" min="100" max="20000" value="500" step="10">
+            <input type="number" id="iTfNum" min="100" max="20000" value="500" step="10" inputmode="numeric" aria-label="Temperatura final en Kelvin">
+          </div>
+        </div>
+        <div class="micro-note">Los movimientos elementales del modelo cuestan decenas de eV: la temperatura es un parámetro de control del muestreo (tesis y artículo usan hasta 20 000 K), no una temperatura física.</div>
+        <div class="fi">
+          <label>Intercambio global h-BN <em id="lGlobal">0%</em></label>
+          <input type="range" id="iGlobal" min="0" max="50" value="0" step="5"
+            oninput="document.getElementById('lGlobal').textContent=this.value+'%'">
+          <div class="micro-note">0% = solo vecinos · &gt;0% mejora ergodicidad en poros a T baja</div>
+        </div>
+        <div class="fi" id="importedMCPolicyRow" style="display:none">
+          <label>MC en estructura importada</label>
+          <select id="iImportedMCPolicy">
+            <option value="auto" selected>Robusto recomendado: B↔N + vacancias móviles; sin mezclar C↔B/N directo</option>
+            <option value="fixed">Conservar estructura: sin MC configuracional</option>
+            <option value="bn">Solo intercambio B↔N; C y vacancias fijas</option>
+            <option value="vacbn">B/N y vacancias móviles solo en hBN; carbono fijo</option>
+            <option value="vac">Vacancias móviles con B/N/C + B↔N; sin mezcla directa C↔B/N</option>
+            <option value="all">Permitir todos los intercambios, incluido C↔B/N</option>
+          </select>
+          <div class="micro-note">Una vacancia solo se mueve si el modo permite Vacancia↔átomo. “B↔N” no mueve vacancias. El modo robusto evita mezclar carbono con hBN salvo por migración de vacancia.</div>
+        </div>
+
+        <div class="sl" data-i18n="lbl_simmc">Simulación MC</div>
+        <div class="fi">
+          <label>Pasos <em id="lSt">50k</em></label>
+          <input type="range" id="iSt" min="5000" max="500000" value="50000" step="5000">
+        </div>
+        <div class="fi">
+          <label data-i18n="lbl_speed">Velocidad</label>
+          <select id="iSpd">
+            <option value="turbo">Turbo</option>
+            <option value="fast" selected data-i18n="opt_fast">Rápida</option>
+            <option value="normal">Normal (animada)</option>
+            <option value="slow">Lenta (animada)</option>
+          </select>
+        </div>
+        <div class="brow" style="margin-top:4px">
+          <button class="btn brun" id="bRun">▶  INICIAR</button>
+          <button class="btn bpause" id="bPause" disabled>⏸  PAUSAR</button>
+          <button class="btn breset" id="bReset">↺  RESET</button>
+        </div>
+        <div class="ctrl-mini-actions">
+          <button onclick="saveSession()" class="btn" style="padding:6px;font-size:.62rem;border-color:#0d9488;color:#0f766e;background:#f0fdfa" title="Guardar red + parámetros en JSON">
+            💾 Guardar sesión
+          </button>
+          <button onclick="loadSession()" class="btn" style="padding:6px;font-size:.62rem;border-color:#2563eb;color:#1d4ed8;background:#eff6ff" title="Cargar sesión JSON guardada">
+            📂 Cargar sesión
+          </button>
+          <button onclick="importGeometryFile()" class="btn" style="padding:6px;font-size:.62rem;border-color:#7c3aed;color:#6d28d9;background:#f5f3ff" title="Importar geometría LAMMPS DATA/DUMP, XYZ, POSCAR/VASP o SIESTA XV">
+            📥 Importar geometría
+          </button>
+          <button onclick="HBNCBandGenerator.openDialog()" class="btn" style="padding:6px;font-size:.62rem;border-color:#059669;color:#047857;background:#ecfdf5" title="Abrir constructor físico de estructuras hBN/Carbono">
+            🧩 Constructor hBN/C
+          </button>
+          <button onclick="exportLAMMPSData()" class="btn" style="padding:6px;font-size:.62rem;border-color:#b45309;color:#92400e;background:#fffbeb" title="Exportar geometría en formato LAMMPS DATA">
+            🧬 Exportar LAMMPS
+          </button>
+        </div>
+        <button class="btn bpause" id="bRec" style="padding:8px;border-color:#ef4444;color:#b91c1c"
+          onclick="toggleRecordingArm()">⏺ GRABAR SIMULACIÓN</button>
+        <div class="rec-note">
+          El video combina la transición estructural y las gráficas E, T, aceptación y cNB. Si activas grabación, inicia con <b>INICIAR</b> y se descarga al finalizar.
+        </div>
+      </div>
+
+      <div class="pcard">
+        <div class="pcard-head">
+          <div>
+            <div class="pcard-step">Paso 4</div>
+            <div class="pcard-title">Modelo energético y comparación DFT</div>
+          </div>
+          <div class="pcard-badge">DFT</div>
+        </div>
+        <div class="pcard-desc">Reservorio de hidrógeno del Monte Carlo, calibración C–H, corrección estérica H–H y referencias químicas de la energía de formación. Los parámetros ε completos, con su procedencia, se editan en la pestaña INV.</div>
+
+        <div class="sl" data-i18n="lbl_robust">Reservorio de hidrógeno del MC</div>
+        <div class="fi">
+          <label>Modelo del reservorio de H</label>
+          <select id="iHRes">
+            <option value="tesis" selected>Tesis 2019: ε_XX = E(H₂)/2 por enlace vacancia–vacancia</option>
+            <option value="H2">Gran canónico respecto de H₂: sin término vacancia–vacancia, −μ_H por H</option>
+          </select>
+        </div>
+        <div class="fi">
+          <label>Δμ<sub>H</sub> del MC (eV) <em id="lMuH">0.00</em></label>
+          <input type="number" id="iMuH" value="0" min="-20" max="20" step="0.01">
+        </div>
+        <div class="micro-note" id="edgePerHNote">Cada H de pasivación aporta ε<sub>Xα</sub> − s. En modo tesis s = Δμ<sub>H</sub>; en modo H₂ s = E(H₂)/2 + Δμ<sub>H</sub>. Δμ<sub>H</sub> &lt; 0: ambiente pobre en H.</div>
+        <div class="fi">
+          <label>ε<sub>CH</sub> promedio AC/ZZ (eV) <em id="lEpsXC">-70.41</em></label>
+          <input type="number" id="iEpsXC" value="-70.41" step="0.01">
+        </div>
+        <div class="micro-note">Valor <b>provisional</b> −70.41 ± 0.40 eV (descomposición aditiva a<sub>C</sub> + a<sub>H</sub>; no es un cálculo DFT). Sustituir con el calibrador de nanocintas SIESTA de la pestaña INV.</div>
+        <div class="grid2">
+          <div class="fi">
+            <label>ε<sub>CH</sub> armchair (eV) <em id="lEpsCHAC">-70.41</em></label>
+            <input type="number" id="iEpsCHAC" value="-70.41" step="0.01">
+          </div>
+          <div class="fi">
+            <label>ε<sub>CH</sub> zigzag (eV) <em id="lEpsCHZZ">-70.41</em></label>
+            <input type="number" id="iEpsCHZZ" value="-70.41" step="0.01">
+          </div>
+        </div>
+        <div class="micro-note" id="chDispNote">Dispersión AC/ZZ: ±0.00 eV/enlace. El promedio alimenta X–C/C–H.</div>
+        <div class="grid2">
+          <div class="fi">
+            <label>Penalización H–H K (eV) <em id="lHHK">35.00</em></label>
+            <input type="number" id="iHHK" value="35.00" min="0" step="0.50">
+          </div>
+          <div class="fi">
+            <label>Dist. mínima H–H (Å) <em id="lHHD">0.72</em></label>
+            <input type="number" id="iHHD" value="0.72" min="0.10" step="0.01">
+          </div>
+        </div>
+        <div class="micro-note">Penalización estérica empírica (no procede de la tesis): K = 35 eV por par H–H solapado. Modo por defecto max(geométrico, topológico) con reglas monovacancia = 3, divacancia = 2, poro triangular = 3 pares. En modo tesis es lo que impide que los poros se fragmenten; su efecto se cuantifica en INV → Escala energética.</div>
+        <div class="fi">
+          <label>Modelo H–H</label>
+          <select id="iHHMode">
+            <option value="max" selected>Robusto: mayor entre geométrico y topológico</option>
+            <option value="geom">Solo geométrico por distancia</option>
+            <option value="topo">Solo topológico por defecto</option>
+            <option value="sum">Suma geométrico + topológico</option>
+          </select>
+        </div>
+
+        <div class="sl">Energía de formación para DFT</div>
+        <!-- [NUEVO v14.7 · D1] Ambiente químico. El reparto μ_B=μ_N de v14.6 era
+             el punto medio arbitrario y hacía que E_form de poros no
+             estequiométricos quedara dominada por la diferencia de energía
+             atómica N vs B (~59 eV/átomo): artefacto de ~1005 eV. -->
+        <div class="fi">
+          <label>Ambiente químico (fija μ<sub>B</sub>, μ<sub>N</sub> con μ<sub>B</sub>+μ<sub>N</sub>=μ<sub>BN</sub>)</label>
+          <select id="iChemEnv" onchange="applyChemicalEnvironment(this.value)">
+            <option value="Nrich" selected>Rico en N: μ_N máximo (equilibrio con NH₃)</option>
+            <option value="Brich">Rico en B: μ_B máximo (equilibrio con BH₃)</option>
+            <option value="mid">Punto medio de la ventana</option>
+          </select>
+        </div>
+        <div class="grid2">
+          <div class="fi">
+            <label>Δμ<sub>H</sub> formación (eV)</label>
+            <input type="number" id="iDmuHForm" value="0" step="0.05">
+          </div>
+          <div class="fi">
+            <label>Referencia μ<sub>BN</sub></label>
+            <select id="iMuBNRef">
+              <option value="model" selected>3·ε_NB (lámina del modelo)</option>
+              <option value="dft">E(BN) Tabla 5.1</option>
+            </select>
+          </div>
+        </div>
+        <div class="micro-note" id="chemWindowNote">—</div>
+        <div class="grid2">
+          <div class="fi">
+            <label>μ<sub>B</sub> ref. (eV/átomo) <em id="lMuB">—</em></label>
+            <input type="number" id="iMuB" value="0" step="0.0001">
+          </div>
+          <div class="fi">
+            <label>μ<sub>N</sub> ref. (eV/átomo) <em id="lMuN">—</em></label>
+            <input type="number" id="iMuN" value="0" step="0.0001">
+          </div>
+          <div class="fi">
+            <label>μ<sub>C</sub> ref. (eV/átomo) <em id="lMuC">—</em></label>
+            <input type="number" id="iMuC" value="0" step="0.0001">
+          </div>
+          <div class="fi">
+            <label>μ<sub>H</sub> ref. (eV/H) <em id="lMuHForm">—</em></label>
+            <input type="number" id="iMuHForm" value="-15.0310" step="0.0001">
+          </div>
+        </div>
+        <div class="ctrl-mini-actions">
+          <button class="btn" style="padding:6px;font-size:.62rem;border-color:#b45309;color:#b45309;background:#fffbeb" onclick="reportParameterConsistency()" title="Comprueba μ_B+μ_N=μ_BN y la escala de los ε">Verificar coherencia</button>
+          <button class="btn" style="padding:6px;font-size:.62rem;border-color:#0891b2;color:#0e7490;background:#ecfeff" onclick="exportFormationVsMu()" title="Exporta E_form(μ_N) en todo el rango accesible">E_form(μ) CSV</button>
+        </div>
+        <div class="fi">
+          <label>E<sub>form</sub> DFT externo opcional (eV) <em id="lEformDFT">—</em></label>
+          <input type="number" id="iEformDFT" placeholder="pegar valor DFT total" step="0.0001">
+        </div>
+        <div class="ctrl-mini-actions">
+          <button class="btn" style="padding:6px;font-size:.62rem;border-color:#7c3aed;color:#6d28d9;background:#f5f3ff" onclick="setFormationReferencePreset('model')" title="Restaurar referencias internas del modelo">μ modelo</button>
+          <button class="btn" style="padding:6px;font-size:.62rem;border-color:#0d9488;color:#0f766e;background:#f0fdfa" onclick="scheduleLiveUpdate('energy','referencias DFT')" title="Recalcular con las referencias actuales">Recalcular Eform</button>
+        </div>
+        <div class="micro-note">E<sub>form</sub> = E<sub>fís</sub> − n<sub>B</sub>μ<sub>B</sub> − n<sub>N</sub>μ<sub>N</sub> − n<sub>C</sub>μ<sub>C</sub> − n<sub>H</sub>μ<sub>H</sub>, con E<sub>fís</sub> sin el término vacancia–vacancia. Con la referencia 3·ε<sub>NB</sub> la lámina perfecta tiene E<sub>form</sub> = 0.</div>
+
+        <div class="fi">
+          <label><span data-i18n="lbl_nruns">Réplicas del lote</span></label>
+          <select id="iNruns">
+            <option value="1" selected>1 réplica</option>
+            <option value="3">3 réplicas</option>
+            <option value="5">5 réplicas</option>
+            <option value="10">10 réplicas</option>
+            <option value="20">20 réplicas</option>
+            <option value="30">30 réplicas</option>
+            <option value="50">50 réplicas</option>
+          </select>
+        </div>
+        <!-- [NUEVO v14.0] Lote reproducible de réplicas independientes -->
+        <div class="fi">
+          <label>Semilla base (vacío = aleatoria)</label>
+          <input type="number" id="iSeed" placeholder="ej. 12345" step="1" min="0">
+        </div>
+        <button class="btn" id="bBatch" style="width:100%;margin-top:3px;border-color:#6d28d9;color:#6d28d9;font-weight:800"
+          onclick="startBatch()" title="Ejecuta N réplicas independientes con semillas reproducibles y calcula media ± σ, histograma de geometrías y CSV">
+          ▶▶ EJECUTAR LOTE
+        </button>
+        <button class="btn" id="bBatchStop" style="width:100%;margin-top:3px;border-color:#dc2626;color:#dc2626;display:none"
+          onclick="stopBatch()">⏹ Detener lote</button>
+        <div class="micro-note">Cada réplica usa semilla = base + i·1000003 (reproducible). Resultado: ⟨E⟩ ± σ, ⟨E_form por H⟩ ± σ, histograma de geometrías y CSV con curvas E(paso) por réplica.</div>
+        <div id="batchResults" style="display:none;margin-top:6px;padding:8px;border:1px solid #ddd6fe;border-radius:8px;background:#f5f3ff;font-size:.68rem;line-height:1.5"></div>
+        <button class="btn" style="width:100%;margin-top:3px;border-color:#2563eb;color:#2563eb"
+          onclick="applyDFTProtocol()" title="Aplicar el protocolo de referencia documentado">
+          🔬 Protocolo de referencia
+        </button>
+        <div class="micro-note">Preset de referencia: red 24×24 (28×28 en fitas), 3 fases 5000→900 K, 400k pasos, parámetros de la tesis.</div>
+      </div>
+
+      <div class="pcard">
+        <div class="pcard-head">
+          <div>
+            <div class="pcard-step">Paso 5</div>
+            <div class="pcard-title">Visualización y edición manual</div>
+          </div>
+          <div class="pcard-badge">Vista</div>
+        </div>
+        <div class="pcard-desc">Resalta la geometría de poro en pantalla o modifica manualmente la estructura sin perder las demás funciones.</div>
+
+        <div class="sl" data-i18n="lbl_overlay">Visualización de poros</div>
+        <div class="ovl-row">
+          <span data-i18n="lbl_poregeom">Geometría de poros</span>
+          <select id="iOvl">
+            <option value="off">Oculta</option>
+            <option value="edge">Bordes resaltados</option>
+            <option value="hull" data-i18n="lbl_contour">Contorno del poro</option>
+          </select>
+        </div>
+
+        <div class="sl" data-i18n="lbl_edit">Edición manual</div>
+        <div class="ctrl-mini-actions">
+          <button class="btn bpause" id="bEdit" style="padding:7px" onclick="toggleEditMode()">✏ EDITAR</button>
+          <button class="btn bpause" id="bRandVac" style="padding:7px" onclick="applyRandomVacancies()" title="Quitar átomos aleatoriamente sin reiniciar la red">⚡ QUITAR</button>
+        </div>
+        <div id="editHint" style="display:none;font-size:.56rem;color:#b45309;background:#fef9c3;border:1px solid #fde047;border-radius:6px;padding:5px 8px;line-height:1.6">
+          Modo edición activo · Click sobre un átomo para modificarlo
+        </div>
+        <div class="soft-note" style="margin-top:4px">
+          Modelo: Obando &amp; Batista, FIMAT-UFOP 2019 | Dpto. Física — Unicauca<br>
+          kB=8.6173324×10⁻⁵ eV/K · d=1.44 Å<br>
+          <span style="color:#2563eb">■ N</span> · <span style="color:#16a34a">■ B</span> · <span style="color:#475569">■ C</span> · <span style="color:#94a3b8">○ H</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB STAT -->
+    <div class="tb" id="t-stat">
+      <div class="sl">Sistema</div>
+      <div class="sg">
+        <div class="sc"><div class="sc-l">E total</div><div class="sc-v e" id="sE">—</div></div>
+        <div class="sc"><div class="sc-l">T (K)</div><div class="sc-v t" id="sT">—</div></div>
+        <div class="sc"><div class="sc-l" data-i18n="lbl_accepted">Aceptados</div><div class="sc-v a" id="sA">—</div></div>
+        <div class="sc"><div class="sc-l" data-i18n="lbl_rejected">Rechazados</div><div class="sc-v r" id="sR">—</div></div>
+      </div>
+      <div class="sl">Composición</div>
+      <div class="sg">
+        <div class="sc"><div class="sc-l">N</div><div class="sc-v" id="sCountN">—</div></div>
+        <div class="sc"><div class="sc-l">B</div><div class="sc-v" id="sCountB">—</div></div>
+        <div class="sc"><div class="sc-l">C</div><div class="sc-v" id="sCountC">—</div></div>
+        <div class="sc"><div class="sc-l">Vac</div><div class="sc-v" id="sCountV">—</div></div>
+        <div class="sc"><div class="sc-l">Átomos</div><div class="sc-v" id="sCountAtoms">—</div></div>
+        <div class="sc"><div class="sc-l">Sitios</div><div class="sc-v" id="sCountSites">—</div></div>
+      </div>
+      <div class="ef-box" id="hPenaltyBox" style="display:none;background:linear-gradient(135deg,#fff7ed,#f8fafc);border-color:#fed7aa">
+        <div class="ef-lbl">Control geométrico de pasivación H</div>
+        <div style="display:flex;align-items:baseline;gap:6px;margin-top:2px">
+          <div class="ef-val" id="sHHOverlap" style="color:#ea580c">—</div>
+          <div class="ef-lbl">pares H–H solapados</div>
+        </div>
+        <div class="ef-sub" id="sHHEnergy">—</div>
+      </div>
+      <div class="ef-box" id="formBox" style="display:none;background:linear-gradient(135deg,#f5f3ff,#eff6ff);border-color:#c4b5fd">
+        <div class="ef-lbl">Energía de formación (defecto respecto de la lámina perfecta)</div>
+        <div style="display:flex;align-items:baseline;gap:6px;margin-top:2px;flex-wrap:wrap">
+          <div class="ef-val" id="sFormE" style="color:#7c3aed">—</div>
+          <div class="ef-lbl">eV total</div>
+          <div class="ef-val" id="sFormPerAtom" style="font-size:.68rem;color:#2563eb">—</div>
+          <div class="ef-lbl">eV por H de borde</div>
+        </div>
+        <div class="ef-sub" id="sFormDetail">—</div>
+        <div class="ef-sub" id="sFormDFTDelta" style="color:#7c3aed;font-weight:700"></div>
+      </div>
+      <div class="sl">calculo_energia</div>
+      <table class="bt">
+        <thead><tr><th data-i18n="lbl_bonds">Ligación</th><th>ε (eV)</th><th>cnt</th><th></th></tr></thead>
+        <tbody>
+          <tr><td>N–B</td><td class="ep" id="epNB">−128.16</td><td class="nv" id="tNB">—</td><td><span class="bbar" id="bNB" style="width:0;background:#16a34a"></span></td></tr>
+          <tr><td>N–N</td><td class="ep" id="epNN">−185.29</td><td class="nv" id="tNN">—</td><td><span class="bbar" id="bNN" style="width:0;background:#2563eb"></span></td></tr>
+          <tr><td>B–B</td><td class="ep" id="epBB">−67.91</td><td class="nv" id="tBB">—</td><td><span class="bbar" id="bBB" style="width:0;background:#15803d"></span></td></tr>
+          <tr><td>C–C</td><td class="ep" id="epCC">−107.32</td><td class="nv" id="tCC">—</td><td><span class="bbar" id="bCC" style="width:0;background:#475569"></span></td></tr>
+          <tr><td>C–N</td><td class="ep" id="epCN">−147.02</td><td class="nv" id="tCN">—</td><td><span class="bbar" id="bCN" style="width:0;background:#7c3aed"></span></td></tr>
+          <tr><td>C–B</td><td class="ep" id="epCB">−88.01</td><td class="nv" id="tCB">—</td><td><span class="bbar" id="bCB" style="width:0;background:#059669"></span></td></tr>
+          <tr><td>X–N (N–H)</td><td class="ep" id="epXN">−109.80</td><td class="nv" id="tXN">—</td><td><span class="bbar" id="bXN" style="width:0;background:#94a3b8"></span></td></tr>
+          <tr><td>X–B (B–H)</td><td class="ep" id="epXB">−50.31</td><td class="nv" id="tXB">—</td><td><span class="bbar" id="bXB" style="width:0;background:#94a3b8"></span></td></tr>
+          <tr><td>X–C (C–H)</td><td class="ep" id="epXC">−70.41</td><td class="nv" id="tXC">—</td><td><span class="bbar" id="bXC" style="width:0;background:#f59e0b"></span></td></tr>
+          <tr><td>X–X</td><td class="ep" id="epXX">−15.03</td><td class="nv" id="tXX">—</td><td><span class="bbar" id="bXX" style="width:0;background:#cbd5e1"></span></td></tr>
+        </tbody>
+      </table>
+      <div style="font-size:.5rem;color:#94a3b8;margin-top:2px">ε efectivos del MC (incluyen el desplazamiento del reservorio de H). C–H: valor provisional, no DFT.</div>
+      <div class="sl">Log</div>
+      <div class="log" id="log"><div class="le i">Sistema listo.</div></div>
+    </div>
+
+    <!-- TAB GRAF -->
+    <div class="tb" id="t-graf">
+      <div class="sl" data-i18n="lbl_evsstep">Energía vs pasos MC</div>
+      <div class="mc" style="height:90px"><div class="mc-l">E (eV)</div><div class="mc-v" id="gEv">—</div><canvas class="mcc" id="gE" height="90"></canvas></div>
+      <div class="sl" data-i18n="lbl_tvsramp">Temperatura (protocolo)</div>
+      <div class="mc" style="height:70px"><div class="mc-l">T (K)</div><div class="mc-v" id="gTv">—</div><canvas class="mcc" id="gT" height="70"></canvas></div>
+      <div class="sl" data-i18n="lbl_accept_rate">Tasa aceptación</div>
+      <div class="mc" style="height:70px"><div class="mc-l">Accept %</div><div class="mc-v" id="gAv">—</div><canvas class="mcc" id="gA" height="70"></canvas></div>
+      <div class="sl">Ligaciones N–B activas</div>
+      <div class="mc" style="height:70px"><div class="mc-l">cNB</div><div class="mc-v" id="gBv">—</div><canvas class="mcc" id="gB" height="70"></canvas></div>
+      <div class="sl">Energía vs temperatura (histéresis en modo ciclo)</div>
+      <div class="mc" style="height:110px"><div class="mc-l">E(T)</div><canvas class="mcc" id="gET" height="110"></canvas></div>
+    </div>
+
+    <!-- TAB INV: herramientas de investigación (src/research/research.js) -->
+    <div class="tb" id="t-inv">
+      <div id="researchRoot"><div class="micro-note">Cargando herramientas de investigación…</div></div>
+    </div>
+
+    <!-- TAB INFO -->
+    <div class="tb" id="t-info">
+      <div class="sl">Motivación experimental</div>
+      <div style="font-size:.62rem;color:#475569;line-height:1.75;background:#fff;border:1.5px solid #e2e8f0;border-radius:8px;padding:9px 10px">
+        <b style="color:#1e293b">Fuente: Pham et al., Nano Letters 2016</b><br>
+        Imágenes HRTEM de nanoporos en h-BN monocapa bajo irradiación electrónica a distintas temperaturas:<br><br>
+        <span style="color:#2563eb">■</span> <b>500 °C:</b> poros triangulares con bordes N en zigzag (metaestables)<br>
+        <span style="color:#16a34a">■</span> <b>900 °C:</b> poros hexagonales y de paralelogramo (más estables)<br>
+        <span style="color:#f59e0b">■</span> <b>~700 °C:</b> temperatura de transición entre geometrías<br><br>
+        La transición triangular → hexagonal ocurre porque los poros hexagonales tienen menor energía de formación por encima de un tamaño crítico. Los triangulares quedan "congelados" a baja temperatura (tesis Fig. 1.4, p. 4).
+      </div>
+
+      <div class="sl">Detalles de la simulación</div>
+      <div style="font-size:.6rem;color:#475569;line-height:1.8;background:#fff;border:1.5px solid #e2e8f0;border-radius:8px;padding:9px 10px">
+        <b style="color:#1e293b">Modelo de ligaciones (bond-counting)</b><br>
+        E<sub>T</sub> = Σ ε<sub>αβ</sub>·n<sub>αβ</sub> &nbsp;(Mazzoni 2006)<br><br>
+        <b style="color:#2563eb">ε<sub>NN</sub></b> = −185.29 eV &nbsp;·&nbsp;
+        <b style="color:#475569">ε<sub>NB</sub></b> = −128.16 eV<br>
+        <b style="color:#16a34a">ε<sub>BB</sub></b> = −67.91 eV &nbsp;·&nbsp;
+        <b style="color:#94a3b8">ε<sub>XN</sub></b> = −109.80 eV<br>
+        <b style="color:#94a3b8">ε<sub>XB</sub></b> = −50.31 eV &nbsp;·&nbsp;
+        <b style="color:#cbd5e1">ε<sub>XX</sub></b> = −15.03 eV<br>
+        <b style="color:#475569">ε<sub>CC</sub></b> = −107.32 eV &nbsp;·&nbsp;
+        <b style="color:#475569">ε<sub>CN</sub></b> = −147.02 eV<br>
+        <b style="color:#475569">ε<sub>CB</sub></b> = −88.01 eV<br>
+        <b style="color:#f59e0b">ε<sub>CH</sub></b> = valor provisional editable<br>
+        <span style="font-size:.55rem;color:#94a3b8">Pendiente de calibración con superceldas AC/ZZ + H y SIESTA/GGA-PBE.</span><br><br>
+        <b style="color:#1e293b">Algoritmo Metrópolis</b><br>
+        P(aceitar) = min(1, e<sup>−ΔE/k<sub>B</sub>T</sup>)<br>
+        k<sub>B</sub> = 8.6173×10<sup>−5</sup> eV/K · d = 1.44 Å<br><br>
+        <b style="color:#1e293b">Intercambio:</b><br>
+        <span style="color:#2563eb">●</span> Poros (opc 1–14): vecinos directos<br>
+        <span style="color:#7c3aed">●</span> BNC (opc 20): 70% local + 30% global<br>
+        El intercambio global simula difusión de largo alcance entre eventos de observación (Martins &amp; Chacham 2010)<br><br>
+        <b style="color:#1e293b">Segregación BNC:</b><br>
+        |ε<sub>CC</sub>|+|ε<sub>NB</sub>| = 235.48 eV<br>
+        |ε<sub>CN</sub>|+|ε<sub>CB</sub>| = 235.03 eV<br>
+        ΔE<sub>mix</sub> = +0.45 eV → <span style="color:#16a34a">inmiscible ✓</span><br>
+        T<sub>crítica</sub> ≈ 5 222 K
+      </div>
+
+      <div class="sl">Referencia</div>
+      <div style="font-size:.58rem;color:#64748b;line-height:1.7;background:#fff;border:1.5px solid #e2e8f0;border-radius:8px;padding:8px 10px">
+        Mg. M.A. Obando, <i>Efeito da temperatura na estabilidade de nanoporos em estruturas 2D</i>, FIMAT-UFOP, 2019<br>
+        Orientador: Prof. R.J.C. Batista (UFOP)<br>
+        Dpto. de Física, Universidad del Cauca, Colombia<br><br>
+        Pham et al., <i>Nano Letters</i> 16, 7142 (2016) — HRTEM<br>
+        Mazzoni et al., <i>PRB</i> 73, 073108 (2006) — energías<br>
+        Martins &amp; Chacham, <i>ACS Nano</i> 5, 385 (2010) — BNC
+      </div>
+    </div>
+  </div><!-- .side -->
+</div><!-- .body -->
+</div><!-- .app -->
+
+<!-- ── MENÚ CONTEXTUAL DE ÁTOMO ───────────────────────────────────── -->
+<div id="atomMenu" style="display:none;position:fixed;z-index:8000;
+  background:#fff;border:2px solid #e2e8f0;border-radius:10px;
+  box-shadow:0 8px 32px #0002;padding:8px;min-width:160px">
+  <div id="atomMenuTitle" style="font-size:.62rem;font-weight:700;color:#475569;
+    padding:2px 6px 6px;border-bottom:1px solid #f1f5f9;margin-bottom:6px">
+    Átomo [?,?]
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:6px">
+    <button onclick="setAtomType(0)" style="font-family:inherit;font-size:.65rem;
+      font-weight:700;padding:6px;border-radius:6px;border:1.5px solid #e2e8f0;
+      background:#f1f5f9;color:#64748b;cursor:pointer">□ Vacancia</button>
+    <button onclick="setAtomType(1)" style="font-family:inherit;font-size:.65rem;
+      font-weight:700;padding:6px;border-radius:6px;border:1.5px solid #93c5fd;
+      background:#eff6ff;color:#1d4ed8;cursor:pointer">● N</button>
+    <button onclick="setAtomType(2)" style="font-family:inherit;font-size:.65rem;
+      font-weight:700;padding:6px;border-radius:6px;border:1.5px solid #86efac;
+      background:#f0fdf4;color:#15803d;cursor:pointer">● B</button>
+    <button onclick="setAtomType(3)" style="font-family:inherit;font-size:.65rem;
+      font-weight:700;padding:6px;border-radius:6px;border:1.5px solid #cbd5e1;
+      background:#f8fafc;color:#475569;cursor:pointer">● C</button>
+  </div>
+  <button onclick="hideAtomMenu()" style="font-family:inherit;font-size:.62rem;
+    font-weight:700;padding:5px;border-radius:6px;border:none;
+    background:#f1f5f9;color:#94a3b8;cursor:pointer;width:100%">Cancelar</button>
+</div>
+
+<!-- ── DIÁLOGO DE EXPORTACIÓN ─────────────────────────────────────── -->
+<div id="exportDlg" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.55);
+  z-index:9999;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:14px;padding:24px 28px;max-width:340px;width:90%;
+    box-shadow:0 20px 60px #0004;border:2px solid #e2e8f0">
+    <div id="dlgTitle" style="font-size:.95rem;font-weight:800;color:#1e293b;margin-bottom:6px">
+      ✓ Simulación completada
+    </div>
+    <div style="font-size:.65rem;color:#64748b;margin-bottom:16px;line-height:1.6" id="dlgSummary">
+      Resumen de resultados...
+    </div>
+    <div id="dlgQuestion" style="font-size:.72rem;font-weight:700;color:#475569;margin-bottom:10px">
+      ¿Exportar resultados?
+    </div>
+
+    <div class="export-group-label">Resumen visual</div>
+    <div style="display:flex;flex-direction:column;gap:7px">
+      <button id="dlgReportBtn" onclick="exportFullReport(this)"
+        data-orig="📋 Informe completo — resumen visual (PNG)"
+        style="font-family:inherit;font-size:.68rem;font-weight:800;padding:11px 12px;border-radius:8px;border:2px solid #7c3aed;background:#f5f3ff;color:#5b21b6;cursor:pointer;text-align:left;transition:.14s;width:100%"
+        onmouseover="this.style.background='#ede9fe'"
+        onmouseout="this.style.background='#f5f3ff'">
+        📋 Informe completo — resumen visual (PNG)
+      </button>
+      <button id="dlgInitBtn" onclick="exportInitialPNG();updateDlgBtn(this,'✓ Inicial exportada')"
+        data-orig="🖼 Imagen — configuración inicial"
+        style="font-family:inherit;font-size:.68rem;font-weight:700;padding:9px 12px;border-radius:8px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#1e293b;cursor:pointer;text-align:left;transition:.14s"
+        onmouseover="this.style.background='#eff6ff'"
+        onmouseout="this.style.background='#f8fafc'">
+        🖼 Imagen — configuración inicial
+      </button>
+      <button id="dlgFinalBtn" onclick="exportFinalPNG();updateDlgBtn(this,'✓ Final exportada')"
+        data-orig="🖼 Imagen — configuración final"
+        style="font-family:inherit;font-size:.68rem;font-weight:700;padding:9px 12px;border-radius:8px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#1e293b;cursor:pointer;text-align:left;transition:.14s"
+        onmouseover="this.style.background='#f0fdf4'"
+        onmouseout="this.style.background='#f8fafc'">
+        🖼 Imagen — configuración final
+      </button>
+      <button id="dlgChartsBtn" onclick="exportChartsPNG();updateDlgBtn(this,'✓ Gráficas exportadas')"
+        data-orig="📊 Gráficas — E, T, accept%, cNB"
+        style="font-family:inherit;font-size:.68rem;font-weight:700;padding:9px 12px;border-radius:8px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#1e293b;cursor:pointer;text-align:left;transition:.14s"
+        onmouseover="this.style.background='#faf5ff'"
+        onmouseout="this.style.background='#f8fafc'">
+        📊 Gráficas — E, T, accept%, cNB
+      </button>
+      <button id="dlgVideoBtn" onclick="exportLastRecordingFromDialog(this)"
+        data-orig="🎥 Video — transición + gráficas (última grabación)"
+        style="font-family:inherit;font-size:.68rem;font-weight:700;padding:9px 12px;border-radius:8px;border:1.5px solid #dc2626;background:#fef2f2;color:#b91c1c;cursor:pointer;text-align:left;transition:.14s"
+        onmouseover="this.style.background='#fee2e2'"
+        onmouseout="this.style.background='#fef2f2'">
+        🎥 Video — transición + gráficas (última grabación)
+      </button>
+    </div>
+
+    <div class="export-group-label">Datos y estructuras</div>
+    <div style="display:flex;flex-direction:column;gap:7px">
+      <button id="dlgCsvBtn" onclick="exportCSV();updateDlgBtn(this,'✓ CSV exportado')"
+        data-orig="📄 Datos CSV — serie temporal completa"
+        style="font-family:inherit;font-size:.68rem;font-weight:700;padding:9px 12px;border-radius:8px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#1e293b;cursor:pointer;text-align:left;transition:.14s"
+        onmouseover="this.style.background='#fefce8'"
+        onmouseout="this.style.background='#f8fafc'">
+        📄 Datos CSV — serie temporal completa
+      </button>
+      <button id="dlgPoscarBtn" onclick="exportPOSCAR();updateDlgBtn(this,'✓ POSCAR exportado')"
+        data-orig="📐 POSCAR — para VASP / VESTA / ASE / Q-ESPRESSO"
+        style="font-family:inherit;font-size:.68rem;font-weight:700;padding:9px 12px;border-radius:8px;border:1.5px solid #7c3aed;background:#f5f3ff;color:#5b21b6;cursor:pointer;text-align:left;transition:.14s"
+        onmouseover="this.style.background='#ede9fe'"
+        onmouseout="this.style.background='#f5f3ff'">
+        📐 POSCAR — para VASP / VESTA / ASE / Q-ESPRESSO
+      </button>
+      <button id="dlgXvBtn" onclick="exportXV();updateDlgBtn(this,'✓ XV exportado')"
+        data-orig="⚛ XV — estructura para SIESTA (DFT)"
+        style="font-family:inherit;font-size:.68rem;font-weight:700;padding:9px 12px;border-radius:8px;border:1.5px solid #0d9488;background:#f0fdfa;color:#0f766e;cursor:pointer;text-align:left;transition:.14s"
+        onmouseover="this.style.background='#ccfbf1'"
+        onmouseout="this.style.background='#f0fdfa'">
+        ⚛ XV — estructura para SIESTA (DFT)
+      </button>
+      <button id="dlgLammpsBtn" onclick="exportLAMMPSData();updateDlgBtn(this,'✓ LAMMPS exportado')"
+        data-orig="🧬 LAMMPS DATA — estructura para LAMMPS/OVITO"
+        style="font-family:inherit;font-size:.68rem;font-weight:700;padding:9px 12px;border-radius:8px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#1e293b;cursor:pointer;text-align:left;transition:.14s"
+        onmouseover="this.style.background='#fffbeb'"
+        onmouseout="this.style.background='#f8fafc'">
+        🧬 LAMMPS DATA — estructura para LAMMPS/OVITO
+      </button>
+    </div>
+
+    <div class="export-group-label">Paquete final</div>
+    <button id="dlgZipBtn" onclick="exportAllAsZip(this)"
+      data-orig="📦 Exportar TODO en ZIP (imagen + CSV + sesión + POSCAR + LAMMPS + video)"
+      style="font-family:inherit;font-size:.68rem;font-weight:700;padding:9px 12px;border-radius:8px;border:2px solid #2563eb;background:#eff6ff;color:#1d4ed8;cursor:pointer;text-align:left;transition:.14s;width:100%;margin-bottom:4px"
+      onmouseover="this.style.background='#dbeafe'"
+      onmouseout="this.style.background='#eff6ff'">
+      📦 Exportar TODO en ZIP (imagen + CSV + sesión + POSCAR + LAMMPS + video)
+    </button>
+    <button id="dlgCloseBtn" onclick="hideExportDialog()"
+      data-orig="Cerrar"
+      style="font-family:inherit;font-size:.68rem;font-weight:700;padding:9px;border-radius:8px;border:none;background:linear-gradient(135deg,#2563eb,#16a34a);color:#fff;cursor:pointer;width:100%;margin-top:14px">
+      Cerrar
+    </button>
+
+  </div>
+</div>
+
+
+
+<!-- ══ MODAL VISUALIZADOR 3D ══════════════════════════════════════════ -->
+<div id="modal3D" style="display:none;position:fixed;inset:0;z-index:9998;
+  background:rgba(0,0,0,0.5);flex-direction:column;align-items:center;
+  justify-content:center">
+
+  <!-- Barra superior -->
+  <div style="width:min(1080px,98vw);display:flex;align-items:center;
+    gap:6px;padding:7px 12px;background:#1e293b;border-radius:10px 10px 0 0;
+    border:1px solid #334155;flex-wrap:wrap">
+    <span style="font-size:.72rem;font-weight:800;color:#e2e8f0">🔮 Estructura 3D</span>
+    <div id="3dInfo" style="font-size:.56rem;color:#94a3b8;flex:1 1 100%;order:99;text-align:left;padding-top:2px"></div>
+    <!-- Vistas predefinidas -->
+    <div style="display:flex;gap:3px;flex-wrap:wrap">
+      <button onclick="set3DView('top')" title="Vista superior (planta)"
+        style="font-family:inherit;font-size:.56rem;padding:3px 7px;border-radius:4px;
+        border:1px solid #475569;background:#334155;color:#e2e8f0;cursor:pointer">⬜ Top</button>
+      <button onclick="set3DView('front')" title="Vista frontal"
+        style="font-family:inherit;font-size:.56rem;padding:3px 7px;border-radius:4px;
+        border:1px solid #475569;background:#334155;color:#e2e8f0;cursor:pointer">⬛ Front</button>
+      <button onclick="set3DView('side')" title="Vista lateral"
+        style="font-family:inherit;font-size:.56rem;padding:3px 7px;border-radius:4px;
+        border:1px solid #475569;background:#334155;color:#e2e8f0;cursor:pointer">◼ Side</button>
+      <button onclick="set3DView('iso')" title="Vista isométrica"
+        style="font-family:inherit;font-size:.56rem;padding:3px 7px;border-radius:4px;
+        border:1px solid #475569;background:#334155;color:#e2e8f0;cursor:pointer">◈ Iso</button>
+      <button onclick="set3DView('persp')" title="Vista perspectiva"
+        style="font-family:inherit;font-size:.56rem;padding:3px 7px;border-radius:4px;
+        border:1px solid #2563eb;background:#1d4ed8;color:#fff;cursor:pointer">◉ Persp</button>
+    </div>
+    <div style="width:1px;height:20px;background:#475569"></div>
+    <button onclick="reset3DCamera()" title="Resetear cámara"
+      style="font-family:inherit;font-size:.56rem;padding:3px 8px;border-radius:4px;
+      border:1px solid #475569;background:#334155;color:#e2e8f0;cursor:pointer">↺ Reset</button>
+    <button onclick="toggle3DStyle()" id="btn3Dstyle"
+      style="font-family:inherit;font-size:.56rem;padding:3px 8px;border-radius:4px;
+      border:1px solid #475569;background:#334155;color:#e2e8f0;cursor:pointer">⚪ Bolas+Palos</button>
+    <label style="display:flex;align-items:center;gap:4px;color:#cbd5e1;font-size:.55rem;background:#334155;border:1px solid #475569;border-radius:5px;padding:3px 6px">
+      átomos
+      <input id="i3DAtomScale" type="range" min="35" max="180" value="100" step="5"
+        oninput="update3DAtomScale(this.value)" style="width:68px">
+    </label>
+    <label style="display:flex;align-items:center;gap:4px;color:#cbd5e1;font-size:.55rem;background:#334155;border:1px solid #475569;border-radius:5px;padding:3px 6px">
+      poro
+      <select id="i3DPoreMode" onchange="update3DPoreVisual()"
+        style="width:auto;padding:2px 5px;font-size:.55rem;background:#0f172a;color:#e2e8f0;border:1px solid #475569;border-radius:4px">
+        <option value="auto">Auto</option>
+        <option value="triangle">Triángulo</option>
+        <option value="parallelogram">Paralelogramo</option>
+        <option value="hexagon">Hexágono</option>
+        <option value="irregular">Irregular</option>
+      </select>
+    </label>
+    <button onclick="close3D()"
+      style="font-family:inherit;font-size:.56rem;padding:3px 10px;border-radius:4px;
+      border:1px solid #ef4444;background:#7f1d1d;color:#fca5a5;cursor:pointer;font-weight:700">✕ Cerrar</button>
+  </div>
+
+  <!-- Canvas 3D — fondo blanco -->
+  <div id="cv3dWrap" style="position:relative;width:min(1080px,98vw);height:min(600px,72vh);
+    background:#ffffff;border-radius:0 0 10px 10px;border:1px solid #334155;border-top:none">
+    <canvas id="cv3d" style="width:100%;height:100%;display:block;cursor:grab;
+      border-radius:0 0 10px 10px"></canvas>
+
+    <!-- Leyenda átomos -->
+    <div style="position:absolute;top:10px;left:10px;background:rgba(255,255,255,0.9);
+      border-radius:7px;padding:7px 10px;font-size:.55rem;color:#1e293b;
+      display:flex;flex-direction:column;gap:4px;border:1px solid #e2e8f0;
+      box-shadow:0 2px 8px #0001">
+      <div style="font-weight:700;color:#64748b;font-size:.5rem;letter-spacing:.06em;margin-bottom:2px">ÁTOMOS</div>
+      <div style="display:flex;align-items:center;gap:5px">
+        <span style="width:11px;height:11px;border-radius:50%;background:#2563eb;display:inline-block;flex-shrink:0"></span>
+        <span>N — Nitrógeno</span></div>
+      <div style="display:flex;align-items:center;gap:5px">
+        <span style="width:11px;height:11px;border-radius:50%;background:#16a34a;display:inline-block;flex-shrink:0"></span>
+        <span>B — Boro</span></div>
+      <div style="display:flex;align-items:center;gap:5px">
+        <span style="width:11px;height:11px;border-radius:50%;background:#475569;display:inline-block;flex-shrink:0"></span>
+        <span>C — Carbono</span></div>
+      <div style="display:flex;align-items:center;gap:5px">
+        <span style="width:11px;height:11px;border-radius:50%;background:#f1f5f9;border:1px solid #cbd5e1;display:inline-block;flex-shrink:0"></span>
+        <span>H — Hidrógeno</span></div>
+    </div>
+
+    <!-- Instrucciones -->
+    <div style="position:absolute;bottom:10px;right:10px;background:rgba(255,255,255,0.85);
+      border-radius:6px;padding:5px 9px;font-size:.5rem;color:#64748b;
+      border:1px solid #e2e8f0">
+      🖱 Arrastrar: rotar &nbsp;·&nbsp; Rueda: zoom &nbsp;·&nbsp; Shift+drag: mover &nbsp;·&nbsp; slider: tamaño atómico
+    </div>
+  </div>
+</div>
+
+
+
+
+<script src="src/ui/i18n.js?v=15.0.1"></script>
+<script src="src/core/core.js?v=15.0.1"></script>
+<script src="src/ui/render.js?v=15.0.1"></script>
+<script src="src/io/export.js?v=15.0.1"></script>
+<script src="src/io/import.js?v=15.0.1"></script>
+<script src="src/geometry/structure_generator_bands.js?v=15.0.1"></script>
+<script src="src/simulation/batch.js?v=15.0.1"></script>
+<script src="src/research/research.js?v=15.0.1"></script>
+<script src="src/ui/controls.js?v=15.0.1"></script>
+<script src="src/view/viewer3d.js?v=15.0.1"></script>
+</body>
+</html>

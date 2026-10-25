@@ -1,17 +1,15 @@
-/* Configuración del sitio. Llena "firebase" con los datos de tu proyecto
-   (Consola de Firebase → Configuración del proyecto → Tus apps → Web). Ver README.md.
-   En localhost el sitio usa siempre los emuladores locales y no toca la base real. */
+/* Configuración de Pruebas Diagnósticas para PhysicsAILab */
 window.CONFIG = {
   marca: 'Pruebas Diagnósticas',
   autor: 'Mg. Manuel Alejandro Obando · Departamento de Física, Universidad del Cauca',
-  contacto: '',            // correo de ventas que aparece en la página principal, p. ej. 'pruebas@tudominio.com'
-  whatsapp: '',            // número con indicativo, p. ej. '573001234567' (opcional)
-  urlSitio: '',            // dirección pública del sitio, p. ej. 'https://pruebas-diagnosticas.web.app' (para los enlaces de los correos)
+  contacto: 'manuelobando@unicauca.edu.co',
+  whatsapp: '573137115473',
+  urlSitio: 'https://physicsailab.com/material/1_cursos/diagnosticas/dist/public',
   firebase: {
-    apiKey: '',
-    authDomain: '',
-    databaseURL: '',
-    projectId: '',
-    appId: ''
+    apiKey: 'AIzaSyD98yDnsc9WmkFCCT8y2rlR3_g0ceWNq4Q',
+    authDomain: 'squashpopayan-65e33.firebaseapp.com',
+    databaseURL: 'https://squashpopayan-65e33-default-rtdb.firebaseio.com',
+    projectId: 'squashpopayan-65e33',
+    appId: '1:549301287103:web:physicsailab'
   }
 };
