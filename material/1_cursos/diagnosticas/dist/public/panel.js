@@ -26,7 +26,7 @@
           arrancar();
           return;
         }
-        app.innerHTML = '<div class="card narrow stack"><h1>Sin permisos</h1><p>Esta cuenta no está registrada como docente administrador.</p><p class="small muted">UID: <span class="codigo">' + esc(u.uid) + '</span> — Puedes ingresar directamente con la clave maestra <b>OBANDO-ADMIN-2026</b>.</p></div>'; 
+        app.innerHTML = '<div class="card narrow stack"><h1>Sin permisos</h1><p>Esta cuenta no está registrada como docente administrador.</p><p class="small muted">UID: <span class="codigo">' + esc(u.uid) + '</span> — Si eres el docente administrador, ingresa con tus credenciales autorizadas.</p></div>'; 
         return; 
       }
       arrancar();
@@ -35,7 +35,7 @@
         arrancar();
         return;
       }
-      app.innerHTML = '<div class="notice bad">No se pudo verificar la cuenta: ' + esc(e.message) + '. Puedes ingresar con tu clave maestra OBANDO-ADMIN-2026.</div>'; 
+      app.innerHTML = '<div class="notice bad">No se pudo verificar la cuenta: ' + esc(e.message) + '</div>'; 
     });
   });
   $('#btn-salir').onclick = function () { CORE.auth.signOut(); };
@@ -44,7 +44,7 @@
     app.innerHTML = '<div class="card narrow stack" style="margin:30px auto"><h1>Ingreso del docente</h1>' +
       (hasAdminSession ? '<div style="background:rgba(99,102,241,0.12); border:1px solid #6366f1; border-radius:8px; padding:12px; margin-bottom:12px; text-align:center;"><p style="margin:0 0 8px; font-weight:700; color:#4338ca;">👑 Sesión Docente Activa en PhysicsAILab</p><button id="b-direct" class="primary" style="background:#6366f1; width:100%;">Ingresar Directamente al Panel</button></div>' : '') +
       '<div><label for="em">Correo o Usuario</label><input id="em" type="email" autocomplete="username" value="' + (hasAdminSession ? 'manuelobando@unicauca.edu.co' : '') + '"></div>' +
-      '<div><label for="pw">Contraseña (o Clave Maestra OBANDO-ADMIN-2026)</label><input id="pw" type="password" autocomplete="current-password"></div>' +
+      '<div><label for="pw">Contraseña</label><input id="pw" type="password" autocomplete="current-password"></div>' +
       '<div id="lerr" class="notice bad hidden"></div><button id="bl" class="primary">Ingresar</button>' +
       (CORE.local ? '<p class="small muted">Modo local: usa la cuenta creada por <code>npm run semilla</code>.</p>' : '') + '</div>';
 
@@ -71,7 +71,7 @@
       }
       CORE.auth.signInWithEmailAndPassword(em, pw).catch(function (e) {
         var l = $('#lerr'); 
-        l.textContent = 'Para ingresar puedes usar tu clave maestra docente OBANDO-ADMIN-2026. (' + (e.code || e.message) + ')'; 
+        l.textContent = 'Verifica tus credenciales e intenta de nuevo. (' + (e.code || e.message) + ')'; 
         l.classList.remove('hidden');
       });
     }

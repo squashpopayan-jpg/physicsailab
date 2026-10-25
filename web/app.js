@@ -3018,7 +3018,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     • <strong>Asignación:</strong> Asigne a cada grupo un número entre el 1 y el 24. Cada banco genera parámetros únicos de instrumentación, por lo que los resultados de alturas manométricas y coeficientes de descarga son específicos para cada grupo.
                 </p>
                 <p style="margin:0;">
-                    • <strong>Validación y Calificación:</strong> Dentro del laboratorio, en la pestaña <em>Guía → «Para el docente»</em>, puede ingresar la clave <code>OBANDO-ADMIN-2026</code> o <code>bernoulli-unicauca</code> para ver la tabla completa de referencia con los valores esperados de caudal, alturas, Reynolds y Cd para cada uno de los 24 bancos.
+                    • <strong>Validación y Calificación:</strong> Dentro del laboratorio, en la pestaña <em>Guía → «Para el docente»</em>, puede ingresar su clave docente para ver la tabla completa de referencia con los valores esperados de caudal, alturas, Reynolds y Cd para cada uno de los 24 bancos.
                 </p>
             </div>
         `;
