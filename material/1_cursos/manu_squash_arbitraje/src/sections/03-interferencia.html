@@ -1,0 +1,99 @@
+<section class="page-section" id="section-interferencia">
+  <div class="content-box">
+    <div class="card-header" style="margin-bottom: 20px;">
+      <div>
+        <div class="eyebrow">Árbol Lógico Oficial WSF · Reglas 8 y 9</div>
+        <h2>Asistente de Decisión de Interferencia Paso a Paso</h2>
+      </div>
+      <button class="btn-sim" id="btnResetTree">↺ Reiniciar Diagnóstico</button>
+    </div>
+
+    <div id="treeFlowContainer">
+      <!-- Paso 1 -->
+      <div class="tree-step" id="treeStep1Box">
+        <div class="tree-step-num">Paso 1 de 4 · Reglas 8.2 y 8.6.1</div>
+        <div class="tree-question">¿Ocurrió realmente interferencia física, visual o de swing y se pidió el Let a tiempo?</div>
+        <div class="tree-options">
+          <button class="tree-opt-btn" data-action="step1" data-val="yes">
+            <div class="tree-opt-title">Sí, hubo interferencia real y oportuna</div>
+            <div class="tree-opt-desc">El oponente estorbó el acceso, swing o visión, y el jugador detuvo el peloteo al instante sin continuar.</div>
+          </button>
+          <button class="tree-opt-btn" data-action="step1" data-val="no_interf">
+            <div class="tree-opt-title">No hubo interferencia real</div>
+            <div class="tree-opt-desc">El contacto fue insignificante o no impidió en lo absoluto la carrera ni la visión hacia la bola.</div>
+          </button>
+          <button class="tree-opt-btn" data-action="step1" data-val="late">
+            <div class="tree-opt-title">Apeló tarde (Aceptó la interferencia)</div>
+            <div class="tree-opt-desc">Siguió jugando la bola tras el contacto y solo pidió Let al ver que su tiro fue malo (Regla 8.6.2).</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Paso 2 -->
+      <div class="tree-step" id="treeStep2Box" style="display: none;">
+        <div class="tree-step-num">Paso 2 de 4 · Reglas 8.6.1 y 8.6.3</div>
+        <div class="tree-question">¿El apelante habría podido llegar a la bola y realizar un buen retorno (Good Return)?</div>
+        <div class="tree-options">
+          <button class="tree-opt-btn" data-action="step2" data-val="yes">
+            <div class="tree-opt-title">Sí, llegaba y podía retornar la bola</div>
+            <div class="tree-opt-desc">La bola estaba en juego y el jugador tenía velocidad, postura y tiempo suficiente para golpearla antes del 2.º bote.</div>
+          </button>
+          <button class="tree-opt-btn" data-action="step2" data-val="no">
+            <div class="tree-opt-title">No llegaba a la bola (Inalcanzable)</div>
+            <div class="tree-opt-desc">La bola moría en el nick, estaba demasiado lejos o el jugador estaba a contrapié sin posibilidad de llegar.</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Paso 3 -->
+      <div class="tree-step" id="treeStep3Box" style="display: none;">
+        <div class="tree-step-num">Paso 3 de 4 · Regla 8.6.4</div>
+        <div class="tree-question">¿El apelante desvió su trayectoria para crear el contacto (Created Interference)?</div>
+        <div class="tree-options">
+          <button class="tree-opt-btn" data-action="step3" data-val="clean">
+            <div class="tree-opt-title">No, tomó la línea directa natural</div>
+            <div class="tree-opt-desc">El jugador se dirigió estrictamente por el camino más corto hacia la bola sin buscar al rival.</div>
+          </button>
+          <button class="tree-opt-btn" data-action="step3" data-val="created">
+            <div class="tree-opt-title">Sí, creó o exageró el contacto</div>
+            <div class="tree-opt-desc">Teniendo pasillo libre hacia la bola, alteró su carrera para colisionar con el rival y pedir falta.</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Paso 4: Zonas -->
+      <div class="tree-step" id="treeStep4Box" style="display: none;">
+        <div class="tree-step-num">Paso 4 de 4 · Clasificación de la Interferencia</div>
+        <div class="tree-question">¿En qué aspecto del juego ocurrió la interferencia directa?</div>
+        <div class="tree-options" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+          <button class="tree-opt-btn" data-action="zone" data-val="access">
+            <div class="tree-opt-title">A. Acceso a la Bola</div>
+            <div class="tree-opt-desc">Carrera hacia la bola o despeje en la T (Regla 8.6).</div>
+          </button>
+          <button class="tree-opt-btn" data-action="zone" data-val="swing">
+            <div class="tree-opt-title">B. Swing de Raqueta</div>
+            <div class="tree-opt-desc">Backswing o terminación en radio de 1.12 m (Regla 8.9).</div>
+          </button>
+          <button class="tree-opt-btn" data-action="zone" data-val="cone">
+            <div class="tree-opt-title">C. Cono Pared Frontal</div>
+            <div class="tree-opt-desc">Rival interpuesto entre bola y frontón (Regla 8.11).</div>
+          </button>
+          <button class="tree-opt-btn" data-action="zone" data-val="turning">
+            <div class="tree-opt-title">D. Giro (Turning)</div>
+            <div class="tree-opt-desc">Bola pasó alrededor del cuerpo en fondo (Regla 8.13).</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Sub-Opciones Dinámicas de la Zona -->
+      <div class="tree-step" id="treeSubZoneBox" style="display: none;">
+        <div class="tree-step-num">Evaluación de Criterios Específicos</div>
+        <div class="tree-question" id="subZoneTitle">Detalle de la zona</div>
+        <div class="tree-options" id="subZoneOptions"></div>
+      </div>
+
+      <!-- Resultado Final -->
+      <div id="treeResultBox" style="display: none; margin-top: 14px;"></div>
+    </div>
+  </div>
+</section>

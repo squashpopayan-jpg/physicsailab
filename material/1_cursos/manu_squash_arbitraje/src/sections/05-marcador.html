@@ -1,0 +1,142 @@
+<section class="page-section" id="section-marcador">
+  <div class="content-box">
+    <div class="card-header" style="margin-bottom: 20px;">
+      <div>
+        <div class="eyebrow">Mesa de Oficiales · World Squash Federation</div>
+        <h2>Planilla y Marcador Oficial WSF PAR-11</h2>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button class="btn-sim" id="btnUndoScore">↶ Deshacer Punto</button>
+        <button class="btn-sim" id="btnNewGame">Nuevo Game</button>
+        <button class="btn-sim" id="btnResetScore" style="color: var(--bad);">Reiniciar Partido</button>
+      </div>
+    </div>
+
+    <!-- Ajustes de Nombres de Jugadores -->
+    <div class="card" style="margin-bottom: 16px; padding: 14px 20px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+        <div>
+          <label style="font-size: .78rem; font-weight: 700; text-transform: uppercase; color: var(--p-a); display: block; margin-bottom: 4px;">
+            Jugador A (Azul):
+          </label>
+          <input type="text" id="inpPlayerA" class="cam-select" value="Jugador A" style="width: 100%;">
+        </div>
+        <div>
+          <label style="font-size: .78rem; font-weight: 700; text-transform: uppercase; color: var(--p-b); display: block; margin-bottom: 4px;">
+            Jugador B (Rojo):
+          </label>
+          <input type="text" id="inpPlayerB" class="cam-select" value="Jugador B" style="width: 100%;">
+        </div>
+      </div>
+    </div>
+
+    <div class="sb-container">
+      <!-- Columna Principal: Marcador Táctil y Llamado Oficial -->
+      <div class="sb-pcard">
+        <!-- Tarjetas de Jugadores con Marcador Gigante -->
+        <div class="sb-players">
+          <div class="sb-player-box player-a server" id="sbPlayerBox1">
+            <span class="sb-serve-badge" id="sbServeBadge1">SAQUE</span>
+            <div class="sb-pname" style="color: var(--p-a);">JUGADOR A</div>
+            <div class="sb-score-huge num" id="sbPtsA">0</div>
+            <div class="sb-games-count" id="sbGamesA">Juegos: 0</div>
+            <button class="btn-point" id="btnPointA" style="width: 100%; margin-top: 12px;">+1 Punto A</button>
+          </div>
+
+          <div class="sb-player-box player-b" id="sbPlayerBox2">
+            <span class="sb-serve-badge" id="sbServeBadge2" style="display: none;">SAQUE</span>
+            <div class="sb-pname" style="color: var(--p-b);">JUGADOR B</div>
+            <div class="sb-score-huge num" id="sbPtsB">0</div>
+            <div class="sb-games-count" id="sbGamesB">Juegos: 0</div>
+            <button class="btn-point" id="btnPointB" style="width: 100%; margin-top: 12px; background: var(--p-b);">+1 Punto B</button>
+          </div>
+        </div>
+
+        <!-- Control de Saque y Cuadro (L/R) -->
+        <div style="background: var(--surface-2); padding: 12px; border-radius: var(--r-sm); border: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+          <button class="btn-sim" id="btnToggleServer">Alternar Servidor ⇄</button>
+          <div class="box-selector" style="margin-top: 0;">
+            <span style="font-size: .85rem; font-weight: 700; margin-right: 4px; display: flex; align-items: center;">Caja de Saque:</span>
+            <button class="box-btn" data-box="L">L (Izquierda)</button>
+            <button class="box-btn active" data-box="R">R (Derecha)</button>
+          </div>
+        </div>
+
+        <!-- 4. Cuadro de Llamado Oficial del Marcador (WSF Appendix 1) -->
+        <div class="sb-official-call-box">
+          <div class="sb-official-call-title">ANUNCIO OFICIAL DEL MARCADOR (ORDEN REGLAMENTARIO WSF):</div>
+          <div class="sb-official-call-text" id="sbCallDisplay">Love all, Play</div>
+        </div>
+
+        <!-- Botones de Incidencias Arbitrales Rápidas -->
+        <div>
+          <div style="font-family: var(--f-display); font-size: .92rem; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; color: var(--ink-2);">
+            Resoluciones e Incidencias del Árbitro:
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px;">
+            <button class="btn-sim" id="btnCallStrokeA" style="color: var(--p-a); font-weight: 700;">Stroke a A</button>
+            <button class="btn-sim" id="btnCallStrokeB" style="color: var(--p-b); font-weight: 700;">Stroke a B</button>
+            <button class="btn-sim" id="btnCallYesLet">Yes Let</button>
+            <button class="btn-sim" id="btnCallFootFault" style="color: var(--bad);">Foot Fault</button>
+            <button class="btn-sim" id="btnCallDown" style="color: var(--bad);">Down</button>
+            <button class="btn-sim" id="btnCallOut" style="color: var(--bad);">Out</button>
+            <button class="btn-sim" id="btnCallNotUp" style="color: var(--bad);">Not Up</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Columna Secundaria: Cronómetros y Planilla -->
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <!-- Cronómetros Oficiales -->
+        <div class="timer-grid">
+          <!-- Calentamiento 4:00 -->
+          <div class="timer-card">
+            <div class="eyebrow" style="justify-content: center;">Calentamiento (WSF R.4)</div>
+            <div class="timer-digits" id="warmupDigits">4:00</div>
+            <div id="warmupAlert" style="display: none; font-size: .82rem; font-weight: 700; color: var(--bad); margin-bottom: 6px;"></div>
+            <div class="timer-btn-row">
+              <button class="timer-btn" id="btnStartWarmup">▶ Iniciar</button>
+              <button class="timer-btn" id="btnPauseWarmup">⏸ Pausa</button>
+              <button class="timer-btn" id="btnResetWarmup">↺ 4:00</button>
+            </div>
+          </div>
+
+          <!-- Intervalo entre Games 90s -->
+          <div class="timer-card">
+            <div class="eyebrow" style="justify-content: center;">Descanso (WSF R.7)</div>
+            <div class="timer-digits" id="intervalDigits">90s</div>
+            <div id="intervalAlert" style="display: none; font-size: .82rem; font-weight: 700; color: var(--warn); margin-bottom: 6px;"></div>
+            <div class="timer-btn-row">
+              <button class="timer-btn" id="btnStartInterval">▶ Iniciar</button>
+              <button class="timer-btn" id="btnPauseInterval">⏸ Pausa</button>
+              <button class="timer-btn" id="btnResetInterval">↺ 90s</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Planilla de Historial del Partido -->
+        <div class="card" style="padding: 16px; flex: 1;">
+          <div class="card-header" style="margin-bottom: 10px;">
+            <div class="card-title" style="font-size: 1.05rem;">Planilla Cronológica (Score-sheet)</div>
+            <span style="font-size: .8rem; color: var(--ink-3);">Últimos 10 puntos</span>
+          </div>
+          <div style="overflow-x: auto;">
+            <table class="scoresheet-table">
+              <thead>
+                <tr>
+                  <th>Hora</th>
+                  <th>Ganador</th>
+                  <th>Tanteador</th>
+                  <th>Incidencia</th>
+                </tr>
+              </thead>
+              <tbody id="sbHistoryTableBody">
+                <!-- Filas dinámicas -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

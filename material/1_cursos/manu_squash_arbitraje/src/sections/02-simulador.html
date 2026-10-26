@@ -1,0 +1,163 @@
+<section class="page-section" id="section-simulador">
+  <div class="content-box">
+    <div class="card-header" style="margin-bottom: 16px;">
+      <div>
+        <div class="eyebrow">Simulador de Jugadas e Interferencias WSF</div>
+        <h2>Catálogo de 18 Situaciones en Cancha 3D y Planta</h2>
+      </div>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <span style="font-size: .85rem; font-weight: 600; color: var(--ink-2);">Cámara 3D:</span>
+        <select class="cam-select" id="camPresetSelect">
+          <option value="arbitro" selected>Silla Árbitro (WSF Regla 3)</option>
+          <option value="tv">Transmisión TV</option>
+          <option value="lateral">Lateral</option>
+          <option value="aerea">Aérea (Planta 3D)</option>
+          <option value="frontal">Frontal</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="grid-cases">
+      <!-- Columna Izquierda: Lista de Casos y Filtros -->
+      <div>
+        <div class="card" style="margin-bottom: 14px; padding: 14px;">
+          <label style="font-size: .8rem; font-weight: 700; text-transform: uppercase; color: var(--ink-2); display: block; margin-bottom: 6px;">
+            Filtrar por Categoría:
+          </label>
+          <select class="cam-select" id="simCategoryFilter" style="width: 100%;">
+            <option value="all">Todas las 18 situaciones</option>
+            <option value="Acceso a la bola">Acceso a la bola</option>
+            <option value="Swing de raqueta">Swing de raqueta</option>
+            <option value="Pared frontal">Pared frontal</option>
+            <option value="Giro (Turning)">Giro (Turning)</option>
+            <option value="2.º Intento (8.12)">2.º Intento</option>
+            <option value="Pelota golpea rival">Pelota golpea rival</option>
+            <option value="Saque y Líneas">Saque y Líneas</option>
+            <option value="Objeto Caído (13)">Objeto Caído</option>
+          </select>
+        </div>
+
+        <div class="case-list" id="simCaseList">
+          <!-- Renderizado dinámico desde 62-sim.js -->
+        </div>
+      </div>
+
+      <!-- Columna Derecha: Canchas, Apelación y Dock de Decisión -->
+      <div>
+        <!-- Ficha Técnica del Caso Seleccionado -->
+        <div class="card" style="margin-bottom: 14px; padding: 14px 18px; border-left: 4px solid var(--brand);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <span class="eyebrow" id="simCaseCat">Acceso a la bola</span>
+            <span class="mono" style="font-size: .85rem; color: var(--ink-3);">Congelación: <b id="simCaseFreeze" style="color: var(--bad);">2.4s</b></span>
+          </div>
+          <h3 id="simCaseTitle" style="color: var(--ink); margin-bottom: 6px;">Cargando caso...</h3>
+          <p id="simCaseDesc" style="font-size: .92rem; color: var(--ink-2); line-height: 1.45;"></p>
+        </div>
+
+        <!-- Canchas Divididas: 3D Perspectiva y Planta 2D -->
+        <div class="canvases-split">
+          <div class="canvas-wrapper">
+            <div class="canvas-header">
+              <span class="canvas-badge">VISTA 3D PERSPECTIVA</span>
+            </div>
+            <canvas id="canvas3D" class="court-canvas"></canvas>
+          </div>
+          <div class="canvas-wrapper">
+            <div class="canvas-header">
+              <span class="canvas-badge">PLANTA 2D REGLAMENTARIA</span>
+            </div>
+            <canvas id="canvasTop" class="court-canvas"></canvas>
+          </div>
+        </div>
+
+        <!-- Barra de Controles de Reproducción -->
+        <div class="sim-controls">
+          <div class="sim-btn-group">
+            <button class="btn-sim primary" id="btnSimPlay">⏸ Pausa</button>
+            <button class="btn-sim" id="btnSimReplay">↺ Reiniciar Jugada</button>
+            <button class="btn-sim" id="btnNextCase">Siguiente Caso ❯</button>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: .85rem; color: var(--ink-2); font-weight: 600;">Tiempo:</span>
+            <span class="mono num" id="simTimeDisplay" style="font-size: 1.1rem; font-weight: 700; color: var(--brand);">0.00s</span>
+          </div>
+        </div>
+
+        <!-- 1. Appeal Banner (Pulsante en tFreeze) -->
+        <div class="appeal-banner" id="appealBanner" style="display: none;">
+          <div class="appeal-title">
+            <span>🚨 ¡LET, PLEASE! — JUEGO DETENIDO</span>
+          </div>
+          <span class="appeal-badge">APELACIÓN EN VIVO</span>
+        </div>
+
+        <!-- 2. Decision Dock (Botones No Let, Yes Let, Stroke) -->
+        <div class="decision-dock">
+          <div class="decision-dock-title">
+            DICTAMEN DEL ÁRBITRO DE SILLA: ¿CUÁL ES TU VEREDICTO OFICIAL?
+          </div>
+          <div class="decision-btns">
+            <button class="btn-decision btn-no-let" data-decision="NO LET">
+              <div>NO LET</div>
+              <span>Sin interferencia / Inalcanzable</span>
+            </button>
+            <button class="btn-decision btn-yes-let" data-decision="YES LET">
+              <div>YES LET</div>
+              <span>Interferencia con esfuerzo / Peloteo nulo</span>
+            </button>
+            <button class="btn-decision btn-stroke" data-decision="STROKE">
+              <div>STROKE</div>
+              <span>Obstrucción / Punto para el jugador</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 3. Verdict Panel (Desglose de los 4 pilares) -->
+        <div class="verdict-panel" id="verdictPanel">
+          <div class="verdict-header">
+            <div>
+              <div class="eyebrow" style="margin-bottom: 2px;">Resolución Oficial WSF</div>
+              <div class="verdict-call" id="verdictCall">DECISIÓN</div>
+            </div>
+            <span class="mono" id="verdictRule" style="font-size: .95rem; font-weight: 700; background: var(--surface-2); padding: 4px 10px; border-radius: 4px; border: 1px solid var(--line);">
+              Regla
+            </span>
+          </div>
+
+          <p id="verdictExp" style="font-size: .95rem; color: var(--ink-2); margin-bottom: 16px; line-height: 1.5;"></p>
+
+          <div style="font-family: var(--f-display); font-size: 1rem; font-weight: 700; text-transform: uppercase; margin-bottom: 10px; color: var(--ink);">
+            Evaluación Técnica de los 4 Pilares Reglamentarios:
+          </div>
+
+          <div class="verdict-pillars">
+            <div class="pillar-card">
+              <div class="pillar-num">Pilar 1 · Regla 8.2 / 8.6.1</div>
+              <div class="pillar-title">Interferencia Real y Oportuna</div>
+              <div class="pillar-desc" id="pilarInterf">-</div>
+            </div>
+
+            <div class="pillar-card">
+              <div class="pillar-num">Pilar 2 · Regla 8.6.1 / 8.6.3</div>
+              <div class="pillar-title">Capacidad de Buen Retorno</div>
+              <div class="pillar-desc" id="pilarRetorno">-</div>
+            </div>
+
+            <div class="pillar-card">
+              <div class="pillar-num">Pilar 3 · Regla 8.6.4</div>
+              <div class="pillar-title">Contacto no Creado</div>
+              <div class="pillar-desc" id="pilarCreado">-</div>
+            </div>
+
+            <div class="pillar-card">
+              <div class="pillar-num">Pilar 4 · Reglas 8.6.5, 8.9, 8.11</div>
+              <div class="pillar-title">Esfuerzo de Despeje / Impedimento</div>
+              <div class="pillar-desc" id="pilarDespeje">-</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>

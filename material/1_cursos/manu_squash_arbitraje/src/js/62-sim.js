@@ -1,0 +1,277 @@
+/* Controlador del Simulador 3D / 2D de Arbitraje y Sistema de Veredicto Interactivo */
+MS.Sim = (function () {
+  const { U, C, Ball, Player, RenderTop, RenderTV, Cases } = MS;
+
+  let currentCase = Cases[0];
+  let curTime = 0;
+  let isPlaying = false;
+  let hasAppealed = false;
+  let userChoice = null;
+  let animId = null;
+  let lastTimestamp = 0;
+  let camPreset = 'arbitro';
+
+  function init() {
+    renderCaseList();
+    loadCase(Cases[0].id);
+    bindControls();
+    resizeCanvases();
+    window.addEventListener('resize', resizeCanvases);
+  }
+
+  function resizeCanvases() {
+    const cTop = U.$('#canvasTop');
+    const c3D = U.$('#canvas3D');
+    if (cTop) {
+      cTop.width = cTop.parentElement.clientWidth;
+      cTop.height = 420;
+    }
+    if (c3D) {
+      c3D.width = c3D.parentElement.clientWidth;
+      c3D.height = 420;
+    }
+    draw();
+  }
+
+  function renderCaseList(filterCat = 'all') {
+    const listEl = U.$('#simCaseList');
+    if (!listEl) return;
+
+    listEl.innerHTML = '';
+    const filtered = filterCat === 'all'
+      ? Cases
+      : Cases.filter((c) => c.cat === filterCat);
+
+    filtered.forEach((c) => {
+      const card = document.createElement('div');
+      card.className = `case-card ${c.id === currentCase.id ? 'active' : ''}`;
+      card.dataset.id = c.id;
+      card.innerHTML = `
+        <div class="case-card-header">
+          <span class="case-num">CASO #${c.num}</span>
+          <span class="case-cat">${c.cat}</span>
+        </div>
+        <div class="case-title">${c.titulo}</div>
+      `;
+      card.addEventListener('click', () => {
+        loadCase(c.id);
+      });
+      listEl.appendChild(card);
+    });
+  }
+
+  function loadCase(id) {
+    const found = Cases.find((c) => c.id === id);
+    if (!found) return;
+
+    currentCase = found;
+    curTime = 0;
+    isPlaying = true;
+    hasAppealed = false;
+    userChoice = null;
+
+    // Actualizar UI
+    U.$$('.case-card').forEach((el) => {
+      el.classList.toggle('active', el.dataset.id === id);
+    });
+
+    const infoTitle = U.$('#simCaseTitle');
+    const infoDesc = U.$('#simCaseDesc');
+    const infoCat = U.$('#simCaseCat');
+    const infoFreeze = U.$('#simCaseFreeze');
+
+    if (infoTitle) infoTitle.textContent = `#${currentCase.num} ${currentCase.titulo}`;
+    if (infoDesc) infoDesc.textContent = currentCase.desc;
+    if (infoCat) infoCat.textContent = currentCase.cat;
+    if (infoFreeze) infoFreeze.textContent = `${currentCase.tFreeze.toFixed(1)}s`;
+
+    // Ocultar banner de apelación y veredicto
+    const banner = U.$('#appealBanner');
+    if (banner) banner.style.display = 'none';
+
+    const vPanel = U.$('#verdictPanel');
+    if (vPanel) vPanel.classList.remove('show');
+
+    // Resetear botones de decisión
+    U.$$('.btn-decision').forEach((btn) => btn.classList.remove('selected'));
+
+    const btnPlay = U.$('#btnSimPlay');
+    if (btnPlay) btnPlay.textContent = '⏸ Pausa';
+
+    startLoop();
+  }
+
+  function startLoop() {
+    if (animId) cancelAnimationFrame(animId);
+    lastTimestamp = performance.now();
+    animId = requestAnimationFrame(loop);
+  }
+
+  function loop(now) {
+    const dt = Math.min(0.06, (now - lastTimestamp) / 1000);
+    lastTimestamp = now;
+
+    if (isPlaying) {
+      curTime += dt;
+
+      // Comprobar congelación tFreeze
+      if (curTime >= currentCase.tFreeze && !hasAppealed) {
+        curTime = currentCase.tFreeze;
+        isPlaying = false;
+        hasAppealed = true;
+        triggerAppeal();
+      }
+
+      // Tiempo límite del caso
+      const maxT = currentCase.ball[currentCase.ball.length - 1].t;
+      if (curTime > maxT) {
+        curTime = maxT;
+        isPlaying = false;
+      }
+    }
+
+    draw();
+
+    const timeBar = U.$('#simTimeDisplay');
+    if (timeBar) timeBar.textContent = `${curTime.toFixed(2)}s`;
+
+    const btnPlay = U.$('#btnSimPlay');
+    if (btnPlay && !isPlaying) btnPlay.textContent = '▶ Reproducir';
+
+    animId = requestAnimationFrame(loop);
+  }
+
+  function triggerAppeal() {
+    U.whistle();
+    const banner = U.$('#appealBanner');
+    if (banner) {
+      banner.style.display = 'flex';
+      banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }
+
+  function draw() {
+    const cTop = U.$('#canvasTop');
+    const c3D = U.$('#canvas3D');
+
+    const ball = Ball.interpolateTrajectory(currentCase.ball, curTime);
+    const pA = Player.interpolateState(currentCase.pA, curTime);
+    const pB = Player.interpolateState(currentCase.pB, curTime);
+
+    const state = {
+      ball,
+      pA,
+      pB,
+      activePlayer: currentCase.striker,
+      appeal: hasAppealed
+    };
+
+    if (cTop) RenderTop.render(cTop, state);
+    if (c3D) RenderTV.render(c3D, state, camPreset);
+  }
+
+  function makeDecision(choice) {
+    userChoice = choice;
+    U.$$('.btn-decision').forEach((btn) => {
+      btn.classList.toggle('selected', btn.dataset.decision === choice);
+    });
+
+    const isCorrect = choice === currentCase.decision;
+    if (isCorrect) {
+      U.beep(880, 0.15, 'sine');
+      setTimeout(() => U.beep(1100, 0.25, 'sine'), 120);
+    } else {
+      U.beep(330, 0.35, 'sawtooth');
+    }
+
+    showVerdict(isCorrect);
+  }
+
+  function showVerdict(isCorrect) {
+    const vPanel = U.$('#verdictPanel');
+    if (!vPanel) return;
+
+    const callEl = U.$('#verdictCall');
+    const ruleEl = U.$('#verdictRule');
+    const expEl = U.$('#verdictExp');
+    const pInterf = U.$('#pilarInterf');
+    const pRetorno = U.$('#pilarRetorno');
+    const pCreado = U.$('#pilarCreado');
+    const pDespeje = U.$('#pilarDespeje');
+
+    if (callEl) {
+      callEl.textContent = `${isCorrect ? '✅ ¡DECISIÓN CORRECTA!' : '❌ DECISIÓN INCORRECTA'} — ${currentCase.decision}`;
+      callEl.style.color = isCorrect ? 'var(--ok)' : 'var(--bad)';
+    }
+    if (ruleEl) ruleEl.textContent = currentCase.regla;
+    if (expEl) expEl.textContent = currentCase.explicacion;
+
+    if (pInterf) pInterf.textContent = currentCase.pilares.interf;
+    if (pRetorno) pRetorno.textContent = currentCase.pilares.retorno;
+    if (pCreado) pCreado.textContent = currentCase.pilares.creado;
+    if (pDespeje) pDespeje.textContent = currentCase.pilares.despeje;
+
+    vPanel.classList.add('show');
+    vPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function bindControls() {
+    const btnPlay = U.$('#btnSimPlay');
+    if (btnPlay) {
+      btnPlay.addEventListener('click', () => {
+        isPlaying = !isPlaying;
+        btnPlay.textContent = isPlaying ? '⏸ Pausa' : '▶ Reproducir';
+      });
+    }
+
+    const btnReplay = U.$('#btnSimReplay');
+    if (btnReplay) {
+      btnReplay.addEventListener('click', () => {
+        curTime = 0;
+        isPlaying = true;
+        hasAppealed = false;
+        userChoice = null;
+        const banner = U.$('#appealBanner');
+        if (banner) banner.style.display = 'none';
+        const vPanel = U.$('#verdictPanel');
+        if (vPanel) vPanel.classList.remove('show');
+        U.$$('.btn-decision').forEach((btn) => btn.classList.remove('selected'));
+        if (btnPlay) btnPlay.textContent = '⏸ Pausa';
+      });
+    }
+
+    const camSelect = U.$('#camPresetSelect');
+    if (camSelect) {
+      camSelect.addEventListener('change', (e) => {
+        camPreset = e.target.value;
+        draw();
+      });
+    }
+
+    const catSelect = U.$('#simCategoryFilter');
+    if (catSelect) {
+      catSelect.addEventListener('change', (e) => {
+        renderCaseList(e.target.value);
+      });
+    }
+
+    U.$$('.btn-decision').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        makeDecision(btn.dataset.decision);
+      });
+    });
+
+    const btnNextCase = U.$('#btnNextCase');
+    if (btnNextCase) {
+      btnNextCase.addEventListener('click', () => {
+        const nextIdx = (currentCase.num % Cases.length);
+        loadCase(Cases[nextIdx].id);
+      });
+    }
+  }
+
+  return {
+    init,
+    loadCase
+  };
+})();
