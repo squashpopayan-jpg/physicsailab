@@ -10,6 +10,7 @@ MS.Sim = (function () {
   let animId = null;
   let lastTimestamp = 0;
   let camPreset = 'arbitro';
+  let camObj = Object.assign({}, C.PRESETS.arbitro);
 
   function init() {
     renderCaseList();
@@ -40,7 +41,9 @@ MS.Sim = (function () {
 
     const wTop = clientWTop > 40 ? clientWTop : (cTop.width > 40 ? cTop.width : 420);
     const w3D = clientW3D > 40 ? clientW3D : (c3D.width > 40 ? c3D.width : 560);
-    const h = 440;
+    const h = (cTop.clientHeight && cTop.clientHeight > 100)
+      ? cTop.clientHeight
+      : (window.innerWidth <= 600 ? 360 : 440);
 
     if (cTop.width !== wTop || cTop.height !== h) {
       cTop.width = wTop;
@@ -199,7 +202,7 @@ MS.Sim = (function () {
     };
 
     if (cTop) RenderTop.render(cTop, state);
-    if (c3D) RenderTV.render(c3D, state, camPreset);
+    if (c3D) RenderTV.render(c3D, state, camObj);
   }
 
   function makeDecision(choice) {
@@ -281,8 +284,35 @@ MS.Sim = (function () {
     if (camSelect) {
       camSelect.addEventListener('change', (e) => {
         camPreset = e.target.value;
+        camObj = Object.assign({}, C.PRESETS[camPreset] || C.PRESETS.arbitro);
         draw();
       });
+    }
+
+    // Rotación orbital interactiva de la cámara 3D con arrastre (pointer drag tipo squash_sim)
+    const c3D = U.$('#canvas3D');
+    if (c3D) {
+      let drag = null;
+      c3D.style.cursor = 'grab';
+      c3D.addEventListener('pointerdown', (e) => {
+        drag = { x: e.clientX, y: e.clientY, az: camObj.az, el: camObj.el };
+        c3D.setPointerCapture(e.pointerId);
+        c3D.style.cursor = 'grabbing';
+      });
+      c3D.addEventListener('pointermove', (e) => {
+        if (!drag) return;
+        camObj.az = drag.az - (e.clientX - drag.x) * 0.008;
+        camObj.el = U.clamp(drag.el + (e.clientY - drag.y) * 0.006, 0.04, 1.42);
+        if (!isPlaying) draw();
+      });
+      const endDrag = (e) => {
+        if (drag) {
+          drag = null;
+          c3D.style.cursor = 'grab';
+        }
+      };
+      c3D.addEventListener('pointerup', endDrag);
+      c3D.addEventListener('pointercancel', endDrag);
     }
 
     const catSelect = U.$('#simCategoryFilter');

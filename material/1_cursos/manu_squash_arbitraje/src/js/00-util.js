@@ -8,6 +8,7 @@ MS.U = (function () {
   U.$$ = (s, root = document) => Array.from(root.querySelectorAll(s));
 
   U.clamp = (v, min, max) => Math.min(max, Math.max(min, v));
+  U.lerp = (a, b, t) => a + (b - a) * t;
   U.rad = (deg) => (deg * Math.PI) / 180;
   U.deg = (rad) => (rad * 180) / Math.PI;
 
@@ -37,6 +38,11 @@ MS.U = (function () {
     x: a.y * b.z - a.z * b.y,
     y: a.z * b.x - a.x * b.z,
     z: a.x * b.y - a.y * b.x
+  });
+  U.lerp3 = (a, b, t) => ({
+    x: a.x + (b.x - a.x) * t,
+    y: a.y + (b.y - a.y) * t,
+    z: a.z + (b.z - a.z) * t
   });
 
   /* Sintetizador de audio para árbitro (sin archivos externos) */
