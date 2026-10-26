@@ -9,6 +9,28 @@
     'use strict';
 
     // Estado global de la trivia
+    
+    const FAKE_TRIVIA_BENCHMARKS = [
+        'laura camila mosquera', 'juan david benavides', 'mateo alejandro gómez', 'mateo alejandro gomez',
+        'daniela sofía prado', 'daniela sofia prado', 'andrés felipe muñoz', 'andres felipe muñoz',
+        'santiago rengifo', 'valentina ordóñez', 'valentina ordoñez', 'carlos mario vidal',
+        'gabriela paz enríquez', 'gabriela paz enriquez', 'felipe santacruz',
+        'marie curie', 'albert einstein', 'isaac newton', 'richard feynman', 'niels bohr',
+        'werner heisenberg', 'galileo galilei', 'max planck', 'michael faraday', 'james clerk maxwell',
+        'ali farag', 'paul coll', 'mostafa asal', 'diego elías', 'diego elias', 'mohamed elshorbagy',
+        'karim abdel gawad', 'mazen hesham', 'tarek momen', 'victor crouin', 'miguel ángel rodríguez', 'miguel angel rodriguez'
+    ];
+
+    function isTriviaBenchmarkFake(r) {
+        if (!r) return true;
+        const id = String(r.id || '').toLowerCase();
+        const name = String(r.name || '').toLowerCase().trim();
+        if (id.startsWith('ref-') || id.startsWith('hist-') || id.startsWith('sq-')) return true;
+        if (FAKE_TRIVIA_BENCHMARKS.includes(name)) return true;
+        if (r.score >= 12000 && !r.realPlayer && (name.includes('laura') || name.includes('marie') || name.includes('einstein') || name.includes('farag') || name.includes('curie'))) return true;
+        return false;
+    }
+
     window.TRIVIA_ENGINE = {
         state: {
             user: null, // { name: '', institution: '' }
@@ -534,18 +556,15 @@
         
         fetchRankingFromCloud: function() {
             try {
-                const FIREBASE_BASE = 'https://squashpopayan-65e33-default-rtdb.firebaseio.com';
                 fetch('https://squashpopayan-65e33-default-rtdb.firebaseio.com/physicsailab/trivia_rankings/fisica.json')
                     .then(r => r.json())
                     .then(data => {
                         if (data && typeof data === 'object') {
-                            const cloudList = Object.values(data).filter(Boolean);
-                            if (cloudList.length > 0) {
-                                cloudList.sort((a, b) => (b.score || 0) - (a.score || 0));
-                                localStorage.setItem('physicsailab_trivia_ranking', JSON.stringify(cloudList));
-                                if (this.state && this.state.currentView === 'ranking') this.renderRanking();
-                                if (typeof this.updateCommunityStats === 'function') this.updateCommunityStats();
-                            }
+                            const cloudList = Object.values(data).filter(r => !isTriviaBenchmarkFake(r));
+                            cloudList.sort((a, b) => (b.score || 0) - (a.score || 0));
+                            localStorage.setItem('physicsailab_trivia_ranking', JSON.stringify(cloudList));
+                            if (this.state && this.state.currentView === 'ranking') this.renderRanking();
+                            if (typeof this.updateCommunityStats === 'function') this.updateCommunityStats();
                         }
                     }).catch(() => {});
             } catch(e) {}
@@ -554,11 +573,13 @@
             try {
                 const stored = JSON.parse(localStorage.getItem('physicsailab_trivia_ranking') || 'null');
                 if (stored && Array.isArray(stored)) {
-                    // Limpiar cualquier residuo de datos ficticios antiguos
-                    return stored.filter(r => r && !String(r.id || '').startsWith('ref-') && !String(r.id || '').startsWith('hist-') && !String(r.id || '').startsWith('sq-'));
+                    const clean = stored.filter(r => !isTriviaBenchmarkFake(r));
+                    if (clean.length !== stored.length) {
+                        localStorage.setItem('physicsailab_trivia_ranking', JSON.stringify(clean));
+                    }
+                    return clean;
                 }
             } catch (e) {}
-
             return [];
         },
 

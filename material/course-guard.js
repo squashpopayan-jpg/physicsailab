@@ -759,12 +759,40 @@
                 return;
             }
 
-            // 2. Obtener claves válidas para este curso
+            // 2. Verificar licencias individuales de alumnos
+            try {
+                const licenses = JSON.parse(localStorage.getItem('physicsailab_student_licenses') || '[]');
+                if (Array.isArray(licenses)) {
+                    const licMatch = licenses.find(l => 
+                        (l.courseId === currentCourse || l.courseId === 'all') && 
+                        (l.code || '').trim().toUpperCase() === val && 
+                        (!l.expiresAt || new Date(l.expiresAt).getTime() > Date.now())
+                    );
+                    if (licMatch) {
+                        setCourseUnlocked(currentCourse, true, { 
+                            licenseId: licMatch.id, 
+                            isSubscription: licMatch.type === 'anual' || licMatch.type === 'semestral' || licMatch.type === 'vitalicio',
+                            expiresAt: licMatch.expiresAt ? new Date(licMatch.expiresAt).getTime() : null,
+                            studentName: licMatch.studentName
+                        });
+                        closeModal();
+                        showToast(`🎓 ¡Licencia personal de ${licMatch.studentName} verificada! Acceso completo liberado.`, 'success');
+                        updateGuardState();
+                        return;
+                    }
+                }
+            } catch(e) {}
+
+            // 3. Obtener claves válidas para este curso
             let validKeys = DEFAULT_COURSE_KEYS[currentCourse] || [];
             try {
                 const customMap = JSON.parse(localStorage.getItem('physicsailab_custom_keys') || '{}');
                 if (customMap[currentCourse]) {
-                    validKeys = validKeys.concat(customMap[currentCourse]);
+                    if (Array.isArray(customMap[currentCourse])) {
+                        validKeys = validKeys.concat(customMap[currentCourse]);
+                    } else if (typeof customMap[currentCourse] === 'string') {
+                        validKeys.push(customMap[currentCourse]);
+                    }
                 }
                 if (window.PLATFORM_DATA && window.PLATFORM_DATA.clavesCursos && window.PLATFORM_DATA.clavesCursos[currentCourse]) {
                     validKeys = validKeys.concat(window.PLATFORM_DATA.clavesCursos[currentCourse]);

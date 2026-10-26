@@ -327,6 +327,11 @@
             background: rgba(255, 255, 255, 0.1);
             color: #fff;
         }
+        .adm-btn-secondary.active {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: var(--adm-indigo);
+            color: #fff;
+        }
         .adm-btn-danger {
             background: rgba(239, 68, 68, 0.12);
             border-color: rgba(239, 68, 68, 0.35);
@@ -349,17 +354,7 @@
             background: rgba(245, 158, 11, 0.25);
         }
 
-        /* Login Box cuando no hay sesión */
-        .adm-login-box {
-            max-width: 440px;
-            margin: 6rem auto 3rem;
-            background: var(--adm-card-bg);
-            border: 1px solid var(--adm-border);
-            border-radius: 18px;
-            padding: 2.2rem;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(99, 102, 241, 0.15);
-            text-align: center;
-        }
+        /* Inputs y Selects */
         .adm-input {
             width: 100%;
             background: #070d19;
@@ -371,8 +366,27 @@
             box-sizing: border-box;
             outline: none;
             transition: border-color 0.2s;
+            font-family: inherit;
         }
         .adm-input:focus {
+            border-color: var(--adm-indigo);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        .adm-select {
+            width: 100%;
+            background: #070d19;
+            border: 1.5px solid rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            color: #fff;
+            font-size: 0.92rem;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.2s;
+            font-family: inherit;
+        }
+        .adm-select:focus {
             border-color: var(--adm-indigo);
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
         }
@@ -389,6 +403,47 @@
             flex-wrap: wrap;
             gap: 1.25rem;
             margin-bottom: 1.5rem;
+        }
+
+        /* Login Box cuando no hay sesión */
+        .adm-login-box {
+            max-width: 440px;
+            margin: 6rem auto 3rem;
+            background: var(--adm-card-bg);
+            border: 1px solid var(--adm-border);
+            border-radius: 18px;
+            padding: 2.2rem;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(99, 102, 241, 0.15);
+            text-align: center;
+        }
+
+        /* Modal Backdrop y Card */
+        .adm-modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(3, 7, 18, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 2500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            box-sizing: border-box;
+            animation: fadeInTab 0.2s ease forwards;
+        }
+        .adm-modal-card {
+            background: #0b1325;
+            border: 1.5px solid rgba(99, 102, 241, 0.4);
+            border-radius: 18px;
+            max-width: 580px;
+            width: 100%;
+            padding: 2.2rem;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(99, 102, 241, 0.18);
+            box-sizing: border-box;
+            position: relative;
         }
     </style>
 </head>
@@ -462,6 +517,7 @@
             </button>
             <button class="adm-tab-btn" onclick="switchAdminTab('tab-keys', this)">
                 <span>🔑 Claves Mensuales & Alumnos</span>
+                <span class="adm-tab-badge" id="badge-keys-count">24</span>
             </button>
             <button class="adm-tab-btn" onclick="switchAdminTab('tab-trivias', this)">
                 <span>🏆 Trivias & Rankings</span>
@@ -479,7 +535,7 @@
         <main class="adm-main">
 
             <!-- ============================================================ -->
-            <!-- PESTAÑA 1: EN VIVO & AUDIENCIA (MONITOREO DE USUARIOS Y SQUASH) -->
+            <!-- PESTAÑA 1: EN VIVO & AUDIENCIA (MONITOREO DE USUARIOS Y PERFILES) -->
             <!-- ============================================================ -->
             <section id="tab-live" class="adm-tab-content active">
                 
@@ -557,6 +613,49 @@
                     </div>
                 </div>
 
+                <!-- DIRECTORIO DE ALUMNOS REGISTRADOS (PERFILES Y MATERIAS ACTIVAS) -->
+                <div class="adm-card" id="adm-profiles-section">
+                    <div class="adm-card-header">
+                        <div>
+                            <h3 class="adm-card-title">
+                                🎓 Directorio de Alumnos Registrados (<span id="adm-profiles-badge">0</span>)
+                            </h3>
+                            <p class="adm-card-desc">
+                                Estudiantes registrados en la plataforma, sus carreras, universidad, interacción y qué materias o simuladores tienen activos.
+                            </p>
+                        </div>
+                        <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+                            <input type="text" id="adm-profiles-search" class="adm-input" placeholder="🔍 Buscar alumno, carrera o curso..." style="width:260px; padding:0.45rem 0.85rem; font-size:0.84rem;" oninput="renderProfilesTable()">
+                            <button class="adm-btn adm-btn-secondary" onclick="fetchProfiles(true)">
+                                🔄 Actualizar Alumnos
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="adm-table-wrap">
+                        <table class="adm-table">
+                            <thead>
+                                <tr>
+                                    <th>Estudiante</th>
+                                    <th>Carrera / Especialidad</th>
+                                    <th>Institución</th>
+                                    <th>Cursos Desbloqueados / Activos</th>
+                                    <th style="text-align:center;">Interacción</th>
+                                    <th>Dispositivo & Conexión</th>
+                                    <th style="text-align:center;">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adm-profiles-tbody">
+                                <tr>
+                                    <td colspan="7" style="text-align:center; padding:2rem; color:var(--adm-muted);">
+                                        Cargando directorio de estudiantes...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
                 <!-- Línea de Tiempo de Actividad Reciente -->
                 <div class="adm-card">
                     <div class="adm-card-header">
@@ -565,18 +664,18 @@
                                 ⚡ Registro de Actividad y Frecuentación Reciente
                             </h3>
                             <p class="adm-card-desc">
-                                Eventos registrados en tiempo real por los estudiantes (visitas, creación de perfiles, apertura de cursos).
+                                Eventos registrados en tiempo real por los estudiantes (visitas, creación de perfiles, apertura y desbloqueo de materias).
                             </p>
                         </div>
                         <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
                             <button class="adm-btn adm-btn-secondary active" onclick="filterActivityLog('all', this)">Todos</button>
+                            <button class="adm-btn adm-btn-secondary" onclick="filterActivityLog('course', this)">Cursos & Contenido</button>
                             <button class="adm-btn adm-btn-secondary" onclick="filterActivityLog('visit', this)">Visitas</button>
                             <button class="adm-btn adm-btn-secondary" onclick="filterActivityLog('profile', this)">Perfiles</button>
-                            <button class="adm-btn adm-btn-secondary" onclick="filterActivityLog('course', this)">Cursos</button>
                         </div>
                     </div>
 
-                    <div id="adm-activity-container" style="max-height:360px; overflow-y:auto; display:flex; flex-direction:column; gap:0.6rem;">
+                    <div id="adm-activity-container" style="max-height:380px; overflow-y:auto; display:flex; flex-direction:column; gap:0.6rem;">
                         <div style="text-align:center; padding:1.5rem; color:var(--adm-muted);">
                             Cargando historial de actividad...
                         </div>
@@ -611,13 +710,13 @@
                     </button>
                 </div>
 
-                <!-- Configuración de Claves Vigentes por Curso -->
+                <!-- Configuración de Claves Vigentes para TODOS los 24 Cursos -->
                 <div class="adm-card">
                     <div class="adm-card-header">
                         <div>
-                            <h3 class="adm-card-title">🔑 Claves Vigentes de Acceso a Simuladores & Cursos</h3>
+                            <h3 class="adm-card-title">🔑 Claves Vigentes de Acceso a Simuladores & Cursos (24 Materias)</h3>
                             <p class="adm-card-desc">
-                                Asigna o personaliza la contraseña vigente de este mes para cada una de tus materias y simuladores.
+                                Asigna o personaliza la contraseña vigente de este mes para cada una de tus materias y simuladores. Se sincronizan en la nube en tiempo real.
                             </p>
                         </div>
                         <button class="adm-btn adm-btn-emerald" onclick="saveCustomCourseKeys()">
@@ -625,66 +724,17 @@
                         </button>
                     </div>
 
-                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:1rem;">
-                        <!-- Simulador Squash -->
-                        <div style="background:#0b1120; border:1px solid rgba(16,185,129,0.3); border-radius:10px; padding:1.1rem;">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-                                <strong style="color:#34d399; font-size:0.95rem;">🎾 Simulador Manu Squash</strong>
-                                <span style="font-size:0.72rem; background:rgba(16,185,129,0.15); color:#34d399; padding:0.15rem 0.5rem; border-radius:6px; font-weight:700;">Rotación Mensual</span>
-                            </div>
-                            <p style="font-size:0.78rem; color:var(--adm-muted); margin:0 0 0.75rem;">
-                                Controles de táctica, biomecánica y personalización de rutinas.
-                            </p>
-                            <div style="display:flex; gap:0.4rem;">
-                                <input type="text" id="key-squash_sim" class="adm-input" value="SQUASH-PRO-2026" style="text-transform:uppercase; font-family:monospace; font-weight:700;">
-                                <button class="adm-btn adm-btn-secondary" onclick="generateRandomKeyFor('key-squash_sim', 'SQUASH')">🎲</button>
-                            </div>
+                    <!-- Buscador en tiempo real de cursos -->
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem; margin-bottom:1.25rem;">
+                        <input type="text" id="adm-courses-key-search" class="adm-input" placeholder="🔍 Filtrar entre los 24 cursos y laboratorios..." style="max-width:360px;" oninput="filterCourseKeyCards(this.value)">
+                        <div style="font-size:0.82rem; color:var(--adm-muted);">
+                            Mostrando <strong id="adm-courses-keys-count" style="color:#fff;">24</strong> cursos configurados
                         </div>
+                    </div>
 
-                        <!-- Faro Pods de Reacción -->
-                        <div style="background:#0b1120; border:1px solid rgba(245,158,11,0.3); border-radius:10px; padding:1.1rem;">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-                                <strong style="color:#fbbf24; font-size:0.95rem;">💡 Faro: Pods de Reacción</strong>
-                                <span style="font-size:0.72rem; background:rgba(245,158,11,0.15); color:#fbbf24; padding:0.15rem 0.5rem; border-radius:6px; font-weight:700;">Manual Protegido</span>
-                            </div>
-                            <p style="font-size:0.78rem; color:var(--adm-muted); margin:0 0 0.75rem;">
-                                Manual técnico de taller, firmware ESP32-S3 y STL 3D.
-                            </p>
-                            <div style="display:flex; gap:0.4rem;">
-                                <input type="text" id="key-faro" class="adm-input" value="FARO-2026" style="text-transform:uppercase; font-family:monospace; font-weight:700;">
-                                <button class="adm-btn adm-btn-secondary" onclick="generateRandomKeyFor('key-faro', 'FARO')">🎲</button>
-                            </div>
-                        </div>
-
-                        <!-- Física del Estado Sólido -->
-                        <div style="background:#0b1120; border:1px solid rgba(56,189,248,0.3); border-radius:10px; padding:1.1rem;">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-                                <strong style="color:#38bdf8; font-size:0.95rem;">🔬 Física del Estado Sólido</strong>
-                                <span style="font-size:0.72rem; background:rgba(56,189,248,0.15); color:#38bdf8; padding:0.15rem 0.5rem; border-radius:6px; font-weight:700;">30 Capítulos</span>
-                            </div>
-                            <p style="font-size:0.78rem; color:var(--adm-muted); margin:0 0 0.75rem;">
-                                Cristales, red recíproca, fonones y 119 simulaciones WebGL.
-                            </p>
-                            <div style="display:flex; gap:0.4rem;">
-                                <input type="text" id="key-solido" class="adm-input" value="SOLIDO-2026" style="text-transform:uppercase; font-family:monospace; font-weight:700;">
-                                <button class="adm-btn adm-btn-secondary" onclick="generateRandomKeyFor('key-solido', 'SOLIDO')">🎲</button>
-                            </div>
-                        </div>
-
-                        <!-- Mecánica Clásica -->
-                        <div style="background:#0b1120; border:1px solid rgba(99,102,241,0.3); border-radius:10px; padding:1.1rem;">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-                                <strong style="color:#a5b4fc; font-size:0.95rem;">⚙️ Mecánica Clásica</strong>
-                                <span style="font-size:0.72rem; background:rgba(99,102,241,0.15); color:#a5b4fc; padding:0.15rem 0.5rem; border-radius:6px; font-weight:700;">Semestre Unicauca</span>
-                            </div>
-                            <p style="font-size:0.78rem; color:var(--adm-muted); margin:0 0 0.75rem;">
-                                Mecánica lagrangiana, oscilaciones y dinámica de partículas.
-                            </p>
-                            <div style="display:flex; gap:0.4rem;">
-                                <input type="text" id="key-mecanica" class="adm-input" value="MECANICA-2026" style="text-transform:uppercase; font-family:monospace; font-weight:700;">
-                                <button class="adm-btn adm-btn-secondary" onclick="generateRandomKeyFor('key-mecanica', 'MEC')">🎲</button>
-                            </div>
-                        </div>
+                    <!-- Grid Dinámico de las 24 Materias -->
+                    <div id="adm-courses-keys-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:1rem;">
+                        <!-- Se llena dinámicamente con los 24 cursos -->
                     </div>
                 </div>
 
@@ -741,6 +791,9 @@
                         <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
                             <button class="adm-btn adm-btn-amber" onclick="purgeFakeTriviaExamples()" title="Elimina los ejemplos ficticios de 15.000 pts para que compitan personas reales">
                                 🧹 Purgar Ejemplos Ficticios
+                            </button>
+                            <button class="adm-btn adm-btn-danger" onclick="resetEntireTriviaRanking()" title="Limpia completamente los registros de esta trivia para iniciar desde cero">
+                                🗑️ Limpiar Todo el Ranking Actual
                             </button>
                             <button class="adm-btn adm-btn-secondary" onclick="fetchTriviaRankings(true)">
                                 🔄 Actualizar Rankings
@@ -922,14 +975,147 @@
         </main>
     </div>
 
+    <!-- Modal para Emitir Licencia Individual de Alumno -->
+    <div id="adm-license-modal" class="adm-modal-backdrop" style="display:none;">
+        <div class="adm-modal-card">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.25rem;">
+                <div>
+                    <h3 style="color:#fff; font-size:1.3rem; margin:0 0 0.35rem; display:flex; align-items:center; gap:0.5rem;">
+                        🎓 Emitir Nueva Licencia de Alumno
+                    </h3>
+                    <p style="color:var(--adm-muted); font-size:0.84rem; margin:0;">
+                        Genera un código exclusivo y personal para un estudiante con expiración programada.
+                    </p>
+                </div>
+                <button type="button" onclick="closeIssueLicenseModal()" style="background:none; border:none; color:#cbd5e1; font-size:1.4rem; cursor:pointer; padding:0.2rem 0.5rem;">✕</button>
+            </div>
+
+            <form id="adm-license-form" onsubmit="event.preventDefault(); saveNewStudentLicense();">
+                <div style="margin-bottom:1rem;">
+                    <label style="display:block; font-size:0.82rem; color:#cbd5e1; font-weight:600; margin-bottom:0.35rem;">
+                        Nombre Completo del Alumno *
+                    </label>
+                    <input type="text" id="adm-lic-student-name" class="adm-input" placeholder="Ej: Daniela Sofía Morales" required>
+                </div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.85rem; margin-bottom:1rem;">
+                    <div>
+                        <label style="display:block; font-size:0.82rem; color:#cbd5e1; font-weight:600; margin-bottom:0.35rem;">
+                            Carrera / Institución
+                        </label>
+                        <input type="text" id="adm-lic-student-inst" class="adm-input" placeholder="Ej: Ing. Física · Unicauca">
+                    </div>
+                    <div>
+                        <label style="display:block; font-size:0.82rem; color:#cbd5e1; font-weight:600; margin-bottom:0.35rem;">
+                            Contacto / WhatsApp (Opcional)
+                        </label>
+                        <input type="text" id="adm-lic-student-contact" class="adm-input" placeholder="Ej: 313 711 5473">
+                    </div>
+                </div>
+
+                <div style="margin-bottom:1rem;">
+                    <label style="display:block; font-size:0.82rem; color:#cbd5e1; font-weight:600; margin-bottom:0.35rem;">
+                        Curso o Simulador a Desbloquear *
+                    </label>
+                    <select id="adm-lic-course-select" class="adm-select" required>
+                        <option value="all">🌟 Acceso Total a Toda la Plataforma (Todos los Cursos)</option>
+                        <!-- Opciones de los 24 cursos inyectadas dinámicamente -->
+                    </select>
+                </div>
+
+                <div style="margin-bottom:1rem;">
+                    <label style="display:block; font-size:0.82rem; color:#cbd5e1; font-weight:600; margin-bottom:0.35rem;">
+                        Tipo de Acceso / Vigencia *
+                    </label>
+                    <select id="adm-lic-type-select" class="adm-select" onchange="handleLicenseTypeChange(this.value)" required>
+                        <option value="semestral">Semestral Universitario (6 Meses)</option>
+                        <option value="anual">Anual Completo (12 Meses)</option>
+                        <option value="mensual">Mensual (30 Días)</option>
+                        <option value="vitalicio">Vitalicio / Permanente</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom:1.5rem;">
+                    <label style="display:block; font-size:0.82rem; color:#cbd5e1; font-weight:600; margin-bottom:0.35rem;">
+                        Código Único de Licencia
+                    </label>
+                    <div style="display:flex; gap:0.4rem;">
+                        <input type="text" id="adm-lic-code-input" class="adm-input" style="font-family:monospace; font-weight:700; text-transform:uppercase;" required>
+                        <button type="button" class="adm-btn adm-btn-secondary" onclick="generateLicenseCode()" title="Generar nuevo código aleatorio">🎲</button>
+                    </div>
+                </div>
+
+                <div style="display:flex; justify-content:flex-end; gap:0.65rem;">
+                    <button type="button" class="adm-btn adm-btn-secondary" onclick="closeIssueLicenseModal()">Cancelar</button>
+                    <button type="submit" class="adm-btn adm-btn-primary">Emitir y Guardar Licencia 🚀</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Scripts de la Aplicación de Administración -->
     <script>
         const FIREBASE_ROOT = 'https://squashpopayan-65e33-default-rtdb.firebaseio.com';
         const FIREBASE_BASE = 'https://squashpopayan-65e33-default-rtdb.firebaseio.com/physicsailab';
         const ADMIN_MASTER_KEY = 'OBANDO-ADMIN-2026';
 
+        // 24 Cursos y Laboratorios Virtuales de la Plataforma
+        const ALL_COURSES = [
+            { id: 'mecanica', name: 'Mecánica Clásica', icon: '⚙️', defaultKey: 'MECANICA-2026', cat: 'Física Fundamental', desc: '19 capítulos, 83 simulaciones numéricas y formulario interactivo.' },
+            { id: 'materiales', name: 'Ciencia e Ingeniería de Materiales', icon: '🧱', defaultKey: 'MATERIALES-2026', cat: 'Materiales & Sólidos', desc: 'Estructuras cristalinas, defectos, diagramas de fase y tratamientos térmicos.' },
+            { id: 'transformadores', name: 'Transformadores de Potencia & Modelado', icon: '⚡', defaultKey: 'TRANSFO-2026', cat: 'Ingeniería Eléctrica', desc: 'Circuitos equivalentes, pruebas en vacío/cortocircuito y rendimiento.' },
+            { id: 'ondas', name: 'Ondas y Acústica', icon: '🌊', defaultKey: 'ONDAS-2026', cat: 'Física Fundamental', desc: 'Ecuación de onda, efecto Doppler, resonancia y acústica física.' },
+            { id: 'neuro', name: 'Neuroplasticidad & Física de Redes', icon: '🧠', defaultKey: 'RECABLEAR-2026', cat: 'Biofísica & Neurociencias', desc: 'Modelos de Hodgkin-Huxley, sinapsis y plasticidad neuronal.' },
+            { id: 'electromagnetismo', name: 'Atlas Interactivo de Electromagnetismo', icon: '🧲', defaultKey: 'ELECTRO-2026', cat: 'Física Fundamental', desc: 'Ecuaciones de Maxwell, ley de Gauss, Ampère y ondas EM.' },
+            { id: 'ml', name: 'Machine Learning & Ciencia de Datos', icon: '🤖', defaultKey: 'DATOS-IA-2026', cat: 'Inteligencia Artificial', desc: 'Regresión, clasificación, redes neuronales y optimización matemática.' },
+            { id: 'cuantica', name: 'Física Cuántica y Atómica', icon: '⚛️', defaultKey: 'CUANTICA-2026', cat: 'Física Moderna', desc: 'Ecuación de Schrödinger, efecto fotoeléctrico y barreras de potencial.' },
+            { id: 'retie', name: 'Normativa RETIE & Seguridad Eléctrica', icon: '📋', defaultKey: 'RETIE-2026', cat: 'Normativa Profesional', desc: 'Reglamento técnico de instalaciones eléctricas, puestas a tierra y distancias.' },
+            { id: 'squash_sim', name: 'Simulador Manu Squash (Biomecánica & Táctica)', icon: '🎾', defaultKey: 'SQUASH-PRO-2026', cat: 'Física del Deporte', desc: 'Cinemática de desplazamientos, rebotes, T y editor de rutinas.' },
+            { id: 'finanzas', name: 'Cuentas Claras: Psicología & Matemática Financiera', icon: '📈', defaultKey: 'FINANZAS-2026', cat: 'Finanzas Cuantitativas', desc: 'Interés compuesto, valor del dinero en el tiempo y presupuesto base cero.' },
+            { id: 'termo', name: 'Termodinámica Computacional & Mecánica Estadística', icon: '🔥', defaultKey: 'TERMO-2026', cat: 'Termodinámica', desc: '25 capítulos interactivos, ciclos Otto/Diesel/Rankine y CoolProp.' },
+            { id: 'torneos', name: 'Torneos Squash Popayán (Gestión & Arbitraje)', icon: '🏆', defaultKey: 'TORNEOS-2026', cat: 'Gestión Deportiva', desc: 'PWA v15 oficial, cuadros eliminatorios, round-robin y marcador en vivo.' },
+            { id: 'laboratorio', name: 'Proyecto Laboratorio: Kits de Bajo Costo', icon: '🔬', defaultKey: 'LAB-PROYECTO-2026', cat: 'Laboratorio Virtual', desc: '38 prácticas experimentales, Phyphox, ESP32, App Inventor y LEGO.' },
+            { id: 'fluidos', name: 'Física de Fluidos: del Continuo a la Turbulencia', icon: '💧', defaultKey: 'FLUIDOS-2026', cat: 'Medios Continuos', desc: '27 capítulos, Navier-Stokes, capa límite, Moody y CFD.' },
+            { id: 'venturi', name: 'Laboratorio Virtual: Tubo de Venturi & Bernoulli', icon: '🧪', defaultKey: 'VENTURI-2026', cat: 'Laboratorio Virtual', desc: 'Banco hidráulico con 24 puestos de trabajo independientes y purga.' },
+            { id: 'pendulo', name: 'Laboratorio Virtual: Péndulo Simple & Gravedad', icon: '⏱️', defaultKey: 'PENDULO-2026', cat: 'Laboratorio Virtual', desc: '24 puestos, medición de g, incertidumbres GUM y Legendre.' },
+            { id: 'guias', name: 'Guías y Montajes de Laboratorio de Física', icon: '📑', defaultKey: 'GUIAS-2026', cat: 'Didáctica & Maker', desc: '46 prácticas experimentales, generador en Word y NTC 4595.' },
+            { id: 'ingles', name: 'Quantum Leap English: Inglés Técnico & Científico', icon: '🇬🇧', defaultKey: 'INGLES-2026', cat: 'Habilidades Profesionales', desc: 'Niveles cuánticos A1 a C1, fonética IPA, voz pasiva y papers.' },
+            { id: 'recorrido', name: 'Recorrido Virtual 3D: Depto. de Física', icon: '🏛️', defaultKey: 'RECORRIDO-2026', cat: 'Gemelo Digital 3D', desc: 'Gemelo digital tridimensional interactivo de los laboratorios Unicauca.' },
+            { id: 'optica', name: 'Óptica: del Rayo al Fotón', icon: '💡', defaultKey: 'OPTICA-2026', cat: 'Física Fundamental', desc: '28 capítulos, matrices ABCD, difracción, láser y fotones individuales.' },
+            { id: 'solido', name: 'Física del Estado Sólido (30 Capítulos)', icon: '💎', defaultKey: 'SOLIDO-2026', cat: 'Materia Condensada', desc: '30 capítulos, 119 simulaciones WebGL 3D, bandas, fonones y superconductividad.' },
+            { id: 'faro', name: 'Faro: Pods de Reacción, Sensores ToF & Hardware', icon: '🚨', defaultKey: 'FARO-2026', cat: 'Hardware Abierto & Deporte', desc: 'Pods ESP32-S3, manual de taller, planos A4 1:1, STLs 3D y firmware.' },
+            { id: 'diagnosticas', name: 'Servicio de Pruebas Diagnósticas (Colegios & Univ.)', icon: '📊', defaultKey: 'DIAGNOSTICAS-2026', cat: 'Evaluación Institucional', desc: '450 preguntas validadas en 9 bancos, supervisión en vivo e informes.' }
+        ];
+
+        // Nombres de ejemplos ficticios para purga garantizada
+        const FAKE_TRIVIA_NAMES = [
+            'laura camila mosquera', 'juan david benavides', 'mateo alejandro gómez', 'mateo alejandro gomez',
+            'daniela sofía prado', 'daniela sofia prado', 'andrés felipe muñoz', 'andres felipe muñoz',
+            'santiago rengifo', 'valentina ordóñez', 'valentina ordoñez', 'carlos mario vidal',
+            'gabriela paz enríquez', 'gabriela paz enriquez', 'felipe santacruz',
+            'marie curie', 'albert einstein', 'isaac newton', 'richard feynman', 'niels bohr',
+            'werner heisenberg', 'galileo galilei', 'max planck', 'michael faraday', 'james clerk maxwell',
+            'ali farag', 'paul coll', 'mostafa asal', 'diego elías', 'diego elias', 'mohamed elshorbagy',
+            'karim abdel gawad', 'mazen hesham', 'tarek momen', 'victor crouin', 'miguel ángel rodríguez', 'miguel angel rodriguez'
+        ];
+
+        function isFakeTriviaEntry(item) {
+            if (!item) return true;
+            const id = String(item.id || '').toLowerCase();
+            const name = String(item.name || '').toLowerCase().trim();
+            if (id.startsWith('ref-') || id.startsWith('hist-') || id.startsWith('sq-')) return true;
+            if (FAKE_TRIVIA_NAMES.includes(name)) return true;
+            if (item.score >= 12000 && !item.realPlayer && (name.includes('laura') || name.includes('marie') || name.includes('einstein') || name.includes('farag') || name.includes('curie'))) return true;
+            return false;
+        }
+
         let currentTriviaBoard = 'fisica';
         let allActiveSessions = {};
+        let allStudentProfiles = {};
+        let allActivityLogs = [];
+        let currentActivityFilter = 'all';
+        let allStudentLicenses = [];
+        let loadedCourseKeys = {};
         let allQuizResults = [];
 
         // Inicialización
@@ -982,32 +1168,46 @@
             if (target) target.classList.add('active');
             if (btn) btn.classList.add('active');
 
-            if (tabId === 'tab-live') fetchActiveSessions();
+            if (tabId === 'tab-live') {
+                fetchActiveSessions();
+                fetchProfiles();
+                fetchActivityLog();
+            }
+            if (tabId === 'tab-keys') {
+                loadCustomCourseKeys();
+                fetchLicenses();
+            }
             if (tabId === 'tab-trivias') fetchTriviaRankings();
             if (tabId === 'tab-quizzes') fetchQuizResults();
         }
 
         // Carga Principal de Datos
         function loadAdminData() {
-            fetchActiveSessions();
             fetchCounters();
+            fetchActiveSessions();
+            fetchProfiles();
+            fetchActivityLog();
+            renderAllCourseKeyCards();
+            loadCustomCourseKeys();
+            fetchLicenses();
             fetchTriviaRankings();
             fetchQuizResults();
-            loadCustomCourseKeys();
+            populateCourseSelectInLicenseModal();
         }
 
         function refreshAdminData(showNotice) {
             loadAdminData();
-            if (showNotice) alert('✓ Datos sincronizados con la nube exitosamente.');
+            if (showNotice) alert('✓ Todos los datos han sido sincronizados con la nube exitosamente.');
         }
 
         // 1. Sesiones Activas (Telemetría en tiempo real)
-        function fetchActiveSessions() {
-            fetch(`${FIREBASE_ROOT}/active_sessions.json`)
+        function fetchActiveSessions(showNotice) {
+            fetch(FIREBASE_ROOT + '/active_sessions.json')
                 .then(r => r.json())
                 .then(data => {
                     allActiveSessions = data || {};
                     renderActiveSessionsTable();
+                    if (showNotice) alert('✓ Sesiones activas sincronizadas.');
                 })
                 .catch(() => {
                     renderActiveSessionsTable();
@@ -1022,7 +1222,6 @@
 
             const now = Date.now();
             const entries = Object.entries(allActiveSessions);
-            // Filtrar sesiones vistas en los últimos 2 minutos
             const activeList = entries.filter(([id, s]) => {
                 if (!s) return false;
                 return s.isOnline !== false && (now - (s.lastSeen || 0)) < 120000;
@@ -1080,13 +1279,12 @@
 
         function kickSession(sessionId, name) {
             if (confirm(`¿Deseas expulsar la sesión de "${name}"?\nEl curso o simulador se bloqueará de inmediato en su dispositivo.`)) {
-                fetch(`${FIREBASE_ROOT}/revoked_sessions/${sessionId}.json`, {
+                fetch(FIREBASE_ROOT + '/revoked_sessions/' + sessionId + '.json', {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(true)
                 }).then(() => {
-                    // Eliminar de active_sessions
-                    fetch(`${FIREBASE_ROOT}/active_sessions/${sessionId}.json`, { method: 'DELETE' });
+                    fetch(FIREBASE_ROOT + '/active_sessions/' + sessionId + '.json', { method: 'DELETE' });
                     delete allActiveSessions[sessionId];
                     renderActiveSessionsTable();
                     alert(`✓ Sesión de "${name}" expulsada exitosamente.`);
@@ -1094,13 +1292,380 @@
             }
         }
 
-        // 2. Rotación Mensual de Claves
+        // 2. Directorio de Alumnos Registrados (Perfiles y Materias Activas)
+        function fetchProfiles(showNotice) {
+            fetch(FIREBASE_BASE + '/profiles.json')
+                .then(r => r.json())
+                .then(data => {
+                    allStudentProfiles = data || {};
+                    renderProfilesTable();
+                    const count = Object.keys(allStudentProfiles).length;
+                    const kpiProfiles = document.getElementById('kpi-profiles-count');
+                    const badgeProfiles = document.getElementById('adm-profiles-badge');
+                    if (kpiProfiles) kpiProfiles.textContent = count;
+                    if (badgeProfiles) badgeProfiles.textContent = count;
+                    if (showNotice) alert(`✓ ${count} perfiles de alumnos sincronizados.`);
+                })
+                .catch(err => {
+                    console.error('Error fetching profiles:', err);
+                    renderProfilesTable();
+                });
+        }
+
+        function renderProfilesTable() {
+            const tbody = document.getElementById('adm-profiles-tbody');
+            const searchInput = document.getElementById('adm-profiles-search');
+            const query = (searchInput ? searchInput.value.toLowerCase().trim() : '');
+            if (!tbody) return;
+
+            let entries = Object.entries(allStudentProfiles || {});
+            if (entries.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align:center; padding:2rem; color:var(--adm-muted);">
+                            No hay perfiles de alumnos registrados en la base de datos.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            if (query) {
+                entries = entries.filter(([id, p]) => {
+                    if (!p) return false;
+                    const name = (p.name || '').toLowerCase();
+                    const career = (p.career || '').toLowerCase();
+                    const inst = (p.institution || '').toLowerCase();
+                    const courses = Array.isArray(p.enrolledCourses) ? p.enrolledCourses.join(' ').toLowerCase() : '';
+                    return name.includes(query) || career.includes(query) || inst.includes(query) || courses.includes(query);
+                });
+            }
+
+            // Ordenar más recientes primero
+            entries.sort((a, b) => new Date(b[1].lastActive || b[1].createdAt || 0) - new Date(a[1].lastActive || a[1].createdAt || 0));
+
+            if (entries.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align:center; padding:2rem; color:var(--adm-muted);">
+                            No se encontraron alumnos que coincidan con "${escapeHtml(query)}".
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = entries.map(([id, p]) => {
+                const isDocente = p.role === 'docente' || (p.name || '').toLowerCase().includes('obando');
+                const enrolled = Array.isArray(p.enrolledCourses) ? p.enrolledCourses : [];
+                
+                const coursesBadges = enrolled.length > 0 ? enrolled.map(cId => {
+                    const cObj = ALL_COURSES.find(c => c.id === cId);
+                    const label = cObj ? `${cObj.icon} ${cObj.name}` : cId;
+                    return `<span style="display:inline-block; font-size:0.72rem; padding:0.15rem 0.5rem; border-radius:999px; background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.3); color:#c7d2fe; margin:0.1rem 0.2rem 0.1rem 0;">${escapeHtml(label)}</span>`;
+                }).join('') : '<span style="color:var(--adm-muted); font-size:0.78rem;">Ninguno activo aún</span>';
+
+                const lastActiveDate = p.lastActive ? new Date(p.lastActive).toLocaleString('es-ES', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '---';
+
+                return `
+                    <tr style="${isDocente ? 'background:rgba(99,102,241,0.06);' : ''}">
+                        <td>
+                            <div style="display:flex; align-items:center; gap:0.6rem;">
+                                <span style="font-size:1.4rem;">${escapeHtml(p.avatar || (isDocente ? '👨‍🏫' : '🎓'))}</span>
+                                <div>
+                                    <strong style="color:#fff; font-size:0.92rem;">${escapeHtml(p.name || 'Estudiante')}</strong>
+                                    ${isDocente ? '<span style="font-size:0.68rem; background:rgba(99,102,241,0.3); color:#a5b4fc; padding:0.1rem 0.4rem; border-radius:4px; margin-left:0.35rem; font-weight:700;">Docente</span>' : ''}
+                                    <div style="font-size:0.72rem; color:var(--adm-muted); font-family:monospace;">ID: ${escapeHtml(id)}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="color:#cbd5e1; font-size:0.84rem;">
+                            ${escapeHtml(p.career || 'Física / Ingeniería')}
+                        </td>
+                        <td style="color:var(--adm-muted); font-size:0.82rem;">
+                            ${escapeHtml(p.institution || 'Universidad del Cauca')}
+                        </td>
+                        <td style="max-width:280px;">
+                            ${coursesBadges}
+                        </td>
+                        <td style="text-align:center;">
+                            <div style="display:inline-flex; gap:0.4rem; font-size:0.76rem;">
+                                <span title="Visitas" style="background:rgba(255,255,255,0.06); padding:0.15rem 0.45rem; border-radius:4px;">👁️ ${p.totalVisits || 1}</span>
+                                <span title="Likes" style="background:rgba(255,255,255,0.06); padding:0.15rem 0.45rem; border-radius:4px;">❤️ ${p.totalLikes || 0}</span>
+                                <span title="Cómics Guardados" style="background:rgba(255,255,255,0.06); padding:0.15rem 0.45rem; border-radius:4px;">📚 ${p.savedComicsCount || 0}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="font-size:0.78rem; color:#cbd5e1;">${escapeHtml(p.device || 'Web')}</div>
+                            <div style="font-size:0.72rem; color:var(--adm-muted);">${lastActiveDate}</div>
+                        </td>
+                        <td style="text-align:center;">
+                            <button class="adm-btn adm-btn-danger" style="font-size:0.75rem; padding:0.25rem 0.55rem;" onclick="deleteStudentProfile('${id}', '${escapeHtml(p.name || 'este estudiante')}')">
+                                🗑️ Eliminar
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function deleteStudentProfile(profileId, name) {
+            if (confirm(`¿Deseas eliminar permanentemente el perfil de "${name}" (${profileId})?\nEsta acción no se puede deshacer.`)) {
+                fetch(FIREBASE_BASE + '/profiles/' + profileId + '.json', { method: 'DELETE' })
+                    .then(() => {
+                        delete allStudentProfiles[profileId];
+                        renderProfilesTable();
+                        const count = Object.keys(allStudentProfiles).length;
+                        const kpiProfiles = document.getElementById('kpi-profiles-count');
+                        const badgeProfiles = document.getElementById('adm-profiles-badge');
+                        if (kpiProfiles) kpiProfiles.textContent = count;
+                        if (badgeProfiles) badgeProfiles.textContent = count;
+                        alert(`✓ Perfil de "${name}" eliminado exitosamente.`);
+                    })
+                    .catch(err => {
+                        alert('Error al eliminar perfil de la base de datos.');
+                    });
+            }
+        }
+
+        // 3. Registro de Actividad y Frecuentación Reciente
+        function fetchActivityLog() {
+            const container = document.getElementById('adm-activity-container');
+            if (!container) return;
+
+            fetch(FIREBASE_BASE + '/activity.json?orderBy="$key"&limitToLast=60')
+                .then(r => r.json())
+                .then(data => {
+                    if (data && typeof data === 'object') {
+                        allActivityLogs = Object.values(data).filter(Boolean);
+                        allActivityLogs.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+                        renderActivityLog();
+                    } else {
+                        fetchActivityLogFallback();
+                    }
+                })
+                .catch(() => {
+                    fetchActivityLogFallback();
+                });
+        }
+
+        function fetchActivityLogFallback() {
+            fetch(FIREBASE_BASE + '/activity.json')
+                .then(r => r.json())
+                .then(data => {
+                    if (data && typeof data === 'object') {
+                        allActivityLogs = Object.values(data).filter(Boolean).slice(-60);
+                        allActivityLogs.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+                        renderActivityLog();
+                    } else {
+                        const container = document.getElementById('adm-activity-container');
+                        if (container) container.innerHTML = `<div style="text-align:center; padding:1.5rem; color:var(--adm-muted);">No hay actividad registrada aún.</div>`;
+                    }
+                })
+                .catch(() => {
+                    const container = document.getElementById('adm-activity-container');
+                    if (container) container.innerHTML = `<div style="text-align:center; padding:1.5rem; color:var(--adm-muted);">Sin conexión al registro de actividad.</div>`;
+                });
+        }
+
+        function filterActivityLog(type, btn) {
+            currentActivityFilter = type;
+            document.querySelectorAll('#tab-live .adm-card:nth-of-type(3) .adm-btn-secondary').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            renderActivityLog();
+        }
+
+        function renderActivityLog() {
+            const container = document.getElementById('adm-activity-container');
+            if (!container) return;
+
+            let filtered = allActivityLogs;
+            if (currentActivityFilter === 'visit') {
+                filtered = allActivityLogs.filter(a => a.type === 'visit');
+            } else if (currentActivityFilter === 'profile') {
+                filtered = allActivityLogs.filter(a => a.type === 'profile' || a.type === 'profile_update' || (a.action || '').toLowerCase().includes('perfil'));
+            } else if (currentActivityFilter === 'course') {
+                filtered = allActivityLogs.filter(a => a.type === 'course_view' || a.type === 'course_unlock' || (a.action || '').toLowerCase().includes('materia') || (a.action || '').toLowerCase().includes('curso') || (a.action || '').toLowerCase().includes('contenido') || (a.action || '').toLowerCase().includes('desbloqueó'));
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div style="text-align:center; padding:1.5rem; color:var(--adm-muted);">No hay eventos para el filtro seleccionado.</div>`;
+                return;
+            }
+
+            const now = Date.now();
+            container.innerHTML = filtered.slice(0, 45).map(act => {
+                const diffMs = now - (new Date(act.timestamp || now).getTime());
+                let timeStr = 'hace un momento';
+                const mins = Math.floor(diffMs / 60000);
+                const hours = Math.floor(mins / 60);
+                const days = Math.floor(hours / 24);
+                if (days > 0) timeStr = `hace ${days} d`;
+                else if (hours > 0) timeStr = `hace ${hours} h`;
+                else if (mins > 0) timeStr = `hace ${mins} min`;
+
+                let icon = '⚡';
+                let badgeColor = 'rgba(99,102,241,0.15)';
+                let textColor = '#a5b4fc';
+                if (act.type === 'visit') {
+                    icon = '👁️';
+                    badgeColor = 'rgba(56,189,248,0.15)';
+                    textColor = '#38bdf8';
+                } else if (act.type === 'course_view') {
+                    icon = '📖';
+                    badgeColor = 'rgba(16,185,129,0.15)';
+                    textColor = '#34d399';
+                } else if (act.type === 'course_unlock') {
+                    icon = '🔓';
+                    badgeColor = 'rgba(245,158,11,0.15)';
+                    textColor = '#fbbf24';
+                } else if (act.type === 'download') {
+                    icon = '📥';
+                    badgeColor = 'rgba(236,72,153,0.15)';
+                    textColor = '#f472b6';
+                }
+
+                return `
+                    <div style="background:rgba(15,23,42,0.6); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:0.75rem 1rem; display:flex; justify-content:space-between; align-items:center; gap:0.75rem;">
+                        <div style="display:flex; align-items:center; gap:0.75rem; min-width:0;">
+                            <div style="font-size:1.25rem; width:36px; height:36px; border-radius:8px; background:${badgeColor}; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                                ${icon}
+                            </div>
+                            <div style="min-width:0;">
+                                <div style="font-size:0.86rem; color:#fff; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                                    ${escapeHtml(act.action || 'Acción en plataforma')}
+                                </div>
+                                <div style="font-size:0.75rem; color:var(--adm-muted); display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
+                                    <span style="color:#e2e8f0; font-weight:600;">${escapeHtml(act.studentName || 'Usuario')}</span>
+                                    <span>·</span>
+                                    <span>${escapeHtml(act.device || 'Navegador')}</span>
+                                    ${act.career ? `<span>·</span><span>${escapeHtml(act.career)}</span>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                        <div style="font-size:0.75rem; color:${textColor}; font-weight:700; white-space:nowrap; flex-shrink:0;">
+                            ${timeStr}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 4. Claves Mensuales de Acceso a Todos los 24 Cursos
+        function renderAllCourseKeyCards(filterQuery = '') {
+            const grid = document.getElementById('adm-courses-keys-grid');
+            const countEl = document.getElementById('adm-courses-keys-count');
+            if (!grid) return;
+
+            const q = filterQuery.toLowerCase().trim();
+            const list = q ? ALL_COURSES.filter(c => c.name.toLowerCase().includes(q) || c.cat.toLowerCase().includes(q) || c.id.toLowerCase().includes(q)) : ALL_COURSES;
+
+            if (countEl) countEl.textContent = list.length;
+
+            if (list.length === 0) {
+                grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:2rem; color:var(--adm-muted);">No se encontraron materias que coincidan con "${escapeHtml(filterQuery)}".</div>`;
+                return;
+            }
+
+            grid.innerHTML = list.map(c => {
+                const currentVal = loadedCourseKeys[c.id] || c.defaultKey;
+                return `
+                    <div style="background:#0b1120; border:1px solid rgba(99,102,241,0.25); border-radius:10px; padding:1.1rem; display:flex; flex-direction:column; justify-content:space-between;">
+                        <div>
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.45rem; gap:0.5rem;">
+                                <strong style="color:#fff; font-size:0.95rem; display:flex; align-items:center; gap:0.4rem;">
+                                    <span>${c.icon}</span>
+                                    <span>${escapeHtml(c.name)}</span>
+                                </strong>
+                                <span style="font-size:0.7rem; background:rgba(99,102,241,0.15); color:#a5b4fc; padding:0.15rem 0.5rem; border-radius:6px; font-weight:700; white-space:nowrap;">
+                                    ${escapeHtml(c.cat)}
+                                </span>
+                            </div>
+                            <p style="font-size:0.78rem; color:var(--adm-muted); margin:0 0 0.85rem; line-height:1.4;">
+                                ${escapeHtml(c.desc)}
+                            </p>
+                        </div>
+                        <div>
+                            <div style="display:flex; gap:0.4rem; align-items:center;">
+                                <input type="text" id="key-${c.id}" class="adm-input" value="${escapeHtml(currentVal)}" style="text-transform:uppercase; font-family:monospace; font-weight:700; font-size:0.88rem; padding:0.55rem 0.75rem;">
+                                <button type="button" class="adm-btn adm-btn-secondary" onclick="generateRandomKeyFor('key-${c.id}', '${c.id.substring(0,3).toUpperCase()}')" title="Generar clave aleatoria para este mes">🎲</button>
+                                <button type="button" class="adm-btn adm-btn-secondary" onclick="copyCourseKey('key-${c.id}')" title="Copiar clave al portapapeles">📋</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filterCourseKeyCards(val) {
+            renderAllCourseKeyCards(val);
+        }
+
+        function generateRandomKeyFor(inputId, prefix) {
+            const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
+            const year = new Date().getFullYear().toString().slice(-2);
+            const input = document.getElementById(inputId);
+            if (input) input.value = `${prefix}-${rand}-${year}`;
+        }
+
+        function copyCourseKey(inputId) {
+            const input = document.getElementById(inputId);
+            if (input) {
+                navigator.clipboard.writeText(input.value).then(() => {
+                    alert(`✓ Clave "${input.value}" copiada al portapapeles.`);
+                });
+            }
+        }
+
+        function loadCustomCourseKeys() {
+            try {
+                const local = JSON.parse(localStorage.getItem('physicsailab_custom_keys') || '{}');
+                loadedCourseKeys = Object.assign({}, local);
+            } catch(e) {}
+
+            fetch(FIREBASE_BASE + '/student_keys_config/monthly_keys.json')
+                .then(r => r.json())
+                .then(data => {
+                    if (data && typeof data === 'object') {
+                        loadedCourseKeys = Object.assign({}, loadedCourseKeys, data);
+                        renderAllCourseKeyCards();
+                    }
+                }).catch(() => {
+                    renderAllCourseKeyCards();
+                });
+        }
+
+        function saveCustomCourseKeys() {
+            const keysObj = {};
+            ALL_COURSES.forEach(c => {
+                const el = document.getElementById('key-' + c.id);
+                if (el) {
+                    keysObj[c.id] = (el.value || c.defaultKey).trim().toUpperCase();
+                } else {
+                    keysObj[c.id] = loadedCourseKeys[c.id] || c.defaultKey;
+                }
+            });
+
+            loadedCourseKeys = keysObj;
+            localStorage.setItem('physicsailab_custom_keys', JSON.stringify(keysObj));
+
+            fetch(FIREBASE_BASE + '/student_keys_config/monthly_keys.json', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(keysObj)
+            }).then(() => {
+                alert('✓ ¡Las 24 claves de materias y simuladores han sido actualizadas y sincronizadas en la nube!');
+            }).catch(err => {
+                alert('✓ Claves guardadas localmente. (Error de red al sincronizar con la nube).');
+            });
+        }
+
         function forceMonthlyRotation() {
             const currentMonth = new Date().toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
             if (confirm(`⚠️ ¿Deseas FORZAR LA ROTACIÓN DE CLAVES PARA ${currentMonth.toUpperCase()}?\n\nAl confirmar:\n• Se invalidarán las claves de alumnos que desbloquearon anteriormente.\n• Se les solicitará escribir la clave de este mes.\n• Los alumnos con Suscripción de Pago NO se bloquearán.`)) {
                 const ts = Date.now();
                 localStorage.setItem('physicsailab_key_rotation_ts', ts.toString());
-                fetch(`${FIREBASE_BASE}/student_keys_config/rotation_ts.json`, {
+                fetch(FIREBASE_BASE + '/student_keys_config/rotation_ts.json', {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(ts)
@@ -1110,50 +1675,199 @@
             }
         }
 
-        function loadCustomCourseKeys() {
-            const defaults = {
-                'key-squash_sim': 'SQUASH-PRO-2026',
-                'key-faro': 'FARO-2026',
-                'key-solido': 'SOLIDO-2026',
-                'key-mecanica': 'MECANICA-2026'
-            };
+        // 5. Licencias Individuales de Alumnos
+        function fetchLicenses(showNotice) {
+            try {
+                const local = JSON.parse(localStorage.getItem('physicsailab_student_licenses') || '[]');
+                allStudentLicenses = Array.isArray(local) ? local : [];
+            } catch(e) {}
 
-            fetch(`${FIREBASE_BASE}/student_keys_config/monthly_keys.json`)
+            fetch(FIREBASE_BASE + '/licenses.json')
                 .then(r => r.json())
                 .then(data => {
                     if (data && typeof data === 'object') {
-                        for (const [k, v] of Object.entries(data)) {
-                            const inp = document.getElementById('key-' + k);
-                            if (inp && v) inp.value = v;
-                        }
+                        allStudentLicenses = Object.values(data).filter(Boolean);
+                        localStorage.setItem('physicsailab_student_licenses', JSON.stringify(allStudentLicenses));
                     }
-                }).catch(() => {});
+                    renderLicensesTable();
+                    if (showNotice) alert('✓ Licencias individuales sincronizadas.');
+                })
+                .catch(() => {
+                    renderLicensesTable();
+                });
         }
 
-        function saveCustomCourseKeys() {
-            const keysObj = {
-                squash_sim: document.getElementById('key-squash_sim').value.trim().toUpperCase(),
-                faro: document.getElementById('key-faro').value.trim().toUpperCase(),
-                solido: document.getElementById('key-solido').value.trim().toUpperCase(),
-                mecanica: document.getElementById('key-mecanica').value.trim().toUpperCase()
-            };
+        function renderLicensesTable() {
+            const tbody = document.getElementById('adm-licenses-tbody');
+            if (!tbody) return;
 
-            fetch(`${FIREBASE_BASE}/student_keys_config/monthly_keys.json`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(keysObj)
-            }).then(() => {
-                alert('✓ Claves mensuales guardadas y actualizadas para los estudiantes.');
+            if (allStudentLicenses.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align:center; padding:2.5rem; color:var(--adm-muted);">
+                            <div style="font-size:2rem; margin-bottom:0.5rem;">🎓</div>
+                            <strong style="color:#e2e8f0; font-size:0.95rem; display:block; margin-bottom:0.35rem;">Aún no has generado ninguna licencia individual</strong>
+                            <span style="font-size:0.84rem;">Haz clic en el botón superior <strong>«➕ Emitir Nuevo Código para Alumno»</strong> para crear accesos personalizados con fecha de caducidad para estudiantes particulares.</span>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            const now = Date.now();
+            allStudentLicenses.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+            tbody.innerHTML = allStudentLicenses.map(lic => {
+                const isExpired = lic.expiresAt && new Date(lic.expiresAt).getTime() < now;
+                const cObj = ALL_COURSES.find(c => c.id === lic.courseId);
+                const courseLabel = lic.courseId === 'all' ? '🌟 Todos los Cursos' : (cObj ? `${cObj.icon} ${cObj.name}` : lic.courseId);
+
+                let expLabel = 'Permanente / Vitalicio';
+                if (lic.expiresAt) {
+                    expLabel = new Date(lic.expiresAt).toLocaleDateString('es-ES', { day:'2-digit', month:'short', year:'numeric' });
+                }
+
+                return `
+                    <tr style="${isExpired ? 'opacity:0.6;' : ''}">
+                        <td>
+                            <strong style="color:#fff;">${escapeHtml(lic.studentName || 'Estudiante')}</strong>
+                            ${lic.institution ? `<div style="font-size:0.75rem; color:var(--adm-muted);">${escapeHtml(lic.institution)}</div>` : ''}
+                        </td>
+                        <td>
+                            <span style="font-weight:600; color:#38bdf8;">${escapeHtml(courseLabel)}</span>
+                        </td>
+                        <td>
+                            <div style="font-size:0.82rem; color:#cbd5e1; text-transform:capitalize;">${escapeHtml(lic.type || 'Semestral')}</div>
+                            <div style="font-size:0.72rem; color:var(--adm-muted);">Vence: ${expLabel}</div>
+                        </td>
+                        <td>
+                            <div style="display:flex; align-items:center; gap:0.4rem;">
+                                <code style="background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.3); color:#a5b4fc; padding:0.2rem 0.5rem; border-radius:6px; font-weight:700; font-size:0.85rem;">
+                                    ${escapeHtml(lic.code)}
+                                </code>
+                                <button type="button" class="adm-btn adm-btn-secondary" style="padding:0.2rem 0.45rem; font-size:0.75rem;" onclick="copyLicCode('${escapeHtml(lic.code)}')" title="Copiar código">📋</button>
+                            </div>
+                        </td>
+                        <td>
+                            ${isExpired 
+                                ? '<span style="font-size:0.75rem; background:rgba(239,68,68,0.2); color:#fca5a5; padding:0.15rem 0.5rem; border-radius:999px; font-weight:700;">🔴 Expirado</span>' 
+                                : '<span style="font-size:0.75rem; background:rgba(16,185,129,0.2); color:#34d399; padding:0.15rem 0.5rem; border-radius:999px; font-weight:700;">🟢 Activo</span>'}
+                        </td>
+                        <td style="text-align:center;">
+                            <button class="adm-btn adm-btn-danger" style="font-size:0.75rem; padding:0.25rem 0.55rem;" onclick="revokeStudentLicense('${lic.id}', '${escapeHtml(lic.studentName)}')">
+                                🗑️ Revocar
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function copyLicCode(code) {
+            navigator.clipboard.writeText(code).then(() => {
+                alert(`✓ Código de licencia "${code}" copiado al portapapeles.`);
             });
         }
 
-        function generateRandomKeyFor(inputId, prefix) {
-            const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
-            const year = new Date().getFullYear().toString().slice(-2);
-            document.getElementById(inputId).value = `${prefix}-${rand}-${year}`;
+        function populateCourseSelectInLicenseModal() {
+            const select = document.getElementById('adm-lic-course-select');
+            if (!select) return;
+            select.innerHTML = '<option value="all">🌟 Acceso Total a Toda la Plataforma (Todos los Cursos)</option>' + 
+                ALL_COURSES.map(c => `<option value="${c.id}">${c.icon} ${c.name} (${c.cat})</option>`).join('');
         }
 
-        // 3. Trivias & Rankings
+        function openIssueLicenseModal() {
+            populateCourseSelectInLicenseModal();
+            generateLicenseCode();
+            document.getElementById('adm-lic-student-name').value = '';
+            document.getElementById('adm-lic-student-inst').value = '';
+            document.getElementById('adm-lic-student-contact').value = '';
+            document.getElementById('adm-license-modal').style.display = 'flex';
+        }
+
+        function closeIssueLicenseModal() {
+            document.getElementById('adm-license-modal').style.display = 'none';
+        }
+
+        function generateLicenseCode() {
+            const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
+            const year = new Date().getFullYear().toString().slice(-2);
+            const input = document.getElementById('adm-lic-code-input');
+            if (input) input.value = `LIC-EST-${rand}-${year}`;
+        }
+
+        function handleLicenseTypeChange(type) {
+            // Callback opcional de tipo
+        }
+
+        function saveNewStudentLicense() {
+            const name = document.getElementById('adm-lic-student-name').value.trim();
+            const inst = document.getElementById('adm-lic-student-inst').value.trim();
+            const contact = document.getElementById('adm-lic-student-contact').value.trim();
+            const courseId = document.getElementById('adm-lic-course-select').value;
+            const type = document.getElementById('adm-lic-type-select').value;
+            const code = document.getElementById('adm-lic-code-input').value.trim().toUpperCase();
+
+            if (!name || !code) {
+                alert('Por favor completa el nombre del estudiante y el código de licencia.');
+                return;
+            }
+
+            const licId = 'lic_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 6);
+            let expiresAt = null;
+            const now = new Date();
+
+            if (type === 'mensual') {
+                now.setDate(now.getDate() + 30);
+                expiresAt = now.toISOString();
+            } else if (type === 'semestral') {
+                now.setMonth(now.getMonth() + 6);
+                expiresAt = now.toISOString();
+            } else if (type === 'anual') {
+                now.setFullYear(now.getFullYear() + 1);
+                expiresAt = now.toISOString();
+            }
+
+            const newLic = {
+                id: licId,
+                studentName: name,
+                institution: inst,
+                contact: contact,
+                courseId: courseId,
+                type: type,
+                code: code,
+                expiresAt: expiresAt,
+                createdAt: new Date().toISOString()
+            };
+
+            allStudentLicenses.push(newLic);
+            localStorage.setItem('physicsailab_student_licenses', JSON.stringify(allStudentLicenses));
+
+            fetch(FIREBASE_BASE + '/licenses/' + licId + '.json', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newLic)
+            }).then(() => {
+                alert(`✓ ¡Licencia generada exitosamente para ${name}!\nCódigo: ${code}`);
+            }).catch(() => {
+                alert(`✓ Licencia guardada localmente.\nCódigo: ${code}`);
+            });
+
+            closeIssueLicenseModal();
+            renderLicensesTable();
+        }
+
+        function revokeStudentLicense(licId, name) {
+            if (confirm(`¿Revocar y eliminar la licencia de "${name}"?\nEl alumno perderá el acceso inmediatamente.`)) {
+                allStudentLicenses = allStudentLicenses.filter(l => l.id !== licId);
+                localStorage.setItem('physicsailab_student_licenses', JSON.stringify(allStudentLicenses));
+                fetch(FIREBASE_BASE + '/licenses/' + licId + '.json', { method: 'DELETE' });
+                renderLicensesTable();
+                alert(`✓ Licencia de "${name}" revocada exitosamente.`);
+            }
+        }
+
+        // 6. Trivias & Rankings
         function selectTriviaBoard(boardName) {
             currentTriviaBoard = boardName;
             document.querySelectorAll('#tab-trivias .adm-btn-secondary').forEach(b => b.classList.remove('active'));
@@ -1166,9 +1880,9 @@
 
         function fetchTriviaRankings(showToast) {
             Promise.all([
-                fetch(`${FIREBASE_BASE}/trivia_rankings/fisica.json`).then(r => r.json()).catch(() => null),
-                fetch(`${FIREBASE_BASE}/trivia_rankings/historia.json`).then(r => r.json()).catch(() => null),
-                fetch(`${FIREBASE_BASE}/trivia_rankings/squash.json`).then(r => r.json()).catch(() => null)
+                fetch(FIREBASE_BASE + '/trivia_rankings/fisica.json').then(r => r.json()).catch(() => null),
+                fetch(FIREBASE_BASE + '/trivia_rankings/historia.json').then(r => r.json()).catch(() => null),
+                fetch(FIREBASE_BASE + '/trivia_rankings/squash.json').then(r => r.json()).catch(() => null)
             ]).then(([fisica, historia, squash]) => {
                 triviaRankingsCache.fisica = Object.values(fisica || {});
                 triviaRankingsCache.historia = Object.values(historia || {});
@@ -1185,6 +1899,16 @@
                     triviaRankingsCache.squash = JSON.parse(localStorage.getItem('physicsailab_squash_trivia_ranking') || '[]');
                 }
 
+                // Sanitizar automáticamente cualquier residuo ficticio
+                ['fisica', 'historia', 'squash'].forEach(board => {
+                    const originalLen = triviaRankingsCache[board].length;
+                    triviaRankingsCache[board] = triviaRankingsCache[board].filter(r => !isFakeTriviaEntry(r));
+                    if (triviaRankingsCache[board].length !== originalLen) {
+                        const storageKey = board === 'fisica' ? 'physicsailab_trivia_ranking' : (board === 'historia' ? 'physicsailab_historia_ranking' : 'physicsailab_squash_trivia_ranking');
+                        localStorage.setItem(storageKey, JSON.stringify(triviaRankingsCache[board]));
+                    }
+                });
+
                 renderTriviaTable();
                 if (showToast) alert('✓ Rankings de trivias actualizados desde la nube.');
             });
@@ -1194,7 +1918,7 @@
             const tbody = document.getElementById('adm-trivias-tbody');
             if (!tbody) return;
 
-            let list = triviaRankingsCache[currentTriviaBoard] || [];
+            let list = (triviaRankingsCache[currentTriviaBoard] || []).filter(r => !isFakeTriviaEntry(r));
             list.sort((a, b) => (b.score || 0) - (a.score || 0));
 
             const badgeCount = document.getElementById('badge-trivias-count');
@@ -1204,7 +1928,7 @@
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="8" style="text-align:center; padding:2rem; color:var(--adm-muted);">
-                            No hay participantes registrados en esta trivia todavía.
+                            <span>🏆</span> No hay participantes registrados en esta trivia todavía.
                         </td>
                     </tr>
                 `;
@@ -1218,14 +1942,12 @@
                 else if (rank === 2) medal = '🥈 2';
                 else if (rank === 3) medal = '🥉 3';
 
-                const isFake = (item.id && (item.id.startsWith('ref-') || item.id.startsWith('hist-') || item.id.startsWith('sq-') || (item.score > 12000 && !item.realPlayer)));
-
                 return `
-                    <tr style="${isFake ? 'background:rgba(239,68,68,0.06);' : ''}">
+                    <tr>
                         <td style="text-align:center; font-weight:800; color:#fff;">${medal}</td>
                         <td>
                             <strong style="color:#fff;">${escapeHtml(item.name || 'Participante')}</strong>
-                            ${isFake ? '<span style="font-size:0.68rem; background:rgba(239,68,68,0.2); color:#fca5a5; padding:0.1rem 0.4rem; border-radius:4px; margin-left:0.4rem;">Ejemplo Ficticio</span>' : '<span style="font-size:0.68rem; background:rgba(16,185,129,0.2); color:#34d399; padding:0.1rem 0.4rem; border-radius:4px; margin-left:0.4rem;">Real</span>'}
+                            <span style="font-size:0.68rem; background:rgba(16,185,129,0.2); color:#34d399; padding:0.1rem 0.4rem; border-radius:4px; margin-left:0.4rem;">Real</span>
                         </td>
                         <td style="color:var(--adm-muted);">${escapeHtml(item.institution || 'Universidad del Cauca')}</td>
                         <td style="text-align:center; font-weight:800; color:#fbbf24; font-family:monospace; font-size:1.05rem;">
@@ -1246,10 +1968,7 @@
 
         function deleteTriviaRecord(board, recordId, name) {
             if (confirm(`¿Eliminar el registro de "${name}" del Ranking?\nSe borrará de forma permanente de la tabla.`)) {
-                // Borrar de Firebase
-                fetch(`${FIREBASE_BASE}/trivia_rankings/${board}/${recordId}.json`, { method: 'DELETE' });
-                
-                // Borrar localmente
+                fetch(FIREBASE_BASE + '/trivia_rankings/' + board + '/' + recordId + '.json', { method: 'DELETE' });
                 triviaRankingsCache[board] = (triviaRankingsCache[board] || []).filter(r => r.id !== recordId);
                 const storageKey = board === 'fisica' ? 'physicsailab_trivia_ranking' : (board === 'historia' ? 'physicsailab_historia_ranking' : 'physicsailab_squash_trivia_ranking');
                 localStorage.setItem(storageKey, JSON.stringify(triviaRankingsCache[board]));
@@ -1258,19 +1977,15 @@
         }
 
         function purgeFakeTriviaExamples() {
-            if (confirm('🧹 ¿Deseas eliminar automáticamente todos los ejemplos ficticios (Marie Curie, Einstein, Laura Mosquera con 15.000 pts)?\n\nEsto dejará únicamente las puntuaciones de las personas reales que jueguen en la plataforma.')) {
+            if (confirm('🧹 ¿Deseas purgar automáticamente todos los registros ficticios de las 3 trivias?\n\nEsto dejará únicamente las puntuaciones de personas reales que hayan competido.')) {
                 ['fisica', 'historia', 'squash'].forEach(board => {
-                    triviaRankingsCache[board] = (triviaRankingsCache[board] || []).filter(r => {
-                        const id = r.id || '';
-                        return !id.startsWith('ref-') && !id.startsWith('hist-') && !id.startsWith('sq-');
-                    });
+                    triviaRankingsCache[board] = (triviaRankingsCache[board] || []).filter(r => !isFakeTriviaEntry(r));
                     const storageKey = board === 'fisica' ? 'physicsailab_trivia_ranking' : (board === 'historia' ? 'physicsailab_historia_ranking' : 'physicsailab_squash_trivia_ranking');
                     localStorage.setItem(storageKey, JSON.stringify(triviaRankingsCache[board]));
                     
-                    // Actualizar en Firebase
                     const boardMap = {};
-                    triviaRankingsCache[board].forEach(item => { boardMap[item.id] = item; });
-                    fetch(`${FIREBASE_BASE}/trivia_rankings/${board}.json`, {
+                    triviaRankingsCache[board].forEach(item => { if (item.id) boardMap[item.id] = item; });
+                    fetch(FIREBASE_BASE + '/trivia_rankings/' + board + '.json', {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(boardMap)
@@ -1282,13 +1997,26 @@
             }
         }
 
-        // 4. Quizzes y Notas
-        function fetchQuizResults() {
-            fetch(`${FIREBASE_BASE}/quiz_results.json`)
+        function resetEntireTriviaRanking() {
+            const boardName = currentTriviaBoard === 'fisica' ? 'Gran Trivia de Física' : (currentTriviaBoard === 'historia' ? 'Historia de la Física' : 'Trivia de Squash');
+            if (confirm(`⚠️ ¿Deseas RESETEAR POR COMPLETO el ranking de la «${boardName}» a CERO?\n\nSe eliminarán todas las puntuaciones acumuladas para comenzar una competencia completamente limpia.`)) {
+                triviaRankingsCache[currentTriviaBoard] = [];
+                const storageKey = currentTriviaBoard === 'fisica' ? 'physicsailab_trivia_ranking' : (currentTriviaBoard === 'historia' ? 'physicsailab_historia_ranking' : 'physicsailab_squash_trivia_ranking');
+                localStorage.removeItem(storageKey);
+                fetch(FIREBASE_BASE + '/trivia_rankings/' + currentTriviaBoard + '.json', { method: 'DELETE' });
+                renderTriviaTable();
+                alert(`✓ El ranking de la «${boardName}» ha quedado en cero.`);
+            }
+        }
+
+        // 7. Quizzes y Notas
+        function fetchQuizResults(showNotice) {
+            fetch(FIREBASE_BASE + '/quiz_results.json')
                 .then(r => r.json())
                 .then(data => {
                     allQuizResults = Object.values(data || {});
                     renderQuizResultsTable();
+                    if (showNotice) alert('✓ Calificaciones sincronizadas.');
                 }).catch(() => {
                     allQuizResults = JSON.parse(localStorage.getItem('physicsailab_quiz_results') || '[]');
                     renderQuizResultsTable();
@@ -1345,7 +2073,7 @@
 
         function deleteQuizRecord(id) {
             if (confirm('¿Eliminar esta calificación?')) {
-                fetch(`${FIREBASE_BASE}/quiz_results/${id}.json`, { method: 'DELETE' });
+                fetch(FIREBASE_BASE + '/quiz_results/' + id + '.json', { method: 'DELETE' });
                 allQuizResults = allQuizResults.filter(r => r.id !== id);
                 renderQuizResultsTable();
             }
@@ -1382,19 +2110,12 @@
 
         // Métricas / Contadores
         function fetchCounters() {
-            fetch(`${FIREBASE_BASE}/counters.json`)
+            fetch(FIREBASE_BASE + '/counters.json')
                 .then(r => r.json())
                 .then(c => {
                     if (!c) return;
                     if (c.real_visits) document.getElementById('kpi-real-visits').textContent = c.real_visits.toLocaleString('es-ES');
                     if (c.real_downloads) document.getElementById('kpi-real-downloads').textContent = c.real_downloads.toLocaleString('es-ES');
-                }).catch(() => {});
-
-            fetch(`${FIREBASE_BASE}/profiles.json`)
-                .then(r => r.json())
-                .then(p => {
-                    const count = Object.keys(p || {}).length;
-                    document.getElementById('kpi-profiles-count').textContent = count;
                 }).catch(() => {});
         }
 
