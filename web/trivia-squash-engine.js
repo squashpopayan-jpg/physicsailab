@@ -116,6 +116,7 @@
             }
 
             this.updateCommunityStats();
+            this.fetchRankingFromCloud();
         },
 
         // Actualizar estadísticas de la comunidad de squash
@@ -520,6 +521,25 @@
         // ==========================================
         // GESTIÓN DE RANKING DE SQUASH
         // ==========================================
+        
+        fetchRankingFromCloud: function() {
+            try {
+                const FIREBASE_BASE = 'https://squashpopayan-65e33-default-rtdb.firebaseio.com';
+                fetch(`${FIREBASE_BASE}/trivia_rankings/squash.json`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data && typeof data === 'object') {
+                            const cloudList = Object.values(data).filter(Boolean);
+                            if (cloudList.length > 0) {
+                                cloudList.sort((a, b) => (b.score || 0) - (a.score || 0));
+                                localStorage.setItem('physicsailab_squash_trivia_ranking', JSON.stringify(cloudList));
+                                if (this.state && this.state.currentView === 'ranking') this.renderRanking();
+                                if (typeof this.updateCommunityStats === 'function') this.updateCommunityStats();
+                            }
+                        }
+                    }).catch(() => {});
+            } catch(e) {}
+        },
         getRanking: function() {
             // Ranking benchmark de deportistas y clubes colombianos y sudamericanos
             const defaultRanking = [
@@ -575,6 +595,15 @@
 
             try {
                 localStorage.setItem('physicsailab_squash_trivia_ranking', JSON.stringify(ranking));
+
+            try {
+                const FIREBASE_BASE = 'https://squashpopayan-65e33-default-rtdb.firebaseio.com';
+                fetch(`${FIREBASE_BASE}/trivia_rankings/squash/${entry.id}.json`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(entry)
+                }).catch(() => {});
+            } catch(e) {}
             } catch (e) {}
         },
 

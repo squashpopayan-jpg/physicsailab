@@ -113,20 +113,44 @@
             if (localStorage.getItem('physicsailab_admin') === 'true') return true;
             if (localStorage.getItem('physicsailab_unlocked_all') === 'true') return true;
 
-            // 2. Desbloqueo específico para este curso
-            const unlockedList = JSON.parse(localStorage.getItem('physicsailab_unlocked_courses') || '[]');
-            if (unlockedList.includes(cId)) return true;
-            if (localStorage.getItem('unlocked_course_' + cId) === 'true') return true;
-
-            // 3. Revisar licencias activas emitidas al estudiante
+            // 2. Revisar licencias activas emitidas al estudiante (Subscriptores y compras)
             const licenses = JSON.parse(localStorage.getItem('physicsailab_student_licenses') || '[]');
             if (Array.isArray(licenses)) {
                 const hasActive = licenses.some(lic => {
                     const matchCourse = lic.cursoId === cId || lic.cursoId === 'todos' || lic.curso === cId;
                     const isActive = !lic.estado || lic.estado === 'activo' || lic.estado === 'aprobado';
-                    return matchCourse && isActive;
+                    if (!matchCourse || !isActive) return false;
+                    // Los suscriptores no se bloquean con la rotación mensual
+                    if (lic.tipo === 'suscripcion' || lic.esSuscripcion) {
+                        if (lic.expiraEn && Date.now() > lic.expiraEn) return false;
+                        return true;
+                    }
+                    return true;
                 });
                 if (hasActive) return true;
+            }
+
+            // 3. Revisar caducidad mensual (1 mes = 30 días) de clave de alumno
+            const unlockInfo = JSON.parse(localStorage.getItem('unlocked_info_' + cId) || 'null');
+            if (unlockInfo) {
+                // Si el docente forzó rotación mensual de claves:
+                const rotationTs = parseInt(localStorage.getItem('physicsailab_key_rotation_ts') || '0', 10);
+                if (rotationTs > 0 && unlockInfo.unlockedAt && unlockInfo.unlockedAt < rotationTs) {
+                    setCourseUnlocked(cId, false);
+                    return false;
+                }
+                // Si pasaron los 30 días del ciclo mensual:
+                if (unlockInfo.expiresAt && Date.now() > unlockInfo.expiresAt) {
+                    setCourseUnlocked(cId, false);
+                    return false;
+                }
+                return true;
+            }
+
+            // 4. Desbloqueo específico anterior
+            const unlockedList = JSON.parse(localStorage.getItem('physicsailab_unlocked_courses') || '[]');
+            if (unlockedList.includes(cId) || localStorage.getItem('unlocked_course_' + cId) === 'true') {
+                return true;
             }
 
             return false;
@@ -135,15 +159,25 @@
         }
     }
 
-    function setCourseUnlocked(cId, val) {
+    function setCourseUnlocked(cId, val, isSub = false) {
         try {
             let list = JSON.parse(localStorage.getItem('physicsailab_unlocked_courses') || '[]');
             if (val) {
                 if (!list.includes(cId)) list.push(cId);
                 localStorage.setItem('unlocked_course_' + cId, 'true');
+                const now = Date.now();
+                const unlockInfo = {
+                    cId: cId,
+                    unlockedAt: now,
+                    expiresAt: isSub ? (now + 365 * 24 * 60 * 60 * 1000) : (now + 30 * 24 * 60 * 60 * 1000),
+                    isSubscription: !!isSub,
+                    month: new Date().toISOString().slice(0, 7)
+                };
+                localStorage.setItem('unlocked_info_' + cId, JSON.stringify(unlockInfo));
             } else {
                 list = list.filter(id => id !== cId);
                 localStorage.removeItem('unlocked_course_' + cId);
+                localStorage.removeItem('unlocked_info_' + cId);
                 localStorage.removeItem('physicsailab_admin');
                 localStorage.removeItem('physicsailab_unlocked_all');
             }
@@ -169,6 +203,43 @@
 
     // Inyectar estilos CSS del modal, candados y barras
     const css = `
+        
+        /* Estilos de bloqueo estricto para Manual de Taller Faro */
+        .pg-faro-locked {
+            filter: blur(12px) grayscale(75%) !important;
+            opacity: 0.22 !important;
+            pointer-events: none !important;
+            user-select: none !important;
+            max-height: 220px !important;
+            overflow: hidden !important;
+            margin-bottom: 2rem !important;
+            position: relative !important;
+        }
+        .pg-faro-barrier-card {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.98)) !important;
+            border: 2px solid rgba(245, 158, 11, 0.6) !important;
+            border-radius: 16px !important;
+            padding: 2.2rem 1.75rem !important;
+            margin: 2.5rem auto !important;
+            max-width: 820px !important;
+            text-align: center !important;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6), 0 0 30px rgba(245, 158, 11, 0.15) !important;
+            position: relative !important;
+            z-index: 100 !important;
+        }
+        .pg-faro-barrier-card h3 {
+            color: #ffffff !important;
+            font-size: 1.35rem !important;
+            margin: 0.5rem 0 0.5rem !important;
+        }
+        .pg-faro-barrier-card p {
+            color: #cbd5e1 !important;
+            font-size: 0.92rem !important;
+            line-height: 1.55 !important;
+            max-width: 650px !important;
+            margin: 0 auto 1.35rem !important;
+        }
+
         /* Candados y tags en navegación */
         .pg-lock-pill {
             display: inline-flex;
@@ -1319,6 +1390,9 @@
     function applyFaroGuard() {
         const unlocked = isUnlocked();
         const freeHrefs = ['#que-es', '#sistema'];
+        const lockedSectionIds = ['sensores', 'materiales', 'electronica', 'carcasa', 'montaje', 'firmware', 'puesta', 'entrenar', 'problemas', 'seguridad', 'siguiente', 'archivos'];
+
+        // 1. Bloqueo en índice lateral
         const links = document.querySelectorAll('nav.indice a, .indice a');
         links.forEach((a) => {
             const href = a.getAttribute('href') || '';
@@ -1343,6 +1417,51 @@
             }
         });
 
+        // 2. Bloqueo visual estricto de las secciones técnicas (electrónica, STL 3D, firmware)
+        lockedSectionIds.forEach(id => {
+            const sec = document.getElementById(id);
+            if (!sec) return;
+            if (!unlocked) {
+                sec.classList.add('pg-faro-locked');
+            } else {
+                sec.classList.remove('pg-faro-locked');
+            }
+        });
+
+        // 3. Tarjeta de barrera de paywall tras la sección gratuita #sistema
+        const sistemaSec = document.getElementById('sistema');
+        let barrier = document.getElementById('pg-faro-paywall-barrier');
+        if (!unlocked) {
+            if (!barrier && sistemaSec && sistemaSec.parentNode) {
+                barrier = document.createElement('div');
+                barrier.id = 'pg-faro-paywall-barrier';
+                barrier.className = 'pg-faro-barrier-card';
+                barrier.innerHTML = `
+                    <div style="font-size:2.4rem; margin-bottom:0.5rem;">🔒</div>
+                    <h3>Contenido Exclusivo · Kit y Manual de Taller Faro</h3>
+                    <p>
+                        Has completado la <strong>vista previa gratuita</strong> (Introducción y Sistema). Los módulos técnicos de esquemas eléctricos interactivos, firmware ESP32-S3 (2.700 líneas), despiece 3D y planos 1:1 requieren clave de alumno o adquisición del kit.
+                    </p>
+                    <div style="display:flex; justify-content:center; gap:0.75rem; flex-wrap:wrap;">
+                        <button type="button" id="pg-faro-barrier-unlock-btn" style="background:linear-gradient(135deg, #0284c7, #06b6d4); color:#fff; font-weight:700; border:none; padding:0.65rem 1.35rem; border-radius:10px; cursor:pointer; font-size:0.92rem; box-shadow:0 4px 15px rgba(2,132,199,0.35);">
+                            🔑 Desbloquear con Clave de Alumno
+                        </button>
+                        <a href="https://physicsailab.com/#cursos" target="_blank" style="background:rgba(255,255,255,0.08); color:#e2e8f0; font-weight:600; border:1px solid rgba(255,255,255,0.2); padding:0.65rem 1.25rem; border-radius:10px; text-decoration:none; font-size:0.92rem;">
+                            💳 Adquirir Kit &amp; Manual de Taller
+                        </a>
+                    </div>
+                `;
+                sistemaSec.parentNode.insertBefore(barrier, sistemaSec.nextSibling);
+                const uBtn = barrier.querySelector('#pg-faro-barrier-unlock-btn');
+                if (uBtn) {
+                    uBtn.addEventListener('click', () => openPaywall('faro'));
+                }
+            }
+        } else {
+            if (barrier) barrier.remove();
+        }
+
+        // 4. Interceptores de interacción y scroll
         if (!window.__faroGuardBound) {
             window.__faroGuardBound = true;
             document.addEventListener('click', (e) => {
@@ -1356,6 +1475,18 @@
                     openPaywall('faro');
                 }
             }, true);
+
+            window.addEventListener('scroll', () => {
+                if (isUnlocked()) return;
+                const barrierEl = document.getElementById('pg-faro-paywall-barrier');
+                if (barrierEl) {
+                    const rect = barrierEl.getBoundingClientRect();
+                    if (rect.bottom < -280) {
+                        barrierEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        openPaywall('faro');
+                    }
+                }
+            }, { passive: true });
         }
     }
 
@@ -1403,7 +1534,61 @@
     }
 
     // Inicialización al cargar el DOM
+    
+    // Telemetría en vivo de sesiones activas (Anti-compartir cuentas y control de accesos)
+    function initActiveSessionTelemetry(cId) {
+        try {
+            const FIREBASE_BASE = 'https://squashpopayan-65e33-default-rtdb.firebaseio.com';
+            let sId = sessionStorage.getItem('physicsailab_session_id');
+            if (!sId) {
+                sId = 'ses_' + Math.random().toString(36).substring(2, 9) + '_' + Date.now().toString(36);
+                sessionStorage.setItem('physicsailab_session_id', sId);
+            }
+
+            const profile = JSON.parse(localStorage.getItem('physicsailab_student_profile') || '{}');
+            const isAdminUser = localStorage.getItem('physicsailab_admin') === 'true';
+            const studentName = isAdminUser ? '👑 Profesor Manuel Obando' : (profile.name || 'Estudiante / Visitante');
+            const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+            const dev = isMobile ? 'Móvil' : 'PC / Laptop';
+
+            function beat() {
+                const payload = {
+                    sessionId: sId,
+                    studentName: studentName,
+                    courseId: cId,
+                    pageTitle: document.title || cId,
+                    path: location.pathname,
+                    device: dev,
+                    lastSeen: Date.now(),
+                    isUnlocked: isUnlocked(),
+                    isOnline: true
+                };
+
+                fetch(`${FIREBASE_BASE}/active_sessions/${sId}.json`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                }).catch(() => {});
+
+                // Verificar si esta sesión fue expulsada por el docente
+                fetch(`${FIREBASE_BASE}/revoked_sessions/${sId}.json`)
+                    .then(r => r.json())
+                    .then(rev => {
+                        if (rev === true) {
+                            setCourseUnlocked(cId, false);
+                            alert('🔒 Tu sesión ha sido cerrada por el docente administrador. Por favor ingresa nuevamente tu clave.');
+                            location.reload();
+                        }
+                    }).catch(() => {});
+            }
+
+            beat();
+            setInterval(beat, 45000);
+        } catch(e) {}
+    }
+
     function init() {
+        initActiveSessionTelemetry(getCurrentCourseId());
         updateGuardState();
         setTimeout(updateGuardState, 150);
         setTimeout(updateGuardState, 500);

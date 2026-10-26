@@ -1,0 +1,1407 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Centro de Mando & Panel Docente · PhysicsAILab</title>
+    <meta name="description" content="Panel exclusivo de administración, telemetría en vivo, gestión de alumnos, rotación de claves y control de trivias. Mg. Manuel Alejandro Obando.">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap">
+    <link rel="stylesheet" href="./styles.css">
+    <style>
+        :root {
+            --adm-bg: #070d19;
+            --adm-card-bg: #0b1325;
+            --adm-border: rgba(99, 102, 241, 0.2);
+            --adm-border-hover: rgba(99, 102, 241, 0.45);
+            --adm-indigo: #6366f1;
+            --adm-cyan: #06b6d4;
+            --adm-emerald: #10b981;
+            --adm-amber: #f59e0b;
+            --adm-rose: #f43f5e;
+            --adm-text: #f8fafc;
+            --adm-muted: #94a3b8;
+        }
+
+        body.admin-page {
+            background-color: var(--adm-bg);
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.12), transparent 40%),
+                radial-gradient(circle at 85% 85%, rgba(6, 182, 212, 0.08), transparent 45%),
+                radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.6), transparent 70%);
+            color: var(--adm-text);
+            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Barra Superior */
+        .adm-header {
+            background: rgba(11, 19, 37, 0.85);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--adm-border);
+            padding: 1rem 1.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .adm-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+        .adm-brand-logo {
+            font-size: 1.85rem;
+            background: rgba(99, 102, 241, 0.15);
+            border: 1px solid rgba(99, 102, 241, 0.35);
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .adm-brand-title {
+            font-size: 1.22rem;
+            font-weight: 800;
+            color: #fff;
+            margin: 0;
+            letter-spacing: -0.3px;
+        }
+        .adm-brand-sub {
+            font-size: 0.78rem;
+            color: var(--adm-muted);
+            margin: 0.1rem 0 0;
+        }
+
+        .adm-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            flex-wrap: wrap;
+        }
+
+        .adm-status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            color: #34d399;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.35rem 0.75rem;
+            border-radius: 999px;
+        }
+        .adm-status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #10b981;
+            box-shadow: 0 0 8px #10b981;
+            animation: pulse-dot 2s infinite;
+        }
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
+        }
+
+        /* Pestañas de Navegación */
+        .adm-tabs-nav {
+            background: rgba(15, 23, 42, 0.7);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 0.5rem 1.75rem 0;
+            display: flex;
+            gap: 0.4rem;
+            overflow-x: auto;
+            scrollbar-width: thin;
+        }
+        .adm-tab-btn {
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: var(--adm-muted);
+            font-size: 0.92rem;
+            font-weight: 700;
+            padding: 0.85rem 1.2rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+        .adm-tab-btn:hover {
+            color: #e2e8f0;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px 8px 0 0;
+        }
+        .adm-tab-btn.active {
+            color: #ffffff;
+            border-bottom-color: var(--adm-indigo);
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 8px 8px 0 0;
+        }
+        .adm-tab-badge {
+            font-size: 0.72rem;
+            padding: 0.15rem 0.45rem;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.1);
+            color: inherit;
+        }
+        .adm-tab-btn.active .adm-tab-badge {
+            background: var(--adm-indigo);
+            color: #fff;
+        }
+
+        /* Contenedor Principal */
+        .adm-main {
+            flex: 1;
+            padding: 1.75rem;
+            max-width: 1440px;
+            width: 100%;
+            margin: 0 auto;
+            box-sizing: border-box;
+        }
+
+        .adm-tab-content {
+            display: none;
+            animation: fadeInTab 0.25s ease forwards;
+        }
+        .adm-tab-content.active {
+            display: block;
+        }
+        @keyframes fadeInTab {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cards & Paneles */
+        .adm-card {
+            background: var(--adm-card-bg);
+            border: 1px solid var(--adm-border);
+            border-radius: 14px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+        .adm-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+            padding-bottom: 0.85rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .adm-card-title {
+            color: #fff;
+            font-size: 1.18rem;
+            font-weight: 700;
+            margin: 0 0 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .adm-card-desc {
+            color: var(--adm-muted);
+            font-size: 0.84rem;
+            margin: 0;
+            line-height: 1.45;
+        }
+
+        /* KPIs */
+        .adm-kpi-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.75rem;
+        }
+        .adm-kpi {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 1.15rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+        .adm-kpi-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .adm-kpi-label {
+            font-size: 0.76rem;
+            color: var(--adm-muted);
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+        }
+        .adm-kpi-val {
+            font-size: 1.9rem;
+            font-weight: 800;
+            color: #fff;
+            font-family: 'JetBrains Mono', monospace;
+            line-height: 1.1;
+        }
+        .adm-kpi-sub {
+            font-size: 0.75rem;
+            color: var(--adm-cyan);
+            margin-top: 0.25rem;
+        }
+
+        /* Tablas */
+        .adm-table-wrap {
+            overflow-x: auto;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        table.adm-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.86rem;
+            text-align: left;
+        }
+        table.adm-table th {
+            background: rgba(15, 23, 42, 0.95);
+            color: #cbd5e1;
+            font-weight: 700;
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            white-space: nowrap;
+        }
+        table.adm-table td {
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: #e2e8f0;
+            vertical-align: middle;
+        }
+        table.adm-table tbody tr:hover {
+            background: rgba(99, 102, 241, 0.06);
+        }
+
+        /* Botones */
+        .adm-btn {
+            font-family: inherit;
+            font-size: 0.84rem;
+            font-weight: 700;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .adm-btn-primary {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+        .adm-btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+        }
+        .adm-btn-secondary {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.15);
+            color: #cbd5e1;
+        }
+        .adm-btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+        .adm-btn-danger {
+            background: rgba(239, 68, 68, 0.12);
+            border-color: rgba(239, 68, 68, 0.35);
+            color: #f87171;
+        }
+        .adm-btn-danger:hover {
+            background: rgba(239, 68, 68, 0.25);
+            color: #fca5a5;
+        }
+        .adm-btn-emerald {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #fff;
+        }
+        .adm-btn-amber {
+            background: rgba(245, 158, 11, 0.15);
+            border-color: rgba(245, 158, 11, 0.4);
+            color: #fbbf24;
+        }
+        .adm-btn-amber:hover {
+            background: rgba(245, 158, 11, 0.25);
+        }
+
+        /* Login Box cuando no hay sesión */
+        .adm-login-box {
+            max-width: 440px;
+            margin: 6rem auto 3rem;
+            background: var(--adm-card-bg);
+            border: 1px solid var(--adm-border);
+            border-radius: 18px;
+            padding: 2.2rem;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(99, 102, 241, 0.15);
+            text-align: center;
+        }
+        .adm-input {
+            width: 100%;
+            background: #070d19;
+            border: 1.5px solid rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            color: #fff;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .adm-input:focus {
+            border-color: var(--adm-indigo);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        /* Banner de Rotación Mensual */
+        .adm-rotation-banner {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(6, 182, 212, 0.08));
+            border: 1.5px solid rgba(99, 102, 241, 0.35);
+            border-radius: 14px;
+            padding: 1.35rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body class="admin-page">
+
+    <!-- Vista de Autenticación Docente (si no hay sesión activa) -->
+    <div id="adm-login-screen" style="display:none;">
+        <div class="adm-login-box">
+            <div style="font-size:3rem; margin-bottom:0.75rem;">🔐</div>
+            <span style="background:rgba(99,102,241,0.15); color:#a5b4fc; border:1px solid rgba(99,102,241,0.3); font-size:0.75rem; font-weight:700; padding:0.25rem 0.75rem; border-radius:999px;">
+                ACCESO EXCLUSIVO DOCENTE
+            </span>
+            <h2 style="font-size:1.6rem; color:#fff; margin:0.85rem 0 0.3rem;">Centro de Mando</h2>
+            <p style="font-size:0.85rem; color:var(--adm-muted); margin:0 0 1.75rem;">
+                Mg. Manuel Alejandro Obando · Universidad del Cauca
+            </p>
+
+            <form id="adm-login-form" onsubmit="event.preventDefault(); handleAdminLogin();" style="text-align:left;">
+                <label for="adm-pass" style="font-size:0.82rem; color:#cbd5e1; font-weight:600; display:block; margin-bottom:0.4rem;">
+                    Contraseña
+                </label>
+                <input type="password" id="adm-pass" class="adm-input" placeholder="Ingresa tu contraseña..." autocomplete="current-password" autofocus required>
+                <div id="adm-login-err" style="color:#f87171; font-size:0.8rem; margin-top:0.5rem; display:none;"></div>
+
+                <button type="submit" class="adm-btn adm-btn-primary" style="width:100%; justify-content:center; padding:0.8rem; font-size:0.95rem; margin-top:1.25rem;">
+                    Ingresar al Panel de Mando 🚀
+                </button>
+            </form>
+
+            <div style="margin-top:1.5rem; font-size:0.8rem; color:var(--adm-muted);">
+                <a href="/" style="color:#38bdf8; text-decoration:none;">← Volver al portal principal</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vista Principal del Centro de Mando (con sesión activa) -->
+    <div id="adm-dashboard-screen" style="display:none; flex-direction:column; min-height:100vh;">
+        
+        <!-- Header Superior -->
+        <header class="adm-header">
+            <div class="adm-brand">
+                <div class="adm-brand-logo">👑</div>
+                <div>
+                    <h1 class="adm-brand-title">PhysicsAILab · Centro de Mando Docente</h1>
+                    <p class="adm-brand-sub">Mg. Manuel Alejandro Obando · Universidad del Cauca</p>
+                </div>
+            </div>
+
+            <div class="adm-header-actions">
+                <span class="adm-status-pill">
+                    <span class="adm-status-dot"></span>
+                    <span>Firebase Conectado</span>
+                </span>
+                <button class="adm-btn adm-btn-secondary" onclick="refreshAdminData(true)" title="Sincronizar telemetría y datos">
+                    🔄 Refrescar
+                </button>
+                <a href="/" target="_blank" class="adm-btn adm-btn-secondary" title="Abrir portal web en nueva pestaña">
+                    🌐 Ver Portal Web ↗️
+                </a>
+                <button class="adm-btn adm-btn-danger" onclick="logoutAdmin()">
+                    🚪 Cerrar Sesión
+                </button>
+            </div>
+        </header>
+
+        <!-- Navegación por Pestañas -->
+        <nav class="adm-tabs-nav" id="adm-tabs">
+            <button class="adm-tab-btn active" onclick="switchAdminTab('tab-live', this)">
+                <span>⚡ En Vivo & Audiencia</span>
+                <span class="adm-tab-badge" id="badge-live-count">0</span>
+            </button>
+            <button class="adm-tab-btn" onclick="switchAdminTab('tab-keys', this)">
+                <span>🔑 Claves Mensuales & Alumnos</span>
+            </button>
+            <button class="adm-tab-btn" onclick="switchAdminTab('tab-trivias', this)">
+                <span>🏆 Trivias & Rankings</span>
+                <span class="adm-tab-badge" id="badge-trivias-count">0</span>
+            </button>
+            <button class="adm-tab-btn" onclick="switchAdminTab('tab-quizzes', this)">
+                <span>📝 Quizzes Oficiales & Notas</span>
+            </button>
+            <button class="adm-tab-btn" onclick="switchAdminTab('tab-projects', this)">
+                <span>🔬 Proyectos Especiales</span>
+            </button>
+        </nav>
+
+        <!-- Área de Contenido de Pestañas -->
+        <main class="adm-main">
+
+            <!-- ============================================================ -->
+            <!-- PESTAÑA 1: EN VIVO & AUDIENCIA (MONITOREO DE USUARIOS Y SQUASH) -->
+            <!-- ============================================================ -->
+            <section id="tab-live" class="adm-tab-content active">
+                
+                <!-- KPIs de la Plataforma -->
+                <div class="adm-kpi-row">
+                    <div class="adm-kpi">
+                        <div class="adm-kpi-top">
+                            <span class="adm-kpi-label">Usuarios en Línea</span>
+                            <span style="font-size:1.25rem;">🟢</span>
+                        </div>
+                        <div class="adm-kpi-val" id="kpi-live-users">0</div>
+                        <div class="adm-kpi-sub">Activos en los últimos 2 min</div>
+                    </div>
+                    <div class="adm-kpi">
+                        <div class="adm-kpi-top">
+                            <span class="adm-kpi-label">Visitas Reales</span>
+                            <span style="font-size:1.25rem;">👁️</span>
+                        </div>
+                        <div class="adm-kpi-val" id="kpi-real-visits">0</div>
+                        <div class="adm-kpi-sub" id="kpi-public-visits">Público: 1.250+</div>
+                    </div>
+                    <div class="adm-kpi">
+                        <div class="adm-kpi-top">
+                            <span class="adm-kpi-label">Descargas Reales</span>
+                            <span style="font-size:1.25rem;">📥</span>
+                        </div>
+                        <div class="adm-kpi-val" id="kpi-real-downloads">0</div>
+                        <div class="adm-kpi-sub" id="kpi-public-downloads">Público: 480+</div>
+                    </div>
+                    <div class="adm-kpi">
+                        <div class="adm-kpi-top">
+                            <span class="adm-kpi-label">Alumnos Registrados</span>
+                            <span style="font-size:1.25rem;">👥</span>
+                        </div>
+                        <div class="adm-kpi-val" id="kpi-profiles-count">0</div>
+                        <div class="adm-kpi-sub">Perfiles en base de datos</div>
+                    </div>
+                </div>
+
+                <!-- Tabla de Usuarios Activos en Vivo (Control Anti-Cuentas Compartidas) -->
+                <div class="adm-card">
+                    <div class="adm-card-header">
+                        <div>
+                            <h3 class="adm-card-title">
+                                👥 Usuarios Activos Ahora Mismo (Monitoreo en Tiempo Real)
+                            </h3>
+                            <p class="adm-card-desc">
+                                Detecta quién está utilizando la plataforma, qué simulador o curso tienen abierto en este instante y su dispositivo. Ideal para detectar cuentas compartidas en el Simulador de Squash.
+                            </p>
+                        </div>
+                        <button class="adm-btn adm-btn-secondary" onclick="fetchActiveSessions(true)">
+                            🔄 Actualizar Sesiones
+                        </button>
+                    </div>
+
+                    <div class="adm-table-wrap">
+                        <table class="adm-table">
+                            <thead>
+                                <tr>
+                                    <th>Estudiante / Usuario</th>
+                                    <th>Página o Simulador en Uso</th>
+                                    <th>Dispositivo</th>
+                                    <th>Última Señal (Heartbeat)</th>
+                                    <th style="text-align:center;">Acción de Control</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adm-active-sessions-tbody">
+                                <tr>
+                                    <td colspan="5" style="text-align:center; padding:2rem; color:var(--adm-muted);">
+                                        Cargando sesiones activas en la plataforma...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Línea de Tiempo de Actividad Reciente -->
+                <div class="adm-card">
+                    <div class="adm-card-header">
+                        <div>
+                            <h3 class="adm-card-title">
+                                ⚡ Registro de Actividad y Frecuentación Reciente
+                            </h3>
+                            <p class="adm-card-desc">
+                                Eventos registrados en tiempo real por los estudiantes (visitas, creación de perfiles, apertura de cursos).
+                            </p>
+                        </div>
+                        <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+                            <button class="adm-btn adm-btn-secondary active" onclick="filterActivityLog('all', this)">Todos</button>
+                            <button class="adm-btn adm-btn-secondary" onclick="filterActivityLog('visit', this)">Visitas</button>
+                            <button class="adm-btn adm-btn-secondary" onclick="filterActivityLog('profile', this)">Perfiles</button>
+                            <button class="adm-btn adm-btn-secondary" onclick="filterActivityLog('course', this)">Cursos</button>
+                        </div>
+                    </div>
+
+                    <div id="adm-activity-container" style="max-height:360px; overflow-y:auto; display:flex; flex-direction:column; gap:0.6rem;">
+                        <div style="text-align:center; padding:1.5rem; color:var(--adm-muted);">
+                            Cargando historial de actividad...
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- PESTAÑA 2: CLAVES MENSUALES & CONTROL DE ALUMNOS (CADUCIDAD 1 MES) -->
+            <!-- ============================================================ -->
+            <section id="tab-keys" class="adm-tab-content">
+                
+                <!-- Banner de Rotación Mensual -->
+                <div class="adm-rotation-banner">
+                    <div>
+                        <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.35rem;">
+                            <span style="font-size:1.3rem;">🔄</span>
+                            <h3 style="color:#fff; font-size:1.15rem; margin:0; font-weight:700;">
+                                Política de Rotación Mensual de Contraseñas (Caducidad 30 Días)
+                            </h3>
+                        </div>
+                        <p style="color:#cbd5e1; font-size:0.86rem; margin:0; max-width:760px; line-height:1.5;">
+                            Las claves estudiantiles de cada curso tienen una <strong>vigencia automática de 1 mes (30 días)</strong>. Pasado ese tiempo, el sistema les solicita volver a ingresar la nueva clave. Si deseas expulsar inmediatamente a los alumnos que ya terminaron o dejaron de ver el curso contigo, puedes forzar la renovación con un solo clic.
+                        </p>
+                        <div style="margin-top:0.65rem; font-size:0.78rem; color:#34d399; display:flex; align-items:center; gap:0.4rem;">
+                            <span>🛡️</span>
+                            <span><strong>Protección para Suscriptores:</strong> Los alumnos con suscripción de pago (semestral o anual) NO son bloqueados; su acceso continúa activo hasta la fecha de expiración de su suscripción.</span>
+                        </div>
+                    </div>
+                    <button class="adm-btn adm-btn-amber" onclick="forceMonthlyRotation()" style="padding:0.75rem 1.25rem; font-size:0.92rem;">
+                        🔄 Forzar Rotación de Claves este Mes
+                    </button>
+                </div>
+
+                <!-- Configuración de Claves Vigentes por Curso -->
+                <div class="adm-card">
+                    <div class="adm-card-header">
+                        <div>
+                            <h3 class="adm-card-title">🔑 Claves Vigentes de Acceso a Simuladores & Cursos</h3>
+                            <p class="adm-card-desc">
+                                Asigna o personaliza la contraseña vigente de este mes para cada una de tus materias y simuladores.
+                            </p>
+                        </div>
+                        <button class="adm-btn adm-btn-emerald" onclick="saveCustomCourseKeys()">
+                            💾 Guardar Todas las Claves
+                        </button>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:1rem;">
+                        <!-- Simulador Squash -->
+                        <div style="background:#0b1120; border:1px solid rgba(16,185,129,0.3); border-radius:10px; padding:1.1rem;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                                <strong style="color:#34d399; font-size:0.95rem;">🎾 Simulador Manu Squash</strong>
+                                <span style="font-size:0.72rem; background:rgba(16,185,129,0.15); color:#34d399; padding:0.15rem 0.5rem; border-radius:6px; font-weight:700;">Rotación Mensual</span>
+                            </div>
+                            <p style="font-size:0.78rem; color:var(--adm-muted); margin:0 0 0.75rem;">
+                                Controles de táctica, biomecánica y personalización de rutinas.
+                            </p>
+                            <div style="display:flex; gap:0.4rem;">
+                                <input type="text" id="key-squash_sim" class="adm-input" value="SQUASH-PRO-2026" style="text-transform:uppercase; font-family:monospace; font-weight:700;">
+                                <button class="adm-btn adm-btn-secondary" onclick="generateRandomKeyFor('key-squash_sim', 'SQUASH')">🎲</button>
+                            </div>
+                        </div>
+
+                        <!-- Faro Pods de Reacción -->
+                        <div style="background:#0b1120; border:1px solid rgba(245,158,11,0.3); border-radius:10px; padding:1.1rem;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                                <strong style="color:#fbbf24; font-size:0.95rem;">💡 Faro: Pods de Reacción</strong>
+                                <span style="font-size:0.72rem; background:rgba(245,158,11,0.15); color:#fbbf24; padding:0.15rem 0.5rem; border-radius:6px; font-weight:700;">Manual Protegido</span>
+                            </div>
+                            <p style="font-size:0.78rem; color:var(--adm-muted); margin:0 0 0.75rem;">
+                                Manual técnico de taller, firmware ESP32-S3 y STL 3D.
+                            </p>
+                            <div style="display:flex; gap:0.4rem;">
+                                <input type="text" id="key-faro" class="adm-input" value="FARO-2026" style="text-transform:uppercase; font-family:monospace; font-weight:700;">
+                                <button class="adm-btn adm-btn-secondary" onclick="generateRandomKeyFor('key-faro', 'FARO')">🎲</button>
+                            </div>
+                        </div>
+
+                        <!-- Física del Estado Sólido -->
+                        <div style="background:#0b1120; border:1px solid rgba(56,189,248,0.3); border-radius:10px; padding:1.1rem;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                                <strong style="color:#38bdf8; font-size:0.95rem;">🔬 Física del Estado Sólido</strong>
+                                <span style="font-size:0.72rem; background:rgba(56,189,248,0.15); color:#38bdf8; padding:0.15rem 0.5rem; border-radius:6px; font-weight:700;">30 Capítulos</span>
+                            </div>
+                            <p style="font-size:0.78rem; color:var(--adm-muted); margin:0 0 0.75rem;">
+                                Cristales, red recíproca, fonones y 119 simulaciones WebGL.
+                            </p>
+                            <div style="display:flex; gap:0.4rem;">
+                                <input type="text" id="key-solido" class="adm-input" value="SOLIDO-2026" style="text-transform:uppercase; font-family:monospace; font-weight:700;">
+                                <button class="adm-btn adm-btn-secondary" onclick="generateRandomKeyFor('key-solido', 'SOLIDO')">🎲</button>
+                            </div>
+                        </div>
+
+                        <!-- Mecánica Clásica -->
+                        <div style="background:#0b1120; border:1px solid rgba(99,102,241,0.3); border-radius:10px; padding:1.1rem;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                                <strong style="color:#a5b4fc; font-size:0.95rem;">⚙️ Mecánica Clásica</strong>
+                                <span style="font-size:0.72rem; background:rgba(99,102,241,0.15); color:#a5b4fc; padding:0.15rem 0.5rem; border-radius:6px; font-weight:700;">Semestre Unicauca</span>
+                            </div>
+                            <p style="font-size:0.78rem; color:var(--adm-muted); margin:0 0 0.75rem;">
+                                Mecánica lagrangiana, oscilaciones y dinámica de partículas.
+                            </p>
+                            <div style="display:flex; gap:0.4rem;">
+                                <input type="text" id="key-mecanica" class="adm-input" value="MECANICA-2026" style="text-transform:uppercase; font-family:monospace; font-weight:700;">
+                                <button class="adm-btn adm-btn-secondary" onclick="generateRandomKeyFor('key-mecanica', 'MEC')">🎲</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Licencias y Códigos Únicos Individuales de Estudiantes -->
+                <div class="adm-card">
+                    <div class="adm-card-header">
+                        <div>
+                            <h3 class="adm-card-title">🎓 Licencias Individuales de Alumnos</h3>
+                            <p class="adm-card-desc">
+                                Emite códigos únicos para estudiantes particulares. Si el alumno deja de asistir, puedes revocar su licencia aquí.
+                            </p>
+                        </div>
+                        <button class="adm-btn adm-btn-primary" onclick="openIssueLicenseModal()">
+                            ➕ Emitir Nuevo Código para Alumno
+                        </button>
+                    </div>
+
+                    <div class="adm-table-wrap">
+                        <table class="adm-table">
+                            <thead>
+                                <tr>
+                                    <th>Alumno</th>
+                                    <th>Curso / Materia</th>
+                                    <th>Tipo de Acceso</th>
+                                    <th>Código Único</th>
+                                    <th>Estado</th>
+                                    <th style="text-align:center;">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adm-licenses-tbody">
+                                <tr>
+                                    <td colspan="6" style="text-align:center; padding:1.5rem; color:var(--adm-muted);">
+                                        Cargando licencias de estudiantes...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- PESTAÑA 3: TRIVIAS & RANKINGS (GESTIÓN DE PUNTUAJES REALES) -->
+            <!-- ============================================================ -->
+            <section id="tab-trivias" class="adm-tab-content">
+                <div class="adm-card">
+                    <div class="adm-card-header">
+                        <div>
+                            <h3 class="adm-card-title">🏆 Gestión de Trivias & Auditoría del Ranking Oficial</h3>
+                            <p class="adm-card-desc">
+                                Supervisa a las personas reales que participan en las trivias de la plataforma. Puedes <strong>eliminar registros inflados o ficticios</strong> para que los competidores reales tengan una competencia justa y limpia.
+                            </p>
+                        </div>
+                        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                            <button class="adm-btn adm-btn-amber" onclick="purgeFakeTriviaExamples()" title="Elimina los ejemplos ficticios de 15.000 pts para que compitan personas reales">
+                                🧹 Purgar Ejemplos Ficticios
+                            </button>
+                            <button class="adm-btn adm-btn-secondary" onclick="fetchTriviaRankings(true)">
+                                🔄 Actualizar Rankings
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Selector de Trivia -->
+                    <div style="display:flex; gap:0.5rem; margin-bottom:1.25rem; flex-wrap:wrap;">
+                        <button class="adm-btn adm-btn-secondary active" id="btn-triv-fisica" onclick="selectTriviaBoard('fisica')">
+                            🎯 Gran Trivia de Física
+                        </button>
+                        <button class="adm-btn adm-btn-secondary" id="btn-triv-historia" onclick="selectTriviaBoard('historia')">
+                            📜 Historia de la Física
+                        </button>
+                        <button class="adm-btn adm-btn-secondary" id="btn-triv-squash" onclick="selectTriviaBoard('squash')">
+                            🎾 Gran Trivia de Squash
+                        </button>
+                    </div>
+
+                    <!-- Tabla de Participantes en Ranking -->
+                    <div class="adm-table-wrap">
+                        <table class="adm-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:60px; text-align:center;">Lugar</th>
+                                    <th>Participante</th>
+                                    <th>Institución / Ciudad</th>
+                                    <th style="text-align:center;">Puntaje Oficial</th>
+                                    <th style="text-align:center;">Preguntas</th>
+                                    <th style="text-align:center;">Racha Máx.</th>
+                                    <th style="text-align:center;">Fecha</th>
+                                    <th style="text-align:center;">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adm-trivias-tbody">
+                                <tr>
+                                    <td colspan="8" style="text-align:center; padding:2rem; color:var(--adm-muted);">
+                                        Cargando participantes de la trivia...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- PESTAÑA 4: QUIZZES OFICIALES & CALIFICACIONES -->
+            <!-- ============================================================ -->
+            <section id="tab-quizzes" class="adm-tab-content">
+                <div class="adm-card">
+                    <div class="adm-card-header">
+                        <div>
+                            <h3 class="adm-card-title">📝 Quizzes Universitarios con PIN & Planilla Oficial</h3>
+                            <p class="adm-card-desc">
+                                Cada evaluación tiene un PIN independiente. Monitorea las calificaciones oficiales de tus estudiantes y exporta a Excel (CSV).
+                            </p>
+                        </div>
+                        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                            <button class="adm-btn adm-btn-emerald" onclick="downloadQuizResultsCsv()">
+                                📥 Descargar Planilla Excel (CSV)
+                            </button>
+                            <button class="adm-btn adm-btn-secondary" onclick="fetchQuizResults(true)">
+                                🔄 Actualizar Notas
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Lista de PINs por Quiz -->
+                    <div id="adm-quizzes-pins-list" style="margin-bottom:1.5rem; display:flex; flex-direction:column; gap:0.75rem;">
+                        <!-- Se llena dinámicamente -->
+                    </div>
+
+                    <!-- Tabla de Calificaciones de Estudiantes -->
+                    <h4 style="color:#fff; font-size:1.05rem; margin:1.5rem 0 0.85rem;">
+                        📊 Planilla de Estudiantes Evaluados (Resultados & Antifraude)
+                    </h4>
+                    <div class="adm-table-wrap">
+                        <table class="adm-table">
+                            <thead>
+                                <tr>
+                                    <th>Estudiante</th>
+                                    <th>Evaluación</th>
+                                    <th style="text-align:center;">Nota (0.0 - 5.0)</th>
+                                    <th style="text-align:center;">Aciertos</th>
+                                    <th style="text-align:center;">Precisión</th>
+                                    <th style="text-align:center;">Seguridad Antifraude</th>
+                                    <th style="text-align:right;">Fecha</th>
+                                    <th style="text-align:center;">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adm-quizzes-tbody">
+                                <tr>
+                                    <td colspan="8" style="text-align:center; padding:2rem; color:var(--adm-muted);">
+                                        Cargando calificaciones de quizzes...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- PESTAÑA 5: PROYECTOS ESPECIALES & TESIS -->
+            <!-- ============================================================ -->
+            <section id="tab-projects" class="adm-tab-content">
+                <div class="adm-card">
+                    <div class="adm-card-header">
+                        <div>
+                            <h3 class="adm-card-title">🔬 Proyectos Especiales & Tesis del Profesor</h3>
+                            <p class="adm-card-desc">
+                                Acceso rápido y directo a todas tus aplicaciones privadas y herramientas de investigación.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(290px, 1fr)); gap:1.25rem;">
+                        <!-- MC hBN -->
+                        <div style="background:#0b1120; border:1px solid rgba(168,85,247,0.35); border-radius:12px; padding:1.25rem; display:flex; flex-direction:column; justify-content:space-between;">
+                            <div>
+                                <span style="font-size:0.72rem; color:#c084fc; font-weight:700; text-transform:uppercase;">Investigación Maestría UFOP</span>
+                                <h4 style="color:#fff; font-size:1.08rem; margin:0.4rem 0 0.5rem;">hBN-MC · Simulador Monte Carlo</h4>
+                                <p style="font-size:0.82rem; color:var(--adm-muted); margin:0 0 1rem; line-height:1.45;">
+                                    Nanoporos en nitruro de boro hexagonal y heteroestructuras h-BNC basados en cálculos DFT (SIESTA).
+                                </p>
+                            </div>
+                            <a href="/material/1_cursos/hBN-MC/index.html" target="_blank" class="adm-btn adm-btn-primary" style="background:linear-gradient(135deg, #a855f7, #6366f1); justify-content:center;">
+                                🚀 Abrir Simulador Monte Carlo ↗️
+                            </a>
+                        </div>
+
+                        <!-- Pruebas Diagnósticas -->
+                        <div style="background:#0b1120; border:1px solid rgba(56,189,248,0.35); border-radius:12px; padding:1.25rem; display:flex; flex-direction:column; justify-content:space-between;">
+                            <div>
+                                <span style="font-size:0.72rem; color:#38bdf8; font-weight:700; text-transform:uppercase;">Servicio Colegios & Universidades</span>
+                                <h4 style="color:#fff; font-size:1.08rem; margin:0.4rem 0 0.5rem;">Pruebas Diagnósticas · Panel Docente</h4>
+                                <p style="font-size:0.82rem; color:var(--adm-muted); margin:0 0 1rem; line-height:1.45;">
+                                    Generación de claves de prueba para estudiantes, control en vivo de cohortes e informes psicométricos.
+                                </p>
+                            </div>
+                            <a href="/material/1_cursos/diagnosticas/dist/public/panel.html" target="_blank" class="adm-btn adm-btn-primary" style="background:linear-gradient(135deg, #0284c7, #38bdf8); color:#000; font-weight:800; justify-content:center;">
+                                📊 Abrir Panel de Pruebas ↗️
+                            </a>
+                        </div>
+
+                        <!-- Faro Pods de Reacción -->
+                        <div style="background:#0b1120; border:1px solid rgba(251,191,36,0.35); border-radius:12px; padding:1.25rem; display:flex; flex-direction:column; justify-content:space-between;">
+                            <div>
+                                <span style="font-size:0.72rem; color:#fbbf24; font-weight:700; text-transform:uppercase;">Hardware & Deporte</span>
+                                <h4 style="color:#fff; font-size:1.08rem; margin:0.4rem 0 0.5rem;">Faro: Pods de Reacción</h4>
+                                <p style="font-size:0.82rem; color:var(--adm-muted); margin:0 0 1rem; line-height:1.45;">
+                                    Pods ToF ESP32-S3 para entrenamiento físico y squash. Manual de taller completo, 3D STL y firmware.
+                                </p>
+                            </div>
+                            <a href="/material/1_cursos/faro/manual/dist/index.html" target="_blank" class="adm-btn adm-btn-secondary" style="border-color:rgba(251,191,36,0.5); color:#fbbf24; justify-content:center;">
+                                💡 Abrir Manual de Taller ↗️
+                            </a>
+                        </div>
+
+                        <!-- ManuSquash Garmin AI Pro -->
+                        <div style="background:#0b1120; border:1px solid rgba(6,182,212,0.35); border-radius:12px; padding:1.25rem; display:flex; flex-direction:column; justify-content:space-between;">
+                            <div>
+                                <span style="font-size:0.72rem; color:#22d3ee; font-weight:700; text-transform:uppercase;">Monitor Biométrico Adaptativo</span>
+                                <h4 style="color:#fff; font-size:1.08rem; margin:0.4rem 0 0.5rem;">ManuSquash · Garmin AI Pro</h4>
+                                <p style="font-size:0.82rem; color:var(--adm-muted); margin:0 0 1rem; line-height:1.45;">
+                                    Monitoreo de HRV, Readiness, Carga ACWR y sesiones de Squash en Popayán sincronizadas con Forerunner.
+                                </p>
+                            </div>
+                            <a href="/garmin/" target="_blank" class="adm-btn adm-btn-primary" style="background:linear-gradient(135deg, #0284c7, #06b6d4); justify-content:center;">
+                                ⌚ Abrir Garmin AI Pro ↗️
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Scripts de la Aplicación de Administración -->
+    <script>
+        const FIREBASE_BASE = 'https://squashpopayan-65e33-default-rtdb.firebaseio.com';
+        const ADMIN_MASTER_KEY = 'OBANDO-ADMIN-2026';
+
+        let currentTriviaBoard = 'fisica';
+        let allActiveSessions = {};
+        let allQuizResults = [];
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+        });
+
+        function checkAuth() {
+            const isAdmin = localStorage.getItem('physicsailab_admin') === 'true';
+            if (isAdmin) {
+                document.getElementById('adm-login-screen').style.display = 'none';
+                document.getElementById('adm-dashboard-screen').style.display = 'flex';
+                loadAdminData();
+            } else {
+                document.getElementById('adm-dashboard-screen').style.display = 'none';
+                document.getElementById('adm-login-screen').style.display = 'block';
+            }
+        }
+
+        function handleAdminLogin() {
+            const passInput = document.getElementById('adm-pass');
+            const errDiv = document.getElementById('adm-login-err');
+            const val = (passInput.value || '').trim();
+
+            if (val === ADMIN_MASTER_KEY || val.toUpperCase() === 'OBANDO-MASTER-ADMIN') {
+                localStorage.setItem('physicsailab_admin', 'true');
+                localStorage.setItem('physicsailab_unlocked_all', 'true');
+                errDiv.style.display = 'none';
+                checkAuth();
+            } else {
+                errDiv.textContent = 'Contraseña incorrecta. Verifica e intenta nuevamente.';
+                errDiv.style.display = 'block';
+            }
+        }
+
+        function logoutAdmin() {
+            if (confirm('¿Deseas cerrar la sesión docente en este dispositivo?')) {
+                localStorage.removeItem('physicsailab_admin');
+                localStorage.removeItem('physicsailab_admin_token');
+                checkAuth();
+            }
+        }
+
+        // Pestañas
+        function switchAdminTab(tabId, btn) {
+            document.querySelectorAll('.adm-tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.adm-tab-btn').forEach(el => el.classList.remove('active'));
+
+            const target = document.getElementById(tabId);
+            if (target) target.classList.add('active');
+            if (btn) btn.classList.add('active');
+
+            if (tabId === 'tab-live') fetchActiveSessions();
+            if (tabId === 'tab-trivias') fetchTriviaRankings();
+            if (tabId === 'tab-quizzes') fetchQuizResults();
+        }
+
+        // Carga Principal de Datos
+        function loadAdminData() {
+            fetchActiveSessions();
+            fetchCounters();
+            fetchTriviaRankings();
+            fetchQuizResults();
+            loadCustomCourseKeys();
+        }
+
+        function refreshAdminData(showNotice) {
+            loadAdminData();
+            if (showNotice) alert('✓ Datos sincronizados con la nube exitosamente.');
+        }
+
+        // 1. Sesiones Activas (Telemetría en tiempo real)
+        function fetchActiveSessions() {
+            fetch(`${FIREBASE_BASE}/active_sessions.json`)
+                .then(r => r.json())
+                .then(data => {
+                    allActiveSessions = data || {};
+                    renderActiveSessionsTable();
+                })
+                .catch(() => {
+                    renderActiveSessionsTable();
+                });
+        }
+
+        function renderActiveSessionsTable() {
+            const tbody = document.getElementById('adm-active-sessions-tbody');
+            const countBadge = document.getElementById('badge-live-count');
+            const kpiLive = document.getElementById('kpi-live-users');
+            if (!tbody) return;
+
+            const now = Date.now();
+            const entries = Object.entries(allActiveSessions);
+            // Filtrar sesiones vistas en los últimos 2 minutos
+            const activeList = entries.filter(([id, s]) => {
+                if (!s) return false;
+                return s.isOnline !== false && (now - (s.lastSeen || 0)) < 120000;
+            });
+
+            if (countBadge) countBadge.textContent = activeList.length;
+            if (kpiLive) kpiLive.textContent = activeList.length;
+
+            if (activeList.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align:center; padding:2rem; color:var(--adm-muted);">
+                            <span>🟢</span> En este momento no hay otros usuarios en línea (o están en segundo plano).
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = activeList.map(([sessionId, s]) => {
+                const diffSec = Math.round((now - (s.lastSeen || now)) / 1000);
+                const isSquash = (s.courseId || '').includes('squash') || (s.pageTitle || '').toLowerCase().includes('squash');
+
+                return `
+                    <tr style="${isSquash ? 'background:rgba(16,185,129,0.06);' : ''}">
+                        <td>
+                            <strong style="color:#fff;">${escapeHtml(s.studentName || 'Estudiante')}</strong>
+                            <div style="font-size:0.72rem; color:var(--adm-muted); font-family:monospace;">ID: ${escapeHtml(sessionId)}</div>
+                        </td>
+                        <td>
+                            <span style="font-weight:600; color:${isSquash ? '#34d399' : '#38bdf8'};">
+                                ${escapeHtml(s.pageTitle || s.courseId || 'Portal')}
+                            </span>
+                            <div style="font-size:0.72rem; color:var(--adm-muted);">${escapeHtml(s.path || '/')}</div>
+                        </td>
+                        <td>
+                            <span style="font-size:0.8rem; background:rgba(255,255,255,0.06); padding:0.2rem 0.5rem; border-radius:6px;">
+                                ${escapeHtml(s.device || 'Navegador Web')}
+                            </span>
+                        </td>
+                        <td>
+                            <span style="color:#34d399; font-weight:700; font-size:0.82rem;">
+                                🟢 Hace ${diffSec}s
+                            </span>
+                        </td>
+                        <td style="text-align:center;">
+                            <button class="adm-btn adm-btn-danger" style="font-size:0.75rem; padding:0.3rem 0.65rem;" onclick="kickSession('${sessionId}', '${escapeHtml(s.studentName || 'este usuario')}')">
+                                🚪 Expulsar
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function kickSession(sessionId, name) {
+            if (confirm(`¿Deseas expulsar la sesión de "${name}"?\nEl curso o simulador se bloqueará de inmediato en su dispositivo.`)) {
+                fetch(`${FIREBASE_BASE}/revoked_sessions/${sessionId}.json`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(true)
+                }).then(() => {
+                    // Eliminar de active_sessions
+                    fetch(`${FIREBASE_BASE}/active_sessions/${sessionId}.json`, { method: 'DELETE' });
+                    delete allActiveSessions[sessionId];
+                    renderActiveSessionsTable();
+                    alert(`✓ Sesión de "${name}" expulsada exitosamente.`);
+                });
+            }
+        }
+
+        // 2. Rotación Mensual de Claves
+        function forceMonthlyRotation() {
+            const currentMonth = new Date().toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+            if (confirm(`⚠️ ¿Deseas FORZAR LA ROTACIÓN DE CLAVES PARA ${currentMonth.toUpperCase()}?\n\nAl confirmar:\n• Se invalidarán las claves de alumnos que desbloquearon anteriormente.\n• Se les solicitará escribir la clave de este mes.\n• Los alumnos con Suscripción de Pago NO se bloquearán.`)) {
+                const ts = Date.now();
+                localStorage.setItem('physicsailab_key_rotation_ts', ts.toString());
+                fetch(`${FIREBASE_BASE}/student_keys_config/rotation_ts.json`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(ts)
+                }).then(() => {
+                    alert('✓ ¡Rotación completada! Todas las claves de meses anteriores han expirado para alumnos regulares.');
+                });
+            }
+        }
+
+        function loadCustomCourseKeys() {
+            const defaults = {
+                'key-squash_sim': 'SQUASH-PRO-2026',
+                'key-faro': 'FARO-2026',
+                'key-solido': 'SOLIDO-2026',
+                'key-mecanica': 'MECANICA-2026'
+            };
+
+            fetch(`${FIREBASE_BASE}/student_keys_config/monthly_keys.json`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data && typeof data === 'object') {
+                        for (const [k, v] of Object.entries(data)) {
+                            const inp = document.getElementById('key-' + k);
+                            if (inp && v) inp.value = v;
+                        }
+                    }
+                }).catch(() => {});
+        }
+
+        function saveCustomCourseKeys() {
+            const keysObj = {
+                squash_sim: document.getElementById('key-squash_sim').value.trim().toUpperCase(),
+                faro: document.getElementById('key-faro').value.trim().toUpperCase(),
+                solido: document.getElementById('key-solido').value.trim().toUpperCase(),
+                mecanica: document.getElementById('key-mecanica').value.trim().toUpperCase()
+            };
+
+            fetch(`${FIREBASE_BASE}/student_keys_config/monthly_keys.json`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(keysObj)
+            }).then(() => {
+                alert('✓ Claves mensuales guardadas y actualizadas para los estudiantes.');
+            });
+        }
+
+        function generateRandomKeyFor(inputId, prefix) {
+            const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
+            const year = new Date().getFullYear().toString().slice(-2);
+            document.getElementById(inputId).value = `${prefix}-${rand}-${year}`;
+        }
+
+        // 3. Trivias & Rankings
+        function selectTriviaBoard(boardName) {
+            currentTriviaBoard = boardName;
+            document.querySelectorAll('#tab-trivias .adm-btn-secondary').forEach(b => b.classList.remove('active'));
+            const btn = document.getElementById(`btn-triv-${boardName}`);
+            if (btn) btn.classList.add('active');
+            renderTriviaTable();
+        }
+
+        let triviaRankingsCache = { fisica: [], historia: [], squash: [] };
+
+        function fetchTriviaRankings(showToast) {
+            Promise.all([
+                fetch(`${FIREBASE_BASE}/trivia_rankings/fisica.json`).then(r => r.json()).catch(() => null),
+                fetch(`${FIREBASE_BASE}/trivia_rankings/historia.json`).then(r => r.json()).catch(() => null),
+                fetch(`${FIREBASE_BASE}/trivia_rankings/squash.json`).then(r => r.json()).catch(() => null)
+            ]).then(([fisica, historia, squash]) => {
+                triviaRankingsCache.fisica = Object.values(fisica || {});
+                triviaRankingsCache.historia = Object.values(historia || {});
+                triviaRankingsCache.squash = Object.values(squash || {});
+                
+                // Fallbacks con localStorage
+                if (triviaRankingsCache.fisica.length === 0) {
+                    triviaRankingsCache.fisica = JSON.parse(localStorage.getItem('physicsailab_trivia_ranking') || '[]');
+                }
+                if (triviaRankingsCache.historia.length === 0) {
+                    triviaRankingsCache.historia = JSON.parse(localStorage.getItem('physicsailab_historia_ranking') || '[]');
+                }
+                if (triviaRankingsCache.squash.length === 0) {
+                    triviaRankingsCache.squash = JSON.parse(localStorage.getItem('physicsailab_squash_trivia_ranking') || '[]');
+                }
+
+                renderTriviaTable();
+                if (showToast) alert('✓ Rankings de trivias actualizados desde la nube.');
+            });
+        }
+
+        function renderTriviaTable() {
+            const tbody = document.getElementById('adm-trivias-tbody');
+            if (!tbody) return;
+
+            let list = triviaRankingsCache[currentTriviaBoard] || [];
+            list.sort((a, b) => (b.score || 0) - (a.score || 0));
+
+            const badgeCount = document.getElementById('badge-trivias-count');
+            if (badgeCount) badgeCount.textContent = list.length;
+
+            if (list.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align:center; padding:2rem; color:var(--adm-muted);">
+                            No hay participantes registrados en esta trivia todavía.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = list.map((item, idx) => {
+                const rank = idx + 1;
+                let medal = rank;
+                if (rank === 1) medal = '🥇 1';
+                else if (rank === 2) medal = '🥈 2';
+                else if (rank === 3) medal = '🥉 3';
+
+                const isFake = (item.id && (item.id.startsWith('ref-') || item.id.startsWith('hist-') || item.id.startsWith('sq-') || (item.score > 12000 && !item.realPlayer)));
+
+                return `
+                    <tr style="${isFake ? 'background:rgba(239,68,68,0.06);' : ''}">
+                        <td style="text-align:center; font-weight:800; color:#fff;">${medal}</td>
+                        <td>
+                            <strong style="color:#fff;">${escapeHtml(item.name || 'Participante')}</strong>
+                            ${isFake ? '<span style="font-size:0.68rem; background:rgba(239,68,68,0.2); color:#fca5a5; padding:0.1rem 0.4rem; border-radius:4px; margin-left:0.4rem;">Ejemplo Ficticio</span>' : '<span style="font-size:0.68rem; background:rgba(16,185,129,0.2); color:#34d399; padding:0.1rem 0.4rem; border-radius:4px; margin-left:0.4rem;">Real</span>'}
+                        </td>
+                        <td style="color:var(--adm-muted);">${escapeHtml(item.institution || 'Universidad del Cauca')}</td>
+                        <td style="text-align:center; font-weight:800; color:#fbbf24; font-family:monospace; font-size:1.05rem;">
+                            ${(item.score || 0).toLocaleString('es-ES')} pts
+                        </td>
+                        <td style="text-align:center;">${item.highestQuestion || '---'}</td>
+                        <td style="text-align:center; color:#f87171; font-weight:700;">🔥 ${item.maxStreak || 0}</td>
+                        <td style="text-align:center; font-size:0.78rem; color:var(--adm-muted);">${escapeHtml(item.date || '---')}</td>
+                        <td style="text-align:center;">
+                            <button class="adm-btn adm-btn-danger" style="font-size:0.75rem; padding:0.25rem 0.55rem;" onclick="deleteTriviaRecord('${currentTriviaBoard}', '${item.id}', '${escapeHtml(item.name || 'este registro')}')">
+                                🗑️ Eliminar
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function deleteTriviaRecord(board, recordId, name) {
+            if (confirm(`¿Eliminar el registro de "${name}" del Ranking?\nSe borrará de forma permanente de la tabla.`)) {
+                // Borrar de Firebase
+                fetch(`${FIREBASE_BASE}/trivia_rankings/${board}/${recordId}.json`, { method: 'DELETE' });
+                
+                // Borrar localmente
+                triviaRankingsCache[board] = (triviaRankingsCache[board] || []).filter(r => r.id !== recordId);
+                const storageKey = board === 'fisica' ? 'physicsailab_trivia_ranking' : (board === 'historia' ? 'physicsailab_historia_ranking' : 'physicsailab_squash_trivia_ranking');
+                localStorage.setItem(storageKey, JSON.stringify(triviaRankingsCache[board]));
+                renderTriviaTable();
+            }
+        }
+
+        function purgeFakeTriviaExamples() {
+            if (confirm('🧹 ¿Deseas eliminar automáticamente todos los ejemplos ficticios (Marie Curie, Einstein, Laura Mosquera con 15.000 pts)?\n\nEsto dejará únicamente las puntuaciones de las personas reales que jueguen en la plataforma.')) {
+                ['fisica', 'historia', 'squash'].forEach(board => {
+                    triviaRankingsCache[board] = (triviaRankingsCache[board] || []).filter(r => {
+                        const id = r.id || '';
+                        return !id.startsWith('ref-') && !id.startsWith('hist-') && !id.startsWith('sq-');
+                    });
+                    const storageKey = board === 'fisica' ? 'physicsailab_trivia_ranking' : (board === 'historia' ? 'physicsailab_historia_ranking' : 'physicsailab_squash_trivia_ranking');
+                    localStorage.setItem(storageKey, JSON.stringify(triviaRankingsCache[board]));
+                    
+                    // Actualizar en Firebase
+                    const boardMap = {};
+                    triviaRankingsCache[board].forEach(item => { boardMap[item.id] = item; });
+                    fetch(`${FIREBASE_BASE}/trivia_rankings/${board}.json`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(boardMap)
+                    });
+                });
+
+                renderTriviaTable();
+                alert('✓ ¡Ejemplos ficticios eliminados! Ahora solo compiten personas reales.');
+            }
+        }
+
+        // 4. Quizzes y Notas
+        function fetchQuizResults() {
+            fetch(`${FIREBASE_BASE}/quiz_results.json`)
+                .then(r => r.json())
+                .then(data => {
+                    allQuizResults = Object.values(data || {});
+                    renderQuizResultsTable();
+                }).catch(() => {
+                    allQuizResults = JSON.parse(localStorage.getItem('physicsailab_quiz_results') || '[]');
+                    renderQuizResultsTable();
+                });
+        }
+
+        function renderQuizResultsTable() {
+            const tbody = document.getElementById('adm-quizzes-tbody');
+            if (!tbody) return;
+
+            if (allQuizResults.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align:center; padding:2rem; color:var(--adm-muted);">
+                            No hay evaluaciones registradas aún.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            allQuizResults.sort((a, b) => new Date(b.completedAt || 0) - new Date(a.completedAt || 0));
+
+            tbody.innerHTML = allQuizResults.map(r => {
+                const gradeNum = parseFloat(r.grade !== undefined ? r.grade : (r.gradeStr || '0'));
+                let gradeColor = '#10b981';
+                if (gradeNum < 3.0) gradeColor = '#f87171';
+                else if (gradeNum < 4.0) gradeColor = '#fbbf24';
+
+                return `
+                    <tr>
+                        <td><strong style="color:#fff;">${escapeHtml(r.studentName || 'Estudiante')}</strong></td>
+                        <td>${escapeHtml(r.quizTitle || 'Quiz')}</td>
+                        <td style="text-align:center;">
+                            <span style="font-weight:800; font-size:1.05rem; color:${gradeColor}; background:rgba(255,255,255,0.06); padding:0.2rem 0.6rem; border-radius:6px;">
+                                ${gradeNum.toFixed(1)}
+                            </span>
+                        </td>
+                        <td style="text-align:center;">${r.correctCount || 0} / ${r.totalQuestions || 0}</td>
+                        <td style="text-align:center; color:var(--adm-cyan); font-weight:700;">${r.accuracy || 0}%</td>
+                        <td style="text-align:center;">
+                            ${(r.tabSwitches || 0) === 0 ? '<span style="color:#34d399;">🟢 0 Salidas</span>' : `<span style="color:#f87171; font-weight:700;">⚠️ ${r.tabSwitches} Salida(s)</span>`}
+                        </td>
+                        <td style="text-align:right; font-size:0.78rem; color:var(--adm-muted);">${escapeHtml(r.completedAt ? new Date(r.completedAt).toLocaleString('es-ES') : '---')}</td>
+                        <td style="text-align:center;">
+                            <button class="adm-btn adm-btn-danger" style="font-size:0.75rem; padding:0.25rem 0.55rem;" onclick="deleteQuizRecord('${r.id}')">
+                                🗑️
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function deleteQuizRecord(id) {
+            if (confirm('¿Eliminar esta calificación?')) {
+                fetch(`${FIREBASE_BASE}/quiz_results/${id}.json`, { method: 'DELETE' });
+                allQuizResults = allQuizResults.filter(r => r.id !== id);
+                renderQuizResultsTable();
+            }
+        }
+
+        function downloadQuizResultsCsv() {
+            if (allQuizResults.length === 0) {
+                alert('No hay calificaciones para exportar.');
+                return;
+            }
+
+            const headers = ['Estudiante', 'Quiz', 'Nota', 'Aciertos', 'Total', 'Precision', 'SalidasPantalla', 'Fecha'];
+            const rows = allQuizResults.map(r => [
+                `"${r.studentName || ''}"`,
+                `"${r.quizTitle || ''}"`,
+                r.grade || '0',
+                r.correctCount || 0,
+                r.totalQuestions || 0,
+                `${r.accuracy || 0}%`,
+                r.tabSwitches || 0,
+                `"${r.completedAt || ''}"`
+            ]);
+
+            const csvContent = '\uFEFF' + [headers.join(';'), ...rows.map(e => e.join(';'))].join('\r\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Calificaciones_PhysicsAILab_${new Date().toISOString().slice(0,10)}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        // Métricas / Contadores
+        function fetchCounters() {
+            fetch(`${FIREBASE_BASE}/counters.json`)
+                .then(r => r.json())
+                .then(c => {
+                    if (!c) return;
+                    if (c.real_visits) document.getElementById('kpi-real-visits').textContent = c.real_visits.toLocaleString('es-ES');
+                    if (c.real_downloads) document.getElementById('kpi-real-downloads').textContent = c.real_downloads.toLocaleString('es-ES');
+                }).catch(() => {});
+
+            fetch(`${FIREBASE_BASE}/profiles.json`)
+                .then(r => r.json())
+                .then(p => {
+                    const count = Object.keys(p || {}).length;
+                    document.getElementById('kpi-profiles-count').textContent = count;
+                }).catch(() => {});
+        }
+
+        function escapeHtml(str) {
+            return String(str || '').replace(/[&<>"']/g, m => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[m]));
+        }
+    </script>
+</body>
+</html>

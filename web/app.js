@@ -4280,17 +4280,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ESPACIO DOCENTE & PANEL DE CONTROL ADMINISTRADOR
     // ========================================================
     window.openAdminPanel = function() {
-        const modal = document.getElementById('admin-modal');
-        const modalBody = document.getElementById('admin-modal-body');
-        if (!modal || !modalBody) return;
-
-        if (isAdmin()) {
-            renderAdminDashboardContent();
-        } else {
-            renderAdminLoginForm();
-        }
-
-        modal.classList.add('active');
+        window.open('/admin.html', '_blank');
     };
 
     window.closeAdminPanel = function() {
@@ -8644,3 +8634,165 @@ document.addEventListener('DOMContentLoaded', () => {
             iframe.contentWindow.postMessage({ action: 'teleport', index: index }, '*');
         }
     };
+
+
+    // ========================================================
+    // BUSCADOR GLOBAL INSTANTÁNEO DE CONTENIDOS Y SIMULADORES
+    // ========================================================
+    window.handleGlobalSearch = function(query) {
+        const dropdown = document.getElementById('global-search-results-dropdown');
+        const clearBtn = document.getElementById('global-search-clear-btn');
+        if (!dropdown) return;
+
+        const q = (query || '').toLowerCase().trim();
+        if (clearBtn) clearBtn.style.display = q ? 'block' : 'none';
+
+        if (q.length < 2) {
+            dropdown.style.display = 'none';
+            dropdown.innerHTML = '';
+            return;
+        }
+
+        const results = [];
+
+        // 1. Cursos y Laboratorios
+        const courses = (typeof data !== 'undefined' && data.cursos) ? data.cursos : [];
+        courses.forEach(c => {
+            const title = (c.titulo || '').toLowerCase();
+            const desc = (c.descripcion || '').toLowerCase();
+            const cat = (c.categoria || '').toLowerCase();
+            const id = (c.id || '').toLowerCase();
+
+            if (title.includes(q) || desc.includes(q) || cat.includes(q) || id.includes(q)) {
+                results.push({
+                    type: c.esPrivado ? '🔬 Privado Docente' : (c.categoria || 'Curso'),
+                    title: c.titulo,
+                    desc: c.descripcion,
+                    link: c.demoPath || '#cursos',
+                    isExternal: !!c.demoPath,
+                    badgeColor: c.esPrivado ? '#c084fc' : '#38bdf8'
+                });
+            }
+        });
+
+        // 2. Cómics
+        const comics = (typeof data !== 'undefined' && data.comics) ? data.comics : [];
+        comics.forEach(cm => {
+            const title = (cm.titulo || '').toLowerCase();
+            const desc = (cm.descripcion || '').toLowerCase();
+            if (title.includes(q) || desc.includes(q)) {
+                results.push({
+                    type: '🎨 Cómic Científico',
+                    title: cm.titulo,
+                    desc: cm.descripcion,
+                    link: cm.pdfPath || '#comics',
+                    isExternal: !!cm.pdfPath,
+                    badgeColor: '#fbbf24'
+                });
+            }
+        });
+
+        // 3. Podcasts
+        const podcasts = (typeof data !== 'undefined' && data.podcasts) ? data.podcasts : [];
+        podcasts.forEach(p => {
+            const title = (p.titulo || '').toLowerCase();
+            const desc = (p.descripcion || '').toLowerCase();
+            if (title.includes(q) || desc.includes(q)) {
+                results.push({
+                    type: '🎙️ Podcast',
+                    title: p.titulo,
+                    desc: p.descripcion,
+                    link: p.audioPath || '#podcasts',
+                    isExternal: !!p.audioPath,
+                    badgeColor: '#4ade80'
+                });
+            }
+        });
+
+        // 4. Trivias y Quizzes
+        const trivias = [
+            { title: 'Gran Trivia de Física', desc: '1.000 preguntas de física con sistema de 3 vidas y ranking oficial.', link: '#trivia', type: '🎯 Trivia Oficial' },
+            { title: 'Trivia de Historia de la Física', desc: '500 preguntas con personajes, descubrimientos y biografías.', link: '#trivia-historia', type: '📜 Trivia Historia' },
+            { title: 'Gran Trivia de Squash', desc: 'Reglamento, física del bote y táctica competitiva.', link: '#trivia-squash', type: '🎾 Trivia Squash' },
+            { title: 'Quizzes Universitarios con PIN', desc: 'Evaluaciones de cinemática, dinámica y electromagnetismo con protocolo antifraude.', link: '#quizzes', type: '📝 Quiz Oficial' },
+            { title: 'Simulador Manu Squash', desc: 'Suite de análisis biomecánico, rutinas tácticas y editor de trayectorias.', link: '/material/1_cursos/squash_sim/dist/index.html', isExternal: true, type: '🎮 Simulador Deportivo' },
+            { title: 'Faro: Pods de Reacción', desc: 'Manual técnico de taller, firmware ESP32-S3 y planos de ensamble.', link: '/material/1_cursos/faro/manual/dist/index.html', isExternal: true, type: '💡 Hardware & Taller' },
+            { title: 'hBN-MC: Simulador Monte Carlo', desc: 'Heteroestructuras 2D y nanoporos de grafeno/hBN.', link: '/material/1_cursos/hBN-MC/index.html', isExternal: true, type: '🔬 Simulación DFT' },
+            { title: 'Pruebas Diagnósticas', desc: 'Plataforma institucional de evaluación para colegios y universidades.', link: '/material/1_cursos/diagnosticas/dist/public/index.html', isExternal: true, type: '🏛️ Servicio Académico' },
+            { title: 'Recorrido 3D Departamento de Física', desc: 'Visita virtual interactiva de las instalaciones y laboratorios Unicauca.', link: '/recorrido/recorrido3d.html', isExternal: true, type: '🌐 Recorrido 3D' }
+        ];
+
+        trivias.forEach(t => {
+            if (t.title.toLowerCase().includes(q) || t.desc.toLowerCase().includes(q)) {
+                results.push({
+                    type: t.type,
+                    title: t.title,
+                    desc: t.desc,
+                    link: t.link,
+                    isExternal: !!t.isExternal,
+                    badgeColor: '#a855f7'
+                });
+            }
+        });
+
+        if (results.length === 0) {
+            dropdown.innerHTML = `
+                <div style="text-align:center; padding:1.25rem; color:var(--text-muted); font-size:0.9rem;">
+                    No se encontraron coincidencias para "<strong>${q}</strong>". Prueba con palabras como <em>mecánica, squash, faro, sólidos, venturi, ondas, trivia</em>...
+                </div>
+            `;
+            dropdown.style.display = 'block';
+            return;
+        }
+
+        dropdown.innerHTML = `
+            <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; margin-bottom:0.6rem; letter-spacing:0.5px; padding:0 0.4rem;">
+                Resultados encontrados (${results.length}):
+            </div>
+            <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                ${results.slice(0, 12).map(r => `
+                    <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:0.75rem 0.95rem; display:flex; justify-content:space-between; align-items:center; gap:0.75rem; transition:background 0.2s;" onmouseover="this.style.background='rgba(99,102,241,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">
+                        <div style="min-width:0;">
+                            <div style="display:flex; align-items:center; gap:0.45rem; margin-bottom:0.25rem;">
+                                <span style="font-size:0.7rem; font-weight:700; background:rgba(255,255,255,0.08); color:${r.badgeColor}; border:1px solid ${r.badgeColor}40; padding:0.15rem 0.5rem; border-radius:6px;">
+                                    ${r.type}
+                                </span>
+                                <strong style="color:#ffffff; font-size:0.92rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                                    ${r.title}
+                                </strong>
+                            </div>
+                            <div style="font-size:0.8rem; color:#94a3b8; line-height:1.35; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                                ${r.desc}
+                            </div>
+                        </div>
+                        <a href="${r.link}" ${r.isExternal ? 'target="_blank"' : ''} onclick="closeGlobalSearchDropdown()" class="btn btn-primary" style="font-size:0.78rem; padding:0.4rem 0.8rem; white-space:nowrap; flex-shrink:0;">
+                            ${r.isExternal ? 'Abrir en pestaña ↗️' : 'Ver ⬇️'}
+                        </a>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+        dropdown.style.display = 'block';
+    };
+
+    window.clearGlobalSearch = function() {
+        const inp = document.getElementById('global-content-search');
+        const clearBtn = document.getElementById('global-search-clear-btn');
+        const dropdown = document.getElementById('global-search-results-dropdown');
+        if (inp) { inp.value = ''; inp.focus(); }
+        if (clearBtn) clearBtn.style.display = 'none';
+        if (dropdown) { dropdown.style.display = 'none'; dropdown.innerHTML = ''; }
+    };
+
+    window.closeGlobalSearchDropdown = function() {
+        const dropdown = document.getElementById('global-search-results-dropdown');
+        if (dropdown) dropdown.style.display = 'none';
+    };
+
+    // Cerrar dropdown al hacer clic fuera
+    document.addEventListener('click', (e) => {
+        const container = document.getElementById('platform-search-container');
+        if (container && !container.contains(e.target)) {
+            closeGlobalSearchDropdown();
+        }
+    });
