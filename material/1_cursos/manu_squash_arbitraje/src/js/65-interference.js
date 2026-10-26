@@ -82,7 +82,7 @@ MS.Interference = (function () {
     if (state.step1 === 'no_interf') {
       showVerdict(
         'NO LET',
-        'Regla 8.6.1 / 8.6.4 (Sin interferencia real)',
+        'Reglas 8.6.1 y 8.6.4: Sin interferencia real',
         'No existió estorbo suficiente que afectara la visión, carrera o swing del apelante.',
         'var(--bad)'
       );
@@ -96,7 +96,7 @@ MS.Interference = (function () {
     if (state.step1 === 'late') {
       showVerdict(
         'NO LET',
-        'Regla 8.6.2 (Accepting Interference)',
+        'Regla 8.6.2: Aceptación de la interferencia',
         'El apelante aceptó la interferencia al continuar la jugada y solo pidió Let tras errar su tiro.',
         'var(--bad)'
       );
@@ -121,7 +121,7 @@ MS.Interference = (function () {
     if (state.step2 === 'no') {
       showVerdict(
         'NO LET',
-        'Regla 8.6.1 / 8.6.3 (Imposibilidad de buen retorno)',
+        'Reglas 8.6.1 y 8.6.3: Imposibilidad de buen retorno',
         'La bola ya estaba fuera de alcance, moría en el nick o el apelante no habría podido ejecutar un buen retorno.',
         'var(--bad)'
       );
@@ -145,7 +145,7 @@ MS.Interference = (function () {
     if (state.step3 === 'created') {
       showVerdict(
         'NO LET',
-        'Regla 8.6.4 (Created Interference)',
+        'Regla 8.6.4: Interferencia creada por el apelante',
         'El apelante desvió su línea natural hacia el oponente para crear o fingir contacto artificial.',
         'var(--bad)'
       );
@@ -182,7 +182,7 @@ MS.Interference = (function () {
     optsEl.innerHTML = '';
 
     if (zone === 'access') {
-      if (titleEl) titleEl.textContent = 'Paso 4.A — Acceso a la Bola (Carrera): ¿Esfuerzo de Despeje?';
+      if (titleEl) titleEl.textContent = 'Paso 4.A — Acceso a la Bola: ¿Esfuerzo de Despeje?';
       optsEl.innerHTML = `
         <button class="tree-opt-btn ${state.subOpt === 'effort' ? 'active' : ''}" data-action="subOpt" data-val="effort">
           <div class="tree-opt-title">Hizo todo el esfuerzo posible por despejar</div>
@@ -239,7 +239,7 @@ MS.Interference = (function () {
           <div class="tree-opt-desc">El oponente bloquea el triángulo y el apelante retiene el tiro por seguridad.</div>
         </button>
         <button class="tree-opt-btn ${state.subOpt === 'only_boast' ? 'active' : ''}" data-action="subOpt" data-val="only_boast">
-          <div class="tree-opt-title">Solo podía jugar pared lateral (Boast)</div>
+          <div class="tree-opt-title">Solo podía jugar hacia la pared lateral</div>
           <div class="tree-opt-desc">La bola estaba tan retrasada que el ángulo físico directo al frontón no existía.</div>
         </button>
       `;
@@ -251,7 +251,7 @@ MS.Interference = (function () {
         hideVerdict();
       }
     } else if (zone === 'turning') {
-      if (titleEl) titleEl.textContent = 'Paso 4.D — Giro sobre la bola (Turning): ¿Causa del Giro?';
+      if (titleEl) titleEl.textContent = 'Paso 4.D — Giro sobre la bola: ¿Causa del Giro?';
       optsEl.innerHTML = `
         <button class="tree-opt-btn ${state.subOpt === 't_nec' ? 'active' : ''}" data-action="subOpt" data-val="t_nec">
           <div class="tree-opt-title">Giro necesario por rebote en esquina</div>
@@ -267,7 +267,7 @@ MS.Interference = (function () {
         </button>
       `;
       if (state.subOpt === 't_nec') {
-        showVerdict('YES LET', 'Regla 8.13.1', 'En un Turning justificado donde el jugador retiene el tiro, la decisión oficial es Yes Let.', 'var(--warn)');
+        showVerdict('YES LET', 'Regla 8.13.1', 'En un giro justificado donde el jugador retiene el tiro, la decisión oficial es Yes Let.', 'var(--warn)');
       } else if (state.subOpt === 't_unnec') {
         showVerdict('NO LET', 'Regla 8.13.3', 'Giro prescindible que generó riesgo autoinfligido. No corresponde concesión de Let.', 'var(--bad)');
       } else if (state.subOpt === 't_delib') {

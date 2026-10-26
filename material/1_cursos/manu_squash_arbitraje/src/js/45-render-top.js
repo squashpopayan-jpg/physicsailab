@@ -63,12 +63,12 @@ MS.RenderTop = (function () {
     ctx.fillRect(X(C.box), Y(C.shortRear), lw, (C.box + 0.05) * s);
     ctx.fillRect(X(C.W - C.box - 0.05), Y(C.shortRear), lw, (C.box + 0.05) * s);
 
-    // Rótulos técnicos discretos
+    // Rótulos técnicos discretos sin paréntesis
     ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
     ctx.font = `700 ${Math.max(9, 0.12 * s)}px Saira, sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('PARED FRONTAL (TIN 0.48m)', X(C.W / 2), Y(-0.1));
+    ctx.fillText('PARED FRONTAL - TIN 0.48m', X(C.W / 2), Y(-0.1));
 
     ctx.fillStyle = 'rgba(20, 50, 80, 0.85)';
     ctx.fillText('VIDRIO TRASERO', X(C.W / 2), Y(C.L + 0.06));
@@ -81,7 +81,7 @@ MS.RenderTop = (function () {
     ctx.stroke();
   }
 
-  function drawFigure2D(ctx, L, p, shirtCol, label, isStriker) {
+  function drawFigure2D(ctx, L, p, shirtCol, label, isStriker, curTime = 0) {
     if (!p) return;
     const { s, X, Y } = L;
     const ang = p.ang || 0;
@@ -106,11 +106,12 @@ MS.RenderTop = (function () {
     ctx.ellipse(X(px), Y(py), 0.32 * s, 0.22 * s, yaw, 0, Math.PI * 2);
     ctx.fill();
 
-    // 2. Piernas y zapatillas
+    // 2. Piernas y zapatillas con cadencia atlética
+    const stride = Math.sin(curTime * 14) * 0.10;
     const hipL = { x: px + r.x * -0.14, y: py + r.y * -0.14 };
     const hipR = { x: px + r.x * 0.14, y: py + r.y * 0.14 };
-    const footL = { x: hipL.x + f.x * 0.12, y: hipL.y + f.y * 0.12 };
-    const footR = { x: hipR.x - f.x * 0.12, y: hipR.y - f.y * 0.12 };
+    const footL = { x: hipL.x + f.x * (0.10 + stride), y: hipL.y + f.y * (0.10 + stride) };
+    const footR = { x: hipR.x - f.x * (0.10 + stride), y: hipR.y - f.y * (0.10 + stride) };
     const kneeL = { x: (hipL.x + footL.x) / 2 + f.x * 0.05, y: (hipL.y + footL.y) / 2 + f.y * 0.05 };
     const kneeR = { x: (hipR.x + footR.x) / 2 + f.x * 0.05, y: (hipR.y + footR.y) / 2 + f.y * 0.05 };
 
@@ -192,7 +193,7 @@ MS.RenderTop = (function () {
 
     if (!state) return;
 
-    const { pA, pB, ball, activePlayer } = state;
+    const { pA, pB, ball, activePlayer, curTime } = state;
     const striker = activePlayer === 'B' ? pB : pA;
     const opponent = activePlayer === 'B' ? pA : pB;
 
@@ -254,11 +255,27 @@ MS.RenderTop = (function () {
     }
 
     // 5. Dibujo de Figuras de Jugadores 2D
-    drawFigure2D(ctx, L, pA, '#1d4ed8', 'A', activePlayer === 'A');
-    drawFigure2D(ctx, L, pB, '#b91c1c', 'B', activePlayer === 'B');
+    drawFigure2D(ctx, L, pA, '#1d4ed8', 'A', activePlayer === 'A', curTime || 0);
+    drawFigure2D(ctx, L, pB, '#b91c1c', 'B', activePlayer === 'B', curTime || 0);
 
-    // 6. Bola de squash (negra con sombra y punto amarillo oficial)
+    // 6. Bola de squash (con destello en pared frontal, sombra y punto amarillo)
     if (ball) {
+      // Destello en frontis cuando impacta
+      if (ball.y < 0.28) {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, 1 - ball.y / 0.28);
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(X(ball.x), Y(0), 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#facc15';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.arc(X(ball.x), Y(0), 12, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+
       const bR = Math.max(3.5, C.ballR * 3 * s);
 
       // Sombra

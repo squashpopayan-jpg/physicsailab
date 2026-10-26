@@ -57,11 +57,11 @@ MS.C = (function () {
 
   /* Presets de cámaras WSF para renderizado 3D */
   C.PRESETS = {
-    arbitro: { az: 0.0, el: 0.22, dist: 8.8, fov: 50, nombre: 'Silla Árbitro (WSF Regla 3)' },
-    tv: { az: 0.0, el: 0.33, dist: 7.6, fov: 52, nombre: 'Transmisión TV' },
-    lateral: { az: -Math.PI / 2, el: 0.22, dist: 7.4, fov: 56, nombre: 'Lateral Árbitro' },
-    aerea: { az: 0.0, el: 1.05, dist: 11.5, fov: 50, nombre: 'Cámara Aérea (Planta 3D)' },
-    frontal: { az: Math.PI, el: 0.26, dist: 8.2, fov: 52, nombre: 'Frontal desde Frontis' }
+    arbitro: { az: 0.0, el: 0.22, dist: 8.8, fov: 50, nombre: 'Silla del Árbitro' },
+    tv: { az: 0.0, el: 0.33, dist: 7.6, fov: 52, nombre: 'Transmisión de TV' },
+    lateral: { az: -Math.PI / 2, el: 0.22, dist: 7.4, fov: 56, nombre: 'Vista Lateral' },
+    aerea: { az: 0.0, el: 1.05, dist: 11.5, fov: 50, nombre: 'Cámara Aérea' },
+    frontal: { az: Math.PI, el: 0.26, dist: 8.2, fov: 52, nombre: 'Vista Frontal' }
   };
 
   return C;

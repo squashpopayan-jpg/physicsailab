@@ -108,7 +108,7 @@ MS.RenderTV = (function () {
 
   function court(ctx, K) {
     const W = C.W, L = C.L, e = K.eye;
-    // Gradiente de estadio arena squash
+    // Gradiente ambiental de estadio cerrado
     const sky = ctx.createLinearGradient(0, 0, 0, K.h);
     sky.addColorStop(0, '#1a2430');
     sky.addColorStop(1, '#2c3e50');
@@ -167,14 +167,17 @@ MS.RenderTV = (function () {
     poly(ctx, K, [{ x: 0, y: L, z: 0 }, { x: W, y: L, z: 0 }, { x: W, y: L, z: topB }, { x: 0, y: L, z: topB }], 'rgba(170,215,245,.08)', edge, 1.2);
     ctx.globalAlpha = 0.8;
     band(ctx, K, { x: 0, y: L - 0.002, z: C.outBack + 0.025 }, { x: W, y: L - 0.002, z: C.outBack + 0.025 }, { x: 0, y: 0, z: 1 }, 0.05, '#c41f2e');
+    // Reflejos diagonales de cristal
+    line3(ctx, K, { x: 1.2, y: L, z: 0.4 }, { x: 2.8, y: L, z: 2.1 }, 'rgba(255, 255, 255, 0.14)', 2.5);
+    line3(ctx, K, { x: 3.6, y: L, z: 0.3 }, { x: 5.2, y: L, z: 2.0 }, 'rgba(255, 255, 255, 0.10)', 2.5);
     ctx.restore();
   }
 
-  function addPlayer3D(items, K, p, shirtCol, label, isStriker, ball) {
+  function addPlayer3D(items, K, p, shirtCol, label, isStriker, ball, curTime = 0) {
     if (!p) return;
     const SKIN = '#e9c8ad', SHORTS = '#1f2933', SHOE = '#f5f5f5';
 
-    // Orientación en cancha: por defecto mirando al frontis (-y) o rotado por ang
+    // Orientación en cancha
     const ang = p.ang || 0;
     const yaw = -Math.PI / 2 + ang;
     const f = { x: Math.cos(yaw), y: Math.sin(yaw), z: 0 };
@@ -185,7 +188,7 @@ MS.RenderTV = (function () {
     const sh = proj(K, { x: p.x, y: p.y, z: 0.002 });
     if (sh) {
       items.push({
-        z: 9999, // Se dibuja primero en la base
+        z: 9999,
         draw: (ctx) => {
           ctx.fillStyle = 'rgba(0,0,0,.26)';
           ctx.beginPath();
@@ -235,7 +238,7 @@ MS.RenderTV = (function () {
       });
     };
 
-    // Estructura anatómica de squash (1.76m de altura estándar)
+    // Estructura anatómica de squash
     const pelvis = { x: p.x, y: p.y, z: 0.84 };
     const hipL = U.a3(pelvis, U.m3(r, -0.13));
     const hipR = U.a3(pelvis, U.m3(r, 0.13));
@@ -245,23 +248,24 @@ MS.RenderTV = (function () {
     const shL = U.a3(chest, U.m3(r, -0.20));
     const shR = U.a3(chest, U.m3(r, 0.20));
 
-    // Piernas con flexión atlética
-    const footL = { x: hipL.x + f.x * 0.10, y: hipL.y + f.y * 0.10, z: 0.05 };
-    const footR = { x: hipR.x - f.x * 0.12, y: hipR.y - f.y * 0.12, z: 0.05 };
+    // Cadencia de zancada atlética animada con curTime
+    const stride = Math.sin(curTime * 14) * 0.14;
+    const footL = { x: hipL.x + f.x * (0.08 + stride), y: hipL.y + f.y * (0.08 + stride), z: Math.max(0.04, 0.05 - stride * 0.12) };
+    const footR = { x: hipR.x - f.x * (0.08 + stride), y: hipR.y - f.y * (0.08 + stride), z: Math.max(0.04, 0.05 + stride * 0.12) };
     const kneeL = { x: (hipL.x + footL.x) / 2 + f.x * 0.06, y: (hipL.y + footL.y) / 2 + f.y * 0.06, z: 0.44 };
     const kneeR = { x: (hipR.x + footR.x) / 2 + f.x * 0.06, y: (hipR.y + footR.y) / 2 + f.y * 0.06, z: 0.44 };
 
     // Pierna Izquierda
     cap(hipL, kneeL, 0.075, SKIN);
-    cap(hipL, U.lerp3(hipL, kneeL, 0.45), 0.085, SHORTS); // Shorts
+    cap(hipL, U.lerp3(hipL, kneeL, 0.45), 0.085, SHORTS);
     cap(kneeL, footL, 0.055, SKIN);
-    cap(footL, U.a3(footL, U.m3(f, 0.14)), 0.05, SHOE); // Zapatilla
+    cap(footL, U.a3(footL, U.m3(f, 0.14)), 0.05, SHOE);
 
     // Pierna Derecha
     cap(hipR, kneeR, 0.075, SKIN);
-    cap(hipR, U.lerp3(hipR, kneeR, 0.45), 0.085, SHORTS); // Shorts
+    cap(hipR, U.lerp3(hipR, kneeR, 0.45), 0.085, SHORTS);
     cap(kneeR, footR, 0.055, SKIN);
-    cap(footR, U.a3(footR, U.m3(f, 0.14)), 0.05, SHOE); // Zapatilla
+    cap(footR, U.a3(footR, U.m3(f, 0.14)), 0.05, SHOE);
 
     // Torso con camiseta oficial
     quad([shL, shR, hipR, hipL], shirtCol, -0.02);
@@ -343,13 +347,13 @@ MS.RenderTV = (function () {
       });
     }
 
-    // Pastilla flotante con nombre sobre la cabeza (como squash_sim)
+    // Pastilla flotante de identificación limpia sobre la cabeza
     const tagPos = proj(K, U.a3(head, { x: 0, y: 0, z: 0.30 }));
     if (tagPos) {
       items.push({
         z: tagPos.z - 0.1,
         draw: (ctx) => {
-          const title = isStriker ? `★ ${label} (Golpeador)` : label;
+          const title = isStriker ? `★ ${label} - Golpeador` : label;
           ctx.font = '700 11px Saira, sans-serif';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
@@ -390,7 +394,7 @@ MS.RenderTV = (function () {
       : (C.PRESETS[camPreset] || C.PRESETS.arbitro);
     const K = camera(preset, w, h);
 
-    // 1. Escenario 3D de Arena WSF (Piso de arce, paredes y líneas)
+    // 1. Escenario 3D de Arena WSF
     court(ctx, K);
 
     if (!state) {
@@ -398,7 +402,7 @@ MS.RenderTV = (function () {
       return;
     }
 
-    const { pA, pB, ball, activePlayer } = state;
+    const { pA, pB, ball, activePlayer, curTime } = state;
     const striker = activePlayer === 'B' ? pB : pA;
     const opponent = activePlayer === 'B' ? pA : pB;
 
@@ -464,11 +468,35 @@ MS.RenderTV = (function () {
     const items = [];
 
     // Jugador A (Azul) y Jugador B (Rojo)
-    addPlayer3D(items, K, pA, '#1d4ed8', 'Jugador A', activePlayer === 'A', ball);
-    addPlayer3D(items, K, pB, '#b91c1c', 'Jugador B', activePlayer === 'B', ball);
+    addPlayer3D(items, K, pA, '#1d4ed8', 'Jugador A', activePlayer === 'A', ball, curTime || 0);
+    addPlayer3D(items, K, pB, '#b91c1c', 'Jugador B', activePlayer === 'B', ball, curTime || 0);
 
     // Pelota 3D con estela, sombra en piso y doble punto amarillo WSF
     if (ball) {
+      // Destello visual de impacto con la pared frontal
+      if (ball.y < 0.28) {
+        const Pimp = proj(K, { x: ball.x, y: 0.003, z: ball.z });
+        if (Pimp) {
+          items.push({
+            z: 9997,
+            draw: (c2) => {
+              c2.save();
+              c2.globalAlpha = Math.max(0, 1 - ball.y / 0.28);
+              c2.fillStyle = '#ffffff';
+              c2.beginPath();
+              c2.arc(Pimp.x, Pimp.y, 6, 0, Math.PI * 2);
+              c2.fill();
+              c2.strokeStyle = '#facc15';
+              c2.lineWidth = 2.5;
+              c2.beginPath();
+              c2.arc(Pimp.x, Pimp.y, 13, 0, Math.PI * 2);
+              c2.stroke();
+              c2.restore();
+            }
+          });
+        }
+      }
+
       // Sombra en piso
       const shd = proj(K, { x: ball.x, y: ball.y, z: 0.003 });
       if (shd) {
@@ -512,11 +540,11 @@ MS.RenderTV = (function () {
       }
     }
 
-    // Ordenar de atrás hacia adelante (Z-buffer por pintor)
+    // Ordenar de atrás hacia adelante (Z-buffer)
     items.sort((a, b) => b.z - a.z);
     for (const it of items) it.draw(ctx);
 
-    // 6. Vidrio trasero transparente superpuesto al final
+    // 6. Vidrio trasero transparente con reflejos diagonales
     glass(ctx, K);
   }
 

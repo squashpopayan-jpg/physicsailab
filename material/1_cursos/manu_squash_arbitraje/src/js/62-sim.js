@@ -198,7 +198,9 @@ MS.Sim = (function () {
       pA,
       pB,
       activePlayer: currentCase.striker,
-      appeal: hasAppealed
+      appeal: hasAppealed,
+      curTime,
+      caseData: currentCase
     };
 
     if (cTop) RenderTop.render(cTop, state);
