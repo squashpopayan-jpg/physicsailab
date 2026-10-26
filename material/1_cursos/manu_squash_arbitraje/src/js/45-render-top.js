@@ -4,18 +4,21 @@ MS.RenderTop = (function () {
 
   function render(canvas, state) {
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
     const w = canvas.width, h = canvas.height;
+    if (w < 40 || h < 40) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
     // Fondo oscuro exterior
     ctx.fillStyle = '#080f18';
     ctx.fillRect(0, 0, w, h);
 
     // Margen y escala para que quepa la cancha de 6.40 x 9.75 m
-    const pad = 24;
-    const availW = w - pad * 2;
-    const availH = h - pad * 2;
-    const scale = Math.min(availW / C.W, availH / C.L);
+    const pad = 20;
+    const availW = Math.max(20, w - pad * 2);
+    const availH = Math.max(20, h - pad * 2);
+    const scale = Math.max(0.5, Math.min(availW / C.W, availH / C.L));
 
     const ox = (w - C.W * scale) / 2;
     const oy = (h - C.L * scale) / 2;
@@ -32,7 +35,7 @@ MS.RenderTop = (function () {
     // Vetas sutiles del tablonado
     ctx.strokeStyle = 'rgba(180, 130, 80, 0.22)';
     ctx.lineWidth = 1;
-    const plankW = 0.12 * scale;
+    const plankW = Math.max(4, 0.12 * scale);
     for (let px = ox; px <= ox + C.W * scale; px += plankW) {
       ctx.beginPath();
       ctx.moveTo(px, oy);
@@ -126,7 +129,7 @@ MS.RenderTop = (function () {
 
     if (striker) {
       const sScr = toScreen(striker.x, striker.y);
-      const swingR = C.SWING_R * scale;
+      const swingR = Math.max(4, C.SWING_R * scale);
 
       let swingBlocked = false;
       if (opponent) {
@@ -188,11 +191,11 @@ MS.RenderTop = (function () {
     const drawPlayer = (p, col, label, isStriker) => {
       if (!p) return;
       const scr = toScreen(p.x, p.y);
-      const pR = 0.35 * scale;
+      const pR = Math.max(4, 0.35 * scale);
 
       // Sombra
       ctx.beginPath();
-      ctx.ellipse(scr.x, scr.y + 4, pR, pR * 0.7, 0, 0, Math.PI * 2);
+      ctx.ellipse(scr.x, scr.y + 4, pR, Math.max(2, pR * 0.7), 0, 0, Math.PI * 2);
       ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
       ctx.fill();
 

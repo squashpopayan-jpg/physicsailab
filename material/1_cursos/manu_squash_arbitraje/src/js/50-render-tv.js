@@ -18,9 +18,10 @@ MS.RenderTV = (function () {
     let right = U.c3({ x: 0, y: 0, z: 1 }, fw);
     right = U.l3(right) < 1e-6 ? { x: 1, y: 0, z: 0 } : U.n3(right);
     const up = U.c3(fw, right);
-    const f = (h / 2) / Math.tan(U.rad(cam.fov) / 2);
+    const safeH = Math.max(40, h);
+    const f = (safeH / 2) / Math.tan(U.rad(cam.fov) / 2);
 
-    return { eye, fw, right, up, f, cx: w / 2, cy: h / 2, w, h };
+    return { eye, fw, right, up, f, cx: w / 2, cy: safeH / 2, w, h: safeH };
   }
 
   function toCam(K, p) {
@@ -93,8 +94,11 @@ MS.RenderTV = (function () {
 
   function render(canvas, state, camPreset = 'arbitro') {
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
     const w = canvas.width, h = canvas.height;
+    if (w < 40 || h < 40) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
     ctx.fillStyle = '#0a1017';
     ctx.fillRect(0, 0, w, h);

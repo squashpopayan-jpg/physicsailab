@@ -17,20 +17,47 @@ MS.Sim = (function () {
     bindControls();
     resizeCanvases();
     window.addEventListener('resize', resizeCanvases);
+
+    if (typeof ResizeObserver !== 'undefined') {
+      const ro = new ResizeObserver(() => {
+        resizeCanvases();
+      });
+      const target = U.$('.canvases-split') || U.$('#section-simulador');
+      if (target) ro.observe(target);
+    }
   }
 
   function resizeCanvases() {
     const cTop = U.$('#canvasTop');
     const c3D = U.$('#canvas3D');
-    if (cTop) {
-      cTop.width = cTop.parentElement.clientWidth;
-      cTop.height = 420;
+    if (!cTop || !c3D) return;
+
+    const wrapTop = cTop.parentElement;
+    const wrap3D = c3D.parentElement;
+
+    const clientWTop = wrapTop ? wrapTop.clientWidth : 0;
+    const clientW3D = wrap3D ? wrap3D.clientWidth : 0;
+
+    const wTop = clientWTop > 40 ? clientWTop : (cTop.width > 40 ? cTop.width : 420);
+    const w3D = clientW3D > 40 ? clientW3D : (c3D.width > 40 ? c3D.width : 560);
+    const h = 440;
+
+    if (cTop.width !== wTop || cTop.height !== h) {
+      cTop.width = wTop;
+      cTop.height = h;
     }
-    if (c3D) {
-      c3D.width = c3D.parentElement.clientWidth;
-      c3D.height = 420;
+    if (c3D.width !== w3D || c3D.height !== h) {
+      c3D.width = w3D;
+      c3D.height = h;
     }
     draw();
+  }
+
+  function onActivate() {
+    resizeCanvases();
+    if (!animId) {
+      startLoop();
+    }
   }
 
   function renderCaseList(filterCat = 'all') {
@@ -108,10 +135,11 @@ MS.Sim = (function () {
   }
 
   function loop(now) {
+    if (!lastTimestamp) lastTimestamp = now;
     const dt = Math.min(0.06, (now - lastTimestamp) / 1000);
     lastTimestamp = now;
 
-    if (isPlaying) {
+    if (isPlaying && currentCase) {
       curTime += dt;
 
       // Comprobar congelación tFreeze
@@ -130,13 +158,17 @@ MS.Sim = (function () {
       }
     }
 
-    draw();
+    try {
+      draw();
+    } catch (err) {
+      console.warn('MS.Sim draw warning:', err);
+    }
 
     const timeBar = U.$('#simTimeDisplay');
     if (timeBar) timeBar.textContent = `${curTime.toFixed(2)}s`;
 
     const btnPlay = U.$('#btnSimPlay');
-    if (btnPlay && !isPlaying) btnPlay.textContent = '▶ Reproducir';
+    if (btnPlay) btnPlay.textContent = isPlaying ? '⏸ Pausa' : '▶ Reproducir';
 
     animId = requestAnimationFrame(loop);
   }
@@ -221,6 +253,10 @@ MS.Sim = (function () {
       btnPlay.addEventListener('click', () => {
         isPlaying = !isPlaying;
         btnPlay.textContent = isPlaying ? '⏸ Pausa' : '▶ Reproducir';
+        if (isPlaying) {
+          lastTimestamp = performance.now();
+          if (!animId) startLoop();
+        }
       });
     }
 
@@ -237,6 +273,7 @@ MS.Sim = (function () {
         if (vPanel) vPanel.classList.remove('show');
         U.$$('.btn-decision').forEach((btn) => btn.classList.remove('selected'));
         if (btnPlay) btnPlay.textContent = '⏸ Pausa';
+        startLoop();
       });
     }
 
@@ -272,6 +309,8 @@ MS.Sim = (function () {
 
   return {
     init,
-    loadCase
+    loadCase,
+    resizeCanvases,
+    onActivate
   };
 })();

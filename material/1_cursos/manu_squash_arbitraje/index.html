@@ -1592,18 +1592,21 @@ MS.RenderTop = (function () {
 
   function render(canvas, state) {
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
     const w = canvas.width, h = canvas.height;
+    if (w < 40 || h < 40) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
     // Fondo oscuro exterior
     ctx.fillStyle = '#080f18';
     ctx.fillRect(0, 0, w, h);
 
     // Margen y escala para que quepa la cancha de 6.40 x 9.75 m
-    const pad = 24;
-    const availW = w - pad * 2;
-    const availH = h - pad * 2;
-    const scale = Math.min(availW / C.W, availH / C.L);
+    const pad = 20;
+    const availW = Math.max(20, w - pad * 2);
+    const availH = Math.max(20, h - pad * 2);
+    const scale = Math.max(0.5, Math.min(availW / C.W, availH / C.L));
 
     const ox = (w - C.W * scale) / 2;
     const oy = (h - C.L * scale) / 2;
@@ -1620,7 +1623,7 @@ MS.RenderTop = (function () {
     // Vetas sutiles del tablonado
     ctx.strokeStyle = 'rgba(180, 130, 80, 0.22)';
     ctx.lineWidth = 1;
-    const plankW = 0.12 * scale;
+    const plankW = Math.max(4, 0.12 * scale);
     for (let px = ox; px <= ox + C.W * scale; px += plankW) {
       ctx.beginPath();
       ctx.moveTo(px, oy);
@@ -1714,7 +1717,7 @@ MS.RenderTop = (function () {
 
     if (striker) {
       const sScr = toScreen(striker.x, striker.y);
-      const swingR = C.SWING_R * scale;
+      const swingR = Math.max(4, C.SWING_R * scale);
 
       let swingBlocked = false;
       if (opponent) {
@@ -1776,11 +1779,11 @@ MS.RenderTop = (function () {
     const drawPlayer = (p, col, label, isStriker) => {
       if (!p) return;
       const scr = toScreen(p.x, p.y);
-      const pR = 0.35 * scale;
+      const pR = Math.max(4, 0.35 * scale);
 
       // Sombra
       ctx.beginPath();
-      ctx.ellipse(scr.x, scr.y + 4, pR, pR * 0.7, 0, 0, Math.PI * 2);
+      ctx.ellipse(scr.x, scr.y + 4, pR, Math.max(2, pR * 0.7), 0, 0, Math.PI * 2);
       ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
       ctx.fill();
 
@@ -1877,9 +1880,10 @@ MS.RenderTV = (function () {
     let right = U.c3({ x: 0, y: 0, z: 1 }, fw);
     right = U.l3(right) < 1e-6 ? { x: 1, y: 0, z: 0 } : U.n3(right);
     const up = U.c3(fw, right);
-    const f = (h / 2) / Math.tan(U.rad(cam.fov) / 2);
+    const safeH = Math.max(40, h);
+    const f = (safeH / 2) / Math.tan(U.rad(cam.fov) / 2);
 
-    return { eye, fw, right, up, f, cx: w / 2, cy: h / 2, w, h };
+    return { eye, fw, right, up, f, cx: w / 2, cy: safeH / 2, w, h: safeH };
   }
 
   function toCam(K, p) {
@@ -1952,8 +1956,11 @@ MS.RenderTV = (function () {
 
   function render(canvas, state, camPreset = 'arbitro') {
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
     const w = canvas.width, h = canvas.height;
+    if (w < 40 || h < 40) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
     ctx.fillStyle = '#0a1017';
     ctx.fillRect(0, 0, w, h);
@@ -2787,20 +2794,47 @@ MS.Sim = (function () {
     bindControls();
     resizeCanvases();
     window.addEventListener('resize', resizeCanvases);
+
+    if (typeof ResizeObserver !== 'undefined') {
+      const ro = new ResizeObserver(() => {
+        resizeCanvases();
+      });
+      const target = U.$('.canvases-split') || U.$('#section-simulador');
+      if (target) ro.observe(target);
+    }
   }
 
   function resizeCanvases() {
     const cTop = U.$('#canvasTop');
     const c3D = U.$('#canvas3D');
-    if (cTop) {
-      cTop.width = cTop.parentElement.clientWidth;
-      cTop.height = 420;
+    if (!cTop || !c3D) return;
+
+    const wrapTop = cTop.parentElement;
+    const wrap3D = c3D.parentElement;
+
+    const clientWTop = wrapTop ? wrapTop.clientWidth : 0;
+    const clientW3D = wrap3D ? wrap3D.clientWidth : 0;
+
+    const wTop = clientWTop > 40 ? clientWTop : (cTop.width > 40 ? cTop.width : 420);
+    const w3D = clientW3D > 40 ? clientW3D : (c3D.width > 40 ? c3D.width : 560);
+    const h = 440;
+
+    if (cTop.width !== wTop || cTop.height !== h) {
+      cTop.width = wTop;
+      cTop.height = h;
     }
-    if (c3D) {
-      c3D.width = c3D.parentElement.clientWidth;
-      c3D.height = 420;
+    if (c3D.width !== w3D || c3D.height !== h) {
+      c3D.width = w3D;
+      c3D.height = h;
     }
     draw();
+  }
+
+  function onActivate() {
+    resizeCanvases();
+    if (!animId) {
+      startLoop();
+    }
   }
 
   function renderCaseList(filterCat = 'all') {
@@ -2878,10 +2912,11 @@ MS.Sim = (function () {
   }
 
   function loop(now) {
+    if (!lastTimestamp) lastTimestamp = now;
     const dt = Math.min(0.06, (now - lastTimestamp) / 1000);
     lastTimestamp = now;
 
-    if (isPlaying) {
+    if (isPlaying && currentCase) {
       curTime += dt;
 
       // Comprobar congelación tFreeze
@@ -2900,13 +2935,17 @@ MS.Sim = (function () {
       }
     }
 
-    draw();
+    try {
+      draw();
+    } catch (err) {
+      console.warn('MS.Sim draw warning:', err);
+    }
 
     const timeBar = U.$('#simTimeDisplay');
     if (timeBar) timeBar.textContent = `${curTime.toFixed(2)}s`;
 
     const btnPlay = U.$('#btnSimPlay');
-    if (btnPlay && !isPlaying) btnPlay.textContent = '▶ Reproducir';
+    if (btnPlay) btnPlay.textContent = isPlaying ? '⏸ Pausa' : '▶ Reproducir';
 
     animId = requestAnimationFrame(loop);
   }
@@ -2991,6 +3030,10 @@ MS.Sim = (function () {
       btnPlay.addEventListener('click', () => {
         isPlaying = !isPlaying;
         btnPlay.textContent = isPlaying ? '⏸ Pausa' : '▶ Reproducir';
+        if (isPlaying) {
+          lastTimestamp = performance.now();
+          if (!animId) startLoop();
+        }
       });
     }
 
@@ -3007,6 +3050,7 @@ MS.Sim = (function () {
         if (vPanel) vPanel.classList.remove('show');
         U.$$('.btn-decision').forEach((btn) => btn.classList.remove('selected'));
         if (btnPlay) btnPlay.textContent = '⏸ Pausa';
+        startLoop();
       });
     }
 
@@ -3042,7 +3086,9 @@ MS.Sim = (function () {
 
   return {
     init,
-    loadCase
+    loadCase,
+    resizeCanvases,
+    onActivate
   };
 })();
 
@@ -4032,7 +4078,17 @@ MS.Scoreboard = (function () {
 document.addEventListener('DOMContentLoaded', () => {
   const { U, Sim, Interference, RulesApp, Scoreboard } = MS;
 
-  // 1. Enrutador por pestañas
+  // 1. Inicializar módulos primero
+  try {
+    if (Sim) Sim.init();
+    if (Interference) Interference.init();
+    if (RulesApp) RulesApp.init();
+    if (Scoreboard) Scoreboard.init();
+  } catch (err) {
+    console.error('Error inicializando módulos:', err);
+  }
+
+  // 2. Enrutador por pestañas
   function navigateTo(sectionId) {
     U.$$('.page-section').forEach((sec) => {
       sec.classList.toggle('active', sec.id === `section-${sectionId}`);
@@ -4045,11 +4101,13 @@ document.addEventListener('DOMContentLoaded', () => {
     window.location.hash = sectionId;
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    // Si entra al simulador, recalcular canvas
+    // Si entra al simulador, activar loop y redimensionar lienzos
     if (sectionId === 'simulador' && Sim) {
+      if (Sim.onActivate) Sim.onActivate();
       setTimeout(() => {
+        if (Sim.onActivate) Sim.onActivate();
         window.dispatchEvent(new Event('resize'));
-      }, 50);
+      }, 40);
     }
   }
 
@@ -4066,7 +4124,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const hash = window.location.hash.replace('#', '') || 'inicio';
   navigateTo(hash);
 
-  // 2. Modo Claro / Oscuro
+  // 3. Modo Claro / Oscuro
   const themeBtn = U.$('#themeBtn');
   const savedTheme = localStorage.getItem('ms_theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
   document.documentElement.setAttribute('data-theme', savedTheme);
@@ -4078,16 +4136,6 @@ document.addEventListener('DOMContentLoaded', () => {
       document.documentElement.setAttribute('data-theme', next);
       localStorage.setItem('ms_theme', next);
     });
-  }
-
-  // 3. Inicializar módulos
-  try {
-    if (Sim) Sim.init();
-    if (Interference) Interference.init();
-    if (RulesApp) RulesApp.init();
-    if (Scoreboard) Scoreboard.init();
-  } catch (err) {
-    console.error('Error inicializando módulos:', err);
   }
 });
 
