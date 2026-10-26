@@ -110,6 +110,8 @@
 
         try {
             // 1. Modo Administrador General (Profesor Obando): todo liberado
+            const isPreviewTesting = location.search.includes('preview=1') || location.search.includes('demo=1') || localStorage.getItem('physicsailab_force_preview') === 'true';
+            if (isPreviewTesting) return false;
             if (localStorage.getItem('physicsailab_admin') === 'true') return true;
             if (localStorage.getItem('physicsailab_unlocked_all') === 'true') return true;
 
@@ -1417,13 +1419,15 @@
             }
         });
 
-        // 2. Bloqueo visual estricto de las secciones técnicas (electrónica, STL 3D, firmware)
+        // 2. Bloqueo físico y visual de las secciones técnicas (electrónica, STL 3D, firmware)
         lockedSectionIds.forEach(id => {
             const sec = document.getElementById(id);
             if (!sec) return;
             if (!unlocked) {
+                sec.style.display = 'none';
                 sec.classList.add('pg-faro-locked');
             } else {
+                sec.style.display = '';
                 sec.classList.remove('pg-faro-locked');
             }
         });
@@ -1527,6 +1531,8 @@
             applyInglesGuard();
         } else if (isTorneos) {
             applyTorneosGuard();
+        } else if (isFaro) {
+            applyFaroGuard();
         } else {
             // Notebook interactivo por defecto (Óptica, Mecánica, Materiales, Ondas, Termo, Fluidos, Cuántica, RETIE, etc.)
             applyNotebookGuard();

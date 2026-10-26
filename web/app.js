@@ -2659,6 +2659,107 @@ document.addEventListener('DOMContentLoaded', () => {
     const comicsGrid = document.getElementById('comics-grid');
     const comicsPaginationControls = document.getElementById('comics-pagination-controls');
 
+    
+    // ========================================================
+    // RECOMENDACIÓN SEMANAL DINÁMICA DE CÓMIC & PODCAST
+    // ========================================================
+    function getWeekNumber(d = new Date()) {
+        d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+        d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+        const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+        return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    }
+
+    let comicRotationOffset = (getWeekNumber() * 3);
+
+    window.rotateComicsOrder = function() {
+        const total = (data.comics && data.comics.length) ? data.comics.length : 1;
+        comicRotationOffset = (comicRotationOffset + 5) % total;
+        renderComics(currentComicCategory);
+        showToast('🎲 ¡Rotación aplicada! Los cómics se han reorganizado.');
+    };
+
+    function renderWeeklyRecommendations() {
+        const spotlightContainer = document.getElementById('weekly-spotlight-container');
+        if (!spotlightContainer || !data.comics || !data.podcasts || data.comics.length === 0 || data.podcasts.length === 0) return;
+
+        const weekNum = getWeekNumber();
+        const featuredComic = data.comics[weekNum % data.comics.length];
+        const featuredPodcast = data.podcasts[weekNum % data.podcasts.length];
+        if (!featuredComic || !featuredPodcast) return;
+
+        spotlightContainer.innerHTML = `
+            <div style="background:linear-gradient(135deg, rgba(99,102,241,0.12), rgba(245,158,11,0.08), rgba(15,23,42,0.95)); border:1.5px solid rgba(245,158,11,0.35); border-radius:18px; padding:1.4rem 1.6rem; margin-bottom:2rem; box-shadow:0 10px 30px rgba(0,0,0,0.35);">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.15rem; flex-wrap:wrap; gap:0.5rem; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:0.75rem;">
+                    <div style="display:flex; align-items:center; gap:0.6rem;">
+                        <span style="font-size:1.6rem;">🌟</span>
+                        <div>
+                            <h3 style="color:#fff; font-size:1.2rem; margin:0; font-weight:800;">
+                                Recomendaciones de la Semana
+                            </h3>
+                            <span style="font-size:0.78rem; color:var(--accent-amber); font-weight:700;">
+                                Selección Curada · Semana #${weekNum} del Año
+                            </span>
+                        </div>
+                    </div>
+                    <span style="font-size:0.75rem; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.35); color:#fbbf24; padding:0.25rem 0.65rem; border-radius:999px; font-weight:700;">
+                        🔄 Rota Automáticamente Cada Semana
+                    </span>
+                </div>
+
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:1.25rem;">
+                    <!-- Cómic de la Semana -->
+                    <div style="background:rgba(15,23,42,0.8); border:1px solid rgba(245,158,11,0.25); border-radius:14px; padding:1.25rem; display:flex; gap:1.1rem; align-items:center;">
+                        <div style="width:90px; height:120px; border-radius:8px; overflow:hidden; flex-shrink:0; border:1px solid rgba(255,255,255,0.15); box-shadow:0 4px 12px rgba(0,0,0,0.4); cursor:pointer;" onclick="openComicViewer('${featuredComic.id}')">
+                            <img src="${featuredComic.portada}" alt="${featuredComic.titulo}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'90\' height=\'120\'><rect width=\'90\' height=\'120\' fill=\'%23111827\'/><text x=\'50%\' y=\'50%\' fill=\'%23F59E0B\' font-size=\'24\' text-anchor=\'middle\' dy=\'.3em\'>🎨</text></svg>';">
+                        </div>
+                        <div style="flex:1; min-width:0;">
+                            <span style="font-size:0.7rem; background:rgba(245,158,11,0.18); color:#fbbf24; border:1px solid rgba(245,158,11,0.35); padding:0.15rem 0.5rem; border-radius:6px; font-weight:700; text-transform:uppercase;">
+                                🎨 Cómic de la Semana
+                            </span>
+                            <h4 style="color:#fff; font-size:1.02rem; margin:0.35rem 0 0.25rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer;" onclick="openComicViewer('${featuredComic.id}')">
+                                ${featuredComic.titulo}
+                            </h4>
+                            <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.45rem;">
+                                ✍️ ${featuredComic.autores}
+                            </div>
+                            <p style="font-size:0.78rem; color:#cbd5e1; margin:0 0 0.75rem; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.35;">
+                                ${featuredComic.descripcion}
+                            </p>
+                            <button onclick="openComicViewer('${featuredComic.id}')" class="btn btn-primary" style="font-size:0.78rem; padding:0.35rem 0.85rem; font-weight:700;">
+                                📖 Leer Cómic Destacado
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Podcast de la Semana -->
+                    <div style="background:rgba(15,23,42,0.8); border:1px solid rgba(56,189,248,0.25); border-radius:14px; padding:1.25rem; display:flex; gap:1.1rem; align-items:center;">
+                        <div style="width:90px; height:120px; border-radius:8px; background:linear-gradient(135deg, rgba(6,182,212,0.2), rgba(15,23,42,0.9)); border:1px solid rgba(56,189,248,0.3); display:flex; flex-direction:column; align-items:center; justify-content:center; flex-shrink:0; font-size:2.4rem;">
+                            🎙️
+                        </div>
+                        <div style="flex:1; min-width:0;">
+                            <span style="font-size:0.7rem; background:rgba(56,189,248,0.18); color:#38bdf8; border:1px solid rgba(56,189,248,0.35); padding:0.15rem 0.5rem; border-radius:6px; font-weight:700; text-transform:uppercase;">
+                                🎙️ Podcast de la Semana
+                            </span>
+                            <h4 style="color:#fff; font-size:1.02rem; margin:0.35rem 0 0.25rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                                ${featuredPodcast.titulo}
+                            </h4>
+                            <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.45rem;">
+                                🎙️ ${featuredPodcast.creditos}
+                            </div>
+                            <p style="font-size:0.78rem; color:#cbd5e1; margin:0 0 0.75rem; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.35;">
+                                ${featuredPodcast.descripcion}
+                            </p>
+                            <button onclick="playPodcast('${featuredPodcast.archivo}', '${featuredPodcast.titulo.replace(/'/g, "\\'")}', '${featuredPodcast.categoria}')" class="btn btn-secondary" style="font-size:0.78rem; padding:0.35rem 0.85rem; font-weight:700; border-color:rgba(56,189,248,0.4); color:#38bdf8;">
+                                ▶️ Escuchar Podcast Destacado
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
     window.renderComics = function(category = 'all') {
         currentComicCategory = category;
         if (!comicsGrid) return;
@@ -2701,7 +2802,13 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const displayed = filtered.slice(0, comicDisplayLimit);
+        // Aplicar rotación de presentación de cómics
+        let rotatedList = filtered;
+        if (filtered.length > 0) {
+            const shift = comicRotationOffset % filtered.length;
+            rotatedList = [...filtered.slice(shift), ...filtered.slice(0, shift)];
+        }
+        const displayed = rotatedList.slice(0, comicDisplayLimit);
 
         comicsGrid.innerHTML = displayed.map(c => {
             const isSaved = getSavedComics().includes(normalizeComicId(c.id));
@@ -2773,6 +2880,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
     renderComics('all');
+    renderWeeklyRecommendations();
 
     // Comic Filter Buttons
     document.querySelectorAll('.comic-filter-btn').forEach(btn => {

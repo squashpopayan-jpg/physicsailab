@@ -124,13 +124,21 @@
             const topStreakEl = document.getElementById('historia-trivia-stat-top-streak');
 
             if (totalParticipantsEl) totalParticipantsEl.textContent = ranking.length;
-            if (topScoreEl && ranking.length > 0) {
-                const maxPts = Math.max(...ranking.map(r => r.score || 0));
-                topScoreEl.textContent = `${maxPts.toLocaleString('es-ES')} pts`;
+            if (topScoreEl) {
+                if (ranking.length > 0) {
+                    const maxPts = Math.max(...ranking.map(r => r.score || 0));
+                    topScoreEl.textContent = `${maxPts.toLocaleString('es-ES')} pts`;
+                } else {
+                    topScoreEl.textContent = '0 pts';
+                }
             }
-            if (topStreakEl && ranking.length > 0) {
-                const maxStk = Math.max(...ranking.map(r => r.maxStreak || 0));
-                topStreakEl.textContent = `🔥 ${maxStk}`;
+            if (topStreakEl) {
+                if (ranking.length > 0) {
+                    const maxStk = Math.max(...ranking.map(r => r.maxStreak || 0));
+                    topStreakEl.textContent = `🔥 ${maxStk}`;
+                } else {
+                    topStreakEl.textContent = '🔥 0';
+                }
             }
         },
 
@@ -523,7 +531,7 @@
         fetchRankingFromCloud: function() {
             try {
                 const FIREBASE_BASE = 'https://squashpopayan-65e33-default-rtdb.firebaseio.com';
-                fetch(`${FIREBASE_BASE}/trivia_rankings/historia.json`)
+                fetch('https://squashpopayan-65e33-default-rtdb.firebaseio.com/physicsailab/trivia_rankings/historia.json')
                     .then(r => r.json())
                     .then(data => {
                         if (data && typeof data === 'object') {
@@ -539,28 +547,15 @@
             } catch(e) {}
         },
         getRanking: function() {
-            // Físicos históricos de referencia
-            const defaultRanking = [
-                { id: 'hist-1', name: 'Marie Curie', institution: 'Institut du Radium, París', score: 15200, highestQuestion: 148, maxStreak: 42, date: '2026-10-23' },
-                { id: 'hist-2', name: 'Albert Einstein', institution: 'ETH Zürich / Princeton University', score: 13800, highestQuestion: 132, maxStreak: 35, date: '2026-10-22' },
-                { id: 'hist-3', name: 'Isaac Newton', institution: 'Cambridge University (Trinity College)', score: 12400, highestQuestion: 119, maxStreak: 28, date: '2026-10-21' },
-                { id: 'hist-4', name: 'Richard Feynman', institution: 'Caltech (California Inst. of Technology)', score: 10900, highestQuestion: 104, maxStreak: 24, date: '2026-10-20' },
-                { id: 'hist-5', name: 'Niels Bohr', institution: 'Institut Niels Bohr, Copenhague', score: 9300, highestQuestion: 89, maxStreak: 20, date: '2026-10-19' },
-                { id: 'hist-6', name: 'Werner Heisenberg', institution: 'Universidad de Leipzig', score: 7800, highestQuestion: 74, maxStreak: 17, date: '2026-10-18' },
-                { id: 'hist-7', name: 'Galileo Galilei', institution: 'Universidad de Padua', score: 6500, highestQuestion: 62, maxStreak: 14, date: '2026-10-17' },
-                { id: 'hist-8', name: 'Max Planck', institution: 'Humboldt-Universität zu Berlin', score: 5400, highestQuestion: 52, maxStreak: 12, date: '2026-10-16' },
-                { id: 'hist-9', name: 'Michael Faraday', institution: 'Royal Institution, Londres', score: 4600, highestQuestion: 44, maxStreak: 10, date: '2026-10-15' },
-                { id: 'hist-10', name: 'James Clerk Maxwell', institution: 'King\'s College London', score: 3700, highestQuestion: 36, maxStreak: 8, date: '2026-10-14' }
-            ];
-
             try {
                 const stored = JSON.parse(localStorage.getItem('physicsailab_historia_ranking') || 'null');
-                if (stored && Array.isArray(stored) && stored.length > 0) {
-                    return stored;
+                if (stored && Array.isArray(stored)) {
+                    // Limpiar cualquier residuo de datos ficticios antiguos
+                    return stored.filter(r => r && !String(r.id || '').startsWith('ref-') && !String(r.id || '').startsWith('hist-') && !String(r.id || '').startsWith('sq-'));
                 }
             } catch (e) {}
 
-            return defaultRanking;
+            return [];
         },
 
         // Actualizar registro en ranking
@@ -596,7 +591,7 @@
 
             try {
                 const FIREBASE_BASE = 'https://squashpopayan-65e33-default-rtdb.firebaseio.com';
-                fetch(`${FIREBASE_BASE}/trivia_rankings/historia/${entry.id}.json`, {
+                fetch(`https://squashpopayan-65e33-default-rtdb.firebaseio.com/physicsailab/trivia_rankings/historia/${entry.id}.json`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(entry)

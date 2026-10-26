@@ -127,13 +127,21 @@
             const topStreakEl = document.getElementById('squash-trivia-stat-top-streak');
 
             if (totalParticipantsEl) totalParticipantsEl.textContent = ranking.length;
-            if (topScoreEl && ranking.length > 0) {
-                const maxPts = Math.max(...ranking.map(r => r.score || 0));
-                topScoreEl.textContent = `${maxPts.toLocaleString('es-ES')} pts`;
+            if (topScoreEl) {
+                if (ranking.length > 0) {
+                    const maxPts = Math.max(...ranking.map(r => r.score || 0));
+                    topScoreEl.textContent = `${maxPts.toLocaleString('es-ES')} pts`;
+                } else {
+                    topScoreEl.textContent = '0 pts';
+                }
             }
-            if (topStreakEl && ranking.length > 0) {
-                const maxStk = Math.max(...ranking.map(r => r.maxStreak || 0));
-                topStreakEl.textContent = `🔥 ${maxStk}`;
+            if (topStreakEl) {
+                if (ranking.length > 0) {
+                    const maxStk = Math.max(...ranking.map(r => r.maxStreak || 0));
+                    topStreakEl.textContent = `🔥 ${maxStk}`;
+                } else {
+                    topStreakEl.textContent = '🔥 0';
+                }
             }
         },
 
@@ -525,7 +533,7 @@
         fetchRankingFromCloud: function() {
             try {
                 const FIREBASE_BASE = 'https://squashpopayan-65e33-default-rtdb.firebaseio.com';
-                fetch(`${FIREBASE_BASE}/trivia_rankings/squash.json`)
+                fetch('https://squashpopayan-65e33-default-rtdb.firebaseio.com/physicsailab/trivia_rankings/squash.json')
                     .then(r => r.json())
                     .then(data => {
                         if (data && typeof data === 'object') {
@@ -541,28 +549,15 @@
             } catch(e) {}
         },
         getRanking: function() {
-            // Ranking benchmark de deportistas y clubes colombianos y sudamericanos
-            const defaultRanking = [
-                { id: 'sq-1', name: 'Miguel Ángel Rodríguez (Tributo)', institution: 'Bogotá D.C. (British Open Champion)', score: 14500, highestQuestion: 140, maxStreak: 35, date: '2026-10-23' },
-                { id: 'sq-2', name: 'Diego Elías (Tributo)', institution: 'Lima, Perú (PSA World Champion)', score: 13900, highestQuestion: 132, maxStreak: 31, date: '2026-10-22' },
-                { id: 'sq-3', name: 'Prof. Manuel Alejandro Obando', institution: 'Club Campestre Popayán / Unicauca', score: 12800, highestQuestion: 120, maxStreak: 28, date: '2026-10-21' },
-                { id: 'sq-4', name: 'Laura Tovar (Tributo)', institution: 'Selección Colombia Femenina', score: 11200, highestQuestion: 105, maxStreak: 25, date: '2026-10-20' },
-                { id: 'sq-5', name: 'Catalina Peláez (Tributo)', institution: 'Liga de Squash de Bogotá', score: 9800, highestQuestion: 92, maxStreak: 21, date: '2026-10-19' },
-                { id: 'sq-6', name: 'Camilo Andrés Cifuentes', institution: 'Universidad del Cauca (Ing. Física)', score: 8600, highestQuestion: 81, maxStreak: 18, date: '2026-10-18' },
-                { id: 'sq-7', name: 'Sebastián Echeverri', institution: 'Liga Vallecaucana de Squash', score: 7400, highestQuestion: 70, maxStreak: 15, date: '2026-10-17' },
-                { id: 'sq-8', name: 'Valeria Mosquera Paz', institution: 'Club Campestre de Popayán', score: 6300, highestQuestion: 60, maxStreak: 13, date: '2026-10-16' },
-                { id: 'sq-9', name: 'Felipe Santamaría', institution: 'Club El Nogal Bogotá', score: 5100, highestQuestion: 49, maxStreak: 11, date: '2026-10-15' },
-                { id: 'sq-10', name: 'Santiago Rengifo', institution: 'Universidad del Valle', score: 4200, highestQuestion: 40, maxStreak: 9, date: '2026-10-14' }
-            ];
-
             try {
                 const stored = JSON.parse(localStorage.getItem('physicsailab_squash_trivia_ranking') || 'null');
-                if (stored && Array.isArray(stored) && stored.length > 0) {
-                    return stored;
+                if (stored && Array.isArray(stored)) {
+                    // Limpiar cualquier residuo de datos ficticios antiguos
+                    return stored.filter(r => r && !String(r.id || '').startsWith('ref-') && !String(r.id || '').startsWith('hist-') && !String(r.id || '').startsWith('sq-'));
                 }
             } catch (e) {}
 
-            return defaultRanking;
+            return [];
         },
 
         // Actualizar registro en ranking
@@ -598,7 +593,7 @@
 
             try {
                 const FIREBASE_BASE = 'https://squashpopayan-65e33-default-rtdb.firebaseio.com';
-                fetch(`${FIREBASE_BASE}/trivia_rankings/squash/${entry.id}.json`, {
+                fetch(`https://squashpopayan-65e33-default-rtdb.firebaseio.com/physicsailab/trivia_rankings/squash/${entry.id}.json`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(entry)

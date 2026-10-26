@@ -924,7 +924,8 @@
 
     <!-- Scripts de la Aplicación de Administración -->
     <script>
-        const FIREBASE_BASE = 'https://squashpopayan-65e33-default-rtdb.firebaseio.com';
+        const FIREBASE_ROOT = 'https://squashpopayan-65e33-default-rtdb.firebaseio.com';
+        const FIREBASE_BASE = 'https://squashpopayan-65e33-default-rtdb.firebaseio.com/physicsailab';
         const ADMIN_MASTER_KEY = 'OBANDO-ADMIN-2026';
 
         let currentTriviaBoard = 'fisica';
@@ -1002,7 +1003,7 @@
 
         // 1. Sesiones Activas (Telemetría en tiempo real)
         function fetchActiveSessions() {
-            fetch(`${FIREBASE_BASE}/active_sessions.json`)
+            fetch(`${FIREBASE_ROOT}/active_sessions.json`)
                 .then(r => r.json())
                 .then(data => {
                     allActiveSessions = data || {};
@@ -1079,13 +1080,13 @@
 
         function kickSession(sessionId, name) {
             if (confirm(`¿Deseas expulsar la sesión de "${name}"?\nEl curso o simulador se bloqueará de inmediato en su dispositivo.`)) {
-                fetch(`${FIREBASE_BASE}/revoked_sessions/${sessionId}.json`, {
+                fetch(`${FIREBASE_ROOT}/revoked_sessions/${sessionId}.json`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(true)
                 }).then(() => {
                     // Eliminar de active_sessions
-                    fetch(`${FIREBASE_BASE}/active_sessions/${sessionId}.json`, { method: 'DELETE' });
+                    fetch(`${FIREBASE_ROOT}/active_sessions/${sessionId}.json`, { method: 'DELETE' });
                     delete allActiveSessions[sessionId];
                     renderActiveSessionsTable();
                     alert(`✓ Sesión de "${name}" expulsada exitosamente.`);

@@ -126,13 +126,21 @@
             const topStreakEl = document.getElementById('trivia-stat-top-streak');
 
             if (totalParticipantsEl) totalParticipantsEl.textContent = ranking.length;
-            if (topScoreEl && ranking.length > 0) {
-                const maxPts = Math.max(...ranking.map(r => r.score || 0));
-                topScoreEl.textContent = `${maxPts.toLocaleString('es-ES')} pts`;
+            if (topScoreEl) {
+                if (ranking.length > 0) {
+                    const maxPts = Math.max(...ranking.map(r => r.score || 0));
+                    topScoreEl.textContent = `${maxPts.toLocaleString('es-ES')} pts`;
+                } else {
+                    topScoreEl.textContent = '0 pts';
+                }
             }
-            if (topStreakEl && ranking.length > 0) {
-                const maxStk = Math.max(...ranking.map(r => r.maxStreak || 0));
-                topStreakEl.textContent = `🔥 ${maxStk}`;
+            if (topStreakEl) {
+                if (ranking.length > 0) {
+                    const maxStk = Math.max(...ranking.map(r => r.maxStreak || 0));
+                    topStreakEl.textContent = `🔥 ${maxStk}`;
+                } else {
+                    topStreakEl.textContent = '🔥 0';
+                }
             }
         },
 
@@ -527,7 +535,7 @@
         fetchRankingFromCloud: function() {
             try {
                 const FIREBASE_BASE = 'https://squashpopayan-65e33-default-rtdb.firebaseio.com';
-                fetch(`${FIREBASE_BASE}/trivia_rankings/fisica.json`)
+                fetch('https://squashpopayan-65e33-default-rtdb.firebaseio.com/physicsailab/trivia_rankings/fisica.json')
                     .then(r => r.json())
                     .then(data => {
                         if (data && typeof data === 'object') {
@@ -543,28 +551,15 @@
             } catch(e) {}
         },
         getRanking: function() {
-            // Estudiantes base de referencia universitaria
-            const defaultRanking = [
-                { id: 'ref-1', name: 'Laura Camila Mosquera', institution: 'Universidad del Cauca (Ing. Física)', score: 14800, highestQuestion: 142, maxStreak: 38, date: '2026-10-23' },
-                { id: 'ref-2', name: 'Juan David Benavides', institution: 'Universidad del Cauca (Ing. Electrónica)', score: 13200, highestQuestion: 125, maxStreak: 29, date: '2026-10-22' },
-                { id: 'ref-3', name: 'Mateo Alejandro Gómez', institution: 'Universidad Nacional de Colombia', score: 11950, highestQuestion: 112, maxStreak: 24, date: '2026-10-21' },
-                { id: 'ref-4', name: 'Daniela Sofía Prado', institution: 'Universidad del Cauca (Física Pura)', score: 9800, highestQuestion: 94, maxStreak: 21, date: '2026-10-20' },
-                { id: 'ref-5', name: 'Andrés Felipe Muñoz', institution: 'Universidad del Valle', score: 8400, highestQuestion: 81, maxStreak: 18, date: '2026-10-19' },
-                { id: 'ref-6', name: 'Santiago Rengifo', institution: 'Universidad del Cauca (Ing. Civil)', score: 7150, highestQuestion: 68, maxStreak: 15, date: '2026-10-18' },
-                { id: 'ref-7', name: 'Valentina Ordóñez', institution: 'Universidad de Antioquia', score: 6200, highestQuestion: 59, maxStreak: 14, date: '2026-10-17' },
-                { id: 'ref-8', name: 'Carlos Mario Vidal', institution: 'Universidad del Cauca (Lic. Ciencias)', score: 5400, highestQuestion: 52, maxStreak: 12, date: '2026-10-16' },
-                { id: 'ref-9', name: 'Gabriela Paz Enríquez', institution: 'Universidad del Cauca (Medicina / Biofísica)', score: 4750, highestQuestion: 45, maxStreak: 11, date: '2026-10-15' },
-                { id: 'ref-10', name: 'Felipe Santacruz', institution: 'Colegio Champagnat Popayán', score: 3900, highestQuestion: 38, maxStreak: 9, date: '2026-10-14' }
-            ];
-
             try {
                 const stored = JSON.parse(localStorage.getItem('physicsailab_trivia_ranking') || 'null');
-                if (stored && Array.isArray(stored) && stored.length > 0) {
-                    return stored;
+                if (stored && Array.isArray(stored)) {
+                    // Limpiar cualquier residuo de datos ficticios antiguos
+                    return stored.filter(r => r && !String(r.id || '').startsWith('ref-') && !String(r.id || '').startsWith('hist-') && !String(r.id || '').startsWith('sq-'));
                 }
             } catch (e) {}
 
-            return defaultRanking;
+            return [];
         },
 
         // Actualizar registro en ranking
@@ -602,7 +597,7 @@
 
             try {
                 const FIREBASE_BASE = 'https://squashpopayan-65e33-default-rtdb.firebaseio.com';
-                fetch(`${FIREBASE_BASE}/trivia_rankings/fisica/${entry.id}.json`, {
+                fetch(`https://squashpopayan-65e33-default-rtdb.firebaseio.com/physicsailab/trivia_rankings/fisica/${entry.id}.json`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(entry)
