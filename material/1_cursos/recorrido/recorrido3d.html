@@ -121,22 +121,42 @@ kbd{background:#223244;border:1px solid #3a5068;border-radius:4px;padding:1px 6p
 <button id="go">Comenzar</button>
 </div></div>
 
-<!-- ===== Modal de Plantilla de Roles en 1 Hoja ===== -->
+<!-- ===== Modal de Plantilla de Roles en 1 Hoja (Con 5.ª Mesa y Estudiantes de Apoyo) ===== -->
 <div id="modalPlantilla" class="sheet-modal" style="display:none;">
   <div class="sheet-container">
     <div class="sheet-header">
       <div class="sheet-title-box">
         <span class="sheet-badge">📋 PLANTILLA OFICIAL DE RECORRIDO · 1 HOJA</span>
         <h2>Asignación de Roles y Estaciones del Recorrido</h2>
-        <p>Departamento de Física · Universidad del Cauca | 3 Salas (Mecánica 1, Mecánica 2, Fluidos) + 1 Estación en Pasillo Izquierdo</p>
+        <p>Departamento de Física · Universidad del Cauca | 3 Salas en Ala Izquierda + 1 Estación en Pasillo Izquierdo</p>
       </div>
       <div class="sheet-actions no-print">
         <button id="btnPrintSheet" class="btn-sheet btn-primary">🖨️ Imprimir / Guardar PDF (1 Hoja)</button>
         <button id="btnExportJSON" class="btn-sheet">📥 Exportar JSON</button>
         <button id="btnImportJSON" class="btn-sheet">📤 Importar JSON</button>
         <input type="file" id="fileImportJSON" accept=".json" style="display:none;">
-        <button id="btnDemoData" class="btn-sheet">⚡ Cargar Ejemplo</button>
+        <button id="btnDemoData" class="btn-sheet">⚡ Cargar Ejemplo Completo</button>
         <button id="btnCloseSheet" class="btn-sheet btn-danger">✕ Cerrar</button>
+      </div>
+    </div>
+
+    <!-- Barra de Configuración de Mesas y Estudiantes -->
+    <div class="sheet-config-bar no-print" style="background:#182534;border:1px solid #2e445b;border-radius:10px;padding:10px 14px;margin-bottom:14px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+      <div style="font-size:12.5px;font-weight:700;color:#ff9863;display:flex;align-items:center;gap:6px;">
+        ⚙️ Configuración Operativa:
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;">
+        <span>Mesas por Sala:</span>
+        <button id="btnToggle4M" class="btn-sheet" style="padding:4px 10px;">4 Mesas</button>
+        <button id="btnToggle5M" class="btn-sheet btn-primary" style="padding:4px 10px;">5 Mesas (Con 5.ª Mesa)</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;">
+        <span>Expositores por Mesa:</span>
+        <button id="btnToggle2PX" class="btn-sheet" style="padding:4px 10px;">2 Estudiantes</button>
+        <button id="btnToggle3PX" class="btn-sheet btn-primary" style="padding:4px 10px;">3 Estudiantes (Con Apoyo)</button>
+      </div>
+      <div style="margin-left:auto;font-size:11.5px;color:#9fb0c2;">
+        💡 Cada función incluye casillas para estudiantes titulares y de apoyo.
       </div>
     </div>
 
@@ -146,252 +166,418 @@ kbd{background:#223244;border:1px solid #3a5068;border-radius:4px;padding:1px 6p
       <div class="sheet-def-grid">
         <div class="sheet-def-card" style="border-left-color:#8e24aa;">
           <b style="color:#d8b4fe;">🟣 Recepción y Registro</b>
-          <span>Recibe en la llegada (Salida sur) y toma lista de asistencia de colegios/estudiantes.</span>
+          <span>Titular y apoyo reciben en Salida sur; toman lista de delegaciones y colegios.</span>
         </div>
         <div class="sheet-def-card" style="border-left-color:#8e24aa;">
           <b style="color:#d8b4fe;">🟣 Reparto de Grupos</b>
-          <span>Divide a los alumnos en 4 grupos homogéneos (A, B, C, D) y entrega escarapelas.</span>
+          <span>Dividen en 4 grupos homogéneos (A, B, C, D) y entregan escarapelas de color.</span>
         </div>
         <div class="sheet-def-card" style="border-left-color:#3949ab;">
           <b style="color:#93c5fd;">🔵 Guías de Grupo (A, B, C, D)</b>
-          <span>Conducen a su grupo por las 4 estaciones; controlan traslados y puntualidad.</span>
+          <span>Guía titular + guía de apoyo (adelante y atrás) coordinan traslados y puntualidad.</span>
         </div>
         <div class="sheet-def-card" style="border-left-color:#fb8c00;">
           <b style="color:#fdba74;">🟠 Control de Sala / Estación</b>
-          <span>Supervisa el cronómetro (8-10 min por sala, rotación de 2 min), modera y da la señal de cambio.</span>
+          <span>Control titular y logística supervisan reloj (8-10 min/sala), orden y cambios de mesa.</span>
         </div>
         <div class="sheet-def-card" style="border-left-color:#00acc1;">
           <b style="color:#67e8f9;">🟢 Expositores de Mesa</b>
-          <span>Demuestran y explican el fenómeno físico a cada subgrupo en rotación simultánea.</span>
+          <span>2 a 3 estudiantes por mesa demuestran y explican el principio físico a los visitantes.</span>
         </div>
         <div class="sheet-def-card" style="border-left-color:#d81b60;">
           <b style="color:#f472b6;">🔴 Entrega y Refrigerios</b>
-          <span>Recibe a los grupos en la Entrega (fin del pasillo) y coordina la entrega con refrigerio.</span>
+          <span>Reciben al finalizar el recorrido, distribuyen refrigerios y despachan con docentes.</span>
         </div>
       </div>
     </div>
 
     <!-- Fila Superior: Coordinación General y Guías -->
     <div class="sheet-row-top">
-      <!-- Recepción y Entrega -->
+      <!-- Recepción, Reparto y Entrega -->
       <div class="sheet-block">
-        <h4>🟣 Coordinación General (Llegada y Cierre)</h4>
+        <h4>🟣 Coordinación General (Llegada, Reparto y Refrigerios)</h4>
         <div class="sheet-inputs-grid">
-          <label class="sheet-lbl">Recepción · Llegada (Salida sur):
-            <input data-sheet="rec.0" placeholder="Nombre del encargado">
+          <label class="sheet-lbl">Recepción · Titular (Salida sur):
+            <input data-sheet="rec.0" placeholder="Nombre encargado titular">
           </label>
-          <label class="sheet-lbl">Reparto de Grupos (Distribución):
-            <input data-sheet="rec.1" placeholder="Nombre del encargado">
+          <label class="sheet-lbl">Recepción · Estudiante de Apoyo:
+            <input data-sheet="rec.2" placeholder="Estudiante de apoyo">
           </label>
-          <label class="sheet-lbl" style="grid-column:span 2;">Entrega de Estudiantes y Refrigerios:
-            <input data-sheet="ent.0" placeholder="Nombre del encargado">
+          <label class="sheet-lbl">Reparto de Grupos · Titular:
+            <input data-sheet="rec.1" placeholder="Nombre encargado titular">
+          </label>
+          <label class="sheet-lbl">Reparto · Estudiante de Apoyo:
+            <input data-sheet="rec.3" placeholder="Estudiante de apoyo">
+          </label>
+          <label class="sheet-lbl">Entrega y Refrigerios · Titular:
+            <input data-sheet="ent.0" placeholder="Nombre encargado titular">
+          </label>
+          <label class="sheet-lbl">Refrigerios · Estudiante de Apoyo:
+            <input data-sheet="ent.1" placeholder="Estudiante de apoyo">
           </label>
         </div>
       </div>
 
-      <!-- Guías de Grupos -->
+      <!-- Guías de Grupos (Titular + Apoyo) -->
       <div class="sheet-block">
-        <h4>🔵 Guías de Grupo (Acompañamiento por Colores)</h4>
+        <h4>🔵 Guías de Grupo (Titular y Estudiante de Apoyo)</h4>
         <div class="sheet-guides-grid">
-          <label class="sheet-lbl"><span class="guide-pill pill-a">Guía Grupo A (Rojo)</span>
-            <input data-sheet="guia.0" placeholder="Nombre del guía">
-          </label>
-          <label class="sheet-lbl"><span class="guide-pill pill-b">Guía Grupo B (Azul)</span>
-            <input data-sheet="guia.1" placeholder="Nombre del guía">
-          </label>
-          <label class="sheet-lbl"><span class="guide-pill pill-c">Guía Grupo C (Verde)</span>
-            <input data-sheet="guia.2" placeholder="Nombre del guía">
-          </label>
-          <label class="sheet-lbl"><span class="guide-pill pill-d">Guía Grupo D (Amarillo)</span>
-            <input data-sheet="guia.3" placeholder="Nombre del guía">
-          </label>
+          <!-- Guía A -->
+          <div style="background:#0e1620;border:1px solid #283a4c;border-radius:6px;padding:6px;">
+            <span class="guide-pill pill-a">Grupo A (Rojo)</span>
+            <label class="sheet-lbl" style="margin-top:4px;">Guía Titular:
+              <input data-sheet="guia.0" placeholder="Guía A Titular">
+            </label>
+            <label class="sheet-lbl" style="margin-top:3px;">Guía de Apoyo:
+              <input data-sheet="guia_aux.0" placeholder="Guía A Apoyo">
+            </label>
+          </div>
+          <!-- Guía B -->
+          <div style="background:#0e1620;border:1px solid #283a4c;border-radius:6px;padding:6px;">
+            <span class="guide-pill pill-b">Grupo B (Azul)</span>
+            <label class="sheet-lbl" style="margin-top:4px;">Guía Titular:
+              <input data-sheet="guia.1" placeholder="Guía B Titular">
+            </label>
+            <label class="sheet-lbl" style="margin-top:3px;">Guía de Apoyo:
+              <input data-sheet="guia_aux.1" placeholder="Guía B Apoyo">
+            </label>
+          </div>
+          <!-- Guía C -->
+          <div style="background:#0e1620;border:1px solid #283a4c;border-radius:6px;padding:6px;">
+            <span class="guide-pill pill-c">Grupo C (Verde)</span>
+            <label class="sheet-lbl" style="margin-top:4px;">Guía Titular:
+              <input data-sheet="guia.2" placeholder="Guía C Titular">
+            </label>
+            <label class="sheet-lbl" style="margin-top:3px;">Guía de Apoyo:
+              <input data-sheet="guia_aux.2" placeholder="Guía C Apoyo">
+            </label>
+          </div>
+          <!-- Guía D -->
+          <div style="background:#0e1620;border:1px solid #283a4c;border-radius:6px;padding:6px;">
+            <span class="guide-pill pill-d">Grupo D (Amarillo)</span>
+            <label class="sheet-lbl" style="margin-top:4px;">Guía Titular:
+              <input data-sheet="guia.3" placeholder="Guía D Titular">
+            </label>
+            <label class="sheet-lbl" style="margin-top:3px;">Guía de Apoyo:
+              <input data-sheet="guia_aux.3" placeholder="Guía D Apoyo">
+            </label>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Bloque Inferior: 4 Estaciones (3 Salas + Pasillo Izquierdo) -->
     <div class="sheet-block">
-      <h4>🔬 Estaciones Experimentales (3 Salas de lado izquierdo + 1 Estación en Pasillo Izquierdo)</h4>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
+        <h4 style="margin:0;border:none;padding:0;">🔬 Estaciones Experimentales (3 Salas Ala Izquierda + 1 Estación en Pasillo Izquierdo)</h4>
+        <span style="font-size:11.5px;color:#9fb0c2;">Rotación simultánea en parejas de salas (1 ↔ 2 y 3 ↔ 4)</span>
+      </div>
       <div class="sheet-stations-grid">
-        <!-- Sala 1 -->
-        <div class="station-col">
+        
+        <div class="station-col ">
           <div class="station-head">
-            <span class="station-badge">SALA 1 (Lado Izq.)</span>
-            <div class="station-title">Lab. Mecánica 1</div>
+            <span class="station-badge">SALA 1 (Ala Izquierda)</span>
+            <div class="station-title" style="">Lab. Mecánica 1</div>
           </div>
           <div class="station-ctrl">
-            <label class="sheet-lbl" style="margin:0;">Control de Sala 1:
+            <label class="sheet-lbl" style="margin:0;">🟠 Control Titular:
               <input data-sheet="ctrl.0" placeholder="Nombre coordinador">
             </label>
+            <label class="sheet-lbl" style="margin-top:4px;">🟠 Estudiante de Apoyo:
+              <input data-sheet="ctrl_aux.0" placeholder="Estudiante de apoyo">
+            </label>
           </div>
-          <div class="station-exp-box">
-            <b>Mesa 1</b>
+          
+          <div class="station-exp-box exp-mesa-0" >
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+              <b>Mesa 1 </b>
+            </div>
             <input class="exp-name" data-sheet="ex.0.0" placeholder="Nombre del experimento 1">
             <div class="expo-inputs">
               <input data-sheet="expo.0.0.0" placeholder="Expositor 1">
               <input data-sheet="expo.0.0.1" placeholder="Expositor 2">
+              <input data-sheet="expo.0.0.2" class="expo-aux-input" placeholder="Expositor 3 (Apoyo)">
             </div>
           </div>
-          <div class="station-exp-box">
-            <b>Mesa 2</b>
+          
+          <div class="station-exp-box exp-mesa-1" >
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+              <b>Mesa 2 </b>
+            </div>
             <input class="exp-name" data-sheet="ex.0.1" placeholder="Nombre del experimento 2">
             <div class="expo-inputs">
               <input data-sheet="expo.0.1.0" placeholder="Expositor 1">
               <input data-sheet="expo.0.1.1" placeholder="Expositor 2">
+              <input data-sheet="expo.0.1.2" class="expo-aux-input" placeholder="Expositor 3 (Apoyo)">
             </div>
           </div>
-          <div class="station-exp-box">
-            <b>Mesa 3</b>
+          
+          <div class="station-exp-box exp-mesa-2" >
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+              <b>Mesa 3 </b>
+            </div>
             <input class="exp-name" data-sheet="ex.0.2" placeholder="Nombre del experimento 3">
             <div class="expo-inputs">
               <input data-sheet="expo.0.2.0" placeholder="Expositor 1">
               <input data-sheet="expo.0.2.1" placeholder="Expositor 2">
+              <input data-sheet="expo.0.2.2" class="expo-aux-input" placeholder="Expositor 3 (Apoyo)">
             </div>
           </div>
-          <div class="station-exp-box">
-            <b>Mesa 4</b>
+          
+          <div class="station-exp-box exp-mesa-3" >
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+              <b>Mesa 4 </b>
+            </div>
             <input class="exp-name" data-sheet="ex.0.3" placeholder="Nombre del experimento 4">
             <div class="expo-inputs">
               <input data-sheet="expo.0.3.0" placeholder="Expositor 1">
               <input data-sheet="expo.0.3.1" placeholder="Expositor 2">
+              <input data-sheet="expo.0.3.2" class="expo-aux-input" placeholder="Expositor 3 (Apoyo)">
             </div>
           </div>
+          
+          <div class="station-exp-box exp-mesa-4" style="border-color:#e0652b;background:rgba(224,101,43,.08);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+              <b>Mesa 5 ⭐ (5.ª Mesa)</b>
+            </div>
+            <input class="exp-name" data-sheet="ex.0.4" placeholder="Nombre del experimento 5">
+            <div class="expo-inputs">
+              <input data-sheet="expo.0.4.0" placeholder="Expositor 1">
+              <input data-sheet="expo.0.4.1" placeholder="Expositor 2">
+              <input data-sheet="expo.0.4.2" class="expo-aux-input" placeholder="Expositor 3 (Apoyo)">
+            </div>
+          </div>
+          
         </div>
-
-        <!-- Sala 2 -->
-        <div class="station-col">
+        
+        <div class="station-col ">
           <div class="station-head">
-            <span class="station-badge">SALA 2 (Lado Izq.)</span>
-            <div class="station-title">Lab. Mecánica 2</div>
+            <span class="station-badge">SALA 2 (Ala Izquierda)</span>
+            <div class="station-title" style="">Lab. Mecánica 2</div>
           </div>
           <div class="station-ctrl">
-            <label class="sheet-lbl" style="margin:0;">Control de Sala 2:
+            <label class="sheet-lbl" style="margin:0;">🟠 Control Titular:
               <input data-sheet="ctrl.1" placeholder="Nombre coordinador">
             </label>
+            <label class="sheet-lbl" style="margin-top:4px;">🟠 Estudiante de Apoyo:
+              <input data-sheet="ctrl_aux.1" placeholder="Estudiante de apoyo">
+            </label>
           </div>
-          <div class="station-exp-box">
-            <b>Mesa 1</b>
+          
+          <div class="station-exp-box exp-mesa-0" >
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+              <b>Mesa 1 </b>
+            </div>
             <input class="exp-name" data-sheet="ex.1.0" placeholder="Nombre del experimento 1">
             <div class="expo-inputs">
               <input data-sheet="expo.1.0.0" placeholder="Expositor 1">
               <input data-sheet="expo.1.0.1" placeholder="Expositor 2">
+              <input data-sheet="expo.1.0.2" class="expo-aux-input" placeholder="Expositor 3 (Apoyo)">
             </div>
           </div>
-          <div class="station-exp-box">
-            <b>Mesa 2</b>
+          
+          <div class="station-exp-box exp-mesa-1" >
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+              <b>Mesa 2 </b>
+            </div>
             <input class="exp-name" data-sheet="ex.1.1" placeholder="Nombre del experimento 2">
             <div class="expo-inputs">
               <input data-sheet="expo.1.1.0" placeholder="Expositor 1">
               <input data-sheet="expo.1.1.1" placeholder="Expositor 2">
+              <input data-sheet="expo.1.1.2" class="expo-aux-input" placeholder="Expositor 3 (Apoyo)">
             </div>
           </div>
-          <div class="station-exp-box">
-            <b>Mesa 3</b>
+          
+          <div class="station-exp-box exp-mesa-2" >
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+              <b>Mesa 3 </b>
+            </div>
             <input class="exp-name" data-sheet="ex.1.2" placeholder="Nombre del experimento 3">
             <div class="expo-inputs">
               <input data-sheet="expo.1.2.0" placeholder="Expositor 1">
               <input data-sheet="expo.1.2.1" placeholder="Expositor 2">
+              <input data-sheet="expo.1.2.2" class="expo-aux-input" placeholder="Expositor 3 (Apoyo)">
             </div>
           </div>
-          <div class="station-exp-box">
-            <b>Mesa 4</b>
+          
+          <div class="station-exp-box exp-mesa-3" >
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+              <b>Mesa 4 </b>
+            </div>
             <input class="exp-name" data-sheet="ex.1.3" placeholder="Nombre del experimento 4">
             <div class="expo-inputs">
               <input data-sheet="expo.1.3.0" placeholder="Expositor 1">
               <input data-sheet="expo.1.3.1" placeholder="Expositor 2">
+              <input data-sheet="expo.1.3.2" class="expo-aux-input" placeholder="Expositor 3 (Apoyo)">
             </div>
           </div>
+          
+          <div class="station-exp-box exp-mesa-4" style="border-color:#e0652b;background:rgba(224,101,43,.08);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+              <b>Mesa 5 ⭐ (5.ª Mesa)</b>
+            </div>
+            <input class="exp-name" data-sheet="ex.1.4" placeholder="Nombre del experimento 5">
+            <div class="expo-inputs">
+              <input data-sheet="expo.1.4.0" placeholder="Expositor 1">
+              <input data-sheet="expo.1.4.1" placeholder="Expositor 2">
+              <input data-sheet="expo.1.4.2" class="expo-aux-input" placeholder="Expositor 3 (Apoyo)">
+            </div>
+          </div>
+          
         </div>
-
-        <!-- Sala 3 -->
-        <div class="station-col">
+        
+        <div class="station-col ">
           <div class="station-head">
-            <span class="station-badge">SALA 3 (Lado Izq.)</span>
-            <div class="station-title">Lab. Fluidos</div>
+            <span class="station-badge">SALA 3 (Ala Izquierda)</span>
+            <div class="station-title" style="">Lab. Fluidos</div>
           </div>
           <div class="station-ctrl">
-            <label class="sheet-lbl" style="margin:0;">Control de Sala 3:
+            <label class="sheet-lbl" style="margin:0;">🟠 Control Titular:
               <input data-sheet="ctrl.2" placeholder="Nombre coordinador">
             </label>
+            <label class="sheet-lbl" style="margin-top:4px;">🟠 Estudiante de Apoyo:
+              <input data-sheet="ctrl_aux.2" placeholder="Estudiante de apoyo">
+            </label>
           </div>
-          <div class="station-exp-box">
-            <b>Mesa 1</b>
+          
+          <div class="station-exp-box exp-mesa-0" >
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+              <b>Mesa 1 </b>
+            </div>
             <input class="exp-name" data-sheet="ex.2.0" placeholder="Nombre del experimento 1">
             <div class="expo-inputs">
               <input data-sheet="expo.2.0.0" placeholder="Expositor 1">
               <input data-sheet="expo.2.0.1" placeholder="Expositor 2">
+              <input data-sheet="expo.2.0.2" class="expo-aux-input" placeholder="Expositor 3 (Apoyo)">
             </div>
           </div>
-          <div class="station-exp-box">
-            <b>Mesa 2</b>
+          
+          <div class="station-exp-box exp-mesa-1" >
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+              <b>Mesa 2 </b>
+            </div>
             <input class="exp-name" data-sheet="ex.2.1" placeholder="Nombre del experimento 2">
             <div class="expo-inputs">
               <input data-sheet="expo.2.1.0" placeholder="Expositor 1">
               <input data-sheet="expo.2.1.1" placeholder="Expositor 2">
+              <input data-sheet="expo.2.1.2" class="expo-aux-input" placeholder="Expositor 3 (Apoyo)">
             </div>
           </div>
-          <div class="station-exp-box">
-            <b>Mesa 3</b>
+          
+          <div class="station-exp-box exp-mesa-2" >
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+              <b>Mesa 3 </b>
+            </div>
             <input class="exp-name" data-sheet="ex.2.2" placeholder="Nombre del experimento 3">
             <div class="expo-inputs">
               <input data-sheet="expo.2.2.0" placeholder="Expositor 1">
               <input data-sheet="expo.2.2.1" placeholder="Expositor 2">
+              <input data-sheet="expo.2.2.2" class="expo-aux-input" placeholder="Expositor 3 (Apoyo)">
             </div>
           </div>
-          <div class="station-exp-box">
-            <b>Mesa 4</b>
+          
+          <div class="station-exp-box exp-mesa-3" >
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+              <b>Mesa 4 </b>
+            </div>
             <input class="exp-name" data-sheet="ex.2.3" placeholder="Nombre del experimento 4">
             <div class="expo-inputs">
               <input data-sheet="expo.2.3.0" placeholder="Expositor 1">
               <input data-sheet="expo.2.3.1" placeholder="Expositor 2">
+              <input data-sheet="expo.2.3.2" class="expo-aux-input" placeholder="Expositor 3 (Apoyo)">
             </div>
           </div>
+          
+          <div class="station-exp-box exp-mesa-4" style="border-color:#e0652b;background:rgba(224,101,43,.08);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+              <b>Mesa 5 ⭐ (5.ª Mesa)</b>
+            </div>
+            <input class="exp-name" data-sheet="ex.2.4" placeholder="Nombre del experimento 5">
+            <div class="expo-inputs">
+              <input data-sheet="expo.2.4.0" placeholder="Expositor 1">
+              <input data-sheet="expo.2.4.1" placeholder="Expositor 2">
+              <input data-sheet="expo.2.4.2" class="expo-aux-input" placeholder="Expositor 3 (Apoyo)">
+            </div>
+          </div>
+          
         </div>
-
-        <!-- Sala 4: Pasillo Lado Izquierdo -->
+        
         <div class="station-col pasillo-col">
           <div class="station-head">
             <span class="station-badge">SALA 4 (En Pasillo)</span>
             <div class="station-title" style="color:#ff8d57;">Pasillo Lado Izquierdo</div>
           </div>
           <div class="station-ctrl">
-            <label class="sheet-lbl" style="margin:0;">Control Estación Pasillo:
+            <label class="sheet-lbl" style="margin:0;">🟠 Control Titular:
               <input data-sheet="ctrl.3" placeholder="Nombre coordinador">
             </label>
+            <label class="sheet-lbl" style="margin-top:4px;">🟠 Estudiante de Apoyo:
+              <input data-sheet="ctrl_aux.3" placeholder="Estudiante de apoyo">
+            </label>
           </div>
-          <div class="station-exp-box">
-            <b>Mesa 1 (Pasillo)</b>
+          
+          <div class="station-exp-box exp-mesa-0" >
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+              <b>Mesa 1 </b>
+            </div>
             <input class="exp-name" data-sheet="ex.3.0" placeholder="Nombre del experimento 1">
             <div class="expo-inputs">
               <input data-sheet="expo.3.0.0" placeholder="Expositor 1">
               <input data-sheet="expo.3.0.1" placeholder="Expositor 2">
+              <input data-sheet="expo.3.0.2" class="expo-aux-input" placeholder="Expositor 3 (Apoyo)">
             </div>
           </div>
-          <div class="station-exp-box">
-            <b>Mesa 2 (Pasillo)</b>
+          
+          <div class="station-exp-box exp-mesa-1" >
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+              <b>Mesa 2 </b>
+            </div>
             <input class="exp-name" data-sheet="ex.3.1" placeholder="Nombre del experimento 2">
             <div class="expo-inputs">
               <input data-sheet="expo.3.1.0" placeholder="Expositor 1">
               <input data-sheet="expo.3.1.1" placeholder="Expositor 2">
+              <input data-sheet="expo.3.1.2" class="expo-aux-input" placeholder="Expositor 3 (Apoyo)">
             </div>
           </div>
-          <div class="station-exp-box">
-            <b>Mesa 3 (Pasillo)</b>
+          
+          <div class="station-exp-box exp-mesa-2" >
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+              <b>Mesa 3 </b>
+            </div>
             <input class="exp-name" data-sheet="ex.3.2" placeholder="Nombre del experimento 3">
             <div class="expo-inputs">
               <input data-sheet="expo.3.2.0" placeholder="Expositor 1">
               <input data-sheet="expo.3.2.1" placeholder="Expositor 2">
+              <input data-sheet="expo.3.2.2" class="expo-aux-input" placeholder="Expositor 3 (Apoyo)">
             </div>
           </div>
-          <div class="station-exp-box">
-            <b>Mesa 4 (Pasillo)</b>
+          
+          <div class="station-exp-box exp-mesa-3" >
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+              <b>Mesa 4 </b>
+            </div>
             <input class="exp-name" data-sheet="ex.3.3" placeholder="Nombre del experimento 4">
             <div class="expo-inputs">
               <input data-sheet="expo.3.3.0" placeholder="Expositor 1">
               <input data-sheet="expo.3.3.1" placeholder="Expositor 2">
+              <input data-sheet="expo.3.3.2" class="expo-aux-input" placeholder="Expositor 3 (Apoyo)">
             </div>
           </div>
+          
+          <div class="station-exp-box exp-mesa-4" style="border-color:#e0652b;background:rgba(224,101,43,.08);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+              <b>Mesa 5 ⭐ (5.ª Mesa)</b>
+            </div>
+            <input class="exp-name" data-sheet="ex.3.4" placeholder="Nombre del experimento 5">
+            <div class="expo-inputs">
+              <input data-sheet="expo.3.4.0" placeholder="Expositor 1">
+              <input data-sheet="expo.3.4.1" placeholder="Expositor 2">
+              <input data-sheet="expo.3.4.2" class="expo-aux-input" placeholder="Expositor 3 (Apoyo)">
+            </div>
+          </div>
+          
         </div>
+        
       </div>
     </div>
   </div>
@@ -634,11 +820,11 @@ const RN=['Sala 1 · Mecánica 1','Sala 2 · Mecánica 2','Sala 3 · Fluidos','S
 const GRP=[{n:'A',c:0xe53935,css:'#e53935'},{n:'B',c:0x1e88e5,css:'#1e88e5'},{n:'C',c:0x43a047,css:'#43a047'},{n:'D',c:0xfdd835,css:'#fdd835'}];
 const SPD=1.7;                                       // velocidad al caminar (pasos/s)
 // ---- nombres editables (experimentos y personas) ----
-const mk=()=>({rec:['',''],guia:['','','',''],ctrl:['','','',''],ent:[''],ex:[0,1,2,3].map(()=>['','','','','']),expo:[0,1,2,3].map(()=>[0,1,2,3,4].map(()=>['','']))});
+const mk=()=>({rec:['','','',''],guia:['','','',''],guia_aux:['','','',''],ctrl:['','','',''],ctrl_aux:['','','',''],ent:['',''],ex:[0,1,2,3].map(()=>['','','','','']),expo:[0,1,2,3].map(()=>[0,1,2,3,4].map(()=>['','','']))});
 let NAMES=mk();
 try{const n=JSON.parse(localStorage.getItem('fisicaTourNames')||'null');if(n)Object.keys(NAMES).forEach(k=>{if(n[k])NAMES[k]=n[k]})}catch(e){}
 const nget=p=>p.split('.').reduce((o,k)=>o&&o[k],NAMES);
-const nset=(p,v)=>{const ks=p.split('.'),l=ks.pop();ks.reduce((o,k)=>o[k],NAMES)[l]=v;try{localStorage.setItem('fisicaTourNames',JSON.stringify(NAMES))}catch(e){}};
+const nset=(p,v)=>{const ks=p.split('.'),l=ks.pop();const target=ks.reduce((o,k)=>{if(o[k]===undefined)o[k]=[];return o[k]},NAMES);target[l]=v;try{localStorage.setItem('fisicaTourNames',JSON.stringify(NAMES))}catch(e){}};
 // ---- roles (cada uno con su color) ----
 const ROLES={
  recepcion:{name:'Recepción y reparto',c:0x8e24aa,css:'#8e24aa',txt:'#fff'},
@@ -703,6 +889,15 @@ function guideKF(g){
  k.walk(TL.tR1e,[...guideOut(r0,lane),...guideIn(r1,lane)]);k.hold(TL.tR2e,0);
  const ex=[EANC[g][0]-1.9,EANC[g][1]];
  k.walk(TL.tR2e,[...guideOut(r1,lane),[ex[0],lane],ex]);k.hold(TL.total,Math.PI/2);
+ return k.kf}
+function guideKFAux(g){
+ const k=KF(),lane=laneZ(g,2)+.35,cl=[DANC[g][0]-2.7,DANC[g][1]];
+ k.P2(0,cl[0],cl[1],Math.PI/2);k.hold(TL.D1,Math.PI/2);
+ const r0=roomOf(g,0),r1=roomOf(g,1);
+ k.walk(TL.D1,[cl,[cl[0],lane],...guideIn(r0,lane).map(p=>[p[0]-.35,p[1]])]);k.hold(TL.tR1e,0);
+ k.walk(TL.tR1e,[...guideOut(r0,lane).map(p=>[p[0]-.35,p[1]]),...guideIn(r1,lane).map(p=>[p[0]-.35,p[1]])]);k.hold(TL.tR2e,0);
+ const ex=[EANC[g][0]-2.7,EANC[g][1]];
+ k.walk(TL.tR2e,[...guideOut(r1,lane).map(p=>[p[0]-.35,p[1]]),[ex[0],lane],ex]);k.hold(TL.total,Math.PI/2);
  return k.kf}
 function studentKF(g,s,n){
  const k=KF(),lane=laneZ(g,s),off=OFF(s,n),slot=[DANC[g][0]+off[0],DANC[g][1]+off[1]],NE=CFG.NE;
@@ -778,21 +973,28 @@ function staff(role,x,z,f,scale,nameRef,l1,ph){
 const addTable=(x,z,mat)=>{box(2.2,.1,1.6,x,1.12,z,mat);[[-.9,-.6],[.9,-.6],[-.9,.6],[.9,.6]].forEach(([p,q])=>box(.1,1.1,.1,x+p,.55,z+q,mat))};
 // ---- personas fijas ----
 staff('recepcion',66.5,ZEND-5.5,0,1.1,'rec.0','Recepción · llegada','(nombre)');
+staff('recepcion',68.2,ZEND-5.5,0,1.05,'rec.2','Recepción · apoyo','(nombre)');
 staff('recepcion',66.5,2.3,0,1.1,'rec.1','Reparto de grupos','(nombre)');
+staff('recepcion',68.2,2.3,0,1.05,'rec.3','Reparto · apoyo','(nombre)');
 staff('entrega',4.4,1.2,Math.PI/2,1.1,'ent.0','Entrega de estudiantes','(nombre)');
+staff('entrega',4.4,2.5,Math.PI/2,1.05,'ent.1','Refrigerios · apoyo','(nombre)');
 RM.forEach(R3=>{
  staff('control',R3.ct[0],R3.ct[1],0,1.1,'ctrl.'+R3.r,'Control · '+RSH[R3.r],'(nombre)');
+ staff('control',R3.ct[0]+1.3,R3.ct[1],0,1.05,'ctrl_aux.'+R3.r,'Apoyo · '+RSH[R3.r],'(nombre)');
  R3.spots.forEach((s,k)=>{
   if(k===4)addTable(s.tc[0],s.tc[1],R3.fl?mTableF:mTable);
   const T0=makeTag('Sala '+(R3.r+1)+' · Exp. '+(k+1),nget('ex.'+R3.r+'.'+k)||'(nombre del experimento)','rgba(20,32,44,.94)','#fff','#e0652b',3.8);
   T0.sp.position.set(s.tc[0],2.75,s.tc[1]);scene.add(T0.sp);T0.ref='ex.'+R3.r+'.'+k;T0.kind='exp';T0.ph='(nombre del experimento)';TAGS.push(T0);
-  const xs=CFG.PX===2?[-.55,.55]:[0];
-  xs.forEach((dx,p)=>staff('expositor',s.eg[0]+dx,s.eg[1],s.ef,1.05,'expo.'+R3.r+'.'+k+'.'+p,'Expositor · Exp. '+(k+1),'(nombre)'))})});
+  const xs=CFG.PX>=3?[-.65,0,.65]:(CFG.PX===2?[-.55,.55]:[0]);
+  xs.forEach((dx,p)=>staff('expositor',s.eg[0]+dx,s.eg[1],s.ef,1.05,'expo.'+R3.r+'.'+k+'.'+p,'Expositor '+(p+1)+' · Exp. '+(k+1),'(nombre)'))})});
 // ---- grupos: estudiantes y guías ----
 GRP.forEach((G,g)=>{const R2=ROLES.guia;
  const gfig=figure(R2.c,1.12,{cap:R2.c,sash:G.c,flag:G.c,ring:0x3949ab});
  const T0=makeTag('Guía '+G.n,nget('guia.'+g)||'(nombre)',R2.css,R2.txt,null,3.3);T0.sp.position.set(0,2.6,0);T0.sp.scale.multiplyScalar(1/1.12);gfig.add(T0.sp);T0.ref='guia.'+g;T0.ph='(nombre)';TAGS.push(T0);
  addAgent('guia',gfig,{g,kf:guideKF(g),mini:R2.css,sp:T0.sp,tag:T0});
+ const afig=figure(R2.c,1.06,{cap:R2.c,sash:G.c,ring:0x3949ab});
+ const T0a=makeTag('Apoyo '+G.n,nget('guia_aux.'+g)||'(nombre)',R2.css,R2.txt,null,3.1);T0a.sp.position.set(0,2.5,0);T0a.sp.scale.multiplyScalar(1/1.06);afig.add(T0a.sp);T0a.ref='guia_aux.'+g;T0a.ph='(nombre)';TAGS.push(T0a);
+ addAgent('guia',afig,{g,kf:guideKFAux(g),mini:R2.css,sp:T0a.sp,tag:T0a});
  const n=GSZ(g);for(let s=0;s<n;s++)addAgent('estudiante',figure(G.c,1),{g,idx:s+1,kf:studentKF(g,s,n),mini:G.css})});
 // ---- letreros de cronómetro en cada sala ----
 const sprites=[0,1,2,3].map(i=>{const c=document.createElement('canvas');c.width=360;c.height=150;
@@ -973,11 +1175,33 @@ function frame(t){const dt=Math.min(.05,(t-last)/1000);last=t;
 requestAnimationFrame(frame);
 window.__P=P;window.__free=free;window.__gy=gy;window.__SIM=SIM;window.__AG=AG;window.__groupState=groupState;window.__AER=AER;window.__STEPS=STEPS;window.__gotoStep=gotoStep;
 
+
 // ===== Sincronización y Control de la Plantilla de Roles en 1 Hoja =====
 const modalP = $('modalPlantilla');
+let sheetNE = CFG.NE || 5;
+let sheetPX = CFG.PX || 3;
+
+function updateSheetViewModes(){
+  if(!modalP) return;
+  // Mesas 4 vs 5
+  modalP.querySelectorAll('.exp-mesa-4').forEach(el => {
+    el.style.display = sheetNE >= 5 ? 'block' : 'none';
+  });
+  if($('btnToggle4M')) $('btnToggle4M').classList.toggle('btn-primary', sheetNE === 4);
+  if($('btnToggle5M')) $('btnToggle5M').classList.toggle('btn-primary', sheetNE >= 5);
+
+  // Expositores 2 vs 3
+  modalP.querySelectorAll('.expo-aux-input').forEach(el => {
+    el.style.display = sheetPX >= 3 ? 'block' : 'none';
+  });
+  if($('btnToggle2PX')) $('btnToggle2PX').classList.toggle('btn-primary', sheetPX === 2);
+  if($('btnToggle3PX')) $('btnToggle3PX').classList.toggle('btn-primary', sheetPX >= 3);
+}
+
 function openSheetModal(){
   if(!modalP) return;
   modalP.style.display = 'block';
+  updateSheetViewModes();
   // Cargar datos actuales de NAMES en todos los campos del modal
   modalP.querySelectorAll('[data-sheet]').forEach(inp => {
     const p = inp.dataset.sheet;
@@ -993,14 +1217,48 @@ if($('topBtnSheet')) $('topBtnSheet').onclick = openSheetModal;
 if($('btnOpenSheetTab')) $('btnOpenSheetTab').onclick = openSheetModal;
 if($('btnCloseSheet')) $('btnCloseSheet').onclick = closeSheetModal;
 
+// Botones de configuración rápida en la plantilla
+if($('btnToggle4M')){
+  $('btnToggle4M').onclick = () => {
+    sheetNE = 4;
+    CFG.NE = 4;
+    try{ localStorage.setItem('fisicaTourCFG', JSON.stringify(CFG)); }catch(e){}
+    updateSheetViewModes();
+  };
+}
+if($('btnToggle5M')){
+  $('btnToggle5M').onclick = () => {
+    sheetNE = 5;
+    CFG.NE = 5;
+    try{ localStorage.setItem('fisicaTourCFG', JSON.stringify(CFG)); }catch(e){}
+    updateSheetViewModes();
+  };
+}
+if($('btnToggle2PX')){
+  $('btnToggle2PX').onclick = () => {
+    sheetPX = 2;
+    CFG.PX = 2;
+    try{ localStorage.setItem('fisicaTourCFG', JSON.stringify(CFG)); }catch(e){}
+    updateSheetViewModes();
+  };
+}
+if($('btnToggle3PX')){
+  $('btnToggle3PX').onclick = () => {
+    sheetPX = 3;
+    CFG.PX = 3;
+    try{ localStorage.setItem('fisicaTourCFG', JSON.stringify(CFG)); }catch(e){}
+    updateSheetViewModes();
+  };
+}
+
 // Sincronización al escribir en la plantilla
 if(modalP){
   modalP.oninput = e => {
     const p = e.target.dataset && e.target.dataset.sheet;
     if(!p) return;
     nset(p, e.target.value);
-    // Sincronizar campo en la barra lateral #names
-    const sideInp = $('names').querySelector('[data-p="'+p+'"]');
+    // Sincronizar campo en la barra lateral #names si existe
+    const sideInp = $('names') ? $('names').querySelector('[data-p="'+p+'"]') : null;
     if(sideInp) sideInp.value = e.target.value;
     refreshTags();
   };
@@ -1036,11 +1294,12 @@ if($('btnImportJSON') && $('fileImportJSON')){
           NAMES = loaded;
           try{ localStorage.setItem('fisicaTourNames', JSON.stringify(NAMES)); }catch(err){}
           openSheetModal();
-          // refrescar panel lateral
-          $('names').querySelectorAll('input').forEach(i => {
-            const p = i.dataset && i.dataset.p;
-            if(p) i.value = String(nget(p) || '');
-          });
+          if($('names')){
+            $('names').querySelectorAll('input').forEach(i => {
+              const p = i.dataset && i.dataset.p;
+              if(p) i.value = String(nget(p) || '');
+            });
+          }
           refreshTags();
           alert('¡Plantilla importada con éxito!');
         }
@@ -1052,54 +1311,124 @@ if($('btnImportJSON') && $('fileImportJSON')){
   };
 }
 
-// Botón Cargar Datos de Ejemplo
+// Botón Cargar Datos de Ejemplo Completo con 5 Mesas y Estudiantes para cada función
 if($('btnDemoData')){
   $('btnDemoData').onclick = () => {
-    NAMES.rec = ['Carlos Muñoz (Llegada)', 'Prof. Andrés Gómez (Reparto)'];
-    NAMES.guia = ['Laura Rivera (Guía A)', 'Mateo Valencia (Guía B)', 'Sofía Castro (Guía C)', 'David Paz (Guía D)'];
-    NAMES.ent = ['Dra. Carmen Solarte (Refrigerios)'];
+    sheetNE = 5;
+    sheetPX = 3;
+    CFG.NE = 5;
+    CFG.PX = 3;
+    try{ localStorage.setItem('fisicaTourCFG', JSON.stringify(CFG)); }catch(e){}
+
+    NAMES.rec = [
+      'Carlos Muñoz (Llegada)',
+      'Prof. Andrés Gómez (Reparto)',
+      'Esteban Cifuentes (Apoyo Llegada)',
+      'Mariana Solarte (Apoyo Reparto)'
+    ];
+    NAMES.guia = [
+      'Laura Rivera (Guía A)',
+      'Mateo Valencia (Guía B)',
+      'Sofía Castro (Guía C)',
+      'David Paz (Guía D)'
+    ];
+    NAMES.guia_aux = [
+      'Camilo Narváez (Apoyo A)',
+      'Valentina Pérez (Apoyo B)',
+      'Nicolás Torres (Apoyo C)',
+      'Isabella Ramos (Apoyo D)'
+    ];
+    NAMES.ent = [
+      'Dra. Carmen Solarte (Refrigerios)',
+      'Felipe Bastidas (Apoyo Refrigerios)'
+    ];
     NAMES.ctrl = [
       'Ing. Felipe Morales (Mecánica 1)',
       'Dra. Patricia Ortiz (Mecánica 2)',
       'Prof. Javier Delgado (Fluidos)',
       'Mg. Camilo Erazo (Pasillo Izquierdo)'
     ];
-    NAMES.ex[0] = ['Péndulo Simple y Resonancia', 'Conservación del Momento', 'Plano Inclinado y Fricción', 'Leyes de Newton con Sensores'];
+    NAMES.ctrl_aux = [
+      'Alejandro Bolaños (Apoyo Mec 1)',
+      'Carolina Hoyos (Apoyo Mec 2)',
+      'Mateo Quintero (Apoyo Fluidos)',
+      'Diana Salamanca (Apoyo Pasillo)'
+    ];
+
+    // Sala 1: Mecánica 1 (5 mesas x 3 expositores)
+    NAMES.ex[0] = [
+      'Péndulo Simple y Resonancia',
+      'Conservación del Momento Lineal',
+      'Plano Inclinado y Fricción',
+      'Leyes de Newton con Sensores',
+      'Péndulo Físico y Teorema de Steiner'
+    ];
     NAMES.expo[0] = [
-      ['Juan José Vidal', 'Ana María Ruiz'],
-      ['Camilo Restrepo', 'Daniela Muñoz'],
-      ['Esteban Narváez', 'Laura Jimena Mera'],
-      ['Alejandro Ordóñez', 'Carolina Bolaños']
+      ['Juan José Vidal', 'Ana María Ruiz', 'Andrés Felipe Mera'],
+      ['Camilo Restrepo', 'Daniela Muñoz', 'Santiago Pantoja'],
+      ['Esteban Narváez', 'Laura Jimena Mera', 'Cristian Zúñiga'],
+      ['Alejandro Ordóñez', 'Carolina Bolaños', 'Valeria Jurado'],
+      ['Manuel Burbano', 'Gabriela Rosero', 'Juan David Paz']
     ];
-    NAMES.ex[1] = ['Choques Elásticos en Carril', 'Movimiento Circular y Centrípeta', 'Giroscopio y Momento Angular', 'Oscilador Armónico Amortiguado'];
+
+    // Sala 2: Mecánica 2 (5 mesas x 3 expositores)
+    NAMES.ex[1] = [
+      'Choques Elásticos en Carril',
+      'Movimiento Circular y Centrípeta',
+      'Giroscopio y Momento Angular',
+      'Oscilador Armónico Amortiguado',
+      'Ondas Estacionarias en Cuerdas'
+    ];
     NAMES.expo[1] = [
-      ['Santiago Benavides', 'Valentina Rengifo'],
-      ['Manuel Hoyos', 'Isabella Burbano'],
-      ['Nicolás Caicedo', 'Mariana Tobar'],
-      ['Julián Montenegro', 'Gabriela Rosero']
+      ['Santiago Benavides', 'Valentina Rengifo', 'Kevin Meneses'],
+      ['Manuel Hoyos', 'Isabella Burbano', 'Tatiana Chaves'],
+      ['Nicolás Caicedo', 'Mariana Tobar', 'Carlos Eduardo Prado'],
+      ['Julián Montenegro', 'Gabriela Rosero', 'Dayana Dorado'],
+      ['Paula Andrea Ramos', 'Felipe Moncayo', 'Daniel Gómez']
     ];
-    NAMES.ex[2] = ['Principio de Bernoulli y Tubo Venturi', 'Tensión Superficial y Capilaridad', 'Flotabilidad y Principio de Arquímedes', 'Viscosímetro de Esferas Descendentes'];
+
+    // Sala 3: Fluidos (5 mesas x 3 expositores)
+    NAMES.ex[2] = [
+      'Principio de Bernoulli y Venturi',
+      'Tensión Superficial y Capilaridad',
+      'Flotabilidad y Arquímedes',
+      'Viscosímetro de Esferas',
+      'Vórtices y Aerodinámica'
+    ];
     NAMES.expo[2] = [
-      ['Felipe Meneses', 'Andrea Pardo'],
-      ['Sebastián Cerón', 'Lucía Guzmán'],
-      ['Mateo Quintero', 'Tatiana Chaves'],
-      ['Andrés Bastidas', 'Valeria Cifuentes']
+      ['Felipe Meneses', 'Andrea Pardo', 'Lucía Guzmán'],
+      ['Sebastián Cerón', 'Lucía Guzmán', 'Andrés Bastidas'],
+      ['Mateo Quintero', 'Tatiana Chaves', 'Valeria Cifuentes'],
+      ['Andrés Bastidas', 'Valeria Cifuentes', 'Javier Paz'],
+      ['Camilo Erazo', 'Natalia Cerón', 'Brayan Rivera']
     ];
-    NAMES.ex[3] = ['Difracción Láser y Óptica de Rendijas', 'Efecto Doppler y Ondas Acústicas', 'Bobina de Tesla y Plasma', 'Electroimanes y Levitación Magnética'];
+
+    // Sala 4: Pasillo Izquierdo (5 mesas x 3 expositores)
+    NAMES.ex[3] = [
+      'Difracción Láser y Rendijas',
+      'Efecto Doppler y Ondas Acústicas',
+      'Bobina de Tesla y Plasma',
+      'Electroimanes y Levitación',
+      'Fibra Óptica y Reflexión Total'
+    ];
     NAMES.expo[3] = [
-      ['Cristian Salazar', 'Dayana Dorado'],
-      ['Brayan Rivera', 'Paula Ramos'],
-      ['Kevin Guauña', 'Natalia Cerón'],
-      ['Gustavo Arcos', 'Yuliana Prado']
+      ['Cristian Salazar', 'Dayana Dorado', 'Gustavo Arcos'],
+      ['Brayan Rivera', 'Paula Ramos', 'Yuliana Prado'],
+      ['Kevin Guauña', 'Natalia Cerón', 'Sebastián Mora'],
+      ['Gustavo Arcos', 'Yuliana Prado', 'Fabián Castillo'],
+      ['Diego Fernando Paz', 'Marcela Vivas', 'Héctor Fabio Ruiz']
     ];
+
     try{ localStorage.setItem('fisicaTourNames', JSON.stringify(NAMES)); }catch(err){}
     openSheetModal();
-    $('names').querySelectorAll('input').forEach(i => {
-      const p = i.dataset && i.dataset.p;
-      if(p) i.value = String(nget(p) || '');
-    });
+    if($('names')){
+      $('names').querySelectorAll('input').forEach(i => {
+        const p = i.dataset && i.dataset.p;
+        if(p) i.value = String(nget(p) || '');
+      });
+    }
     refreshTags();
   };
 }
 
-</script></body></html>
+</script></body>
