@@ -1158,6 +1158,42 @@ window.PLATFORM_DATA = {
             descuentoTag: "Exclusivo Docente",
             enlaceCompra: null,
             enlaceWompi: null
+        },
+        {
+            id: "percepcion",
+            titulo: "Percepción Computacional: Visión Artificial, Señales & Machine Learning",
+            nivel: "Especialización & Maestría en IA / Universitario Avanzado",
+            modulos: "15 Temas Teóricos · 7 Clases Magistrales · 7 Simuladores · 10 Aulas Netlify · Test 40 Preguntas",
+            categoria: "Inteligencia Artificial & Percepción",
+            categoriaFiltro: "ia",
+            descripcion: "Curso integral desarrollado por el Ing. Luis Fernando Barajas Ardila para la Especialización en Inteligencia Artificial. Cubre sistemas biológicos (visión y audición), muestreo Nyquist-Shannon, cuantificación digital, fuentes de ruido, convolución 2D, detector de bordes de Canny, morfología matemática, FFT 2D, segmentación de Otsu, crecimiento de regiones, momentos de Hu, descriptores de textura Haralick (GLCM), LBP, filtros de Gabor, SIFT, clasificadores k-NN/SVM/CNN, curvas ROC/AUC, biometría y percepción para vehículos autónomos.",
+            temas: [
+                "01. Introducción a los Sistemas de Percepción (Biológicos vs Artificiales)",
+                "02. Elementos y Arquitectura de un Sistema de Percepción",
+                "03. Captura y Digitalización: Muestreo A/D y Teorema de Nyquist-Shannon",
+                "04. Fuentes y Tipos de Ruido: Gaussiano, Impulsivo, Poisson y Speckle",
+                "05. Detección y Cancelación de Anomalías: Filtro de Mediana y Wiener",
+                "06. Procesamiento de Imagen: Operaciones Elementales y Corrección Gamma",
+                "07. Procesamiento de Imagen: Convolución Espacial y Detector de Bordes de Canny",
+                "08. Morfología Matemática: Elemento Estructurante, Erosión, Dilatación y Top-Hat",
+                "09. Procesamiento de Señales: Filtrado y Análisis en Frecuencia (DFT 2D)",
+                "10. Segmentación: Umbralización de Otsu, Crecimiento por Semillas y Watershed",
+                "11. Extracción de Características: Propiedades Estadísticas y Momentos de Hu",
+                "12. Caracterización de Textura: Matriz de Coocurrencia de Haralick y LBP",
+                "13. Procesamientos Multiescala: Bancos de Gabor, Wavelet y Descriptores SIFT",
+                "14. Toma de Decisiones: k-NN, SVM, Matriz de Confusión y Curvas ROC/AUC",
+                "15. Aplicaciones Actuales: Biometría, Vehículos Autónomos y Fusión Sensorial"
+            ],
+            destacado: true,
+            tipo: "Curso Maestro Interactivo",
+            demoPath: "/material/1_cursos/percepcion/dist/index.html",
+            precioEstimado: "$35 USD (~$140.000 COP)",
+            precioCOP: 140000,
+            precioUSD: 35,
+            valorReal: "$69 USD",
+            descuentoTag: "Especialización IA",
+            enlaceCompra: "https://hotmart.com",
+            enlaceWompi: "https://checkout.wompi.co/l/VPOS_b6GD2z"
         }
     ],
 

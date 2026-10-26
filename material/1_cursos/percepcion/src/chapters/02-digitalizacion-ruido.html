@@ -1,0 +1,153 @@
+<!-- 02-digitalizacion-ruido.html -->
+<template class="chapter-src" data-id="digitalizacion" data-num="02" data-part="Clase 2 · Adquisición &amp; Ruido" data-title="Captura, Digitalización, Ruido &amp; Detección de Anomalías">
+  <div class="chapter-hero">
+    <div class="chapter-tag">Clase 2 · Temas 3, 4 &amp; 5</div>
+    <h1>Muestreo, Cuantificación, Fuentes de Ruido &amp; Cancelación de Anomalías</h1>
+    <p class="chapter-lead">
+      El mundo físico es analógico y continuo, pero los procesadores digitales solo operan con matrices discretas de valores numéricos finitos. En esta clase abordamos los límites teóricos de la conversión analógico-discreta (Nyquist-Shannon), el modelado matemático del ruido y los algoritmos para detectar y cancelar anomalías sensoriales.
+    </p>
+  </div>
+
+  <div class="chapter-body">
+    <section>
+      <h2>2.1 Captura y Digitalización de Señales (Tema 3)</h2>
+      <p>
+        La conversión de una señal analógica continua \(x(t)\) o una escena óptica bidimensional \(I(x,y)\) a formato digital requiere dos pasos fundamentales: <strong>muestreo</strong> (discretización en el dominio independiente) y <strong>cuantificación</strong> (discretización en amplitud).
+      </p>
+
+      <div class="box law">
+        <div class="box-head">Teorema de Muestreo de Nyquist-Shannon</div>
+        <p>
+          Para reconstruir de forma exacta y sin distorsión una señal analógica continua de banda limitada con frecuencia máxima \(f_{\max}\), la frecuencia de muestreo \(f_s\) debe ser estrictamente mayor o igual que el doble de dicha frecuencia máxima:
+          \[
+            f_s \ge 2 f_{\max}
+          \]
+          A la frecuencia \(f_N = 2 f_{\max}\) se le denomina <strong>tasa de Nyquist</strong>, y a \(f_{\max} = f_s / 2\) <strong>frecuencia de plegamiento</strong> o de Nyquist.
+        </p>
+        <p>
+          Si \(f_s < 2 f_{\max}\), se produce el fenómeno destructivo de <strong>aliasing</strong> (solapamiento espectral): las componentes de alta frecuencia se pliegan y se enmascaran falsamente como frecuencias bajas inexistentes en la señal original. Para evitarlo en visión computacional y audio, siempre se antepone un <em>filtro analógico paso bajo antialiasing</em> antes del convertidor A/D.
+        </p>
+      </div>
+
+      <h3>Cuantificación y Rango Dinámico</h3>
+      <p>
+        La cuantificación mapea el rango continuo de voltaje del sensor a un conjunto finito de \(L = 2^b\) niveles enteros discretos, donde \(b\) es la resolución en bits (típicamente \(b = 8\) bits para \(256\) niveles de gris, o \(b = 10, 12, 16\) bits en cámaras industriales y sensores LiDAR).
+      </p>
+      <p>
+        El error o <strong>ruido de cuantificación</strong> \(e_q = x - x_q\) se modela como una variable aleatoria uniforme en \([-\Delta/2, \Delta/2]\), donde \(\Delta = \frac{V_{\max} - V_{\min}}{2^b}\) es el paso de cuantificación. Su varianza teórica es:
+        \[
+          \sigma_q^2 = \frac{\Delta^2}{12}
+        \]
+        La relación señal a ruido de cuantificación máxima teórica (\(SNR_q\)) para una señal senoidal pura viene dada por la regla de los \(6\text{ dB}\):
+        \[
+          SNR_q \approx 6.02 \cdot b + 1.76 \quad [\text{dB}]
+        \]
+        Cada bit adicional de resolución en el conversor A/D incrementa la relación señal a ruido en aproximadamente \(6\text{ dB}\).
+      </p>
+
+      <!-- SIMULADOR 2 -->
+      <div class="sim-host" data-sim="sim-muestreo-ruido"></div>
+    </section>
+
+    <section>
+      <h2>2.2 Fuentes y Tipos de Ruido (Tema 4)</h2>
+      <p>
+        El ruido es cualquier perturbación indeseada, determinista o estocástica, que degrada la señal capturada por el sensor. En sistemas de percepción computacional distinguimos las siguientes familias de ruido:
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Tipo de Ruido</th>
+              <th>Modelo Estadístico</th>
+              <th>Origen Físico</th>
+              <th>Estrategia Óptima de Cancelación</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Gaussiano (Térmico)</strong></td>
+              <td>Distribución Normal: \(p(z) = \frac{1}{\sqrt{2\pi}\sigma} e^{-\frac{(z-\mu)^2}{2\sigma^2}}\)</td>
+              <td>Agitación térmica de electrones en fotodiodos y circuitos amplificadores (ruido Johnson-Nyquist).</td>
+              <td>Filtro de media espacial, suavizado Gaussiano o filtro de Wiener.</td>
+            </tr>
+            <tr>
+              <td><strong>Impulsivo (Sal y Pimienta)</strong></td>
+              <td>Píxeles saturados en \(0\) (negro/pimienta) o \(255\) (blanco/sal) con probabilidad \(P\).</td>
+              <td>Falla momentánea de celdas de memoria, píxeles quemados en el sensor, interferencias electrostáticas.</td>
+              <td><strong>Filtro de mediana</strong> (no lineal) o filtro de mediana adaptativa.</td>
+            </tr>
+            <tr>
+              <td><strong>Poisson (Shot Noise)</strong></td>
+              <td>Distribución de Poisson: \(P(k) = \frac{\lambda^k e^{-\lambda}}{k!}\)</td>
+              <td>Naturaleza cuántica discreta de los fotones al incidir en el sensor (especialmente con poca luz).</td>
+              <td>Transformación de Anscombe + filtrado gaussiano.</td>
+            </tr>
+            <tr>
+              <td><strong>Multiplicativo (Speckle)</strong></td>
+              <td>Ruido granular multiplicativo: \(I_{ruido} = I \cdot \eta\)</td>
+              <td>Interferencia constructiva/destructiva de ondas coherentes en radar (SAR), ultrasonidos o luz láser.</td>
+              <td>Filtros homomórficos (logaritmo) o filtros de Lee/Frost.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Entropía de Shannon y Contenido de Información</h3>
+      <p>
+        La <strong>entropía de Shannon</strong> mide el grado de incertidumbre o aleatoriedad presente en una señal discreta. Para una imagen con niveles de gris \(r_k\) cuya probabilidad estimada mediante histograma normalizado sea \(p(r_k)\):
+        \[
+          H(X) = - \sum_{k=0}^{L-1} p(r_k) \log_2 p(r_k) \quad [\text{bits/símbolo}]
+        \]
+        Una imagen con histograma plano y uniforme maximiza la entropía (\(H_{\max} = \log_2(256) = 8\text{ bits}\)), mientras que una señal constante sin variación posee entropía cero. El ruido gaussiano de alta varianza eleva la entropía no estructurada de la imagen.
+      </p>
+    </section>
+
+    <section>
+      <h2>2.3 Detección y Cancelación de Anomalías (Tema 5)</h2>
+      <p>
+        Una <strong>anomalía</strong> (outlier) es una observación que se desvía drásticamente del comportamiento estadístico del resto del conjunto de datos. En señales continuas de sensores (acelerómetros, giróscopos, temperatura, ToF) se emplean técnicas estadísticas:
+      </p>
+
+      <div class="box def">
+        <div class="box-head">Métodos Estadísticos de Detección de Anomalías</div>
+        <ul>
+          <li><strong>Puntaje Z (Z-Score):</strong> Mide la distancia de una muestra \(x_i\) respecto a la media \(\mu\) en unidades de desviación estándar \(\sigma\):
+            \[
+              Z = \frac{|x_i - \mu|}{\sigma}
+            \]
+            Si \(Z > 3\), la muestra tiene menos de un \(0.27\%\) de probabilidad de pertenecer a una distribución normal y se clasifica como anomalía.
+          </li>
+          <li><strong>Filtro de Hampel (Basado en Mediana y MAD):</strong> Reemplaza la media y desviación estándar por estadísticos robustos frente a outliers extremos:
+            \[
+              \text{MAD} = 1.4826 \cdot \text{mediana}(|x_i - \tilde{x}|)
+            \]
+            donde \(\tilde{x}\) es la mediana local en una ventana móvil. Evita que un valor atípico gigantesco distorsione el cálculo.
+          </li>
+        </ul>
+      </div>
+
+      <div class="box ex">
+        <div class="box-head">¿Por qué el Filtro de Mediana supera al Filtro de Media en Ruido Impulsivo?</div>
+        <p>
+          El <strong>filtro de media</strong> promedia todos los valores de la vecindad: si un píxel tiene un valor de ruido corrupto de \(255\) sobre un fondo oscuro de \(10\), la media eleva el valor a \(50\), creando una mancha difuminada y borrando el borde nítido.
+        </p>
+        <p>
+          En cambio, el <strong>filtro de mediana</strong> ordena los valores de la ventana de tamaño \(N\) (por ejemplo, \(5\) elementos: \([10, 11, 10, 12, 255] \rightarrow [10, 10, 11, 12, 255]\)) y selecciona el valor central (\(11\)). El valor extremo \(255\) queda totalmente aislado en un extremo de la lista ordenada y <strong>se cancela al \(100\%\) sin desenfocar los bordes</strong>.
+        </p>
+      </div>
+    </section>
+
+    <div class="chapter-nav-footer">
+      <a href="#fundamentos" class="btn-chap-nav" onclick="window.PERCEPCION.navigateTo('fundamentos')">
+        <span class="nav-dir">← Anterior</span>
+        <span class="nav-title">Clase 1 · Sistemas de Percepción</span>
+      </a>
+      <a href="#espacial" class="btn-chap-nav" onclick="window.PERCEPCION.navigateTo('espacial')">
+        <span class="nav-dir">Siguiente Capítulo →</span>
+        <span class="nav-title">Clase 3 · Preprocesamiento Espacial &amp; Bordes Canny</span>
+      </a>
+    </div>
+  </div>
+</template>

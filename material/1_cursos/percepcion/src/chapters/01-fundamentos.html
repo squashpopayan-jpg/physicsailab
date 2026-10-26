@@ -1,0 +1,121 @@
+<!-- 01-fundamentos.html -->
+<template class="chapter-src" data-id="fundamentos" data-num="01" data-part="Clase 1 · Fundamentos" data-title="Introducción &amp; Elementos de un Sistema de Percepción">
+  <div class="chapter-hero">
+    <div class="chapter-tag">Clase 1 · Temas 1 &amp; 2</div>
+    <h1>Sistemas de Percepción: Biología vs Computación &amp; Arquitectura Sensorial</h1>
+    <p class="chapter-lead">
+      La percepción computacional emula y extiende las facultades sensoriales biológicas. En esta primera clase analizamos cómo el ojo y el oído humano capturan e interpretan patrones del entorno y cómo formalizamos la arquitectura de un sistema de percepción artificial moderno desde los sensores hasta la toma de decisiones.
+    </p>
+  </div>
+
+  <div class="chapter-body">
+    <section>
+      <h2>1.1 Percepción Biológica: Sistema Auditivo y Visual</h2>
+      <p>
+        Para diseñar sistemas de percepción computacional eficientes es indispensable estudiar las soluciones biológicas consolidadas tras millones de años de evolución:
+      </p>
+
+      <h3>El Sistema Visual Humano (SVH)</h3>
+      <p>
+        La retina humana realiza un procesamiento inicial extraordinariamente sofisticado. Contiene dos tipos fundamentales de fotorreceptores:
+      </p>
+      <ul>
+        <li><strong>Conos (~6 millones):</strong> Concentrados densamente en la <em>fóvea centralis</em>. Son responsables de la visión diurna o fotópica, la alta agudeza espacial y la percepción cromática en tres bandas espectrales principales: conos S (azul, pico en \(\approx 420\text{ nm}\)), conos M (verde, pico en \(\approx 534\text{ nm}\)) y conos L (rojo, pico en \(\approx 564\text{ nm}\)).</li>
+        <li><strong>Bastones (~120 millones):</strong> Distribuidos por la periferia de la retina. Presentan una enorme sensibilidad a niveles mínimos de iluminación (visión nocturna o escotópica con pico de absorción en \(\approx 498\text{ nm}\)), pero sin discriminación de color y con baja agudeza visual.</li>
+      </ul>
+
+      <div class="box law">
+        <div class="box-head">Principio Fisiológico: Inhibición Lateral &amp; Bandas de Mach</div>
+        <p>
+          En la retina, las <strong>células horizontales</strong> interconectan fotorreceptores adyacentes. Cuando un fotorreceptor se estimula fuertemente por la luz, emite señales inhibitorias a sus vecinos laterales.
+        </p>
+        <p>
+          Este fenómeno biológico produce el efecto perceptivo de las <strong>Bandas de Mach</strong>: en la frontera entre dos franjas de distinta luminosidad, el borde oscuro se percibe aún más oscuro y el claro más brillante. Matemáticamente, la inhibición lateral actúa exactamente como un <strong>filtro espacial paso alto</strong> o un operador Laplaciano (\(\nabla^2\)), realzando los bordes antes de que la información llegue a la corteza visual.
+        </p>
+      </div>
+
+      <h3>El Sistema Auditivo Humano</h3>
+      <p>
+        El oído convierte ondas mecánicas de presión acústica en potenciales de acción neuronales en la cóclea. A lo largo de la <strong>membrana basilar</strong> existe una organización tonotópica precisa:
+      </p>
+      <ul>
+        <li>La <em>base</em> de la cóclea (estrecha y rígida) resuena ante frecuencias altas (hasta \(20\,000\text{ Hz}\)).</li>
+        <li>El <em>ápice</em> (ancho y flexible) resuena ante frecuencias bajas (hasta \(20\text{ Hz}\)).</li>
+      </ul>
+      <p>
+        Esta descomposición física equivale a un <strong>banco de filtros pasa-banda continuo</strong> (bandas críticas o escalas Bark/Mel), precursor biológico de la Transformada de Fourier de tiempo reducido (STFT).
+      </p>
+
+      <!-- SIMULADOR 1 -->
+      <div class="sim-host" data-sim="sim-auditivo-visual"></div>
+    </section>
+
+    <section>
+      <h2>1.2 Elementos de un Sistema de Percepción Computacional (Tema 2)</h2>
+      <p>
+        Un sistema artificial de percepción transforma variables físicas analógicas en descripciones simbólicas útiles mediante cinco etapas interdependientes:
+      </p>
+
+      <div class="box def">
+        <div class="box-head">Definición Formal: Pipeline Sensorial Artificial</div>
+        <ol style="margin:0; padding-left:1.2rem;">
+          <li><strong>Transducción y Captura:</strong> Sensores físicos (cámaras CCD/CMOS, micrófonos, LiDAR, ultrasonidos, radar) convierten la energía del entorno en señales eléctricas.</li>
+          <li><strong>Digitalización &amp; Acondicionamiento:</strong> Muestreo espacio-temporal y cuantificación numérica (conversión A/D) con eliminación de sesgos o saturaciones.</li>
+          <li><strong>Preprocesamiento:</strong> Cancelación de ruido, filtrado espacial/temporal, corrección radiométrica o ecualización de iluminación.</li>
+          <li><strong>Segmentación y Extracción de Características:</strong> Separación del objeto de interés respecto al fondo y extracción de descriptores compactos e invariantes (forma, textura, color, espectro).</li>
+          <li><strong>Decisión o Clasificación:</strong> Algoritmos de inferencia y aprendizaje automático (árboles, k-NN, SVM, redes neuronales) que asignan etiquetas categóricas o valores continuos.</li>
+        </ol>
+      </div>
+
+      <h3>Taxonomía de Sensores en Percepción</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Tipo de Sensor</th>
+              <th>Naturaleza Energética</th>
+              <th>Ejemplos Típicos</th>
+              <th>Fortalezas &amp; Limitaciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Pasivos</strong></td>
+              <td>Miden radiación o energía emitida por el entorno (sin emitir energía propia).</td>
+              <td>Cámaras RGB estándar, cámaras térmicas infrarrojas (FLIR), arreglos de micrófonos.</td>
+              <td>Bajo consumo, gran densidad de información. Dependen fuertemente de las condiciones de luz externa.</td>
+            </tr>
+            <tr>
+              <td><strong>Activos</strong></td>
+              <td>Emiten un haz de energía propia y miden el reflejo o eco de retorno.</td>
+              <td>LiDAR (pulsos láser ToF), Radar milimétrico, Sonar ultrasónico, cámaras de luz estructurada.</td>
+              <td>Inmunes a la oscuridad, estiman distancias 3D directamente. Mayor consumo y peso, interferencia mutua.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="box warn">
+        <div class="box-head">Cuidado con la Iluminación y el Espacio de Representación</div>
+        <p>
+          En visión computacional, una imagen capturada \(I(x,y)\) es el producto de dos factores físicos:
+          \[
+            I(x,y) = r(x,y) \cdot i(x,y)
+          \]
+          donde \(r(x,y) \in [0,1]\) es la <strong>reflectancia</strong> propia de la superficie del objeto y \(i(x,y)\) es la <strong>iluminancia</strong> incidente de la fuente de luz. Los algoritmos de percepción deben buscar invariancia ante \(i(x,y)\) para reconocer objetos con independencia de cambios de sombras o luz ambiental.
+        </p>
+      </div>
+    </section>
+
+    <div class="chapter-nav-footer">
+      <a href="#inicio" class="btn-chap-nav" onclick="window.PERCEPCION.navigateTo('inicio')">
+        <span class="nav-dir">← Anterior</span>
+        <span class="nav-title">Bienvenida &amp; Mapa General</span>
+      </a>
+      <a href="#digitalizacion" class="btn-chap-nav" onclick="window.PERCEPCION.navigateTo('digitalizacion')">
+        <span class="nav-dir">Siguiente Capítulo →</span>
+        <span class="nav-title">Clase 2 · Captura, Muestreo, Ruido &amp; Anomalías</span>
+      </a>
+    </div>
+  </div>
+</template>

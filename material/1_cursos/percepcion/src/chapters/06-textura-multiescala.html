@@ -1,0 +1,109 @@
+<!-- 06-textura-multiescala.html -->
+<template class="chapter-src" data-id="textura" data-num="06" data-part="Clase 6 · Textura &amp; Puntos Clave" data-title="Textura en Imágenes &amp; Extracción Multiescala (SIFT)">
+  <div class="chapter-hero">
+    <div class="chapter-tag">Clase 6 · Temas 12 &amp; 13</div>
+    <h1>Caracterización de Textura (Haralick, LBP) &amp; Descriptores Multiescala (Gabor, SIFT)</h1>
+    <p class="chapter-lead">
+      La textura describe las relaciones espaciales entre intensidades y es crucial para segmentar tejidos biológicos, terrenos y materiales. En esta clase estudiamos la Matriz de Coocurrencia de Haralick, los Patrones Binarios Locales (LBP), los bancos de filtros de Gabor y la célebre Transformada de Características Invariantes a la Escala (SIFT).
+    </p>
+  </div>
+
+  <div class="chapter-body">
+    <section>
+      <h2>6.1 Caracterización de Textura en Imágenes (Tema 12)</h2>
+      <p>
+        La textura no puede definirse mediante el valor de un único píxel: requiere modelar la distribución espacial y periodicidad de patrones locales. El enfoque estadístico de segundo orden más empleado es la <strong>Matriz de Coocurrencia de Niveles de Gris (GLCM)</strong>, introducida por Robert M. Haralick en 1973.
+      </p>
+
+      <div class="box def">
+        <div class="box-head">Definición de la Matriz GLCM: \(P(i, j \mid d, \theta)\)</div>
+        <p>
+          Para una imagen cuantificada en \(N_g\) niveles de gris (típicamente \(8\) o \(16\)), la matriz GLCM contabiliza cuántas veces un píxel de intensidad \(i\) se encuentra a una distancia \(d\) (en píxeles) y en una dirección angular \(\theta\) respecto a otro píxel de intensidad \(j\):
+          \[
+            \theta \in \{0^\circ \text{ [horizontal]}, \; 45^\circ \text{ [diagonal ascendente]}, \; 90^\circ \text{ [vertical]}, \; 135^\circ \text{ [diagonal descendente]}\}
+          \]
+          Normalizando la matriz para que \(\sum_i \sum_j P(i,j) = 1\), Haralick dedujo catorce descriptores cuantitativos, de los cuales destacan cuatro:
+        </p>
+        <ul>
+          <li><strong>Contraste:</strong> \(\sum_i \sum_j |i - j|^2 P(i,j)\). Mide las variaciones locales de intensidad. Es muy alto en texturas rugosas y bajo en superficies lisas.</li>
+          <li><strong>Homogeneidad (IDM):</strong> \(\sum_i \sum_j \frac{P(i,j)}{1 + |i - j|}\). Pondera la cercanía de las transiciones a la diagonal principal de la matriz. Mide la uniformidad visual.</li>
+          <li><strong>Energía (Segundo Momento Angular - ASM):</strong> \(\sum_i \sum_j P(i,j)^2\). Alcanza su valor máximo de \(1\) cuando la textura es totalmente homogénea y constante.</li>
+          <li><strong>Entropía:</strong> \(-\sum_i \sum_j P(i,j) \log_2 P(i,j)\). Cuantifica el desorden o aleatoriedad en la distribución de la textura.</li>
+        </ul>
+      </div>
+
+      <h3>Patrones Binarios Locales (LBP - Local Binary Patterns)</h3>
+      <p>
+        Propuesto por Ojala et al. (1996), el operador LBP destaca por su bajísimo coste computacional e invariancia ante cambios monótonos de iluminación (como variaciones globales de brillo o contraste):
+      </p>
+      <ol>
+        <li>Para cada píxel central \(g_c\), se examina su vecindad de \(8\) píxeles contiguos \(g_p\) (\(p=0,\dots,7\)).</li>
+        <li>Se aplica una umbralización binaria: \(s(g_p - g_c) = 1\) si \(g_p \ge g_c\), y \(0\) en caso contrario.</li>
+        <li>Se concatenan los bits en sentido horario y se obtiene un número decimal entre \(0\) y \(255\):
+          \[
+            \text{LBP}_{P,R}(x_c, y_c) = \sum_{p=0}^{P-1} s(g_p - g_c) \cdot 2^p
+          \]
+        </li>
+      </ol>
+      <p>
+        Un histograma de códigos LBP describe de forma compacta bordes, esquinas, puntos y áreas planas en rostros y texturas industriales.
+      </p>
+
+      <!-- SIMULADOR 6 -->
+      <div class="sim-host" data-sim="sim-haralick-gabor"></div>
+    </section>
+
+    <section>
+      <h2>6.2 Procesamientos Multiescala &amp; Algoritmos Avanzados (Tema 13)</h2>
+      <p>
+        Las escenas del mundo real contienen estructuras a múltiples escalas (detalles finos, bordes medios y formas globales). Los métodos avanzados operan en <em>espacios de escala</em>:
+      </p>
+
+      <div class="box law">
+        <div class="box-head">Filtros de Gabor 2D: El Modelo de la Corteza Visual Primaria (V1)</div>
+        <p>
+          Dennis Gabor y posteriores neurobiólogos demostraron que las células simples de la corteza visual de los mamíferos responden como <strong>filtros de Gabor 2D</strong>: sinusoides armónicas moduladas por una envolvente Gaussiana bidimensional:
+          \[
+            g(x,y;\lambda,\theta,\psi,\sigma,\gamma) = \exp\left(-\frac{x'^2 + \gamma^2 y'^2}{2\sigma^2}\right) \cos\left(2\pi \frac{x'}{\lambda} + \psi\right)
+          \]
+          donde \(x' = x \cos\theta + y \sin\theta\) e \(y' = -x \sin\theta + y \cos\theta\).
+        </p>
+        <p>
+          Un <strong>banco de filtros de Gabor</strong> cubre múltiples orientaciones \(\theta\) y frecuencias espaciales \(\lambda\), extrayendo características altamente discriminativas para biometría (iris de Daugman y huellas dactilares).
+        </p>
+      </div>
+
+      <h3>Transformada de Características Invariantes a la Escala (SIFT - David Lowe, 2004)</h3>
+      <p>
+        SIFT es uno de los algoritmos más influyentes de la visión por computadora clásica. Extrae puntos clave geométricos e invariantes ante <strong>traslación, escala, rotación, iluminación y cambios moderados de punto de vista afín (3D)</strong>:
+      </p>
+      <ol>
+        <li><strong>Detección de Extremos en Espacio de Escala (DoG):</strong> Se convoluciona la imagen con filtros gaussianos a diferentes escalas \(\sigma\) y se restan octavas sucesivas para aproximar el Laplaciano del Gaussiano mediante la <em>Diferencia de Gaussianas</em>:
+          \[
+            D(x,y,\sigma) = (G(x,y,k\sigma) - G(x,y,\sigma)) * I(x,y)
+          \]
+          Un píxel es candidato a punto clave si es un máximo o mínimo estricto comparado con sus \(8\) vecinos en su propia escala y los \(9 \times 2 = 18\) vecinos de las escalas inmediatamente superior e inferior (\(26\) vecinos en total).
+        </li>
+        <li><strong>Localización Subpíxel y Filtrado de Puntos Inestables:</strong> Se ajusta una serie de Taylor tridimensional para localizar la posición continua del extremo, eliminando puntos de bajo contraste (\(|D(\mathbf{x})| < 0.03\)) o bordes alargados inestables mediante el cociente de autovalores de la matriz Hessiana.</li>
+        <li><strong>Asignación de Orientación Canónica:</strong> Se calcula el gradiente local en torno al punto y se crea un histograma de orientaciones de \(36\) sectores. El pico principal se asigna como orientación del punto, garantizando <em>invariancia absoluta ante rotación</em>.</li>
+        <li><strong>Construcción del Descriptor de 128 Dimensiones:</strong> Se toma una ventana de \(16 \times 16\) píxeles alineada con la orientación principal, se divide en una cuadrícula de \(4 \times 4\) subregiones de \(4 \times 4\) píxeles, y en cada una se calcula un histograma de gradientes de \(8\) direcciones. Esto genera un vector característico compacto de:
+          \[
+            4 \times 4 \times 8 = 128 \quad \text{valores numéricos}
+          \]
+          que se normaliza a longitud unidad para inmunizarlo ante cambios afines de iluminación.
+        </li>
+      </ol>
+    </section>
+
+    <div class="chapter-nav-footer">
+      <a href="#segmentacion" class="btn-chap-nav" onclick="window.PERCEPCION.navigateTo('segmentacion')">
+        <span class="nav-dir">← Anterior</span>
+        <span class="nav-title">Clase 5 · Segmentación &amp; Momentos Hu</span>
+      </a>
+      <a href="#decision" class="btn-chap-nav" onclick="window.PERCEPCION.navigateTo('decision')">
+        <span class="nav-dir">Siguiente Capítulo →</span>
+        <span class="nav-title">Clase 7 · Decisión, Métricas ROC &amp; Aplicaciones</span>
+      </a>
+    </div>
+  </div>
+</template>

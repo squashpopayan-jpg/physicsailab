@@ -1,0 +1,137 @@
+<!-- 05-segmentacion-estadistica.html -->
+<template class="chapter-src" data-id="segmentacion" data-num="05" data-part="Clase 5 · Segmentación &amp; Formas" data-title="Segmentación de Imágenes &amp; Momentos de Hu">
+  <div class="chapter-hero">
+    <div class="chapter-tag">Clase 5 · Temas 10 &amp; 11</div>
+    <h1>Segmentación de Imágenes, Crecimiento de Regiones &amp; Momentos Invariantes de Hu</h1>
+    <p class="chapter-lead">
+      La segmentación subdivide una imagen en sus regiones u objetos constituyentes homogéneos. En esta clase profundizamos en la umbralización automática de Otsu, el crecimiento de regiones por semillas, el algoritmo Watershed y la caracterización estadística de formas mediante los siete momentos invariantes de Hu y métricas de evaluación frente a Ground Truth.
+    </p>
+  </div>
+
+  <div class="chapter-body">
+    <section>
+      <h2>5.1 Fundamentos y Métodos de Segmentación (Tema 10)</h2>
+      <p>
+        Formalmente, la segmentación particiona el conjunto de píxeles \(R\) en \(n\) subregiones disjuntas \(R_1, R_2, \dots, R_n\) tales que:
+      </p>
+      <ol>
+        <li>\(\bigcup_{i=1}^n R_i = R\) (cobertura total de la imagen).</li>
+        <li>\(R_i\) es una región conexa para todo \(i\).</li>
+        <li>\(R_i \cap R_j = \emptyset\) para todo \(i \neq j\) (las regiones son mutuamente excluyentes).</li>
+        <li>\(P(R_i) = \text{Verdadero}\) (todos los píxeles de una región satisfacen un predicado de homogeneidad).</li>
+        <li>\(P(R_i \cup R_j) = \text{Falso}\) para regiones adyacentes (regiones contiguas difieren en propiedades).</li>
+      </ol>
+
+      <div class="box law">
+        <div class="box-head">Umbralización Automática de Otsu (1979)</div>
+        <p>
+          El método de Nobuyuki Otsu calcula analíticamente el umbral óptimo global \(k^*\) que maximiza la <strong>varianza entre clases (\(\sigma_B^2\))</strong> de un histograma bimodal, lo que equivale matemáticamente a minimizar la varianza intra-clase (\(\sigma_W^2\)):
+          \[
+            \sigma_B^2(k) = \omega_0(k) \cdot \omega_1(k) \cdot \left[ \mu_0(k) - \mu_1(k) \right]^2
+          \]
+          donde:
+          \[
+            \omega_0(k) = \sum_{i=0}^k p_i, \quad \omega_1(k) = 1 - \omega_0(k), \quad
+            \mu_0(k) = \frac{1}{\omega_0(k)} \sum_{i=0}^k i \, p_i, \quad
+            \mu_1(k) = \frac{1}{\omega_1(k)} \sum_{i=k+1}^{L-1} i \, p_i
+          \]
+          El algoritmo recorre eficientemente los \(256\) niveles de gris en tiempo lineal \(\mathcal{O}(L)\), localizando el valor \(k^* = \arg\max_k \sigma_B^2(k)\) sin requerir ajuste manual subjetivo.
+        </p>
+      </div>
+
+      <h3>Crecimiento de Regiones Basado en Semillas (Seeded Region Growing)</h3>
+      <p>
+        Parte de uno o varios píxeles de referencia iniciales (\(seed\)) e inspecciona recursivamente sus vecinos (en 4 u 8-conectividad). Si un píxel contiguo satisface un criterio de similitud:
+        \[
+          |I(x,y) - I(seed)| \le \Delta
+        \]
+        se incorpora a la región y la semilla actualiza su media de intensidad. Es ideal para extraer estructuras anatómicas en imágenes médicas (tumores, ventrículos, órganos) a partir de un clic del usuario.
+      </p>
+
+      <h3>Segmentación por Cuencas Hidrográficas (Watershed)</h3>
+      <p>
+        Interpreta la imagen del gradiente \(|\nabla f|\) como un <strong>mapa topográfico de relieve</strong>, donde los valores de gris corresponden a altitudes. Las regiones homogéneas son valles o cuencas receptoras de agua, y los bordes son crestas divisorias de aguas.
+      </p>
+      <p>
+        Se simula la inundación progresiva desde los mínimos locales. Cuando el agua procedente de dos cuencas distintas está a punto de unirse, se levanta una presa o dique. Estas presas constituyen las fronteras exactas de segmentación. Para evitar la sobresegmentación causada por ruido local, se emplean <strong>marcadores internos y externos</strong> impuestos por el operador.
+      </p>
+
+      <!-- SIMULADOR 5 -->
+      <div class="sim-host" data-sim="sim-otsu-segmentacion"></div>
+    </section>
+
+    <section>
+      <h2>5.2 Extracción de Características Estadísticas &amp; Momentos de Hu (Tema 11)</h2>
+      <p>
+        Una vez segmentado un objeto binario o región de interés, es indispensable cuantificar su forma geométrica mediante descriptores matemáticos invariantes:
+      </p>
+
+      <div class="box def">
+        <div class="box-head">Momentos Geométricos y Centrales</div>
+        <p>
+          Para una función bidimensional \(f(x,y)\), el momento geométrico de orden \((p+q)\) es:
+          \[
+            m_{pq} = \sum_x \sum_y x^p y^q f(x,y)
+          \]
+          El momento \(m_{00}\) representa el <strong>área</strong> de la región, y el centro de gravedad o <strong>centroide</strong> viene dado por:
+          \[
+            \bar{x} = \frac{m_{10}}{m_{00}}, \qquad \bar{y} = \frac{m_{01}}{m_{00}}
+          \]
+          Los <strong>momentos centrales</strong> eliminan la dependencia de la traslación geográfica en la imagen:
+          \[
+            \mu_{pq} = \sum_x \sum_y (x - \bar{x})^p (y - \bar{y})^q f(x,y)
+          \]
+          Los <strong>momentos centrales normalizados</strong> neutralizan además el tamaño o escala:
+          \[
+            \eta_{pq} = \frac{\mu_{pq}}{\mu_{00}^\gamma}, \qquad \text{con } \gamma = \frac{p+q}{2} + 1 \quad (\text{para } p+q \ge 2)
+          \]
+        </p>
+      </div>
+
+      <div class="box law">
+        <div class="box-head">Los Siete Momentos Invariantes de Hu (1962)</div>
+        <p>
+          Ming-Kuei Hu demostró que combinaciones lineales no lineales de momentos de segundo y tercer orden confieren <strong>invariancia simultánea ante traslación, cambio de escala y rotación bidimensional</strong>:
+        </p>
+        <ul>
+          <li>\(\phi_1 = \eta_{20} + \eta_{02}\) (Momento de inercia normalizado respecto al centroide).</li>
+          <li>\(\phi_2 = (\eta_{20} - \eta_{02})^2 + 4\eta_{11}^2\)</li>
+          <li>\(\phi_3 = (\eta_{30} - 3\eta_{12})^2 + (3\eta_{21} - \eta_{03})^2\)</li>
+          <li>\(\phi_4 = (\eta_{30} + \eta_{12})^2 + (\eta_{21} + \eta_{03})^2\)</li>
+          <li>\(\phi_5, \phi_6, \phi_7\) (incorporan productos cruzados y discriminación de simetría especular / reflexión).</li>
+        </ul>
+        <p>
+          Estos descriptores permiten reconocer piezas industriales, siluetas de aeronaves o caracteres tipográficos sin importar su posición ni orientación en la cámara.
+        </p>
+      </div>
+
+      <h3>Evaluación de la Segmentación frente a Ground Truth (Actividad 2)</h3>
+      <p>
+        Para validar cuantitativamente la calidad de un algoritmo de segmentación frente a una máscara manual experta de referencia (Ground Truth \(G\)), se emplean métricas de solapamiento espacial:
+      </p>
+      <ul>
+        <li><strong>Coeficiente de Similitud Dice (DSC / F1):</strong>
+          \[
+            \text{Dice}(A, G) = \frac{2 \cdot |A \cap G|}{|A| + |G|}
+          \]
+        </li>
+        <li><strong>Índice de Jaccard (Intersection over Union - IoU):</strong>
+          \[
+            \text{IoU}(A, G) = \frac{|A \cap G|}{|A \cup G|} = \frac{\text{Dice}}{2 - \text{Dice}}
+          \]
+        </li>
+      </ul>
+    </section>
+
+    <div class="chapter-nav-footer">
+      <a href="#morfologia" class="btn-chap-nav" onclick="window.PERCEPCION.navigateTo('morfologia')">
+        <span class="nav-dir">← Anterior</span>
+        <span class="nav-title">Clase 4 · Morfología &amp; Fourier 2D</span>
+      </a>
+      <a href="#textura" class="btn-chap-nav" onclick="window.PERCEPCION.navigateTo('textura')">
+        <span class="nav-dir">Siguiente Capítulo →</span>
+        <span class="nav-title">Clase 6 · Textura Haralick &amp; Multiescala SIFT</span>
+      </a>
+    </div>
+  </div>
+</template>

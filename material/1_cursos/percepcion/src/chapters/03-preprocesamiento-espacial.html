@@ -1,0 +1,126 @@
+<!-- 03-preprocesamiento-espacial.html -->
+<template class="chapter-src" data-id="espacial" data-num="03" data-part="Clase 3 · Espacio &amp; Convolución" data-title="Preprocesamiento Espacial &amp; Detección de Bordes">
+  <div class="chapter-hero">
+    <div class="chapter-tag">Clase 3 · Temas 6 &amp; 7</div>
+    <h1>Operaciones Elementales, Convolución 2D &amp; Detector de Bordes de Canny</h1>
+    <p class="chapter-lead">
+      El preprocesamiento en el dominio espacial actúa directamente sobre los píxeles de la imagen. En esta clase estudiamos desde las transformaciones de intensidad puntual y la ecualización del histograma hasta el fundamento matemático de la convolución 2D, los filtros espaciales paso bajo y paso alto, y el óptimo algoritmo detector de bordes de Canny.
+    </p>
+  </div>
+
+  <div class="chapter-body">
+    <section>
+      <h2>3.1 Operaciones Elementales de Intensidad (Tema 6)</h2>
+      <p>
+        Una transformación de intensidad puntual mapea el nivel de gris de entrada \(r \in [0, L-1]\) en un nivel de salida \(s\) según una función de transferencia \(s = T(r)\):
+      </p>
+
+      <div class="box law">
+        <div class="box-head">Corrección Gamma (Ley de Potencias)</div>
+        <p>
+          La transformación de ley de potencias es el estándar en calibración de cámaras, monitores y preprocesamiento de visión:
+          \[
+            s = c \cdot r^\gamma
+          \]
+          donde \(c\) y \(\gamma\) son constantes positivas.
+        </p>
+        <ul>
+          <li><strong>Si \(\gamma < 1\):</strong> Expande los niveles oscuros y comprime los brillantes (aclara escenas en penumbra, revelando detalles en las sombras).</li>
+          <li><strong>Si \(\gamma > 1\):</strong> Comprime los niveles oscuros y expande los brillantes (oscurece imágenes sobreexpuestas o "lavadas", aumentando el contraste en zonas de altas luces).</li>
+        </ul>
+      </div>
+
+      <h3>Ecualización del Histograma</h3>
+      <p>
+        El histograma de una imagen digital con niveles de intensidad en el intervalo \([0, L-1]\) es una función discreta \(h(r_k) = n_k\), donde \(n_k\) es el número de píxeles con intensidad \(r_k\). La probabilidad de ocurrencia normalizada es \(p_r(r_k) = \frac{n_k}{M \cdot N}\).
+      </p>
+      <p>
+        La <strong>ecualización global de histograma</strong> busca una transformación \(s = T(r)\) que distribuya uniformemente los niveles de gris a lo largo de todo el rango dinámico disponible, maximizando el contraste global. Dicha función de transformación es exactamente la <strong>función de distribución acumulada (CDF)</strong>:
+        \[
+          s_k = T(r_k) = (L - 1) \sum_{j=0}^{k} p_r(r_j) = \frac{L - 1}{M \cdot N} \sum_{j=0}^{k} n_j
+        \]
+      </p>
+    </section>
+
+    <section>
+      <h2>3.2 Convolución Espacial Bidimensional (Tema 7)</h2>
+      <p>
+        La convolución espacial 2D es la operación angular del procesamiento de imágenes clásico y de las capas convolucionales (CNN) del Deep Learning. Una máscara o <em>kernel</em> \(w\) de dimensiones impares \(K \times K\) se desliza sobre la imagen \(f(x,y)\):
+      </p>
+
+      <div class="box def">
+        <div class="box-head">Definición de Convolución 2D Discreta</div>
+        <p>
+          Para un kernel de tamaño \(m \times n\) (donde \(a = \lfloor m/2 \rfloor\) y \(b = \lfloor n/2 \rfloor\)):
+          \[
+            g(x,y) = f(x,y) * w(x,y) = \sum_{s=-a}^{a} \sum_{t=-b}^{b} w(s,t) \cdot f(x - s, y - t)
+          \]
+          En la práctica computacional (como en OpenCV o PyTorch), se utiliza típicamente la <strong>correlación cruzada</strong> (que no rota el kernel \(180^\circ\)), ya que la gran mayoría de filtros canónicos (Gaussianos, Sobel, Laplacianos) son simétricos o antisimétricos.
+        </p>
+      </div>
+
+      <h3>Filtros de Suavizado (Paso Bajo)</h3>
+      <p>
+        El <strong>filtro Gaussiano bidimensional</strong> es el único operador lineal separable e isotrópico (invariante a la rotación):
+        \[
+          G(x,y) = \frac{1}{2\pi \sigma^2} \exp\left(-\frac{x^2 + y^2}{2\sigma^2}\right)
+        \]
+        La desviación estándar \(\sigma\) controla el grado de desenfoque. Al ser separable, una convolución 2D con un kernel \(K \times K\) (\(\mathcal{O}(K^2)\) operaciones por píxel) se factoriza en dos convoluciones 1D unidimensionales consecutivas (horizontal y vertical, con coste \(\mathcal{O}(2K)\)), reduciendo drásticamente la latencia en tiempo real.
+      </p>
+
+      <h3>Filtros de Gradiente y Detección de Bordes (Paso Alto)</h3>
+      <p>
+        Un borde corresponde a una discontinuidad abrupta en el perfil de intensidad local. El vector gradiente espacial apunta en la dirección de máxima tasa de cambio de luminosidad:
+        \[
+          \nabla f = \begin{bmatrix} G_x \\ G_y \end{bmatrix} = \begin{bmatrix} \frac{\partial f}{\partial x} \\ \frac{\partial f}{\partial y} \end{bmatrix}
+        \]
+        La <strong>magnitud del gradiente</strong> y su <strong>orientación angular</strong> vienen dadas por:
+        \[
+          M(x,y) = \sqrt{G_x^2 + G_y^2} \approx |G_x| + |G_y|, \qquad \alpha(x,y) = \arctan\left(\frac{G_y}{G_x}\right)
+        \]
+        Los <strong>operadores de Sobel</strong> aproximan estas derivadas espaciales mediante matrices \(3 \times 3\) que combinan diferenciación central con suavizado triangular ortogonal para mitigar el ruido:
+        \[
+          S_x = \begin{bmatrix} -1 & 0 & 1 \\ -2 & 0 & 2 \\ -1 & 0 & 1 \end{bmatrix}, \qquad
+          S_y = \begin{bmatrix} -1 & -2 & -1 \\ 0 & 0 & 0 \\ 1 & 2 & 1 \end{bmatrix}
+        \]
+      </p>
+    </section>
+
+    <section>
+      <h2>3.3 El Detector de Bordes de Canny: El Estándar Óptimo</h2>
+      <p>
+        Desarrollado por John F. Canny en 1986, este algoritmo se diseñó a partir de tres criterios matemáticos óptimos: <em>baja tasa de error</em> (no perder bordes reales ni inventar bordes espurios), <em>localización precisa</em> (la distancia entre el borde detectado y el real debe minimizarse) y <em>respuesta única</em> (un borde no debe generar líneas múltiples paralelas).
+      </p>
+
+      <div class="box law">
+        <div class="box-head">Las 4 Etapas del Algoritmo de Canny</div>
+        <ol style="margin:0; padding-left:1.2rem;">
+          <li><strong>Filtrado Gaussiano:</strong> Convolución con \(G(x,y;\sigma)\) para eliminar el ruido de alta frecuencia que perturbaría las derivadas.</li>
+          <li><strong>Cálculo de Magnitud y Dirección del Gradiente:</strong> Convolución con máscaras de Sobel para obtener \(M(x,y)\) y redondear la orientación \(\alpha(x,y)\) a 4 sectores canónicos: \(0^\circ\) (horizontal), \(45^\circ\) (diagonal positiva), \(90^\circ\) (vertical) y \(135^\circ\) (diagonal negativa).</li>
+          <li><strong>Supresión de No-Máximos (Non-Maximum Suppression - NMS):</strong> Adelgaza los bordes gruesos a líneas de 1 píxel de espesor. Para cada píxel, comprueba si su magnitud \(M(x,y)\) es el máximo estricto comparado con sus dos vecinos en la dirección del gradiente. Si no lo es, se anula a cero.</li>
+          <li><strong>Umbralización por Histéresis y Seguimiento de Bordes:</strong> Utiliza dos umbrales \((T_{bajo}, T_{alto})\):
+            <ul>
+              <li>Si \(M(x,y) \ge T_{alto}\), se clasifica como <strong>borde fuerte</strong> inmediato.</li>
+              <li>Si \(M(x,y) < T_{bajo}\), se descarta permanentemente como ruido.</li>
+              <li>Si \(T_{bajo} \le M(x,y) < T_{alto}\), se clasifica como <strong>borde débil</strong> y solo se conserva si está conectado espacialmente (en 8-vecindad) con algún borde fuerte.</li>
+            </ul>
+          </li>
+        </ol>
+      </div>
+
+      <!-- SIMULADOR 3 -->
+      <div class="sim-host" data-sim="sim-convolucion-canny"></div>
+    </section>
+
+    <div class="chapter-nav-footer">
+      <a href="#digitalizacion" class="btn-chap-nav" onclick="window.PERCEPCION.navigateTo('digitalizacion')">
+        <span class="nav-dir">← Anterior</span>
+        <span class="nav-title">Clase 2 · Muestreo, Ruido &amp; Anomalías</span>
+      </a>
+      <a href="#morfologia" class="btn-chap-nav" onclick="window.PERCEPCION.navigateTo('morfologia')">
+        <span class="nav-dir">Siguiente Capítulo →</span>
+        <span class="nav-title">Clase 4 · Morfología Matemática &amp; Análisis Frecuencial</span>
+      </a>
+    </div>
+  </div>
+</template>

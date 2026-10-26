@@ -1,0 +1,114 @@
+<!-- 04-morfologia-frecuencia.html -->
+<template class="chapter-src" data-id="morfologia" data-num="04" data-part="Clase 4 · Formas &amp; Frecuencia" data-title="Morfología Matemática &amp; Análisis en Frecuencia (Fourier 2D)">
+  <div class="chapter-hero">
+    <div class="chapter-tag">Clase 4 · Temas 8 &amp; 9</div>
+    <h1>Morfología Matemática, Elementos Estructurantes &amp; Filtrado en Frecuencia (2D FFT)</h1>
+    <p class="chapter-lead">
+      La morfología matemática proporciona herramientas algebraicas y conjuntistas para procesar formas geométricas, limpiar ruido y conectar regiones estructurales. Complementariamente, el análisis en el dominio de la frecuencia mediante la Transformada de Fourier 2D descompone la escena en frecuencias espaciales, permitiendo filtrar patrones periódicos e interpretar la física de la señal.
+    </p>
+  </div>
+
+  <div class="chapter-body">
+    <section>
+      <h2>4.1 Morfología Matemática (Tema 8)</h2>
+      <p>
+        Formulada originalmente por Georges Matheron y Jean Serra en la Escuela de Minas de París, la morfología matemática modela las imágenes binarias como subconjuntos del espacio discreto bidimensional \(\mathbb{Z}^2\). Su comportamiento queda gobernado por un conjunto sonda de referencia denominado <strong>elemento estructurante (SE)</strong>, definido por su forma, tamaño y punto de anclaje u origen.
+      </p>
+
+      <div class="box def">
+        <div class="box-head">Las Operaciones Fundamentales: Erosión &amp; Dilatación</div>
+        <p>
+          Sea \(A\) la imagen binaria y \(B\) el elemento estructurante:
+        </p>
+        <ul>
+          <li><strong>Erosión (\(A \ominus B\)):</strong>
+            \[
+              A \ominus B = \left\{ z \in \mathbb{Z}^2 \;\middle|\; (B)_z \subseteq A \right\}
+            \]
+            El conjunto de todas las posiciones \(z\) tales que el elemento estructurante trasladado \((B)_z\) está <em>completamente contenido</em> dentro de \(A\). Efecto: Encoge las figuras blancas, elimina objetos más pequeños que \(B\) y ensancha los huecos oscuros.
+          </li>
+          <li><strong>Dilatación (\(A \oplus B\)):</strong>
+            \[
+              A \oplus B = \left\{ z \in \mathbb{Z}^2 \;\middle|\; (\hat{B})_z \cap A \neq \emptyset \right\}
+            \]
+            El conjunto de posiciones donde el elemento estructurante reflejado \(\hat{B}\) trasladado a \(z\) <em>solapa al menos en un píxel</em> con \(A\). Efecto: Expande las figuras blancas, rellena pequeños agujeros negros y conecta componentes próximos.
+          </li>
+        </ul>
+      </div>
+
+      <h3>Operaciones Compuestas: Apertura y Clausura</h3>
+      <p>
+        La erosión y la dilatación no son operaciones inversas. Su combinación secuencial da lugar a dos filtros morfológicos fundamentales:
+      </p>
+      <ul>
+        <li><strong>Apertura morfológica (\(A \circ B = (A \ominus B) \oplus B\)):</strong> Erosión seguida de dilatación. Es <em>antiextensiva</em> (\(A \circ B \subseteq A\)) e <em>idempotente</em> (\((A \circ B) \circ B = A \circ B\)). Suaviza contornos, rompe puentes estrechos (istmos) y elimina picos y ruido impulsivo brillante sin alterar las dimensiones globales de los objetos grandes.</li>
+        <li><strong>Clausura morfológica (\(A \bullet B = (A \oplus B) \ominus B\)):</strong> Dilatación seguida de erosión. Es <em>extensiva</em> (\(A \subseteq A \bullet B\)) e <em>idempotente</em>. Fusiona hendiduras estrechas, rellena agujeros internos y conecta fracturas en bordes continuos.</li>
+      </ul>
+
+      <div class="box law">
+        <div class="box-head">Técnicas Morfológicas Avanzadas</div>
+        <ul>
+          <li><strong>Gradiente Morfológico:</strong> \(g = (A \oplus B) - (A \ominus B)\). Destaca los contornos y límites de los objetos con gran robustez frente a fluctuaciones de intensidad.</li>
+          <li><strong>Transformada Top-Hat (Sombrero de copa blanca):</strong> \(T_{hat}(f) = f - (f \circ b)\). Resta a la imagen original su apertura morfológica. Permite extraer elementos brillantes pequeños aislándolos de un fondo con <em>iluminación no uniforme</em> (por ejemplo, vasos sanguíneos en angiografías o células en microscopía).</li>
+          <li><strong>Transformada Bottom-Hat (Sombrero de copa negra):</strong> \(B_{hat}(f) = (f \bullet b) - f\). Aísla regiones oscuras sobre fondos brillantes variables.</li>
+        </ul>
+      </div>
+
+      <!-- SIMULADOR 4 -->
+      <div class="sim-host" data-sim="sim-morfologia-fft"></div>
+    </section>
+
+    <section>
+      <h2>4.2 Procesamiento de Señales en Frecuencia: La Transformada de Fourier 2D (Tema 9)</h2>
+      <p>
+        El análisis en frecuencia se sustenta en el principio de Jean-Baptiste Joseph Fourier: cualquier función periódica o aperiódica bien comportada puede expresarse como la suma ponderada de senoides y cosenos a distintas frecuencias espaciales.
+      </p>
+
+      <div class="box def">
+        <div class="box-head">Transformada Discreta de Fourier 2D (DFT)</div>
+        <p>
+          Para una imagen digital \(f(x,y)\) de dimensiones \(M \times N\), la DFT bidimensional directa y su inversa vienen dadas por:
+          \[
+            F(u,v) = \sum_{x=0}^{M-1} \sum_{y=0}^{N-1} f(x,y) \exp\left[-j 2\pi \left(\frac{ux}{M} + \frac{vy}{N}\right)\right]
+          \]
+          \[
+            f(x,y) = \frac{1}{MN} \sum_{u=0}^{M-1} \sum_{v=0}^{N-1} F(u,v) \exp\left[j 2\pi \left(\frac{ux}{M} + \frac{vy}{N}\right)\right]
+          \]
+          donde \(u = 0, \dots, M-1\) y \(v = 0, \dots, N-1\) representan las frecuencias espaciales horizontal y vertical.
+        </p>
+      </div>
+
+      <h3>Magnitud, Fase y Centrado del Espectro (fftshift)</h3>
+      <p>
+        Dado que \(F(u,v)\) es una función compleja (\(F(u,v) = R(u,v) + j I(u,v)\)), se analiza mediante:
+      </p>
+      <ul>
+        <li><strong>Espectro de Magnitud (Módulo):</strong> \(|F(u,v)| = \sqrt{R(u,v)^2 + I(u,v)^2}\). Contiene la distribución de energía de las frecuencias espaciales. Típicamente se comprime con escala logarítmica para visualización: \(D(u,v) = c \log(1 + |F(u,v)|)\).</li>
+        <li><strong>Espectro de Fase:</strong> \(\phi(u,v) = \arctan\left(\frac{I(u,v)}{R(u,v)}\right)\). <em>La fase almacena la información geométrica, la posición espacial de los bordes y las formas de la escena</em> (si se altera la fase, la imagen queda completamente irreconocible).</li>
+        <li><strong>Centrado con fftshift:</strong> Multiplicando la imagen espacial por \((-1)^{x+y}\) antes de aplicar la DFT, el origen de frecuencias continuas DC (\(u=0, v=0\)) se desplaza exactamente al centro de la matriz \((M/2, N/2)\).</li>
+      </ul>
+
+      <div class="box law">
+        <div class="box-head">Teorema de la Convolución en Frecuencia</div>
+        <p>
+          La convolución espacial bidimensional equivale a un simple producto punto a punto en el dominio frecuencial:
+          \[
+            f(x,y) * h(x,y) \iff F(u,v) \cdot H(u,v)
+          \]
+          donde \(H(u,v)\) es la función de transferencia del filtro. Esto permite diseñar filtros pasa-bajas (atenuación de altas frecuencias para suavizar), filtros pasa-altas (para realce de bordes) y <strong>filtros notch (de muesca)</strong> para eliminar de raíz interferencias sinusoidales periódicas (moiré) colocando ceros en los picos espectrales correspondientes.
+        </p>
+      </div>
+    </section>
+
+    <div class="chapter-nav-footer">
+      <a href="#espacial" class="btn-chap-nav" onclick="window.PERCEPCION.navigateTo('espacial')">
+        <span class="nav-dir">← Anterior</span>
+        <span class="nav-title">Clase 3 · Preprocesamiento Espacial &amp; Canny</span>
+      </a>
+      <a href="#segmentacion" class="btn-chap-nav" onclick="window.PERCEPCION.navigateTo('segmentacion')">
+        <span class="nav-dir">Siguiente Capítulo →</span>
+        <span class="nav-title">Clase 5 · Segmentación &amp; Momentos Estadísticos</span>
+      </a>
+    </div>
+  </div>
+</template>

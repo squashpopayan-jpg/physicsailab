@@ -1,0 +1,153 @@
+<!-- 97-laboratorio-colab.html -->
+<template class="chapter-src" data-id="colab" data-num="10" data-part="Práctica Computacional" data-title="Laboratorio Python &amp; Google Colab">
+  <div class="chapter-hero">
+    <div class="chapter-tag">Entorno de Programación &amp; Colab</div>
+    <h1>Laboratorio Práctico: Python, OpenCV &amp; Google Colab</h1>
+    <p class="chapter-lead">
+      Siguiendo la <em>Guía Esencial de Prompts, Python y Google Colab</em> del <strong>Ing. Luis Fernando Barajas Ardila</strong>, aquí encontrarás cuadernos ejecutables, snippets optimizados y recomendaciones de ingeniería de prompts para acelerar el desarrollo de proyectos de percepción computacional.
+    </p>
+  </div>
+
+  <div class="chapter-body">
+    <section>
+      <h2>Ingeniería de Prompts para Visión &amp; Código Python</h2>
+      <p>
+        Para obtener código limpio, vectorizado y sin errores en modelos generativos (ChatGPT, Claude, Gemini, Copilot), la estructura óptima recomendada por el docente consta de cuatro elementos esenciales:
+      </p>
+
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:1rem; margin:1.5rem 0 2rem;">
+        <div style="background:var(--surface); border:1px solid var(--rule); border-radius:8px; padding:1rem;">
+          <div style="font-weight:800; color:var(--accent); font-size:0.85rem; margin-bottom:0.25rem;">01. ROL</div>
+          <p style="font-size:0.85rem; margin:0; color:var(--ink-2);">Define la especialidad: <em>"Actúa como un ingeniero senior en visión por computadora e inteligencia artificial..."</em></p>
+        </div>
+        <div style="background:var(--surface); border:1px solid var(--rule); border-radius:8px; padding:1rem;">
+          <div style="font-weight:800; color:var(--accent-2); font-size:0.85rem; margin-bottom:0.25rem;">02. CONTEXTO</div>
+          <p style="font-size:0.85rem; margin:0; color:var(--ink-2);">Establece las condiciones: <em>"Tengo imágenes médicas en escala de grises con ruido impulsivo y bajo contraste..."</em></p>
+        </div>
+        <div style="background:var(--surface); border:1px solid var(--rule); border-radius:8px; padding:1rem;">
+          <div style="font-weight:800; color:#10B981; font-size:0.85rem; margin-bottom:0.25rem;">03. TAREA</div>
+          <p style="font-size:0.85rem; margin:0; color:var(--ink-2);">Declara el objetivo exacto: <em>"Escribe una función en Python usando OpenCV y NumPy que aplique un filtro de mediana 5x5 y ecualización CLAHE..."</em></p>
+        </div>
+        <div style="background:var(--surface); border:1px solid var(--rule); border-radius:8px; padding:1rem;">
+          <div style="font-weight:800; color:#F59E0B; font-size:0.85rem; margin-bottom:0.25rem;">04. RESTRICCIONES</div>
+          <p style="font-size:0.85rem; margin:0; color:var(--ink-2);">Estándar técnico: <em>"Usa exclusivamente código vectorizado sin bucles for lentos e incluye comentarios línea a línea."</em></p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Cuadernos de Laboratorio Listos para Ejecutar</h2>
+
+      <!-- Notebook 1 -->
+      <div class="code-block">
+        <div class="code-header">
+          <span>Notebook 1 · Filtrado Espacial &amp; Cancelación de Ruido (OpenCV)</span>
+          <button type="button" class="btn-code-copy" onclick="copyCode(this)">Copiar</button>
+        </div>
+        <code><span class="sx-com"># ==========================================</span>
+<span class="sx-com"># Práctica 1: Filtrado de Ruido Impulsivo y Gaussiano</span>
+<span class="sx-com"># Docente: Ing. Luis Fernando Barajas Ardila</span>
+<span class="sx-com"># ==========================================</span>
+<span class="sx-kw">import</span> cv2
+<span class="sx-kw">import</span> numpy <span class="sx-kw">as</span> np
+<span class="sx-kw">import</span> matplotlib.pyplot <span class="sx-kw">as</span> plt
+
+<span class="sx-com"># 1. Cargar imagen en escala de grises</span>
+img = cv2.imread(<span class="sx-str">'muestra.jpg'</span>, cv2.IMREAD_GRAYSCALE)
+
+<span class="sx-com"># 2. Inyectar ruido sal y pimienta artificial</span>
+ruido_sp = img.copy()
+prob = <span class="sx-num">0.05</span>
+mask_sal = np.random.rand(*img.shape) < prob / <span class="sx-num">2</span>
+mask_pim = np.random.rand(*img.shape) < prob / <span class="sx-num">2</span>
+ruido_sp[mask_sal] = <span class="sx-num">255</span>
+ruido_sp[mask_pim] = <span class="sx-num">0</span>
+
+<span class="sx-com"># 3. Aplicar Filtro de Mediana (óptimo contra sal y pimienta)</span>
+filtrada_mediana = cv2.medianBlur(ruido_sp, ksize=<span class="sx-num">5</span>)
+
+<span class="sx-com"># 4. Comparar con Filtro de Media (desenfoca los bordes)</span>
+filtrada_media = cv2.blur(ruido_sp, ksize=(<span class="sx-num">5</span>, <span class="sx-num">5</span>))
+
+<span class="sx-com"># 5. Visualizar resultados</span>
+fig, axes = plt.subplots(<span class="sx-num">1</span>, <span class="sx-num">3</span>, figsize=(<span class="sx-num">14</span>, <span class="sx-num">4</span>))
+axes[<span class="sx-num">0</span>].imshow(ruido_sp, cmap=<span class="sx-str">'gray'</span>); axes[<span class="sx-num">0</span>].set_title(<span class="sx-str">'Ruido Sal y Pimienta'</span>)
+axes[<span class="sx-num">1</span>].imshow(filtrada_media, cmap=<span class="sx-str">'gray'</span>); axes[<span class="sx-num">1</span>].set_title(<span class="sx-str">'Filtro Media (Desenfocado)'</span>)
+axes[<span class="sx-num">2</span>].imshow(filtrada_mediana, cmap=<span class="sx-str">'gray'</span>); axes[<span class="sx-num">2</span>].set_title(<span class="sx-str">'Filtro Mediana (Bordes Preservados)'</span>)
+plt.show()</code>
+      </div>
+
+      <!-- Notebook 2 -->
+      <div class="code-block">
+        <div class="code-header">
+          <span>Notebook 2 · Segmentación por Otsu &amp; Evaluación con Ground Truth (scikit-image)</span>
+          <button type="button" class="btn-code-copy" onclick="copyCode(this)">Copiar</button>
+        </div>
+        <code><span class="sx-kw">from</span> skimage.filters <span class="sx-kw">import</span> threshold_otsu
+<span class="sx-kw">from</span> skimage.metrics <span class="sx-kw">import</span> jaccard_score
+
+<span class="sx-com"># 1. Calcular umbral óptimo global con Otsu</span>
+thresh = threshold_otsu(img)
+mascara_predicha = (img >= thresh).astype(np.uint8)
+
+<span class="sx-com"># 2. Cargar máscara Ground Truth de referencia</span>
+ground_truth = cv2.imread(<span class="sx-str">'ground_truth.png'</span>, cv2.IMREAD_GRAYSCALE) > <span class="sx-num">128</span>
+
+<span class="sx-com"># 3. Calcular Coeficiente Dice e Índice de Jaccard (IoU)</span>
+interseccion = np.logical_and(mascara_predicha, ground_truth).sum()
+total_pixeles = mascara_predicha.sum() + ground_truth.sum()
+dice = (<span class="sx-num">2.0</span> * interseccion) / total_pixeles
+iou = jaccard_score(ground_truth.ravel(), mascara_predicha.ravel())
+
+print(<span class="sx-str">f"Umbral de Otsu calculado: {thresh}"</span>)
+print(<span class="sx-str">f"Coeficiente Dice: {dice:.4f}"</span>)
+print(<span class="sx-str">f"Índice Jaccard (IoU): {iou:.4f}"</span>)</code>
+      </div>
+
+      <!-- Notebook 3 -->
+      <div class="code-block">
+        <div class="code-header">
+          <span>Notebook 3 · Textura Haralick GLCM &amp; Local Binary Patterns (LBP)</span>
+          <button type="button" class="btn-code-copy" onclick="copyCode(this)">Copiar</button>
+        </div>
+        <code><span class="sx-kw">from</span> skimage.feature <span class="sx-kw">import</span> graycomatrix, graycoprops, local_binary_pattern
+
+<span class="sx-com"># 1. Matriz de Coocurrencia de Haralick (GLCM) a 4 ángulos</span>
+distancias = [<span class="sx-num">1</span>, <span class="sx-num">3</span>]
+angulos = [<span class="sx-num">0</span>, np.pi/<span class="sx-num">4</span>, np.pi/<span class="sx-num">2</span>, <span class="sx-num">3</span>*np.pi/<span class="sx-num">4</span>]
+glcm = graycomatrix(img, distances=distancias, angles=angulos, levels=<span class="sx-num">256</span>, symmetric=<span class="sx-kw">True</span>, normed=<span class="sx-kw">True</span>)
+
+<span class="sx-com"># 2. Descriptores de Haralick</span>
+contraste = graycoprops(glcm, <span class="sx-str">'contrast'</span>).mean()
+homogeneidad = graycoprops(glcm, <span class="sx-str">'homogeneity'</span>).mean()
+energia = graycoprops(glcm, <span class="sx-str">'energy'</span>).mean()
+
+<span class="sx-com"># 3. Patrones Binarios Locales (LBP Circular)</span>
+radius = <span class="sx-num">2</span>
+n_points = <span class="sx-num">8</span> * radius
+lbp = local_binary_pattern(img, n_points, radius, method=<span class="sx-str">'uniform'</span>)
+
+print(<span class="sx-str">f"Haralick Contraste Promedio: {contraste:.3f}"</span>)
+print(<span class="sx-str">f"Haralick Homogeneidad Promedio: {homogeneidad:.3f}"</span>)
+print(<span class="sx-str">f"Haralick Energía (ASM): {energia:.4f}"</span>)</code>
+      </div>
+
+      <div style="text-align:center; margin:2rem 0;">
+        <a href="https://colab.research.google.com" target="_blank" rel="noopener noreferrer" class="btn-colab" style="font-size:0.95rem; padding:0.6rem 1.5rem;">
+          ⚡ Abrir Google Colab en nueva pestaña
+        </a>
+      </div>
+    </section>
+
+    <div class="chapter-nav-footer">
+      <a href="#formulario" class="btn-chap-nav" onclick="window.PERCEPCION.navigateTo('formulario')">
+        <span class="nav-dir">← Anterior</span>
+        <span class="nav-title">Formulario &amp; Ecuaciones</span>
+      </a>
+      <a href="#test" class="btn-chap-nav" onclick="window.PERCEPCION.navigateTo('test')">
+        <span class="nav-dir">Siguiente Sección →</span>
+        <span class="nav-title">Test Oficial de 40 Preguntas</span>
+      </a>
+    </div>
+  </div>
+</template>

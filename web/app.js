@@ -8830,6 +8830,7 @@ document.addEventListener('DOMContentLoaded', () => {
             { title: 'Faro: Pods de Reacción', desc: 'Manual técnico de taller, firmware ESP32-S3 y planos de ensamble.', link: '/material/1_cursos/faro/manual/dist/index.html', isExternal: true, type: '💡 Hardware & Taller' },
             { title: 'hBN-MC: Simulador Monte Carlo', desc: 'Heteroestructuras 2D y nanoporos de grafeno/hBN.', link: '/material/1_cursos/hBN-MC/index.html', isExternal: true, type: '🔬 Simulación DFT' },
             { title: 'Pruebas Diagnósticas', desc: 'Plataforma institucional de evaluación para colegios y universidades.', link: '/material/1_cursos/diagnosticas/dist/public/index.html', isExternal: true, type: '🏛️ Servicio Académico' },
+            { title: 'Percepción Computacional', desc: 'Visión artificial, Canny, Otsu, Haralick, SIFT, toma de decisiones y test de 40 preguntas.', link: '/material/1_cursos/percepcion/dist/index.html', isExternal: true, type: '👁️ Curso Interactivo' },
             { title: 'Recorrido 3D Departamento de Física', desc: 'Visita virtual interactiva de las instalaciones y laboratorios Unicauca.', link: '/recorrido/recorrido3d.html', isExternal: true, type: '🌐 Recorrido 3D' }
         ];
 

@@ -1,0 +1,193 @@
+<!-- 07-decision-aplicaciones.html -->
+<template class="chapter-src" data-id="decision" data-num="07" data-part="Clase 7 · Inferencia &amp; Casos Reales" data-title="Toma de Decisiones, Métricas ROC &amp; Aplicaciones">
+  <div class="chapter-hero">
+    <div class="chapter-tag">Clase 7 · Temas 14 &amp; 15</div>
+    <h1>Algoritmos de Decisión, Evaluación (Curvas ROC/AUC) &amp; Aplicaciones Contemporáneas</h1>
+    <p class="chapter-lead">
+      La etapa final del pipeline de percepción computacional transforma los vectores de características en conclusiones operativas: clasificar una muestra, detectar una anomalía o guiar a un vehículo autónomo. En esta clase final formalizamos los clasificadores de patrones, las matrices de confusión, la evaluación rigurosa con curvas ROC y las grandes aplicaciones en biometría y conducción autónoma.
+    </p>
+  </div>
+
+  <div class="chapter-body">
+    <section>
+      <h2>7.1 Algoritmos de Decisión y Reconocimiento de Patrones (Tema 14)</h2>
+      <p>
+        Dado un vector de características extraído de una imagen o señal \(\mathbf{x} = [x_1, x_2, \dots, x_d]^T \in \mathbb{R}^d\), la tarea del clasificador es asignarle una etiqueta de clase categórica \(y \in \{C_1, C_2, \dots, C_K\}\) minimizando el riesgo de error bayesiano.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Algoritmo</th>
+              <th>Principio Matemático</th>
+              <th>Ventajas</th>
+              <th>Limitaciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>k-NN (Vecinos más Cercanos)</strong></td>
+              <td>Clasifica por votación mayoritaria de los \(k\) vectores de entrenamiento más cercanos según distancia euclídea \(\|\mathbf{x} - \mathbf{x}_i\|_2\).</td>
+              <td>No paramétrico, sin fase de entrenamiento explícita, fronteras de decisión no lineales complejas.</td>
+              <td>Coste computacional alto en inferencia (\(\mathcal{O}(N \cdot d)\)), sensible a la maldición de la dimensionalidad y al escalado.</td>
+            </tr>
+            <tr>
+              <td><strong>SVM (Support Vector Machines)</strong></td>
+              <td>Maximiza el margen geométrico entre clases encontrando el hiperplano óptimo: \(\min \frac{1}{2}\|\mathbf{w}\|^2 + C \sum \xi_i\). Emplea truco del kernel (RBF / Gaussiano).</td>
+              <td>Excelente capacidad de generalización teórica, robusto frente a sobreajuste en espacios de alta dimensionalidad.</td>
+              <td>Elección sensible de hiperparámetros (\(C, \gamma\)), entrenamiento cuadrático \(\mathcal{O}(N^2)\) en grandes volúmenes de datos.</td>
+            </tr>
+            <tr>
+              <td><strong>Árboles de Decisión &amp; Random Forest</strong></td>
+              <td>Partición recursiva del espacio de características maximizando la ganancia de información (entropía de Shannon) o índice de Gini.</td>
+              <td>Altamente explicables e interpretables por humanos, manejan variables numéricas y categóricas sin normalizar.</td>
+              <td>Propensos al sobreajuste si no se podan; los bosques aleatorios corrigen esto promediando cientos de árboles no correlacionados.</td>
+            </tr>
+            <tr>
+              <td><strong>Redes Neuronales (MLP &amp; CNN)</strong></td>
+              <td>Composiciones de funciones afines y no lineales entrenadas mediante descenso de gradiente estocástico y retropropagación (backpropagation).</td>
+              <td>Aprenden representaciones y características directamente de los píxeles crudos (end-to-end), estado del arte en visión.</td>
+              <td>Demandan millones de parámetros y GPUs, naturaleza de "caja negra" con escasa explicabilidad analítica.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Matriz de Confusión y Métricas de Rendimiento</h3>
+      <p>
+        Para un problema de clasificación binaria (donde la clase positiva representa, por ejemplo, la presencia de un defecto o de un rostro), se construye la <strong>Matriz de Confusión</strong>:
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th></th>
+              <th>Condición Real Positiva (\(P\))</th>
+              <th>Condición Real Negativa (\(N\))</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Predicción Positiva</strong></td>
+              <td><strong>Verdadero Positivo (\(TP\))</strong>: Acierto</td>
+              <td><strong>Falso Positivo (\(FP\))</strong>: Error Tipo I (Falsa Alarma)</td>
+            </tr>
+            <tr>
+              <td><strong>Predicción Negativa</strong></td>
+              <td><strong>Falso Negativo (\(FN\))</strong>: Error Tipo II (Pérdida / Falso Rechazo)</td>
+              <td><strong>Verdadero Negativo (\(TN\))</strong>: Rechazo Correcto</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="box law">
+        <div class="box-head">Métricas Clave de Evaluación Cuantitativa</div>
+        <ul>
+          <li><strong>Exactitud (Accuracy):</strong>
+            \[
+              \text{Accuracy} = \frac{TP + TN}{TP + TN + FP + FN}
+            \]
+            <em>Precaución:</em> Resulta engañosa cuando las clases están fuertemente desbalanceadas (e.g. \(99\%\) sanos y \(1\%\) enfermos).
+          </li>
+          <li><strong>Sensibilidad / Recall / Tasa de Verdaderos Positivos (TPR):</strong>
+            \[
+              \text{Recall} = \frac{TP}{TP + FN}
+            \]
+            Proporción de casos positivos reales que fueron identificados correctamente. Vital en medicina y seguridad.
+          </li>
+          <li><strong>Precisión (Valor Predictivo Positivo):</strong>
+            \[
+              \text{Precision} = \frac{TP}{TP + FP}
+            \]
+            De todos los que el sistema predijo como positivos, ¿cuántos lo eran realmente?
+          </li>
+          <li><strong>F1-Score:</strong> Media armónica entre Precisión y Recall (balance óptimo):
+            \[
+              F1 = 2 \cdot \frac{\text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}} = \frac{2 TP}{2 TP + FP + FN}
+            \]
+          </li>
+          <li><strong>Curva ROC y Área bajo la Curva (AUC):</strong> Grafica la Sensibilidad (\(TPR\)) frente a la Tasa de Falsos Positivos (\(FPR = 1 - \text{Especificidad} = \frac{FP}{FP + TN}\)) al variar el umbral de decisión continuo \(\tau \in [0, 1]\). Un clasificador aleatorio tiene \(\text{AUC} = 0.5\); un clasificador perfecto alcanza \(\text{AUC} = 1.0\).
+          </li>
+        </ul>
+      </div>
+
+      <!-- SIMULADOR 7 -->
+      <div class="sim-host" data-sim="sim-decision-roc"></div>
+    </section>
+
+    <section>
+      <h2>7.2 Aplicaciones Actuales del Tratamiento de la Señal (Tema 15)</h2>
+      <p>
+        La integración sinérgica de sensores avanzados y algoritmos de percepción ha revolucionado dos industrias estratégicas:
+      </p>
+
+      <h3>1. Biometría Computacional</h3>
+      <ul>
+        <li><strong>Reconocimiento Facial:</strong> Evolucionó desde los métodos lineales de subespacios (<em>Eigenfaces</em> mediante descomposición PCA del espacio de covarianza, y <em>Fisherfaces</em> mediante Análisis Discriminante Lineal LDA) hasta las redes neuronales profundas siamesas y funciones de pérdida de margen angular (<em>ArcFace, CosFace</em>), capaces de proyectar rostros en esferas de \(512\) dimensiones donde la distancia angular codifica la identidad con independencia de peinado, pose, barba o envejecimiento.</li>
+        <li><strong>Reconocimiento de Iris:</strong> El algoritmo de John Daugman proyecta la textura del iris en coordenadas polares pseudo-adimensionales y aplica filtros de Gabor 2D multiescala, cuantificando la fase de salida en un <strong>IrisCode binario de 2048 bits</strong>. La comparación entre dos códigos de iris se realiza en nanosegundos mediante distancia de Hamming (\(XOR\)), con una probabilidad de falsa aceptación menor a \(1\) en \(10^9\).</li>
+        <li><strong>Huella Dactilar:</strong> Detección y emparejamiento de <em>minucias</em> locales (bifurcaciones y terminaciones de crestas papilares) con grafos topológicos invariantes.</li>
+      </ul>
+
+      <h3>2. Vehículos Autónomos y Fusión Sensorial (Self-Driving Cars)</h3>
+      <p>
+        Ningún sensor individual es suficiente para garantizar seguridad crítica en automoción. La percepción autónoma se fundamenta en la <strong>fusión sensorial heterogénea</strong>:
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Sensor</th>
+              <th>Modalidad</th>
+              <th>Ventajas Operativas</th>
+              <th>Vulnerabilidades Ambientales</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Cámaras RGB Estéreo</strong></td>
+              <td>Pasivo (Luz visible)</td>
+              <td>Alta resolución espacial y cromática, lectura de señales viales y semáforos, bajo coste.</td>
+              <td>Cegadas por sol frontal directo, inoperantes en niebla densa o noche cerrada.</td>
+            </tr>
+            <tr>
+              <td><strong>LiDAR 3D (ToF)</strong></td>
+              <td>Activo (Láser IR 905/1550 nm)</td>
+              <td>Nubes de puntos 3D de precisión milimétrica, medición directa de distancia y reflectividad.</td>
+              <td>Atenuación severa en lluvia fuerte o nieve (dispersión óptica), elevado coste unitario.</td>
+            </tr>
+            <tr>
+              <td><strong>Radar de Ondas Milimétricas</strong></td>
+              <td>Activo (77 GHz)</td>
+              <td>Inmune a niebla, polvo, lluvia y oscuridad; mide velocidad instantánea por efecto Doppler.</td>
+              <td>Baja resolución angular, reflexiones fantasma por objetos metálicos en el entorno.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="box warn">
+        <div class="box-head">Retos Abiertos: Ataques Adversarios &amp; Casos Esquina (Edge Cases)</div>
+        <p>
+          Los sistemas modernos de percepción basados en Deep Learning son vulnerables a <strong>ataques adversarios</strong>: modificaciones microscópicas imperceptibles al ojo humano añadidas a una imagen pueden provocar que una red neuronal clasifique una señal de "STOP" como una de "Límite de Velocidad 80 km/h" con un \(99\%\) de confianza.
+        </p>
+        <p>
+          Garantizar la <em>robustez certificada</em>, la <em>explicabilidad algorítmica</em> y la redundancia con validación física clásica es la frontera activa de investigación del tratamiento digital de señales e inteligencia artificial.
+        </p>
+      </div>
+    </section>
+
+    <div class="chapter-nav-footer">
+      <a href="#textura" class="btn-chap-nav" onclick="window.PERCEPCION.navigateTo('textura')">
+        <span class="nav-dir">← Anterior</span>
+        <span class="nav-title">Clase 6 · Textura Haralick &amp; SIFT</span>
+      </a>
+      <a href="#aulas" class="btn-chap-nav" onclick="window.PERCEPCION.navigateTo('aulas')">
+        <span class="nav-dir">Siguiente Sección →</span>
+        <span class="nav-title">Aulas Virtuales Interactivas (Netlify)</span>
+      </a>
+    </div>
+  </div>
+</template>
