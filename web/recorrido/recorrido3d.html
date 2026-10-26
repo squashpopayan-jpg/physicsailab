@@ -593,7 +593,7 @@ const ZEND=CW+22, XEND=84;
 const GY=-1.6;                    // nivel del patio/terreno (el edificio está elevado)
 const FL2=4.4;                    // nivel del segundo piso
 const TR=.55, NST=11, RISE=(FL2-GY)/NST;   // gradas exteriores: huella, escalones y alzada (desde el patio)
-const labs=[['Lab. de Mecánica 1',8],['Lab. de Mecánica 2',22],['Lab. de Fluidos',36],['Sala 4 · Pasillo (lado izquierdo)',50]];
+const labs=[['Lab. de Mecánica 1',8],['Lab. de Mecánica 2',22],['Lab. de Fluidos',36]];
 const SIS={x:C2b,z:CW,w:12,d:10};
 const DOOR={z0:2.5,z1:5.5};
 // gradas EXTERIORES rectas al 2.º piso, pegadas al muro norte, suben hacia el este desde el patio; el muro se abre para entrar desde el pasillo
@@ -623,7 +623,7 @@ function gy(x,z){
 const midC2=(C2a+C2b)/2;
 const places=[
  ['Entrega',4,3.8,-Math.PI/2],['Mecánica 1',15,CW+6,Math.PI],['Mecánica 2',29,CW+6,Math.PI],
- ['Fluidos',43,CW+6,Math.PI],['Sala 4 (Pasillo)',57,CW+2.5,Math.PI],['Distribución de grupos',midC2,3.6,Math.PI],
+ ['Fluidos',43,CW+6,Math.PI],['Pasillo Sistemas (Est. 4)',75,3.2,0],['Distribución de grupos',midC2,3.6,Math.PI],
  ['Sistemas',SIS.x+6,CW+5,Math.PI],['Salida',midC2,ZEND-2.5,0],['Patio',-7,4,-Math.PI/2],['Pasillo norte',midC2,-18,0]];
 function where(x,z,y){
  if(x>=C2a&&x<=C2b&&z<0)return"Pasillo norte";
@@ -633,6 +633,8 @@ function where(x,z,y){
  if(y>2)return'Segundo piso (por modelar)';
  for(const G of [GE,GD])if(z<0&&x>=G.x0&&x<=G.xl)return'Gradas exteriores al 2.º piso ('+(G===GE?'Entrega':'Distribución')+')';
  if(x>=SIS.x&&x<=SIS.x+SIS.w&&z>=CW&&z<=SIS.z+SIS.d)return'Sala de Sistemas';
+ if(x>=C2b&&x<=XEND&&z>=0&&z<=CW)return'Estación 4 · Pasillo (frente a Sistemas)';
+ if(x>=50&&x<=64&&z>=CW&&z<=CW+14)return'Sala auxiliar (no habilitada)';
  for(const [n,lx] of labs)if(x>=lx&&x<lx+14&&z>=CW&&z<=CW+14)return n;
  if(x<8&&z<8)return'Entrega de estudiantes';
  if(x>=C2a&&x<=C2b&&z<=CW)return'Distribución de grupos';
@@ -680,12 +682,12 @@ plane(-10,-9,14,-2.2,GY+0.02,mStone);plane(60,-9,XEND,-2.2,GY+0.02,mStone);     
 plane(-10,-2.2,-3.2,9,GY+0.02,mStone);                               // patio frente a la puerta
 for(let i=1;i<=4;i++)bx(-.8*i,GY,2.3,-.8*(i-1),-.4*i,5.7,mStep);    // gradas de la puerta: de frente hacia el patio
 // plintos del edificio
-[[0,WZ,GE.x0,0],[0,0,XEND,CW],[C2a,0,C2b,ZEND],[0,0,8,8],...labs.map(([n,x])=>[x,CW,x+14,CW+14]),[SIS.x,SIS.z,SIS.x+SIS.w,SIS.z+SIS.d]]
+[[0,WZ,GE.x0,0],[0,0,XEND,CW],[C2a,0,C2b,ZEND],[0,0,8,8],...labs.map(([n,x])=>[x,CW,x+14,CW+14]),[50,CW,64,CW+14],[SIS.x,SIS.z,SIS.x+SIS.w,SIS.z+SIS.d]]
  .forEach(r=>bx(r[0],GY,r[1],r[2],0,r[3],M(0xa7a39a)));
 
 // suelos
 plane(0,WZ,GE.x0,0,0.01,mFloorC);plane(0,0,XEND,CW,0.01,mFloorC);plane(C2a,0,C2b,ZEND,0.01,mFloorC);plane(0,0,8,8,0.01,mFloorC);
-labs.forEach(([n,x])=>plane(x,CW,x+14,CW+14,0.01,mFloorL));plane(SIS.x,SIS.z,SIS.x+SIS.w,SIS.z+SIS.d,0.01,mFloorS);
+labs.forEach(([n,x])=>plane(x,CW,x+14,CW+14,0.01,mFloorL));plane(50,CW,64,CW+14,0.01,mFloorL);cr(50,CW,64,CW+14);plane(SIS.x,SIS.z,SIS.x+SIS.w,SIS.z+SIS.d,0.01,mFloorS);
 plane(C2a,0,C2b,CW,0.03,M(0xf5c9b0));
 plane(C2a-.5,ZEND-.6,C2b+.5,ZEND,0.03,M(0x2fa866));
 // techos (con huecos para las gradas)
@@ -721,6 +723,7 @@ leaf.geometry.translate(0,0,(DOOR.z1-DOOR.z0)/2);leaf.position.set(-.1,(H-.55)/2
 // resto de muros
 wall(XEND,0,XEND,CW);wall(SIS.x+SIS.w,CW,XEND,CW);
 labs.forEach(([n,x])=>{wall(x,CW,x,CW+14);wall(x+14,CW,x+14,CW+14);wall(x,CW+14,x+14,CW+14);wall(x,CW,x+6,CW);wall(x+8,CW,x+14,CW)});
+ wall(50,CW,50,CW+14);wall(64,CW,64,CW+14);wall(50,CW+14,64,CW+14);wall(50,CW,56,CW);wall(58,CW,64,CW);box(2,.7,.34,57,H-.35,CW,mLint);label('No habilitado',4.8,1.1,57,H-1.35,LZ,'rgba(40,48,56,.85)',Math.PI);
 wall(SIS.x,CW,SIS.x+5,CW);wall(SIS.x+7,CW,SIS.x+SIS.w,CW);wall(SIS.x,CW,SIS.x,CW+SIS.d);wall(SIS.x+SIS.w,CW,SIS.x+SIS.w,CW+SIS.d);wall(SIS.x,CW+SIS.d,SIS.x+SIS.w,CW+SIS.d);
 wall(C2a,CW+14,C2a,ZEND);wall(C2b,CW+SIS.d,C2b,ZEND);
 
@@ -755,6 +758,7 @@ const mLint=M(0x4b5d70),LZ=CW-.22;
 labs.forEach(([n,x])=>{box(2,.7,.34,x+7,H-.35,CW,mLint);label(n,6.2,1.4,x+7,H-1.35,LZ,null,Math.PI)});
 box(2,.7,.34,SIS.x+6,H-.35,CW,mLint);label('Sala de Sistemas',6.2,1.4,SIS.x+6,H-1.35,LZ,null,Math.PI);
 label('Entrega de estudiantes',6.6,1.1,4,H-1,WZ+.17);
+label('Estación 4 · Pasillo de Sistemas',6.4,1.3,69.2,H-1.3,2.5,'rgba(224,101,43,.95)',-Math.PI/2);label('Estación 4 · Pasillo de Sistemas',6.4,1.3,69.25,H-1.3,2.5,'rgba(224,101,43,.95)',Math.PI/2);
 label('Distribución de grupos',6.6,1.2,midC2,H-.9,3.6,'rgba(160,70,25,.95)',Math.PI);
 label('Distribución de grupos',6.6,1.2,midC2,H-.9,3.58,'rgba(160,70,25,.95)',0);
 label('SALIDA',4.2,1.3,midC2,H-1,ZEND-.2,'rgba(30,125,75,.95)',Math.PI);
@@ -816,7 +820,7 @@ const CFG={N:80,NE:4,PX:2,D1:10,T1:3,S:9,T2:2,F:3,E:4};          // N estudiante
 try{const c=JSON.parse(localStorage.getItem('fisicaTourCFG')||'null');if(c)Object.keys(CFG).forEach(k=>{if(c[k]>0)CFG[k]=c[k]})}catch(e){}
 CFG.NE=CFG.NE>=5?5:4;CFG.PX=CFG.PX>=2?2:1;CFG.N=Math.max(8,Math.min(160,Math.round(CFG.N)));
 const NG=4,GSZ=g=>Math.floor(CFG.N/NG)+(g<CFG.N%NG?1:0);
-const RN=['Sala 1 · Mecánica 1','Sala 2 · Mecánica 2','Sala 3 · Fluidos','Sala 4 · Pasillo (lado izquierdo)'],RSH=['Sala 1','Sala 2','Sala 3','Sala 4 (Pasillo)'];
+const RN=['Sala 1 · Mecánica 1','Sala 2 · Mecánica 2','Sala 3 · Fluidos','Estación 4 · Pasillo (frente a Sistemas)'],RSH=['Sala 1','Sala 2','Sala 3','Estación 4 (Pasillo)'];
 const GRP=[{n:'A',c:0xe53935,css:'#e53935'},{n:'B',c:0x1e88e5,css:'#1e88e5'},{n:'C',c:0x43a047,css:'#43a047'},{n:'D',c:0xfdd835,css:'#fdd835'}];
 const SPD=1.7;                                       // velocidad al caminar (pasos/s)
 // ---- nombres editables (experimentos y personas) ----
@@ -851,30 +855,52 @@ const DANC=[[65.2,1.0],[67.8,1.0],[65.2,3.6],[67.8,3.6]];
 const EANC=[[2.4,-.4],[6.4,-.4],[2.4,2.8],[6.4,2.8]];
 const EXITP=[[-6,2.9],[-8.4,2.9],[-6,5.1],[-8.4,5.1]];
 const OFF=(s,n)=>{const rows=Math.ceil(n/5);return[((s%5)-2)*.5,(Math.floor(s/5)-(rows-1)/2)*.5]};
-const RM=[0,1,2,3].map(r=>{const x0=8+14*r,fl=r===2,aisle=fl?CW+5.95:CW+6.3,AE=fl?[x0+1.3,aisle]:[x0+7,aisle];
- const inPts=[[x0+7,CW-.2],[x0+7,CW+1.5],...(fl?[[x0+1.3,CW+1.5]]:[]),AE];
- const sp=[];
- const add=(pos,f,tc,eg,ef,an,pre)=>sp.push({pos,f,tc,eg,ef,an:an||[pos[0],aisle],pre:pre||[pos]});
- if(!fl){
-  add([x0+4.6,CW+5.8],Math.PI,[x0+4.6,CW+4.3],[x0+4.6,CW+2.7],0);
-  add([x0+9.6,CW+5.8],Math.PI,[x0+9.6,CW+4.3],[x0+9.6,CW+2.7],0);
-  add([x0+9.6,CW+6.9],0,[x0+9.6,CW+8.3],[x0+9.6,CW+9.9],Math.PI);
-  add([x0+4.6,CW+6.9],0,[x0+4.6,CW+8.3],[x0+4.6,CW+9.9],Math.PI);
-  add([x0+7,CW+9.8],0,[x0+7,CW+11.2],[x0+7,CW+12.6],Math.PI,[x0+7,aisle],[[x0+7,CW+9.8]]);
+const RM=[0,1,2,3].map(r=>{
+ if(r<3){
+  const x0=8+14*r,fl=r===2,aisle=fl?CW+5.95:CW+6.3,AE=fl?[x0+1.3,aisle]:[x0+7,aisle];
+  const inPts=[[x0+7,CW-.2],[x0+7,CW+1.5],...(fl?[[x0+1.3,CW+1.5]]:[]),AE];
+  const sp=[];
+  const add=(pos,f,tc,eg,ef,an,pre)=>sp.push({pos,f,tc,eg,ef,an:an||[pos[0],aisle],pre:pre||[pos]});
+  if(!fl){
+   add([x0+4.6,CW+5.8],Math.PI,[x0+4.6,CW+4.3],[x0+4.6,CW+2.7],0);
+   add([x0+9.6,CW+5.8],Math.PI,[x0+9.6,CW+4.3],[x0+9.6,CW+2.7],0);
+   add([x0+9.6,CW+6.9],0,[x0+9.6,CW+8.3],[x0+9.6,CW+9.9],Math.PI);
+   add([x0+4.6,CW+6.9],0,[x0+4.6,CW+8.3],[x0+4.6,CW+9.9],Math.PI);
+   add([x0+7,CW+9.8],0,[x0+7,CW+11.2],[x0+7,CW+12.6],Math.PI,[x0+7,aisle],[[x0+7,CW+9.8]]);
+  }else{
+   add([x0+4.5,CW+5.5],Math.PI,[x0+4.5,CW+3.9],[x0+4.5,CW+2.4],0);
+   add([x0+9.5,CW+5.5],Math.PI,[x0+9.5,CW+3.9],[x0+9.5,CW+2.4],0);
+   add([x0+9.5,CW+6.4],0,[x0+9.5,CW+7.9],[x0+9.5,CW+9.4],Math.PI);
+   add([x0+4.5,CW+6.4],0,[x0+4.5,CW+7.9],[x0+4.5,CW+9.4],Math.PI);
+   add([x0+7,CW+9.9],0,[x0+7,CW+11.3],[x0+7,CW+12.7],Math.PI,AE,[[x0+1.3,CW+9.9],[x0+7,CW+9.9]]);
+  }
+  return{r,x0,fl,isPasillo:false,aisle,AE,inPts,spots:sp.slice(0,CFG.NE),gspot:[x0+2.3,CW+1.7],ct:[x0+11.8,CW+1.3]};
  }else{
-  add([x0+4.5,CW+5.5],Math.PI,[x0+4.5,CW+3.9],[x0+4.5,CW+2.4],0);
-  add([x0+9.5,CW+5.5],Math.PI,[x0+9.5,CW+3.9],[x0+9.5,CW+2.4],0);
-  add([x0+9.5,CW+6.4],0,[x0+9.5,CW+7.9],[x0+9.5,CW+9.4],Math.PI);
-  add([x0+4.5,CW+6.4],0,[x0+4.5,CW+7.9],[x0+4.5,CW+9.4],Math.PI);
-  add([x0+7,CW+9.9],0,[x0+7,CW+11.3],[x0+7,CW+12.7],Math.PI,AE,[[x0+1.3,CW+9.9],[x0+7,CW+9.9]]);
+  // Estación 4 en el Pasillo frente a Sala de Sistemas (x: 69.5 a 83.5)
+  const x0=69.0,aisle=3.2,AE=[71.5,aisle];
+  const inPts=[[69.0,aisle],[71.0,aisle]];
+  const sp=[];
+  const add=(pos,f,tc,eg,ef,an,pre)=>sp.push({pos,f,tc,eg,ef,an:an||[pos[0],aisle],pre:pre||[pos]});
+  add([71.5,3.0],0,[71.5,1.35],[71.5,0.5],Math.PI,[71.5,aisle],[[71.5,3.0]]);
+  add([74.5,3.0],0,[74.5,1.35],[74.5,0.5],Math.PI,[74.5,aisle],[[74.5,3.0]]);
+  add([77.5,3.0],0,[77.5,1.35],[77.5,0.5],Math.PI,[77.5,aisle],[[77.5,3.0]]);
+  add([80.5,3.0],0,[80.5,1.35],[80.5,0.5],Math.PI,[80.5,aisle],[[80.5,3.0]]);
+  add([82.6,3.0],0,[82.6,1.35],[82.6,0.5],Math.PI,[82.6,aisle],[[82.6,3.0]]);
+  return{r,x0,fl:false,isPasillo:true,aisle,AE,inPts,spots:sp.slice(0,CFG.NE),gspot:[69.8,3.8],ct:[69.2,1.8]};
  }
- return{r,x0,fl,aisle,AE,inPts,spots:sp.slice(0,CFG.NE),gspot:[x0+2.3,CW+1.7],ct:[x0+11.8,CW+1.3]}});
-const dX=r=>RM[r].x0+7;
+});
+const dX=r=>r===3?69.0:RM[r].x0+7;
 const pathRoom=(r,i,j)=>{const A=RM[r].spots[i],B=RM[r].spots[j];return[A.pos,...A.pre.slice(0,-1).reverse(),A.an,B.an,...B.pre]};
-const roomOut=(r,i,lane)=>{const A=RM[r].spots[i];return[A.pos,...A.pre.slice(0,-1).reverse(),A.an,...RM[r].inPts.slice().reverse(),[dX(r),lane]]};
-const roomIn=(r,i,lane)=>{const B=RM[r].spots[i];return[[dX(r),lane],...RM[r].inPts,B.an,...B.pre]};
-const guideIn=(r,lane)=>[[dX(r),lane],[dX(r),CW-.2],[dX(r),CW+1.5],RM[r].gspot];
-const guideOut=(r,lane)=>[RM[r].gspot,[dX(r),CW+1.5],[dX(r),CW-.2],[dX(r),lane]];
+const roomOut=(r,i,lane)=>{const A=RM[r].spots[i];
+ if(r===3) return [A.pos,...A.pre.slice(0,-1).reverse(),A.an,[69.0,lane]];
+ return [A.pos,...A.pre.slice(0,-1).reverse(),A.an,...RM[r].inPts.slice().reverse(),[dX(r),lane]];
+};
+const roomIn=(r,i,lane)=>{const B=RM[r].spots[i];
+ if(r===3) return [[69.0,lane],B.an,...B.pre];
+ return [[dX(r),lane],...RM[r].inPts,B.an,...B.pre];
+};
+const guideIn=(r,lane)=>r===3?[[69.0,lane],RM[r].gspot]:[[dX(r),lane],[dX(r),CW-.2],[dX(r),CW+1.5],RM[r].gspot];
+const guideOut=(r,lane)=>r===3?[RM[r].gspot,[69.0,lane]]:[RM[r].gspot,[dX(r),CW+1.5],[dX(r),CW-.2],[dX(r),lane]];
 // ---- keyframes ----
 function KF(){const kf=[];
  const P2=(t,x,z,f)=>{const l=kf[kf.length-1];if(l&&t<=l.t)t=l.t+.001;kf.push({t,x,z,f})};
@@ -979,11 +1005,13 @@ staff('recepcion',68.2,2.3,0,1.05,'rec.3','Reparto · apoyo','(nombre)');
 staff('entrega',4.4,1.2,Math.PI/2,1.1,'ent.0','Entrega de estudiantes','(nombre)');
 staff('entrega',4.4,2.5,Math.PI/2,1.05,'ent.1','Refrigerios · apoyo','(nombre)');
 RM.forEach(R3=>{
- staff('control',R3.ct[0],R3.ct[1],0,1.1,'ctrl.'+R3.r,'Control · '+RSH[R3.r],'(nombre)');
- staff('control',R3.ct[0]+1.3,R3.ct[1],0,1.05,'ctrl_aux.'+R3.r,'Apoyo · '+RSH[R3.r],'(nombre)');
+ staff('control',R3.ct[0],R3.ct[1],R3.r===3?Math.PI/2:0,1.1,'ctrl.'+R3.r,'Control · '+RSH[R3.r],'(nombre)');
+ staff('control',R3.ct[0]+(R3.r===3?0:1.3),R3.ct[1]+(R3.r===3?.9:0),R3.r===3?Math.PI/2:0,1.05,'ctrl_aux.'+R3.r,'Apoyo · '+RSH[R3.r],'(nombre)');
  R3.spots.forEach((s,k)=>{
-  if(k===4)addTable(s.tc[0],s.tc[1],R3.fl?mTableF:mTable);
-  const T0=makeTag('Sala '+(R3.r+1)+' · Exp. '+(k+1),nget('ex.'+R3.r+'.'+k)||'(nombre del experimento)','rgba(20,32,44,.94)','#fff','#e0652b',3.8);
+  // En pasillo se agregan todas las mesas explícitamente; en salas cerradas la mesa 5 si k===4
+  if(R3.r===3 || k===4) addTable(s.tc[0],s.tc[1],R3.fl?mTableF:mTable);
+  const tagTitle = (R3.r===3 ? 'Estación 4' : 'Sala '+(R3.r+1)) + ' · Exp. '+(k+1);
+  const T0=makeTag(tagTitle,nget('ex.'+R3.r+'.'+k)||'(nombre del experimento)','rgba(20,32,44,.94)','#fff','#e0652b',3.8);
   T0.sp.position.set(s.tc[0],2.75,s.tc[1]);scene.add(T0.sp);T0.ref='ex.'+R3.r+'.'+k;T0.kind='exp';T0.ph='(nombre del experimento)';TAGS.push(T0);
   const xs=CFG.PX>=3?[-.65,0,.65]:(CFG.PX===2?[-.55,.55]:[0]);
   xs.forEach((dx,p)=>staff('expositor',s.eg[0]+dx,s.eg[1],s.ef,1.05,'expo.'+R3.r+'.'+k+'.'+p,'Expositor '+(p+1)+' · Exp. '+(k+1),'(nombre)'))})});
@@ -999,7 +1027,7 @@ GRP.forEach((G,g)=>{const R2=ROLES.guia;
 // ---- letreros de cronómetro en cada sala ----
 const sprites=[0,1,2,3].map(i=>{const c=document.createElement('canvas');c.width=360;c.height=150;
  const tx=new THREE.CanvasTexture(c);const m=new THREE.Mesh(new THREE.PlaneGeometry(3.8,1.58),new THREE.MeshBasicMaterial({map:tx,transparent:true,side:THREE.DoubleSide}));
- m.position.set(RM[i].ct[0],3.4,RM[i].ct[1]);scene.add(m);return{c,tx,last:''}});
+ m.position.set(RM[i].ct[0],3.4,RM[i].ct[1]);if(i===3){m.rotation.y=-Math.PI/2;}scene.add(m);return{c,tx,last:''}});
 // ---- reloj y estado ----
 const SIM={t:0,play:false,speed:20,target:null};
 const mmss=s=>{s=Math.max(0,Math.round(s));return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')};
