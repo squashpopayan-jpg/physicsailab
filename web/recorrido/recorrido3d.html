@@ -1771,32 +1771,37 @@ function staff(role,x,z,f,scale,nameRef,l1,ph,tagW,tagH,tagY){
  T0.ref=nameRef;T0.l1x=l1;T0.ph=ph;TAGS.push(T0);
  return addAgent(role,fig,{static:true,x,z,mini:R2.css,tag:T0,sp:T0.sp,nameRef})}
 const addTable=(x,z,mat)=>{box(2.2,.1,1.6,x,1.12,z,mat);[[-.9,-.6],[.9,-.6],[-.9,.6],[.9,.6]].forEach(([p,q])=>box(.1,1.1,.1,x+p,.55,z+q,mat))};
-// ---- personas fijas ----
-staff('recepcion',66.5,ZEND-5.5,0,1.1,'rec.0','Recepción · llegada','(nombre)');
-staff('recepcion',68.2,ZEND-5.5,0,1.05,'rec.2','Recepción · apoyo','(nombre)');
-staff('recepcion',66.5,2.3,0,1.1,'rec.1','Reparto de grupos','(nombre)');
-staff('recepcion',68.2,2.3,0,1.05,'rec.3','Reparto · apoyo','(nombre)');
-staff('entrega',4.4,1.2,Math.PI/2,1.1,'ent.0','Entrega de estudiantes','(nombre)');
-staff('entrega',4.4,2.5,Math.PI/2,1.05,'ent.1','Entrega · Relevo','(nombre)');
+// ---- personas fijas (dotación exacta del recorrido) ----
+// 2 personas en recepción y reparto: 1 en Salida Sur (recibe) y 1 en Cruce de Pasillos (reparte)
+staff('recepcion',66.5,ZEND-5.5,0,1.1,'rec.0','Recepción (Llegada)','(nombre)',2.2,0.65,2.75);
+staff('recepcion',66.5,2.3,0,1.1,'rec.1','Reparto de grupos','(nombre)',2.2,0.65,2.75);
+
+// 1 persona en la entrega de estudiantes
+staff('entrega',4.4,1.8,Math.PI/2,1.1,'ent.0','Entrega de estudiantes','(nombre)',2.2,0.65,2.75);
+
+// 1 persona por sala controlando el tiempo en sala (cuidador del tiempo)
 RM.forEach(R3=>{
- staff('control',R3.ct[0],R3.ct[1],R3.r===3?Math.PI/2:0,1.1,'ctrl.'+R3.r,'Control · '+RSH[R3.r],'(nombre)');
- staff('control',R3.ct[0]+(R3.r===3?0:1.3),R3.ct[1]+(R3.r===3?.9:0),R3.r===3?Math.PI/2:0,1.05,'ctrl_aux.'+R3.r,'Apoyo · '+RSH[R3.r],'(nombre)');
+ staff('control',R3.ct[0],R3.ct[1],R3.r===3?Math.PI/2:0,1.1,'ctrl.'+R3.r,'Control · '+RSH[R3.r],'(nombre)',2.2,0.65,2.75);
  R3.spots.forEach((s,k)=>{
   // En pasillo se agregan todas las mesas explícitamente; en salas cerradas la mesa 5 si k===4
   if(R3.r===3 || k===4) addTable(s.tc[0],s.tc[1],R3.fl?mTableF:mTable);
+  
+  // Letrero del Experimento elevado sobre el centro de la mesa
   const tagTitle = (R3.r===3 ? 'Estación 4' : 'Sala '+(R3.r+1)) + ' · Exp. '+(k+1);
-  const T0=makeTag(tagTitle,nget('ex.'+R3.r+'.'+k)||'(nombre del experimento)','rgba(20,32,44,.94)','#fff','#e0652b',3.8);
-  T0.sp.position.set(s.tc[0],2.75,s.tc[1]);scene.add(T0.sp);T0.ref='ex.'+R3.r+'.'+k;T0.kind='exp';T0.ph='(nombre del experimento)';TAGS.push(T0);
-  const xs=CFG.PX>=3?[-.65,0,.65]:(CFG.PX===2?[-.55,.55]:[0]);
-  xs.forEach((dx,p)=>staff('expositor',s.eg[0]+dx,s.eg[1],s.ef,1.05,'expo.'+R3.r+'.'+k+'.'+p,'Expositor '+(p+1)+' · Exp. '+(k+1),'(nombre)'))})});
-// ---- grupos: estudiantes y guías ----
+  const T0=makeTag(tagTitle,nget('ex.'+R3.r+'.'+k)||'(nombre del experimento)','rgba(20,32,44,.95)','#fff','#e0652b',2.4,0.70);
+  T0.sp.position.set(s.tc[0],2.95,s.tc[1]);scene.add(T0.sp);T0.ref='ex.'+R3.r+'.'+k;T0.kind='exp';T0.ph='(nombre del experimento)';TAGS.push(T0);
+  
+  // Exactamente 2 estudiantes por mesa en cada sala (separados dx = -0.55 y +0.55 con alturas escalonadas para cero solapamiento)
+  staff('expositor',s.eg[0]-.55,s.eg[1],s.ef,1.05,'expo.'+R3.r+'.'+k+'.0','Expositor 1','(nombre)',1.28,0.42,2.38);
+  staff('expositor',s.eg[0]+.55,s.eg[1],s.ef,1.05,'expo.'+R3.r+'.'+k+'.1','Expositor 2','(nombre)',1.28,0.42,2.62);
+ })});
+
+// ---- grupos: exactamente 4 guías en total (1 por grupo: A, B, C, D) ----
 GRP.forEach((G,g)=>{const R2=ROLES.guia;
  const gfig=figure(R2.c,1.12,{cap:R2.c,sash:G.c,flag:G.c,ring:0x3949ab});
- const T0=makeTag('Guía '+G.n,nget('guia.'+g)||'(nombre)',R2.css,R2.txt,null,3.3);T0.sp.position.set(0,2.6,0);T0.sp.scale.multiplyScalar(1/1.12);gfig.add(T0.sp);T0.ref='guia.'+g;T0.ph='(nombre)';TAGS.push(T0);
+ const T0=makeTag('Guía '+G.n,nget('guia.'+g)||'(nombre)',R2.css,R2.txt,null,2.2,0.65);
+ T0.sp.position.set(0,2.65,0);T0.sp.scale.multiplyScalar(1/1.12);gfig.add(T0.sp);T0.ref='guia.'+g;T0.ph='(nombre)';TAGS.push(T0);
  addAgent('guia',gfig,{g,kf:guideKF(g),mini:R2.css,sp:T0.sp,tag:T0});
- const afig=figure(R2.c,1.06,{cap:R2.c,sash:G.c,ring:0x3949ab});
- const T0a=makeTag('Apoyo '+G.n,nget('guia_aux.'+g)||'(nombre)',R2.css,R2.txt,null,3.1);T0a.sp.position.set(0,2.5,0);T0a.sp.scale.multiplyScalar(1/1.06);afig.add(T0a.sp);T0a.ref='guia_aux.'+g;T0a.ph='(nombre)';TAGS.push(T0a);
- addAgent('guia',afig,{g,kf:guideKFAux(g),mini:R2.css,sp:T0a.sp,tag:T0a});
  const n=GSZ(g);for(let s=0;s<n;s++)addAgent('estudiante',figure(G.c,1),{g,idx:s+1,kf:studentKF(g,s,n),mini:G.css})});
 // ---- letreros de cronómetro en cada sala ----
 const sprites=[0,1,2,3].map(i=>{const c=document.createElement('canvas');c.width=360;c.height=150;
