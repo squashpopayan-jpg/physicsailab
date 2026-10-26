@@ -50,7 +50,8 @@ window.PLATFORM_DATA = {
         "optica": ["OPTICA-2026", "FOTON-26", "OBANDO-OPTICA-26", "LUZ-RAYO-26", "MAXWELL-OPTICA-26"],
         "solido": ["SOLIDO-2026", "ESTADO-SOLIDO-26", "SOLIDOS-UFOP-26", "OBANDO-SOLIDO-26"],
         "faro": ["FARO-2026", "PODS-REACCION-26", "LUZ-FARO-26", "OBANDO-FARO-26"],
-        "diagnosticas": ["DIAGNOSTICAS-2026", "PRUEBAS-26", "OBANDO-DIAG-26"]
+        "diagnosticas": ["DIAGNOSTICAS-2026", "PRUEBAS-26", "OBANDO-DIAG-26"],
+        "squash_arbitraje": ["ARBITRAJE-2026", "SQUASH-REF-26", "MANU-REF-26", "WSF-REGLAS-26"]
     },
 
     // Configuración oficial de Pasarelas de Pago (Wompi PSE, Bancolombia, Nequi y Hotmart)
@@ -1098,6 +1099,33 @@ window.PLATFORM_DATA = {
             valorReal: "$700.000 COP",
             descuentoTag: "Servicio Institucional",
             enlaceCompra: "https://checkout.wompi.co/l/VPOS_b6GD2z",
+            enlaceWompi: "https://checkout.wompi.co/l/VPOS_b6GD2z"
+        },
+        {
+            id: "squash_arbitraje",
+            titulo: "Manu_Squash Arbitraje: Sistema Oficial WSF & Simulador Interactivo",
+            nivel: "Árbitros / Entrenadores / Jugadores",
+            modulos: "6 Módulos Interactivos + Simulador 3D/2D + Árbol de Decisión WSF",
+            categoria: "Deporte & Ciencias del Movimiento",
+            categoriaFiltro: "aplicada",
+            descripcion: "Aplicación interactiva y manual oficial de arbitraje de squash bajo el reglamento de la World Squash Federation (WSF). Incluye simulador de cancha 3D/2D con jugadas interactivas, árbol de decisión dinámico para interferencias (Stroke, Yes Let, No Let), manual comentado de Reglas 1 a 15 y planilla/marcador con llamados reglamentarios oficiales en vivo.",
+            temas: [
+                "01. Filosofía del Arbitraje y Código de Conducta WSF",
+                "02. Simulador de Cancha 3D/2D con Jugadas de Prueba",
+                "03. Árbol de Decisión Interactivo de Interferencias (Stroke, Yes Let, No Let)",
+                "04. Manual Oficial de Reglas 1 a 15 WSF Comentadas",
+                "05. Planilla Electrónica & Marcador con Llamados Reglamentarios",
+                "06. Casos Polémicos, Exámenes de Certificación & Protocolos de Interferencia"
+            ],
+            destacado: true,
+            tipo: "Aplicación Interactiva HTML5/JS",
+            demoPath: "/material/1_cursos/manu_squash_arbitraje/index.html",
+            precioEstimado: "$25 USD (~$99.000 COP)",
+            precioCOP: 99000,
+            precioUSD: 25,
+            valorReal: "$45 USD",
+            descuentoTag: "Lanzamiento Oficial",
+            enlaceCompra: "https://hotmart.com",
             enlaceWompi: "https://checkout.wompi.co/l/VPOS_b6GD2z"
         },
         {

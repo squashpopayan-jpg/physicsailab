@@ -2426,6 +2426,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 coursesGrid.innerHTML = coursesToRender.map(c => {
             const isLab = c.id === 'transformadores' || c.esLaboratorio;
             const isSquash = c.id === 'squash_sim';
+            const isArbitraje = c.id === 'squash_arbitraje';
             const isPrivado = !!c.esPrivado;
             const isDiagnosticas = c.id === 'diagnosticas';
             const isFaro = c.id === 'faro';
@@ -2440,14 +2441,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 openBtnText = 'Ver Portal Institucional 🏛️';
             } else if (isFaro) {
                 openBtnText = courseUnlocked ? 'Abrir Manual de Taller 💡' : 'Vista Previa de Taller 👁️';
+            } else if (isArbitraje) {
+                openBtnText = courseUnlocked ? 'Abrir Sistema de Arbitraje ⚖️' : 'Vista Previa del Arbitraje 👁️';
             } else {
                 openBtnText = courseUnlocked
                     ? (isLab ? 'Abrir Laboratorio 🧪' : (isSquash ? 'Abrir Simulador Completo 🎮' : 'Abrir Curso Completo 📖'))
                     : (isLab ? 'Vista Previa del Banco 👁️' : (isSquash ? 'Vista Previa de Rutinas 👁️' : 'Vista Previa Gratuita 👁️'));
             }
 
-            const buyBtnText = isLab ? 'Adquirir Lab 💳' : (isSquash ? 'Adquirir Simulador 💳' : (isFaro ? 'Adquirir Kit & Manual 💡' : (isDiagnosticas ? 'Cotizar Servicio 🏛️' : 'Comprar Curso 💳')));
-            const detailsBtnText = isLab ? 'Ficha Técnica 📋' : (isSquash ? 'Módulos 📑' : (isDiagnosticas ? 'Bancos & Detalles 📋' : 'Temario 📑'));
+            const buyBtnText = isLab ? 'Adquirir Lab 💳' : (isSquash ? 'Adquirir Simulador 💳' : (isArbitraje ? 'Adquirir Sistema Oficial ⚖️' : (isFaro ? 'Adquirir Kit & Manual 💡' : (isDiagnosticas ? 'Cotizar Servicio 🏛️' : 'Comprar Curso 💳'))));
+            const detailsBtnText = isLab ? 'Ficha Técnica 📋' : (isSquash ? 'Módulos 📑' : (isArbitraje ? 'Reglamento & Módulos 📑' : (isDiagnosticas ? 'Bancos & Detalles 📋' : 'Temario 📑')));
             const tagClass = isLab ? 'lab-tag' : (c.destacado ? 'interactive' : '');
 
             let lockStatusBadge = '';

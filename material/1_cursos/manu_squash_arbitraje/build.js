@@ -8,6 +8,7 @@
    Genera:
    - dist/index.html (autocontenido, doble clic para abrir)
    - dist/manu-squash-arbitraje.html (standalone)
+   - index.html (raíz del curso para acceso web directo)
 */
 const fs = require('fs');
 const path = require('path');
@@ -60,6 +61,8 @@ const full = `<!doctype html>
 </head>
 <body>
 ${page}
+<script src="/material/course-guard.js"></script>
+<script>if(typeof window.PhysicsAILabGuard==='undefined'){var s=document.createElement('script');s.src='../../course-guard.js';document.head.appendChild(s);}</script>
 </body>
 </html>
 `;
@@ -67,5 +70,6 @@ ${page}
 fs.mkdirSync(path.join(root, 'dist'), { recursive: true });
 fs.writeFileSync(path.join(root, 'dist', 'index.html'), full, 'utf8');
 fs.writeFileSync(path.join(root, 'dist', 'manu-squash-arbitraje.html'), full, 'utf8');
+fs.writeFileSync(path.join(root, 'index.html'), full, 'utf8');
 
-console.log(`Compilación exitosa: dist/index.html (${(full.length / 1024).toFixed(1)} KB)`);
+console.log(`Compilación exitosa: dist/index.html y root index.html (${(full.length / 1024).toFixed(1)} KB)`);

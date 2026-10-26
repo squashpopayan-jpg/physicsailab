@@ -661,8 +661,7 @@ main#app { padding: 24px 0 60px; }
 }
 canvas.court-canvas {
   width: 100%;
-  height: 480px;
-  min-height: 400px;
+  height: 440px;
   display: block;
   background: #080f18;
 }
@@ -884,44 +883,31 @@ canvas.court-canvas {
 </section>
 
 <!-- 02-simulador.html -->
-<section class="page-section active" id="section-simulador">
+<section class="page-section" id="section-simulador">
   <div class="content-box">
-    <!-- Encabezado del Simulador -->
-    <div class="card-header" style="margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+    <div class="card-header" style="margin-bottom: 16px;">
       <div>
-        <div class="eyebrow">Simulador Oficial WSF · Decisiones en Cancha</div>
+        <div class="eyebrow">Simulador de Jugadas e Interferencias WSF</div>
         <h2>Catálogo de 18 Situaciones en Cancha 3D y Planta</h2>
       </div>
-
-      <!-- Barra Superior de Modos de Vista y Cámaras -->
-      <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-        <!-- Selector de Vistas -->
-        <div style="display: flex; background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r-sm); padding: 3px;">
-          <button class="box-btn active" data-vmode="both" style="border: none;">Ambas Vistas</button>
-          <button class="box-btn" data-vmode="3d" style="border: none;">Solo 3D</button>
-          <button class="box-btn" data-vmode="top" style="border: none;">Solo Planta 2D</button>
-        </div>
-
-        <!-- Selector de Cámara 3D -->
-        <div style="display: flex; align-items: center; gap: 6px;">
-          <span style="font-size: .85rem; font-weight: 700; color: var(--ink-2);">Cámara:</span>
-          <select class="cam-select" id="camPresetSelect">
-            <option value="arbitro" selected>Silla Árbitro (WSF Regla 3)</option>
-            <option value="tv">Transmisión TV</option>
-            <option value="lateral">Lateral Árbitro</option>
-            <option value="aerea">Aérea (Planta 3D)</option>
-            <option value="frontal">Frontal</option>
-          </select>
-        </div>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <span style="font-size: .85rem; font-weight: 600; color: var(--ink-2);">Cámara 3D:</span>
+        <select class="cam-select" id="camPresetSelect">
+          <option value="arbitro" selected>Silla Árbitro (WSF Regla 3)</option>
+          <option value="tv">Transmisión TV</option>
+          <option value="lateral">Lateral</option>
+          <option value="aerea">Aérea (Planta 3D)</option>
+          <option value="frontal">Frontal</option>
+        </select>
       </div>
     </div>
 
     <div class="grid-cases">
-      <!-- Columna Izquierda: Filtro y Selección de Casos -->
+      <!-- Columna Izquierda: Lista de Casos y Filtros -->
       <div>
         <div class="card" style="margin-bottom: 14px; padding: 14px;">
-          <label style="font-size: .78rem; font-weight: 800; text-transform: uppercase; color: var(--ink-2); display: block; margin-bottom: 6px;">
-            Categoría WSF:
+          <label style="font-size: .8rem; font-weight: 700; text-transform: uppercase; color: var(--ink-2); display: block; margin-bottom: 6px;">
+            Filtrar por Categoría:
           </label>
           <select class="cam-select" id="simCategoryFilter" style="width: 100%;">
             <option value="all">Todas las 18 situaciones</option>
@@ -936,88 +922,56 @@ canvas.court-canvas {
           </select>
         </div>
 
-        <div class="case-list" id="simCaseList"></div>
+        <div class="case-list" id="simCaseList">
+          <!-- Renderizado dinámico desde 62-sim.js -->
+        </div>
       </div>
 
-      <!-- Columna Derecha: Canchas, Telemetría, Línea de Tiempo y Veredicto -->
+      <!-- Columna Derecha: Canchas, Apelación y Dock de Decisión -->
       <div>
-        <!-- Ficha Resumen del Caso Actual -->
-        <div class="card" style="margin-bottom: 12px; padding: 14px 18px; border-left: 5px solid var(--brand);">
+        <!-- Ficha Técnica del Caso Seleccionado -->
+        <div class="card" style="margin-bottom: 14px; padding: 14px 18px; border-left: 4px solid var(--brand);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
             <span class="eyebrow" id="simCaseCat">Acceso a la bola</span>
-            <span class="mono" style="font-size: .88rem; color: var(--ink-3);">Congelación de Apelación: <b id="simCaseFreeze" style="color: var(--bad);">2.4s</b></span>
+            <span class="mono" style="font-size: .85rem; color: var(--ink-3);">Congelación: <b id="simCaseFreeze" style="color: var(--bad);">2.4s</b></span>
           </div>
           <h3 id="simCaseTitle" style="color: var(--ink); margin-bottom: 6px;">Cargando caso...</h3>
-          <p id="simCaseDesc" style="font-size: .95rem; color: var(--ink-2); line-height: 1.45;"></p>
+          <p id="simCaseDesc" style="font-size: .92rem; color: var(--ink-2); line-height: 1.45;"></p>
         </div>
 
-        <!-- Canchas de Juego (3D y 2D) -->
-        <div class="canvases-split" id="canvasesSplit">
-          <!-- Vista 3D Perspectiva -->
-          <div class="canvas-wrapper" id="wrapper3D">
+        <!-- Canchas Divididas: 3D Perspectiva y Planta 2D -->
+        <div class="canvases-split">
+          <div class="canvas-wrapper">
             <div class="canvas-header">
-              <span class="canvas-badge">VISTA 3D PERSPECTIVA · CÁMARA WSF</span>
+              <span class="canvas-badge">VISTA 3D PERSPECTIVA</span>
             </div>
             <canvas id="canvas3D" class="court-canvas"></canvas>
           </div>
-
-          <!-- Vista Planta 2D Técnica -->
-          <div class="canvas-wrapper" id="wrapperTop">
+          <div class="canvas-wrapper">
             <div class="canvas-header">
-              <span class="canvas-badge">PLANTA 2D · CONO, SWING Y ACCESO</span>
+              <span class="canvas-badge">PLANTA 2D REGLAMENTARIA</span>
             </div>
             <canvas id="canvasTop" class="court-canvas"></canvas>
           </div>
         </div>
 
-        <!-- Telemetría y Relato de la Jugada en Tiempo Real -->
-        <div class="card" style="background: var(--surface-2); padding: 12px 16px; margin-bottom: 12px; border: 1px solid var(--line);">
-          <div style="font-family: var(--f-mono); font-size: .75rem; font-weight: 700; text-transform: uppercase; color: var(--ink-3); margin-bottom: 2px;">
-            Telemetría de la Jugada:
+        <!-- Barra de Controles de Reproducción -->
+        <div class="sim-controls">
+          <div class="sim-btn-group">
+            <button class="btn-sim primary" id="btnSimPlay">⏸ Pausa</button>
+            <button class="btn-sim" id="btnSimReplay">↺ Reiniciar Jugada</button>
+            <button class="btn-sim" id="btnNextCase">Siguiente Caso ❯</button>
           </div>
-          <div id="simTelemetryText" style="font-size: .95rem; color: var(--ink); font-weight: 500;">
-            Cargando simulación...
-          </div>
-        </div>
-
-        <!-- Barra de Control y Reproducción con Scrubber de Tiempo -->
-        <div class="sim-controls" style="flex-direction: column; align-items: stretch; gap: 10px;">
-          <!-- Deslizador de Línea de Tiempo (Scrubber) -->
-          <div style="display: flex; align-items: center; gap: 12px;">
-            <span style="font-family: var(--f-mono); font-size: .8rem; font-weight: 700; color: var(--ink-2); white-space: nowrap;">0.0s</span>
-            <input type="range" id="simScrubber" min="0" max="400" value="0" step="1" style="flex: 1; height: 8px; cursor: pointer; accent-color: var(--brand);">
-            <span class="mono num" id="simTimeDisplay" style="font-size: .95rem; font-weight: 800; color: var(--brand); white-space: nowrap; min-width: 90px; text-align: right;">0.00s</span>
-          </div>
-
-          <!-- Botones de Control de Reproducción y Velocidad -->
-          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-            <div class="sim-btn-group">
-              <button class="btn-sim primary" id="btnSimPlay">⏸ Pausar</button>
-              <button class="btn-sim" id="btnSimReplay">↺ Repetir</button>
-              <button class="btn-sim" id="btnSimFullPlay" title="Ver la jugada completa sin detener en tFreeze">▶ Ver Completa</button>
-            </div>
-
-            <!-- Velocidades de Análisis de Árbitro -->
-            <div style="display: flex; align-items: center; gap: 6px;">
-              <span style="font-size: .8rem; font-weight: 700; color: var(--ink-2);">Velocidad:</span>
-              <div style="display: flex; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-sm); overflow: hidden;">
-                <button class="box-btn" data-speed="0.25" style="border: none; padding: 4px 8px;">¼×</button>
-                <button class="box-btn" data-speed="0.5" style="border: none; padding: 4px 8px;">½×</button>
-                <button class="box-btn active" data-speed="1.0" style="border: none; padding: 4px 8px;">1×</button>
-              </div>
-            </div>
-
-            <div class="sim-btn-group">
-              <button class="btn-sim" id="btnPrevCase">❮ Anterior</button>
-              <button class="btn-sim" id="btnNextCase">Siguiente ❯</button>
-            </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: .85rem; color: var(--ink-2); font-weight: 600;">Tiempo:</span>
+            <span class="mono num" id="simTimeDisplay" style="font-size: 1.1rem; font-weight: 700; color: var(--brand);">0.00s</span>
           </div>
         </div>
 
         <!-- 1. Appeal Banner (Pulsante en tFreeze) -->
         <div class="appeal-banner" id="appealBanner" style="display: none;">
           <div class="appeal-title">
-            <span>🚨 ¡LET, PLEASE! — JUGADA CONGELADA PARA VEREDICTO</span>
+            <span>🚨 ¡LET, PLEASE! — JUEGO DETENIDO</span>
           </div>
           <span class="appeal-badge">APELACIÓN EN VIVO</span>
         </div>
@@ -1034,7 +988,7 @@ canvas.court-canvas {
             </button>
             <button class="btn-decision btn-yes-let" data-decision="YES LET">
               <div>YES LET</div>
-              <span>Interferencia accidental con esfuerzo</span>
+              <span>Interferencia con esfuerzo / Peloteo nulo</span>
             </button>
             <button class="btn-decision btn-stroke" data-decision="STROKE">
               <div>STROKE</div>
@@ -1043,7 +997,7 @@ canvas.court-canvas {
           </div>
         </div>
 
-        <!-- 3. Verdict Panel (Desglose de los 4 pilares reglamentarios) -->
+        <!-- 3. Verdict Panel (Desglose de los 4 pilares) -->
         <div class="verdict-panel" id="verdictPanel">
           <div class="verdict-header">
             <div>
@@ -1407,8 +1361,7 @@ window.MS_LOGO = "{{LOGO}}";
 <script>
 /* ==== 00-util.js ==== */
 /* Utilidades matemáticas, manipulación de DOM, audio sintético y temporizadores */
-'use strict';
-var MS = (typeof window !== 'undefined' ? window : globalThis).MS = (typeof window !== 'undefined' ? window : globalThis).MS || {};
+window.MS = window.MS || {};
 
 MS.U = (function () {
   const U = {};
@@ -1448,22 +1401,7 @@ MS.U = (function () {
     z: a.x * b.y - a.y * b.x
   });
 
-  /* Preparación de canvas de alta definición (HiDPI / Retina) */
-  U.fitCanvas = (cv, w, h) => {
-    if (!cv) return null;
-    const dpr = Math.min(2.5, (typeof window !== 'undefined' && window.devicePixelRatio) || 1);
-    const W = Math.round(w * dpr);
-    const H = Math.round(h * dpr);
-    if (cv.width !== W || cv.height !== H) {
-      cv.width = W;
-      cv.height = H;
-    }
-    const ctx = cv.getContext('2d');
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    return ctx;
-  };
-
-  /* Sintetizador de audio para árbitro (silbatos y avisos reglamentarios) */
+  /* Sintetizador de audio para árbitro (sin archivos externos) */
   let audioCtx = null;
   U.beep = function (freq = 880, dur = 0.15, type = 'sine') {
     try {
@@ -1484,12 +1422,14 @@ MS.U = (function () {
       gain.connect(audioCtx.destination);
       osc.start();
       osc.stop(audioCtx.currentTime + dur);
-    } catch (e) {}
+    } catch (e) {
+      // Silencio si el navegador bloquea audio
+    }
   };
 
   U.whistle = function () {
-    U.beep(1350, 0.12, 'square');
-    setTimeout(() => U.beep(1600, 0.22, 'square'), 90);
+    U.beep(1200, 0.12, 'square');
+    setTimeout(() => U.beep(1450, 0.22, 'square'), 100);
   };
 
   U.fmtSecs = (s) => {
@@ -1647,123 +1587,101 @@ MS.Player = (function () {
 
 /* ==== 45-render-top.js ==== */
 /* Renderizador 2D en Planta de la Cancha de Squash con Capas Oficiales de Arbitraje WSF */
-'use strict';
-var MS = (typeof window !== 'undefined' ? window : globalThis).MS = (typeof window !== 'undefined' ? window : globalThis).MS || {};
-
 MS.RenderTop = (function () {
   const { C, U } = MS;
 
-  function render(ctx, w, h, state) {
-    if (!ctx) return;
+  function render(canvas, state) {
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width, h = canvas.height;
 
     // Fondo oscuro exterior
-    ctx.fillStyle = '#080d14';
+    ctx.fillStyle = '#080f18';
     ctx.fillRect(0, 0, w, h);
 
-    // Margen para etiquetas y escala completa de la cancha
+    // Margen y escala para que quepa la cancha de 6.40 x 9.75 m
     const pad = 24;
     const availW = w - pad * 2;
     const availH = h - pad * 2;
     const scale = Math.min(availW / C.W, availH / C.L);
 
-    const courtW = C.W * scale;
-    const courtH = C.L * scale;
-    const ox = (w - courtW) / 2;
-    const oy = (h - courtH) / 2;
+    const ox = (w - C.W * scale) / 2;
+    const oy = (h - C.L * scale) / 2;
 
     const toScreen = (x, y) => ({
       x: ox + x * scale,
       y: oy + y * scale
     });
 
-    // 1. Suelo de madera de arce (Maple Court Floor)
-    ctx.fillStyle = '#d9b47a';
-    ctx.fillRect(ox, oy, courtW, courtH);
+    // 1. Suelo de madera de arce
+    ctx.fillStyle = '#d4ad74';
+    ctx.fillRect(ox, oy, C.W * scale, C.L * scale);
 
-    // Listones de parqué de cancha
-    ctx.strokeStyle = 'rgba(180, 135, 85, 0.28)';
+    // Vetas sutiles del tablonado
+    ctx.strokeStyle = 'rgba(180, 130, 80, 0.22)';
     ctx.lineWidth = 1;
-    const plankW = 0.16 * scale;
-    for (let px = ox; px <= ox + courtW; px += plankW) {
+    const plankW = 0.12 * scale;
+    for (let px = ox; px <= ox + C.W * scale; px += plankW) {
       ctx.beginPath();
       ctx.moveTo(px, oy);
-      ctx.lineTo(px, oy + courtH);
+      ctx.lineTo(px, oy + C.L * scale);
       ctx.stroke();
     }
 
-    // 2. Tin frontal en planta (madera oscura y chapa metálica)
-    ctx.fillStyle = '#1e293b';
-    ctx.fillRect(ox - 8, oy - 14, courtW + 16, 14);
-    ctx.fillStyle = '#475569';
-    ctx.font = 'bold 9px IBM Plex Mono, monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText('PARED FRONTAL · TIN 0.48m', ox + courtW / 2, oy - 4);
-
-    // 3. Líneas rojas reglamentarias WSF (5 cm de ancho)
-    const lineW = Math.max(2.5, C.lineW * scale);
+    // 2. Líneas rojas reglamentarias WSF (5 cm de ancho)
+    const lineW = Math.max(2, C.lineW * scale);
     ctx.strokeStyle = '#c41f2e';
     ctx.lineWidth = lineW;
 
-    // Perímetro
-    ctx.strokeRect(ox, oy, courtW, courtH);
+    // Pared frontal (Tin en planta)
+    ctx.fillStyle = '#1e293b';
+    ctx.fillRect(ox - 6, oy - 8, C.W * scale + 12, 8);
+
+    // Perímetro de cancha
+    ctx.strokeRect(ox, oy, C.W * scale, C.L * scale);
 
     // Línea corta (a 4.26 m del vidrio trasero)
     const yShort = oy + C.shortFront * scale;
     ctx.beginPath();
     ctx.moveTo(ox, yShort);
-    ctx.lineTo(ox + courtW, yShort);
+    ctx.lineTo(ox + C.W * scale, yShort);
     ctx.stroke();
 
     // Línea de media cancha
     const xHalf = ox + C.half * scale;
     ctx.beginPath();
     ctx.moveTo(xHalf, yShort);
-    ctx.lineTo(xHalf, oy + courtH);
+    ctx.lineTo(xHalf, oy + C.L * scale);
     ctx.stroke();
 
-    // Cuadros de saque (1.60 m de lado)
+    // Cuadros de saque (1.60 m)
     const boxSize = C.box * scale;
+    // Cuadro izquierdo
     ctx.strokeRect(ox, yShort, boxSize, boxSize);
-    ctx.strokeRect(ox + courtW - boxSize, yShort, boxSize, boxSize);
+    // Cuadro derecho
+    ctx.strokeRect(ox + C.W * scale - boxSize, yShort, boxSize, boxSize);
 
-    // Indicadores de cajas
-    ctx.fillStyle = 'rgba(196, 31, 46, 0.35)';
-    ctx.font = 'bold 11px IBM Plex Mono, monospace';
-    ctx.fillText('CAJA I (L)', ox + boxSize / 2, yShort + boxSize / 2 + 4);
-    ctx.fillText('CAJA D (R)', ox + courtW - boxSize / 2, yShort + boxSize / 2 + 4);
-
-    // "T" Reglamentaria
-    ctx.fillStyle = '#c41f2e';
+    // Vidrio trasero
+    ctx.strokeStyle = 'rgba(100, 200, 255, 0.6)';
+    ctx.lineWidth = 4;
     ctx.beginPath();
-    ctx.arc(xHalf, yShort, 4.5, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.font = 'bold 12px Saira, sans-serif';
-    ctx.fillText('LA "T"', xHalf, yShort - 9);
-
-    // Pared trasera de vidrio
-    ctx.strokeStyle = 'rgba(125, 211, 252, 0.75)';
-    ctx.lineWidth = 5;
-    ctx.beginPath();
-    ctx.moveTo(ox, oy + courtH);
-    ctx.lineTo(ox + courtW, oy + courtH);
+    ctx.moveTo(ox, oy + C.L * scale);
+    ctx.lineTo(ox + C.W * scale, oy + C.L * scale);
     ctx.stroke();
-    ctx.fillStyle = 'rgba(125, 211, 252, 0.85)';
-    ctx.font = 'bold 9px IBM Plex Mono, monospace';
-    ctx.fillText('VIDRIO TRASERO (SILLA DEL ÁRBITRO DETRÁS)', ox + courtW / 2, oy + courtH + 16);
 
     if (!state) return;
 
-    const { pA, pB, ball, activePlayer } = state;
-    const striker = activePlayer === 'B' ? pB : pA;
-    const opponent = activePlayer === 'B' ? pA : pB;
+    const { pA, pB, ball, activePlayer, appeal } = state;
 
-    // 4. CAPA DE ARBITRAJE 1: Cono Frontal (Regla 8.11 WSF)
+    // 3. CAPA DE ARBITRAJE 1: Cono de Acceso a Pared Frontal (Regla 8.11 WSF)
     if (ball) {
       const bScr = toScreen(ball.x, ball.y);
       const fLeft = toScreen(0, 0);
       const fRight = toScreen(C.W, 0);
 
-      const inCone = opponent && C.inFrontCone(opponent, ball, 0.2);
+      // Verificar si el no-golpeador está en el cono
+      const nonStriker = activePlayer === 'B' ? pA : pB;
+      const inCone = nonStriker && C.inFrontCone(nonStriker, ball, 0.2);
 
       ctx.beginPath();
       ctx.moveTo(bScr.x, bScr.y);
@@ -1772,26 +1690,28 @@ MS.RenderTop = (function () {
       ctx.closePath();
 
       if (inCone) {
-        ctx.fillStyle = 'rgba(220, 38, 38, 0.38)';
+        ctx.fillStyle = 'rgba(220, 38, 38, 0.42)'; // Rojo peligro: obstrucción
         ctx.strokeStyle = '#dc2626';
-        ctx.lineWidth = 2.5;
       } else {
-        ctx.fillStyle = 'rgba(10, 90, 146, 0.16)';
-        ctx.strokeStyle = 'rgba(10, 90, 146, 0.55)';
-        ctx.lineWidth = 1.5;
+        ctx.fillStyle = 'rgba(10, 90, 146, 0.16)'; // Azul translúcido: cono libre
+        ctx.strokeStyle = 'rgba(10, 90, 146, 0.45)';
       }
+      ctx.lineWidth = 1.5;
       ctx.fill();
       ctx.stroke();
 
+      // Etiqueta del cono si hay invasión
       if (inCone) {
         ctx.fillStyle = '#dc2626';
         ctx.font = 'bold 11px IBM Plex Mono, monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('🚨 ¡OBSTRUCCIÓN CONO FRONTAL (REGLA 8.11)!', bScr.x, bScr.y - 18);
+        ctx.fillText('¡OBSTRUCCIÓN CONO FRONTAL (8.11)!', bScr.x - 90, bScr.y - 14);
       }
     }
 
-    // 5. CAPA DE ARBITRAJE 2: Anillo de Swing Razonable de 1.12 m (Regla 8.9 WSF)
+    // 4. CAPA DE ARBITRAJE 2: Anillo de Swing Razonable de 1.12 m (Regla 8.9 WSF)
+    const striker = activePlayer === 'B' ? pB : pA;
+    const opponent = activePlayer === 'B' ? pA : pB;
+
     if (striker) {
       const sScr = toScreen(striker.x, striker.y);
       const swingR = C.SWING_R * scale;
@@ -1806,95 +1726,81 @@ MS.RenderTop = (function () {
       ctx.arc(sScr.x, sScr.y, swingR, 0, Math.PI * 2);
 
       if (swingBlocked) {
-        ctx.fillStyle = 'rgba(217, 119, 6, 0.28)';
+        ctx.fillStyle = 'rgba(217, 119, 6, 0.25)'; // Ámbar de advertencia
         ctx.strokeStyle = '#d97706';
         ctx.lineWidth = 2.5;
       } else {
-        ctx.fillStyle = 'rgba(43, 138, 87, 0.12)';
-        ctx.strokeStyle = 'rgba(43, 138, 87, 0.55)';
+        ctx.fillStyle = 'rgba(52, 211, 153, 0.1)';  // Verde seguro
+        ctx.strokeStyle = 'rgba(52, 211, 153, 0.5)';
         ctx.lineWidth = 1.5;
       }
       ctx.fill();
       ctx.stroke();
 
+      // Indicador de radio 1.12m
       ctx.fillStyle = swingBlocked ? '#d97706' : '#2b8a57';
-      ctx.font = 'bold 9px IBM Plex Mono, monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText(`RADIO DE SWING 1.12m ${swingBlocked ? '· ¡INVADIDO!' : ''}`, sScr.x, sScr.y + swingR + 12);
+      ctx.font = '9px IBM Plex Mono, monospace';
+      ctx.fillText('RADIO SWING 1.12m', sScr.x - 45, sScr.y + swingR + 12);
     }
 
-    // 6. CAPA DE ARBITRAJE 3: Vector de Acceso Directo (Regla 8.6 WSF)
+    // 5. CAPA DE ARBITRAJE 3: Vector de Acceso Directo a la Bola (Regla 8.6 WSF)
     if (striker && ball) {
       const sScr = toScreen(striker.x, striker.y);
       const bScr = toScreen(ball.x, ball.y);
 
       ctx.save();
-      ctx.setLineDash([6, 4]);
+      ctx.setLineDash([5, 4]);
 
       let accessBlocked = false;
-      let distToOpp = 999;
       if (opponent) {
-        distToOpp = C.distSeg(opponent, striker, ball);
-        if (distToOpp < 0.65) accessBlocked = true;
+        const dSeg = C.distSeg(opponent, striker, ball);
+        if (dSeg < 0.65) accessBlocked = true;
       }
 
-      ctx.strokeStyle = accessBlocked ? '#dc2626' : '#0284c7';
-      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = accessBlocked ? '#dc2626' : '#0ea5e9';
+      ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(sScr.x, sScr.y);
       ctx.lineTo(bScr.x, bScr.y);
       ctx.stroke();
       ctx.restore();
 
-      const midX = (sScr.x + bScr.x) / 2;
-      const midY = (sScr.y + bScr.y) / 2;
-      ctx.fillStyle = accessBlocked ? '#dc2626' : '#0284c7';
-      ctx.font = 'bold 10px IBM Plex Mono, monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText(
-        accessBlocked ? `¡LÍNEA DE ACCESO BLOQUEADA! (d=${distToOpp.toFixed(2)}m)` : 'LÍNEA DE ACCESO DESPEJADA',
-        midX, midY - 8
-      );
+      if (accessBlocked) {
+        ctx.fillStyle = '#dc2626';
+        ctx.font = 'bold 10px IBM Plex Mono, monospace';
+        ctx.fillText('LÍNEA DE ACCESO BLOQUEADA (8.6)', (sScr.x + bScr.x) / 2 - 80, (sScr.y + bScr.y) / 2 - 8);
+      }
     }
 
-    // 7. Dibujo Completo de Jugadores (A = Azul, B = Rojo)
-    const drawPlayer = (p, color, label, isStriker) => {
+    // 6. Dibujo de Jugadores
+    const drawPlayer = (p, col, label, isStriker) => {
       if (!p) return;
       const scr = toScreen(p.x, p.y);
-      const pR = Math.max(12, 0.38 * scale);
+      const pR = 0.35 * scale;
 
-      // Sombra proyectada
+      // Sombra
       ctx.beginPath();
-      ctx.ellipse(scr.x, scr.y + 4, pR * 1.1, pR * 0.7, 0, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+      ctx.ellipse(scr.x, scr.y + 4, pR, pR * 0.7, 0, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
       ctx.fill();
 
-      // Aura de golpeador activo
-      if (isStriker) {
-        ctx.beginPath();
-        ctx.arc(scr.x, scr.y, pR + 4, 0, Math.PI * 2);
-        ctx.strokeStyle = '#fad02c';
-        ctx.lineWidth = 2.5;
-        ctx.stroke();
-      }
-
-      // Torso y hombros
+      // Cuerpo
       ctx.beginPath();
       ctx.arc(scr.x, scr.y, pR, 0, Math.PI * 2);
-      ctx.fillStyle = color;
+      ctx.fillStyle = col;
       ctx.fill();
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = isStriker ? '#ffffff' : 'rgba(0, 0, 0, 0.5)';
+      ctx.lineWidth = isStriker ? 3 : 1.5;
       ctx.stroke();
 
-      // Raqueta extendida
+      // Raqueta y dirección
       const ang = p.ang || 0;
-      const rkLen = 0.85 * scale;
+      const rkLen = 0.65 * scale;
       const rx = scr.x + Math.sin(ang) * rkLen;
       const ry = scr.y - Math.cos(ang) * rkLen;
 
       ctx.strokeStyle = '#fad02c';
-      ctx.lineWidth = 3;
+      ctx.lineWidth = 2.5;
       ctx.beginPath();
       ctx.moveTo(scr.x, scr.y);
       ctx.lineTo(rx, ry);
@@ -1902,57 +1808,44 @@ MS.RenderTop = (function () {
 
       // Aro de raqueta
       ctx.beginPath();
-      ctx.arc(rx, ry, Math.max(6, 0.15 * scale), 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(250, 208, 44, 0.3)';
-      ctx.fill();
-      ctx.strokeStyle = '#fad02c';
-      ctx.lineWidth = 2;
+      ctx.arc(rx, ry, 5, 0, Math.PI * 2);
       ctx.stroke();
 
-      // Letra central A / B
+      // Nombre / Letra
       ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 13px Saira, sans-serif';
+      ctx.font = 'bold 12px Saira, sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(label, scr.x, scr.y);
-
-      // Etiqueta flotante con nombre
-      ctx.fillStyle = '#0f172a';
-      ctx.fillRect(scr.x - 42, scr.y - pR - 18, 84, 15);
-      ctx.fillStyle = color;
-      ctx.font = 'bold 9px IBM Plex Mono, monospace';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(isStriker ? `★ JUGADOR ${label}` : `JUGADOR ${label}`, scr.x, scr.y - pR - 10);
     };
 
     drawPlayer(pA, '#1d4ed8', 'A', activePlayer === 'A');
     drawPlayer(pB, '#b91c1c', 'B', activePlayer === 'B');
 
-    // 8. Bola de Squash con punto amarillo y estela
+    // 7. Bola de squash (negra con punto amarillo WSF)
     if (ball) {
       const bScr = toScreen(ball.x, ball.y);
-      const bR = Math.max(5, C.ballR * 3.5 * scale);
+      const bR = Math.max(4, C.ballR * 3 * scale);
 
-      // Sombra en el suelo
+      // Sombra de pelota
       ctx.beginPath();
-      ctx.ellipse(bScr.x, bScr.y + 4, bR * 1.2, bR * 0.7, 0, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+      ctx.ellipse(bScr.x, bScr.y + 3, bR, bR * 0.6, 0, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
       ctx.fill();
 
-      // Cuerpo de la pelota
+      // Cuerpo de pelota
       ctx.beginPath();
       ctx.arc(bScr.x, bScr.y, bR, 0, Math.PI * 2);
-      ctx.fillStyle = '#0f172a';
+      ctx.fillStyle = '#111827';
       ctx.fill();
-      ctx.strokeStyle = '#64748b';
-      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 1;
       ctx.stroke();
 
-      // Doble punto amarillo oficial WSF
+      // Punto amarillo oficial (Double Yellow Dot)
       ctx.beginPath();
-      ctx.arc(bScr.x - 1.5, bScr.y - 1, 1.8, 0, Math.PI * 2);
-      ctx.arc(bScr.x + 1.8, bScr.y + 0.8, 1.8, 0, Math.PI * 2);
+      ctx.arc(bScr.x - 1, bScr.y - 1, 1.8, 0, Math.PI * 2);
+      ctx.arc(bScr.x + 1.8, bScr.y + 0.5, 1.8, 0, Math.PI * 2);
       ctx.fillStyle = '#facc15';
       ctx.fill();
     }
@@ -1965,9 +1858,6 @@ MS.RenderTop = (function () {
 
 /* ==== 50-render-tv.js ==== */
 /* Renderizador 3D en Perspectiva de Cancha con Cámara Oficial "Silla Árbitro" WSF */
-'use strict';
-var MS = (typeof window !== 'undefined' ? window : globalThis).MS = (typeof window !== 'undefined' ? window : globalThis).MS || {};
-
 MS.RenderTV = (function () {
   const { C, U } = MS;
 
@@ -2060,28 +1950,25 @@ MS.RenderTV = (function () {
     ctx.restore();
   }
 
-  function render(ctx, w, h, state, camPreset = 'arbitro') {
-    if (!ctx) return;
+  function render(canvas, state, camPreset = 'arbitro') {
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width, h = canvas.height;
 
-    ctx.fillStyle = '#080d15';
+    ctx.fillStyle = '#0a1017';
     ctx.fillRect(0, 0, w, h);
 
     const preset = C.PRESETS[camPreset] || C.PRESETS.arbitro;
     const K = getCameraMatrix(preset, w, h);
 
-    // 1. Suelo de madera de arce 3D
+    // 1. Suelo de madera 3D
     const floorPts = [
       { x: 0, y: 0, z: 0 },
       { x: C.W, y: 0, z: 0 },
       { x: C.W, y: C.L, z: 0 },
       { x: 0, y: C.L, z: 0 }
     ];
-    drawPoly(ctx, K, floorPts, '#d4ad74', '#9a6e3c', 2);
-
-    // Listones de suelo 3D
-    for (let x = 0.8; x < C.W; x += 0.8) {
-      drawLine(ctx, K, { x, y: 0, z: 0.001 }, { x, y: C.L, z: 0.001 }, 'rgba(160, 115, 65, 0.25)', 1);
-    }
+    drawPoly(ctx, K, floorPts, '#cb9b65', '#a87847', 1.5);
 
     // 2. Pared Frontal (Frontis)
     const frontWall = [
@@ -2090,7 +1977,7 @@ MS.RenderTV = (function () {
       { x: C.W, y: 0, z: C.outFront },
       { x: 0, y: 0, z: C.outFront }
     ];
-    drawPoly(ctx, K, frontWall, '#edf2f7', '#cbd5e1', 1.5);
+    drawPoly(ctx, K, frontWall, '#eef3f8', '#cbd5e1', 1);
 
     // Tin frontal (0.48 m)
     const tinPts = [
@@ -2101,14 +1988,18 @@ MS.RenderTV = (function () {
     ];
     drawPoly(ctx, K, tinPts, '#1e293b', '#0f172a', 1);
 
-    // Líneas rojas frontales
-    drawLine(ctx, K, { x: 0, y: 0, z: C.tin }, { x: C.W, y: 0, z: C.tin }, '#c41f2e', 3);
-    drawLine(ctx, K, { x: 0, y: 0, z: C.svc }, { x: C.W, y: 0, z: C.svc }, '#c41f2e', 3);
-    drawLine(ctx, K, { x: 0, y: 0, z: C.outFront }, { x: C.W, y: 0, z: C.outFront }, '#c41f2e', 3.5);
+    // Línea de corte de tin
+    drawLine(ctx, K, { x: 0, y: 0, z: C.tin }, { x: C.W, y: 0, z: C.tin }, '#c41f2e', 2.5);
 
-    // Paredes laterales (Líneas de fuera inclinadas)
-    drawLine(ctx, K, { x: 0, y: 0, z: C.outFront }, { x: 0, y: C.L, z: C.outBack }, '#c41f2e', 3);
-    drawLine(ctx, K, { x: C.W, y: 0, z: C.outFront }, { x: C.W, y: C.L, z: C.outBack }, '#c41f2e', 3);
+    // Línea de saque en frontis (1.78 m)
+    drawLine(ctx, K, { x: 0, y: 0, z: C.svc }, { x: C.W, y: 0, z: C.svc }, '#c41f2e', 2.5);
+
+    // Línea de fuera en frontis (4.57 m)
+    drawLine(ctx, K, { x: 0, y: 0, z: C.outFront }, { x: C.W, y: 0, z: C.outFront }, '#c41f2e', 3);
+
+    // Paredes laterales (Línea de fuera inclinada)
+    drawLine(ctx, K, { x: 0, y: 0, z: C.outFront }, { x: 0, y: C.L, z: C.outBack }, '#c41f2e', 2.5);
+    drawLine(ctx, K, { x: C.W, y: 0, z: C.outFront }, { x: C.W, y: C.L, z: C.outBack }, '#c41f2e', 2.5);
 
     // Pared trasera de vidrio
     const glassPts = [
@@ -2117,27 +2008,27 @@ MS.RenderTV = (function () {
       { x: C.W, y: C.L, z: C.outBack },
       { x: 0, y: C.L, z: C.outBack }
     ];
-    drawPoly(ctx, K, glassPts, 'rgba(125, 211, 252, 0.12)', 'rgba(125, 211, 252, 0.55)', 2.5);
-    drawLine(ctx, K, { x: 0, y: C.L, z: C.outBack }, { x: C.W, y: C.L, z: C.outBack }, '#c41f2e', 3);
+    drawPoly(ctx, K, glassPts, 'rgba(125, 211, 252, 0.12)', 'rgba(125, 211, 252, 0.4)', 2);
+    drawLine(ctx, K, { x: 0, y: C.L, z: C.outBack }, { x: C.W, y: C.L, z: C.outBack }, '#c41f2e', 2.5);
 
     // Líneas rojas del suelo
-    drawLine(ctx, K, { x: 0, y: C.shortFront, z: 0.002 }, { x: C.W, y: C.shortFront, z: 0.002 }, '#c41f2e', 3);
-    drawLine(ctx, K, { x: C.half, y: C.shortFront, z: 0.002 }, { x: C.half, y: C.L, z: 0.002 }, '#c41f2e', 3);
-
+    // Línea corta
+    drawLine(ctx, K, { x: 0, y: C.shortFront, z: 0.002 }, { x: C.W, y: C.shortFront, z: 0.002 }, '#c41f2e', 2.5);
+    // Línea media cancha
+    drawLine(ctx, K, { x: C.half, y: C.shortFront, z: 0.002 }, { x: C.half, y: C.L, z: 0.002 }, '#c41f2e', 2.5);
     // Cuadros de saque
-    drawLine(ctx, K, { x: C.box, y: C.shortFront, z: 0.002 }, { x: C.box, y: C.shortFront + C.box, z: 0.002 }, '#c41f2e', 2.5);
-    drawLine(ctx, K, { x: 0, y: C.shortFront + C.box, z: 0.002 }, { x: C.box, y: C.shortFront + C.box, z: 0.002 }, '#c41f2e', 2.5);
+    drawLine(ctx, K, { x: C.box, y: C.shortFront, z: 0.002 }, { x: C.box, y: C.shortFront + C.box, z: 0.002 }, '#c41f2e', 2);
+    drawLine(ctx, K, { x: 0, y: C.shortFront + C.box, z: 0.002 }, { x: C.box, y: C.shortFront + C.box, z: 0.002 }, '#c41f2e', 2);
 
-    drawLine(ctx, K, { x: C.W - C.box, y: C.shortFront, z: 0.002 }, { x: C.W - C.box, y: C.shortFront + C.box, z: 0.002 }, '#c41f2e', 2.5);
-    drawLine(ctx, K, { x: C.W - C.box, y: C.shortFront + C.box, z: 0.002 }, { x: C.W, y: C.shortFront + C.box, z: 0.002 }, '#c41f2e', 2.5);
+    drawLine(ctx, K, { x: C.W - C.box, y: C.shortFront, z: 0.002 }, { x: C.W - C.box, y: C.shortFront + C.box, z: 0.002 }, '#c41f2e', 2);
+    drawLine(ctx, K, { x: C.W - C.box, y: C.shortFront + C.box, z: 0.002 }, { x: C.W, y: C.shortFront + C.box, z: 0.002 }, '#c41f2e', 2);
 
     if (!state) return;
-
     const { pA, pB, ball, activePlayer } = state;
     const striker = activePlayer === 'B' ? pB : pA;
     const opponent = activePlayer === 'B' ? pA : pB;
 
-    // 3. CAPA 3D DE ARBITRAJE: Cono Frontal (Regla 8.11 WSF)
+    // 3. CAPA 3D DE ARBITRAJE: Cono Frontal Proyectado (Regla 8.11 WSF)
     if (ball) {
       const inCone = opponent && C.inFrontCone(opponent, ball, 0.2);
       const conePts = [
@@ -2147,9 +2038,9 @@ MS.RenderTV = (function () {
       ];
       drawPoly(
         ctx, K, conePts,
-        inCone ? 'rgba(220, 38, 38, 0.42)' : 'rgba(10, 90, 146, 0.18)',
-        inCone ? '#dc2626' : 'rgba(10, 90, 146, 0.5)',
-        2
+        inCone ? 'rgba(220, 38, 38, 0.38)' : 'rgba(10, 90, 146, 0.16)',
+        inCone ? '#dc2626' : 'rgba(10, 90, 146, 0.4)',
+        1.5
       );
     }
 
@@ -2172,9 +2063,9 @@ MS.RenderTV = (function () {
       }
       drawPoly(
         ctx, K, ringPts,
-        swingBlocked ? 'rgba(217, 119, 6, 0.32)' : 'rgba(43, 138, 87, 0.14)',
-        swingBlocked ? '#d97706' : 'rgba(43, 138, 87, 0.6)',
-        2.5
+        swingBlocked ? 'rgba(217, 119, 6, 0.28)' : 'rgba(52, 211, 153, 0.12)',
+        swingBlocked ? '#d97706' : 'rgba(52, 211, 153, 0.5)',
+        2
       );
     }
 
@@ -2189,110 +2080,79 @@ MS.RenderTV = (function () {
         ctx, K,
         { x: striker.x, y: striker.y, z: 0.01 },
         { x: ball.x, y: ball.y, z: 0.01 },
-        accessBlocked ? '#dc2626' : '#0284c7',
-        3,
+        accessBlocked ? '#dc2626' : '#0ea5e9',
+        2.5,
         true
       );
     }
 
-    // 6. Jugadores 3D con siluetas deportivas completas
+    // 6. Jugadores 3D
     const drawPlayer3D = (p, col, label, isStriker) => {
       if (!p) return;
-
-      // Sombra en el suelo
+      // Sombra en piso
       const shadowPts = [];
-      for (let i = 0; i < 16; i++) {
-        const th = (i / 16) * Math.PI * 2;
-        shadowPts.push({ x: p.x + Math.cos(th) * 0.42, y: p.y + Math.sin(th) * 0.32, z: 0.005 });
+      for (let i = 0; i < 12; i++) {
+        const th = (i / 12) * Math.PI * 2;
+        shadowPts.push({ x: p.x + Math.cos(th) * 0.35, y: p.y + Math.sin(th) * 0.28, z: 0.005 });
       }
-      drawPoly(ctx, K, shadowPts, 'rgba(0, 0, 0, 0.38)');
+      drawPoly(ctx, K, shadowPts, 'rgba(0, 0, 0, 0.35)');
 
-      // Piernas y torso
-      const pLeft = { x: p.x - 0.2, y: p.y, z: 0 };
-      const pRight = { x: p.x + 0.2, y: p.y, z: 0 };
-      const pelvis = { x: p.x, y: p.y, z: 0.85 };
-      const chest = { x: p.x, y: p.y, z: 1.35 };
-      const head = { x: p.x, y: p.y, z: 1.78 };
+      // Cuerpo vertical
+      const base = { x: p.x, y: p.y, z: 0 };
+      const chest = { x: p.x, y: p.y, z: 1.15 };
+      const head = { x: p.x, y: p.y, z: 1.72 };
 
-      drawLine(ctx, K, pLeft, pelvis, '#1e293b', 6);
-      drawLine(ctx, K, pRight, pelvis, '#1e293b', 6);
-      drawLine(ctx, K, pelvis, chest, col, 10);
-
-      // Cabeza
+      drawLine(ctx, K, base, chest, col, 8);
       const hScr = proj(K, head);
       if (hScr) {
         ctx.beginPath();
-        ctx.arc(hScr.x, hScr.y, 10, 0, Math.PI * 2);
-        ctx.fillStyle = '#f8fafc';
+        ctx.arc(hScr.x, hScr.y, 8, 0, Math.PI * 2);
+        ctx.fillStyle = '#f5e9e0';
         ctx.fill();
         ctx.strokeStyle = col;
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 2.5;
         ctx.stroke();
 
         ctx.fillStyle = '#0f172a';
-        ctx.font = 'bold 11px Saira, sans-serif';
+        ctx.font = 'bold 9px Saira, sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(label, hScr.x, hScr.y);
-
-        // Nombre de jugador flotante
-        ctx.fillStyle = '#0f172a';
-        ctx.fillRect(hScr.x - 46, hScr.y - 28, 92, 16);
-        ctx.fillStyle = col;
-        ctx.font = 'bold 10px IBM Plex Mono, monospace';
-        ctx.fillText(isStriker ? `★ JUGADOR ${label}` : `JUGADOR ${label}`, hScr.x, hScr.y - 20);
       }
 
-      // Raqueta extendida en 3D
+      // Raqueta extendida
       const ang = p.ang || 0;
       const rkTip = {
-        x: p.x + Math.sin(ang) * 0.85,
-        y: p.y - Math.cos(ang) * 0.85,
-        z: 1.15
+        x: p.x + Math.sin(ang) * 0.75,
+        y: p.y - Math.cos(ang) * 0.75,
+        z: 0.95
       };
-      drawLine(ctx, K, chest, rkTip, '#fad02c', 3.5);
-
-      // Cabeza de raqueta
-      const rkScr = proj(K, rkTip);
-      if (rkScr) {
-        ctx.beginPath();
-        ctx.arc(rkScr.x, rkScr.y, 7, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(250, 208, 44, 0.4)';
-        ctx.fill();
-        ctx.strokeStyle = '#fad02c';
-        ctx.lineWidth = 2.5;
-        ctx.stroke();
-      }
+      drawLine(ctx, K, chest, rkTip, '#fad02c', 3);
     };
 
     drawPlayer3D(pA, '#1d4ed8', 'A', activePlayer === 'A');
     drawPlayer3D(pB, '#b91c1c', 'B', activePlayer === 'B');
 
-    // 7. Bola 3D con altura z y sombra en suelo
+    // 7. Pelota 3D con altura z y sombra en piso
     if (ball) {
+      // Sombra en el suelo
       const bShadow = proj(K, { x: ball.x, y: ball.y, z: 0.005 });
       if (bShadow) {
         ctx.beginPath();
-        ctx.arc(bShadow.x, bShadow.y, 5, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        ctx.arc(bShadow.x, bShadow.y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
         ctx.fill();
       }
-
+      // Bola real en elevación
       const bScr = proj(K, { x: ball.x, y: ball.y, z: ball.z });
       if (bScr) {
         ctx.beginPath();
-        ctx.arc(bScr.x, bScr.y, 7.5, 0, Math.PI * 2);
-        ctx.fillStyle = '#0f172a';
+        ctx.arc(bScr.x, bScr.y, 6, 0, Math.PI * 2);
+        ctx.fillStyle = '#111827';
         ctx.fill();
         ctx.strokeStyle = '#facc15';
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 1.5;
         ctx.stroke();
-
-        // Punto amarillo WSF
-        ctx.beginPath();
-        ctx.arc(bScr.x, bScr.y, 2.5, 0, Math.PI * 2);
-        ctx.fillStyle = '#facc15';
-        ctx.fill();
       }
     }
   }
@@ -2908,38 +2768,39 @@ MS.Cases = [
 ];
 
 /* ==== 62-sim.js ==== */
-/* Controlador del Simulador 3D / 2D de Arbitraje con Línea de Tiempo, Velocidades y Telemetría */
-'use strict';
-var MS = (typeof window !== 'undefined' ? window : globalThis).MS = (typeof window !== 'undefined' ? window : globalThis).MS || {};
-
+/* Controlador del Simulador 3D / 2D de Arbitraje y Sistema de Veredicto Interactivo */
 MS.Sim = (function () {
   const { U, C, Ball, Player, RenderTop, RenderTV, Cases } = MS;
 
   let currentCase = Cases[0];
   let curTime = 0;
-  let isPlaying = true;
-  let playSpeed = 1.0;
+  let isPlaying = false;
   let hasAppealed = false;
-  let stopAtFreeze = true;
   let userChoice = null;
   let animId = null;
   let lastTimestamp = 0;
   let camPreset = 'arbitro';
-  let viewMode = 'both'; // 'both', '3d', 'top'
 
   function init() {
     renderCaseList();
-    bindControls();
     loadCase(Cases[0].id);
-    window.addEventListener('resize', () => requestAnimationFrame(draw));
+    bindControls();
+    resizeCanvases();
+    window.addEventListener('resize', resizeCanvases);
   }
 
-  function sizeOf(cv) {
-    if (!cv) return { w: 400, h: 420 };
-    const r = cv.getBoundingClientRect();
-    const w = Math.max(280, r.width || cv.parentElement.clientWidth || 400);
-    const h = Math.max(340, r.height || cv.parentElement.clientHeight || 420);
-    return { w, h };
+  function resizeCanvases() {
+    const cTop = U.$('#canvasTop');
+    const c3D = U.$('#canvas3D');
+    if (cTop) {
+      cTop.width = cTop.parentElement.clientWidth;
+      cTop.height = 420;
+    }
+    if (c3D) {
+      c3D.width = c3D.parentElement.clientWidth;
+      c3D.height = 420;
+    }
+    draw();
   }
 
   function renderCaseList(filterCat = 'all') {
@@ -2977,9 +2838,9 @@ MS.Sim = (function () {
     curTime = 0;
     isPlaying = true;
     hasAppealed = false;
-    stopAtFreeze = true;
     userChoice = null;
 
+    // Actualizar UI
     U.$$('.case-card').forEach((el) => {
       el.classList.toggle('active', el.dataset.id === id);
     });
@@ -2994,24 +2855,18 @@ MS.Sim = (function () {
     if (infoCat) infoCat.textContent = currentCase.cat;
     if (infoFreeze) infoFreeze.textContent = `${currentCase.tFreeze.toFixed(1)}s`;
 
+    // Ocultar banner de apelación y veredicto
     const banner = U.$('#appealBanner');
     if (banner) banner.style.display = 'none';
 
     const vPanel = U.$('#verdictPanel');
     if (vPanel) vPanel.classList.remove('show');
 
+    // Resetear botones de decisión
     U.$$('.btn-decision').forEach((btn) => btn.classList.remove('selected'));
 
     const btnPlay = U.$('#btnSimPlay');
-    if (btnPlay) btnPlay.textContent = '⏸ Pausar';
-
-    const maxT = currentCase.ball[currentCase.ball.length - 1].t;
-    const scrubber = U.$('#simScrubber');
-    if (scrubber) {
-      scrubber.min = 0;
-      scrubber.max = Math.round(maxT * 100);
-      scrubber.value = 0;
-    }
+    if (btnPlay) btnPlay.textContent = '⏸ Pausa';
 
     startLoop();
   }
@@ -3026,62 +2881,34 @@ MS.Sim = (function () {
     const dt = Math.min(0.06, (now - lastTimestamp) / 1000);
     lastTimestamp = now;
 
-    const maxT = currentCase.ball[currentCase.ball.length - 1].t;
-
     if (isPlaying) {
-      curTime += dt * playSpeed;
+      curTime += dt;
 
-      // Congelación en tFreeze
-      if (stopAtFreeze && curTime >= currentCase.tFreeze && !hasAppealed) {
+      // Comprobar congelación tFreeze
+      if (curTime >= currentCase.tFreeze && !hasAppealed) {
         curTime = currentCase.tFreeze;
         isPlaying = false;
         hasAppealed = true;
         triggerAppeal();
       }
 
-      if (curTime >= maxT) {
+      // Tiempo límite del caso
+      const maxT = currentCase.ball[currentCase.ball.length - 1].t;
+      if (curTime > maxT) {
         curTime = maxT;
         isPlaying = false;
       }
     }
 
     draw();
-    updateTelemetry();
 
     const timeBar = U.$('#simTimeDisplay');
-    if (timeBar) timeBar.textContent = `${curTime.toFixed(2)}s / ${maxT.toFixed(1)}s`;
-
-    const scrubber = U.$('#simScrubber');
-    if (scrubber && !scrubber.matches(':active')) {
-      scrubber.value = Math.round(curTime * 100);
-    }
+    if (timeBar) timeBar.textContent = `${curTime.toFixed(2)}s`;
 
     const btnPlay = U.$('#btnSimPlay');
-    if (btnPlay) {
-      btnPlay.textContent = isPlaying ? '⏸ Pausar' : '▶ Reproducir';
-    }
+    if (btnPlay && !isPlaying) btnPlay.textContent = '▶ Reproducir';
 
     animId = requestAnimationFrame(loop);
-  }
-
-  function updateTelemetry() {
-    const teleBox = U.$('#simTelemetryText');
-    if (!teleBox) return;
-
-    const t = curTime;
-    const tf = currentCase.tFreeze;
-
-    if (t < 0.8) {
-      teleBox.innerHTML = `<b>0.0s:</b> Inicio de la jugada. Jugador conectado en preparación de golpe.`;
-    } else if (t < tf - 0.4) {
-      teleBox.innerHTML = `<b>${t.toFixed(1)}s:</b> La pelota rebota hacia la pared frontal. Ambos jugadores se desplazan por la cancha.`;
-    } else if (t < tf) {
-      teleBox.innerHTML = `<b>${t.toFixed(1)}s:</b> Aproximación crítica hacia la bola. Analizando líneas de acceso y cono frontal...`;
-    } else if (Math.abs(t - tf) <= 0.1) {
-      teleBox.innerHTML = `<span style="color: var(--bad); font-weight: 800;">🚨 ¡${tf.toFixed(1)}s — MOMENTO DEL ESTORBO / APELACIÓN!</span> ${currentCase.desc}`;
-    } else {
-      teleBox.innerHTML = `<b>${t.toFixed(1)}s:</b> Continuación de la trayectoria tras el punto de apelación.`;
-    }
   }
 
   function triggerAppeal() {
@@ -3109,17 +2936,8 @@ MS.Sim = (function () {
       appeal: hasAppealed
     };
 
-    if (c3D && (viewMode === 'both' || viewMode === '3d')) {
-      const { w, h } = sizeOf(c3D);
-      const ctx = U.fitCanvas(c3D, w, h);
-      RenderTV.render(ctx, w, h, state, camPreset);
-    }
-
-    if (cTop && (viewMode === 'both' || viewMode === 'top')) {
-      const { w, h } = sizeOf(cTop);
-      const ctx = U.fitCanvas(cTop, w, h);
-      RenderTop.render(ctx, w, h, state);
-    }
+    if (cTop) RenderTop.render(cTop, state);
+    if (c3D) RenderTV.render(c3D, state, camPreset);
   }
 
   function makeDecision(choice) {
@@ -3152,7 +2970,7 @@ MS.Sim = (function () {
     const pDespeje = U.$('#pilarDespeje');
 
     if (callEl) {
-      callEl.textContent = `${isCorrect ? '✅ ¡DECISIÓN CORRECTA!' : '❌ DECISIÓN DISCREPANTE'} — ${currentCase.decision}`;
+      callEl.textContent = `${isCorrect ? '✅ ¡DECISIÓN CORRECTA!' : '❌ DECISIÓN INCORRECTA'} — ${currentCase.decision}`;
       callEl.style.color = isCorrect ? 'var(--ok)' : 'var(--bad)';
     }
     if (ruleEl) ruleEl.textContent = currentCase.regla;
@@ -3167,39 +2985,12 @@ MS.Sim = (function () {
     vPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
-  function setViewMode(mode) {
-    viewMode = mode;
-    const wrap3D = U.$('#wrapper3D');
-    const wrapTop = U.$('#wrapperTop');
-    const container = U.$('#canvasesSplit');
-
-    U.$$('[data-vmode]').forEach((btn) => {
-      btn.classList.toggle('active', btn.dataset.vmode === mode);
-    });
-
-    if (mode === 'both') {
-      if (wrap3D) wrap3D.style.display = 'block';
-      if (wrapTop) wrapTop.style.display = 'block';
-      if (container) container.style.gridTemplateColumns = '1.15fr 0.85fr';
-    } else if (mode === '3d') {
-      if (wrap3D) wrap3D.style.display = 'block';
-      if (wrapTop) wrapTop.style.display = 'none';
-      if (container) container.style.gridTemplateColumns = '1fr';
-    } else if (mode === 'top') {
-      if (wrap3D) wrap3D.style.display = 'none';
-      if (wrapTop) wrapTop.style.display = 'block';
-      if (container) container.style.gridTemplateColumns = '1fr';
-    }
-
-    requestAnimationFrame(draw);
-  }
-
   function bindControls() {
     const btnPlay = U.$('#btnSimPlay');
     if (btnPlay) {
       btnPlay.addEventListener('click', () => {
         isPlaying = !isPlaying;
-        btnPlay.textContent = isPlaying ? '⏸ Pausar' : '▶ Reproducir';
+        btnPlay.textContent = isPlaying ? '⏸ Pausa' : '▶ Reproducir';
       });
     }
 
@@ -3209,51 +3000,15 @@ MS.Sim = (function () {
         curTime = 0;
         isPlaying = true;
         hasAppealed = false;
-        stopAtFreeze = true;
+        userChoice = null;
         const banner = U.$('#appealBanner');
         if (banner) banner.style.display = 'none';
         const vPanel = U.$('#verdictPanel');
         if (vPanel) vPanel.classList.remove('show');
         U.$$('.btn-decision').forEach((btn) => btn.classList.remove('selected'));
-        if (btnPlay) btnPlay.textContent = '⏸ Pausar';
+        if (btnPlay) btnPlay.textContent = '⏸ Pausa';
       });
     }
-
-    const btnFullPlay = U.$('#btnSimFullPlay');
-    if (btnFullPlay) {
-      btnFullPlay.addEventListener('click', () => {
-        stopAtFreeze = false;
-        curTime = 0;
-        isPlaying = true;
-        if (btnPlay) btnPlay.textContent = '⏸ Pausar';
-      });
-    }
-
-    const scrubber = U.$('#simScrubber');
-    if (scrubber) {
-      scrubber.addEventListener('input', (e) => {
-        curTime = parseFloat(e.target.value) / 100;
-        isPlaying = false;
-        draw();
-        updateTelemetry();
-      });
-    }
-
-    // Selector de velocidades (0.25x, 0.5x, 1x)
-    U.$$('[data-speed]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        playSpeed = parseFloat(btn.dataset.speed);
-        U.$$('[data-speed]').forEach((b) => b.classList.remove('active'));
-        btn.classList.add('active');
-      });
-    });
-
-    // Selector de modo de vista (both, 3d, top)
-    U.$$('[data-vmode]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        setViewMode(btn.dataset.vmode);
-      });
-    });
 
     const camSelect = U.$('#camPresetSelect');
     if (camSelect) {
@@ -3279,16 +3034,8 @@ MS.Sim = (function () {
     const btnNextCase = U.$('#btnNextCase');
     if (btnNextCase) {
       btnNextCase.addEventListener('click', () => {
-        const nextIdx = currentCase.num % Cases.length;
+        const nextIdx = (currentCase.num % Cases.length);
         loadCase(Cases[nextIdx].id);
-      });
-    }
-
-    const btnPrevCase = U.$('#btnPrevCase');
-    if (btnPrevCase) {
-      btnPrevCase.addEventListener('click', () => {
-        const prevIdx = (currentCase.num - 2 + Cases.length) % Cases.length;
-        loadCase(Cases[prevIdx].id);
       });
     }
   }
@@ -4282,9 +4029,6 @@ MS.Scoreboard = (function () {
 
 /* ==== 99-main.js ==== */
 /* Inicialización general, enrutador de vistas y gestor de temas */
-'use strict';
-var MS = (typeof window !== 'undefined' ? window : globalThis).MS = (typeof window !== 'undefined' ? window : globalThis).MS || {};
-
 document.addEventListener('DOMContentLoaded', () => {
   const { U, Sim, Interference, RulesApp, Scoreboard } = MS;
 
@@ -4299,15 +4043,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     window.location.hash = sectionId;
-    if (typeof window.scrollTo === 'function') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    // Redimensionar canvases al entrar al simulador
-    if (sectionId === 'simulador') {
+    // Si entra al simulador, recalcular canvas
+    if (sectionId === 'simulador' && Sim) {
       setTimeout(() => {
         window.dispatchEvent(new Event('resize'));
-      }, 60);
+      }, 50);
     }
   }
 
@@ -4320,8 +4062,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Hash inicial: por defecto abrir directamente en el simulador interactivo
-  const hash = window.location.hash.replace('#', '') || 'simulador';
+  // Hash inicial
+  const hash = window.location.hash.replace('#', '') || 'inicio';
   navigateTo(hash);
 
   // 2. Modo Claro / Oscuro
@@ -4351,5 +4093,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </script>
 
+<script src="/material/course-guard.js"></script>
+<script>if(typeof window.PhysicsAILabGuard==='undefined'){var s=document.createElement('script');s.src='../../course-guard.js';document.head.appendChild(s);}</script>
 </body>
 </html>

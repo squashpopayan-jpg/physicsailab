@@ -39,7 +39,8 @@
         "optica": ["OPTICA-2026", "FOTON-26", "OBANDO-OPTICA-26", "LUZ-RAYO-26", "MAXWELL-OPTICA-26"],
         "solido": ["SOLIDO-2026", "ESTADO-SOLIDO-26", "SOLIDOS-UFOP-26", "OBANDO-SOLIDO-26"],
         "faro": ["FARO-2026", "PODS-REACCION-26", "LUZ-FARO-26", "OBANDO-FARO-26"],
-        "diagnosticas": ["DIAGNOSTICAS-2026", "PRUEBAS-26", "OBANDO-DIAG-26"]
+        "diagnosticas": ["DIAGNOSTICAS-2026", "PRUEBAS-26", "OBANDO-DIAG-26"],
+        "squash_arbitraje": ["ARBITRAJE-2026", "SQUASH-REF-26", "MANU-REF-26", "WSF-REGLAS-26"]
     };
 
     function getCurrentCourseId() {
@@ -47,11 +48,13 @@
         const m = p.match(/1_cursos\/([^\/]+)/);
         if (m && m[1]) {
             const raw = m[1];
+            if (raw === 'manu_squash_arbitraje' || raw === 'squash_arbitraje' || raw === 'arbitraje') return 'squash_arbitraje';
             if (raw === 'squash' || raw === 'squash-sim') return 'squash_sim';
             return raw;
         }
 
         if (p.includes('solido') || p.includes('estado-solido')) return 'solido';
+        if (p.includes('arbitraje') || p.includes('manu_squash_arbitraje')) return 'squash_arbitraje';
         if (p.includes('faro')) return 'faro';
         if (p.includes('diagnostica')) return 'diagnosticas';
         if (p.includes('optica')) return 'optica';
@@ -78,6 +81,7 @@
 
         const t = (document.title || '').toLowerCase();
         if (t.includes('sólido') || t.includes('solido')) return 'solido';
+        if (t.includes('arbitraje')) return 'squash_arbitraje';
         if (t.includes('faro')) return 'faro';
         if (t.includes('diagnostica')) return 'diagnosticas';
         if (t.includes('óptica') || t.includes('optica')) return 'optica';
@@ -200,6 +204,7 @@
     const isPendulo = courseId === 'pendulo' || !!document.querySelector('nav a[data-tab="matematico"]');
     const isIngles = courseId === 'ingles' || !!document.querySelector('.stepper');
     const isTorneos = courseId === 'torneos';
+    const isArbitraje = courseId === 'squash_arbitraje';
     const isFaro = courseId === 'faro' || !!document.querySelector('.indice');
     const isRecorrido = courseId === 'recorrido';
 
@@ -1555,6 +1560,48 @@
                     }
                 }
             }, { passive: true });
+        }
+    }
+
+    
+    function applyArbitrajeGuard() {
+        const unlocked = isUnlocked();
+        // Módulos que requieren clave completa: Árbol de interferencias y Planilla/Marcador
+        const lockedTabs = ['interferencia', 'marcador'];
+
+        lockedTabs.forEach((tabId) => {
+            const btn = document.querySelector(`.nav button[data-go="${tabId}"]`);
+            if (btn) {
+                const existingPill = btn.querySelector('.pg-lock-pill');
+                if (!unlocked) {
+                    btn.classList.add('pg-locked-tab');
+                    if (!existingPill) {
+                        const pill = document.createElement('span');
+                        pill.className = 'pg-lock-pill';
+                        pill.textContent = '🔒';
+                        btn.appendChild(pill);
+                    }
+                } else {
+                    btn.classList.remove('pg-locked-tab');
+                    if (existingPill) existingPill.remove();
+                }
+            }
+        });
+
+        if (!window.__arbitrajeGuardBound) {
+            window.__arbitrajeGuardBound = true;
+            document.addEventListener('click', (e) => {
+                if (isUnlocked()) return;
+                const btn = e.target.closest('.nav button[data-go]');
+                if (btn) {
+                    const go = btn.getAttribute('data-go');
+                    if (lockedTabs.includes(go)) {
+                        e.preventDefault();
+                        e.stopImmediatePropagation();
+                        openPaywall('squash_arbitraje');
+                    }
+                }
+            }, true);
         }
     }
 
