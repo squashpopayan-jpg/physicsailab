@@ -616,6 +616,42 @@
             background: rgba(52, 211, 153, 0.1);
         }
 
+        
+        @media (max-width: 768px) {
+            .pg-modal {
+                padding: 1.35rem 1rem !important;
+                width: 94% !important;
+                max-width: 94% !important;
+                max-height: 85vh !important;
+                max-height: 85dvh !important;
+                border-radius: 16px !important;
+            }
+            .pg-input {
+                font-size: 16px !important; /* Previene auto-zoom en iOS Safari */
+                min-height: 44px;
+            }
+            .pg-input-group {
+                flex-direction: column !important;
+                gap: 0.5rem !important;
+            }
+            .pg-btn-unlock {
+                width: 100% !important;
+                padding: 0.75rem !important;
+                min-height: 44px !important;
+                justify-content: center;
+            }
+            .pg-buy-actions {
+                flex-direction: column !important;
+            }
+            .pg-btn-buy, .pg-btn-whatsapp {
+                width: 100% !important;
+                box-sizing: border-box !important;
+                text-align: center !important;
+                min-height: 44px !important;
+                justify-content: center;
+            }
+        }
+
         /* Toast feedback */
         .pg-toast {
             position: fixed;
