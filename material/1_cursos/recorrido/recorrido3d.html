@@ -39,7 +39,43 @@ kbd{background:#223244;border:1px solid #3a5068;border-radius:4px;padding:1px 6p
 #act .sw{display:inline-flex;gap:2px}#act .sw i{display:inline-block;width:14px;height:14px;border-radius:4px}
 #act .rd{color:var(--mu);line-height:1.4;font-size:12px;margin-top:2px}#act .pcard{margin-top:6px;padding:8px;border:1px dashed #3a5068;border-radius:8px;color:var(--mu)}
 #act .pcard .rs{margin-top:6px;color:var(--tx);line-height:1.5}
-@media(max-width:700px){#map canvas{width:150px}#cred{display:none}#act{top:auto;bottom:70px;right:10px;left:10px;width:auto;max-height:45%}}
+/* Optimización visual para celular y reducción de cuadros */
+.mini-top-btn{padding:3px 8px;font-size:11px;border-radius:6px;cursor:pointer;font-weight:700;display:inline-flex;align-items:center;gap:3px;box-shadow:0 2px 5px rgba(0,0,0,0.3);transition:transform 0.1s}
+.mini-top-btn:hover{transform:translateY(-1px)}
+
+@media(max-width:768px){
+  #top{top:8px;left:8px;right:8px;width:auto;max-width:100%;padding:6px 10px;background:rgba(15,23,42,0.85);backdrop-filter:blur(10px);border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,0.5)}
+  #top b{font-size:13px}
+  #top small{display:none}
+  #loc{font-size:11px;margin-top:2px}
+  
+  /* Minimapa flotante móvil plegable que no estorba */
+  #map{top:72px;right:8px;width:126px;padding:4px;background:rgba(15,23,42,0.88);backdrop-filter:blur(8px);border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,0.6);z-index:20}
+  #map canvas{width:118px!important;height:auto!important;border-radius:6px}
+  
+  /* Barra inferior de teletransporte: fila horizontal deslizable limpia de 38px */
+  #tp{bottom:8px!important;left:8px!important;right:8px!important;padding:4px 6px!important;display:flex!important;gap:5px!important;overflow-x:auto!important;flex-wrap:nowrap!important;justify-content:flex-start!important;-webkit-overflow-scrolling:touch!important;scrollbar-width:none!important;border-radius:12px!important;background:rgba(15,23,42,0.82)!important;backdrop-filter:blur(10px)!important}
+  #tp::-webkit-scrollbar{display:none!important}
+  #tp button{padding:4px 10px!important;font-size:11px!important;white-space:nowrap!important;flex-shrink:0!important;border-radius:16px!important}
+  
+  /* Cuadro de actividad y simulación: reducido y plegable */
+  #act{top:auto!important;bottom:54px!important;right:8px!important;left:8px!important;width:auto!important;max-height:40%!important;background:rgba(15,23,42,0.88)!important;backdrop-filter:blur(12px)!important;border-radius:12px!important;box-shadow:0 8px 28px rgba(0,0,0,0.7)!important}
+  #act .clk{font-size:18px!important}
+  #act table td{padding:2px 3px!important;font-size:11px!important}
+  #act .ph{font-size:11.5px!important;margin:2px 0 4px!important}
+  #act .cfg{gap:4px!important}
+  #act .cfg input{padding:2px!important;font-size:10.5px!important}
+  #cred{display:none}
+}
+
+/* Reducción estética de tamaño en cuadros de la simulación */
+#act{font-size:11.5px}
+#act .clk{font-size:20px}
+#act table td{padding:2px 4px}
+.station-exp-box{padding:5px;margin-bottom:5px}
+.station-exp-box .exp-name{padding:3px 5px;font-size:11px;margin-bottom:3px}
+.station-exp-box .expo-inputs input{padding:2px 4px;font-size:10.5px}
+
 
 /* ===== Estilos de Plantilla de Roles en 1 Hoja ===== */
 .sheet-modal{position:fixed;inset:0;background:rgba(8,12,17,.88);backdrop-filter:blur(8px);z-index:9999;overflow-y:auto;padding:16px;box-sizing:border-box}
@@ -210,15 +246,31 @@ kbd{background:#223244;border:1px solid #3a5068;border-radius:4px;padding:1px 6p
 </style></head><body>
 <canvas id="c"></canvas>
 <div class="pn" id="top">
-  <b>Departamento de Física · recorrido 3D</b>
-  <small>Universidad del Cauca · maqueta a escala del plano</small>
-  <div id="loc">Entrega</div>
-  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;">
-    <button id="topBtnSheet" style="background:var(--ac);border:1px solid #ff7e47;color:#fff;padding:5px 11px;border-radius:6px;font-size:11.5px;cursor:pointer;font-weight:700;display:inline-flex;align-items:center;gap:5px;box-shadow:0 2px 6px rgba(224,101,43,0.35);">📋 Plantilla de Roles</button>
-    <button id="btnQuickNav" style="background:linear-gradient(135deg,#0284c7,#2563eb);border:1px solid #38bdf8;color:#fff;padding:5px 11px;border-radius:6px;font-size:11.5px;cursor:pointer;font-weight:700;display:inline-flex;align-items:center;gap:5px;box-shadow:0 2px 8px rgba(37,99,235,0.4);">🧭 ¿A dónde ir? (Elegir)</button>
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+    <div>
+      <b style="font-size:13.5px;">Depto. de Física · 3D</b>
+      <span id="loc" style="margin-left:4px;font-size:11.5px;color:var(--ac);font-weight:700;">· Entrega</span>
+    </div>
+    <div style="display:flex;gap:4px;align-items:center;">
+      <button id="btnZoomIn" title="Acercar vista (Zoom dentro de salas o aérea)" style="padding:2px 7px;font-size:12px;font-weight:800;background:#0284c7;border:1px solid #38bdf8;color:#fff;border-radius:5px;cursor:pointer;">＋</button>
+      <button id="btnZoomOut" title="Alejar vista (Zoom)" style="padding:2px 7px;font-size:12px;font-weight:800;background:#0284c7;border:1px solid #38bdf8;color:#fff;border-radius:5px;cursor:pointer;">－</button>
+      <button id="btnResetZoom" title="Restablecer vista normal" style="padding:2px 6px;font-size:10px;font-weight:700;background:#1e293b;border:1px solid #475569;color:#94a3b8;border-radius:5px;cursor:pointer;">1:1</button>
+    </div>
+  </div>
+  <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:5px;">
+    <button id="topBtnSheet" class="mini-top-btn" style="background:var(--ac);border:1px solid #ff7e47;color:#fff;">📋 Roles</button>
+    <button id="btnQuickNav" class="mini-top-btn" style="background:linear-gradient(135deg,#0284c7,#2563eb);border:1px solid #38bdf8;color:#fff;">🧭 ¿A dónde ir?</button>
+    <button id="btnToggleMap" class="mini-top-btn" style="background:#1e293b;border:1px solid #475569;color:#e2e8f0;">🗺️ Mapa</button>
+    <button id="btnToggleAct" class="mini-top-btn" style="background:#1e293b;border:1px solid #475569;color:#e2e8f0;">⏱️ Actividad</button>
   </div>
 </div>
-<div class="pn" id="map"><canvas id="mm" width="230" height="172"></canvas></div>
+<div class="pn" id="map">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:1px 2px 3px;">
+    <span style="font-size:9.5px;font-weight:700;color:var(--mu);letter-spacing:0.4px;">MAPA PLANTA</span>
+    <button id="btnCloseMap" style="background:none;border:none;color:#94a3b8;font-size:11px;padding:0 3px;cursor:pointer;line-height:1;">✕</button>
+  </div>
+  <canvas id="mm" width="230" height="172"></canvas>
+</div>
 <div class="pn" id="act"></div>
 <div class="pn" id="tp"></div>
 <div id="cred">Mg. Manuel Alejandro Obando · Depto. de Física · Unicauca</div>
@@ -324,7 +376,8 @@ kbd{background:#223244;border:1px solid #3a5068;border-radius:4px;padding:1px 6p
         <p>Departamento de Física · Universidad del Cauca | 3 Salas en Ala Izquierda + 1 Estación en Pasillo Izquierdo</p>
       </div>
       <div class="sheet-actions no-print">
-        <button id="btnPrintSheet" class="btn-sheet btn-primary">🖨️ Imprimir / Guardar PDF (1 Hoja)</button>
+        <button id="btnApplyPlantilla3D" class="btn-sheet" style="background:#0284c7;border-color:#38bdf8;color:#fff;font-weight:700;box-shadow:0 2px 8px rgba(2,132,199,0.4);">💾 Actualizar Recorrido 3D</button>
+        <button id="btnPrintSheet" class="btn-sheet btn-primary">🖨️ Imprimir / PDF (1 Hoja)</button>
         <button id="btnExportJSON" class="btn-sheet">📥 Exportar JSON</button>
         <button id="btnImportJSON" class="btn-sheet">📤 Importar JSON</button>
         <input type="file" id="fileImportJSON" accept=".json" style="display:none;">
@@ -1017,14 +1070,36 @@ addEventListener('mousemove',e=>{const locked=document.pointerLockElement===cv;
   if(P.aerial){const s=AER.h*.0016;AER.cx-=(e.clientX-lx)*s;AER.cz-=(e.clientY-ly)*s*1.2}
   else{P.yaw-=(e.clientX-lx)*.004;P.pitch=Math.max(-1.3,Math.min(1.3,P.pitch-(e.clientY-ly)*.004))}
   lx=e.clientX;ly=e.clientY}});
-cv.addEventListener('wheel',e=>{if(!P.aerial)return;e.preventDefault();zoom(Math.exp(e.deltaY*.0012))},{passive:false});
+cv.addEventListener('wheel',e=>{
+  e.preventDefault();
+  if(P.aerial){
+    zoom(Math.exp(e.deltaY*.0012));
+  } else {
+    // Zoom adentro de las salas y pasillos (Ajuste del campo de visión fov)
+    const factor = e.deltaY > 0 ? 1.08 : 0.92;
+    zoomWalk(factor);
+  }
+},{passive:false});
 cv.addEventListener('dblclick',()=>{if(!P.aerial){try{cv.requestPointerLock()}catch(e){}}});
 const T={};let pinch=0;
 cv.addEventListener('touchstart',e=>{for(const t of e.changedTouches)T[t.identifier]={x:t.clientX,y:t.clientY,sx:t.clientX,sy:t.clientY,left:t.clientX<innerWidth/2};
  if(e.touches.length===2)pinch=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY)},{passive:true});
 cv.addEventListener('touchmove',e=>{
  if(P.aerial){
-  if(e.touches.length===2){const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);if(pinch)zoom(pinch/d);pinch=d}
+  if(e.touches.length===2){
+  const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+  if(pinch){
+    if(P.aerial){
+      zoom(pinch/d);
+    } else {
+      // Zoom táctil adentro de las salas (Pinch to zoom)
+      const ratio = pinch/d;
+      cam.fov = Math.max(26, Math.min(85, cam.fov * (ratio > 1 ? 1.025 : 0.975)));
+      cam.updateProjectionMatrix();
+    }
+  }
+  pinch=d;
+}
   else for(const t of e.changedTouches){const s=T[t.identifier];if(!s)continue;const k=AER.h*.0016;AER.cx-=(t.clientX-s.x)*k;AER.cz-=(t.clientY-s.y)*k*1.2;s.x=t.clientX;s.y=t.clientY}
   return}
  for(const t of e.changedTouches){const s=T[t.identifier];if(!s)continue;
@@ -1045,9 +1120,9 @@ function drawMap(){g.clearRect(0,0,230,172);
  const px=ox+P.x*K,pz=oz+P.z*K;g.save();g.translate(px,pz);g.rotate(-P.yaw+Math.PI);
  g.fillStyle='#ffd23f';g.beginPath();g.moveTo(0,-6);g.lineTo(4.5,5);g.lineTo(-4.5,5);g.closePath();g.fill();g.restore()}
 // ===== Simulación de la actividad (v3): 80 estudiantes, 4 grupos, parejas de salas (1–2 y 3–4) =====
-const CFG={N:80,NE:4,PX:2,D1:10,T1:3,S:9,T2:2,F:3,E:4};          // N estudiantes; NE experimentos por sala; PX expositores por experimento; minutos
+const CFG={N:80,NE:5,PX:3,D1:10,T1:3,S:9,T2:2,F:3,E:4};          // N estudiantes; NE experimentos por sala; PX expositores por experimento; minutos
 try{const c=JSON.parse(localStorage.getItem('fisicaTourCFG')||'null');if(c)Object.keys(CFG).forEach(k=>{if(c[k]>0)CFG[k]=c[k]})}catch(e){}
-CFG.NE=CFG.NE>=5?5:4;CFG.PX=CFG.PX>=2?2:1;CFG.N=Math.max(8,Math.min(160,Math.round(CFG.N)));
+CFG.NE=Math.max(4,Math.min(5,CFG.NE||5));CFG.PX=Math.max(1,Math.min(3,CFG.PX||3));CFG.N=Math.max(8,Math.min(160,Math.round(CFG.N)));
 const NG=4,GSZ=g=>Math.floor(CFG.N/NG)+(g<CFG.N%NG?1:0);
 const RN=['Sala 1 · Mecánica 1','Sala 2 · Mecánica 2','Sala 3 · Fluidos','Estación 4 · Pasillo (frente a Sistemas)'],RSH=['Sala 1','Sala 2','Sala 3','Estación 4 (Pasillo)'];
 const GRP=[{n:'A',c:0xe53935,css:'#e53935'},{n:'B',c:0x1e88e5,css:'#1e88e5'},{n:'C',c:0x43a047,css:'#43a047'},{n:'D',c:0xfdd835,css:'#fdd835'}];
@@ -1103,7 +1178,7 @@ const RM=[0,1,2,3].map(r=>{
    add([x0+4.5,CW+6.4],0,[x0+4.5,CW+7.9],[x0+4.5,CW+9.4],Math.PI);
    add([x0+7,CW+9.9],0,[x0+7,CW+11.3],[x0+7,CW+12.7],Math.PI,AE,[[x0+1.3,CW+9.9],[x0+7,CW+9.9]]);
   }
-  return{r,x0,fl,isPasillo:false,aisle,AE,inPts,spots:sp.slice(0,CFG.NE),gspot:[x0+2.3,CW+1.7],ct:[x0+11.8,CW+1.3]};
+  return{r,x0,fl,isPasillo:false,aisle,AE,inPts,spots:sp.slice(0,5),gspot:[x0+2.3,CW+1.7],ct:[x0+11.8,CW+1.3]};
  }else{
   // Estación 4 en el Pasillo frente a Sala de Sistemas (x: 69.5 a 83.5)
   const x0=69.0,aisle=3.2,AE=[71.5,aisle];
@@ -1115,7 +1190,7 @@ const RM=[0,1,2,3].map(r=>{
   add([77.5,3.0],0,[77.5,1.35],[77.5,0.5],Math.PI,[77.5,aisle],[[77.5,3.0]]);
   add([80.5,3.0],0,[80.5,1.35],[80.5,0.5],Math.PI,[80.5,aisle],[[80.5,3.0]]);
   add([82.6,3.0],0,[82.6,1.35],[82.6,0.5],Math.PI,[82.6,aisle],[[82.6,3.0]]);
-  return{r,x0,fl:false,isPasillo:true,aisle,AE,inPts,spots:sp.slice(0,CFG.NE),gspot:[69.8,3.8],ct:[69.2,1.8]};
+  return{r,x0,fl:false,isPasillo:true,aisle,AE,inPts,spots:sp.slice(0,5),gspot:[69.8,3.8],ct:[69.2,1.8]};
  }
 });
 const dX=r=>r===3?69.0:RM[r].x0+7;
@@ -1433,6 +1508,107 @@ requestAnimationFrame(frame);
 window.__P=P;window.__free=free;window.__gy=gy;window.__SIM=SIM;window.__AG=AG;window.__groupState=groupState;window.__AER=AER;window.__STEPS=STEPS;window.__gotoStep=gotoStep;
 
 
+// ===== Funciones de Zoom (Dentro de las salas y Vista Aérea) =====
+function zoomWalk(factor){
+  cam.fov = Math.max(26, Math.min(85, cam.fov * factor));
+  cam.updateProjectionMatrix();
+  const pct = Math.round((60 / cam.fov) * 100);
+  const desc = cam.fov < 50 ? 'Acercamiento detallado (Mesas y experimentos)' : (cam.fov > 68 ? 'Gran angular (Vista amplia de sala)' : 'Vista normal');
+  showDestinationToast('Zoom: ' + pct + '%', desc, '#0284c7');
+}
+function resetZoomWalk(){
+  cam.fov = 60;
+  cam.updateProjectionMatrix();
+  showDestinationToast('Zoom 100%', 'Campo de visión estándar restablecido', '#0284c7');
+}
+
+if($('btnZoomIn')){
+  $('btnZoomIn').onclick = () => {
+    if(P.aerial) zoom(0.8);
+    else zoomWalk(0.88);
+  };
+}
+if($('btnZoomOut')){
+  $('btnZoomOut').onclick = () => {
+    if(P.aerial) zoom(1.25);
+    else zoomWalk(1.14);
+  };
+}
+if($('btnResetZoom')){
+  $('btnResetZoom').onclick = () => {
+    if(P.aerial){ AER.h = 66; showDestinationToast('Vista aérea 1:1', 'Altura restablecida', '#38bdf8'); }
+    else resetZoomWalk();
+  };
+}
+
+// ===== Control de Paneles en Pantallas Móviles =====
+if($('btnToggleMap') && $('map')){
+  $('btnToggleMap').onclick = () => {
+    const isShown = $('map').style.display !== 'none';
+    $('map').style.display = isShown ? 'none' : 'block';
+    $('btnToggleMap').classList.toggle('on', !isShown);
+  };
+}
+if($('btnCloseMap') && $('map')){
+  $('btnCloseMap').onclick = () => {
+    $('map').style.display = 'none';
+    if($('btnToggleMap')) $('btnToggleMap').classList.remove('on');
+  };
+}
+if($('btnToggleAct') && $('act')){
+  $('btnToggleAct').onclick = () => {
+    const isShown = $('act').style.display !== 'none';
+    $('act').style.display = isShown ? 'none' : 'block';
+    $('btnToggleAct').classList.toggle('on', !isShown);
+  };
+}
+
+// Ocultar minimapa y panel en móviles al arrancar para no estorbar
+if(window.innerWidth <= 768){
+  if($('map')) $('map').style.display = 'none';
+  if($('act')) $('act').style.display = 'none';
+}
+
+// ===== Sincronización Inmediata y Completa de la Plantilla al Recorrido 3D =====
+function applyPlantillaUpdatesTo3D(){
+  // 1. Refrescar todos los nombres en letreros y sprites
+  refreshTags();
+
+  // 2. Sincronizar configuración de 4 vs 5 mesas y expositores
+  CFG.NE = sheetNE;
+  CFG.PX = sheetPX;
+  try{ localStorage.setItem('fisicaTourCFG', JSON.stringify(CFG)); }catch(e){}
+
+  // 3. Actualizar visibilidad de Mesa 5 y Expositor 3 en los letreros 3D
+  TAGS.forEach(T0 => {
+    if(!T0.ref) return;
+    if(T0.ref.endsWith('.4') && T0.kind === 'exp'){
+      T0.sp.visible = (sheetNE >= 5);
+    }
+    if(T0.ref.endsWith('.2') && T0.ref.startsWith('expo.')){
+      T0.sp.visible = (sheetPX >= 3);
+    }
+    const val = nget(T0.ref) || T0.ph;
+    T0.set(T0.l1, val);
+  });
+
+  // 4. Actualizar visibilidad de figuras humanas de apoyo y 5.ª mesa
+  AG.forEach(a => {
+    if(!a.nameRef) return;
+    if(a.nameRef.endsWith('.4') && a.role === 'expositor'){
+      a.fig.visible = (sheetNE >= 5);
+    }
+    if(a.nameRef.endsWith('.2') && a.nameRef.startsWith('expo.')){
+      a.fig.visible = (sheetPX >= 3);
+    }
+  });
+
+  lastCard = '';
+  if(SEL) {
+    $('pcard').innerHTML = cardHTML(SEL, SIM.t);
+  }
+}
+
 // ===== Funciones Interactivas de Teletransporte y Notificaciones =====
 function showDestinationToast(title, subtitle, color){
   let t = document.getElementById('destToast');
@@ -1549,6 +1725,7 @@ function openSheetModal(){
 function closeSheetModal(){
   if(!modalP) return;
   modalP.style.display = 'none';
+  applyPlantillaUpdatesTo3D();
 }
 
 if($('topBtnSheet')) $('topBtnSheet').onclick = openSheetModal;
@@ -1595,10 +1772,9 @@ if(modalP){
     const p = e.target.dataset && e.target.dataset.sheet;
     if(!p) return;
     nset(p, e.target.value);
-    // Sincronizar campo en la barra lateral #names si existe
     const sideInp = $('names') ? $('names').querySelector('[data-p="'+p+'"]') : null;
     if(sideInp) sideInp.value = e.target.value;
-    refreshTags();
+    applyPlantillaUpdatesTo3D();
   };
 }
 
@@ -1650,6 +1826,14 @@ if($('btnImportJSON') && $('fileImportJSON')){
 }
 
 // Botón Cargar Datos de Ejemplo Completo con 5 Mesas y Estudiantes para cada función
+if($('btnApplyPlantilla3D')){
+  $('btnApplyPlantilla3D').onclick = () => {
+    applyPlantillaUpdatesTo3D();
+    showDestinationToast('✅ Recorrido 3D Actualizado', 'Todos los nombres y mesas sincronizados en vivo', '#22c55e');
+    closeSheetModal();
+  };
+}
+
 if($('btnDemoData')){
   $('btnDemoData').onclick = () => {
     sheetNE = 5;
