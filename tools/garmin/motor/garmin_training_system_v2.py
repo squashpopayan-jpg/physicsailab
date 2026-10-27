@@ -6405,64 +6405,12 @@ def upload_to_drive(filepath: Path):
 # SUBIR WORKOUT A GARMIN
 # ═══════════════════════════════════════════════════════
 def upload_workout_to_garmin(api: Garmin, workout: dict, profile: dict):
-    """Sube el workout adaptativo del día al reloj."""
-    try:
-        from garminconnect.workout import (
-            RunningWorkout, WorkoutSegment,
-            create_warmup_step, create_interval_step,
-            create_recovery_step, create_cooldown_step,
-            create_repeat_group,
-        )
-    except ImportError:
-        print("   ❌ pip install --upgrade garminconnect pydantic"); return
-
-    name       = workout.get("name", "Adaptive Workout")
-    reps       = workout.get("reps", 1)
-    work_sec   = workout.get("work_sec", 1200)
-    rest_sec   = workout.get("rest_sec", 0)
-    warmup_sec = workout.get("warmup_min", 5) * 60
-    cool_sec   = workout.get("cooldown_min", 5) * 60
-
-    order = 1
-    warmup = create_warmup_step(float(warmup_sec), step_order=order); order += 1
-
-    if reps > 1:
-        ivs = []
-        for _ in range(reps):
-            ivs.append(create_interval_step(float(work_sec), step_order=order)); order += 1
-            if rest_sec > 0:
-                ivs.append(create_recovery_step(float(rest_sec), step_order=order)); order += 1
-        main_step = create_repeat_group(reps, ivs, step_order=order); order += 1
-    else:
-        main_step = create_interval_step(float(work_sec), step_order=order); order += 1
-
-    cooldown = create_cooldown_step(float(cool_sec), step_order=order)
-    total = warmup_sec + reps * (work_sec + rest_sec) + cool_sec
-
-    wo_obj = RunningWorkout(
-        workoutName=name,
-        estimatedDurationInSecs=total,
-        workoutSegments=[WorkoutSegment(
-            segmentOrder=1,
-            sportType={"sportTypeId": 1, "sportTypeKey": "running"},
-            workoutSteps=[warmup, main_step, cooldown],
-        )],
-    )
-
-    try:
-        result = api.upload_running_workout(wo_obj)
-        print(f"   ✅ '{name}' subido ({total//60} min)")
-        if isinstance(result, dict) and result.get("workoutId"):
-            wid = result["workoutId"]
-            sched = input(f"   ¿Programar? (YYYY-MM-DD o Enter): ").strip()
-            if sched:
-                try:
-                    api.schedule_workout(wid, sched)
-                    print(f"   📅 Programado: {sched}")
-                except Exception as e:
-                    print(f"   ⚠️  {e}")
-    except Exception as e:
-        print(f"   ❌ {e}"); traceback.print_exc()
+    """
+    Sube el workout adaptativo del día al reloj con zonas de FC y envío directo al Forerunner 970.
+    Invocado manualmente desde la opción 4 del menú interactivo.
+    """
+    zones = profile.get("zones", [])
+    return _auto_upload_workout(api, workout, zones=zones, force=True)
 
 
 # ═══════════════════════════════════════════════════════
@@ -6753,11 +6701,14 @@ def _auto_upload_workout(api: Garmin, workout: dict, zones: list = None, force: 
         return {"status": "error", "date": today_str, "error": str(e)}
 
 
-def auto_run(days: int = 30, upload_workout: bool = True, force_upload: bool = False):
+def auto_run(days: int = 30, upload_workout: bool = False, force_upload: bool = False):
     """
     Modo automático — corre sin menú, sin interacción.
-    Equivale a la opción 9 del menú.
-    Uso: python garmin_training_system_v2.py --auto [--days N]
+    Equivale a la opción 9 del menú (extrae, calibra, analiza, dashboard y exporta).
+    Por defecto NO sube el workout al reloj (upload_workout=False) para evitar
+    generar entrenamientos no deseados en la app Garmin.
+    Solo sube al reloj cuando se invoque manualmente con --upload o --force-upload.
+    Uso: python garmin_training_system_v2.py --auto [--days N] [--upload]
     """
     print(f"""
 ╔══════════════════════════════════════════════════════════╗
@@ -6781,19 +6732,17 @@ def auto_run(days: int = 30, upload_workout: bool = True, force_upload: bool = F
         analysis = analyze_and_recommend(raw, profile)
         export_for_web(raw, profile, analysis, workout)
 
-        # ── Subida segura al reloj (NO quitar):
-        # _auto_upload_workout revisa garmin_data/last_workout_upload.json.
-        # Si ya existe registro para hoy, no sube nada. Esta llamada mantiene la
-        # operación idempotente cuando el modo auto se ejecuta varias veces al día.
+        # ── Subida al reloj (SOLO manual o explícita):
+        # La sincronización automática de métricas NUNCA sube entrenamientos por defecto.
         if upload_workout:
-            print(f"\n  ⌚ Verificando/subiendo workout al Forerunner 970...")
+            print(f"\n  ⌚ Subiendo workout al Forerunner 970 (solicitud manual explícita)...")
             _auto_upload_workout(api, workout, profile.get("zones") or raw.get("zones", []), force=force_upload)
         else:
-            print(f"\n  ⏭️  Workout NO subido al reloj (modo --no-upload)")
-
+            print(f"\n  ⏭️  Workout NO subido al reloj (sincronización de solo métricas).")
+            print(f"      Para subir al reloj, hazlo manualmente desde el menú (opción 4) o usa --upload.")
 
         print(f"\n  ✅ Auto-run completado: {_now().strftime('%H:%M')}")
-        print(f"  📱 Datos en app móvil + workout en el reloj.")
+        print(f"  📱 Métricas y dashboards exportados para la web (PhysicsAILab).")
     except Exception as e:
         print(f"\n  ❌ Error en auto-run: {e}")
         traceback.print_exc()
@@ -6830,13 +6779,15 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="Garmin Adaptive Training System v2.0")
     parser.add_argument("--auto",  action="store_true",
-                        help="Modo automático: extrae, analiza y exporta sin menú")
+                        help="Modo automático: extrae, analiza y exporta sin menú (no sube al reloj por defecto)")
     parser.add_argument("--days",  type=int, default=30,
                         help="Días de historial a extraer (default: 30, max: 365)")
+    parser.add_argument("--upload", action="store_true",
+                        help="Subir el entrenamiento del día al reloj Garmin Connect (manual)")
     parser.add_argument("--no-upload", action="store_true",
-                        help="No subir workout al reloj (solo extraer y exportar)")
+                        help="Garantizar que NO se suba workout al reloj (solo extraer y exportar)")
     parser.add_argument("--force-upload", action="store_true",
-                        help="Forzar subida aunque ya se haya generado hoy (borra el lock del día)")
+                        help="Forzar subida al reloj aunque ya se haya generado hoy (borra el lock del día)")
     parser.add_argument("--offline", action="store_true",
                         help="Recalcular desde datos/full_extract.json sin conectarse a Garmin")
     args = parser.parse_args()
@@ -6846,9 +6797,12 @@ if __name__ == "__main__":
             offline_run()
         elif args.auto:
             days = max(1, min(365, args.days))
-            no_upload    = getattr(args, 'no_upload', False)
+            upload_flag  = getattr(args, 'upload', False)
             force_upload = getattr(args, 'force_upload', False)
-            auto_run(days, upload_workout=not no_upload, force_upload=force_upload)
+            no_upload    = getattr(args, 'no_upload', False)
+            # Solo sube si se pide explícitamente (--upload o --force-upload) y no se prohíbe (--no-upload)
+            should_upload = (upload_flag or force_upload) and not no_upload
+            auto_run(days, upload_workout=should_upload, force_upload=force_upload)
         else:
             main()
     except KeyboardInterrupt:
