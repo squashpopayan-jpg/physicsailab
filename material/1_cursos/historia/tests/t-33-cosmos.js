@@ -1,0 +1,24 @@
+module.exports = function (T, C, R) {
+  const H = 'Histórico', S = 'SciPy', N = 'Numérico';
+  const xs = C.HUBBLE1929.map((d) => d[1]), ys = C.HUBBLE1929.map((d) => d[2]), f = C.linfit(xs, ys);
+  T.abs(S, 'Hubble (1929): pendiente del ajuste lineal con ordenada (numpy.polyfit)', f.m, R.hubble_fit[0], 1e-6);
+  T.abs(S, 'Hubble (1929): ordenada del ajuste', f.b, R.hubble_fit[1], 1e-6);
+  T.abs(H, 'Hubble obtuvo 465–500 km/s/Mpc con sus 24 galaxias (el valor actual es 70)', f.m, 465, 60);
+  T.rel(S, 'edad de Hubble 1/H₀ con 500 km/s/Mpc', C.hubbleAgeGyr(500), R.age_hubble500, 1e-6);
+  T.ok(H, 'con 500 km/s/Mpc el universo (≈ 2 Gyr) sería más joven que la Tierra (4.5 Gyr): la crisis de la edad', C.hubbleAgeGyr(500) < 2.1 && C.hubbleAgeGyr(500) < 4.5);
+  for (const [H0, Om, OL, t] of R.age) T.rel(S, `edad del universo (quad) con H₀ = ${H0}, Ωm = ${Om}, ΩΛ = ${OL}`, C.ageGyr(H0, Om, OL), t, 1e-5);
+  T.abs(H, 'Planck 2018: la edad del universo es 13.8 Gyr', C.ageGyr(67.4, 0.315, 0.685), 13.8, 0.1);
+  T.abs(N, 'universo de Einstein–de Sitter: t = 2/(3H₀)', C.ageGyr(70, 1, 0), (2 / 3) * C.hubbleAgeGyr(70), 1e-5);
+  for (const [z, H0, Om, OL, d] of R.dl) T.rel(S, `distancia de luminosidad (quad), z = ${z}, Ωm = ${Om}, ΩΛ = ${OL}`, C.lumDistMpc(z, H0, Om, OL), d, 1e-6);
+  const dmu = C.distMod(C.lumDistMpc(0.5, 70, 0.3, 0.7)) - C.distMod(C.lumDistMpc(0.5, 70, 0.3, 0));
+  T.abs(H, 'supernovas Ia (1998): a z = 0.5 aparecen 0.2–0.3 mag más débiles con Λ que en un universo abierto sin Λ', dmu, 0.25, 0.08);
+  T.abs(S, 'transición deceleración → aceleración: z = (2ΩΛ/Ωm)^{1/3} − 1 (brentq)', C.zTransition(0.315, 0.685), R.ztrans, 1e-9);
+  T.abs(H, 'q₀ = Ωm/2 − ΩΛ = −0.53 (expansión acelerada)', C.q0(0.315, 0.685), -0.5275, 1e-4);
+  T.rel(S, 'CMB: densidad de fotones con 2ζ(3)/π² (scipy.special.zeta) a 2.7255 K', C.cmbPhotonDensity(2.7255), R.cmb_n, 1e-8);
+  T.abs(H, 'CMB: 411 fotones por cm³', C.cmbPhotonDensity(2.7255) / 1e6, 411, 1);
+  T.rel(S, 'CMB: densidad de energía π²k⁴T⁴/(15ħ³c³)', C.cmbEnergyDensity(2.7255), R.cmb_u, 1e-8);
+  T.rel(S, 'CMB: máximo en frecuencia a 160.2 GHz', C.cmbPeakGHz(2.7255), R.cmb_peak, 1e-6);
+  T.abs(H, 'Penzias y Wilson (1965): ruido de antena de 3.5 K a 4.08 GHz, consistente con 2.7255 K', 3.5, 2.7255, 1);
+  T.rel(S, 'halo isotermo: masa dentro de 30 kpc (quad) frente a la forma cerrada', C.haloMass(30, 200, 5), R.halo_mass, 1e-6);
+  T.ok(H, 'sin halo, la curva de rotación kepleriana cae como r^{-1/2}; con halo se mantiene plana (±15 %) entre 10 y 30 kpc', (() => { const v = (r) => C.vTotal(r, 6e10, 3, 200, 5); return Math.abs(v(30) / v(10) - 1) < 0.15 && C.vPlummer(30, 6e10, 3) / C.vPlummer(10, 6e10, 3) < 0.65; })());
+};

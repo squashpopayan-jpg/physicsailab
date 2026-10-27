@@ -1,0 +1,25 @@
+module.exports = function (T, C, R) {
+  const H = 'Histórico', S = 'SciPy', DEG = Math.PI / 180;
+  const f = C.fermatMin(1, 1, 2, 1, 1 / 1.333);
+  T.abs(S, 'Fermat: punto de cruce del mínimo (minimize_scalar)', f.x, R.fermat.x, 1e-6);
+  T.abs(S, 'Fermat: tiempo mínimo', f.t, R.fermat.t, 1e-10);
+  T.abs(H, 'Fermat: en el mínimo sen θ₁/sen θ₂ = n = 1.333', f.s1 / f.s2, 1.333, 1e-6);
+  T.abs(S, 'Fermat: la razón de senos coincide con la de scipy', f.s1 / f.s2, R.fermat.ratio, 1e-6);
+  const e = C.elastic(2, 4, 6, 0);
+  T.abs(S, 'choque elástico: velocidad final del cuerpo B', e.u1, R.elastic.u1, 1e-12);
+  T.abs(S, 'choque elástico: velocidad final del cuerpo C', e.u2, R.elastic.u2, 1e-12);
+  T.abs(H, 'Huygens: se conserva la cantidad de movimiento con signo', 2 * e.u1 + 6 * e.u2, 8, 1e-12);
+  T.abs(H, 'Huygens: se conserva la energía cinética', 0.5 * 2 * e.u1 ** 2 + 0.5 * 6 * e.u2 ** 2, 16, 1e-12);
+  const d = C.descartesRule4(2, 4, 6);
+  T.ok(H, 'regla 4 de Descartes: viola la conservación de la cantidad de movimiento con signo', Math.abs(2 * d.u1 + 6 * d.u2 - 8) > 1);
+  T.ok(H, 'regla 4 de Descartes: sí conserva Σ m|v| (lo que él pensaba conservado)', Math.abs(2 * Math.abs(d.u1) + 6 * Math.abs(d.u2) - 8) < 1e-12);
+  T.abs(S, 'masas iguales: B queda quieto', C.elastic(3, 5, 3, 0).u1, 0, 1e-12);
+  for (const k of Object.keys(R.cycloid_t)) T.abs(S, 'tautócrona (quad): tiempo de descenso desde ' + k + ' de altura', R.cycloid_t[k], R.cycloid_quarter, 1e-6);
+  T.abs(H, 'tautócrona: T/4 = π√(a/g)', C.tautoPeriod(0.4) / 4, R.cycloid_quarter, 1e-12);
+  T.abs(H, 'tautócrona: la cuenta llega al fondo en T/4 desde cualquier φ0', Math.abs(C.tautoPhi(C.tautoPeriod(0.4) / 4, -2.2, 0.4)), 0, 1e-9);
+  T.abs(H, 'péndulo cicloidal de a = 0.25 m: periodo 2.006 s', C.tautoPeriod(0.25), 2.006, 0.002);
+  T.abs(H, 'péndulo de 1 m (L = 4a): 2.006 s', C.huygensPendulum(1), 2.006, 0.002);
+  T.abs(S, 'refracción de Huygens (45°, n = 1.5)', C.huygensRefraction(45 * DEG, 1, 1 / 1.5) / DEG, R.huygens_th2, 1e-9);
+  T.abs(H, 'aceleración centrípeta de la Luna (v²/r) ≈ 2.7×10⁻³ m/s²', C.centripetal((2 * Math.PI * 3.844e8) / (27.321661 * 86400), 3.844e8), R.moon_ac, 1e-12);
+  T.abs(H, 'la aceleración centrípeta de la Luna es 1/3600 de g', 9.80665 / R.moon_ac, 3600, 80);
+};

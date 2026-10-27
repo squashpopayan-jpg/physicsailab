@@ -1,0 +1,25 @@
+module.exports = function (T, C, R) {
+  const H = 'Histórico', S = 'SciPy';
+  T.rel(S, 'Torricelli: altura de la columna de mercurio (m)', C.columnHeight(C.ATM, C.RHO.mercurio), R.col.Hg, 1e-9);
+  T.abs(H, 'columna de mercurio: 0.760 m', C.columnHeight(C.ATM, C.RHO.mercurio), 0.76, 0.001);
+  T.rel(S, 'columna de agua (m)', C.columnHeight(C.ATM, 998), R.col.agua, 1e-9);
+  T.abs(H, 'columna de agua: 10.3 m (límite de las bombas)', C.columnHeight(C.ATM, 998), 10.3, 0.1);
+  T.rel(S, 'columna de aceite (m)', C.columnHeight(C.ATM, 920), R.col.aceite, 1e-9);
+  T.abs(H, 'razón agua/mercurio = 13.6 (densidades)', C.columnHeight(C.ATM, 998) / C.columnHeight(C.ATM, C.RHO.mercurio), 13.6, 0.03);
+  T.rel(S, 'altura de escala de la atmósfera (m)', C.scaleHeight(288.15), R.H, 1e-9);
+  T.rel(S, 'Puy de Dôme: desnivel deducido de las lecturas de Périer (m)', C.altitudeDiff(711.7, 627.1), R.perier_dz, 1e-9);
+  T.abs(H, 'Puy de Dôme: desnivel real ≈ 1 070 m (±30 m)', R.perier_dz, 1070, 30);
+  T.abs(H, 'lecturas de Périer: 26 pulgadas 3½ líneas = 711.7 mm', 26 * 27.07 + 3.5 * 2.2558, 711.7, 0.5);
+  T.abs(H, 'lecturas de Périer: 23 pulgadas 2 líneas = 627.1 mm', 23 * 27.07 + 2 * 2.2558, 627.1, 0.5);
+  T.abs(S, 'Bogotá (2 640 m): columna de mercurio (mm)', 760 * C.pressureAt(2640) / C.ATM, R.bogota_mm, 1e-6);
+  T.rel(S, 'hemisferios de 25.5 cm con vacío perfecto (N)', C.hemisphereForce(0.255, C.ATM, 0), R.hemi, 1e-12);
+  T.abs(H, 'hemisferios: unos 30 caballos de 700 N', C.hemisphereForce(0.255, C.ATM, 0) / 700, 30, 1);
+  T.abs(H, 'prensa de Pascal: 200 N con émbolos 4 y 40 cm dan 20 kN', C.hydraulic(200, Math.PI * 0.02 ** 2, Math.PI * 0.2 ** 2), 20000, 1e-6);
+  const f = C.boyleFit();
+  T.abs(S, 'Boyle: pendiente de P frente a 1/V (polyfit)', f.m, R.boyle_fit.m, 1e-6);
+  T.abs(S, 'Boyle: ordenada en el origen (polyfit)', f.b, R.boyle_fit.b, 1e-6);
+  T.ok(H, 'Boyle: P·V constante dentro del 1 % en las 25 medidas', R.boyle_fit.maxdev < 0.01);
+  T.ok(H, 'Boyle: la ordenada en el origen es pequeña frente a la presión (< 1 %)', Math.abs(f.b) < 0.01 * 29.125);
+  for (const l of [0, 20, 51.5, 80]) T.abs(S, 'inclinación de un dipolo a ' + l + '° de latitud', C.dipAngle(l), R.dip[String(l)], 1e-9);
+  T.abs(H, 'Norman (71.8°) frente al dipolo en Londres (68.3°): diferencia > 3°', 71.83 - C.dipAngle(51.5), 3.5, 0.5);
+};

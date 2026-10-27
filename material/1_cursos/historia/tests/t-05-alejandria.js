@@ -1,0 +1,24 @@
+module.exports = function (T, C, R) {
+  const H = 'Histórico', S = 'SciPy';
+  T.rel(S, 'Eratóstenes: circunferencia con estadio de 157.5 m (km)', C.eratosthenes(7.2, 5000, 157.5).km, R.erat_km, 1e-12);
+  T.abs(H, 'Eratóstenes: 250 000 estadios', C.eratosthenes(7.2, 5000, 157.5).circStadia, 250000, 1e-6);
+  T.abs(H, 'Eratóstenes: error de −1.6 % con el estadio egipcio', C.eratosthenes(7.2, 5000, 157.5).err, -0.0158, 0.0005);
+  T.abs(H, 'Eratóstenes: el estadio ático da +16 %', C.eratosthenes(7.2, 5000, 185).err, 0.156, 0.005);
+  T.rel(S, 'Aristarco 87°: razón Sol/Luna', C.aristarchus(87).ratio, R.aristarco[0], 1e-12);
+  T.rel(S, 'Aristarco 89.853°: razón Sol/Luna', C.aristarchus(89.853).ratio, R.aristarco[1], 1e-12);
+  T.abs(H, 'Aristarco 87° ≈ 19', C.aristarchus(87).ratio, 19, 0.2);
+  const pp = C.archimedesPi(4);
+  T.abs(S, 'Arquímedes: cota inferior (96 lados) = n sen(π/n)/2', pp.lo, R.pi_lo_hi[0], 1e-12);
+  T.abs(S, 'Arquímedes: cota superior (96 lados) = n tan(π/n)/2', pp.hi, R.pi_lo_hi[1], 1e-12);
+  T.ok(H, 'Arquímedes: 223/71 < cota inferior < π < cota superior < 22/7', 223 / 71 < pp.lo && pp.lo < Math.PI && Math.PI < pp.hi && pp.hi < 22 / 7);
+  T.rel(S, 'corona: volumen extra con 20 % de plata (cm³)', C.crown(1000, 0.2).dV, R.crown_dV, 1e-12);
+  for (const qf of [1, 2]) T.abs(S, `ecuante qf=${qf}: error máximo en longitud (°), brentq`, C.equantError(0.0934, qf, 720).max, R['equant_max_' + (qf === 1 ? 'exc' : 'bis')], 2e-3);
+  T.abs(H, 'ecuante bisecado: error ≈ 9′ (Kepler: «8′»)', C.equantError(0.0934, 2, 720).max * 60, 8.5, 1.5);
+  R.kepler_nu.forEach(([M, nu]) => T.abs(S, `ecuación de Kepler (brentq): ν en M=${M}`, C.trueAnomaly(M, 0.0934), nu, 1e-9));
+  const snell = [10, 20, 30, 40, 50, 60, 70, 80].map((i) => (Math.asin(Math.sin((i * Math.PI) / 180) / 1.333) * 180) / Math.PI);
+  snell.forEach((v, i) => T.abs(S, `ley de Snell a ${(i + 1) * 10}°`, v, R.snell[i], 1e-12));
+  const PT = [8, 15.5, 22.5, 29, 35, 40.5, 45.5, 50];
+  T.ok(H, 'Ptolomeo: tabla de refracción con diferencias que decrecen exactamente 0.5° cada fila', PT.slice(1).map((v, i) => v - PT[i]).every((d, i, a) => i === 0 || Math.abs(a[i - 1] - d - 0.5) < 1e-9));
+  T.ok(H, 'Ptolomeo frente a Snell: diferencia máxima 2.4° (a 80°)', Math.abs(Math.max(...PT.map((v, i) => Math.abs(v - snell[i]))) - 2.4) < 0.05);
+  T.abs(H, 'precesión: 150 años a 50.29″/año = 2.1°', R.precession_150, 2.095, 0.001);
+};

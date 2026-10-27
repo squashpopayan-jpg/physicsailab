@@ -1,0 +1,20 @@
+module.exports = function (T, C, R) {
+  const H = 'Histórico', S = 'SciPy';
+  T.eq(H, 'Coulomb: par total 36°, 144° y 576° (36, 18+126, 8.5+567 = 575.5)', C.coulombData.map(C.coulombForce), R.coulomb.f);
+  const e = C.coulombExponent(false), c = C.coulombExponent(true);
+  T.abs(S, 'Coulomb: exponente entre el 1.º y el 2.º punto (ángulos)', e[0], R.coulomb.n12, 1e-12);
+  T.abs(S, 'Coulomb: exponente entre el 1.º y el 3.º punto (ángulos)', e[1], R.coulomb.n13, 1e-12);
+  T.abs(S, 'Coulomb: exponente con la cuerda (1.º-2.º)', c[0], R.coulomb.c12, 1e-12);
+  T.abs(S, 'Coulomb: exponente con la cuerda (1.º-3.º)', c[1], R.coulomb.c13, 1e-12);
+  T.ok(H, 'Coulomb: todos los exponentes entre 1.9 y 2.1', [...e, ...c].every((v) => v > 1.9 && v < 2.1));
+  for (const [x, n, v] of R.shell19) T.abs(S, 'campo interior de la cáscara, x = ' + x + ', n = ' + n + ' (quad)', C.shellField(x, n, 60000), v, 2e-5);
+  T.abs(H, 'teorema de Newton: campo interior nulo con n = 2', Math.abs(C.shellField(0.7, 2, 60000)), 0, 2e-6);
+  T.ok(H, 'con n ≠ 2 el campo interior es distinto de cero (|F| > 5×10⁻³ para n = 2.1 en x = 0.5)', Math.abs(C.shellField(0.5, 2.1, 4000)) > 5e-3);
+  const p = C.pile(10, 0.8, 1, 20);
+  T.abs(S, 'pila: corriente (álgebra lineal)', p.I, R.pile.I, 1e-12);
+  T.abs(S, 'pila: tensión en la carga', p.V, R.pile.V, 1e-12);
+  T.abs(S, 'pila: la potencia es máxima con R = n r (barrido numérico)', R.pile.R_at_Pmax, R.pile.Pmax_R, 0.01);
+  T.abs(H, 'pila: la potencia máxima V²/4R coincide con la de la fórmula', C.pile(10, 0.8, 1, 10).P, C.pile(10, 0.8, 1, 10).Pmax, 1e-12);
+  T.abs(S, 'botella de Leiden de 1 nF a 20 kV: 0.2 J', C.capEnergy(1e-9, 20e3), R.leiden, 1e-12);
+  T.abs(H, 'resistencia de un alambre: ρ l / A', C.wireResistance(1.68e-8, 100, 1e-6), 1.68, 1e-9);
+};

@@ -1,0 +1,22 @@
+module.exports = function (T, C, R) {
+  const H = 'Histórico', S = 'SciPy', N = 'Numérico';
+  for (const [m, l] of R.balmer_vac) T.abs(S, 'serie de Balmer (Rydberg con masa reducida, scipy.constants), m = ' + m, C.lineVacuumNm(2, m, 1, 1836.15267343), l, 5e-3);
+  for (const m of [3, 4, 5, 6, 7]) T.abs(H, 'la fórmula de Balmer (1885) reproduce las líneas del aire con 0.1 nm, m = ' + m, C.balmerNm(m), C.vacToAir(C.lineVacuumNm(2, m, 1, 1836.15267343)), 0.12);
+  T.abs(H, 'Hα: 656.28 nm en el aire', C.vacToAir(C.lineVacuumNm(2, 3, 1, 1836.15267343)), 656.28, 0.03);
+  T.abs(S, 'Lyman-α: 121.57 nm', C.lineVacuumNm(1, 2, 1, 1836.15267343), R.lyman_a, 5e-3);
+  T.abs(S, 'Paschen-α: 1875 nm', C.lineVacuumNm(3, 4, 1, 1836.15267343), R.paschen_a, 0.05);
+  T.rel(S, 'Rydberg en eV: 13.6057', C.EV_RY, R.ry_ev, 1e-9);
+  T.rel(S, 'radio de Bohr a₀ = 52.9 pm', C.bohrRadius(1, 1), R.bohr_a0, 1e-9);
+  T.rel(S, 'velocidad del electrón en la primera órbita: αc = 2.19×10⁶ m/s', C.orbitSpeed(1, 1), R.bohr_speed, 1e-9);
+  T.abs(H, 'primera órbita: 0.74 % de c', C.orbitSpeed(1, 1) / C.K.c, 0.0073, 1e-4);
+  T.abs(S, 'estructura fina del 2p: α²Ry/16 = 4.53×10⁻⁵ eV', C.fineSplit2p(), R.fine, 1e-9);
+  T.abs(H, 'la separación del 2p es 0.365 cm⁻¹', C.fineSplit2p() * 8065.54, 0.365, 0.002);
+  T.abs(S, 'Pickering–Fowler: la línea He⁺ 4→3 (n′ = 4, 3) a 468.6 nm con masa reducida de He', C.lineVacuumNm(3, 4, 2, 3.97259968907 * 1822.888486209), R.hep_4686, 5e-3);
+  T.abs(H, 'He⁺: razón de constantes de Rydberg He/H = 1.00041 (explica «el hidrógeno» de Pickering)', C.rydbergMass(3.97259968907 * 1822.888486209) / C.rydbergMass(1836.15267343), R.ratio_he_h, 1e-9);
+  T.abs(H, 'deuterio: Hα se desplaza 0.179 nm respecto del hidrógeno (Urey 1931)', R.d_shift, 0.179, 0.003);
+  T.abs(N, 'nivel fundamental del hidrógeno: −13.6 eV', C.levelEv(1, 1), -13.6057, 1e-3);
+  T.abs(N, 'energía de ionización del He⁺ es 4 Ry', C.levelEv(1, 2), -54.4228, 1e-3);
+  for (const [el, Z, E] of C.KALPHA) T.abs(H, `ley de Moseley: Kα de ${el} (Z = ${Z}) con ${Z > 60 ? '9' : '3.5'} %`, C.moseleyKalphaEv(Z) / 1000 / E, 1, Z > 60 ? 0.09 : 0.035);
+  T.abs(N, 'Moseley recupera Z de la energía Kα del cobre', C.moseleyZ(8.0478), 29, 0.2);
+  T.abs(H, 'Franck y Hertz: caídas de corriente separadas 4.9 V', (() => { let m = []; for (let v = 2; v < 40; v += 0.02) { const a = C.franckHertz(v - 0.02, 4.9, 1.5, 0.3), b = C.franckHertz(v, 4.9, 1.5, 0.3), c = C.franckHertz(v + 0.02, 4.9, 1.5, 0.3); if (b > a && b >= c && b > 0.05) m.push(v); } const d = []; for (let i = 1; i < m.length; i++) d.push(m[i] - m[i - 1]); return d.reduce((s, x) => s + x, 0) / d.length; })(), 4.9, 0.3);
+};

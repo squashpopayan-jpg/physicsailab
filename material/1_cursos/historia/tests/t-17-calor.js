@@ -1,0 +1,20 @@
+module.exports = function (T, C, R) {
+  const H = 'Histórico', S = 'SciPy';
+  const c = C.carnot(423, 313, 1e-3, 3e-3, 1.4, 1);
+  T.abs(S, 'Carnot: V₃ de la adiabática', c.V3, R.carnot.V3, 1e-12);
+  T.abs(S, 'Carnot: V₄ de la adiabática', c.V4, R.carnot.V4, 1e-12);
+  T.rel(S, 'Carnot: trabajo = suma de ∫P dV de las cuatro etapas (quad)', c.W, R.carnot.W, 1e-9);
+  T.rel(S, 'Carnot: calor absorbido', c.Qh, R.carnot.Qh, 1e-9);
+  T.abs(S, 'Carnot: rendimiento = W/Qh', c.eta, R.carnot.eta, 1e-9);
+  T.abs(H, 'Carnot: rendimiento = 1 − Tf/Tc', c.eta, c.etaCarnot, 1e-12);
+  T.abs(H, 'máquina de 1824 entre 150 °C y 40 °C: 26 %', R.eta150_40, 0.26, 0.002);
+  T.abs(S, 'Mayer con datos actuales (cp = 0.2395, γ = 1.4)', C.mayerJ(0.2395, 1.4, 0.28706), R.mayer_mod, 1e-3);
+  T.abs(H, 'Mayer con datos modernos: 4.2 J/cal', R.mayer_mod, 4.19, 0.03);
+  T.abs(H, 'Mayer con datos de 1842: 3.6 J/cal (publicó 3.58)', C.mayerJ(0.267, 1.421, 0.28706), 3.58, 0.08);
+  T.abs(S, 'caloría = 4.184 J', R.cal, 4.184, 1e-12);
+  T.abs(S, 'Joule: trabajo de las 20 caídas (J)', 27.2 * 9.80665 * 10.9 * 20, R.joule.E, 1e-6);
+  T.abs(S, 'Joule: ΔT del agua', C.joulePaddle(27.2, 10.9, 20, 30, 1), R.joule.dT, 1e-9);
+  T.abs(H, 'Joule: el ΔT de 0.46 K supera 100 veces la resolución de 0.003 K', C.joulePaddle(27.2, 10.9, 20, 30, 1) / 0.003, 154, 5);
+  T.abs(H, 'Rumford: J = 6.6 J/cal con todo el trabajo del caballo', R.rumford.J, 6.6, 0.1);
+  T.abs(H, 'valores de J: Rumford 5.6 > Joule 4.15 > Mayer 3.58', (5.6 > 4.15 && 4.15 > 3.58) ? 1 : 0, 1, 0);
+};

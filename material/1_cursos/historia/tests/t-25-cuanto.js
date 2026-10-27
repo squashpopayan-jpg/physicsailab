@@ -1,0 +1,26 @@
+module.exports = function (T, C, R) {
+  const H = 'Histórico', S = 'SciPy', N = 'Numérico', K = C.K;
+  for (const [l, t, b] of R.planck) T.rel(S, `Planck: radiancia a ${(l * 1e9).toFixed(0)} nm y ${t} K frente a scipy.constants`, C.planckB(l, t), b, 1e-9);
+  T.rel(S, 'ley de Wien: λ_max·T = 2.8978×10⁻³ m·K', C.wienB0(), R.wien_b, 1e-6);
+  T.rel(S, 'x de Wien: solución de x = 5(1 − e^{−x}) (brentq)', C.wienX(), R.wien_x, 1e-12);
+  T.rel(S, 'σ de Stefan–Boltzmann desde la integral de Planck', C.stefanFromPlanck(5772) / Math.pow(5772, 4), R.stefan, 1e-6);
+  T.rel(S, 'emitancia total del Sol (5772 K): integral en λ con quad', C.stefanFromPlanck(R.stefan_num[0]), R.stefan_num[1], 1e-5);
+  T.abs(H, 'el Sol (5772 K) tiene su máximo en 502 nm', C.wienLambda(5772) * 1e9, 502, 1);
+  T.abs(H, 'Wien: una persona a 310 K emite al máximo en 9.3 µm', C.wienLambda(310) * 1e6, 9.35, 0.05);
+  T.rel(N, 'a longitudes de onda largas Planck tiende a Rayleigh–Jeans', C.planckB(0.1, 300) / C.rayleighB(0.1, 300), 1, 1e-3);
+  T.rel(N, 'a longitudes de onda cortas Planck tiende a Wien', C.planckB(2e-7, 3000) / C.wienB(2e-7, 3000), 1, 1e-6);
+  T.ok(H, 'catástrofe ultravioleta: Rayleigh–Jeans excede a Planck en un factor > 10⁹ a 100 nm y 5000 K', C.rayleighB(1e-7, 5000) / C.planckB(1e-7, 5000) > 1e9);
+  T.abs(S, 'hc = 1239.84 eV·nm', (K.h * K.c) / K.e * 1e9, R.hc_ev_nm, 1e-9);
+  T.abs(H, 'Planck (1900): h = 6.55×10⁻³⁴, k = 1.346×10⁻²³, N_A = 6.2×10²³', R.planck1900.NA / 1e23, 6.17, 0.05);
+  T.abs(H, 'Planck (1900): carga elemental 1.56×10⁻¹⁹ C desde F/N_A', R.planck1900.e * 1e19, 1.56, 0.01);
+  T.abs(H, 'Einstein: el sodio (φ = 2.28 eV) tiene umbral en 5.5×10¹⁴ Hz (545 nm)', C.threshNu(2.28) / 1e14, 5.51, 0.02);
+  T.abs(N, 'efecto fotoeléctrico: la pendiente V_p(ν) es h/e', (C.stopV(1.2e15, 2.28) - C.stopV(1.0e15, 2.28)) / 2e14, K.h / K.e, 1e-24);
+  T.abs(H, 'luz de 400 nm sobre sodio: tensión de frenado 0.82 V', C.stopV(K.c / 400e-9, 2.28), 0.82, 0.01);
+  T.ok(N, 'por debajo del umbral no hay emisión, sea cual sea la intensidad', C.photoK(4e14, 2.28) < 0);
+  T.rel(S, 'longitud de onda de Compton h/(m_e c)', C.comptonShift(Math.PI / 2), R.compton, 1e-9);
+  T.abs(H, 'Compton (1923): a 90° el desplazamiento es 2.43 pm', C.comptonShift(Math.PI / 2) * 1e12, 2.43, 0.005);
+  T.abs(H, 'Compton: a 180° el desplazamiento es 4.85 pm', C.comptonShift(Math.PI) * 1e12, 4.85, 0.01);
+  for (const [t, cv] of R.einstein) T.rel(S, 'calor específico de Einstein (derivada de la energía), T = ' + t + ' K', C.einsteinCV(t, 1300), cv, 1e-6);
+  T.abs(H, 'Dulong–Petit: 3R = 24.94 J/(mol·K) a temperaturas altas', C.einsteinCV(1e5, 1300), 24.94, 0.01);
+  T.abs(H, 'diamante a 300 K: C_V ≈ 5 J/(mol·K), mucho menos que 3R', C.einsteinCV(300, 1300), 5.8, 1.5);
+};

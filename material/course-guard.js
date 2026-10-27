@@ -13,7 +13,8 @@
         "transformadores",
         "pendulo",
         "venturi",
-        "recorrido"
+        "recorrido",
+        "historia"
     ];
     const DEFAULT_COURSE_KEYS = {
         "mecanica": ["MECANICA-2026", "OBANDO-MEC-26"],
@@ -40,7 +41,8 @@
         "solido": ["SOLIDO-2026", "ESTADO-SOLIDO-26", "SOLIDOS-UFOP-26", "OBANDO-SOLIDO-26"],
         "faro": ["FARO-2026", "PODS-REACCION-26", "LUZ-FARO-26", "OBANDO-FARO-26"],
         "diagnosticas": ["DIAGNOSTICAS-2026", "PRUEBAS-26", "OBANDO-DIAG-26"],
-        "squash_arbitraje": ["ARBITRAJE-2026", "SQUASH-REF-26", "MANU-REF-26", "WSF-REGLAS-26"]
+        "squash_arbitraje": ["ARBITRAJE-2026", "SQUASH-REF-26", "MANU-REF-26", "WSF-REGLAS-26"],
+        "historia": ["HISTORIA-2026", "CIENCIA-HIST-26", "OBANDO-HISTORIA-26", "SABER-2026", "BIENVENIDA-2026"]
     };
 
     function getCurrentCourseId() {
@@ -53,6 +55,7 @@
             return raw;
         }
 
+        if (p.includes('historia') || p.includes('saber')) return 'historia';
         if (p.includes('solido') || p.includes('estado-solido')) return 'solido';
         if (p.includes('arbitraje') || p.includes('manu_squash_arbitraje')) return 'squash_arbitraje';
         if (p.includes('faro')) return 'faro';
@@ -80,6 +83,7 @@
         if (p.includes('/neuro/')) return 'neuro';
 
         const t = (document.title || '').toLowerCase();
+        if (t.includes('historia') || t.includes('llegamos a saber') || t.includes('saber')) return 'historia';
         if (t.includes('sólido') || t.includes('solido')) return 'solido';
         if (t.includes('arbitraje')) return 'squash_arbitraje';
         if (t.includes('faro')) return 'faro';
@@ -899,6 +903,11 @@
         }
 
         const curCourse = getCurrentCourseId();
+        if (curCourse === 'historia') {
+            topBar.className = 'pg-top-bar unlocked';
+            topBar.innerHTML = `<span>🎁 <strong>«Cómo llegamos a saber»</strong> · Cortesía de Bienvenida · Acceso 100% Libre</span>`;
+            return;
+        }
         if (LAB_COURSE_IDS.includes(curCourse)) {
             topBar.className = 'pg-top-bar unlocked';
             topBar.innerHTML = `<span>🔬 <strong>Laboratorio Virtual Abierto</strong> · Acceso Libre al Público</span>`;

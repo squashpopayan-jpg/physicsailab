@@ -416,7 +416,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function isCourseUnlocked(courseId) {
         if (isAdmin()) return true;
         const c = (data.cursos || []).find(x => x.id === courseId);
-        if (c && (c.accesoLibre || c.precioCOP === 0 || c.id === 'recorrido')) return true;
+        if (c && (c.accesoLibre || c.precioCOP === 0 || c.id === 'recorrido' || c.id === 'historia')) return true;
         if (isAdmin()) return true;
         const list = getUnlockedCourses();
         if (list.includes(courseId)) return true;
@@ -2445,7 +2445,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 openBtnText = courseUnlocked ? 'Abrir Sistema de Arbitraje ⚖️' : 'Vista Previa del Arbitraje 👁️';
             } else {
                 openBtnText = courseUnlocked
-                    ? (isLab ? 'Abrir Laboratorio 🧪' : (isSquash ? 'Abrir Simulador Completo 🎮' : 'Abrir Curso Completo 📖'))
+                    ? (isLab ? 'Abrir Laboratorio 🧪' : (isSquash ? 'Abrir Simulador Completo 🎮' : (c.id === 'historia' ? 'Abrir Tratado Completo 📖' : 'Abrir Curso Completo 📖')))
                     : (isLab ? 'Vista Previa del Banco 👁️' : (isSquash ? 'Vista Previa de Rutinas 👁️' : 'Vista Previa Gratuita 👁️'));
             }
 
@@ -2461,7 +2461,9 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (adminMode) {
                 lockStatusBadge = `<span class="unlocked-tag admin-badge" title="Liberado con Permisos de Administrador">👑 Modo Docente</span>`;
             } else if (courseUnlocked) {
-                lockStatusBadge = `<span class="unlocked-tag" title="Desbloqueado con clave estudiantil">🔓 Desbloqueado</span>`;
+                lockStatusBadge = (c.id === 'historia' || c.esCortesia)
+                    ? `<span class="unlocked-tag" style="background:rgba(217,119,6,0.18); color:#f59e0b; border-color:rgba(217,119,6,0.45);" title="Cortesía de Bienvenida · Acceso Libre para todos">🎁 Cortesía Libre</span>`
+                    : `<span class="unlocked-tag" title="Desbloqueado con clave estudiantil">🔓 Desbloqueado</span>`;
             } else {
                 lockStatusBadge = `<span class="badge" style="font-size:0.65rem; padding:0.2rem 0.5rem; background:rgba(245,158,11,0.12); color:var(--accent-amber); border-color:rgba(245,158,11,0.25);">👁️ Vista Previa</span>`;
             }
@@ -3657,7 +3659,7 @@ document.addEventListener('DOMContentLoaded', () => {
         container.innerHTML = courses.map(c => {
             const originalCOP = c.precioCOP || 115000;
             const originalUSD = c.precioUSD || 29;
-            const isFreeLab = c.accesoLibre || c.precioCOP === 0 || c.id === 'recorrido';
+            const isFreeLab = c.accesoLibre || c.precioCOP === 0 || c.id === 'recorrido' || c.id === 'historia';
             const courseUnlocked = isCourseUnlocked(c.id);
 
             let priceHtml = '';

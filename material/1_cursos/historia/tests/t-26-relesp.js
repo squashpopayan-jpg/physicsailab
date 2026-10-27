@@ -1,0 +1,30 @@
+module.exports = function (T, C, R) {
+  const H = 'Histórico', S = 'SciPy', N = 'Numérico', K = C.K;
+  for (const [b, g] of R.gamma) T.rel(S, 'factor de Lorentz γ(β = ' + b + ') con mpmath', C.gamma(b), g, 1e-12);
+  const bo = C.boost(3, 5, 0.8);
+  T.abs(S, 'boost (matriz de Lorentz con numpy): x′', bo.x, R.boost[0], 1e-12);
+  T.abs(S, 'boost (matriz de Lorentz con numpy): t′', bo.t, R.boost[1], 1e-12);
+  T.abs(N, 'el intervalo t² − x² es invariante', C.interval2(bo.x, bo.t), C.interval2(3, 5), 1e-12);
+  T.abs(N, 'dos boosts sucesivos equivalen a la suma de velocidades relativista', C.boost(C.boost(3, 5, 0.5).x, C.boost(3, 5, 0.5).t, 0.5).x - C.boost(3, 5, C.velAdd(0.5, 0.5)).x, 0, 1e-12);
+  T.abs(H, 'composición: 0.9c + 0.9c = 0.994c', C.velAdd(0.9, 0.9), 0.99448, 1e-5);
+  T.abs(N, 'ninguna combinación supera c: u ⊕ 1 = 1', C.velAdd(0.7, 1), 1, 1e-15);
+  T.abs(H, 'gemelo viajero a 0.8c, 4 años luz: Tierra 10 años, viajero 6', C.twinProper(4, 0.8), 6, 1e-12);
+  T.abs(N, 'gemelo: la Tierra mide 10 años', C.twinEarth(4, 0.8), 10, 1e-12);
+  const [Tt, bm] = [R.twin_smooth[0], R.twin_smooth[1]];
+  let s = 0, n = 200000; for (let i = 0; i < n; i++) { const t = ((i + 0.5) * Tt) / n, b = bm * Math.pow(Math.sin((Math.PI * t) / Tt), 2); s += Math.sqrt(1 - b * b); } s *= Tt / n;
+  T.abs(S, 'gemelo con velocidad variable: ∫√(1−β²)dt frente a scipy.quad', s, R.twin_smooth[2], 1e-9);
+  T.rel(S, 'cohete de aceleración constante 1 g a 4 años luz (acosh, mpmath)', C.rocketProper(4, 1), R.rocket, 1e-9);
+  T.abs(H, 'con 1 g, un viaje de 4 años luz dura unos 3.46 años para los viajeros', C.rocketProper(4, 1), 3.46, 0.02);
+  for (const [h, b, rel, cl] of R.muon) { T.rel(S, `muones: supervivencia relativista desde ${h} m`, C.muonSurvive(h, b, R.tau_mu, true), rel, 1e-9); T.rel(S, `muones: supervivencia clásica desde ${h} m`, C.muonSurvive(h, b, R.tau_mu, false), cl, 1e-9); }
+  T.ok(H, 'Rossi y Hall (1941): con dilatación llegan ≈ 70 veces más muones que sin ella (15 km, 0.995c)', C.muonSurvive(15000, 0.9952, R.tau_mu, true) / C.muonSurvive(15000, 0.9952, R.tau_mu, false) > 50);
+  T.abs(S, 'energía en reposo del electrón: 0.511 MeV', (C.restEnergy(K.me) / K.e) / 1e6, R.me_c2_MeV, 1e-6);
+  T.abs(H, 'E = mc²: un gramo equivale a 9×10¹³ J (21 kt de TNT)', C.restEnergy(1e-3) / 1e13, 8.988, 0.001);
+  T.rel(N, 'a baja velocidad la energía cinética relativista tiende a ½mv²', C.kineticRel(1, 1e-3) / C.kineticClassical(1, 1e-3), 1, 1e-5);
+  T.ok(H, 'a 0.9c la energía cinética relativista es 3 veces la clásica o más', C.kineticRel(1, 0.9) / C.kineticClassical(1, 0.9) > 3);
+  T.abs(S, 'electrón de 500 kV: β = 0.863', C.betaFromVolts(5e5), R.relbeta, 1e-12);
+  T.abs(H, 'Kaufmann/Bucherer: un electrón de 500 kV va al 86 % de c', C.betaFromVolts(5e5), 0.8629, 1e-3);
+  for (const [b, m] of R.abraham) T.rel(S, 'masa transversal de Abraham (mpmath), β = ' + b, C.massAbraham(b), m, 1e-9);
+  T.abs(N, 'masa de Abraham a β → 0 es la masa en reposo', C.massAbraham(0.01), 1, 1e-3);
+  T.ok(H, 'a 0.9c las masas de Abraham y de Einstein (γ) difieren más de un 10 %', Math.abs(C.massAbraham(0.9) / C.gamma(0.9) - 1) > 0.1);
+  T.abs(N, 'Doppler: acercamiento × alejamiento = 1', C.dopplerApproach(0.6) * C.dopplerRecede(0.6), 1, 1e-14);
+};
