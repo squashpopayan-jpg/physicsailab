@@ -922,11 +922,18 @@
                         </div>
                     </div>
 
-                    <!-- Buscador en tiempo real de cursos -->
+                    <!-- Buscador inteligente por coincidencia de cursos -->
                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem; margin-bottom:1.25rem;">
-                        <input type="text" id="adm-courses-key-search" class="adm-input" placeholder="🔍 Filtrar entre los 25 cursos y laboratorios..." style="max-width:360px;" oninput="filterCourseKeyCards(this.value)">
-                        <div style="font-size:0.82rem; color:var(--adm-muted);">
-                            Mostrando <strong id="adm-courses-keys-count" style="color:#fff;">25</strong> cursos configurados
+                        <div style="position:relative; flex:1; max-width:440px;">
+                            <input type="text" id="adm-courses-key-search" class="adm-input" 
+                                   placeholder="🔍 Buscar por coincidencia (ej: mecanica, optica, solido, termo, MAXI)..." 
+                                   style="width:100%; padding-right:2.4rem;" 
+                                   oninput="filterCourseKeyCards(this.value)">
+                            <button type="button" id="adm-clear-search-btn" onclick="clearCourseKeySearch()" 
+                                    style="position:absolute; right:0.75rem; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--adm-muted); cursor:pointer; font-size:1.1rem; display:none;" title="Limpiar búsqueda">✕</button>
+                        </div>
+                        <div style="font-size:0.84rem; color:var(--adm-muted);">
+                            Mostrando <strong id="adm-courses-keys-count" style="color:#fff;">27</strong> materias configuradas
                         </div>
                     </div>
 
@@ -1753,18 +1760,71 @@
         }
 
         // 4. Claves Mensuales de Acceso a Todos los 25 Cursos
+        function normalizeSearchText(str) {
+            if (!str) return '';
+            return str
+                .toString()
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^a-z0-9\s]/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        function filterCourseKeyCards(val) {
+            const clearBtn = document.getElementById('adm-clear-search-btn');
+            if (clearBtn) clearBtn.style.display = (val && val.trim()) ? 'block' : 'none';
+            renderAllCourseKeyCards(val);
+        }
+
+        function clearCourseKeySearch() {
+            const inp = document.getElementById('adm-courses-key-search');
+            if (inp) {
+                inp.value = '';
+                filterCourseKeyCards('');
+                inp.focus();
+            }
+        }
+
         function renderAllCourseKeyCards(filterQuery = '') {
             const grid = document.getElementById('adm-courses-keys-grid');
             const countEl = document.getElementById('adm-courses-keys-count');
             if (!grid) return;
 
-            const q = filterQuery.toLowerCase().trim();
-            const list = q ? ALL_COURSES.filter(c => c.name.toLowerCase().includes(q) || c.cat.toLowerCase().includes(q) || c.id.toLowerCase().includes(q)) : ALL_COURSES;
+            const qClean = normalizeSearchText(filterQuery);
+            const tokens = qClean ? qClean.split(' ').filter(Boolean) : [];
+
+            const list = tokens.length > 0 ? ALL_COURSES.filter(c => {
+                const activeKey = loadedCourseKeys[c.id] || c.defaultKey || '';
+                const searchable = normalizeSearchText([
+                    c.name || '',
+                    c.id || '',
+                    (c.id || '').replace(/_/g, ' '),
+                    c.cat || '',
+                    c.desc || '',
+                    activeKey
+                ].join(' '));
+
+                return tokens.every(tok => searchable.includes(tok));
+            }) : ALL_COURSES;
 
             if (countEl) countEl.textContent = list.length;
 
             if (list.length === 0) {
-                grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:2rem; color:var(--adm-muted);">No se encontraron materias que coincidan con "${escapeHtml(filterQuery)}".</div>`;
+                grid.innerHTML = `
+                    <div style="grid-column:1/-1; text-align:center; padding:3rem 1.5rem; background:#0b1120; border:1px dashed rgba(99,102,241,0.3); border-radius:12px;">
+                        <div style="font-size:2.2rem; margin-bottom:0.6rem;">🔍</div>
+                        <h4 style="color:#fff; margin:0 0 0.4rem; font-size:1.1rem;">No se encontraron materias</h4>
+                        <p style="color:var(--adm-muted); font-size:0.88rem; margin:0 auto 1.25rem; max-width:460px;">
+                            Ningún curso coincide con "<strong>${escapeHtml(filterQuery)}</strong>".
+                            Puedes buscar por nombre (ej: <em>mecanica</em>, <em>optica</em>, <em>solido</em>), categoría o por la contraseña activa.
+                        </p>
+                        <button type="button" class="adm-btn adm-btn-secondary" onclick="clearCourseKeySearch()" style="margin:0 auto;">
+                            Mostrar todas las 27 materias
+                        </button>
+                    </div>
+                `;
                 return;
             }
 
@@ -1790,7 +1850,7 @@
                         <div>
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
                                 <span style="font-size:0.73rem; color:#94a3b8; font-weight:600;">Contraseña activa:</span>
-                                <span id="badge-${c.id}" style="font-size:0.7rem; color:#38bdf8; font-family:monospace; font-weight:700;">${escapeHtml(currentVal)}</span>
+                                <span id="badge-${c.id}" style="font-size:0.75rem; color:#38bdf8; font-family:monospace; font-weight:700;">${escapeHtml(currentVal)}</span>
                             </div>
                             <div style="display:flex; gap:0.4rem; align-items:center; margin-bottom:0.55rem;">
                                 <input type="text" id="key-${c.id}" class="adm-input" value="${escapeHtml(currentVal)}" 
@@ -1814,10 +1874,6 @@
                     </div>
                 `;
             }).join('');
-        }
-
-        function filterCourseKeyCards(val) {
-            renderAllCourseKeyCards(val);
         }
 
         function generateRandomKeyFor(inputId, prefix) {

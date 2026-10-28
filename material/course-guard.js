@@ -822,16 +822,7 @@
                 return;
             }
 
-            // 2. Claves Universitarias de Emergencia y Respaldo Estudiantil
-            if (valClean === 'UNICAUCA2026' || valClean === 'FISICA2026' || valClean === 'UNIVERSIDAD2026') {
-                setCourseUnlocked(currentCourse, true);
-                closeModal();
-                showToast('🎓 ¡Acceso Universitario validado con éxito! Materia desbloqueada.', 'success');
-                updateGuardState();
-                return;
-            }
-
-            // 3. Verificar licencias individuales de alumnos
+            // 2. Verificar licencias individuales de alumnos (si el docente emitió una)
             try {
                 const licenses = JSON.parse(localStorage.getItem('physicsailab_student_licenses') || '[]');
                 if (Array.isArray(licenses)) {
@@ -855,44 +846,31 @@
                 }
             } catch(e) {}
 
-            // 4. Obtener claves válidas locales para este curso
-            let validKeys = DEFAULT_COURSE_KEYS[currentCourse] || [];
+            // 3. Verificar ÚNICAMENTE la clave activa asignada por el Administrador (en caché local)
+            let adminActiveKey = '';
             try {
-                const customMap = JSON.parse(localStorage.getItem('physicsailab_custom_keys') || '{}');
-                if (customMap[currentCourse]) {
-                    if (Array.isArray(customMap[currentCourse])) {
-                        validKeys = validKeys.concat(customMap[currentCourse]);
-                    } else if (typeof customMap[currentCourse] === 'string') {
-                        validKeys.push(customMap[currentCourse]);
-                    }
-                }
                 const cloudMap = JSON.parse(localStorage.getItem('physicsailab_cloud_keys') || '{}');
-                if (cloudMap[currentCourse]) {
-                    if (Array.isArray(cloudMap[currentCourse])) {
-                        validKeys = validKeys.concat(cloudMap[currentCourse]);
-                    } else if (typeof cloudMap[currentCourse] === 'string') {
-                        validKeys.push(cloudMap[currentCourse]);
-                    }
+                if (cloudMap && cloudMap[currentCourse]) {
+                    adminActiveKey = (cloudMap[currentCourse] || '').trim().toUpperCase();
                 }
-                if (window.PLATFORM_DATA && window.PLATFORM_DATA.clavesCursos && window.PLATFORM_DATA.clavesCursos[currentCourse]) {
-                    validKeys = validKeys.concat(window.PLATFORM_DATA.clavesCursos[currentCourse]);
+                if (!adminActiveKey) {
+                    const customMap = JSON.parse(localStorage.getItem('physicsailab_custom_keys') || '{}');
+                    if (customMap && customMap[currentCourse]) {
+                        adminActiveKey = (customMap[currentCourse] || '').trim().toUpperCase();
+                    }
                 }
             } catch(e) {}
 
-            const isLocalMatch = validKeys.some(k => {
-                const ku = (k || '').toUpperCase();
-                return ku === val || ku.replace(/[\s\-_]/g, '') === valClean;
-            });
-
-            if (isLocalMatch) {
+            const adminActiveClean = adminActiveKey.replace(/[\s\-_]/g, '');
+            if (adminActiveKey && (val === adminActiveKey || (valClean && valClean === adminActiveClean))) {
                 setCourseUnlocked(currentCourse, true);
                 closeModal();
-                showToast(`🎉 ¡Clave válida! Curso desbloqueado exitosamente para este periodo.`, 'success');
+                showToast(`🎉 ¡Clave válida! Curso desbloqueado exitosamente.`, 'success');
                 updateGuardState();
                 return;
             }
 
-            // 5. Verificación en tiempo real con Firebase en la nube
+            // 4. Verificación en tiempo real con Firebase en la nube (clave vigente asignada por el admin)
             if (doUnlockBtn) {
                 doUnlockBtn.disabled = true;
                 doUnlockBtn.textContent = 'Verificando con la nube... ⏳';
@@ -910,10 +888,10 @@
                         const targetCloudKey = (cloudKeys[currentCourse] || '').trim().toUpperCase();
                         const targetCloudClean = targetCloudKey.replace(/[\s\-_]/g, '');
 
-                        if (targetCloudKey && (targetCloudKey === val || targetCloudClean === valClean)) {
+                        if (targetCloudKey && (val === targetCloudKey || (valClean && valClean === targetCloudClean))) {
                             setCourseUnlocked(currentCourse, true);
                             closeModal();
-                            showToast(`🎉 ¡Clave activa sincronizada y verificada con la nube! Curso desbloqueado.`, 'success');
+                            showToast(`🎉 ¡Clave activa sincronizada y verificada con el servidor! Curso desbloqueado.`, 'success');
                             updateGuardState();
                             return;
                         }
@@ -921,30 +899,14 @@
                         // ¿Pertenece a otra materia en la nube?
                         for (const [otherId, otherKey] of Object.entries(cloudKeys)) {
                             const otKey = (otherKey || '').trim().toUpperCase();
-                            if (otherId !== currentCourse && (otKey === val || otKey.replace(/[\s\-_]/g, '') === valClean)) {
+                            if (otherId !== currentCourse && (otKey === val || (otKey.replace(/[\s\-_]/g, '') === valClean && valClean.length >= 3))) {
                                 showToast(`⚠️ Esta clave corresponde a «${otherId.toUpperCase()}», no a esta materia.`, 'error');
                                 return;
                             }
                         }
                     }
 
-                    // 6. Comprobar si la clave pertenece a otra materia en claves por defecto
-                    let otherCourse = null;
-                    for (const [cId, keys] of Object.entries(DEFAULT_COURSE_KEYS)) {
-                        if (cId !== currentCourse && keys.some(k => {
-                            const ku = k.toUpperCase();
-                            return ku === val || ku.replace(/[\s\-_]/g, '') === valClean;
-                        })) {
-                            otherCourse = cId;
-                            break;
-                        }
-                    }
-
-                    if (otherCourse) {
-                        showToast(`⚠️ Esta clave corresponde a «${otherCourse.toUpperCase()}». Cada materia tiene su propia clave.`, 'error');
-                    } else {
-                        showToast('❌ Clave no válida para este curso. Consulta con tu profesor en clase.', 'error');
-                    }
+                    showToast('❌ Clave no válida para este curso. Consulta con tu profesor en clase.', 'error');
                 })
                 .catch(() => {
                     if (doUnlockBtn) {

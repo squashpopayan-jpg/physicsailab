@@ -2037,25 +2037,18 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     function getCourseKeys(courseId) {
-        let keys = (data.clavesCursos && data.clavesCursos[courseId]) ? [...data.clavesCursos[courseId]] : [];
+        let keys = [];
         try {
-            const custom = JSON.parse(localStorage.getItem('physicsailab_custom_keys') || '{}');
-            if (custom[courseId]) {
-                if (Array.isArray(custom[courseId])) {
-                    keys = [...new Set([...custom[courseId], ...keys])];
-                } else if (typeof custom[courseId] === 'string') {
-                    keys.unshift(custom[courseId]);
-                }
+            const cloud = JSON.parse(localStorage.getItem('physicsailab_cloud_keys') || '{}');
+            if (cloud && cloud[courseId] && typeof cloud[courseId] === 'string') {
+                keys.push(cloud[courseId].trim().toUpperCase());
             }
         } catch(e) {}
         try {
-            const cloud = JSON.parse(localStorage.getItem('physicsailab_cloud_keys') || '{}');
-            if (cloud[courseId]) {
-                if (Array.isArray(cloud[courseId])) {
-                    keys = [...new Set([...cloud[courseId], ...keys])];
-                } else if (typeof cloud[courseId] === 'string') {
-                    keys.unshift(cloud[courseId]);
-                }
+            const custom = JSON.parse(localStorage.getItem('physicsailab_custom_keys') || '{}');
+            if (custom && custom[courseId] && typeof custom[courseId] === 'string') {
+                const k = custom[courseId].trim().toUpperCase();
+                if (!keys.includes(k)) keys.unshift(k);
             }
         } catch(e) {}
         return keys;
@@ -4907,7 +4900,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function getQuizPassword(quizId) {
         const map = getStoredQuizPasswords();
-        return (map[quizId] || DEFAULT_QUIZ_PASSWORDS[quizId] || 'FISICA2026').trim().toUpperCase();
+        return (map[quizId] || DEFAULT_QUIZ_PASSWORDS[quizId] || 'QUIZ-2026').trim().toUpperCase();
     }
 
     function setQuizPassword(quizId, newPassword) {
@@ -8848,31 +8841,49 @@ document.addEventListener('DOMContentLoaded', () => {
     // ========================================================
     // BUSCADOR GLOBAL INSTANTÁNEO DE CONTENIDOS Y SIMULADORES
     // ========================================================
+    function normalizeSearchText(str) {
+        if (!str) return '';
+        return str
+            .toString()
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9\s]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
     window.handleGlobalSearch = function(query) {
         const dropdown = document.getElementById('global-search-results-dropdown');
         const clearBtn = document.getElementById('global-search-clear-btn');
         if (!dropdown) return;
 
-        const q = (query || '').toLowerCase().trim();
-        if (clearBtn) clearBtn.style.display = q ? 'block' : 'none';
+        const qRaw = (query || '').trim();
+        const qClean = normalizeSearchText(qRaw);
+        if (clearBtn) clearBtn.style.display = qRaw ? 'block' : 'none';
 
-        if (q.length < 2) {
+        if (qClean.length < 2) {
             dropdown.style.display = 'none';
             dropdown.innerHTML = '';
             return;
         }
 
+        const tokens = qClean.split(' ').filter(Boolean);
         const results = [];
 
         // 1. Cursos y Laboratorios
         const courses = (typeof data !== 'undefined' && data.cursos) ? data.cursos : [];
         courses.forEach(c => {
-            const title = (c.titulo || '').toLowerCase();
-            const desc = (c.descripcion || '').toLowerCase();
-            const cat = (c.categoria || '').toLowerCase();
-            const id = (c.id || '').toLowerCase();
+            const searchable = normalizeSearchText([
+                c.titulo || '',
+                c.id || '',
+                (c.id || '').replace(/_/g, ' '),
+                c.categoria || '',
+                c.descripcion || '',
+                (c.temas || []).join(' ')
+            ].join(' '));
 
-            if (title.includes(q) || desc.includes(q) || cat.includes(q) || id.includes(q)) {
+            if (tokens.every(tok => searchable.includes(tok))) {
                 results.push({
                     type: c.esPrivado ? '🔬 Privado Docente' : (c.categoria || 'Curso'),
                     title: c.titulo,
@@ -8887,9 +8898,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // 2. Cómics
         const comics = (typeof data !== 'undefined' && data.comics) ? data.comics : [];
         comics.forEach(cm => {
-            const title = (cm.titulo || '').toLowerCase();
-            const desc = (cm.descripcion || '').toLowerCase();
-            if (title.includes(q) || desc.includes(q)) {
+            const searchable = normalizeSearchText([cm.titulo || '', cm.descripcion || '', cm.categoria || ''].join(' '));
+            if (tokens.every(tok => searchable.includes(tok))) {
                 results.push({
                     type: '🎨 Cómic Científico',
                     title: cm.titulo,
@@ -8904,9 +8914,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // 3. Podcasts
         const podcasts = (typeof data !== 'undefined' && data.podcasts) ? data.podcasts : [];
         podcasts.forEach(p => {
-            const title = (p.titulo || '').toLowerCase();
-            const desc = (p.descripcion || '').toLowerCase();
-            if (title.includes(q) || desc.includes(q)) {
+            const searchable = normalizeSearchText([p.titulo || '', p.descripcion || ''].join(' '));
+            if (tokens.every(tok => searchable.includes(tok))) {
                 results.push({
                     type: '🎙️ Podcast',
                     title: p.titulo,
@@ -8927,27 +8936,27 @@ document.addEventListener('DOMContentLoaded', () => {
             { title: 'Simulador Manu Squash', desc: 'Suite de análisis biomecánico, rutinas tácticas y editor de trayectorias.', link: '/material/1_cursos/squash_sim/dist/index.html', isExternal: true, type: '🎮 Simulador Deportivo' },
             { title: 'Faro: Pods de Reacción', desc: 'Manual técnico de taller, firmware ESP32-S3 y planos de ensamble.', link: '/material/1_cursos/faro/manual/dist/index.html', isExternal: true, type: '💡 Hardware & Taller' },
             { title: 'hBN-MC: Simulador Monte Carlo', desc: 'Heteroestructuras 2D y nanoporos de grafeno/hBN.', link: '/material/1_cursos/hBN-MC/index.html', isExternal: true, type: '🔬 Simulación DFT' },
-            { title: 'Pruebas Diagnósticas', desc: 'Plataforma institucional de evaluación para colegios y universidades.', link: '/material/1_cursos/diagnosticas/dist/public/index.html', isExternal: true, type: '🏛️ Servicio Académico' },
-            { title: 'Recorrido 3D Departamento de Física', desc: 'Visita virtual interactiva de las instalaciones y laboratorios Unicauca.', link: '/recorrido/recorrido3d.html', isExternal: true, type: '🌐 Recorrido 3D' }
+            { title: 'Pruebas Diagnósticas', desc: 'Plataforma institucional de evaluación para colegios y universidades.', link: '/material/1_cursos/diagnosticas/dist/public/index.html', isExternal: true, type: '🏛️ Servicio Académico' }
         ];
 
         trivias.forEach(t => {
-            if (t.title.toLowerCase().includes(q) || t.desc.toLowerCase().includes(q)) {
+            const searchable = normalizeSearchText([t.title, t.desc, t.type].join(' '));
+            if (tokens.every(tok => searchable.includes(tok))) {
                 results.push({
                     type: t.type,
                     title: t.title,
                     desc: t.desc,
                     link: t.link,
                     isExternal: !!t.isExternal,
-                    badgeColor: '#a855f7'
+                    badgeColor: '#a78bfa'
                 });
             }
         });
 
         if (results.length === 0) {
             dropdown.innerHTML = `
-                <div style="text-align:center; padding:1.25rem; color:var(--text-muted); font-size:0.9rem;">
-                    No se encontraron coincidencias para "<strong>${q}</strong>". Prueba con palabras como <em>mecánica, squash, faro, sólidos, venturi, ondas, trivia</em>...
+                <div style="text-align:center; padding:1.5rem; color:var(--text-muted); font-size:0.92rem;">
+                    🔍 No se encontraron contenidos que coincidan con "<strong>${escapeHtml(qRaw)}</strong>".
                 </div>
             `;
             dropdown.style.display = 'block';
@@ -8955,31 +8964,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         dropdown.innerHTML = `
-            <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; margin-bottom:0.6rem; letter-spacing:0.5px; padding:0 0.4rem;">
-                Resultados encontrados (${results.length}):
+            <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; padding:0.25rem 0.5rem 0.6rem; border-bottom:1px solid rgba(255,255,255,0.08); margin-bottom:0.4rem; display:flex; justify-content:space-between;">
+                <span>Resultados encontrados (${results.length})</span>
+                <span style="color:#a5b4fc;">Haz clic para abrir</span>
             </div>
-            <div style="display:flex; flex-direction:column; gap:0.5rem;">
-                ${results.slice(0, 12).map(r => `
-                    <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:0.75rem 0.95rem; display:flex; justify-content:space-between; align-items:center; gap:0.75rem; transition:background 0.2s;" onmouseover="this.style.background='rgba(99,102,241,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'">
-                        <div style="min-width:0;">
-                            <div style="display:flex; align-items:center; gap:0.45rem; margin-bottom:0.25rem;">
-                                <span style="font-size:0.7rem; font-weight:700; background:rgba(255,255,255,0.08); color:${r.badgeColor}; border:1px solid ${r.badgeColor}40; padding:0.15rem 0.5rem; border-radius:6px;">
-                                    ${r.type}
-                                </span>
-                                <strong style="color:#ffffff; font-size:0.92rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                                    ${r.title}
-                                </strong>
-                            </div>
-                            <div style="font-size:0.8rem; color:#94a3b8; line-height:1.35; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                                ${r.desc}
-                            </div>
-                        </div>
-                        <a href="${r.link}" ${r.isExternal ? 'target="_blank"' : ''} onclick="closeGlobalSearchDropdown()" class="btn btn-primary" style="font-size:0.78rem; padding:0.4rem 0.8rem; white-space:nowrap; flex-shrink:0;">
-                            ${r.isExternal ? 'Abrir en pestaña ↗️' : 'Ver ⬇️'}
-                        </a>
+            ${results.map(r => `
+                <a href="${r.link}" ${r.isExternal ? 'target="_blank"' : ''} onclick="closeGlobalSearchDropdown()" 
+                   style="display:block; padding:0.65rem 0.75rem; border-radius:8px; text-decoration:none; transition:background 0.15s ease; border-bottom:1px solid rgba(255,255,255,0.04);" 
+                   onmouseover="this.style.background='rgba(99,102,241,0.15)'" onmouseout="this.style.background='transparent'">
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem; margin-bottom:0.2rem;">
+                        <strong style="color:#fff; font-size:0.92rem;">${escapeHtml(r.title)}</strong>
+                        <span style="font-size:0.68rem; background:${r.badgeColor}22; color:${r.badgeColor}; border:1px solid ${r.badgeColor}44; padding:0.1rem 0.45rem; border-radius:4px; font-weight:700; white-space:nowrap;">
+                            ${escapeHtml(r.type)}
+                        </span>
                     </div>
-                `).join('')}
-            </div>
+                    <p style="margin:0; font-size:0.78rem; color:var(--text-muted); line-height:1.35; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                        ${escapeHtml(r.desc)}
+                    </p>
+                </a>
+            `).join('')}
         `;
         dropdown.style.display = 'block';
     };
