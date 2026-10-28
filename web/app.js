@@ -1547,10 +1547,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         localStorage.setItem('unlocked_course_' + courseId, 'true');
         const now = Date.now();
+        const rotTs = parseInt(localStorage.getItem('physicsailab_key_rotation_ts') || '0', 10);
+        const safeUnlockAt = (rotTs >= now) ? (rotTs + 2000) : now;
         const unlockInfo = {
             cId: courseId,
-            unlockedAt: now,
-            expiresAt: now + 30 * 24 * 60 * 60 * 1000,
+            unlockedAt: safeUnlockAt,
+            expiresAt: safeUnlockAt + 60 * 24 * 60 * 60 * 1000,
             isSubscription: false,
             month: new Date().toISOString().slice(0, 7)
         };
@@ -6466,15 +6468,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!newKey) return;
 
         const cleanKey = newKey.trim().toUpperCase();
-        if (cleanKey.length < 3) {
-            alert('La clave debe tener al menos 3 caracteres.');
+        if (cleanKey.length < 2) {
+            alert('La clave debe tener al menos 2 caracteres.');
             return;
         }
 
         try {
             const custom = JSON.parse(localStorage.getItem('physicsailab_custom_keys') || '{}');
-            custom[courseId] = [cleanKey, ...(currentKeys.slice(1))];
+            custom[courseId] = cleanKey;
             localStorage.setItem('physicsailab_custom_keys', JSON.stringify(custom));
+
+            const cloud = JSON.parse(localStorage.getItem('physicsailab_cloud_keys') || '{}');
+            cloud[courseId] = cleanKey;
+            localStorage.setItem('physicsailab_cloud_keys', JSON.stringify(cloud));
 
             // Sincronizar en la nube Firebase para propagar a todos los estudiantes
             fetch(`${FIREBASE_BASE}/student_keys_config/monthly_keys/${courseId}.json`, {

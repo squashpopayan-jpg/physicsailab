@@ -1283,7 +1283,9 @@
             { id: 'solido', name: 'Física del Estado Sólido (30 Capítulos)', icon: '💎', defaultKey: 'SOLIDO-2026', cat: 'Materia Condensada', desc: '30 capítulos, 119 simulaciones WebGL 3D, bandas, fonones y superconductividad.' },
             { id: 'faro', name: 'Faro: Pods de Reacción, Sensores ToF & Hardware', icon: '🚨', defaultKey: 'FARO-2026', cat: 'Hardware Abierto & Deporte', desc: 'Pods ESP32-S3, manual de taller, planos A4 1:1, STLs 3D y firmware.' },
             { id: 'diagnosticas', name: 'Servicio de Pruebas Diagnósticas (Colegios & Univ.)', icon: '📊', defaultKey: 'DIAGNOSTICAS-2026', cat: 'Evaluación Institucional', desc: '450 preguntas validadas en 9 bancos, supervisión en vivo e informes.' },
-            { id: 'squash_arbitraje', name: 'Manu_Squash Arbitraje (WSF & Simulador)', icon: '⚖️', defaultKey: 'ARBITRAJE-2026', cat: 'Física del Deporte & Arbitraje', desc: 'Simulador 3D/2D, árbol de interferencias WSF, reglas 1-15 y planilla de marcador en vivo.' }
+            { id: 'squash_arbitraje', name: 'Manu_Squash Arbitraje (WSF & Simulador)', icon: '⚖️', defaultKey: 'ARBITRAJE-2026', cat: 'Física del Deporte & Arbitraje', desc: 'Simulador 3D/2D, árbol de interferencias WSF, reglas 1-15 y planilla de marcador en vivo.' },
+            { id: 'historia', name: 'Cómo llegamos a saber: Historia de la Física', icon: '📜', defaultKey: 'HISTORIA-2026', cat: 'Epistemología & Historia', desc: '14 capítulos interactivos, trivia histórica de 100 preguntas. (Cortesía de Bienvenida - 100% Liberado)' },
+            { id: 'hbn_mc', name: 'hBN-MC: Monte Carlo Nanoporos', icon: '🔬', defaultKey: 'HBN-MC-2026', cat: 'Nanotecnología & Simulación', desc: 'Simulador Monte Carlo de nanoporos en nitruro de boro hexagonal (U. del Cauca / UFOP).' }
         ];
 
         // Nombres de ejemplos ficticios para purga garantizada
@@ -1768,16 +1770,17 @@
 
             grid.innerHTML = list.map(c => {
                 const currentVal = loadedCourseKeys[c.id] || c.defaultKey;
+                const isFree = c.id === 'recorrido' || c.id === 'historia';
                 return `
-                    <div style="background:#0b1120; border:1px solid rgba(99,102,241,0.25); border-radius:10px; padding:1.1rem; display:flex; flex-direction:column; justify-content:space-between;">
+                    <div id="card-${c.id}" style="background:#0b1120; border:1px solid rgba(99,102,241,0.25); border-radius:12px; padding:1.15rem; display:flex; flex-direction:column; justify-content:space-between; transition:all 0.25s ease;">
                         <div>
                             <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.45rem; gap:0.5rem;">
                                 <strong style="color:#fff; font-size:0.95rem; display:flex; align-items:center; gap:0.4rem;">
                                     <span>${c.icon}</span>
                                     <span>${escapeHtml(c.name)}</span>
                                 </strong>
-                                <span style="font-size:0.7rem; background:rgba(99,102,241,0.15); color:#a5b4fc; padding:0.15rem 0.5rem; border-radius:6px; font-weight:700; white-space:nowrap;">
-                                    ${escapeHtml(c.cat)}
+                                <span style="font-size:0.7rem; background:${isFree ? 'rgba(16,185,129,0.2)' : 'rgba(99,102,241,0.15)'}; color:${isFree ? '#34d399' : '#a5b4fc'}; padding:0.18rem 0.55rem; border-radius:6px; font-weight:700; white-space:nowrap;">
+                                    ${isFree ? 'LIBRE (BIENVENIDA)' : escapeHtml(c.cat)}
                                 </span>
                             </div>
                             <p style="font-size:0.78rem; color:var(--adm-muted); margin:0 0 0.85rem; line-height:1.4;">
@@ -1785,10 +1788,27 @@
                             </p>
                         </div>
                         <div>
-                            <div style="display:flex; gap:0.4rem; align-items:center;">
-                                <input type="text" id="key-${c.id}" class="adm-input" value="${escapeHtml(currentVal)}" style="text-transform:uppercase; font-family:monospace; font-weight:700; font-size:0.88rem; padding:0.55rem 0.75rem;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
+                                <span style="font-size:0.73rem; color:#94a3b8; font-weight:600;">Contraseña activa:</span>
+                                <span id="badge-${c.id}" style="font-size:0.7rem; color:#38bdf8; font-family:monospace; font-weight:700;">${escapeHtml(currentVal)}</span>
+                            </div>
+                            <div style="display:flex; gap:0.4rem; align-items:center; margin-bottom:0.55rem;">
+                                <input type="text" id="key-${c.id}" class="adm-input" value="${escapeHtml(currentVal)}" 
+                                       style="text-transform:uppercase; font-family:monospace; font-weight:700; font-size:0.9rem; padding:0.55rem 0.75rem; flex:1;"
+                                       placeholder="Escribe la clave..."
+                                       onkeydown="if(event.key==='Enter') saveSingleCourseKey('${c.id}', '${c.name.replace(/'/g, "\\'")}', document.getElementById('btn-save-${c.id}'));"
+                                       title="Escribe la clave y presiona Enter o clic en Cambiar Contraseña">
                                 <button type="button" class="adm-btn adm-btn-secondary" onclick="generateRandomKeyFor('key-${c.id}', '${c.id.substring(0,3).toUpperCase()}')" title="Generar clave aleatoria para este mes">🎲</button>
                                 <button type="button" class="adm-btn adm-btn-secondary" onclick="copyCourseKey('key-${c.id}')" title="Copiar clave al portapapeles">📋</button>
+                            </div>
+                            <div>
+                                <button type="button" id="btn-save-${c.id}" class="adm-btn adm-btn-emerald" 
+                                        onclick="saveSingleCourseKey('${c.id}', '${c.name.replace(/'/g, "\\'")}', this)" 
+                                        style="width:100%; justify-content:center; padding:0.55rem 0.85rem; font-size:0.84rem; font-weight:700; gap:0.4rem; border-radius:8px;" 
+                                        title="Guardar y activar inmediatamente la nueva contraseña para ${escapeHtml(c.name)}">
+                                    💾 Cambiar Contraseña Individual
+                                </button>
+                                <div id="status-${c.id}" style="font-size:0.75rem; margin-top:0.4rem; display:none; text-align:center; font-weight:600;"></div>
                             </div>
                         </div>
                     </div>
@@ -1834,32 +1854,315 @@
                 });
         }
 
+        function saveSingleCourseKey(courseId, courseName, btnEl) {
+            const input = document.getElementById('key-' + courseId);
+            const statusEl = document.getElementById('status-' + courseId);
+            const cardEl = document.getElementById('card-' + courseId);
+            const badgeEl = document.getElementById('badge-' + courseId);
+            if (!input) return;
+
+            const cleanKey = input.value.trim().toUpperCase();
+            if (cleanKey.length < 2) {
+                alert('⚠️ La clave para "' + courseName + '" debe tener al menos 2 caracteres.');
+                input.focus();
+                return;
+            }
+
+            input.value = cleanKey;
+            if (badgeEl) badgeEl.textContent = cleanKey;
+
+            if (btnEl) {
+                btnEl.disabled = true;
+                btnEl.innerHTML = '⏳ Guardando en la nube...';
+                btnEl.style.opacity = '0.75';
+            }
+
+            // 1. Guardar localmente de inmediato
+            loadedCourseKeys[courseId] = cleanKey;
+            try {
+                const custom = JSON.parse(localStorage.getItem('physicsailab_custom_keys') || '{}');
+                custom[courseId] = cleanKey;
+                localStorage.setItem('physicsailab_custom_keys', JSON.stringify(custom));
+
+                const cloud = JSON.parse(localStorage.getItem('physicsailab_cloud_keys') || '{}');
+                cloud[courseId] = cleanKey;
+                localStorage.setItem('physicsailab_cloud_keys', JSON.stringify(cloud));
+            } catch(e) {}
+
+            // 2. Guardar en Firebase Realtime Database
+            fetch(FIREBASE_BASE + '/student_keys_config/monthly_keys/' + courseId + '.json', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(cleanKey)
+            }).then(res => {
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                return res.json();
+            }).then(() => {
+                if (btnEl) {
+                    btnEl.disabled = false;
+                    btnEl.innerHTML = '✓ ¡Contraseña Actualizada!';
+                    btnEl.style.opacity = '1';
+                    btnEl.style.background = '#059669';
+                    btnEl.style.borderColor = '#34d399';
+                }
+                if (statusEl) {
+                    statusEl.innerHTML = `<span style="color:#34d399;">✓ Activa en la nube: <strong>${escapeHtml(cleanKey)}</strong></span>`;
+                    statusEl.style.display = 'block';
+                }
+                if (cardEl) {
+                    cardEl.style.borderColor = '#10b981';
+                    cardEl.style.boxShadow = '0 0 15px rgba(16,185,129,0.3)';
+                }
+                setTimeout(() => {
+                    if (btnEl) {
+                        btnEl.innerHTML = '💾 Cambiar Contraseña Individual';
+                        btnEl.style.background = '';
+                        btnEl.style.borderColor = '';
+                    }
+                    if (cardEl) {
+                        cardEl.style.borderColor = 'rgba(99,102,241,0.25)';
+                        cardEl.style.boxShadow = '';
+                    }
+                    if (statusEl) {
+                        setTimeout(() => { statusEl.style.display = 'none'; }, 5000);
+                    }
+                }, 2500);
+            }).catch(err => {
+                console.warn('Network warning:', err);
+                if (btnEl) {
+                    btnEl.disabled = false;
+                    btnEl.innerHTML = '✓ Guardada Localmente';
+                    btnEl.style.opacity = '1';
+                    btnEl.style.background = '#d97706';
+                }
+                if (statusEl) {
+                    statusEl.innerHTML = `<span style="color:#fbbf24;">✓ Guardada en este navegador (verifique conexión a internet): <strong>${escapeHtml(cleanKey)}</strong></span>`;
+                    statusEl.style.display = 'block';
+                }
+                setTimeout(() => {
+                    if (btnEl) {
+                        btnEl.innerHTML = '💾 Cambiar Contraseña Individual';
+                        btnEl.style.background = '';
+                    }
+                }, 3000);
+            });
+        }
+
+        function saveSingleCourseKey(courseId, courseName, btnEl) {
+            const input = document.getElementById('key-' + courseId);
+            const statusEl = document.getElementById('status-' + courseId);
+            const cardEl = document.getElementById('card-' + courseId);
+            const badgeEl = document.getElementById('badge-' + courseId);
+            if (!input) return;
+
+            const cleanKey = input.value.trim().toUpperCase();
+            if (cleanKey.length < 2) {
+                alert('⚠️ La clave para "' + courseName + '" debe tener al menos 2 caracteres.');
+                input.focus();
+                return;
+            }
+
+            input.value = cleanKey;
+            if (badgeEl) badgeEl.textContent = cleanKey;
+
+            if (btnEl) {
+                btnEl.disabled = true;
+                btnEl.innerHTML = '⏳ Guardando en la nube...';
+                btnEl.style.opacity = '0.75';
+            }
+
+            // 1. Guardar localmente de inmediato
+            loadedCourseKeys[courseId] = cleanKey;
+            try {
+                const custom = JSON.parse(localStorage.getItem('physicsailab_custom_keys') || '{}');
+                custom[courseId] = cleanKey;
+                localStorage.setItem('physicsailab_custom_keys', JSON.stringify(custom));
+
+                const cloud = JSON.parse(localStorage.getItem('physicsailab_cloud_keys') || '{}');
+                cloud[courseId] = cleanKey;
+                localStorage.setItem('physicsailab_cloud_keys', JSON.stringify(cloud));
+            } catch(e) {}
+
+            // 2. Guardar en Firebase Realtime Database
+            fetch(FIREBASE_BASE + '/student_keys_config/monthly_keys/' + courseId + '.json', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(cleanKey)
+            }).then(res => {
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                return res.json();
+            }).then(() => {
+                if (btnEl) {
+                    btnEl.disabled = false;
+                    btnEl.innerHTML = '✓ ¡Contraseña Actualizada!';
+                    btnEl.style.opacity = '1';
+                    btnEl.style.background = '#059669';
+                    btnEl.style.borderColor = '#34d399';
+                }
+                if (statusEl) {
+                    statusEl.innerHTML = `<span style="color:#34d399;">✓ Activa en la nube: <strong>${escapeHtml(cleanKey)}</strong></span>`;
+                    statusEl.style.display = 'block';
+                }
+                if (cardEl) {
+                    cardEl.style.borderColor = '#10b981';
+                    cardEl.style.boxShadow = '0 0 15px rgba(16,185,129,0.3)';
+                }
+                setTimeout(() => {
+                    if (btnEl) {
+                        btnEl.innerHTML = '💾 Cambiar Contraseña Individual';
+                        btnEl.style.background = '';
+                        btnEl.style.borderColor = '';
+                    }
+                    if (cardEl) {
+                        cardEl.style.borderColor = 'rgba(99,102,241,0.25)';
+                        cardEl.style.boxShadow = '';
+                    }
+                    if (statusEl) {
+                        setTimeout(() => { statusEl.style.display = 'none'; }, 5000);
+                    }
+                }, 2500);
+            }).catch(err => {
+                console.warn('Network warning:', err);
+                if (btnEl) {
+                    btnEl.disabled = false;
+                    btnEl.innerHTML = '✓ Guardada Localmente';
+                    btnEl.style.opacity = '1';
+                    btnEl.style.background = '#d97706';
+                }
+                if (statusEl) {
+                    statusEl.innerHTML = `<span style="color:#fbbf24;">✓ Guardada en este navegador (verifique conexión a internet): <strong>${escapeHtml(cleanKey)}</strong></span>`;
+                    statusEl.style.display = 'block';
+                }
+                setTimeout(() => {
+                    if (btnEl) {
+                        btnEl.innerHTML = '💾 Cambiar Contraseña Individual';
+                        btnEl.style.background = '';
+                    }
+                }, 3000);
+            });
+        }
+
+        function saveSingleCourseKey(courseId, courseName, btnEl) {
+            const input = document.getElementById('key-' + courseId);
+            const statusEl = document.getElementById('status-' + courseId);
+            const cardEl = document.getElementById('card-' + courseId);
+            const badgeEl = document.getElementById('badge-' + courseId);
+            if (!input) return;
+
+            const cleanKey = input.value.trim().toUpperCase();
+            if (cleanKey.length < 2) {
+                alert('⚠️ La clave para "' + courseName + '" debe tener al menos 2 caracteres.');
+                input.focus();
+                return;
+            }
+
+            input.value = cleanKey;
+            if (badgeEl) badgeEl.textContent = cleanKey;
+
+            if (btnEl) {
+                btnEl.disabled = true;
+                btnEl.innerHTML = '⏳ Guardando en la nube...';
+                btnEl.style.opacity = '0.75';
+            }
+
+            // 1. Guardar localmente de inmediato
+            loadedCourseKeys[courseId] = cleanKey;
+            try {
+                const custom = JSON.parse(localStorage.getItem('physicsailab_custom_keys') || '{}');
+                custom[courseId] = cleanKey;
+                localStorage.setItem('physicsailab_custom_keys', JSON.stringify(custom));
+
+                const cloud = JSON.parse(localStorage.getItem('physicsailab_cloud_keys') || '{}');
+                cloud[courseId] = cleanKey;
+                localStorage.setItem('physicsailab_cloud_keys', JSON.stringify(cloud));
+            } catch(e) {}
+
+            // 2. Guardar en Firebase Realtime Database
+            fetch(FIREBASE_BASE + '/student_keys_config/monthly_keys/' + courseId + '.json', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(cleanKey)
+            }).then(res => {
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                return res.json();
+            }).then(() => {
+                if (btnEl) {
+                    btnEl.disabled = false;
+                    btnEl.innerHTML = '✓ ¡Contraseña Actualizada!';
+                    btnEl.style.opacity = '1';
+                    btnEl.style.background = '#059669';
+                    btnEl.style.borderColor = '#34d399';
+                }
+                if (statusEl) {
+                    statusEl.innerHTML = `<span style="color:#34d399;">✓ Activa en la nube: <strong>${escapeHtml(cleanKey)}</strong></span>`;
+                    statusEl.style.display = 'block';
+                }
+                if (cardEl) {
+                    cardEl.style.borderColor = '#10b981';
+                    cardEl.style.boxShadow = '0 0 15px rgba(16,185,129,0.3)';
+                }
+                setTimeout(() => {
+                    if (btnEl) {
+                        btnEl.innerHTML = '💾 Cambiar Contraseña Individual';
+                        btnEl.style.background = '';
+                        btnEl.style.borderColor = '';
+                    }
+                    if (cardEl) {
+                        cardEl.style.borderColor = 'rgba(99,102,241,0.25)';
+                        cardEl.style.boxShadow = '';
+                    }
+                    if (statusEl) {
+                        setTimeout(() => { statusEl.style.display = 'none'; }, 5000);
+                    }
+                }, 2500);
+            }).catch(err => {
+                console.warn('Network warning:', err);
+                if (btnEl) {
+                    btnEl.disabled = false;
+                    btnEl.innerHTML = '✓ Guardada Localmente';
+                    btnEl.style.opacity = '1';
+                    btnEl.style.background = '#d97706';
+                }
+                if (statusEl) {
+                    statusEl.innerHTML = `<span style="color:#fbbf24;">✓ Guardada en este navegador (verifique conexión a internet): <strong>${escapeHtml(cleanKey)}</strong></span>`;
+                    statusEl.style.display = 'block';
+                }
+                setTimeout(() => {
+                    if (btnEl) {
+                        btnEl.innerHTML = '💾 Cambiar Contraseña Individual';
+                        btnEl.style.background = '';
+                    }
+                }, 3000);
+            });
+        }
+
         function saveCustomCourseKeys() {
-            const keysObj = {};
+            const keysObj = Object.assign({}, loadedCourseKeys);
             ALL_COURSES.forEach(c => {
                 const el = document.getElementById('key-' + c.id);
-                if (el) {
-                    keysObj[c.id] = (el.value || c.defaultKey).trim().toUpperCase();
-                } else {
-                    keysObj[c.id] = loadedCourseKeys[c.id] || c.defaultKey;
+                if (el && el.value) {
+                    keysObj[c.id] = el.value.trim().toUpperCase();
+                } else if (!keysObj[c.id]) {
+                    keysObj[c.id] = c.defaultKey;
                 }
             });
 
             loadedCourseKeys = keysObj;
             localStorage.setItem('physicsailab_custom_keys', JSON.stringify(keysObj));
+            localStorage.setItem('physicsailab_cloud_keys', JSON.stringify(keysObj));
 
             fetch(FIREBASE_BASE + '/student_keys_config/monthly_keys.json', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(keysObj)
             }).then(() => {
-                alert('✓ ¡Las 24 claves de materias y simuladores han sido actualizadas y sincronizadas en la nube!');
+                alert('✓ ¡Todas las contraseñas de materias han sido sincronizadas en la nube con éxito!');
             }).catch(err => {
-                alert('✓ Claves guardadas localmente. (Error de red al sincronizar con la nube).');
+                alert('✓ Contraseñas guardadas localmente. (Error de red al sincronizar con la nube).');
             });
         }
 
-                function resetAllCourseKeysToDefault() {
+        function resetAllCourseKeysToDefault() {
             if (!confirm('¿Deseas restablecer todas las claves a los valores estándar oficiales (MECANICA-2026, MATERIALES-2026, etc.)?\n\nAl confirmar, todos los estudiantes podrán usar las claves estándar del semestre.')) return;
             const keysObj = {};
             ALL_COURSES.forEach(c => {
