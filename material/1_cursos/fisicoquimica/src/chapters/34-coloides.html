@@ -1,0 +1,63 @@
+<template class="chapter-src" data-id="coloides" data-num="34" data-title="Coloides y estabilidad" data-part="Parte VII · Superficies, coloides y macromoléculas" data-short="Doble capa eléctrica, ecuación de Poisson–Boltzmann y solución de Gouy–Chapman, longitud de Debye, atracción de Hamaker, teoría DLVO, barrera de energía, concentración crítica de coagulación y regla de Schulze–Hardy, potencial zeta y electroforesis">
+<p class="lead">La leche, la tinta, la pintura, la sangre y el barro son dispersiones de partículas de entre 1 nm y 1 µm en un líquido. Son sistemas fuera de equilibrio (el estado de menor energía libre sería el de las partículas pegadas), pero pueden durar años: la causa de que no coagulen es una repulsión electrostática, y la de que coagulen al añadir sal es el apantallamiento de esa repulsión. La teoría de Derjaguin–Landau–Verwey–Overbeek (DLVO, 1941–1948) explica ambas cosas con la suma de dos potenciales que ya conocemos: la doble capa eléctrica del capítulo 14 y la dispersión de London del capítulo 7.</p>
+
+<section>
+<h2>La doble capa de Gouy–Chapman</h2>
+<p>Una partícula cargada en agua rodea su superficie con una nube de contraiones. El potencial \(\psi(x)\) a distancia \(x\) obedece la ecuación de Poisson–Boltzmann, con la densidad de carga dada por la distribución de Boltzmann de los iones. Para un electrolito simétrico \(z\!:\!z\) y una superficie plana la solución es exacta (Gouy, 1910; Chapman, 1913):</p>
+<div class="eq key" data-name="Gouy–Chapman">\[\tanh\frac{ze\psi}{4k_BT}=\tanh\frac{ze\psi_0}{4k_BT}\,e^{-\kappa x},\qquad\kappa^2=\frac{2n_0z^2e^2}{\varepsilon_r\varepsilon_0k_BT},\qquad\sigma=\sqrt{8n_0\varepsilon_r\varepsilon_0k_BT}\,\sinh\frac{ze\psi_0}{2k_BT}.\]</div>
+<p>\(\kappa^{-1}\) es la <span class="term">longitud de Debye</span>, el espesor efectivo de la nube: 9.6 nm con 1 mM de sal 1:1, 3.0 nm con 10 mM, 0.96 nm con 0.1 M (\(\kappa^{-1}=0.304/\sqrt c\) nm); disminuye con la concentración y con la carga \(z\) de los iones. A potencial pequeño se reduce a la forma de Debye–Hückel, \(\psi=\psi_0e^{-\kappa x}\), que se utilizó en el capítulo 12 para los iones.</p>
+<div class="sim" data-sim="gouy-chapman" data-title="Potencial en la doble capa de Gouy–Chapman frente a Debye–Hückel"></div>
+<div class="sim-guide"><ul>
+<li>Con \(\psi_0=80\) mV y 10 mM de sal 1:1: \(\kappa^{-1}=3.04\) nm, y a esa distancia el potencial es 25.1 mV (la forma lineal diría \(80/e=29.4\) mV: la teoría de Debye–Hückel sobreestima el potencial cerca de una superficie muy cargada, porque los contraiones se acumulan más). La carga superficial correspondiente es 26.6 mC/m² (una carga elemental por 6.0 nm²).</li>
+<li>Con 0.1 M: \(\kappa^{-1}=0.96\) nm y, para el mismo potencial, \(\sigma=84\) mC/m² (1.9 nm² por carga): comprimir la doble capa exige más carga superficial para mantener el potencial. Con \(\psi_0=25\) mV las dos curvas casi coinciden (límite de Debye–Hückel, \(|\psi|<k_BT/e=25.7\) mV).</li>
+<li>La solución de este simulador coincide con la integración numérica de la ecuación de Poisson–Boltzmann (solve_bvp) en cuatro distancias a \(10^{-6}\) o mejor.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>La teoría DLVO</h2>
+<p>Dos partículas esféricas iguales de radio \(a\) a distancia superficie–superficie \(h\) tienen dos contribuciones a su energía de interacción:</p>
+<ul>
+<li><strong>Repulsión de las dobles capas</strong> (superposición de las nubes de iones; aproximación de Derjaguin, 1934, válida si \(\kappa a\gg1\)): \(V_R=64\pi a\,n_0k_BT\,\gamma^2\kappa^{-2}e^{-\kappa h}\), con \(\gamma=\tanh(ze\psi_d/4k_BT)\); decrece exponencialmente con una longitud de decaimiento \(\kappa^{-1}\).</li>
+<li><strong>Atracción de van der Waals</strong> (suma de las dispersiones de London entre todos los pares de moléculas, Hamaker, 1937): para \(h\ll a\), \(V_A=-Aa/12h\), con la <em>constante de Hamaker</em> \(A\) (\(\sim10^{-20}\)–\(10^{-19}\) J; \(A\approx3.7\times10^{-20}\) J para el óxido de aluminio en agua). La fórmula exacta para esferas iguales, que se usa aquí, es \(V_A=-\tfrac A6\bigl[\tfrac{2a^2}{h^2+4ah}+\tfrac{2a^2}{(h+2a)^2}+\ln\tfrac{h^2+4ah}{(h+2a)^2}\bigr]\).</li>
+</ul>
+<p>La suma, \(V=V_R+V_A\), es el potencial DLVO: atracción fuerte a distancias muy pequeñas (<em>mínimo primario</em>: partículas pegadas, irreversible), una <em>barrera</em> de energía repulsiva a distancias intermedias, y a veces un <em>mínimo secundario</em> poco profundo a gran distancia (floculación débil y reversible). Si la barrera supera unos 15 \(k_BT\), la dispersión es estable por años; si no hay barrera, coagula con la rapidez de una colisión controlada por la difusión (Smoluchowski, capítulo 21). Verwey y Overbeek (1948) y Derjaguin y Landau (1941) construyeron la teoría independientemente.</p>
+<div class="sim" data-sim="dlvo" data-title="Energía de interacción DLVO entre dos esferas: barrera, mínimo secundario y estabilidad"></div>
+<div class="sim-guide"><ul>
+<li>Con \(\psi_d=50\) mV, 10 mM de sal 1:1, \(a=100\) nm y \(A=3.7\times10^{-20}\) J: barrera de 97 \(k_BT\) a 1.2 nm, mínimo secundario de −1.3 \(k_BT\) a 19 nm. La dispersión es estable. Con 0.3 M no hay barrera (\(\kappa^{-1}=0.56\) nm): coagulación rápida. La concentración crítica de coagulación (CCC) es 0.14 M, típica de un óxido o un látex con 1:1.</li>
+<li>Con un electrolito divalente (2 : 2) a 10 mM, la barrera baja a 15 \(k_BT\) y la CCC a 17 mM (más de ocho veces menor): los iones multivalentes apantallan mucho mejor, y el potencial \(\gamma\) (que depende de \(z\psi\)) pesa más. Con \(\psi_d=20\) mV y 0.1 M (1:1) la barrera desaparece: la CCC es de 1.5 mM, porque con ψ_d bajo la repulsión es débil desde el inicio.</li>
+<li>El tamaño \(a\) no cambia la barrera <em>por unidad de radio</em>, pero sí la altura total: \(V_R\) y \(V_A\) escalan con \(a\), de modo que partículas más grandes tienen barreras más altas en \(k_BT\) (y mínimos secundarios más profundos): por eso las dispersiones de partículas de varios µm floculan con facilidad y se redispersan agitando.</li>
+</ul></div>
+<p>Cuando la barrera desaparece, la <span class="term">concentración crítica de coagulación</span> se obtiene exigiendo que \(V=0\) y \(\dd V/\dd h=0\) a la vez, a \(\kappa h\approx1\). Con el potencial alto (\(\gamma\to1\)) se obtiene el resultado analítico</p>
+<div class="eq key" data-name="Regla de Schulze–Hardy">\[c_\mathrm{CCC}\propto\frac{\gamma^4}{A^2z^6}\ \Rightarrow\ c_\mathrm{CCC}(z=1):c_\mathrm{CCC}(z=2):c_\mathrm{CCC}(z=3)=1:\tfrac1{64}:\tfrac1{729}.\]</div>
+<p>Es la regla empírica de Schulze (1882) y Hardy (1900): la eficacia coagulante crece como la sexta potencia de la carga del contraión. Con \(A=10^{-20}\) J y \(\gamma=1\), las CCC son 38, 0.60 y 0.052 mol/L para \(z=1,2,3\); en las dispersiones reales, \(\gamma<1\) y \(A\) es mayor, de modo que las CCC de monovalentes son 0.05–0.5 M. Los \(\mathrm{Al^{3+}}\) y \(\mathrm{Fe^{3+}}\) se usan en la depuración del agua como coagulantes por esa razón.</p>
+</section>
+
+<section>
+<h2>Potencial zeta y electroforesis</h2>
+<p>El potencial de la superficie no se mide directamente. Lo que sí se mide es la velocidad de una partícula en un campo eléctrico: su <span class="term">movilidad electroforética</span> \(\mu=v/E\), que depende del potencial en el <em>plano de deslizamiento</em> (el borde de la capa de líquido que se mueve con la partícula), el <span class="term">potencial zeta</span> \(\zeta\), cuyo valor es parecido al potencial de Stern \(\psi_d\). Smoluchowski (1903) obtuvo \(\mu=\varepsilon\zeta/\eta\) para \(\kappa a\gg1\) (partícula grande, la doble capa es delgada), Hückel (1924) \(\mu=2\varepsilon\zeta/3\eta\) para \(\kappa a\ll1\); Henry (1931) unió los dos con una función \(f(\kappa a)\) que Ohshima (1994) aproxima con error menor de 1 %:</p>
+<div class="eq key" data-name="Movilidad electroforética (Henry)">\[\mu=\frac{2\varepsilon\varepsilon_0\zeta}{3\eta}f(\kappa a),\qquad f(\kappa a)=1+\frac{1}{2\left[1+\dfrac{2.5}{\kappa a\,(1+2e^{-\kappa a})}\right]^3},\quad f(0)=1,\ f(\infty)=\tfrac32.\]</div>
+<div class="sim" data-sim="zeta" data-title="Del valor medido de la movilidad al potencial zeta con la función de Henry"></div>
+<div class="sim-guide"><ul>
+<li>Una movilidad de \(-3\times10^{-8}\) m²/(V·s) (valor típico de un látex en sal diluida) con \(\kappa a=30\) da \(\zeta=-41\) mV con la función de Henry (\(f=1.393\)); la fórmula de Smoluchowski daría −38.5 mV y la de Hückel −57.7 mV: una diferencia de 50 % según la aproximación. Con \(\kappa a=0.2\) (partícula pequeña en medio diluido) la de Hückel es correcta (\(f=1.003\)); con \(\kappa a=500\), la de Smoluchowski (\(f=1.493\)).</li>
+<li>Una dispersión con \(|\zeta|>30\) mV se considera estable; entre \(\pm10\) mV, inestable. El <em>punto isoeléctrico</em> (\(\zeta=0\)) del óxido o de la proteína es el pH al que se anula la carga neta y la estabilidad es mínima, como en la caseína de la leche (pH 4.6: se cuaja).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Calcule la longitud de Debye de una disolución de NaCl 5 mM y de CaCl₂ 5 mM a 25 °C (\(\kappa^{-1}=0.304/\sqrt I\) nm con \(I\) en mol/L para 1:1; en general \(\kappa^{-1}=0.304/\sqrt{I}\) con \(I=\tfrac12\sum c_iz_i^2\)).
+<details><summary>Respuesta</summary><p>NaCl: \(I=5\) mM, \(\kappa^{-1}=0.304/\sqrt{0.005}=4.30\) nm. CaCl₂: \(I=\tfrac12(0.005\cdot4+0.010\cdot1)=0.015\) M, \(\kappa^{-1}=0.304/\sqrt{0.015}=2.48\) nm: el divalente comprime más la doble capa.</p></details></li>
+<li><span class="lvl">Básico</span>Con la regla de Schulze–Hardy, si la CCC de un coloide con NaCl es 120 mM, estime la CCC con CaCl₂ y con AlCl₃.
+<details><summary>Respuesta</summary><p>Los contraiones son los cationes (coloide negativo): \(z=1,2,3\). \(120/64=1.9\) mM con Ca²⁺ y \(120/729=0.16\) mM con Al³⁺. (En la práctica, ~1–3 mM y ~0.1 mM.)</p></details></li>
+<li><span class="lvl">Intermedio</span>Una partícula de 300 nm de diámetro en 1 mM de KCl tiene movilidad \(-2.8\times10^{-8}\) m²/V·s. Halle \(\kappa a\) y \(\zeta\) (\(\eta=0.89\) mPa·s).
+<details><summary>Respuesta</summary><p>\(\kappa^{-1}=9.6\) nm, \(a=150\) nm: \(\kappa a=15.6\); \(f=1+1/(2[1+2.5/15.6]^3)=1.320\). \(\zeta=3\eta\mu/(2\varepsilon\varepsilon_0f)=3(8.9\times10^{-4})(-2.8\times10^{-8})/(2\times6.94\times10^{-10}\times1.320)=-41\) mV.</p></details></li>
+<li><span class="lvl">Intermedio</span>Por qué la fórmula de Debye–Hückel, \(\psi=\psi_0e^{-\kappa x}\), exagera el potencial de una superficie con \(\psi_0=100\) mV, y cuánto vale el potencial exacto a \(x=\kappa^{-1}\) con 1:1.
+<details><summary>Respuesta</summary><p>A \(\psi_0\gg k_BT/e\) el término \(\sinh\) no se puede linealizar: los contraiones se acumulan más, apantallan antes. Con \(f=e/4k_BT=9.73\) V⁻¹: \(\tanh(9.73\times0.1)=0.7495\); a \(x=\kappa^{-1}\): \(0.7495e^{-1}=0.2758\); \(\psi=\mathrm{atanh}(0.2758)/9.73=0.0291\) V \(=29.1\) mV, frente a \(100/e=36.8\) mV de Debye–Hückel.</p></details></li>
+<li><span class="lvl">Avanzado</span>Deduzca \(c_\mathrm{CCC}\propto z^{-6}\) imponiendo \(V=0\) y \(V'=0\) con \(V_R=64\pi an_0k_BT\kappa^{-2}e^{-\kappa h}\) y \(V_A=-Aa/12h\).
+<details><summary>Respuesta</summary><p>\(V'=0\): \(\kappa V_R=-V_A/h\) (derivando ambos términos) y \(V=0\): \(V_R=-V_A\) ⇒ \(\kappa h=1\). Entonces \(64\pi n_0k_BT\kappa^{-2}e^{-1}=A\kappa/12\) ⇒ \(n_0=A\,e\,\kappa^3/(768\pi k_BT)\). Como \(\kappa^2\propto n_0z^2\): \(\kappa^3\propto n_0^{3/2}z^3\) y \(n_0^{-1/2}\propto Az^3\) ⇒ \(n_0\propto A^{-2}z^{-6}\) (con \(\gamma=1\); \(e\) es la base del logaritmo natural).</p></details></li>
+</ol>
+<div class="box note"><h4>Para profundizar</h4><p>G. Gouy, <em>J. Phys. Théor. Appl.</em> 9, 457 (1910). D. L. Chapman, <em>Phil. Mag.</em> 25, 475 (1913). B. V. Derjaguin y L. Landau, <em>Acta Physicochim. URSS</em> 14, 633 (1941). E. J. W. Verwey y J. Th. G. Overbeek, <em>Theory of the Stability of Lyophobic Colloids</em>, Elsevier, 1948. H. C. Hamaker, <em>Physica</em> 4, 1058 (1937). M. von Smoluchowski, <em>Bull. Int. Acad. Sci. Cracovie</em> 182 (1903). D. C. Henry, <em>Proc. R. Soc. A</em> 133, 106 (1931). H. Ohshima, <em>J. Colloid Interface Sci.</em> 168, 269 (1994). J. N. Israelachvili, <em>Intermolecular and Surface Forces</em>, 3.ª ed., Academic Press, 2011, caps. 14 y 15. R. J. Hunter, <em>Foundations of Colloid Science</em>, 2.ª ed., Oxford, 2001. D. F. Evans y H. Wennerström, <em>The Colloidal Domain</em>, 2.ª ed., Wiley-VCH, 1999.</p></div>
+</section>
+</template>

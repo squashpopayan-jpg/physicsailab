@@ -1,0 +1,84 @@
+<template class="chapter-src" data-id="gasesreales" data-num="2" data-title="Gases reales y fugacidad" data-part="Parte I · Termodinámica química" data-short="Factor de compresibilidad, coeficientes del virial y su significado molecular, temperatura de Boyle, ecuación de Peng–Robinson, fugacidad y coeficiente de fugacidad, estados correspondientes de Pitzer y fugacidad en mezclas gaseosas">
+<p class="lead">El gas ideal es un modelo sin atracciones ni volumen propio. Sirve a presiones bajas, pero la industria química trabaja a 200 bar en la síntesis de amoníaco, a 100 bar en los gasoductos y a 1000 bar en el polietileno. Para que el potencial químico siga siendo útil en esas condiciones, G. N. Lewis inventó en 1901 una presión corregida, la <em>fugacidad</em>, que conserva la forma del potencial químico del gas ideal. Este capítulo muestra de dónde salen las desviaciones y cómo se calculan.</p>
+
+<section>
+<h2>El factor de compresibilidad y el desarrollo del virial</h2>
+<p>La medida habitual de la no idealidad es el <span class="term">factor de compresibilidad</span> \(Z=PV_m/(RT)\), que vale 1 para el gas ideal. Si \(Z<1\), las atracciones intermoleculares dominan y el gas es más compresible que el ideal; si \(Z>1\), dominan las repulsiones de corto alcance (el volumen propio de las moléculas). Para un gas real, \(Z\) se desarrolla en potencias de la densidad molar \(1/V_m\):</p>
+<div class="eq key" data-name="Desarrollo del virial">\[Z=1+\frac{B(T)}{V_m}+\frac{C(T)}{V_m^2}+\cdots\approx1+\frac{B(T)}{RT}P\quad(\text{baja presión}).\]</div>
+<p>Los coeficientes \(B\), \(C\), … dependen solo de la temperatura y de la sustancia. Tienen significado molecular preciso: \(B\) mide el efecto de las colisiones de <em>pares</em> de moléculas, \(C\) el de tríos. Por la mecánica estadística (capítulo 31), \(B=-2\pi N_A\int_0^\infty\left(e^{-u(r)/k_BT}-1\right)r^2\,\dd r\), con \(u(r)\) la energía potencial entre dos moléculas. A baja temperatura, las moléculas se atraen más tiempo y \(B\) es negativo; a alta temperatura la energía cinética supera la profundidad del pozo y predomina la repulsión: \(B\) es positivo. El cambio de signo ocurre en la <span class="term">temperatura de Boyle</span> \(T_B\), a la cual el gas se comporta como ideal en una región amplia de presiones porque las atracciones y las repulsiones se compensan.</p>
+<div class="sim" data-sim="virial-B" data-title="El segundo coeficiente virial y la temperatura de Boyle"></div>
+<div class="sim-guide"><ul>
+<li>La curva es la correlación de Pitzer y Curl, que solo necesita \(T_c\), \(P_c\) y el factor acéntrico \(\omega\); los puntos son el segundo coeficiente de la ecuación de referencia (CoolProp). Para el N₂, el Ar, el CH₄ y el CO₂ coinciden dentro de unos \(\pm6\) cm³/mol para \(T_r>0.85\).</li>
+<li>La temperatura de Boyle del N₂ sale de 336 K (el valor experimental, citado por Atkins, es 327 K); la del Ar, 417 K (411 K); la del CO₂, 693 K (715 K).</li>
+<li>A 300 K el nitrógeno tiene \(B\approx-4.6\) cm³/mol (CoolProp): a 5 MPa, \(Z=1+BP/RT=0.991\), así que aun a 50 bar se aparta menos de 1 % del gas ideal.</li>
+<li>Seleccione NH₃ o H₂: la correlación falla (moléculas polares y efectos cuánticos), señal de que los gases polares y los muy ligeros piden otros modelos.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Ecuaciones de estado cúbicas: la de Peng–Robinson</h2>
+<p>El desarrollo del virial converge solo a densidades moderadas. Para presiones altas y para cruzar la región líquido–vapor se usan ecuaciones de estado cúbicas en el volumen, herederas de la de van der Waals. La más popular en la industria química es la de Peng y Robinson (1976):</p>
+<div class="eq key" data-name="Peng–Robinson">\[P=\frac{RT}{V_m-b}-\frac{a(T)}{V_m^2+2bV_m-b^2},\quad a=0.45724\frac{R^2T_c^2}{P_c}\alpha,\quad b=0.07780\frac{RT_c}{P_c},\quad\alpha=\left[1+\kappa\left(1-\sqrt{T/T_c}\right)\right]^2,\]</div>
+<p>con \(\kappa=0.37464+1.54226\,\omega-0.26992\,\omega^2\). El <span class="term">factor acéntrico</span> \(\omega=-\log_{10}(P_{sat}/P_c)_{T_r=0.7}-1\), definido por Pitzer en 1955, mide la desviación de la molécula respecto de un fluido «simple» como el argón (\(\omega\approx0\)); crece con el tamaño y la polaridad de la molécula. La ecuación se resuelve para el factor \(Z\) como un polinomio cúbico: tres raíces reales en la zona de dos fases (la menor es líquido, la mayor vapor), una sola fuera de ella.</p>
+<p>Con solo \(T_c\), \(P_c\) y \(\omega\), Peng–Robinson reproduce \(Z\) del CO₂ a 320 K y 5 MPa como 0.754 (la ecuación de referencia da 0.771, un 2.2 % de diferencia). Hasta unos 20 MPa y fuera de la región crítica, el error típico en \(Z\) es de 2 a 6 % para los gases no polares; a 50 MPa y T moderada puede llegar a 10 %. Es un modelo de ingeniería, no de metrología.</p>
+</section>
+
+<section>
+<h2>Fugacidad: la presión efectiva</h2>
+<p>El potencial químico del gas ideal, \(\mu=\mu^\circ+RT\ln(P/P^\circ)\), tiene la forma matemática más simple posible. Lewis propuso conservarla para los gases reales cambiando la presión por una variable \(f\) con unidades de presión:</p>
+<div class="eq key" data-name="Fugacidad">\[\mu(T,P)=\mu^\circ(T)+RT\ln\frac{f}{P^\circ},\qquad \lim_{P\to0}\frac{f}{P}=1.\]</div>
+<p>El cociente \(\phi=f/P\) es el <span class="term">coeficiente de fugacidad</span>. Restando el potencial del gas ideal a la misma \(T\) y \(P\), \(\mu-\mu^{id}=RT\ln\phi\): el coeficiente de fugacidad es la forma exponencial de la <em>energía de Gibbs residual</em>. Como \(\left(\partial\mu/\partial P\right)_T=V_m\), derivando se obtiene</p>
+<div class="eq key" data-name="Coeficiente de fugacidad">\[\ln\phi=\int_0^P\frac{Z-1}{P'}\,\dd P',\qquad \ln\phi\approx\frac{BP}{RT}\ \ (\text{virial truncado}).\]</div>
+<p>Con \(Z<1\) (atracciones), \(\phi<1\): la fugacidad es menor que la presión y el gas tiende menos a escapar de lo que haría un gas ideal. Con \(Z>1\) (repulsiones), \(\phi>1\). Con Peng–Robinson, la integral tiene una forma cerrada con logaritmos, que se usa en todos los simuladores de procesos. La condición de equilibrio de fases del capítulo 1, \(\mu^\alpha=\mu^\beta\), se convierte en igualdad de fugacidades, \(f^\alpha=f^\beta\).</p>
+<div class="sim" data-sim="fugacidad" data-title="Coeficiente de fugacidad de gases reales frente a la presión"></div>
+<div class="sim-guide"><ul>
+<li>CO₂ a 320 K: \(\phi\) baja casi linealmente al aumentar \(P\) (el virial lo describe bien hasta 2 MPa: 0.924 frente a 0.923 de la ecuación de referencia) y alcanza 0.810 a 5 MPa, con el virial dando 0.821 y Peng–Robinson 0.794.</li>
+<li>A 5 MPa, la fugacidad del CO₂ es \(f=0.810\times5=4.05\) MPa, y su potencial químico está \(RT\ln\phi=-0.56\) kJ/mol por debajo del de un gas ideal a la misma presión.</li>
+<li>Nitrógeno a 300 K: \(\phi\) baja a 0.993 hacia 10 MPa y vuelve a subir, hasta 1.19 a 50 MPa: pasa de dominar las atracciones a dominar las repulsiones.</li>
+<li>El virial truncado en \(B\) se vuelve inservible mucho antes de 20 MPa en gases densos (metano a 200 K): hace falta una ecuación de estado completa.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Estados correspondientes</h2>
+<p>Los gases difieren en tamaño y fuerzas, pero comparten una forma de potencial intermolecular. Van der Waals notó en 1873 que, medidas en unidades de sus propias constantes críticas, \(T_r=T/T_c\) y \(P_r=P/P_c\), todos los fluidos simples se comportan casi igual. Pitzer (1955) añadió la primera corrección en un parámetro, el factor acéntrico: \(Z=Z^{(0)}(T_r,P_r)+\omega\,Z^{(1)}(T_r,P_r)\). Es el <span class="term">principio de estados correspondientes</span>, y es la razón de que baste una carta de \(Z\) para cualquier gas no polar.</p>
+<div class="sim" data-sim="carta-z" data-title="Carta de compresibilidad generalizada: cuatro gases sobre las mismas curvas"></div>
+<div class="sim-guide"><ul>
+<li>Los puntos de Ar, N₂, CH₄ y CO₂ (con temperaturas críticas de 126 a 304 K y presiones críticas de 3.4 a 7.4 MPa) caen casi sobre las mismas curvas: la dispersión entre los cuatro gases es como máximo del 9 %, y el CO₂, con \(\omega=0.224\), es el más separado de los demás.</li>
+<li>Cerca de \(T_r=1.1\), \(P_r\approx1.5\)–2, \(Z\) baja a 0.4–0.5: es la vecindad del punto crítico, donde el fluido es muy compresible.</li>
+<li>Con \(\omega=0\), las curvas de Peng–Robinson se desvían de los datos hasta un 10 % (en \(T_r=1.1\)) y un 8 % en \(T_r=2\), sobre todo a \(P_r\) altas. Mueva \(\omega\) hasta 0.22: la curva sube para el CO₂, como indica Pitzer.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Gases reales en mezcla</h2>
+<p>En una mezcla, la fugacidad de la especie \(i\) es \(f_i=\phi_iy_iP\), con \(\phi_i\) el coeficiente de fugacidad <em>del componente en la mezcla</em>. La regla más simple es la de <span class="term">Lewis–Randall</span>: \(\phi_i\) de la mezcla es el de la sustancia pura a la misma \(T\) y \(P\) total. Vale cuando las moléculas se parecen. En general, las ecuaciones cúbicas se extienden con las reglas de mezcla de van der Waals, \(a=\sum\sum y_iy_j\sqrt{a_ia_j}(1-k_{ij})\), \(b=\sum y_ib_i\), donde \(k_{ij}\) es un parámetro binario de ajuste. La expresión de \(\ln\phi_i\) se obtiene derivando la energía de Gibbs residual respecto del número de moles \(n_i\).</p>
+<div class="sim" data-sim="mezcla-phi" data-title="Coeficientes de fugacidad en una mezcla binaria con Peng–Robinson"></div>
+<div class="sim-guide"><ul>
+<li>El \(\phi\) de un componente en la mezcla depende de la composición y se aparta de la regla de Lewis–Randall: para CO₂ y CH₄ a 350 K y 10 MPa, \(\phi_{CO_2}=0.726\) en la mezcla al 50 % y 0.711 puro; \(\phi_{CH_4}=0.911\) y 0.898.</li>
+<li>Al acercarse a \(y\to1\), el \(\phi\) del componente en la mezcla tiende al del gas puro (límite de la regla de Lewis–Randall) y al otro extremo, a su valor de dilución infinita.</li>
+<li>A 350 K y 10 MPa la regla de Lewis–Randall falla en 4–7 % para CH₄–C₂H₆ y N₂–CO₂, moléculas de atracción muy distinta, pero acierta en 0.4 % para N₂–H₂, donde ambas son casi ideales.</li>
+</ul></div>
+<div class="box ex"><h4>Síntesis de amoníaco a 200 bar: el efecto de la fugacidad</h4>
+<p>Para \(\tfrac12\mathrm{N_2}+\tfrac32\mathrm{H_2}\rightleftharpoons\mathrm{NH_3}\) a 700 K y 200 bar, con alimentación 1:3, calcule la fracción de NH₃ en el equilibrio suponiendo gas ideal y con Peng–Robinson.</p>
+<details><summary>Solución</summary><p>La constante termodinámica \(K\) se calcula de la energía de Gibbs estándar de reacción (capítulo 4) y no depende de la presión. Para gases reales, \(K=\dfrac{y_{NH_3}}{y_{N_2}^{1/2}y_{H_2}^{3/2}}\,\dfrac{\phi_{NH_3}}{\phi_{N_2}^{1/2}\phi_{H_2}^{3/2}}\,\dfrac{P^\circ}{P}\); el cociente de \(\phi\) se llama \(K_\phi\). Con la composición de equilibrio, \(K_\phi=0.864\): la no idealidad favorece la formación de amoníaco. El avance de reacción pasa de 0.458 (ideal) a 0.486 (Peng–Robinson), y la fracción molar de NH₃ de 29.7 % a 32.1 %, un 8 % más. A 1000 bar la diferencia es mucho mayor (56.6 % frente a 68.9 %, aunque a esa presión la ecuación de Peng–Robinson es ya una extrapolación): la no idealidad es parte del motivo por el cual el proceso Haber–Bosch industrial opera a presiones altas.</p></details>
+</div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>El segundo coeficiente virial del CO₂ a 320 K es −105 cm³/mol. Estime \(Z\) y \(\phi\) a 2 MPa con el virial truncado.
+<details><summary>Respuesta</summary><p>\(BP/RT=(-105\times10^{-6})(2\times10^6)/(8.3145\times320)=-0.0789\). \(Z=0.921\) y \(\phi=e^{-0.0789}=0.924\) (la ecuación de referencia da \(Z=0.917\), \(\phi=0.923\)).</p></details></li>
+<li><span class="lvl">Básico</span>¿Cuánto vale \(\mu-\mu^{id}\) para el CO₂ a 320 K si \(\phi=0.810\)?
+<details><summary>Respuesta</summary><p>\(RT\ln0.810=8.3145(320)(-0.2107)=-0.56\) kJ/mol.</p></details></li>
+<li><span class="lvl">Intermedio</span>Un gas sigue \(Z=1+BP/RT\) con \(B\) constante. Muestre que \(\ln\phi=BP/RT\) y que \(f=P\,e^{BP/RT}\).
+<details><summary>Respuesta</summary><p>\((Z-1)/P=B/RT\), constante, e integrando de 0 a \(P\) resulta \(\ln\phi=BP/RT\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Con la correlación de Pitzer, \(B^0=0.083-0.422/T_r^{1.6}\) y \(B^1=0.139-0.172/T_r^{4.2}\), calcule \(B\) del metano a 300 K (\(T_c=190.56\) K, \(P_c=4.599\) MPa, \(\omega=0.011\)).
+<details><summary>Respuesta</summary><p>\(T_r=1.574\); \(B^0=-0.1212\); \(B^1=0.1134\). \(BP_c/(RT_c)=-0.1212+0.011(0.1134)=-0.1200\), y \(B=-0.1200(8.3145)(190.56)/(4.599\times10^6)=-41.3\) cm³/mol. El valor experimental es cercano a −43 cm³/mol.</p></details></li>
+<li><span class="lvl">Avanzado</span>Para vapor de un gas de van der Waals a baja densidad, demuestre que \(B=b-a/(RT)\) y halle la temperatura de Boyle.
+<details><summary>Respuesta</summary><p>Se desarrolla \(P=RT/(V_m-b)-a/V_m^2\) en \(1/V_m\): \(Z=1+(b-a/RT)/V_m+\cdots\). \(B=0\) en \(T_B=a/(Rb)=27T_c/8\). Para el N₂ con \(T_c=126.2\) K da 426 K, mayor que el valor real (327 K): la ecuación de van der Waals sobreestima \(T_B\).</p></details></li>
+</ol>
+<div class="box note"><h4>Para profundizar</h4><p>G. N. Lewis, «The law of physico-chemical change», <em>Proc. Am. Acad. Arts Sci.</em> 37, 49 (1901). K. S. Pitzer, «Volumetric and thermodynamic properties of fluids», <em>J. Am. Chem. Soc.</em> 77, 3427 (1955). D.-Y. Peng y D. B. Robinson, <em>Ind. Eng. Chem. Fundam.</em> 15, 59 (1976). J. M. Smith, H. C. Van Ness y M. M. Abbott, <em>Introducción a la termodinámica en ingeniería química</em>, 7.ª ed., McGraw-Hill, 2007, caps. 3 y 10. B. E. Poling, J. M. Prausnitz y J. P. O'Connell, <em>The Properties of Gases and Liquids</em>, 5.ª ed., 2001, cap. 4. I. H. Bell et al., «Pure and pseudo-pure fluid thermophysical property evaluation and the open-source library CoolProp», <em>Ind. Eng. Chem. Res.</em> 53, 2498 (2014).</p></div>
+</section>
+</template>

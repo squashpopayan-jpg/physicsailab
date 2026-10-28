@@ -1,0 +1,73 @@
+<template class="chapter-src" data-id="superficies" data-num="32" data-title="Superficies e interfases" data-part="Parte VII · Superficies, coloides y macromoléculas" data-short="Tensión superficial, ecuación de Young–Laplace, capilaridad y ley de Jurin, ecuación de Kelvin y condensación capilar, adsorción de Gibbs y tensioactivos, micelas, ángulo de contacto de Young, mojado, rugosidad de Wenzel y Cassie">
+<p class="lead">Una gota de agua es redonda, un insecto camina sobre un estanque y el agua sube por un árbol de cien metros. Los tres hechos son la misma física: una molécula en la superficie de un líquido tiene menos vecinos que una en el interior y, por tanto, más energía; el sistema reduce el área de la interfase siempre que puede. Este capítulo cuantifica esa energía (la tensión superficial), deduce de ella la presión dentro de una gota, la altura de un menisco, la presión de vapor de las gotas diminutas y el comportamiento de los jabones, y termina con el ángulo de contacto, que decide si un líquido moja o rueda sobre un sólido.</p>
+
+<section>
+<h2>Tensión superficial y presión de Laplace</h2>
+<p>El trabajo reversible necesario para aumentar el área de una interfase en \(\dd A\) a \(T\) y \(P\) constantes es \(\dd w=\gamma\,\dd A\); \(\gamma\) es la <span class="term">tensión superficial</span> (J/m² = N/m), la energía de Gibbs superficial por unidad de área. Para el agua es de 71.97 mN/m a 25 °C y decrece linealmente hasta cero en el punto crítico (la fórmula IAPWS reproduce los valores de CoolProp a 0.5 %). Una superficie curva soporta una diferencia de presión (Young, 1805; Laplace, 1806):</p>
+<div class="eq key" data-name="Ecuación de Young–Laplace">\[\Delta P=\gamma\left(\frac1{R_1}+\frac1{R_2}\right)\ \to\ \frac{2\gamma}r\ \text{(gota o burbuja en un líquido)},\quad\frac{4\gamma}r\ \text{(pompa de jabón, dos superficies)}.\]</div>
+<p>La presión dentro de una gota de agua de 1 µm es 144 kPa mayor que fuera (1.4 atm); en una de 1 nm, 1440 atm. Es el origen de la <span class="term">capilaridad</span>: en un tubo estrecho, un líquido que moja (\(\theta<90^\circ\)) forma un menisco cóncavo con presión menor que la atmosférica; el líquido sube hasta que la presión hidrostática compensa:</p>
+<div class="eq key" data-name="Ley de Jurin">\[h=\frac{2\gamma\cos\theta}{\rho g r},\qquad h_\mathrm{real}\approx h-\frac r3,\qquad l_c=\sqrt{\frac\gamma{\rho g}}.\]</div>
+<p>La corrección \(r/3\) (Rayleigh) es el peso del líquido del menisco. La <em>longitud capilar</em> \(l_c\) (2.71 mm para el agua) separa los regímenes: a escalas menores domina la tensión superficial (gotas casi esféricas, número de Bond \(\mathrm{Bo}=(r/l_c)^2\ll1\)); a mayores, la gravedad (charcos planos).</p>
+<div class="sim" data-sim="capilar" data-title="Presión de Laplace y ascenso o descenso capilar"></div>
+<div class="sim-guide"><ul>
+<li>Agua en un capilar de 0.5 mm de radio y \(\theta=0\): \(h=29.44\) mm por Jurin y 29.28 mm con la corrección de Rayleigh; la solución numérica del menisco completo (ecuación de Young–Laplace axisimétrica integrada con solve_ivp) da 29.28 mm: acuerdo de 0.01 mm. A 1 mm: 14.72 (Jurin), 14.39 (corregido), 14.40 (numérico). La ley sin corrección sobrestima el ascenso cuando \(r\) se acerca a \(l_c\).</li>
+<li>El mercurio (\(\gamma=0.486\) N/m, \(\theta=140^\circ\), \(\rho=13.5\) g/cm³) baja 11.2 mm en un capilar de 0.5 mm: menisco convexo, la presión del líquido bajo la superficie es mayor que la exterior. Cambie el ángulo a 90°: \(h=0\) (menisco plano).</li>
+<li>El ascenso en árboles de 100 m (\(r\approx1\) µm en el xilema) sería \(h=14.7\) m por capilaridad: no alcanza. Lo que lo explica es la cohesión del agua bajo tensión (hasta \(-10\) MPa) y la evaporación en las hojas: una presión negativa que el agua soporta porque es un líquido metaestable (capítulo 7).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>La ecuación de Kelvin: gotas, poros y nucleación</h2>
+<p>Dentro de una gota, la presión del líquido es mayor que la externa en \(2\gamma/r\); su potencial químico aumenta en \(V_m\cdot2\gamma/r\) y, para estar en equilibrio con el vapor, este debe tener una presión mayor que la de una superficie plana (William Thomson, lord Kelvin, 1871):</p>
+<div class="eq key" data-name="Ecuación de Kelvin">\[\ln\frac{P_r}{P_0}=\frac{2\gamma V_m}{rRT}\ \ (\text{gota})\qquad\text{y}\qquad\ln\frac{P_r}{P_0}=-\frac{2\gamma V_m\cos\theta}{rRT}\ \ (\text{menisco cóncavo en un poro}).\]</div>
+<p>Las gotas pequeñas se evaporan hacia las grandes (maduración de Ostwald: por eso las nubes y las espumas evolucionan), un vapor puro sin núcleos puede <em>sobresaturarse</em> mucho antes de condensar (la gota crítica es tan pequeña que nunca se forma espontáneamente: nucleación homogénea), y un poro mojable condensa líquido a presiones <em>menores</em> que la de saturación (condensación capilar, base de la medida de tamaños de poro por adsorción de N₂, capítulo 33).</p>
+<div class="sim" data-sim="kelvin" data-title="Presión de vapor de gotas y condensación capilar en poros según Kelvin"></div>
+<div class="sim-guide"><ul>
+<li>Una gota de agua de 10 nm a 25 °C tiene \(P/P_0=1.111\); de 100 nm, 1.0106; de 1 nm, 2.86 (aquí la ecuación ya está en su límite: una gota de unas decenas de moléculas no tiene una tensión superficial definida). La integral termodinámica \(\int V_m\,\dd P/RT\) con la densidad y la tensión de CoolProp coincide con la fórmula cerrada a 0.4 %.</li>
+<li>En el sentido contrario, un poro cilíndrico de 10 nm, totalmente mojado, condensa a una humedad relativa de 90 %, y uno de 1 nm a 35 %. El radio de Kelvin de una gota en equilibrio con una humedad relativa del 101 % es de 105 nm; con 110 %, 11 nm; con 300 %, 1 nm: por eso la lluvia necesita núcleos de condensación (sales, polvo, aerosoles) de 0.1 µm o más, y una niebla sin núcleos se forma hasta que la sobresaturación llega a 300–400 %.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Adsorción en la interfase: Gibbs y tensioactivos</h2>
+<p>Un soluto que se acumula en la superficie (<em>tensioactivo</em>) baja \(\gamma\). Gibbs (1878) relacionó ambos efectos con una identidad exacta para una disolución diluida: el <span class="term">exceso superficial</span> \(\Gamma\) (mol/m² de soluto en la interfase respecto del interior) es</p>
+<div class="eq key" data-name="Isoterma de adsorción de Gibbs y ecuación de Szyszkowski">\[\Gamma=-\frac1{RT}\frac{\dd\gamma}{\dd\ln c},\qquad\gamma=\gamma_0-RT\,\Gamma_\infty\ln\left(1+\frac ca\right)\ \Rightarrow\ \Gamma=\Gamma_\infty\frac c{a+c}.\]</div>
+<p>Con una isoterma de Langmuir para \(\Gamma\) (capítulo 33) se obtiene la ecuación de Szyszkowski (1908). La pendiente de \(\gamma\) frente a \(\ln c\) mide cuántas moléculas hay por unidad de superficie y, con \(\Gamma_\infty\), el área por molécula \(1/(\Gamma_\infty N_A)\). Por encima de la <span class="term">concentración micelar crítica</span> (CMC), las moléculas en exceso se agregan en micelas (esferas de 2–4 nm con las colas hidrófobas dentro y las cabezas en el agua) y la actividad del monómero, y con ella \(\gamma\), deja de cambiar.</p>
+<div class="sim" data-sim="tensioactivo" data-title="Tensión superficial de una disolución de tensioactivo: Szyszkowski, Gibbs y CMC"></div>
+<div class="sim-guide"><ul>
+<li>Los parámetros por defecto describen el dodecilsulfato de sodio (SDS) a 25 °C: \(\Gamma_\infty=3.2\) µmol/m² (52 Å² por molécula, la medida es 50–55), \(a=0.11\) mM, CMC = 8.2 mM. Resultado: \(\gamma_\mathrm{CMC}=37.7\) mN/m (experimento ≈ 38) y una presión superficial \(\Pi=\gamma_0-\gamma=34\) mN/m.</li>
+<li>A 1 mM (\(c/a=9\)) la cobertura es 0.90, \(\gamma=53.6\) mN/m y \(\Gamma=2.88\) µmol/m²; la derivada numérica \(-\dd\gamma/\dd\ln c\,/RT\) coincide con la isoterma de Langmuir hasta la séptima cifra (la prueba de la identidad de Gibbs). A 0.05 mM la cobertura es 0.31: aún bajo, \(\gamma=69\) mN/m.</li>
+<li>Por encima de la CMC (50 mM), \(\gamma\) se mantiene en 37.7 mN/m y \(d\gamma/d\ln c=0\): el exceso superficial ya no cambia, pero la solubilización de grasas por micelas empieza: así limpian los jabones. La CMC baja al añadir una sal (el \(\mathrm{NaCl}\) apantalla la repulsión entre las cabezas cargadas, capítulo 34).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Ángulo de contacto y mojado</h2>
+<p>Una gota sobre un sólido forma un casquete con un ángulo \(\theta\) en la línea de contacto que fija el equilibrio de las tres tensiones superficiales (Young, 1805). Minimizar la energía de una gota con volumen fijo (\(E=\gamma_{lv}A_{lv}+(\gamma_{sl}-\gamma_{sv})A_{sl}\)) da</p>
+<div class="eq key" data-name="Ecuación de Young y trabajo de adhesión">\[\gamma_{sv}=\gamma_{sl}+\gamma_{lv}\cos\theta,\qquad W_a=\gamma_{lv}(1+\cos\theta),\qquad S=\gamma_{sv}-\gamma_{sl}-\gamma_{lv}\ (\ge0:\ \text{esparcimiento total}).\]</div>
+<p>Con \(\theta<90^\circ\) el líquido moja; con \(\theta>90^\circ\), no; el agua sobre vidrio limpio, \(\theta\approx0\); sobre teflón, 110°. Las superficies reales son rugosas. Wenzel (1936) mostró que la rugosidad amplifica el carácter de la superficie: \(\cos\theta^*=r\cos\theta\) (\(r\ge1\), cociente de área real a aparente). Si el líquido no penetra y deja aire en los huecos (Cassie y Baxter, 1944), \(\cos\theta^*=f_s\cos\theta+(1-f_s)\cos180^\circ\) y el ángulo puede superar 150°: la <em>superhidrofobicidad</em> de la hoja de loto.</p>
+<div class="sim" data-sim="young" data-title="Ecuación de Young, esparcimiento y rugosidad de Wenzel"></div>
+<div class="sim-guide"><ul>
+<li>Con \(\gamma_{lv}=72\), \(\gamma_{sv}=40\), \(\gamma_{sl}=30\) mN/m: \(\cos\theta=0.139\), \(\theta=82.0^\circ\), \(W_a=82\) mN/m y \(S=-62\) mN/m (no esparce). La minimización numérica de la energía de la gota con scipy.optimize da el mismo ángulo (82.02°). Con \(\gamma_{sv}=70\), \(\gamma_{sl}=10\): \(\theta=33.6^\circ\).</li>
+<li>Con rugosidad \(r=2\) y \(\theta=33.6^\circ\): \(\cos\theta^*=1.67>1\) y la superficie se moja por completo (\(\theta^*=0\)); con \(\theta=120^\circ\) (cos = −0.5) y \(r=1.5\), \(\theta^*=139^\circ\): la rugosidad empeora el no-mojado, como en las hojas.</li>
+<li>Cassie–Baxter: un material con 10 % de sólido (\(\theta=110^\circ\)) y 90 % de aire bajo la gota tiene \(\theta^*=159^\circ\): una gota casi esférica que rueda con inclinaciones de pocos grados; es el efecto «loto» (Barthlott y Neinhuis, 1997).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Calcule el ascenso capilar del agua (\(\gamma=0.0720\) N/m, \(\rho=997\) kg/m³, \(\theta=0\)) en un tubo de 0.1 mm de diámetro, y la sobrepresión dentro de una gota de 2 µm de radio.
+<details><summary>Respuesta</summary><p>\(r=0.05\) mm: \(h=2(0.0720)/(997\times9.807\times5\times10^{-5})=0.295\) m (29.5 cm). Gota: \(\Delta P=2\gamma/r=2(0.0720)/(2\times10^{-6})=7.2\times10^4\) Pa (0.71 atm).</p></details></li>
+<li><span class="lvl">Básico</span>Con \(\gamma=0.0720\) N/m, \(V_m=18.07\) cm³/mol y \(T=298.15\) K, calcule \(P/P_0\) para una gota de 5 nm de radio.
+<details><summary>Respuesta</summary><p>\(2\gamma V_m/rRT=2(0.0720)(1.807\times10^{-5})/(5\times10^{-9}\times2478.6)=0.2100\); \(P/P_0=e^{0.2100}=1.234\).</p></details></li>
+<li><span class="lvl">Intermedio</span>A una concentración de 1 mM de SDS, la tensión superficial es 53.6 mN/m, y a 10 mM (por encima de la CMC) 37.7. Con \(\gamma_0=72\) mN/m estime \(\Gamma\) a partir de una pendiente \(\Delta\gamma/\Delta\ln c\) entre 0.1 y 1 mM, si \(\gamma(0.1\,\mathrm{mM})=66.8\) mN/m.
+<details><summary>Respuesta</summary><p>\(\Delta\gamma/\Delta\ln c=(53.6-66.8)\times10^{-3}/\ln10=-5.73\times10^{-3}\) N/m. \(\Gamma=5.73\times10^{-3}/(8.314\times298.15)=2.31\times10^{-6}\) mol/m² (2.3 µmol/m², un valor medio entre las coberturas 0.48 y 0.90 de la isoterma). El área por molécula en esa zona es \(1/(2.31\times10^{-6}N_A)=72\) Å².</p></details></li>
+<li><span class="lvl">Intermedio</span>El agua forma 62° sobre un polímero. ¿Cuál es \(\gamma_{sv}-\gamma_{sl}\) y el trabajo de adhesión? ¿Qué ángulo tendría sobre una versión con rugosidad \(r=1.8\)?
+<details><summary>Respuesta</summary><p>\(\gamma_{sv}-\gamma_{sl}=0.0720\cos62^\circ=33.8\) mN/m; \(W_a=72(1+0.469)=105.8\) mN/m. Con \(r=1.8\): \(\cos\theta^*=1.8(0.469)=0.845\), \(\theta^*=32.3^\circ\).</p></details></li>
+<li><span class="lvl">Avanzado</span>Deduzca la ecuación de Kelvin a partir de la igualdad de potenciales químicos del líquido (a presión \(P_L=P+2\gamma/r\)) y del vapor.
+<details><summary>Respuesta</summary><p>\(\mu_L(P_L)=\mu_V(P_r)\). Para el líquido incompresible, \(\mu_L(P_L)=\mu_L(P_0)+V_m(P_L-P_0)\); para el vapor ideal, \(\mu_V(P_r)=\mu_V(P_0)+RT\ln(P_r/P_0)\). En el equilibrio plano, \(\mu_L(P_0)=\mu_V(P_0)\). Restando: \(RT\ln(P_r/P_0)=V_m(P_L-P_0)\). Con \(P_L-P_0\approx2\gamma/r\) (a \(P_r\) cercana a \(P_0\), \(P_r-P_0\) se desprecia): \(\ln(P_r/P_0)=2\gamma V_m/rRT\).</p></details></li>
+</ol>
+<div class="box note"><h4>Para profundizar</h4><p>T. Young, <em>Phil. Trans. R. Soc.</em> 95, 65 (1805). P.-S. de Laplace, <em>Traité de mécanique céleste</em>, supl. al libro X (1806). W. Thomson (Lord Kelvin), <em>Phil. Mag.</em> 42, 448 (1871). J. W. Gibbs, <em>Trans. Conn. Acad.</em> 3, 343 (1878). B. von Szyszkowski, <em>Z. Phys. Chem.</em> 64, 385 (1908). R. N. Wenzel, <em>Ind. Eng. Chem.</em> 28, 988 (1936). A. B. D. Cassie y S. Baxter, <em>Trans. Faraday Soc.</em> 40, 546 (1944). W. Barthlott y C. Neinhuis, <em>Planta</em> 202, 1 (1997). IAPWS, <em>Release on Surface Tension of Ordinary Water Substance</em> (1994). P. G. de Gennes, F. Brochard-Wyart y D. Quéré, <em>Capillarity and Wetting Phenomena</em>, Springer, 2004. A. W. Adamson y A. P. Gast, <em>Physical Chemistry of Surfaces</em>, 6.ª ed., Wiley, 1997. D. J. Shaw, <em>Introduction to Colloid and Surface Chemistry</em>, 4.ª ed., 1992. M. J. Rosen y J. T. Kunjappu, <em>Surfactants and Interfacial Phenomena</em>, 4.ª ed., Wiley, 2012.</p></div>
+</section>
+</template>

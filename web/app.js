@@ -1,3 +1,16 @@
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+if (typeof window !== 'undefined') {
+    window.escapeHtml = escapeHtml;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const data = window.PLATFORM_DATA;
     if (!data) return;
@@ -2039,16 +2052,27 @@ document.addEventListener('DOMContentLoaded', () => {
     function getCourseKeys(courseId) {
         let keys = [];
         try {
-            const cloud = JSON.parse(localStorage.getItem('physicsailab_cloud_keys') || '{}');
-            if (cloud && cloud[courseId] && typeof cloud[courseId] === 'string') {
-                keys.push(cloud[courseId].trim().toUpperCase());
-            }
-        } catch(e) {}
-        try {
             const custom = JSON.parse(localStorage.getItem('physicsailab_custom_keys') || '{}');
             if (custom && custom[courseId] && typeof custom[courseId] === 'string') {
                 const k = custom[courseId].trim().toUpperCase();
-                if (!keys.includes(k)) keys.unshift(k);
+                if (!keys.includes(k)) keys.push(k);
+            }
+        } catch(e) {}
+        try {
+            const cloud = JSON.parse(localStorage.getItem('physicsailab_cloud_keys') || '{}');
+            if (cloud && cloud[courseId] && typeof cloud[courseId] === 'string') {
+                const k = cloud[courseId].trim().toUpperCase();
+                if (!keys.includes(k)) keys.push(k);
+            }
+        } catch(e) {}
+        try {
+            const pData = (typeof data !== 'undefined' && data) ? data : (window.PLATFORM_DATA || {});
+            if (pData && pData.clavesCursos && pData.clavesCursos[courseId]) {
+                const defKeys = Array.isArray(pData.clavesCursos[courseId]) ? pData.clavesCursos[courseId] : [pData.clavesCursos[courseId]];
+                defKeys.forEach(k => {
+                    const clean = String(k).trim().toUpperCase();
+                    if (!keys.includes(clean)) keys.push(clean);
+                });
             }
         } catch(e) {}
         return keys;
@@ -2482,6 +2506,36 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    let currentCourseSearchQuery = '';
+
+    window.handleCoursesSearchInput = function(query) {
+        currentCourseSearchQuery = (query || '').trim();
+        const clearBtn = document.getElementById('courses-search-clear-btn');
+        const statusBar = document.getElementById('courses-search-status-bar');
+        const statusText = document.getElementById('courses-search-status-text');
+        if (clearBtn) clearBtn.style.display = currentCourseSearchQuery ? 'block' : 'none';
+        if (statusBar && statusText) {
+            if (currentCourseSearchQuery) {
+                statusBar.style.display = 'flex';
+                statusText.innerHTML = `🔍 Filtrando cursos por: "<strong>${escapeHtml(currentCourseSearchQuery)}</strong>"`;
+            } else {
+                statusBar.style.display = 'none';
+            }
+        }
+        renderCourses(currentCourseFilter);
+    };
+
+    window.clearCoursesSearchInput = function() {
+        currentCourseSearchQuery = '';
+        const inp = document.getElementById('courses-search-input');
+        const clearBtn = document.getElementById('courses-search-clear-btn');
+        const statusBar = document.getElementById('courses-search-status-bar');
+        if (inp) { inp.value = ''; inp.focus(); }
+        if (clearBtn) clearBtn.style.display = 'none';
+        if (statusBar) statusBar.style.display = 'none';
+        renderCourses(currentCourseFilter);
+    };
+
     function renderCourses(filter = 'all') {
         currentCourseFilter = filter;
         const coursesGrid = document.getElementById('courses-grid');
@@ -2489,13 +2543,48 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!coursesGrid || !data.cursos) return;
 
         const f = (filter || 'all').toLowerCase();
-        const filtered = f === 'all'
+        let filtered = f === 'all'
             ? data.cursos
             : data.cursos.filter(c => (c.categoriaFiltro || '').toLowerCase() === f || (c.categoria || '').toLowerCase().includes(f));
 
+        if (currentCourseSearchQuery) {
+            const tokens = normalizeSearchText(currentCourseSearchQuery).split(' ').filter(Boolean);
+            if (tokens.length > 0) {
+                filtered = filtered.filter(c => {
+                    const searchable = normalizeSearchText([
+                        c.titulo || '',
+                        c.id || '',
+                        (c.id || '').replace(/_/g, ' '),
+                        c.categoria || '',
+                        c.descripcion || '',
+                        c.modulos || '',
+                        (c.temas || []).join(' ')
+                    ].join(' '));
+                    return tokens.every(tok => searchable.includes(tok));
+                });
+            }
+        }
+
+        if (filtered.length === 0) {
+            coursesGrid.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1.5rem; background: rgba(15,23,42,0.6); border: 1px dashed rgba(99,102,241,0.35); border-radius: 16px;">
+                    <div style="font-size: 2.5rem; margin-bottom: 0.6rem;">🔍</div>
+                    <h4 style="color: #fff; font-size: 1.2rem; margin: 0 0 0.5rem;">No se encontraron cursos</h4>
+                    <p style="color: var(--text-muted); font-size: 0.92rem; max-width: 480px; margin: 0 auto 1.25rem;">
+                        No hay materias ni laboratorios que coincidan con "<strong>${escapeHtml(currentCourseSearchQuery)}</strong>".
+                    </p>
+                    <button type="button" class="btn btn-secondary" onclick="clearCoursesSearchInput()" style="margin: 0 auto;">
+                        Mostrar todos los cursos
+                    </button>
+                </div>
+            `;
+            if (toggleContainer) toggleContainer.innerHTML = '';
+            return;
+        }
+
         const isMobile = window.innerWidth <= 768;
         const total = filtered.length;
-        const coursesToRender = (isMobile && !coursesExpanded) ? filtered.slice(0, 3) : filtered;
+        const coursesToRender = (isMobile && !coursesExpanded && !currentCourseSearchQuery) ? filtered.slice(0, 3) : filtered;
 
                 coursesGrid.innerHTML = coursesToRender.map(c => {
             const isLab = c.id === 'transformadores' || c.esLaboratorio;
@@ -8852,6 +8941,30 @@ document.addEventListener('DOMContentLoaded', () => {
             .replace(/\s+/g, ' ')
             .trim();
     }
+    window.normalizeSearchText = normalizeSearchText;
+
+    window.handleGlobalSearchKeydown = function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const q = (e.target.value || '').trim();
+            if (q) {
+                closeGlobalSearchDropdown();
+                const cursosSection = document.getElementById('cursos');
+                if (cursosSection) {
+                    cursosSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+                const coursesSearchInp = document.getElementById('courses-search-input');
+                if (coursesSearchInp) {
+                    coursesSearchInp.value = q;
+                }
+                if (typeof handleCoursesSearchInput === 'function') {
+                    handleCoursesSearchInput(q);
+                }
+            }
+        } else if (e.key === 'Escape') {
+            closeGlobalSearchDropdown();
+        }
+    };
 
     window.handleGlobalSearch = function(query) {
         const dropdown = document.getElementById('global-search-results-dropdown');
@@ -8872,7 +8985,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const results = [];
 
         // 1. Cursos y Laboratorios
-        const courses = (typeof data !== 'undefined' && data.cursos) ? data.cursos : [];
+        const pData = (typeof data !== 'undefined' && data) ? data : (window.PLATFORM_DATA || {});
+        const courses = (pData && pData.cursos) ? pData.cursos : [];
         courses.forEach(c => {
             const searchable = normalizeSearchText([
                 c.titulo || '',
@@ -8880,23 +8994,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 (c.id || '').replace(/_/g, ' '),
                 c.categoria || '',
                 c.descripcion || '',
+                c.modulos || '',
                 (c.temas || []).join(' ')
             ].join(' '));
 
             if (tokens.every(tok => searchable.includes(tok))) {
                 results.push({
+                    id: c.id,
                     type: c.esPrivado ? '🔬 Privado Docente' : (c.categoria || 'Curso'),
                     title: c.titulo,
                     desc: c.descripcion,
                     link: c.demoPath || '#cursos',
                     isExternal: !!c.demoPath,
+                    isCourse: true,
                     badgeColor: c.esPrivado ? '#c084fc' : '#38bdf8'
                 });
             }
         });
 
         // 2. Cómics
-        const comics = (typeof data !== 'undefined' && data.comics) ? data.comics : [];
+        const comics = (pData && pData.comics) ? pData.comics : [];
         comics.forEach(cm => {
             const searchable = normalizeSearchText([cm.titulo || '', cm.descripcion || '', cm.categoria || ''].join(' '));
             if (tokens.every(tok => searchable.includes(tok))) {
@@ -8912,7 +9029,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // 3. Podcasts
-        const podcasts = (typeof data !== 'undefined' && data.podcasts) ? data.podcasts : [];
+        const podcasts = (pData && pData.podcasts) ? pData.podcasts : [];
         podcasts.forEach(p => {
             const searchable = normalizeSearchText([p.titulo || '', p.descripcion || ''].join(' '));
             if (tokens.every(tok => searchable.includes(tok))) {
@@ -8933,6 +9050,7 @@ document.addEventListener('DOMContentLoaded', () => {
             { title: 'Trivia de Historia de la Física', desc: '500 preguntas con personajes, descubrimientos y biografías.', link: '#trivia-historia', type: '📜 Trivia Historia' },
             { title: 'Gran Trivia de Squash', desc: 'Reglamento, física del bote y táctica competitiva.', link: '#trivia-squash', type: '🎾 Trivia Squash' },
             { title: 'Quizzes Universitarios con PIN', desc: 'Evaluaciones de cinemática, dinámica y electromagnetismo con protocolo antifraude.', link: '#quizzes', type: '📝 Quiz Oficial' },
+            { title: 'Tratado de Fisicoquímica', desc: '38 capítulos interactivos, 141 simulaciones y cinética química avanzada.', link: '/material/1_cursos/fisicoquimica/dist/index.html', isExternal: true, type: '🧪 Tratado Oficial' },
             { title: 'Simulador Manu Squash', desc: 'Suite de análisis biomecánico, rutinas tácticas y editor de trayectorias.', link: '/material/1_cursos/squash_sim/dist/index.html', isExternal: true, type: '🎮 Simulador Deportivo' },
             { title: 'Faro: Pods de Reacción', desc: 'Manual técnico de taller, firmware ESP32-S3 y planos de ensamble.', link: '/material/1_cursos/faro/manual/dist/index.html', isExternal: true, type: '💡 Hardware & Taller' },
             { title: 'hBN-MC: Simulador Monte Carlo', desc: 'Heteroestructuras 2D y nanoporos de grafeno/hBN.', link: '/material/1_cursos/hBN-MC/index.html', isExternal: true, type: '🔬 Simulación DFT' },
@@ -8942,14 +9060,16 @@ document.addEventListener('DOMContentLoaded', () => {
         trivias.forEach(t => {
             const searchable = normalizeSearchText([t.title, t.desc, t.type].join(' '));
             if (tokens.every(tok => searchable.includes(tok))) {
-                results.push({
-                    type: t.type,
-                    title: t.title,
-                    desc: t.desc,
-                    link: t.link,
-                    isExternal: !!t.isExternal,
-                    badgeColor: '#a78bfa'
-                });
+                if (!results.some(r => r.title === t.title)) {
+                    results.push({
+                        type: t.type,
+                        title: t.title,
+                        desc: t.desc,
+                        link: t.link,
+                        isExternal: !!t.isExternal,
+                        badgeColor: '#a78bfa'
+                    });
+                }
             }
         });
 
@@ -8957,32 +9077,47 @@ document.addEventListener('DOMContentLoaded', () => {
             dropdown.innerHTML = `
                 <div style="text-align:center; padding:1.5rem; color:var(--text-muted); font-size:0.92rem;">
                     🔍 No se encontraron contenidos que coincidan con "<strong>${escapeHtml(qRaw)}</strong>".
+                    <div style="margin-top:0.6rem;">
+                        <button type="button" class="btn btn-secondary" style="font-size:0.8rem; padding:0.35rem 0.8rem;" onclick="clearGlobalSearch()">Limpiar búsqueda</button>
+                    </div>
                 </div>
             `;
             dropdown.style.display = 'block';
             return;
         }
 
+        const courseResultsCount = results.filter(r => r.isCourse).length;
+
         dropdown.innerHTML = `
-            <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; padding:0.25rem 0.5rem 0.6rem; border-bottom:1px solid rgba(255,255,255,0.08); margin-bottom:0.4rem; display:flex; justify-content:space-between;">
+            <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; padding:0.25rem 0.5rem 0.6rem; border-bottom:1px solid rgba(255,255,255,0.08); margin-bottom:0.4rem; display:flex; justify-content:space-between; align-items:center;">
                 <span>Resultados encontrados (${results.length})</span>
-                <span style="color:#a5b4fc;">Haz clic para abrir</span>
+                <span style="color:#a5b4fc; font-size:0.72rem;">Presiona <strong>Enter</strong> para ver en Cursos ➔</span>
             </div>
-            ${results.map(r => `
-                <a href="${r.link}" ${r.isExternal ? 'target="_blank"' : ''} onclick="closeGlobalSearchDropdown()" 
-                   style="display:block; padding:0.65rem 0.75rem; border-radius:8px; text-decoration:none; transition:background 0.15s ease; border-bottom:1px solid rgba(255,255,255,0.04);" 
-                   onmouseover="this.style.background='rgba(99,102,241,0.15)'" onmouseout="this.style.background='transparent'">
-                    <div style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem; margin-bottom:0.2rem;">
-                        <strong style="color:#fff; font-size:0.92rem;">${escapeHtml(r.title)}</strong>
-                        <span style="font-size:0.68rem; background:${r.badgeColor}22; color:${r.badgeColor}; border:1px solid ${r.badgeColor}44; padding:0.1rem 0.45rem; border-radius:4px; font-weight:700; white-space:nowrap;">
-                            ${escapeHtml(r.type)}
-                        </span>
-                    </div>
-                    <p style="margin:0; font-size:0.78rem; color:var(--text-muted); line-height:1.35; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                        ${escapeHtml(r.desc)}
-                    </p>
-                </a>
-            `).join('')}
+            <div style="max-height:360px; overflow-y:auto;">
+                ${results.map(r => `
+                    <a href="${r.link}" ${r.isExternal ? 'target="_blank"' : ''} onclick="closeGlobalSearchDropdown()" 
+                       style="display:block; padding:0.65rem 0.75rem; border-radius:8px; text-decoration:none; transition:background 0.15s ease; border-bottom:1px solid rgba(255,255,255,0.04);" 
+                       onmouseover="this.style.background='rgba(99,102,241,0.15)'" onmouseout="this.style.background='transparent'">
+                        <div style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem; margin-bottom:0.2rem;">
+                            <strong style="color:#fff; font-size:0.92rem;">${escapeHtml(r.title)}</strong>
+                            <span style="font-size:0.68rem; background:${r.badgeColor}22; color:${r.badgeColor}; border:1px solid ${r.badgeColor}44; padding:0.1rem 0.45rem; border-radius:4px; font-weight:700; white-space:nowrap;">
+                                ${escapeHtml(r.type)}
+                            </span>
+                        </div>
+                        <p style="margin:0; font-size:0.78rem; color:var(--text-muted); line-height:1.35; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                            ${escapeHtml(r.desc)}
+                        </p>
+                    </a>
+                `).join('')}
+            </div>
+            ${courseResultsCount > 0 ? `
+                <div style="padding:0.5rem 0.5rem 0.2rem; border-top:1px solid rgba(255,255,255,0.08); margin-top:0.4rem; text-align:center;">
+                    <button type="button" class="btn btn-secondary" style="width:100%; font-size:0.8rem; padding:0.4rem 0.8rem; justify-content:center; color:#38bdf8; border-color:rgba(56,189,248,0.4);"
+                            onclick="closeGlobalSearchDropdown(); const cs = document.getElementById('cursos'); if(cs) cs.scrollIntoView({behavior:'smooth'}); const cinp = document.getElementById('courses-search-input'); if(cinp){ cinp.value = '${escapeHtml(qRaw).replace(/'/g, "\\\'")}'; handleCoursesSearchInput(cinp.value); }">
+                        🔍 Ver los ${courseResultsCount} cursos filtrados en la cuadrícula de Cursos ➔
+                    </button>
+                </div>
+            ` : ''}
         `;
         dropdown.style.display = 'block';
     };

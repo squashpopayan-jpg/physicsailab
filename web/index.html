@@ -200,7 +200,7 @@
                     <span style="position:absolute; left:1.15rem; font-size:1.25rem; pointer-events:none; opacity:0.85;">🔍</span>
                     <input type="text" id="global-content-search" placeholder="Buscar en PhysicsAILab (cursos, simuladores, laboratorios, cómics, trivias, herramientas)..." 
                            style="width:100%; background:rgba(15,23,42,0.92); border:1.5px solid rgba(99,102,241,0.4); border-radius:14px; padding:0.95rem 2.8rem 0.95rem 3.1rem; color:#fff; font-size:1rem; box-shadow:0 8px 30px rgba(0,0,0,0.35); outline:none; transition:all 0.2s ease; font-family:inherit;"
-                           autocomplete="off" oninput="handleGlobalSearch(this.value)">
+                           autocomplete="off" oninput="handleGlobalSearch(this.value)" onkeydown="handleGlobalSearchKeydown(event)">
                     <button id="global-search-clear-btn" type="button" onclick="clearGlobalSearch()" 
                             style="position:absolute; right:1.1rem; background:transparent; border:none; color:var(--text-muted); font-size:1.15rem; cursor:pointer; display:none;" title="Limpiar búsqueda">✕</button>
                 </div>
@@ -304,7 +304,7 @@
                     <p>📥 Descargas de Material</p>
                 </div>
                 <a href="#cursos" class="stat-item" style="text-decoration:none; color:inherit; display:block;">
-                    <h3>17</h3>
+                    <h3>28</h3>
                     <p>🔬 Cursos & Labs</p>
                 </a>
                 <a href="#quizzes" class="stat-item" style="text-decoration:none; color:inherit; display:block;">
@@ -336,12 +336,12 @@
                     <div class="portal-card" onclick="navigateToSection('cursos')">
                         <div class="portal-card-top">
                             <span class="portal-icon">🚀</span>
-                            <span class="portal-badge" style="background:rgba(56,189,248,0.15); color:#38bdf8;">17 Cursos Oficiales</span>
+                            <span class="portal-badge" style="background:rgba(56,189,248,0.15); color:#38bdf8;">28 Cursos Oficiales</span>
                         </div>
                         <h3 class="portal-card-title">Cursos &amp; Laboratorios Virtuales</h3>
                         <p class="portal-card-desc">Cuadernos computacionales interactivos con motores físicos, simulaciones numéricas, temarios completos y guías prácticas de laboratorio.</p>
                         <div class="portal-card-cta">
-                            <span>Explorar Cursos (18)</span>
+                            <span>Explorar Cursos (28)</span>
                             <span class="cta-arrow">→</span>
                         </div>
                     </div>
@@ -510,7 +510,7 @@
             <span class="quick-nav-label">⚡ Acceso Rápido:</span>
             <div class="quick-nav-chips">
                 <a href="#mis-cursos" class="quick-chip chip-my-courses" id="quick-chip-my-courses" style="display:none; background:rgba(16,185,129,0.2); border-color:rgba(16,185,129,0.5); color:#34D399; font-weight:700;">🎓 Mis Cursos (0)</a>
-                <a href="#cursos" class="quick-chip">🚀 Cursos & Labs (18)</a>
+                <a href="#cursos" class="quick-chip">🚀 Cursos & Labs (28)</a>
                 <a href="#trivia" class="quick-chip" style="background:rgba(245,158,11,0.18); border-color:rgba(245,158,11,0.5); color:#fbbf24; font-weight:700;">🎯 Gran Trivia de Física</a>
                 <a href="#trivia-historia" class="quick-chip" style="background:rgba(217,119,6,0.18); border-color:rgba(217,119,6,0.5); color:#f59e0b; font-weight:700;">📜 Historia de la Física</a>
                 <a href="#trivia-squash" class="quick-chip" style="background:rgba(16,185,129,0.18); border-color:rgba(16,185,129,0.5); color:#34d399; font-weight:700;">🎾 Gran Trivia de Squash</a>
@@ -703,10 +703,29 @@
                 </div>
             </div>
 
+            
+            <!-- Buscador en tiempo real de cursos y laboratorios -->
+            <div class="courses-search-wrapper" style="margin-bottom: 1.5rem; max-width: 680px;">
+                <div style="position: relative; display: flex; align-items: center;">
+                    <span style="position: absolute; left: 1.15rem; font-size: 1.15rem; pointer-events: none; opacity: 0.75;">🔍</span>
+                    <input type="text" id="courses-search-input" 
+                           placeholder="Buscar curso o laboratorio (ej: fisicoquímica, mecánica, termo, venturi, laboratorio)..." 
+                           oninput="handleCoursesSearchInput(this.value)"
+                           style="width: 100%; background: rgba(15,23,42,0.9); border: 1.5px solid rgba(99,102,241,0.4); border-radius: 12px; padding: 0.85rem 2.8rem 0.85rem 3rem; color: #fff; font-size: 0.98rem; box-shadow: 0 4px 20px rgba(0,0,0,0.3); outline: none; transition: border-color 0.2s;"
+                           onfocus="this.style.borderColor='rgba(99,102,241,0.85)'" onblur="this.style.borderColor='rgba(99,102,241,0.4)'">
+                    <button id="courses-search-clear-btn" type="button" onclick="clearCoursesSearchInput()" 
+                            style="position: absolute; right: 0.95rem; background: transparent; border: none; color: var(--text-muted); font-size: 1.15rem; cursor: pointer; display: none;" title="Limpiar búsqueda">✕</button>
+                </div>
+                <div id="courses-search-status-bar" style="display: none; justify-content: space-between; align-items: center; margin-top: 0.55rem; font-size: 0.84rem; color: #a5b4fc; padding: 0 0.4rem;">
+                    <span id="courses-search-status-text"></span>
+                    <button type="button" onclick="clearCoursesSearchInput()" style="background: none; border: none; color: #f87171; cursor: pointer; text-decoration: underline; font-size: 0.82rem; font-weight: 600;">Ver todos los cursos</button>
+                </div>
+            </div>
+
             <!-- Filtros de Categorías de Cursos -->
             <div class="filter-bar" style="margin-bottom: 2rem;">
-                <button class="filter-btn course-filter-btn active" data-filter="all">Todos los Cursos (27)</button>
-                <button class="filter-btn course-filter-btn" data-filter="fundamental">⚛️ Física Fundamental & Historia (10)</button>
+                <button class="filter-btn course-filter-btn active" data-filter="all">Todos los Cursos (28)</button>
+                <button class="filter-btn course-filter-btn" data-filter="fundamental">⚛️ Física Fundamental & Historia (11)</button>
                 <button class="filter-btn course-filter-btn" data-filter="materiales">🔬 Materiales & Labs (6)</button>
                 <button class="filter-btn course-filter-btn" data-filter="ia">🧠 IA & Neurociencia (2)</button>
                 <button class="filter-btn course-filter-btn" data-filter="aplicada">🎾 Deporte, Arbitraje & Aplicadas (7)</button>
