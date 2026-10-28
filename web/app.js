@@ -1546,6 +1546,15 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('physicsailab_unlocked_courses', JSON.stringify(list));
         }
         localStorage.setItem('unlocked_course_' + courseId, 'true');
+        const now = Date.now();
+        const unlockInfo = {
+            cId: courseId,
+            unlockedAt: now,
+            expiresAt: now + 30 * 24 * 60 * 60 * 1000,
+            isSubscription: false,
+            month: new Date().toISOString().slice(0, 7)
+        };
+        localStorage.setItem('unlocked_info_' + courseId, JSON.stringify(unlockInfo));
         updateStudentBannerState();
         renderEnrolledCourses();
         renderCourses(currentCourseFilter);
@@ -2037,8 +2046,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         } catch(e) {}
+        try {
+            const cloud = JSON.parse(localStorage.getItem('physicsailab_cloud_keys') || '{}');
+            if (cloud[courseId]) {
+                if (Array.isArray(cloud[courseId])) {
+                    keys = [...new Set([...cloud[courseId], ...keys])];
+                } else if (typeof cloud[courseId] === 'string') {
+                    keys.unshift(cloud[courseId]);
+                }
+            }
+        } catch(e) {}
         return keys;
     }
+
+    // Sincronizar en segundo plano las claves mensuales activas desde Firebase
+    function syncCloudCourseKeys() {
+        fetch(`${FIREBASE_BASE}/student_keys_config/monthly_keys.json`)
+            .then(r => r.json())
+            .then(data => {
+                if (data && typeof data === 'object') {
+                    localStorage.setItem('physicsailab_cloud_keys', JSON.stringify(data));
+                }
+            })
+            .catch(() => {});
+    }
+    syncCloudCourseKeys();
 
     function updateStudentBannerState() {
         const bannerContainer = document.getElementById('student-banner-container');
@@ -2370,29 +2402,76 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // 4. ¿Pertenece a otro curso?
-        let otherCourse = null;
-        for (const c of (data.cursos || [])) {
-            if (c.id !== courseId) {
-                const keys = getCourseKeys(c.id).map(k => k.toUpperCase());
-                if (keys.includes(code)) {
-                    otherCourse = c;
-                    break;
-                }
-            }
+        // 4. Verificación en tiempo real con Firebase en la nube
+        if (err) {
+            err.innerHTML = `<span style="color:#38bdf8;">⏳ Verificando clave con el servidor...</span>`;
+            err.style.display = "block";
         }
 
-        if (otherCourse) {
-            if (err) {
-                err.innerHTML = `⚠️ Esta clave corresponde a <strong>«${otherCourse.titulo}»</strong>, no a este curso.<br>Puedes desbloquear ese curso desde su respectiva tarjeta.`;
-                err.style.display = "block";
-            }
-        } else {
-            if (err) {
-                err.textContent = "❌ Clave no válida para este curso. Consulta con el profesor Manuel Obando en clase.";
-                err.style.display = "block";
-            }
-        }
+        fetch(`${FIREBASE_BASE}/student_keys_config/monthly_keys.json`)
+            .then(r => r.json())
+            .then(cloudKeys => {
+                if (cloudKeys && typeof cloudKeys === 'object') {
+                    localStorage.setItem('physicsailab_cloud_keys', JSON.stringify(cloudKeys));
+                    const assignedKey = (cloudKeys[courseId] || '').trim().toUpperCase();
+                    if (assignedKey && assignedKey === code) {
+                        unlockCourse(courseId);
+                        closeCourseKeyModal();
+                        const course = (data.cursos || []).find(c => c.id === courseId);
+                        const courseTitle = course ? course.titulo : "Curso";
+                        alert(`🎉 ¡Excelente!\n\nEl curso «${courseTitle}» ha sido desbloqueado con éxito con la nueva clave activa.`);
+                        showToast(`🎓 ¡Curso desbloqueado: <strong>${courseTitle}</strong>!`);
+                        setTimeout(() => {
+                            const el = document.getElementById("mis-cursos");
+                            if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                        }, 300);
+                        return;
+                    }
+
+                    // ¿Pertenece a otro curso en la nube?
+                    for (const [otherId, otherKey] of Object.entries(cloudKeys)) {
+                        if (otherId !== courseId && (otherKey || '').trim().toUpperCase() === code) {
+                            const otherC = (data.cursos || []).find(c => c.id === otherId);
+                            const otherTitle = otherC ? otherC.titulo : otherId;
+                            if (err) {
+                                err.innerHTML = `⚠️ Esta clave corresponde a <strong>«${otherTitle}»</strong>, no a este curso.<br>Puedes desbloquear ese curso desde su respectiva tarjeta.`;
+                                err.style.display = "block";
+                            }
+                            return;
+                        }
+                    }
+                }
+
+                // 5. Comprobar si pertenece a otro curso en claves locales
+                let otherCourse = null;
+                for (const c of (data.cursos || [])) {
+                    if (c.id !== courseId) {
+                        const keys = getCourseKeys(c.id).map(k => k.toUpperCase());
+                        if (keys.includes(code)) {
+                            otherCourse = c;
+                            break;
+                        }
+                    }
+                }
+
+                if (otherCourse) {
+                    if (err) {
+                        err.innerHTML = `⚠️ Esta clave corresponde a <strong>«${otherCourse.titulo}»</strong>, no a este curso.<br>Puedes desbloquear ese curso desde su respectiva tarjeta.`;
+                        err.style.display = "block";
+                    }
+                } else {
+                    if (err) {
+                        err.textContent = "❌ Clave no válida para este curso. Consulta con el profesor Manuel Obando en clase.";
+                        err.style.display = "block";
+                    }
+                }
+            })
+            .catch(() => {
+                if (err) {
+                    err.textContent = "❌ Clave no válida para este curso. Consulta con el profesor Manuel Obando en clase.";
+                    err.style.display = "block";
+                }
+            });
     };
 
     // 3. Renderizar Cursos (con modo compacto en móvil y filtros de categoría)
@@ -6396,7 +6475,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const custom = JSON.parse(localStorage.getItem('physicsailab_custom_keys') || '{}');
             custom[courseId] = [cleanKey, ...(currentKeys.slice(1))];
             localStorage.setItem('physicsailab_custom_keys', JSON.stringify(custom));
-            showToast(`🔑 Clave para <strong>${courseTitle}</strong> actualizada a: <strong>${cleanKey}</strong>`);
+
+            // Sincronizar en la nube Firebase para propagar a todos los estudiantes
+            fetch(`${FIREBASE_BASE}/student_keys_config/monthly_keys/${courseId}.json`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(cleanKey)
+            }).then(() => {
+                showToast(`🔑 Clave para <strong>${courseTitle}</strong> actualizada y sincronizada en la nube a: <strong>${cleanKey}</strong>`);
+            }).catch(() => {
+                showToast(`🔑 Clave guardada localmente para <strong>${courseTitle}</strong>: <strong>${cleanKey}</strong>`);
+            });
+
             renderAdminDashboardContent();
             renderCourses(currentCourseFilter);
         } catch(e) {

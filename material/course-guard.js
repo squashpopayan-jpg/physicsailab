@@ -9,6 +9,17 @@
     'use strict';
 
     const ADMIN_MASTER_KEY = "OBANDO-ADMIN-2026";
+    // Sincronización proactiva de claves en la nube (Firebase)
+    try {
+        fetch('https://squashpopayan-65e33-default-rtdb.firebaseio.com/physicsailab/student_keys_config/monthly_keys.json')
+            .then(r => r.json())
+            .then(data => {
+                if (data && typeof data === 'object') {
+                    localStorage.setItem('physicsailab_cloud_keys', JSON.stringify(data));
+                }
+            }).catch(() => {});
+    } catch(e) {}
+
     const LAB_COURSE_IDS = [
         "transformadores",
         "pendulo",
@@ -17,30 +28,30 @@
         "historia"
     ];
     const DEFAULT_COURSE_KEYS = {
-        "mecanica": ["MECANICA-2026", "OBANDO-MEC-26"],
-        "materiales": ["MATERIALES-2026", "SOLIDOS-UFOP-26"],
-        "transformadores": ["TRANSFO-2026", "LAB-TRANS-26"],
-        "ondas": ["ONDAS-2026", "VIBRACIONES-26"],
-        "neuro": ["RECABLEAR-2026", "NEURO-26"],
-        "electromagnetismo": ["ELECTRO-2026", "FIET-EM-26"],
-        "ml": ["DATOS-IA-2026", "MACHINE-LEARNING-26"],
-        "cuantica": ["CUANTICA-2026", "MODERNA-26"],
-        "retie": ["RETIE-2026", "NORMA-RETIE-26"],
-        "squash_sim": ["SQUASH-PRO-2026", "MANU-SQUASH-26"],
-        "finanzas": ["FINANZAS-2026", "CUENTAS-CLARAS-26"],
-        "termo": ["TERMO-2026", "CALOR-TERMO-26", "OBANDO-TERMO-26"],
-        "torneos": ["TORNEOS-2026", "SQUASH-POPAYAN-26", "SQUASH-TORNEOS-26"],
-        "laboratorio": ["LAB-PROYECTO-2026", "PROYECTO-LAB-26", "OBANDO-LAB-26"],
-        "fluidos": ["FLUIDOS-2026", "BERNOULLI-26", "OBANDO-FLUIDOS-26"],
-        "venturi": ["VENTURI-2026", "BERNOULLI-VENTURI-26", "OBANDO-VENTURI-26", "BERNOULLI-2026"],
-        "pendulo": ["PENDULO-2026", "GRAVEDAD-26", "OBANDO-PENDULO-26", "FISICA-10-26"],
-        "guias": ["GUIAS-2026", "MONTAJES-26", "LAB-MONTAJES-26"],
-        "ingles": ["INGLES-2026", "QUANTUM-ENGLISH-26", "LEAP-2026"],
-        "recorrido": ["RECORRIDO-2026", "DEPTO-FISICA-26", "OBANDO-RECORRIDO-26", "UNICAUCA-26"],
-        "optica": ["OPTICA-2026", "FOTON-26", "OBANDO-OPTICA-26", "LUZ-RAYO-26", "MAXWELL-OPTICA-26"],
-        "solido": ["SOLIDO-2026", "ESTADO-SOLIDO-26", "SOLIDOS-UFOP-26", "OBANDO-SOLIDO-26"],
-        "faro": ["FARO-2026", "PODS-REACCION-26", "LUZ-FARO-26", "OBANDO-FARO-26"],
-        "diagnosticas": ["DIAGNOSTICAS-2026", "PRUEBAS-26", "OBANDO-DIAG-26"],
+        "mecanica": ["MECANICA-2026", "OBANDO-MEC-26", "MEC-QXN7-26"],
+        "materiales": ["MATERIALES-2026", "SOLIDOS-UFOP-26", "MAT-DVCF-26"],
+        "transformadores": ["TRANSFO-2026", "LAB-TRANS-26", "TRA-FXOL-26"],
+        "ondas": ["ONDAS-2026", "VIBRACIONES-26", "OND-LVAR-26"],
+        "neuro": ["RECABLEAR-2026", "NEURO-26", "NEU-FZ10-26"],
+        "electromagnetismo": ["ELECTRO-2026", "FIET-EM-26", "ELE-1TAQ-26"],
+        "ml": ["DATOS-IA-2026", "MACHINE-LEARNING-26", "ML-XZJD-26"],
+        "cuantica": ["CUANTICA-2026", "MODERNA-26", "CUA-GE1J-26"],
+        "retie": ["RETIE-2026", "NORMA-RETIE-26", "RET-LLP4-26"],
+        "squash_sim": ["SQUASH-PRO-2026", "MANU-SQUASH-26", "SQU-PLLW-26"],
+        "finanzas": ["FINANZAS-2026", "CUENTAS-CLARAS-26", "FIN-SEA8-26"],
+        "termo": ["TERMO-2026", "CALOR-TERMO-26", "OBANDO-TERMO-26", "TER-E9WM-26"],
+        "torneos": ["TORNEOS-2026", "SQUASH-POPAYAN-26", "SQUASH-TORNEOS-26", "TOR-KX9Q-26"],
+        "laboratorio": ["LAB-PROYECTO-2026", "PROYECTO-LAB-26", "OBANDO-LAB-26", "LAB-7RAG-26"],
+        "fluidos": ["FLUIDOS-2026", "BERNOULLI-26", "OBANDO-FLUIDOS-26", "FLU-CJTO-26"],
+        "venturi": ["VENTURI-2026", "BERNOULLI-VENTURI-26", "OBANDO-VENTURI-26", "BERNOULLI-2026", "VEN-BQS2-26"],
+        "pendulo": ["PENDULO-2026", "GRAVEDAD-26", "OBANDO-PENDULO-26", "FISICA-10-26", "PEN-A66O-26"],
+        "guias": ["GUIAS-2026", "MONTAJES-26", "LAB-MONTAJES-26", "GUI-8MEI-26"],
+        "ingles": ["INGLES-2026", "QUANTUM-ENGLISH-26", "LEAP-2026", "ING-WWUP-26"],
+        "recorrido": ["RECORRIDO-2026", "DEPTO-FISICA-26", "OBANDO-RECORRIDO-26", "UNICAUCA-26", "REC-WERL-26"],
+        "optica": ["OPTICA-2026", "FOTON-26", "OBANDO-OPTICA-26", "LUZ-RAYO-26", "MAXWELL-OPTICA-26", "OPT-ACB4-26"],
+        "solido": ["SOLIDO-2026", "ESTADO-SOLIDO-26", "SOLIDOS-UFOP-26", "OBANDO-SOLIDO-26", "SOL-I5CX-26"],
+        "faro": ["FARO-2026", "PODS-REACCION-26", "LUZ-FARO-26", "OBANDO-FARO-26", "FAR-PCK1-26"],
+        "diagnosticas": ["DIAGNOSTICAS-2026", "PRUEBAS-26", "OBANDO-DIAG-26", "DIA-GHNR-26"],
         "squash_arbitraje": ["ARBITRAJE-2026", "SQUASH-REF-26", "MANU-REF-26", "WSF-REGLAS-26"],
         "historia": ["HISTORIA-2026", "CIENCIA-HIST-26", "OBANDO-HISTORIA-26", "SABER-2026", "BIENVENIDA-2026"]
     };
@@ -828,7 +839,7 @@
                 }
             } catch(e) {}
 
-            // 3. Obtener claves válidas para este curso
+            // 3. Obtener claves válidas para este curso (locales + nube en caché)
             let validKeys = DEFAULT_COURSE_KEYS[currentCourse] || [];
             try {
                 const customMap = JSON.parse(localStorage.getItem('physicsailab_custom_keys') || '{}');
@@ -837,6 +848,14 @@
                         validKeys = validKeys.concat(customMap[currentCourse]);
                     } else if (typeof customMap[currentCourse] === 'string') {
                         validKeys.push(customMap[currentCourse]);
+                    }
+                }
+                const cloudMap = JSON.parse(localStorage.getItem('physicsailab_cloud_keys') || '{}');
+                if (cloudMap[currentCourse]) {
+                    if (Array.isArray(cloudMap[currentCourse])) {
+                        validKeys = validKeys.concat(cloudMap[currentCourse]);
+                    } else if (typeof cloudMap[currentCourse] === 'string') {
+                        validKeys.push(cloudMap[currentCourse]);
                     }
                 }
                 if (window.PLATFORM_DATA && window.PLATFORM_DATA.clavesCursos && window.PLATFORM_DATA.clavesCursos[currentCourse]) {
@@ -869,20 +888,60 @@
                 }
             } catch(e) {}
 
-            // 4. Comprobar si la clave pertenece a otra materia
-            let otherCourse = null;
-            for (const [cId, keys] of Object.entries(DEFAULT_COURSE_KEYS)) {
-                if (keys.some(k => k.toUpperCase() === val)) {
-                    otherCourse = cId;
-                    break;
-                }
+            // 4. Verificación en tiempo real con Firebase por si el docente recién cambió la clave en la nube
+            if (doUnlockBtn) {
+                doUnlockBtn.disabled = true;
+                doUnlockBtn.textContent = 'Verificando con la nube... ⏳';
             }
 
-            if (otherCourse) {
-                showToast(`⚠️ Esta clave corresponde a «${otherCourse.toUpperCase()}». Cada curso tiene su propia clave independiente.`, 'error');
-            } else {
-                showToast('❌ Clave no válida para este curso. Consulta con tu profesor en clase.', 'error');
-            }
+            fetch('https://squashpopayan-65e33-default-rtdb.firebaseio.com/physicsailab/student_keys_config/monthly_keys.json')
+                .then(r => r.json())
+                .then(cloudKeys => {
+                    if (doUnlockBtn) {
+                        doUnlockBtn.disabled = false;
+                        doUnlockBtn.textContent = 'Desbloquear Materia 🔓';
+                    }
+                    if (cloudKeys && typeof cloudKeys === 'object') {
+                        localStorage.setItem('physicsailab_cloud_keys', JSON.stringify(cloudKeys));
+                        const targetCloudKey = (cloudKeys[currentCourse] || '').trim().toUpperCase();
+                        if (targetCloudKey && targetCloudKey === val) {
+                            setCourseUnlocked(currentCourse, true);
+                            closeModal();
+                            showToast(`🎉 ¡Clave activa sincronizada y verificada con la nube! Curso desbloqueado.`, 'success');
+                            updateGuardState();
+                            return;
+                        }
+                        // ¿Pertenece a otra materia en la nube?
+                        for (const [otherId, otherKey] of Object.entries(cloudKeys)) {
+                            if (otherId !== currentCourse && (otherKey || '').trim().toUpperCase() === val) {
+                                showToast(`⚠️ Esta clave corresponde a «${otherId.toUpperCase()}», no a esta materia.`, 'error');
+                                return;
+                            }
+                        }
+                    }
+
+                    // 5. Comprobar si la clave pertenece a otra materia en claves por defecto
+                    let otherCourse = null;
+                    for (const [cId, keys] of Object.entries(DEFAULT_COURSE_KEYS)) {
+                        if (keys.some(k => k.toUpperCase() === val)) {
+                            otherCourse = cId;
+                            break;
+                        }
+                    }
+
+                    if (otherCourse) {
+                        showToast(`⚠️ Esta clave corresponde a «${otherCourse.toUpperCase()}». Cada curso tiene su propia clave independiente.`, 'error');
+                    } else {
+                        showToast('❌ Clave no válida para este curso. Consulta con tu profesor en clase.', 'error');
+                    }
+                })
+                .catch(() => {
+                    if (doUnlockBtn) {
+                        doUnlockBtn.disabled = false;
+                        doUnlockBtn.textContent = 'Desbloquear Materia 🔓';
+                    }
+                    showToast('❌ Clave no válida para este curso. Consulta con tu profesor en clase.', 'error');
+                });
         };
 
         doUnlockBtn.addEventListener('click', tryUnlock);

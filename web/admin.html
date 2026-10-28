@@ -912,9 +912,14 @@
                                 Asigna o personaliza la contraseña vigente de este mes para cada una de tus materias y simuladores. Se sincronizan en la nube en tiempo real.
                             </p>
                         </div>
-                        <button class="adm-btn adm-btn-emerald" onclick="saveCustomCourseKeys()">
-                            💾 Guardar Todas las Claves
-                        </button>
+                        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                            <button type="button" class="adm-btn adm-btn-secondary" onclick="resetAllCourseKeysToDefault()" style="border-color:rgba(56,189,248,0.5); color:#38bdf8;">
+                                🔄 Claves Estándar (MECANICA-2026...)
+                            </button>
+                            <button class="adm-btn adm-btn-emerald" onclick="saveCustomCourseKeys()">
+                                💾 Guardar Todas las Claves
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Buscador en tiempo real de cursos -->
@@ -1851,6 +1856,29 @@
                 alert('✓ ¡Las 24 claves de materias y simuladores han sido actualizadas y sincronizadas en la nube!');
             }).catch(err => {
                 alert('✓ Claves guardadas localmente. (Error de red al sincronizar con la nube).');
+            });
+        }
+
+                function resetAllCourseKeysToDefault() {
+            if (!confirm('¿Deseas restablecer todas las claves a los valores estándar oficiales (MECANICA-2026, MATERIALES-2026, etc.)?\n\nAl confirmar, todos los estudiantes podrán usar las claves estándar del semestre.')) return;
+            const keysObj = {};
+            ALL_COURSES.forEach(c => {
+                keysObj[c.id] = c.defaultKey;
+                const el = document.getElementById('key-' + c.id);
+                if (el) el.value = c.defaultKey;
+            });
+            loadedCourseKeys = keysObj;
+            localStorage.setItem('physicsailab_custom_keys', JSON.stringify(keysObj));
+            localStorage.setItem('physicsailab_cloud_keys', JSON.stringify(keysObj));
+
+            fetch(FIREBASE_BASE + '/student_keys_config/monthly_keys.json', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(keysObj)
+            }).then(() => {
+                alert('✓ ¡Todas las claves han sido restablecidas a las claves estándar (MECANICA-2026, etc.) y sincronizadas en la nube!');
+            }).catch(() => {
+                alert('✓ Claves restablecidas localmente.');
             });
         }
 
