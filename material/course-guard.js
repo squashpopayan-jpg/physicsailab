@@ -126,7 +126,7 @@
     function isUnlocked() {
         const cId = getCurrentCourseId();
         // Cursos 100% liberados y cortesías de bienvenida:
-        if (cId === 'recorrido' || cId === 'historia' || cId === 'kids') return true;
+        if (cId === 'venturi' || cId === 'pendulo' || cId === 'recorrido' || cId === 'historia' || cId === 'kids') return true;
         if (LAB_COURSE_IDS.includes(cId)) return true;
 
         try {
@@ -1293,10 +1293,8 @@
     // Intercepción en Laboratorio de Péndulo Simple
     // ----------------------------------------------------
     function applyPenduloGuard() {
-        const unlocked = isUnlocked();
-        // Tabs libres: 'banco' (simulador virtual de péndulo)
-        // Tabs bloqueadas: 'real' (toma de datos reales), 'cuaderno' (cálculos y errores), 'matematico' (análisis no lineal), 'guia' (guía de práctica)
-        const lockedTabs = ['real', 'cuaderno', 'matematico', 'guia'];
+        // Laboratorio de Péndulo Simple 100% liberado y de acceso abierto para todos
+        return;
 
         lockedTabs.forEach((tabId) => {
             const navLink = document.querySelector(`.nav a[href="#${tabId}"], .nav a[data-tab="${tabId}"]`);
@@ -1352,10 +1350,8 @@
     // Intercepción en Laboratorio de Venturi
     // ----------------------------------------------------
     function applyVenturiGuard() {
-        const unlocked = isUnlocked();
-        // Tabs libres: 'banco' (simulador tubo Venturi)
-        // Tabs bloqueadas: 'cuaderno' (registro de datos y cálculo de caudal), 'guia' (guía de laboratorio)
-        const lockedTabs = ['cuaderno', 'guia'];
+        // Laboratorio de Tubo de Venturi 100% liberado y de acceso abierto para todos
+        return;
 
         lockedTabs.forEach((tabId) => {
             const navLink = document.querySelector(`.nav a[href="#${tabId}"], .nav a[data-tab="${tabId}"]`);
@@ -1853,8 +1849,8 @@
     // ========================================================
     function checkCurrentHashLock() {
         if (isUnlocked()) return;
-
         const cId = getCurrentCourseId();
+        if (cId === 'venturi' || cId === 'pendulo' || isVenturi || isPendulo) return;
         const rawHash = decodeURIComponent(location.hash.replace(/^#/, '')).split('.')[0].toLowerCase();
         if (!rawHash || rawHash === 'inicio') return;
 

@@ -1000,8 +1000,10 @@ window.PLATFORM_DATA = {
             precioUSD: 0,
             accesoLibre: true,
             descuentoTag: "Laboratorio Abierto 100% Libre",
-            enlaceCompra: "https://hotmart.com",
-            enlaceWompi: "https://checkout.wompi.co/l/VPOS_b6GD2z"
+            esCortesia: true,
+            accesoLibre: true,
+            enlaceCompra: null,
+            enlaceWompi: null
         },
         {
             id: "pendulo",
@@ -1034,8 +1036,10 @@ window.PLATFORM_DATA = {
             precioUSD: 0,
             accesoLibre: true,
             descuentoTag: "Laboratorio Abierto 100% Libre",
-            enlaceCompra: "https://hotmart.com",
-            enlaceWompi: "https://checkout.wompi.co/l/VPOS_b6GD2z"
+            esCortesia: true,
+            accesoLibre: true,
+            enlaceCompra: null,
+            enlaceWompi: null
         },
         {
             id: "guias",

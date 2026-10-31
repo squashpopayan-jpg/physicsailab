@@ -2632,6 +2632,8 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (courseUnlocked) {
                 if (c.id === 'kids') {
                     lockStatusBadge = `<span class="kids-badge-rainbow" title="Cortesía Educativa para Niños y Familias · 100% Libre">🌈 100% LIBRE · NIÑOS</span>`;
+                } else if (c.id === 'venturi' || c.id === 'pendulo') {
+                    lockStatusBadge = `<span class="unlocked-tag" style="background:rgba(16,185,129,0.18); color:#34d399; border-color:rgba(16,185,129,0.45); font-weight:800;" title="Laboratorio Virtual Universitario · Acceso 100% Abierto y Libre">🧪 Laboratorio Liberado</span>`;
                 } else if (c.id === 'historia' || c.esCortesia) {
                     lockStatusBadge = `<span class="unlocked-tag" style="background:rgba(217,119,6,0.18); color:#f59e0b; border-color:rgba(217,119,6,0.45);" title="Cortesía de Bienvenida · Acceso Libre para todos">🎁 Cortesía Libre</span>`;
                 } else {
@@ -2670,7 +2672,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     </div>
                     <div class="card-actions" style="flex-wrap:wrap; gap:0.4rem;">
-                        ${c.demoPath ? (isPrivado && !adminMode ? `<button type="button" class="btn btn-secondary" onclick="openAdminPanel()" style="flex:1; justify-content:center; border-color:rgba(168,85,247,0.4); color:#c084fc;">${openBtnText}</button>` : `<a href="${c.demoPath}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="flex:1; justify-content:center; ${isPrivado ? "background:linear-gradient(135deg, #a855f7, #6366f1); border:none;" : ""}">${openBtnText}</a>`) : ''}
+                        ${c.demoPath ? (isPrivado && !adminMode ? `<button type="button" class="btn btn-secondary" onclick="openAdminPanel()" style="flex:1; justify-content:center; border-color:rgba(168,85,247,0.4); color:#c084fc;">${openBtnText}</button>` : `<a href="${c.demoPath}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="flex:1; justify-content:center; ${(c.id === 'venturi' || c.id === 'pendulo') ? 'background:linear-gradient(135deg, #059669, #10b981); border:none;' : ''} ${isPrivado ? "background:linear-gradient(135deg, #a855f7, #6366f1); border:none;" : ""}">${openBtnText}</a>`) : ''}
                         ${(isDiagnosticas && adminMode) ? `<a href="/material/1_cursos/diagnosticas/dist/public/panel.html" target="_blank" class="btn btn-secondary" style="border-color:rgba(56,189,248,0.5); color:#38bdf8; display:inline-flex; align-items:center; gap:0.35rem;" title="Abrir panel docente de pruebas">📊 Panel Docente</a>` : ''}
                         ${c.id === 'venturi' ? `<button type="button" class="btn btn-secondary" onclick="openVenturiGroupModal()" style="border-color:rgba(56,189,248,0.5); color:#38bdf8; display:inline-flex; align-items:center; gap:0.35rem;" title="Organizar puestos y asignar bancos para grupos (1 al 24)">👥 Puestos Grupos (1-24)</button>` : ''}
                         ${c.id === 'pendulo' ? `<button type="button" class="btn btn-secondary" onclick="openPenduloGroupModal()" style="border-color:rgba(56,189,248,0.5); color:#38bdf8; display:inline-flex; align-items:center; gap:0.35rem;" title="Organizar puestos y asignar bancos para grupos (1 al 24)">👥 Puestos Grupos (1-24)</button>` : ''}
