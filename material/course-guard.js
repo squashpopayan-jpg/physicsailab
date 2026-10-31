@@ -126,7 +126,7 @@
     function isUnlocked() {
         const cId = getCurrentCourseId();
         // Cursos 100% liberados y cortesías de bienvenida:
-        if (cId === 'recorrido' || cId === 'historia') return true;
+        if (cId === 'recorrido' || cId === 'historia' || cId === 'kids') return true;
         if (LAB_COURSE_IDS.includes(cId)) return true;
 
         try {
@@ -383,6 +383,18 @@
             position: relative;
             cursor: not-allowed !important;
             opacity: 0.55 !important;
+        }
+
+        /* Bloqueo activo de fondo mientras el Paywall está visible */
+        body.pg-barrier-active .mainwrap,
+        body.pg-barrier-active main,
+        body.pg-barrier-active .content,
+        body.pg-barrier-active .page-section,
+        body.pg-barrier-active .chapter,
+        body.pg-barrier-active section {
+            filter: blur(14px) grayscale(75%) !important;
+            pointer-events: none !important;
+            user-select: none !important;
         }
 
         /* Floating Top Bar */
@@ -710,6 +722,125 @@
         setTimeout(() => toast.remove(), 4000);
     }
 
+    // ========================================================
+    // EXPULSIÓN Y RETORNO SEGURO A VISTA PREVIA GRATUITA
+    // ========================================================
+    function enforceFreePreviewState() {
+        if (isUnlocked()) return;
+
+        const cId = getCurrentCourseId();
+
+        // A. Arbitraje
+        if (cId === 'squash_arbitraje') {
+            const secInt = document.getElementById('section-interferencia');
+            const secMarc = document.getElementById('section-marcador');
+            if (secInt) secInt.classList.remove('active');
+            if (secMarc) secMarc.classList.remove('active');
+
+            const homeSec = document.getElementById('section-inicio') || document.getElementById('section-simulador');
+            if (homeSec) homeSec.classList.add('active');
+
+            document.querySelectorAll('.nav button[data-go]').forEach(b => {
+                b.classList.toggle('active', b.dataset.go === 'inicio');
+            });
+
+            try {
+                if (window.location.hash === '#interferencia' || window.location.hash === '#marcador') {
+                    history.replaceState(null, '', window.location.pathname + '#inicio');
+                }
+            } catch(e) {
+                window.location.hash = '#inicio';
+            }
+            window.scrollTo({ top: 0, behavior: 'instant' });
+            return;
+        }
+
+        // B. Péndulo
+        if (isPendulo) {
+            const b = document.querySelector('.nav a[href="#banco"], .nav a[data-tab="banco"]');
+            if (b) b.click();
+            try {
+                history.replaceState(null, '', window.location.pathname + '#banco');
+            } catch(e) {}
+            window.scrollTo({ top: 0, behavior: 'instant' });
+            return;
+        }
+
+        // C. Venturi
+        if (isVenturi) {
+            const b = document.querySelector('.nav a[href="#banco"], .nav a[data-tab="banco"]');
+            if (b) b.click();
+            try {
+                history.replaceState(null, '', window.location.pathname + '#banco');
+            } catch(e) {}
+            window.scrollTo({ top: 0, behavior: 'instant' });
+            return;
+        }
+
+        // D. Transformadores
+        if (isTransformadores) {
+            const b = document.querySelector('.nav a[href="#banco"]');
+            if (b) b.click();
+            try {
+                history.replaceState(null, '', window.location.pathname + '#banco');
+            } catch(e) {}
+            window.scrollTo({ top: 0, behavior: 'instant' });
+            return;
+        }
+
+        // E. Squash Simulator
+        if (isSquash) {
+            const b = document.querySelector('.nav button[data-go="simulador"]');
+            if (b) b.click();
+            try {
+                history.replaceState(null, '', window.location.pathname + '#simulador');
+            } catch(e) {}
+            window.scrollTo({ top: 0, behavior: 'instant' });
+            return;
+        }
+
+        // F. Faro
+        if (isFaro) {
+            window.scrollTo({ top: 0, behavior: 'instant' });
+            return;
+        }
+
+        // G. Cuadernos Interactivos (Notebooks)
+        const firstThematic = getFirstThematicId();
+        const fallbackId = firstThematic || 'inicio';
+        const fallbackTarget = '#' + fallbackId;
+
+        const homeLink = document.querySelector(`#toc > a[href="#inicio"], #toc > a[data-id="inicio"]`) ||
+                         (firstThematic ? document.querySelector(`#toc > a[href="#${firstThematic}"], #toc > a[data-id="${firstThematic}"]`) : null);
+
+        if (homeLink) {
+            homeLink.click();
+        } else {
+            try {
+                history.replaceState(null, '', window.location.pathname + fallbackTarget);
+                window.dispatchEvent(new HashChangeEvent('hashchange'));
+            } catch(e) {
+                location.hash = fallbackTarget;
+            }
+        }
+
+        // Ocultar forzosamente cualquier capítulo bloqueado en el DOM
+        try {
+            document.querySelectorAll('.chapter').forEach(art => {
+                const id = art.dataset.id;
+                if (id && id !== 'inicio' && (!firstThematic || id !== firstThematic)) {
+                    art.hidden = true;
+                    art.style.display = 'none';
+                } else if (id === 'inicio' || (firstThematic && id === firstThematic)) {
+                    art.hidden = false;
+                    art.style.display = '';
+                }
+            });
+        } catch(e) {}
+
+        window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+
     // Modal Paywall
     let activeModal = null;
     function openPaywall(attemptedTarget = '') {
@@ -788,10 +919,16 @@
         const doUnlockBtn = overlay.querySelector('#pg-btn-do-unlock');
         const codeInput = overlay.querySelector('#pg-student-code-input');
 
+        document.body.classList.add('pg-barrier-active');
+
         const closeModal = () => {
+            document.body.classList.remove('pg-barrier-active');
             if (activeModal) {
                 activeModal.remove();
                 activeModal = null;
+            }
+            if (!isUnlocked()) {
+                enforceFreePreviewState();
             }
         };
 
@@ -800,6 +937,14 @@
         overlay.addEventListener('click', (e) => {
             if (e.target === overlay) closeModal();
         });
+
+        const onEscKey = (e) => {
+            if (e.key === 'Escape' && activeModal) {
+                document.removeEventListener('keydown', onEscKey);
+                closeModal();
+            }
+        };
+        document.addEventListener('keydown', onEscKey);
 
         const tryUnlock = () => {
             const rawVal = (codeInput.value || '').trim();
@@ -816,7 +961,8 @@
             if (val === ADMIN_MASTER_KEY || val === 'OBANDO-MASTER-ADMIN' || valClean === 'OBANDOADMIN2026' || valClean === 'OBANDO2026' || valClean === 'ADMIN2026') {
                 localStorage.setItem('physicsailab_admin', 'true');
                 setCourseUnlocked(currentCourse, true);
-                closeModal();
+                document.body.classList.remove('pg-barrier-active');
+                if (activeModal) { activeModal.remove(); activeModal = null; }
                 showToast('👑 ¡Sesión de Administrador Activada! Acceso total liberado a toda la plataforma.', 'success');
                 updateGuardState();
                 return;
@@ -1124,7 +1270,8 @@
 
         // Cualquier otro capítulo está bloqueado en preview
         e.preventDefault();
-        e.stopPropagation();
+        e.stopImmediatePropagation();
+        enforceFreePreviewState();
         const title = targetA.textContent.replace('🔒', '').replace('Premium', '').trim() || id;
         openPaywall(title);
     }
@@ -1137,9 +1284,9 @@
 
         // Intentó entrar por hash directamente a un capítulo bloqueado
         setTimeout(() => {
-            location.hash = firstThematic ? '#' + firstThematic : '#inicio';
+            enforceFreePreviewState();
             openPaywall(h);
-        }, 150);
+        }, 80);
     }
 
     // ----------------------------------------------------
@@ -1633,16 +1780,25 @@
             window.__arbitrajeGuardBound = true;
             document.addEventListener('click', (e) => {
                 if (isUnlocked()) return;
-                const btn = e.target.closest('.nav button[data-go]');
+                const btn = e.target.closest('[data-go]');
                 if (btn) {
                     const go = btn.getAttribute('data-go');
                     if (lockedTabs.includes(go)) {
                         e.preventDefault();
                         e.stopImmediatePropagation();
-                        openPaywall('squash_arbitraje');
+                        enforceFreePreviewState();
+                        openPaywall('Árbol de Interferencias');
                     }
                 }
             }, true);
+        }
+
+        const curHash = (location.hash || '').replace(/^#/, '').toLowerCase();
+        if (!unlocked && lockedTabs.includes(curHash)) {
+            setTimeout(() => {
+                enforceFreePreviewState();
+                openPaywall('Árbol de Interferencias');
+            }, 80);
         }
     }
 
@@ -1690,6 +1846,68 @@
             applyNotebookGuard();
         }
     }
+
+
+    // ========================================================
+    // MONITOR GLOBAL DE HASH & NAVEGACIÓN
+    // ========================================================
+    function checkCurrentHashLock() {
+        if (isUnlocked()) return;
+
+        const cId = getCurrentCourseId();
+        const rawHash = decodeURIComponent(location.hash.replace(/^#/, '')).split('.')[0].toLowerCase();
+        if (!rawHash || rawHash === 'inicio') return;
+
+        if (cId === 'squash_arbitraje') {
+            if (['interferencia', 'marcador'].includes(rawHash)) {
+                enforceFreePreviewState();
+                openPaywall(rawHash === 'interferencia' ? 'Árbol de Interferencias' : 'Planilla Oficial');
+            }
+            return;
+        }
+
+        if (isPendulo) {
+            if (['real', 'cuaderno', 'matematico', 'guia'].includes(rawHash)) {
+                enforceFreePreviewState();
+                openPaywall(rawHash);
+            }
+            return;
+        }
+
+        if (isVenturi) {
+            if (['cuaderno', 'guia'].includes(rawHash)) {
+                enforceFreePreviewState();
+                openPaywall(rawHash);
+            }
+            return;
+        }
+
+        if (isTransformadores) {
+            if (['cuaderno', 'exposicion', 'guia'].includes(rawHash)) {
+                enforceFreePreviewState();
+                openPaywall(rawHash);
+            }
+            return;
+        }
+
+        if (isSquash) {
+            if (['editor', 'anatomia', 'fisiologia', 'biomecanica', 'lesiones', 'fundamentos'].includes(rawHash)) {
+                enforceFreePreviewState();
+                openPaywall(rawHash);
+            }
+            return;
+        }
+
+        // Notebooks por defecto
+        const firstThematic = (getFirstThematicId() || '').toLowerCase();
+        if (firstThematic && rawHash === firstThematic) return;
+
+        enforceFreePreviewState();
+        openPaywall(rawHash);
+    }
+
+    window.addEventListener('hashchange', checkCurrentHashLock);
+    window.addEventListener('popstate', checkCurrentHashLock);
 
     // Inicialización al cargar el DOM
     
