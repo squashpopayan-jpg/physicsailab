@@ -2590,6 +2590,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const isLab = c.id === 'transformadores' || c.esLaboratorio;
             const isSquash = c.id === 'squash_sim';
             const isArbitraje = c.id === 'squash_arbitraje';
+            const isKids = c.id === 'kids' || c.esKids;
+            const isMcuantica = c.id === 'mcuantica';
             const isPrivado = !!c.esPrivado;
             const isDiagnosticas = c.id === 'diagnosticas';
             const isFaro = c.id === 'faro';
@@ -2618,8 +2620,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const buyBtnText = isLab ? 'Adquirir Lab 💳' : (isSquash ? 'Adquirir Simulador 💳' : (isArbitraje ? 'Adquirir Sistema Oficial ⚖️' : (isFaro ? 'Adquirir Kit & Manual 💡' : (isDiagnosticas ? 'Cotizar Servicio 🏛️' : 'Comprar Curso 💳'))));
             const detailsBtnText = isLab ? 'Ficha Técnica 📋' : (isSquash ? 'Módulos 📑' : (isArbitraje ? 'Reglamento & Módulos 📑' : (isDiagnosticas ? 'Bancos & Detalles 📋' : 'Temario 📑')));
-            const isKids = c.id === 'kids' || c.esKids;
-            const isMcuantica = c.id === 'mcuantica';
             const tagClass = isKids ? 'lab-tag' : (isLab ? 'lab-tag' : (c.destacado ? 'interactive' : ''));
 
             let lockStatusBadge = '';
@@ -7213,6 +7213,12 @@ document.addEventListener('DOMContentLoaded', () => {
     let isBlackoutCooldown = false;
     let blackoutCooldownTimer = null;
     let windowBlurTimer = null;
+
+    window.dismissSecurityBanner = function() {
+        const banner = document.getElementById("quiz-security-banner");
+        if (banner) banner.style.display = "none";
+        if (window._securityBannerTimeout) clearTimeout(window._securityBannerTimeout);
+    };
 
     function triggerAntiCheatAlert(type, message) {
         if (isBlackoutCooldown) return;
