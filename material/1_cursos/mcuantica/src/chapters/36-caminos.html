@@ -1,0 +1,114 @@
+<template class="chapter-src" data-id="caminos" data-num="36" data-title="Integrales de camino de Feynman" data-part="Parte VIII · Caminos de Feynman y mecánica relativista" data-short="La amplitud como suma sobre todos los caminos, el propagador libre y el del oscilador, la fase estacionaria y el límite clásico (espiral de Cornu), el tiempo imaginario, el producto de Trotter y el Monte Carlo de integrales de camino">
+<p class="lead">La mecánica ondulatoria de Schrödinger y la mecánica matricial de Heisenberg describen cómo evoluciona el estado; Feynman (1948), siguiendo una idea de Dirac, propuso otra formulación equivalente que contesta la pregunta «¿por qué camino fue la partícula?» con la respuesta más radical posible: <em>por todos</em>. La amplitud de ir de \((x_a,t_a)\) a \((x_b,t_b)\) es la suma de \(\ee^{\ii S[x]/\hb}\) sobre todas las trayectorias posibles, cada una con el peso de fase dado por su acción clásica. De esta idea salen el límite clásico (el principio de mínima acción como interferencia constructiva), los métodos numéricos de Monte Carlo para sistemas cuánticos de muchos cuerpos y la teoría cuántica de campos.</p>
+
+<section>
+<h2>Del propagador a la suma sobre caminos</h2>
+<p>El <span class="term">propagador</span> es el elemento de matriz del operador de evolución en la base de posición: \(K(x_b,t_b;x_a,t_a)=\langle x_b|\ee^{-\ii H(t_b-t_a)/\hb}|x_a\rangle\), de modo que \(\psi(x_b,t_b)=\int K\,\psi(x_a,t_a)\,\dd x_a\). Por ser \(\ee^{-\ii HT/\hb}\) un producto de \(N\) factores iguales, \(K\) se puede escribir insertando \(N-1\) completitudes \(\int\dd x_j|x_j\rangle\langle x_j|\) en el camino. Con el paso \(\epsilon=T/N\) y la fórmula de Trotter \(\ee^{-\ii(T_c+V)\epsilon/\hb}\approx\ee^{-\ii T_c\epsilon/\hb}\ee^{-\ii V\epsilon/\hb}\) (con error \(O(\epsilon^2)\) por paso, que desaparece en el límite \(N\to\infty\)), cada factor es</p>
+<div class="eq">\[\langle x_{j+1}|\ee^{-\ii\epsilon H/\hb}|x_j\rangle\approx\sqrt{\frac{m}{2\pi\ii\hb\epsilon}}\ \exp\!\left\{\frac{\ii\epsilon}{\hb}\left[\frac m2\Big(\frac{x_{j+1}-x_j}{\epsilon}\Big)^2-V(x_j)\right]\right\},\]</div>
+<p>(la parte cinética es la transformada de Fourier del propagador libre). Al multiplicar y pasar al límite, la suma de los exponentes es la acción \(S=\int(\tfrac12m\dot x^2-V)\,\dd t\) discretizada, y se obtiene el resultado central de este capítulo:</p>
+<div class="eq key" data-name="Integral de camino">\[K(x_b,t_b;x_a,t_a)=\int\mathcal Dx(t)\ \ee^{\ii S[x]/\hb},\qquad S[x]=\int_{t_a}^{t_b}\Big[\tfrac12m\dot x^2-V(x)\Big]\dd t,\]</div>
+<p>donde \(\int\mathcal Dx\) es la integral sobre todas las trayectorias con \(x(t_a)=x_a\), \(x(t_b)=x_b\), entendida como el límite del producto de \(N-1\) integrales ordinarias. Las trayectorias contribuyentes no son diferenciables (en el límite continuo son «fractales» como las de un movimiento browniano), pero la acción discretizada sí está definida. La propiedad de composición \(K(x_c,t_c;x_a,t_a)=\int K(x_c,t_c;x_b,t_b)K(x_b,t_b;x_a,t_a)\,\dd x_b\) es la ecuación de Chapman–Kolmogorov cuántica. Y si en la relación \(\psi(x,t+\epsilon)=\int K_\epsilon(x,y)\psi(y,t)\,\dd y\) se desarrolla en \(\epsilon\) (la integral en \(y\) la dominan los \(y\) a distancia \(\sqrt{\hb\epsilon/m}\) de \(x\)), sale la ecuación de Schrödinger: la suma sobre caminos <em>implica</em> la dinámica de Schrödinger.</p>
+</section>
+
+<section>
+<h2>Los propagadores exactos: libre y oscilador armónico</h2>
+<p>Las integrales gaussianas (de Fresnel, \(\int\ee^{\ii ay^2}\dd y=\sqrt{\pi/a}\,\ee^{\ii\pi/4}\)) se componen exactamente. Para la partícula libre, \(N\to\infty\) da</p>
+<div class="eq key" data-name="Propagador libre">\[K_0(x,t;x',0)=\sqrt{\frac{m}{2\pi\ii\hb t}}\ \exp\!\left[\frac{\ii m(x-x')^2}{2\hb t}\right]=\sqrt{\frac{m}{2\pi\hb t}}\ \ee^{-\ii\pi/4}\,\ee^{\ii S_\text{cl}/\hb},\quad S_\text{cl}=\frac{m(x-x')^2}{2t}.\]</div>
+<p>La amplitud tiene módulo independiente de \(x\) (de una fuente puntual, la partícula se dispersa igual en todas las posiciones, con un desfase que crece con la distancia): la anchura de un paquete gaussiano \(\sigma(t)=\sigma_0\sqrt{1+(\hb t/2m\sigma_0^2)^2}\) sale de \(\int K_0\psi_0\,\dd x'\) (capítulo 3). Para el oscilador armónico, el resultado de Mehler,</p>
+<div class="eq key" data-name="Propagador del oscilador">\[K(x,t;x',0)=\sqrt{\frac{m\omega}{2\pi\hb|\sin\omega t|}}\ \ee^{-\ii\pi/4-\ii\pi\nu/2}\exp\!\left\{\frac{\ii m\omega}{2\hb\sin\omega t}\Big[(x^2+x'^2)\cos\omega t-2xx'\Big]\right\},\quad\nu=\Big\lfloor\frac{\omega t}\pi\Big\rfloor.\]</div>
+<p>El exponente es de nuevo \(\ii S_\text{cl}/\hb\) (la acción de la trayectoria clásica), y el prefactor (la «determinante de fluctuaciones») es independiente de \(x,x'\); para un potencial cuadrático, la suma sobre caminos es exacta con solo el camino clásico más el factor de fluctuaciones. El <em>índice de Maslov</em> \(\nu\) añade un factor \(\ee^{-\ii\pi/2}\) cada vez que el tiempo pasa por un múltiplo de \(\pi/\omega\) (un punto conjugado, donde \(\sin\omega t=0\) y el propagador se vuelve una delta: en \(t=\pi/\omega\), \(K=-\ii\,\delta(x+x')\), la inversión de paridad con el factor \(\ee^{-\ii\pi/2}\)). Es la fase que hay que incluir para reproducir un estado coherente que da más de media vuelta.</p>
+</section>
+
+<section>
+<h2>El límite clásico: fase estacionaria y espiral de Cornu</h2>
+<p>¿Por qué un cuerpo macroscópico sigue una trayectoria definida si <em>todos</em> los caminos contribuyen? Porque los caminos vecinos tienen fases \(S/\hb\) muy distintas y se anulan por interferencia, salvo cerca del camino que hace estacionaria la acción, \(\delta S=0\), que es el camino clásico. Un modelo exacto: partícula libre de \(x=0\) en \(t=0\) a \(x=0\) en \(t=T\), con caminos rectos a trozos que pasan por \(y\) a mitad del tiempo; el camino clásico es \(y=0\), y</p>
+<div class="eq key" data-name="Amplitud y fase estacionaria">\[S(y)=\frac{2my^2}{T}\ \Rightarrow\ \int_{-Y}^{Y}\!\ee^{\ii ay^2}\,\dd y=2\sqrt{\frac{\pi}{2a}}\,\big[C(u)+\ii\,S(u)\big],\quad a=\frac{2m}{\hb T},\ u=Y\sqrt{\frac{2a}\pi},\]</div>
+<p>con las integrales de Fresnel \(C,S\). Al ir sumando caminos cada vez más alejados del clásico, la suma traza la <span class="term">espiral de Cornu</span>, que se enrolla alrededor del valor límite \(\sqrt{\pi/a}\,\ee^{\ii\pi/4}\). El semiancho de la primera <em>zona de Fresnel</em> es \(y_F=\sqrt{\pi/a}=\sqrt{\pi\hb T/2m}\): los caminos con \(|y|\lesssim y_F/2\) ya aportan el 97 % del módulo total, y los demás no hacen más que oscilar alrededor de él. Para un electrón durante 1 ns, \(y_F=0.43\ \mu\)m (la trayectoria clásica es difusa a escala micrométrica); para una masa de 1 g durante 1 s, \(y_F=4\times10^{-16}\) m, menos que un protón: la trayectoria clásica es nítida. Cuando \(\hb\to0\) (\(a\to\infty\)), \(y_F\to0\) y solo sobrevive el camino clásico.</p>
+<div class="sim" data-sim="cornu" data-title="Suma de caminos cerca del clásico: la espiral de Cornu"></div>
+<div class="sim-guide"><ul>
+<li>Con \(a=6\): \(y_F=0.7236\), el límite es \(|S|=0.7236\) con fase \(45^\circ\). Incluyendo solo \(|y|\le y_F/2=0.3618\) se obtiene el 97.3 % del módulo; hasta \(y_F\), el 125.7 % (la espiral se pasa y vuelve); con \(Y=0.8\), \(109.1\,\%\) y fase \(59.5^\circ\); con \(Y=4\), \(104.8\,\%\).</li>
+<li>Al aumentar \(a\) (\(a=60\)) la zona de Fresnel se encoge a \(y_F=0.2288\) y con \(Y=0.3\) se alcanza el \(76.7\,\%\): la estacionariedad es más aguda. Con \(a=0.2\) (\(y_F=3.963\)) casi todos los caminos contribuyen y el concepto de trayectoria desaparece.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Tiempo imaginario: el producto de Trotter y el Monte Carlo de caminos</h2>
+<p>Con \(t\to-\ii\hb\beta\) (<em>rotación de Wick</em>) el factor de fase \(\ee^{\ii S/\hb}\) se convierte en un peso real \(\ee^{-S_E/\hb}\) con la acción euclídea \(S_E=\int(\tfrac12m\dot x^2+V)\,\dd\tau\), y el propagador en el <em>operador de densidad</em> \(\rho(x,x';\beta)=\langle x|\ee^{-\beta H}|x'\rangle\). La función de partición es la suma sobre caminos <em>cerrados</em> en el tiempo imaginario \(\beta=1/k_BT\):</p>
+<div class="eq key" data-name="Integral de camino euclídea">\[Z=\operatorname{Tr}\ee^{-\beta H}=\oint\mathcal Dx\ \ee^{-S_E[x]/\hb},\qquad\rho_N=\Big(\ee^{-\epsilon V/2}\,K_\epsilon\,\ee^{-\epsilon V/2}\Big)^N,\ \epsilon=\frac\beta N,\quad\text{error}\ \propto\epsilon^2.\]</div>
+<p>Para el oscilador, la suma exacta da \(Z=1/[2\sinh(\beta\hb\omega/2)]\), el núcleo \(\rho(x,x;\beta)\) es una gaussiana de varianza \(\tfrac12\coth(\beta\hb\omega/2)\) (en unidades de \(\hb/m\omega\)) y \(\langle x^2\rangle=E=\tfrac12\coth(\beta/2)\). A temperatura baja, los caminos cerrados largos proyectan sobre el estado fundamental. Hay dos maneras de calcularlo en el ordenador. La primera es el <em>producto matricial</em>: se discretiza \(x\) en una malla y se multiplica \(N\) veces la matriz de un tramo (con \(N=2^k\), \(k\) elevaciones al cuadrado); el error decrece como \(\epsilon^2\). La segunda, imprescindible con muchas partículas (donde la matriz sería gigantesca), es el <span class="term">Monte Carlo de integrales de camino</span>: cada configuración es un «polímero anular» de \(P\) cuentas \(x_1,\dots,x_P\) unidas por resortes de constante \(m/\hb^2\epsilon\) en el potencial \(V\), muestreado con el algoritmo de Metropolis (aquí con movimientos de «staging», que re-muestrean tramos del camino con un puente browniano). Así se simulan el helio superfluido y los cristales cuánticos.</p>
+<div class="sim" data-sim="euclideano" data-title="Producto de Trotter en tiempo imaginario: el error decrece como ε²"></div>
+<div class="sim-guide"><ul>
+<li>Oscilador con \(\beta=3\) y \(N=16\) (\(\epsilon=0.1875\)): \(Z=0.23539\) frente al valor exacto \(0.23482\), \(\langle x^2\rangle=0.55022\) frente a \(0.55240\) (error \(0.39\,\%\)). Al doblar \(N\) el error se divide por \(\approx4\) (cociente \(3.92\)): es una convergencia de segundo orden.</li>
+<li>Con el doble pozo \((x^2-1)^2\), \(\beta=3\), \(N=64\): \(\langle x^2\rangle=0.62064\) frente a \(0.62022\) de la referencia; el error es \(6.8\times10^{-4}\) y el cociente a \(N/2\) es \(4.26\). La densidad térmica es bimodal (dos pozos en \(x=\pm1\)).</li>
+</ul></div>
+<div class="sim" data-sim="pimc" data-title="Monte Carlo de integrales de camino: polímeros anulares que reproducen la densidad térmica"></div>
+<div class="sim-guide"><ul>
+<li>Oscilador con \(\beta=4\), \(P=16\), \(20000\) barridos: \(\langle x^2\rangle=0.5159\pm0.0047\); el valor exacto con \(P=16\) cuentas es \(0.5148\) (sesgo de discretización) y el del continuo, \(0.5187\). El histograma de las posiciones coincide con la gaussiana \(\rho(x,x)/Z\). Aceptación \(78.7\,\%\).</li>
+<li>Doble pozo con \(\beta=3\), \(P=16\): \(0.6258\pm0.0034\), frente a \(0.6202\) del continuo; los caminos saltan entre los dos pozos (efecto túnel en tiempo imaginario: <em>instantones</em>).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Calcule el semiancho de la primera zona de Fresnel \(y_F=\sqrt{\pi\hb T/2m}\) para (a) un electrón durante \(T=1\) ns y (b) una masa de 1 g durante 1 s. Compare las dos y con el radio del protón (\(\sim10^{-15}\) m).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Fórmula.</b> \(y_F=\sqrt{\pi/a}\) con \(a=2m/(\hb T)\) (fase \(S/\hb=ay^2\)).</li>
+<li><b>Electrón.</b> \(a=2\times9.109\times10^{-31}/(1.0546\times10^{-34}\times10^{-9})=1.728\times10^{13}\ \text{m}^{-2}\); \(y_F=\sqrt{\pi/1.728\times10^{13}}=4.26\times10^{-7}\) m \(=0.43\ \mu\)m.</li>
+<li><b>Masa de 1 g.</b> \(a=2\times10^{-3}/(1.0546\times10^{-34}\times1)=1.897\times10^{31}\ \text{m}^{-2}\); \(y_F=\sqrt{\pi/1.897\times10^{31}}=4.07\times10^{-16}\) m.</li>
+<li><b>Cociente.</b> \(4.07\times10^{-16}/4.26\times10^{-7}=9.5\times10^{-10}\) (porque \(y_F\propto\sqrt{T/m}\): masa \(10^{27}\) veces mayor, tiempo \(10^9\) veces mayor, \(\sqrt{10^9/10^{27}}\)).</li>
+<li><b>Comparación.</b> El electrón se «difumina» en micrómetros, mucho más que su tamaño: la trayectoria no existe. La masa de 1 g tiene \(y_F\) menor que el radio del protón (\(\sim10^{-15}\) m): su camino clásico está definido a una precisión inimaginable.</li>
+<li><b>Resultado.</b> <span class="ans">(a) \(y_F=0.43\ \mu\)m; (b) \(y_F=4.1\times10^{-16}\) m; cociente \(9.5\times10^{-10}\).</span></li>
+</ol></details></li>
+<li><span class="lvl">Básico</span>Un oscilador armónico se encuentra en equilibrio térmico con \(\beta\hb\omega=3\). Calcule \(Z\), \(\langle n\rangle\), la energía media y \(\langle x^2\rangle\), y compruebe que \(\langle x^2\rangle\) coincide con \(E/\hb\omega\) en unidades de \(\hb/m\omega\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Partición.</b> \(Z=1/[2\sinh(\beta/2)]=1/(2\sinh1.5)=1/(2\times2.1293)=0.23482\).</li>
+<li><b>Ocupación media.</b> \(\langle n\rangle=1/(\ee^{\beta}-1)=1/(20.086-1)=0.05240\).</li>
+<li><b>Energía.</b> \(E=\hb\omega(\langle n\rangle+\tfrac12)=0.55240\,\hb\omega\), que coincide con \(\tfrac12\coth(1.5)=0.5\times1.10479=0.55240\).</li>
+<li><b>\(\langle x^2\rangle\).</b> Por el teorema del virial, \(\langle V\rangle=\tfrac12E\) con \(V=\tfrac12m\omega^2x^2\), de modo que \(\langle x^2\rangle=E/(m\omega^2)\); en unidades de \(\hb/m\omega\), \(\langle x^2\rangle=E/\hb\omega=0.5524\).</li>
+<li><b>Comparación con el estado fundamental.</b> \(\langle x^2\rangle_0=0.5\): la temperatura aumenta la dispersión un \(10.5\,\%\).</li>
+<li><b>Resultado.</b> <span class="ans">\(Z=0.23482\); \(\langle n\rangle=0.0524\); \(E=0.5524\,\hb\omega\); \(\langle x^2\rangle=0.5524\ \hb/m\omega\).</span></li>
+</ol></details></li>
+<li><span class="lvl">Intermedio</span>Para el oscilador con \(\beta=3\), calcule por el producto de Trotter (acción primitiva con \(N\) cortes) el error relativo de \(\langle x^2\rangle\) para \(N=8,16,32,64\) y verifique que decrece como \(\epsilon^2\). Use la fórmula exacta \(\langle x^2\rangle_N=\frac1N\sum_{k=0}^{N-1}\big[\tfrac4\epsilon\sin^2(\pi k/N)+\epsilon\big]^{-1}\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Origen de la fórmula.</b> La acción discreta \(S=\sum_j\big[(x_{j+1}-x_j)^2/2\epsilon+\epsilon x_j^2/2\big]\) es una forma cuadrática \(\tfrac12x^TAx\) con \(A\) circulante; sus autovalores son \(\lambda_k=\tfrac4\epsilon\sin^2(\pi k/N)+\epsilon\) y \(\langle x_j^2\rangle=(A^{-1})_{jj}=\tfrac1N\sum_k\lambda_k^{-1}\).</li>
+<li><b>Valor exacto.</b> \(\tfrac12\coth(1.5)=0.552396\).</li>
+<li><b>\(N=8\) (\(\epsilon=0.375\)).</b> \(\langle x^2\rangle_8=0.54388\): error \(-1.54\,\%\).</li>
+<li><b>\(N=16\) (\(\epsilon=0.1875\)).</b> \(0.55022\): error \(-0.393\,\%\).</li>
+<li><b>\(N=32\).</b> \(0.55185\): \(-0.0987\,\%\). <b>\(N=64\):</b> \(0.55226\): \(-0.0247\,\%\).</li>
+<li><b>Cociente.</b> \(1.54/0.393=3.92\); \(0.393/0.0987=3.98\); \(0.0987/0.0247=4.00\): al doblar \(N\), el error se divide por 4 (\(\propto\epsilon^2\)); además, el error es siempre negativo: la acción primitiva subestima la dispersión.</li>
+<li><b>Resultado.</b> <span class="ans">Errores \(-1.54\,\%,\,-0.393\,\%,\,-0.0987\,\%,\,-0.0247\,\%\) para \(N=8,16,32,64\); cociente \(\to4\).</span></li>
+</ol></details></li>
+<li><span class="lvl">Intermedio</span>Demuestre que el propagador del oscilador en \(t=\pi/\omega\) es \(K=-\ii\,\delta(x+x')\) y úselo para obtener \(\psi(x,\pi/\omega)\) de un estado coherente. ¿Cuánto vale el centro de \(|\psi|^2\) para \(\alpha=1.5\)?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Suma espectral.</b> \(K(x,t;x',0)=\sum_n\ee^{-\ii\omega t(n+1/2)}\psi_n(x)\psi_n(x')\).</li>
+<li><b>En \(t=\pi/\omega\).</b> \(\ee^{-\ii\pi(n+1/2)}=-\ii\,(-1)^n\).</li>
+<li><b>Paridad.</b> \(\psi_n(-x')=(-1)^n\psi_n(x')\), luego \(K=-\ii\sum_n\psi_n(x)\psi_n(-x')=-\ii\,\delta(x+x')\) por completitud (concuerda con el índice de Maslov: \(\ee^{-\ii\pi/4}\) más \(\ee^{-\ii\pi/2\cdot1}\) y el límite \(\sin\omega t\to0\)).</li>
+<li><b>Evolución.</b> \(\psi(x,\pi/\omega)=\int K\psi(x',0)\,\dd x'=-\ii\,\psi(-x,0)\): el estado se refleja (con la fase global \(-\ii\)).</li>
+<li><b>Estado coherente.</b> Con \(\alpha=1.5\) real, el centro está en \(\xi_c=\sqrt2\alpha=2.1213\) en \(t=0\) y en \(-2.1213\) en \(t=\pi/\omega\): medio periodo. Se verifica con la solución analítica del paquete.</li>
+<li><b>Maslov.</b> Más allá de \(t=\pi/\omega\) hay que incluir \(\ee^{-\ii\pi/2}\) por cada punto conjugado: con \(t=3.6/\omega\) (\(\nu=1\)) el núcleo con índice de Maslov reproduce la solución analítica con error \(<10^{-5}\).</li>
+<li><b>Resultado.</b> <span class="ans">\(K(x,\pi/\omega;x',0)=-\ii\,\delta(x+x')\); \(\psi(x,\pi/\omega)=-\ii\,\psi(-x,0)\); el centro pasa de \(+2.1213\) a \(-2.1213\).</span></li>
+</ol></details></li>
+<li><span class="lvl">Avanzado</span>Aplique el método de la suma sobre caminos a un anillo de \(P=4\) cuentas del oscilador con \(\beta=0.5\): construya la matriz \(A\), halle sus autovalores, \(\langle x^2\rangle_4\), y compare con el valor del continuo y con \(P=8\) a \(\beta=1\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Peso.</b> Con \(\epsilon=\beta/P\), \(S_E=\sum_j\big[\tfrac{(x_{j+1}-x_j)^2}{2\epsilon}+\tfrac\epsilon2x_j^2\big]\) con \(x_{P+1}=x_1\) (camino cerrado): \(S_E=\tfrac12x^TAx\), \(A_{jj}=\tfrac2\epsilon+\epsilon\), \(A_{j,j\pm1}=-\tfrac1\epsilon\) (circulante).</li>
+<li><b>Autovalores (\(P=4,\epsilon=0.125\)).</b> \(\lambda_k=\tfrac4\epsilon\sin^2(\pi k/4)+\epsilon=32\sin^2(\pi k/4)+0.125\): \(0.125,\ 16.125,\ 32.125,\ 16.125\).</li>
+<li><b>Covarianza.</b> \(\langle x_jx_l\rangle=(A^{-1})_{jl}\); la diagonal es \(\tfrac1P\sum_k\lambda_k^{-1}=\tfrac14(8+0.06202+0.03113+0.06202)=2.0388\).</li>
+<li><b>Continuo.</b> \(\tfrac12\coth(0.25)=2.0415\): error \(-0.13\,\%\) con solo cuatro cuentas.</li>
+<li><b>\(P=8,\beta=1\).</b> \(\epsilon=0.125\): \(\langle x^2\rangle_8=1.0805\) frente a \(\tfrac12\coth(0.5)=1.0820\) (\(-0.14\,\%\)).</li>
+<li><b>Interpretación.</b> Cada cuenta es un «estado imaginario» a tiempo \(\tau_j=j\epsilon\); los resortes de constante \(1/\epsilon\) representan la energía cinética. El Monte Carlo muestrea \(\ee^{-S_E}\) sin invertir ninguna matriz, y es exacto para el oscilador porque la distribución es gaussiana.</li>
+<li><b>Resultado.</b> <span class="ans">Autovalores \(0.125,\,16.125,\,32.125,\,16.125\); \(\langle x^2\rangle_4=2.0388\) (continuo 2.0415); \(P=8,\beta=1\): \(1.0805\) (continuo \(1.0820\)).</span></li>
+</ol></details></li>
+<li><span class="lvl">Avanzado</span>Con \(a=6\) en la suma de caminos cerca del clásico, calcule el límite \(\int_{-\infty}^\infty\ee^{\ii ay^2}\dd y\), el semiancho \(y_F\) y el porcentaje del módulo total alcanzado con \(Y=y_F/2\), \(Y=y_F\) y \(Y=2\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Límite.</b> Girando el contorno \(y=\ee^{\ii\pi/4}s\): \(\int\ee^{\ii ay^2}\dd y=\ee^{\ii\pi/4}\int\ee^{-as^2}\dd s=\sqrt{\pi/a}\,\ee^{\ii\pi/4}\). Con \(a=6\): módulo \(\sqrt{\pi/6}=0.7236\), fase \(45^\circ\).</li>
+<li><b>Zona de Fresnel.</b> \(y_F=\sqrt{\pi/a}=0.7236\) (la fase \(ay^2\) cambia en \(\pi\) entre \(0\) y \(y_F\)).</li>
+<li><b>Suma parcial.</b> \(\int_{-Y}^{Y}\ee^{\ii ay^2}\dd y=2\sqrt{\pi/2a}\,[C(u)+\ii S(u)]\) con \(u=Y\sqrt{2a/\pi}\) y \(2\sqrt{\pi/2a}=1.0233\).</li>
+<li><b>\(Y=y_F/2=0.3618\).</b> \(u=0.7071\): \(|S_Y|=0.7040\), \(97.3\,\%\) del límite, fase \(14.9^\circ\).</li>
+<li><b>\(Y=y_F=0.7236\).</b> \(u=1.4142\): \(|S_Y|=0.9093\), \(125.7\,\%\), fase \(53.5^\circ\): la espiral se pasa del punto límite.</li>
+<li><b>\(Y=2\).</b> \(u=3.9088\): \(|S_Y|=0.6466\), \(89.4\,\%\): sigue oscilando alrededor del límite con amplitud decreciente (\(\sim1/aY\)).</li>
+<li><b>Resultado.</b> <span class="ans">\(\sqrt{\pi/6}\,\ee^{\ii\pi/4}\) (0.7236, 45°); \(y_F=0.7236\); \(97.3\,\%\) (\(Y=y_F/2\)), \(125.7\,\%\) (\(Y=y_F\)), \(89.4\,\%\) (\(Y=2\)).</span></li>
+</ol></details></li>
+</ol>
+</section>
+</template>

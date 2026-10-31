@@ -1,0 +1,95 @@
+<template class="chapter-src" data-id="medida" data-num="32" data-title="Medida cuántica y decoherencia" data-part="Parte VII · Sistemas abiertos, medida e información" data-short="El modelo de medida de von Neumann, la visibilidad y la información de camino, la decoherencia de un qubit por un baño de espines, el gato de Schrödinger en un oscilador amortiguado y la transición cuántico–clásica">
+<p class="lead">El postulado de medida (capítulo 4) dice que, al medir, el estado salta bruscamente a un autoestado del observable. Es el aspecto menos satisfactorio de la teoría: ¿qué cuenta como medida? ¿Por qué el salto no es, a su vez, una evolución unitaria del sistema más el aparato? La respuesta moderna no elimina el problema filosófico, pero lo reduce a una pregunta física precisa y calculable: ¿cómo se pierde la coherencia de un sistema cuando interactúa con su entorno? La <span class="term">decoherencia</span> explica por qué no vemos superposiciones macroscópicas, por qué ciertas bases (los «estados puntero») se vuelven preferidas y por qué la mecánica clásica emerge de la cuántica.</p>
+
+<section>
+<h2>La medida como entrelazamiento (von Neumann)</h2>
+<p>Un aparato ideal de medida tiene un <em>puntero</em> en un estado inicial \(|\phi\rangle\) y una interacción que lo desplaza según el valor medido del observable \(\sigma_z\): \(U=\exp(-\ii g\,\sigma_z\otimes\hat p)\), donde \(\hat p\) genera traslaciones del puntero. Para un qubit en \(c|0\rangle+s|1\rangle\) y un puntero gaussiano de ancho \(\sigma\) centrado en cero, la evolución unitaria produce un estado entrelazado:</p>
+<div class="eq key" data-name="Medida de von Neumann">\[\left(c|0\rangle+s|1\rangle\right)|\phi_0\rangle\ \longrightarrow\ c\,|0\rangle|\phi_{-d}\rangle+s\,|1\rangle|\phi_{+d}\rangle,\qquad\rho_S=\begin{pmatrix}|c|^2&cs\,V\\cs\,V&|s|^2\end{pmatrix},\quad V=\langle\phi_{-d}|\phi_{+d}\rangle=\ee^{-d^2/2\sigma^2}.\]</div>
+<p>El estado del qubit, tras ignorar el puntero, tiene las mismas poblaciones y coherencias reducidas por el solapamiento \(V\): cuanto más separados quedan los dos estados del puntero (\(d\gg\sigma\)), más se anula la coherencia, y la medida es «fuerte»; con \(d\ll\sigma\) la medida es «débil» y casi no perturba. Las poblaciones, \(|c|^2\) y \(|s|^2\), no cambian: el qubit queda en la mezcla diagonal \(|c|^2|0\rangle\langle0|+|s|^2|1\rangle\langle1|\), exactamente como si hubiera colapsado y se hubiera olvidado el resultado. La visibilidad de la interferencia posible, \(V\), y la información de camino que lleva el puntero, \(D=\sqrt{1-V^2}\) (la distinguibilidad de los dos estados del puntero), cumplen la relación de complementariedad de Englert, \(V^2+D^2=1\) (caso puro): quien sabe por dónde fue la partícula no ve las franjas. No hay nada que «colapse» en esta descripción; el colapso aparente es la selección, por el observador, de una de las ramas del estado entrelazado.</p>
+<div class="sim" data-sim="medida-vn" data-title="Medida de von Neumann: el puntero se entrelaza y la coherencia del qubit desaparece"></div>
+<div class="sim-guide"><ul>
+<li>Con \(d=1.5\sigma\) y \(c=s=0.7071\): \(V=\ee^{-1.125}=0.3247\), la coherencia pasa de 0.5 a \(0.1623\), \(D=0.9458\) y la entropía del qubit es \(0.9226\) bits (de 0 a casi 1). Con \(d=0\) el puntero no se mueve y no hay medida (\(V=1\), la coherencia intacta, entropía 0).</li>
+<li>Con \(d=4\sigma\): \(V=3.4\times10^{-4}\), coherencia \(1.7\times10^{-4}\), entropía \(1.0000\) bits: una medida casi proyectiva. Las poblaciones \(P(0)=0.5041\) y \(P(1)=0.4959\) (con \(c=0.7100\)) no dependen de \(d\).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Decoherencia: el entorno como aparato de medida</h2>
+<p>Un sistema real no necesita un aparato: cualquier entorno (fotones, colisiones con moléculas, espines nucleares, fonones) que se acople a él lo «mide» continuamente, y sus estados quedan entrelazados con el sistema. El caso más simple y exactamente soluble es el de un qubit acoplado a \(N\) espines vía \(H=\tfrac12\sigma_z\otimes\sum_kg_k\sigma_z^{(k)}\), con los espines del entorno inicialmente en \(|+\rangle\): cada uno gira un ángulo \(\pm g_kt\) según el estado del qubit, y la coherencia del qubit es el solapamiento de los dos estados del entorno,</p>
+<div class="eq key" data-name="Decoherencia por un baño de espines">\[\rho_{01}(t)=\rho_{01}(0)\prod_{k=1}^N\cos(g_kt)\ \approx\ \rho_{01}(0)\,\ee^{-t^2/2T_2^2},\qquad T_2=\Big(\sum_kg_k^2\Big)^{-1/2}.\]</div>
+<p>Para \(N\) grande, el producto de cosenos decae como una gaussiana en el tiempo \(T_2\sim1/(\bar g\sqrt N)\): la <em>velocidad de decoherencia crece con el tamaño del entorno</em>. Y no se recupera: la coherencia solo reaparece (recurrencia) si todos los cosenos valen \(\pm1\) a la vez, lo que para muchos espines con acoplamientos distintos tarda un tiempo astronómico. Con pocos espines iguales (\(N=1,2,3\)), en cambio, hay revivals completos en \(t=\pi/g\): la decoherencia es un efecto de entornos <em>grandes</em>. La decoherencia selecciona además una base preferida, los <span class="term">estados puntero</span> (Zurek: <em>einselección</em>): los que no se entrelazan con el entorno al interactuar con él (aquí, los de \(\sigma_z\), que conmutan con \(H\)); las superposiciones de estados puntero decoheren, los estados puntero mismos son estables.</p>
+<div class="sim" data-sim="bano-espines" data-title="Decoherencia de un qubit por un baño de espines: gaussiana y recurrencias"></div>
+<div class="sim-guide"><ul>
+<li>Con \(N=3\) espines iguales (\(g_k=1\)): \(2|\rho_{01}|=|\cos t|^3\); \(T_2=1/\sqrt3=0.577\), la coherencia cae a 1/2 en \(t=0.654\) (la gaussiana predice 0.680) y reaparece por completo en \(t=\pi\) (revival). Con \(N=1\): una oscilación \(|\cos t|\) pura.</li>
+<li>Con \(N=20\) y acoplamientos dispersos (dispersión 0.5): \(T_2=0.204\) y la coherencia no vuelve (máximo \(9\times10^{-4}\) en la segunda mitad). Con \(N=20\) iguales, \(T_2=0.2236\) y \(\cos^{20}(T_2)=0.604\) frente a la gaussiana \(\ee^{-1/2}=0.607\): la aproximación gaussiana es excelente.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El gato de Schrödinger en un oscilador amortiguado</h2>
+<p>Schrödinger (1935) ilustró lo absurdo de las superposiciones macroscópicas con un gato vivo-y-muerto. Un modelo preciso es una superposición de dos estados coherentes de un oscilador, \(|\alpha\rangle+|-\alpha\rangle\) (el «gato», realizable con un campo de microondas en una cavidad: Brune, Haroche et al., 1996). Si el oscilador pierde energía a una tasa \(\gamma\) (a \(T=0\)), cada estado coherente se contrae a \(|\alpha\ee^{-\gamma t/2}\rangle\), pero la coherencia entre las dos copias decae mucho más rápido:</p>
+<div class="eq key" data-name="Decoherencia de un gato">\[c(t)=\exp\left[-\frac12|\alpha_1-\alpha_2|^2\left(1-\ee^{-\gamma t}\right)\right]\ \xrightarrow{\ \gamma t\ll1\ }\ \ee^{-2\gamma\alpha^2t},\qquad\tau_D=\frac1{2\gamma\alpha^2}=\frac{\tau_R}{2\bar n}\quad(|\alpha_1-\alpha_2|=2\alpha).\]</div>
+<p>El tiempo de decoherencia es \(1/(2\bar n)\) veces el de relajación: cuanto mayor es la «distancia» entre las dos ramas (\(\propto\sqrt{\bar n}\)), más rápido se destruye la interferencia. Para un objeto macroscópico, la estimación de Zurek es \(\tau_D/\tau_R=(\lambda_\text{dB}/\Delta x)^2\), con la longitud de onda térmica \(\lambda_\text{dB}=\hbar/\sqrt{2mk_BT}\): para una masa de 1 g a 300 K, \(\lambda_\text{dB}=3.7\times10^{-23}\) m, y una superposición separada \(\Delta x=1\) cm tiene \(\tau_D/\tau_R\approx1.3\times10^{-41}\): decohere en un tiempo inconcebiblemente breve, y por eso nunca vemos un gato vivo-y-muerto. En el laboratorio, la decoherencia se ha medido paso a paso en cavidades (Haroche, Nobel 2012), con moléculas de \(\mathrm C_{60}\) y mayores (Arndt) y con osciladores mecánicos.</p>
+<div class="sim" data-sim="gato" data-title="Decoherencia de un gato de Schrödinger: cuanto más grande, más rápido"></div>
+<div class="sim-guide"><ul>
+<li>Con \(\alpha=2\) (\(\bar n=4\)): \(\tau_D=0.125/\gamma\); a \(\gamma t=0.05\) la coherencia vale \(0.677\) y a \(\gamma t=0.5\), \(0.0429\) (mientras que la población solo ha caído a \(\ee^{-0.5}=0.607\)). Con \(\alpha=0.5\) (\(\bar n=0.25\)): \(\tau_D=2/\gamma\) y a \(\gamma t=0.5\) la coherencia es \(0.821\).</li>
+<li>El panel derecho muestra \(\tau_D\gamma=1/2\bar n\) en escala logarítmica: un gato con 100 fotones decohere 200 veces más deprisa de lo que pierde energía.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un qubit \((|0\rangle+|1\rangle)/\sqrt2\) se mide con un puntero gaussiano que se desplaza \(\pm1.5\sigma\). Calcule \(V\), la coherencia residual, \(D\) y la entropía del qubit.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Solapamiento.</b> \(V=\ee^{-d^2/2\sigma^2}=\ee^{-1.125}=0.3247\).</li>
+<li><b>Coherencia.</b> \(\rho_{01}=cs\,V=0.5\times0.3247=0.1623\).</li>
+<li><b>Distinguibilidad.</b> \(D=\sqrt{1-V^2}=\sqrt{1-0.1054}=0.9458\).</li>
+<li><b>Entropía.</b> Autovalores \(0.5\pm0.1623=0.6623,\,0.3377\): \(S=-0.6623\log_20.6623-0.3377\log_20.3377=0.3937+0.5289=0.9226\) bits.</li>
+<li><b>Resultado.</b> <span class="ans">\(V=0.3247\); \(\rho_{01}=0.1623\) (de 0.5); \(D=0.9458\); \(S=0.9226\) bits (de 0).</span></li>
+</ol></details></li>
+<li><span class="lvl">Básico</span>¿Qué separación \(d/\sigma\) del puntero reduce la visibilidad a \(V=0.01\)? ¿Cuánto vale entonces \(D\)?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Condición.</b> \(\ee^{-d^2/2\sigma^2}=0.01\).</li>
+<li><b>Despeje.</b> \(d^2/2\sigma^2=\ln100=4.605\Rightarrow d/\sigma=\sqrt{9.210}=3.035\).</li>
+<li><b>Distinguibilidad.</b> \(D=\sqrt{1-10^{-4}}=0.99995\).</li>
+<li><b>Resultado.</b> <span class="ans">\(d=3.035\,\sigma\) (los dos estados del puntero se separan unas tres veces su anchura); \(D=0.99995\).</span></li>
+</ol></details></li>
+<li><span class="lvl">Intermedio</span>Un qubit se acopla a \(N=20\) espines con \(g_k=g\) iguales. Halle \(T_2\), la coherencia exacta en \(t=T_2\) y su comparación con la gaussiana; ¿cuándo reaparece?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>\(T_2\).</b> \(T_2=1/(g\sqrt{20})=0.2236/g\).</li>
+<li><b>Exacta.</b> \(\cos^{20}(0.2236)=(0.97510)^{20}=0.6040\).</li>
+<li><b>Gaussiana.</b> \(\ee^{-t^2/2T_2^2}=\ee^{-1/2}=0.6065\): coincide al 0.4 %.</li>
+<li><b>Reaparición.</b> \(|\cos gt|^{20}=1\) en \(gt=\pi\): \(t=\pi/g=14\,T_2\) (revival completo, porque todos los acoplamientos son iguales).</li>
+<li><b>Con dispersión.</b> Si los \(g_k\) son todos distintos, los cosenos no vuelven a 1 a la vez: la recurrencia tarda tiempos del orden de \(10^{N}\) veces más.</li>
+<li><b>Resultado.</b> <span class="ans">\(T_2=0.2236/g\); \(2|\rho_{01}|(T_2)=0.604\) (gaussiana: 0.607); revival en \(t=\pi/g\) solo si los acoplamientos son idénticos.</span></li>
+</ol></details></li>
+<li><span class="lvl">Intermedio</span>Para un gato \(|\alpha\rangle+|-\alpha\rangle\) con \(\alpha=2\) halle \(\tau_D\gamma\), la coherencia a \(\gamma t=0.05\) y \(0.5\), y compárela con \(\alpha=0.5\) a \(\gamma t=0.5\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Distancia.</b> \(|\alpha_1-\alpha_2|^2=4\alpha^2=16\) (\(\alpha=2\)); \(4\alpha^2=1\) (\(\alpha=0.5\)).</li>
+<li><b>Tiempo de decoherencia.</b> \(\tau_D\gamma=1/(2\alpha^2)=0.125\) y \(2\).</li>
+<li><b>\(\alpha=2\).</b> \(c(t)=\exp[-8(1-\ee^{-\gamma t})]\): \(\gamma t=0.05\): \(\ee^{-0.3902}=0.6769\); \(\gamma t=0.5\): \(\ee^{-3.1478}=0.04295\).</li>
+<li><b>\(\alpha=0.5\).</b> \(c=\exp[-0.5(1-\ee^{-0.5})]=\ee^{-0.1967}=0.8214\).</li>
+<li><b>Población.</b> A \(\gamma t=0.5\): \(\ee^{-0.5}=0.6065\), mucho mayor que la coherencia del gato grande (0.043).</li>
+<li><b>Resultado.</b> <span class="ans">\(\tau_D\gamma=0.125\) y 2; \(c=0.6769\) y \(0.04295\) para \(\alpha=2\); \(0.8214\) para \(\alpha=0.5\).</span></li>
+</ol></details></li>
+<li><span class="lvl">Avanzado</span>Demuestre que para dos estados puros del puntero, la distancia de traza entre ellos es \(\sqrt{1-V^2}\) y que el máximo de la probabilidad de distinguirlos con una medida es \(P=\tfrac12(1+D)\). Evalúe con \(V=0.3247\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Dos estados puros.</b> \(\rho_0=|\phi_0\rangle\langle\phi_0|\), \(\rho_1=|\phi_1\rangle\langle\phi_1|\): la diferencia \(\rho_0-\rho_1\) tiene rango 2 con autovalores \(\pm\sqrt{1-|\langle\phi_0|\phi_1\rangle|^2}\).</li>
+<li><b>Distancia de traza.</b> \(\tfrac12\|\rho_0-\rho_1\|_1=\sqrt{1-V^2}=D\).</li>
+<li><b>Discriminación de Helstrom.</b> Con probabilidades a priori \(\tfrac12\): \(P_\text{éxito}=\tfrac12\left(1+\tfrac12\|\rho_0-\rho_1\|_1\right)=\tfrac12(1+D)\).</li>
+<li><b>Valor.</b> \(D=0.9458\Rightarrow P=0.9729\); con \(V=1\): \(P=\tfrac12\) (nada se distingue); con \(V=0\): \(P=1\).</li>
+<li><b>Resultado.</b> <span class="ans">\(D=\sqrt{1-V^2}\) es la distinguibilidad; la medida óptima acierta con \(P=\tfrac12(1+D)=0.973\) (para \(V=0.3247\)).</span></li>
+</ol></details></li>
+<li><span class="lvl">Avanzado</span>Estime \(\tau_D/\tau_R=(\lambda_\text{dB}/\Delta x)^2\) para (a) una masa de 1 g a 300 K con \(\Delta x=1\) cm y (b) un electrón a 300 K con \(\Delta x=1\) nm.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Fórmula.</b> \(\lambda_\text{dB}=\hbar/\sqrt{2mk_BT}\).</li>
+<li><b>(a)</b> \(\sqrt{2\times10^{-3}\times1.381\times10^{-23}\times300}=2.878\times10^{-12}\) kg·m/s; \(\lambda_\text{dB}=3.664\times10^{-23}\) m; \((3.664\times10^{-23}/0.01)^2=1.34\times10^{-41}\).</li>
+<li><b>(b)</b> \(m_e\): \(\sqrt{2\times9.109\times10^{-31}\times4.14\times10^{-21}}=8.69\times10^{-26}\); \(\lambda_\text{dB}=1.21\) nm; \((1.21/1)^2=1.5\).</li>
+<li><b>Interpretación.</b> (a) la superposición macroscópica se destruye \(10^{41}\) veces más rápido de lo que el objeto pierde energía; (b) para un electrón y distancias de nm la decoherencia es comparable a la relajación: las superposiciones cuánticas pueden observarse.</li>
+<li><b>Resultado.</b> <span class="ans">(a) \(\tau_D/\tau_R=1.3\times10^{-41}\); (b) \(\approx1.5\): «cuántico» a escala atómica, «clásico» a escala macroscópica.</span></li>
+</ol></details></li>
+</ol>
+<div class="box note"><h4>Para profundizar</h4><p>J. von Neumann, <em>Mathematische Grundlagen der Quantenmechanik</em>, 1932. E. Schrödinger, <em>Naturwissenschaften</em> 23, 807 (1935). H. D. Zeh, <em>Found. Phys.</em> 1, 69 (1970). W. H. Zurek, <em>Phys. Rev. D</em> 24, 1516 (1981); <em>Rev. Mod. Phys.</em> 75, 715 (2003). B.-G. Englert, <em>Phys. Rev. Lett.</em> 77, 2154 (1996). M. Brune et al., <em>Phys. Rev. Lett.</em> 77, 4887 (1996). M. Arndt et al., <em>Nature</em> 401, 680 (1999). M. Schlosshauer, <em>Decoherence and the Quantum-to-Classical Transition</em>, Springer, 2007. S. Haroche y J.-M. Raimond, <em>Exploring the Quantum</em>, Oxford, 2006.</p></div>
+</section>
+</template>

@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Gran Trivia de Squash | PhysicsAILab</title>
+    <meta name="description" content="Gran Trivia de Squash oficial interactiva con sistema de 3 vidas, racha y ranking en tiempo real en PhysicsAILab.">
+    
+    <!-- Favicon & Icons -->
+    <link rel="icon" type="image/svg+xml" href="favicon.ico">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    
+    <!-- Estilos de la plataforma -->
+    <link rel="stylesheet" href="styles.css">
+    
+    <style>
+        /* Ajustes de ventana dedicada e iOS WebKit */
+        body {
+            background-color: #070b14;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+        }
+        @supports (-webkit-touch-callout: none) {
+            body { background-attachment: scroll !important; }
+        }
+        .standalone-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(10, 14, 23, 0.95);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.75rem 1rem;
+        }
+        .standalone-header-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+        .standalone-back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 700;
+            padding: 0.45rem 0.85rem;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s ease;
+        }
+        .standalone-back-btn:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+        .standalone-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+        .standalone-title {
+            color: #fff;
+            font-size: 1.05rem;
+            font-weight: 800;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .standalone-main {
+            flex: 1;
+            max-width: 1100px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 1.5rem 1rem 3rem;
+            box-sizing: border-box;
+        }
+        /* Forzar inputs a 16px en móviles para prevenir zoom molesto en iOS */
+        @media screen and (max-width: 768px) {
+            input, select, textarea, .trivia-form-input {
+                font-size: 16px !important;
+            }
+            .standalone-title span.hide-mob {
+                display: none;
+            }
+        }
+        /* Eliminar scroll del contenedor ya que la ventana es dedicada */
+        .section-header {
+            margin-bottom: 1.5rem;
+        }
+        .dedicated-view-header, .dedicated-view-footer {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Fijo de la Ventana Dedicada -->
+    <header class="standalone-header">
+        <div class="standalone-header-inner">
+            <a href="index.html#trivia-squash" class="standalone-back-btn" title="Volver al portal principal de PhysicsAILab">
+                <span>←</span> <span>Volver a la Plataforma</span>
+            </a>
+            <div class="standalone-title-wrap">
+                <span class="badge" style="background:#10b98122; color:#10b981; border-color:#10b98155; font-size:0.75rem; padding:0.2rem 0.55rem;">
+                    Reglamento WSF & Biomecánica
+                </span>
+                <h1 class="standalone-title">
+                    <span>Gran Trivia de Squash</span>
+                </h1>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+                <button type="button" class="btn btn-secondary" onclick="TRIVIA_SQUASH_ENGINE.switchView('ranking')" style="font-size:0.82rem; padding:0.4rem 0.75rem; border-color:#10b98155; color:#10b981; font-weight:700;">
+                    🏆 Ranking
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenido Principal de la Trivia -->
+    <main class="standalone-main">
+        <div class="trivia-container" id="squash-trivia-container">
+
+                <!-- ========================================== -->
+                <!-- VISTA 1: BIENVENIDA, REGLAS Y REGISTRO     -->
+                <!-- ========================================== -->
+                <div id="squash-trivia-view-welcome" class="trivia-view">
+                    <div class="trivia-welcome-card">
+                        <div class="trivia-welcome-decor" aria-hidden="true">
+                            <span>🎾</span>
+                            <span>⚡</span>
+                            <span>🏆</span>
+                            <span>🥇</span>
+                        </div>
+
+                        <div class="trivia-welcome-header">
+                            <span class="trivia-main-icon">🎾</span>
+                            <div>
+                                <h3 class="trivia-welcome-title">El Gran Desafío de Trivia de Squash</h3>
+                                <p class="trivia-welcome-desc">
+                                    Diseñado por el Mg. Manuel Alejandro Obando (docente y jugador de squash) para amantes, atletas y entrenadores de este deporte. Tu puntuación y racha quedarán registradas en la <strong>Tabla Oficial de Jugadores</strong>.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Métricas rápidas de la comunidad de squash -->
+                        <div class="trivia-community-stats">
+                            <div class="trivia-stat-box">
+                                <span class="stat-icon">📚</span>
+                                <strong class="stat-val" style="color:#ef4444; letter-spacing:1px;">❤️❤️❤️</strong>
+                                <span class="stat-label">3 Vidas por Partida</span>
+                            </div>
+                            <div class="trivia-stat-box">
+                                <span class="stat-icon">👥</span>
+                                <strong class="stat-val" id="squash-trivia-stat-participants">0</strong>
+                                <span class="stat-label">Jugadores en Ranking</span>
+                            </div>
+                            <div class="trivia-stat-box">
+                                <span class="stat-icon">🏆</span>
+                                <strong class="stat-val" id="squash-trivia-stat-top-score" style="color:#34d399;">0 pts</strong>
+                                <span class="stat-label">Puntaje Récord</span>
+                            </div>
+                            <div class="trivia-stat-box">
+                                <span class="stat-icon">🔥</span>
+                                <strong class="stat-val" id="squash-trivia-stat-top-streak" style="color:#fbbf24;">🔥 35</strong>
+                                <span class="stat-label">Mejor Racha de Aciertos</span>
+                            </div>
+                        </div>
+
+                        <!-- CAJA OBLIGATORIA DE INSTRUCCIONES Y REGLA DE HONOR -->
+                        <div class="trivia-rules-card">
+                            <div class="rules-card-header">
+                                <span style="font-size:1.3rem;">📋</span>
+                                <div>
+                                    <h4 style="margin:0; color:#fff; font-size:1.05rem;">Instrucciones Oficiales &amp; Regla de Honor</h4>
+                                    <span style="font-size:0.78rem; color:#cbd5e1;">Lee con atención antes de iniciar tu desafío en la cancha</span>
+                                </div>
+                            </div>
+                            <div class="rules-card-body">
+                                <div class="rule-item" style="background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.35); border-radius:8px; padding:0.85rem 1rem;">
+                                    <span class="rule-icon">❤️</span>
+                                    <div>
+                                        <strong style="color:#f87171;">Sistema de 3 Vidas (Game Over al agotarlas):</strong>
+                                        <p style="color:#fca5a5; margin:0.25rem 0 0;">
+                                            Inicias con <strong>3 vidas</strong> (❤️❤️❤️). Si cometes 3 errores (bolas en la chapa/tin o faltas), el sistema finaliza tu partido, guarda tus puntos y te ubica directamente en el <strong>Ranking Oficial de Squash</strong>.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="rule-item" style="background:rgba(16,185,129,0.09); border:1px solid rgba(16,185,129,0.3); border-radius:8px; padding:0.85rem 1rem;">
+                                    <span class="rule-icon">💖</span>
+                                    <div>
+                                        <strong style="color:#34d399;">Recuperación de Vida por Racha de 10 Aciertos:</strong>
+                                        <p style="color:#a7f3d0; margin:0.25rem 0 0;">
+                                            Si logras conectar una racha de <strong>10 aciertos seguidos en la T</strong>, ¡recuperas automáticamente 1 vida perdida! (máximo acumulable: 3 vidas).
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="rule-item" style="background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); border-radius:8px; padding:0.85rem 1rem;">
+                                    <span class="rule-icon">🔀</span>
+                                    <div>
+                                        <strong style="color:#38bdf8;">Orden Aleatorio de Preguntas:</strong>
+                                        <p style="color:#bae6fd; margin:0.25rem 0 0;">
+                                            Cada ingreso baraja aleatoriamente el banco de preguntas abarcando reglamento WSF, termodinámica de la bola, biomecánica y leyendas mundiales en un orden dinámico.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="rule-item highlight-rule">
+                                    <span class="rule-icon">🚫</span>
+                                    <div>
+                                        <strong style="color:#f87171;">Sin consultas a reglamentos ni Inteligencia Artificial:</strong>
+                                        <p style="color:#fca5a5; margin:0.25rem 0 0;">
+                                            Todas las preguntas son de selección múltiple (A, B, C, D). En este reto <strong>NO necesitas consultar reglamentos ni preguntar a la IA</strong>. Mide tu experiencia y memoria deportiva real.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="rule-item">
+                                    <span class="rule-icon">🔥</span>
+                                    <div>
+                                        <strong>Puntaje y Bonos por Racha:</strong>
+                                        <p style="margin:0.25rem 0 0;">Cada nick o golpe ganador suma 100 puntos base más multiplicador de racha en la T.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Formulario de Registro para el Ranking de Squash -->
+                        <div class="trivia-register-card">
+                            <div style="font-size:0.95rem; font-weight:800; color:#fff; margin-bottom:0.75rem; display:flex; align-items:center; gap:0.4rem;">
+                                <span>✍️</span> Registro de Jugador para la Tabla de Clasificación:
+                            </div>
+                            <div class="trivia-form-grid">
+                                <div>
+                                    <label for="squash-trivia-player-name" class="trivia-form-label">
+                                        Nombre Completo o Apodo Deportivo: <strong style="color:#f87171;">*</strong>
+                                    </label>
+                                    <input type="text" id="squash-trivia-player-name" class="trivia-form-input" placeholder="Tu nombre completo o apodo deportivo" maxlength="60" required />
+                                </div>
+                                <div>
+                                    <label for="squash-trivia-player-inst" class="trivia-form-label">
+                                        Club / Liga / Universidad / Ciudad: <span style="color:var(--text-muted); font-size:0.75rem;">(Opcional)</span>
+                                    </label>
+                                    <input type="text" id="squash-trivia-player-inst" class="trivia-form-input" placeholder="Ej: Squash Popayán" maxlength="70" />
+                                </div>
+                            </div>
+
+                            <!-- Botones de Acción -->
+                            <div style="display:flex; gap:0.75rem; flex-wrap:wrap; margin-top:1.25rem;">
+                                <button type="button" class="btn btn-primary btn-start-trivia" onclick="TRIVIA_SQUASH_ENGINE.start(true)">
+                                    🎾 Entrar a la Cancha (Desde la Pregunta #1)
+                                </button>
+                                <button type="button" class="btn btn-secondary" onclick="TRIVIA_SQUASH_ENGINE.switchView('ranking')" style="border-color:rgba(16,185,129,0.5); color:#34d399;">
+                                    🏆 Ver Ranking Oficial de Squash
+                                </button>
+                            </div>
+
+                            <!-- Opción de continuar progreso -->
+                            <div id="squash-trivia-resume-box" style="display:none; margin-top:1rem; padding-top:1rem; border-top:1px dashed rgba(255,255,255,0.1);">
+                                <button type="button" class="btn btn-secondary" id="squash-trivia-resume-btn" onclick="TRIVIA_SQUASH_ENGINE.start(false)" style="border-color:rgba(52,211,153,0.5); color:#34d399; font-weight:700;">
+                                    ▶️ Continuar donde quedé en la cancha
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ========================================== -->
+                <!-- VISTA 2: TABLERO DE JUEGO ACTIVO           -->
+                <!-- ========================================== -->
+                <div id="squash-trivia-view-game" class="trivia-view" style="display:none;">
+                    <div class="trivia-game-card">
+                        <!-- Barra Superior de Estado Gamificada -->
+                        <div class="trivia-game-header">
+                            <div class="trivia-header-left">
+                                <span class="trivia-area-tag" id="squash-trivia-area-badge" style="background:rgba(16,185,129,0.15); border-color:rgba(16,185,129,0.4); color:#34d399;">Reglamento WSF</span>
+                                <span class="trivia-diff-tag" id="squash-trivia-difficulty-badge">Nivel 1: Básico</span>
+                            </div>
+                            <div class="trivia-header-center">
+                                <span class="trivia-q-num" id="squash-trivia-question-number">Pregunta 1</span>
+                            </div>
+                            <div class="trivia-header-right">
+                                <div class="trivia-stat-pill lives" id="squash-trivia-lives-pill" title="3 vidas por partida. Racha de 10 aciertos recupera 1 vida.">
+                                    <span>❤️</span> <strong id="squash-trivia-lives-val">❤️❤️❤️</strong>
+                                </div>
+                                <div class="trivia-stat-pill score" style="border-color:rgba(16,185,129,0.35);">
+                                    <span>🏆</span> <strong id="squash-trivia-score-val">0 pts</strong>
+                                </div>
+                                <div class="trivia-stat-pill streak">
+                                    <strong id="squash-trivia-streak-val">🔥 0</strong>
+                                </div>
+                                <button type="button" class="btn-trivia-pause" onclick="TRIVIA_SQUASH_ENGINE.finishAndShowRanking()" title="Guardar progreso y ver ranking">
+                                    💾 Salir y Guardar
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Barra de Progreso Dinámica -->
+                        <div class="trivia-progress-bar-wrap">
+                            <div class="trivia-progress-bar-fill" id="squash-trivia-progress-bar-fill" style="width: 0.2%;"></div>
+                        </div>
+
+                        <!-- Cuerpo de la Pregunta -->
+                        <div class="trivia-game-body" id="squash-trivia-game-body">
+                            <div class="trivia-question-card">
+                                <h3 class="trivia-question-text" id="squash-trivia-question-text">
+                                    Cargando pregunta de squash...
+                                </h3>
+                            </div>
+
+                            <!-- Opciones de Selección Múltiple (A, B, C, D) -->
+                            <div class="trivia-options-grid" id="squash-trivia-options-container">
+                                <!-- Generadas dinámicamente -->
+                            </div>
+
+                            <!-- Tarjeta de Retroalimentación Inmediata con Explicación -->
+                            <div id="squash-trivia-feedback-card" class="trivia-feedback-card" style="display:none;">
+                                <div class="feedback-title" id="squash-trivia-feedback-title"></div>
+                                <div class="feedback-text" id="squash-trivia-feedback-text"></div>
+                            </div>
+
+                            <!-- Botón Siguiente Pregunta -->
+                            <div style="text-align:right; margin-top:1.25rem;">
+                                <button type="button" class="btn btn-primary btn-next-trivia" id="squash-trivia-next-btn" onclick="TRIVIA_SQUASH_ENGINE.nextQuestion()" style="display:none;">
+                                    Siguiente Pregunta ➔
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ========================================== -->
+                <!-- VISTA 3: TABLA DE LÍDERES / RANKING        -->
+                <!-- ========================================== -->
+                <div id="squash-trivia-view-ranking" class="trivia-view" style="display:none;">
+                    <div class="trivia-ranking-card">
+                        <div class="ranking-header">
+                            <div>
+                                <span class="badge" style="background:rgba(16, 185, 129, 0.15); border-color:rgba(16, 185, 129, 0.4); color:#34d399;">
+                                    🏆 Salón de Honor del Squash
+                                </span>
+                                <h3 style="color:#fff; font-size:1.45rem; margin:0.35rem 0 0.25rem;">Tabla de Clasificación de Jugadores</h3>
+                                <p style="font-size:0.84rem; color:var(--text-muted); margin:0;">
+                                    Mejores puntuaciones registradas en la Gran Trivia de Squash.
+                                </p>
+                            </div>
+                            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                                <button type="button" class="btn btn-primary" id="squash-trivia-ranking-play-btn" onclick="TRIVIA_SQUASH_ENGINE.start(true)" style="background:linear-gradient(135deg, #10b981, #059669); border:none; font-size:0.85rem; padding:0.5rem 1rem;">
+                                    🎮 Nueva Partida (3 Vidas ❤️)
+                                </button>
+                                <button type="button" class="btn btn-secondary" onclick="TRIVIA_SQUASH_ENGINE.switchView('welcome')" style="font-size:0.85rem; padding:0.5rem 1rem;">
+                                    📋 Menú Principal
+                                </button>
+                                <button type="button" class="btn btn-secondary" onclick="TRIVIA_SQUASH_ENGINE.shareWhatsApp()" style="border-color:#25D366; color:#25D366; font-size:0.85rem; padding:0.5rem 1rem;">
+                                    💬 Compartir Récord
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Podio Top 3 -->
+                        <div class="trivia-podium-grid" id="squash-trivia-ranking-podium">
+                            <!-- Inyectado dinámicamente -->
+                        </div>
+
+                        <!-- Filtro de Búsqueda -->
+                        <div style="margin-bottom:1rem; display:flex; gap:0.75rem; align-items:center;">
+                            <input type="text" id="squash-trivia-ranking-search" class="trivia-form-input" placeholder="🔍 Buscar jugador, club o ciudad..." oninput="TRIVIA_SQUASH_ENGINE.renderRanking()" style="max-width:380px;" />
+                        </div>
+
+                        <!-- Tabla Completa de Posiciones -->
+                        <div class="trivia-table-wrap">
+                            <table class="trivia-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width:70px;">Posición</th>
+                                        <th>Jugador / Club / Universidad</th>
+                                        <th style="text-align:center;">Puntaje</th>
+                                        <th style="text-align:center;">Nivel Máximo</th>
+                                        <th style="text-align:center;">Racha Récord</th>
+                                        <th style="text-align:right;">Fecha</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="squash-trivia-ranking-tbody">
+                                    <!-- Inyectado dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+    </main>
+
+    <!-- Scripts Esenciales -->
+    <script src="data.js"></script>
+    <script src="trivia-squash-questions.js"></script>
+    <script src="trivia-squash-engine.js"></script>
+
+    <!-- Autoarranque y Parámetros de URL -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const playerName = urlParams.get('player') || urlParams.get('name');
+            const playerInst = urlParams.get('inst');
+            const autoStart = urlParams.get('start');
+
+            // Buscar inputs de nombre
+            const nameInputs = document.querySelectorAll('#trivia-player-name, #historia-trivia-player-name, #squash-trivia-player-name');
+            const instInputs = document.querySelectorAll('#trivia-player-inst, #historia-trivia-player-inst, #squash-trivia-player-inst');
+
+            if (playerName) {
+                nameInputs.forEach(inp => { inp.value = decodeURIComponent(playerName); });
+            }
+            if (playerInst) {
+                instInputs.forEach(inp => { inp.value = decodeURIComponent(playerInst); });
+            }
+
+            // Si se pasa start=1 o ya viene con nombre desde index.html, iniciar inmediatamente
+            if (playerName && (autoStart === '1' || autoStart === 'true')) {
+                setTimeout(() => {
+                    if (window.TRIVIA_SQUASH_ENGINE && typeof window.TRIVIA_SQUASH_ENGINE.start === 'function') {
+                        window.TRIVIA_SQUASH_ENGINE.start(true);
+                    }
+                }, 150);
+            } else {
+                // Si ya hay perfil previo guardado y no hay start forzado, inicializar normalmente
+                if (window.TRIVIA_SQUASH_ENGINE && typeof window.TRIVIA_SQUASH_ENGINE.init === 'function') {
+                    window.TRIVIA_SQUASH_ENGINE.init();
+                }
+            }
+
+            // Soporte para tecla Enter en los inputs de nombre
+            nameInputs.forEach(inp => {
+                inp.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (window.TRIVIA_SQUASH_ENGINE && typeof window.TRIVIA_SQUASH_ENGINE.start === 'function') {
+                            window.TRIVIA_SQUASH_ENGINE.start(true);
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

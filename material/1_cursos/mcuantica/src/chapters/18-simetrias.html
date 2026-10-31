@@ -1,0 +1,114 @@
+<template class="chapter-src" data-id="simetrias" data-num="18" data-title="Simetrías, leyes de conservación y reglas de selección" data-part="Parte III · Momento angular y el átomo" data-short="Operadores de simetría y su relación con las cantidades conservadas, paridad, matrices de rotación de Wigner, reglas de selección dipolares y vidas medias del hidrógeno, y simetrías dinámicas">
+<p class="lead">Las simetrías son más útiles en mecánica cuántica que en la clásica. Una simetría del hamiltoniano garantiza una cantidad conservada, explica las degeneraciones de los niveles, clasifica los estados con números cuánticos y, sobre todo, <em>prohíbe</em> transiciones sin necesidad de calcular ningún elemento de matriz. Este capítulo reúne las ideas que ya hemos usado (momento, momento angular, paridad) en un solo esquema y las aplica a las líneas espectrales del hidrógeno.</p>
+
+<section>
+<h2>Simetría, conservación y degeneración</h2>
+<p>Una <span class="term">simetría</span> es una transformación unitaria \(\hat U\) (que conserva los productos escalares y por tanto las probabilidades) tal que \(\hat U\hat H\hat U^\dagger=\hat H\), es decir, \([\hat U,\hat H]=0\). Las consecuencias son tres.</p>
+<ul>
+<li><b>Conservación.</b> Si \(\hat U=\ee^{-\ii\varepsilon\hat G/\hbar}\) depende de un parámetro continuo, \(\hat G\) es un observable hermítico con \([\hat G,\hat H]=0\) y, por el teorema de Ehrenfest (capítulo 4), \(\langle G\rangle\) es constante: es el equivalente cuántico del teorema de Noether. Las traslaciones espaciales (generador \(\hat{\mathbf p}\)), temporales (\(\hat H\)) y las rotaciones (\(\hat{\mathbf J}\)) dan la conservación del momento, la energía y el momento angular.</li>
+<li><b>Números cuánticos.</b> \(\hat H\) y \(\hat G\) tienen autoestados comunes, que se pueden rotular por los autovalores de \(\hat G\) (\(m\), paridad, ...).</li>
+<li><b>Degeneración.</b> Si \(\hat H|\psi\rangle=E|\psi\rangle\), entonces \(\hat H\hat U|\psi\rangle=E\hat U|\psi\rangle\): el estado transformado tiene la misma energía. Si \(\hat U|\psi\rangle\) es independiente de \(|\psi\rangle\), el nivel es degenerado. Los \(2l+1\) estados de un nivel con momento angular \(l\) son los \(2l+1\) estados que se obtienen rotando uno de ellos.</li>
+</ul>
+<p>Las simetrías <em>discretas</em> (paridad, inversión temporal, intercambio de partículas idénticas) no tienen un generador continuo, pero sus autovalores sí son números cuánticos y también conducen a reglas de selección. La inversión del tiempo es antiunitaria, y de ella se deduce la degeneración de Kramers: con un número impar de fermiones y sin campo magnético, todo nivel es al menos doblemente degenerado.</p>
+</section>
+
+<section>
+<h2>Paridad</h2>
+<p>El operador de <span class="term">paridad</span> invierte el espacio: \((\hat\Pi\psi)(\mathbf r)=\psi(-\mathbf r)\). Como \(\hat\Pi^2=1\), sus autovalores son \(\pm1\). Si \(V(-\mathbf r)=V(\mathbf r)\), \([\hat\Pi,\hat H]=0\); en una dimensión los estados ligados no son degenerados y, por tanto, tienen paridad definida (par o impar). Los armónicos esféricos tienen paridad \((-1)^l\), de modo que el estado \(nlm\) del hidrógeno tiene paridad \((-1)^l\). Como \(x,y,z\) son operadores <em>impares</em> (\(\hat\Pi\hat{\mathbf r}\hat\Pi=-\hat{\mathbf r}\)),</p>
+<div class="eq key" data-name="Regla de selección de paridad">\[\langle f|\hat{\mathbf r}|i\rangle=\langle f|\hat\Pi^\dagger\hat\Pi\,\hat{\mathbf r}\,\hat\Pi^\dagger\hat\Pi|i\rangle=-\pi_f\pi_i\langle f|\hat{\mathbf r}|i\rangle\ \Rightarrow\ \langle f|\hat{\mathbf r}|i\rangle=0\ \text{si}\ \pi_f=\pi_i.\]</div>
+<p>Dos estados de la misma paridad tienen elemento dipolar nulo y no pueden conectarse por emisión o absorción de un fotón eléctrico dipolar. El simulador lo muestra para un doble pozo: en los estados pares o impares alternados que produce la barrera, la matriz de \(|\langle m|x|n\rangle|\) tiene un patrón de tablero de ajedrez: solo conectan estados de paridad opuesta. Si se rompe la simetría con un término \(\varepsilon x\), los estados pierden su paridad definida y los elementos «prohibidos» aparecen. Es la razón física de que moléculas sin centro de inversión absorban en el infrarrojo y de que los átomos en un campo eléctrico pierdan sus reglas de selección (efecto Stark).</p>
+<div class="sim" data-sim="paridad" data-title="Doble pozo: paridad de los estados y matriz de elementos dipolares |⟨m|x|n⟩|"></div>
+<div class="sim-guide"><ul>
+<li>Con \(V_0=10\) (\(a=2\), \(\hbar=m=1\)) los estados se agrupan en pares casi degenerados, \(E=2.1686,\,2.1689\) y \(6.177,\,6.201\), con paridades alternadas \(+,-,+,-,+,-\): el estado par y el impar de cada par son la combinación simétrica y antisimétrica de una función localizada en un pozo (capítulo 7). El mayor elemento dipolar, \(|\langle0|x|1\rangle|=1.908\), es casi \(a=2\): el estado par e impar se conectan porque el electrón «salta» entre pozos.</li>
+<li>Con \(\varepsilon=0\): la lectura «misma paridad» vale \(\sim10^{-12}\) (cero numérico). Con \(\varepsilon=0.3\) los dos primeros niveles se separan (\(E=1.594\) y \(2.738\)): un pozo queda más profundo. Aumente \(\varepsilon\): los estados dejan de tener paridad definida (la paridad calculada ya no es \(\pm1\)) y el elemento prohibido crece de forma continua. La paridad es una simetría del hamiltoniano, no del estado.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Rotaciones y matrices de Wigner</h2>
+<p>La rotación del sistema por los ángulos de Euler \((\alpha,\beta,\gamma)\) está generada por \(\hat{\mathbf J}\): \(\hat R=\ee^{-\ii\alpha\hat J_z}\ee^{-\ii\beta\hat J_y}\ee^{-\ii\gamma\hat J_z}\) (con \(\hbar=1\)). En el subespacio de momento angular \(j\) tiene los elementos \(D^j_{m'm}=\ee^{-\ii m'\alpha}\,d^j_{m'm}(\beta)\,\ee^{-\ii m\gamma}\), donde la <span class="term">matriz d de Wigner</span> \(d^j_{m'm}(\beta)=\langle jm'|\ee^{-\ii\beta\hat J_y}|jm\rangle\) es real. Dos casos básicos:</p>
+<div class="eq key" data-name="Matrices d de espín ½ y de espín 1">\[d^{1/2}(\beta)=\begin{pmatrix}\cos\frac\beta2&-\sin\frac\beta2\\\sin\frac\beta2&\cos\frac\beta2\end{pmatrix},\qquad d^{1}(\beta)=\begin{pmatrix}\frac{1+\cos\beta}2&-\frac{\sin\beta}{\sqrt2}&\frac{1-\cos\beta}2\\\frac{\sin\beta}{\sqrt2}&\cos\beta&-\frac{\sin\beta}{\sqrt2}\\\frac{1-\cos\beta}2&\frac{\sin\beta}{\sqrt2}&\frac{1+\cos\beta}2\end{pmatrix}.\]</div>
+<p>(filas \(m'=1,0,-1\) y columnas \(m=1,0,-1\)). Un estado \(|j,m\rangle\) girado un ángulo \(\beta\) respecto de \(y\) tiene la probabilidad \(|d^j_{m'm}(\beta)|^2\) de hallarse en \(|j,m'\rangle\) en la base original. El valor medio \(\langle J_z\rangle=\sum m'|d^j_{m'm}|^2=m\cos\beta\) es exactamente el clásico (un vector de longitud \(m\) girado), pero las probabilidades son una distribución de ancho cuántico. Una rotación de \(2\pi\) multiplica los estados por \((-1)^{2j}\): \(+1\) para \(j\) entero y \(-1\) para semientero, el signo de espinor del capítulo 15.</p>
+<div class="sim" data-sim="wigner-d" data-title="Matrices d de Wigner: probabilidades de la proyección después de una rotación"></div>
+<div class="sim-guide"><ul>
+<li>Con \(j=1\), \(m=1\), \(\beta=90^\circ\): \(P(m'=1,0,-1)=\tfrac14,\tfrac12,\tfrac14\) y \(\langle J_z\rangle=0=\cos90^\circ\). Con \(\beta=180^\circ\) el estado queda en \(m'=-1\) con probabilidad 1.</li>
+<li>Con \(j=\tfrac12\) y \(\beta=360^\circ\): \(d_{mm}=-1\) (cambia el signo); con \(j=1\), \(+1\). Al aumentar \(j\) la distribución se estrecha en torno al valor clásico \(m\cos\beta\): el límite clásico.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Reglas de selección dipolares y vidas medias</h2>
+<p>La interacción de un átomo con la luz es, en la aproximación dipolar eléctrica (la longitud de onda es mucho mayor que el átomo), \(H'=-\mathbf d\cdot\mathbf E\) con \(\mathbf d=-e\mathbf r\). Las componentes esféricas \(r_q\) (\(q=0,\pm1\)) son un tensor de rango 1: por el teorema de Wigner–Eckart,</p>
+<div class="eq">\[\langle n'l'm'|r_q|nlm\rangle=\langle l\,m\,1\,q|l'\,m'\rangle\ \times\int_0^\infty R_{n'l'}\,R_{nl}\,r^3\,\dd r\ \times\sqrt{\tfrac{2l+1}{2l'+1}}\,\langle l\,0\,1\,0|l'\,0\rangle ,\]</div>
+<p>donde el coeficiente de Clebsch–Gordan (capítulo 16) impone \(m'=m+q\) y \(|l-1|\le l'\le l+1\), y la paridad impone \(l'\neq l\). El resultado son las <span class="term">reglas de selección del dipolo eléctrico</span>: \(\Delta l=\pm1\) y \(\Delta m=0,\pm1\) (\(\Delta m=0\) con luz polarizada linealmente según \(z\), \(\pm1\) con luz circular). No hay regla sobre \(n\). La tasa de emisión espontánea de \((n,l)\) a \((n',l')\), sumada sobre los estados finales y promediada sobre \(m\), es el <span class="term">coeficiente \(A\) de Einstein</span>:</p>
+<div class="eq key" data-name="Emisión espontánea dipolar">\[A_{nl\to n'l'}=\frac{4\alpha\,\omega^3}{3c^2}\ \frac{l_>}{2l+1}\ \left|\langle n'l'|r|nl\rangle\right|^2,\qquad\hbar\omega=E_n-E_{n'},\qquad l_>=\max(l,l'),\qquad\tau=\Bigl(\sum A\Bigr)^{-1}.\]</div>
+<p>La tasa crece como \(\omega^3\) (los fotones de alta frecuencia se emiten rápido) y con el cuadrado de la integral radial. Para \(2p\to1s\), con \(\langle1s|r|2p\rangle=\tfrac{128\sqrt6}{243}a_0=1.2903\,a_0\): \(A=6.27\times10^8\) s\(^{-1}\), una vida media de 1.595 ns. El nivel \(2s\) no puede decaer a \(1s\) por \(E1\) (\(\Delta l=0\)) y vive mucho más: decae por emisión simultánea de dos fotones (\(8.23\) s\(^{-1}\), \(\tau=0.12\) s). Se dice que es <em>metaestable</em>; con la desviación de los dos fotones se produce el continuo de la emisión de nebulosas planetarias.</p>
+<div class="sim" data-sim="dipolo-h" data-title="Emisión espontánea del hidrógeno: coeficientes A de Einstein y vidas medias"></div>
+<div class="sim-guide"><ul>
+<li>\(2p\): un solo canal, \(1s\), \(A=6.268\times10^8\) s\(^{-1}\), \(\tau=1.595\) ns, \(\lambda=121.5\) nm (Lyman-\(\alpha\)). \(3p\): dos canales, \(1s\) (Lyman-\(\beta\), 88.17 %) y \(2s\) (Balmer \(\mathrm H\alpha\), 11.83 %); \(\tau=5.269\) ns. \(3d\): solo \(2p\) (la rama de Balmer), \(\tau=15.46\) ns. \(3s\): solo \(2p\), \(A=6.32\times10^6\) s\(^{-1}\) y \(\tau=158\) ns (mucho más lento, pues la integral radial es menor).</li>
+<li>Con «mostrar prohibidas» las columnas de \(\Delta l\neq\pm1\) valen cero: \(3s\to2s\), \(3p\to2p\), \(3d\to2s\), \(3d\to1s\). Para \(4f\) solo existe el canal \(3d\) (cascada de Rydberg).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Simetrías dinámicas y degeneración accidental</h2>
+<p>Los niveles del hidrógeno dependen solo de \(n\): para cada \(n\) hay \(n^2\) estados, pero la simetría de rotación solo explica la degeneración \(2l+1\) en \(m\). La degeneración en \(l\) tiene un origen distinto, una simetría «oculta» generada por el <em>vector de Runge–Lenz</em> \(\mathbf K\) (conservado exclusivamente para \(V\propto1/r\), el origen clásico del cierre de las órbitas keplerianas). Junto con \(\mathbf L\) generan el álgebra de \(\mathrm{SO}(4)\), que equivale a dos momentos angulares independientes \(\mathbf J_{1,2}=\tfrac12(\mathbf L\pm\mathbf K')\), con \(j_1=j_2=\tfrac{n-1}2\) y una dimensión \((2j_1+1)(2j_2+1)=n^2\) (Pauli, 1926: halló el espectro del hidrógeno por álgebra, antes que Schrödinger con la ecuación diferencial). El oscilador armónico isótropo tiene la simetría \(\mathrm{SU}(3)\), de donde la degeneración \(\tfrac12(N+1)(N+2)\) del capítulo 13. Cualquier perturbación que rompa la simetría (un campo eléctrico, la corrección relativista, el apantallamiento de los otros electrones) levanta la degeneración y desdobla el nivel (capítulos 19 y 20).</p>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Con la paridad \((-1)^l\) y la regla \(\Delta l=\pm1\), halle qué transiciones entre los niveles \(n=3\) y \(n=2\) del hidrógeno están permitidas por el dipolo eléctrico y cuántas combinaciones \((l,l')\) hay en total.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Niveles.</b> \(n=3\): \(l=0,1,2\) (\(3s,3p,3d\)); \(n=2\): \(l'=0,1\) (\(2s,2p\)): \(3\times2=6\) combinaciones.</li>
+<li><b>Paridades.</b> \(3s\) (+), \(3p\) (\(-\)), \(3d\) (+); \(2s\) (+), \(2p\) (\(-\)).</li>
+<li><b>Regla \(\Delta l=\pm1\) (paridad opuesta).</b> \(3s\to2p\) ✓; \(3s\to2s\) ✗; \(3p\to2s\) ✓; \(3p\to2p\) ✗; \(3d\to2p\) ✓; \(3d\to2s\) ✗ (\(\Delta l=2\)).</li>
+<li><b>Resultado.</b> <span class="ans">3 de las 6 combinaciones están permitidas: \(3s\to2p\), \(3p\to2s\) y \(3d\to2p\) (todas dan la línea \(\mathrm H\alpha\) a 656 nm).</span></li>
+</ol></details></li>
+<li><span class="lvl">Básico</span>Calcule la tasa de emisión espontánea \(2p\to1s\) y la vida media del nivel \(2p\), con \(\langle1s|r|2p\rangle=1.2903\,a_0\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Frecuencia.</b> \(\hbar\omega=\tfrac34Ry=10.204\) eV: \(\omega=\dfrac{10.204\times1.6022\times10^{-19}}{1.0546\times10^{-34}}=1.5503\times10^{16}\) rad/s (\(\lambda=121.5\) nm).</li>
+<li><b>Prefactor.</b> \(\dfrac{4\alpha\omega^3}{3c^2}=\dfrac{4\times7.2974\times10^{-3}\times(1.5503\times10^{16})^3}{3\times(2.9979\times10^8)^2}=4.0338\times10^{29}\) m\(^{-2}\)s\(^{-1}\).</li>
+<li><b>Integral radial.</b> \(R=1.2903\times5.2918\times10^{-11}\) m \(=6.828\times10^{-11}\) m, \(R^2=4.662\times10^{-21}\) m².</li>
+<li><b>Factor angular.</b> \(l=1\), \(l'=0\): \(l_>/(2l+1)=\tfrac13\).</li>
+<li><b>Tasa.</b> \(A=4.0338\times10^{29}\times\tfrac13\times4.662\times10^{-21}=6.268\times10^{8}\) s\(^{-1}\).</li>
+<li><b>Vida media.</b> \(\tau=1/A=1.595\) ns.</li>
+<li><b>Resultado.</b> <span class="ans">\(A=6.268\times10^8\) s\(^{-1}\); \(\tau(2p)=1.595\) ns (medida: 1.60 ns).</span></li>
+</ol></details></li>
+<li><span class="lvl">Intermedio</span>Un espín 1 en \(|1,1\rangle\) se gira un ángulo \(\beta\) alrededor de \(y\). Con la matriz \(d^1\) halle las probabilidades de \(m'=1,0,-1\) y \(\langle J_z\rangle\); evalúelas para \(\beta=90^\circ\) y \(60^\circ\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Columna de \(m=1\).</b> \(d^1_{11}=\tfrac{1+\cos\beta}2\), \(d^1_{01}=\tfrac{\sin\beta}{\sqrt2}\), \(d^1_{-1,1}=\tfrac{1-\cos\beta}2\).</li>
+<li><b>Probabilidades.</b> \(P_1=\tfrac{(1+\cos\beta)^2}4\), \(P_0=\tfrac{\sin^2\beta}2\), \(P_{-1}=\tfrac{(1-\cos\beta)^2}4\); suman 1.</li>
+<li><b>\(\langle J_z\rangle\).</b> \(P_1-P_{-1}=\tfrac{(1+c)^2-(1-c)^2}4=\cos\beta\) (con \(c=\cos\beta\)).</li>
+<li><b>\(\beta=90^\circ\).</b> \(P=\tfrac14,\ \tfrac12,\ \tfrac14\); \(\langle J_z\rangle=0\).</li>
+<li><b>\(\beta=60^\circ\).</b> \(\cos60^\circ=\tfrac12\): \(P_1=\tfrac{(1.5)^2}4=0.5625\); \(P_0=\tfrac{0.75}2=0.375\); \(P_{-1}=\tfrac{0.25}4=0.0625\); \(\langle J_z\rangle=0.5\).</li>
+<li><b>Resultado.</b> <span class="ans">\(P=\tfrac{(1+\cos\beta)^2}4,\ \tfrac{\sin^2\beta}2,\ \tfrac{(1-\cos\beta)^2}4\); \(\langle J_z\rangle=\cos\beta\); en 90°: 0.25, 0.5, 0.25; en 60°: 0.5625, 0.375, 0.0625.</span></li>
+</ol></details></li>
+<li><span class="lvl">Intermedio</span>Calcule el elemento de matriz \(\langle1s|z|2p,m=0\rangle\) y el momento dipolar de transición correspondiente (en C·m y en debye).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Factorización.</b> \(\langle1s|z|2p0\rangle=\langle R_{10}|r|R_{21}\rangle\int Y_{00}^*\cos\theta\,Y_{10}\,\dd\Omega\).</li>
+<li><b>Parte angular.</b> Con \(Y_{10}=\sqrt{3/4\pi}\cos\theta\) y \(Y_{00}=1/\sqrt{4\pi}\): \(\int Y_{00}^*\cos\theta\,Y_{10}\,\dd\Omega=\sqrt{\tfrac{3}{16\pi^2}}\int\cos^2\theta\,\dd\Omega=\sqrt{\tfrac{3}{16\pi^2}}\cdot\tfrac{4\pi}3=\tfrac1{\sqrt3}\).</li>
+<li><b>Resultado numérico.</b> \(\langle z\rangle=\dfrac{1.2903}{\sqrt3}a_0=0.7449\,a_0=3.942\times10^{-11}\) m.</li>
+<li><b>Momento dipolar.</b> \(d=e\langle z\rangle=0.7449\times8.4784\times10^{-30}\) C·m \(=6.316\times10^{-30}\) C·m \(=1.893\) D.</li>
+<li><b>Resultado.</b> <span class="ans">\(\langle1s|z|2p0\rangle=0.7449\,a_0\); \(d=6.316\times10^{-30}\) C·m (1.893 D).</span></li>
+</ol></details></li>
+<li><span class="lvl">Avanzado</span>Demuestre que en el oscilador armónico \(\langle n|x|m\rangle\) solo es no nulo si \(|n-m|=1\), y verifique con las matrices truncadas que \(x^2\) conecta \(n\) con \(n\pm2\) y \(n\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Paridad.</b> \(\psi_n\) tiene paridad \((-1)^n\) y \(x\) es impar: \(\langle n|x|m\rangle=0\) si \(n-m\) es par.</li>
+<li><b>Operadores escalera.</b> \(x=\sqrt{\hbar/2m\omega}\,(a+a^\dagger)\): \(a|m\rangle=\sqrt m|m-1\rangle\), \(a^\dagger|m\rangle=\sqrt{m+1}|m+1\rangle\), por tanto \(\langle n|x|m\rangle\neq0\) solo si \(n=m\pm1\) (la paridad es una consecuencia, y la regla es más fuerte).</li>
+<li><b>Valores (\(\hbar=m=\omega=1\)).</b> \(\langle0|x|1\rangle=\tfrac1{\sqrt2}=0.7071\), \(\langle1|x|2\rangle=1\), \(\langle2|x|3\rangle=\sqrt{\tfrac32}=1.2247\).</li>
+<li><b>\(x^2\).</b> \(x^2=\tfrac12(a^2+a^{\dagger2}+2a^\dagger a+1)\): \(\langle0|x^2|0\rangle=\tfrac12\), \(\langle0|x^2|2\rangle=\tfrac12\sqrt2=0.7071\), \(\langle1|x^2|1\rangle=\tfrac32\); y es cero entre \(n\) y \(n\pm1\).</li>
+<li><b>Resultado.</b> <span class="ans">\(x\): \(\Delta n=\pm1\); \(x^2\): \(\Delta n=0,\pm2\); \(\langle0|x|1\rangle=0.7071\), \(\langle0|x^2|2\rangle=0.7071\).</span></li>
+</ol></details></li>
+<li><span class="lvl">Avanzado</span>Con los coeficientes \(A(3p\to1s)=1.673\times10^8\) s\(^{-1}\) y \(A(3p\to2s)=2.246\times10^7\) s\(^{-1}\) halle la vida media del nivel \(3p\) y las fracciones de ramificación, y explique por qué el \(2s\) es metaestable.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Tasa total.</b> \(A=1.673\times10^8+2.246\times10^7=1.898\times10^8\) s\(^{-1}\).</li>
+<li><b>Vida media.</b> \(\tau=1/A=5.27\) ns (medida: 5.27 ns).</li>
+<li><b>Ramificación.</b> \(1s\): \(1.673/1.898=88.2\,\%\) (Lyman-\(\beta\), 102.5 nm); \(2s\): \(11.8\,\%\) (\(\mathrm H\alpha\), 656.5 nm).</li>
+<li><b>Metaestabilidad del \(2s\).</b> El único nivel inferior es \(1s\), de la misma paridad (+) y con \(\Delta l=0\): \(E1\) está prohibido por las dos reglas. Solo quedan procesos de orden superior: la emisión de dos fotones, \(8.23\) s\(^{-1}\) (\(\tau=0.12\) s), \(10^8\) veces más lento que el \(2p\).</li>
+<li><b>Resultado.</b> <span class="ans">\(\tau(3p)=5.27\) ns; 88.2 % a \(1s\) y 11.8 % a \(2s\); el \(2s\) es metaestable (\(\tau\approx0.12\) s) porque \(2s\to1s\) viola las reglas de selección \(E1\).</span></li>
+</ol></details></li>
+</ol>
+<div class="box note"><h4>Para profundizar</h4><p>E. P. Wigner, <em>Group Theory and Its Application to the Quantum Mechanics of Atomic Spectra</em>, Academic Press, 1959. W. Pauli, <em>Z. Phys.</em> 36, 336 (1926). V. Bargmann, <em>Z. Phys.</em> 99, 576 (1936). H. A. Bethe y E. E. Salpeter, <em>Quantum Mechanics of One- and Two-Electron Atoms</em>, Springer, 1957, §§ 59–63. S. P. Goldman y G. W. F. Drake, <em>Phys. Rev. A</em> 24, 183 (1981) (decaimiento de dos fotones del \(2s\)). J. J. Sakurai y J. Napolitano, <em>Modern Quantum Mechanics</em>, 2.ª ed., 2011, cap. 4. A. Messiah, <em>Quantum Mechanics</em>, vol. 2, Dover, 1999, caps. XIII–XIV.</p></div>
+</section>
+</template>

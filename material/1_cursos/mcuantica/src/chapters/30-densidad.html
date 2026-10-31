@@ -1,0 +1,97 @@
+<template class="chapter-src" data-id="densidad" data-num="30" data-title="La matriz densidad" data-part="Parte VII · Sistemas abiertos, medida e información" data-short="Estados puros y mezclas, operador densidad y sus propiedades, esfera de Bloch, entropía de von Neumann, estado reducido de un subsistema, purificación y estado térmico">
+<p class="lead">Hasta ahora todo sistema tenía una función de onda. Pero un haz de electrones salido de un horno, un átomo en un gas, el espín de un electrón entrelazado con otro lejano o un sistema en equilibrio térmico no tienen un estado puro \(|\psi\rangle\) bien definido: o bien la preparación es incierta, o bien el sistema es parte de uno mayor. El <span class="term">operador densidad</span> \(\hat\rho\) describe ambos casos con el mismo formalismo, incluye las probabilidades clásicas y las cuánticas y es la herramienta indispensable de la información cuántica, la decoherencia y la termodinámica.</p>
+
+<section>
+<h2>Estados puros y mezclas</h2>
+<p>Si el sistema se prepara en el estado \(|\psi_i\rangle\) con probabilidad clásica \(p_i\) (una <em>mezcla estadística</em>), el valor esperado de un observable es \(\langle A\rangle=\sum_ip_i\langle\psi_i|A|\psi_i\rangle=\mathrm{Tr}(\hat\rho A)\) con</p>
+<div class="eq key" data-name="Operador densidad">\[\hat\rho=\sum_ip_i|\psi_i\rangle\langle\psi_i|,\qquad\hat\rho=\hat\rho^\dagger,\ \ \hat\rho\ge0,\ \ \mathrm{Tr}\hat\rho=1,\qquad\mathrm{Tr}\hat\rho^2\le1\ (=1\iff\text{estado puro}),\qquad\ii\hbar\dot{\hat\rho}=[\hat H,\hat\rho].\]</div>
+<p>La ecuación de von Neumann es el análogo de la de Schrödinger para \(\hat\rho\), y conserva \(\mathrm{Tr}\hat\rho^2\) y el espectro de \(\hat\rho\). Los elementos diagonales \(\rho_{nn}\) son las probabilidades de hallar el sistema en \(|n\rangle\) (las «poblaciones»); los no diagonales, las <em>coherencias</em>, miden la interferencia entre estados: la distinción entre la mezcla \(\tfrac12(|0\rangle\langle0|+|1\rangle\langle1|)\) (sin coherencia, medida de \(\sigma_x\) al azar) y la superposición \(|+\rangle\langle+|\) (con coherencia máxima) es la distinción entre ignorancia y superposición cuántica. La <span class="term">entropía de von Neumann</span> \(S=-\mathrm{Tr}\,\hat\rho\log_2\hat\rho\) mide cuánta información falta: 0 para un estado puro y \(\log_2d\) para el máximamente mezclado.</p>
+<p>Para un qubit, \(\hat\rho=\tfrac12(1+\mathbf r\cdot\boldsymbol\sigma)\) con el vector de Bloch \(\mathbf r=\langle\boldsymbol\sigma\rangle\) dentro de la bola unidad: sobre la superficie (\(r=1\)) están los estados puros y en el centro el estado máximamente mezclado \(\tfrac12\mathbb 1\). Los autovalores son \((1\pm r)/2\), la pureza \((1+r^2)/2\). Una propiedad fundamental es la <em>ambigüedad</em>: el mismo \(\hat\rho\) se puede obtener con colecciones muy distintas de estados puros (por ejemplo, \(\tfrac12\mathbb 1\) es la mezcla de \(|0\rangle,|1\rangle\) y también de \(|+\rangle,|-\rangle\)), y ninguna medida puede distinguirlas. El operador densidad contiene todo lo que se puede saber del sistema.</p>
+<div class="sim" data-sim="rho-bloch" data-title="La bola de Bloch: estados puros y mezclas de un qubit"></div>
+<div class="sim-guide"><ul>
+<li>Con \(r=0.6\), \(\theta=50^\circ\), \(\varphi=30^\circ\): \(\rho_{00}=0.6928\), \(\rho_{01}=0.1990-0.1149\ii\), autovalores \(0.8,\,0.2\), pureza \(0.68\), entropía \(0.7219\) bits; \(P(\uparrow_z)=0.6928\), \(P(\uparrow_x)=0.6990\).</li>
+<li>Con \(r=1\) (puro, sobre el ecuador \(\theta=90^\circ\)): \(\rho_{00}=\rho_{01}=\tfrac12\), pureza 1, entropía 0; con \(r=0\): \(\rho=\tfrac12\mathbb 1\), entropía 1 bit, y todas las medidas dan \(\tfrac12\).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Subsistemas: el estado reducido y la purificación</h2>
+<p>Cuando el sistema \(A\) forma parte de uno mayor \(AB\) en el estado \(\hat\rho_{AB}\), todos los resultados de medidas sobre \(A\) solo se pueden calcular con el <span class="term">estado reducido</span> \(\hat\rho_A=\mathrm{Tr}_B\,\hat\rho_{AB}\) (traza parcial). Si \(\hat\rho_{AB}=|\psi\rangle\langle\psi|\) es <em>puro</em> pero \(\hat\rho_A\) es mezcla, los subsistemas están entrelazados. Toda función de onda de dos partes se puede escribir como una <strong>descomposición de Schmidt</strong> \(|\psi\rangle=\sum_k\sqrt{\lambda_k}\,|a_k\rangle|b_k\rangle\), y los dos estados reducidos tienen los mismos autovalores \(\lambda_k\): la <em>entropía de entrelazamiento</em> es \(S(\rho_A)=S(\rho_B)=-\sum\lambda_k\log_2\lambda_k\). Para dos qubits, \(\cos\alpha|00\rangle+\sin\alpha|11\rangle\) tiene \(\hat\rho_A=\mathrm{diag}(\cos^2\alpha,\sin^2\alpha)\) (la fase relativa desaparece en la traza), \(S=H(\cos^2\alpha)\) y concurrencia \(|\sin2\alpha|\). Recíprocamente, toda mezcla \(\hat\rho_A\) es el estado reducido de un estado puro de un sistema mayor (<span class="term">purificación</span>): la incertidumbre «clásica» puede verse siempre como entrelazamiento con un entorno. Este hecho está en el corazón de la decoherencia (capítulo 32).</p>
+<div class="sim" data-sim="rho-reducida" data-title="Estado reducido de un estado entrelazado: entropía de entrelazamiento y concurrencia"></div>
+<div class="sim-guide"><ul>
+<li>Con \(\alpha=20^\circ\): \(\hat\rho_A=\mathrm{diag}(0.8830,0.1170)\), \(\mathrm{Tr}\hat\rho_A^2=0.7934\), \(S=0.5206\) bits, concurrencia \(\sin40^\circ=0.6428\) y información mutua \(2S=1.0412\) bits (con \(S(AB)=0\)). La fase \(\varphi\) no cambia nada de \(\hat\rho_A\) (solo las coherencias del estado completo).</li>
+<li>Con \(\alpha=45^\circ\) (estado de Bell): \(\hat\rho_A=\tfrac12\mathbb 1\), \(S=1\) bit, concurrencia 1; con \(\alpha=0\) (estado producto): \(S=0\) y no hay correlaciones de ningún tipo.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El estado térmico</h2>
+<p>Un sistema en equilibrio con un baño a temperatura \(T\) está en el operador densidad canónico, la mezcla de estados propios con pesos de Boltzmann:</p>
+<div class="eq key" data-name="Operador densidad canónico">\[\hat\rho_\beta=\frac{\ee^{-\beta\hat H}}{Z},\quad Z=\mathrm{Tr}\,\ee^{-\beta\hat H},\quad\beta=\frac1{k_BT},\qquad S_\text{termodinámica}=k_B\ln2\cdot S_\text{vN}\ (\text{bits}),\qquad\langle E\rangle=\mathrm{Tr}(\hat\rho_\beta\hat H).\]</div>
+<p>Es la distribución que maximiza la entropía de von Neumann con la energía media dada (principio de máxima entropía de Jaynes). Para un qubit con separación \(\hbar\omega\), \(\hat\rho_\beta\) es diagonal con \(p_\uparrow-p_\downarrow=\tanh(\beta\hbar\omega/2)\) (el vector de Bloch se encoge de 1 a 0 al subir \(T\) de 0 a \(\infty\)); para un oscilador, \(p_n=(1-\ee^{-\beta\hbar\omega})\ee^{-n\beta\hbar\omega}\) y \(\bar n=1/(\ee^{\beta\hbar\omega}-1)\) (la distribución de Planck del capítulo 1). La matriz densidad es, por tanto, el puente natural entre la mecánica cuántica y la mecánica estadística.</p>
+<div class="sim" data-sim="rho-termico" data-title="El operador densidad térmico: ocupaciones, pureza y entropía"></div>
+<div class="sim-guide"><ul>
+<li>Qubit con \(k_BT=\hbar\omega\): \(p=0.7311,\,0.2689\), \(r=\tanh\tfrac12=0.4621\), pureza \(0.6068\), entropía \(0.8399\) bits. Oscilador a \(k_BT=\hbar\omega\): \(\bar n=0.5820\) excitaciones y \(S=1.5013\) bits.</li>
+<li>Tres niveles equiespaciados a \(k_BT=\hbar\omega\): \(p=0.6652,\,0.2447,\,0.0900\), entropía \(1.2009\) bits (máxima: \(\log_23=1.585\)). Al bajar \(T\) la entropía tiende a 0 (estado fundamental puro); al subir, a \(\log_2N\).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Compare la mezcla \(\tfrac12(|0\rangle\langle0|+|1\rangle\langle1|)\) con el estado puro \(|+\rangle=(|0\rangle+|1\rangle)/\sqrt2\): \(\hat\rho\), pureza, \(\langle\sigma_z\rangle\), \(\langle\sigma_x\rangle\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Mezcla.</b> \(\hat\rho_m=\tfrac12\begin{pmatrix}1&0\\0&1\end{pmatrix}=\tfrac12\mathbb 1\).</li>
+<li><b>Puro.</b> \(\hat\rho_+=|+\rangle\langle+|=\tfrac12\begin{pmatrix}1&1\\1&1\end{pmatrix}\).</li>
+<li><b>Pureza.</b> \(\mathrm{Tr}\hat\rho_m^2=\tfrac12\); \(\mathrm{Tr}\hat\rho_+^2=1\).</li>
+<li><b>\(\sigma_z\).</b> \(\langle\sigma_z\rangle=\mathrm{Tr}(\hat\rho\sigma_z)=0\) en ambos: la medida de \(\sigma_z\) no los distingue.</li>
+<li><b>\(\sigma_x\).</b> Mezcla: \(\mathrm{Tr}(\tfrac12\sigma_x)=0\); puro: \(\mathrm{Tr}(\hat\rho_+\sigma_x)=1\): la medida de \(\sigma_x\) sí los distingue (la coherencia).</li>
+<li><b>Resultado.</b> <span class="ans">Pureza \(\tfrac12\) frente a 1; \(\langle\sigma_z\rangle=0\) en los dos; \(\langle\sigma_x\rangle=0\) (mezcla) frente a \(1\) (puro).</span></li>
+</ol></details></li>
+<li><span class="lvl">Básico</span>Un qubit tiene el vector de Bloch \(\mathbf r\) de longitud \(r=0.6\) con \(\theta=50^\circ\), \(\varphi=30^\circ\). Halle \(\hat\rho\), autovalores, pureza, entropía y \(P(\uparrow_z)\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Componentes.</b> \(x=r\sin\theta\cos\varphi=0.3980\); \(y=r\sin\theta\sin\varphi=0.2298\); \(z=r\cos\theta=0.3857\).</li>
+<li><b>Matriz.</b> \(\hat\rho=\tfrac12\begin{pmatrix}1+z&x-\ii y\\x+\ii y&1-z\end{pmatrix}=\begin{pmatrix}0.6928&0.1990-0.1149\ii\\0.1990+0.1149\ii&0.3072\end{pmatrix}\).</li>
+<li><b>Autovalores.</b> \((1\pm r)/2=0.8,\ 0.2\).</li>
+<li><b>Pureza.</b> \(\tfrac12(1+r^2)=0.68\).</li>
+<li><b>Entropía.</b> \(-0.8\log_20.8-0.2\log_20.2=0.2575+0.4644=0.7219\) bits.</li>
+<li><b>Resultado.</b> <span class="ans">\(\rho_{00}=0.6928\); \(\lambda=0.8,0.2\); Tr\(\rho^2=0.68\); \(S=0.7219\) bits; \(P(\uparrow_z)=0.6928\).</span></li>
+</ol></details></li>
+<li><span class="lvl">Intermedio</span>Para \(|\psi\rangle=\cos\alpha|00\rangle+\sin\alpha|11\rangle\) con \(\alpha=20^\circ\) halle \(\hat\rho_A\), la entropía de entrelazamiento, la concurrencia y la información mutua.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Estado reducido.</b> \(\hat\rho_A=\mathrm{Tr}_B|\psi\rangle\langle\psi|=\cos^2\alpha|0\rangle\langle0|+\sin^2\alpha|1\rangle\langle1|\) (los términos cruzados llevan \(\langle0_B|1_B\rangle=0\)): \(\mathrm{diag}(0.8830,0.1170)\).</li>
+<li><b>Entropía.</b> \(S=-0.8830\log_20.8830-0.1170\log_20.1170=0.1585+0.3621=0.5206\) bits.</li>
+<li><b>Concurrencia.</b> \(C=|\sin2\alpha|=\sin40^\circ=0.6428\).</li>
+<li><b>Información mutua.</b> \(S(A)+S(B)-S(AB)=0.5206+0.5206-0=1.0412\) bits.</li>
+<li><b>Resultado.</b> <span class="ans">\(\hat\rho_A=\mathrm{diag}(0.8830,0.1170)\); \(S=0.5206\) bits; \(C=0.6428\); \(I=1.0412\) bits.</span></li>
+</ol></details></li>
+<li><span class="lvl">Intermedio</span>Halle el operador densidad térmico de un qubit y de un oscilador a \(k_BT=\hbar\omega\): ocupaciones, longitud de Bloch, pureza, entropía y \(\bar n\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Qubit.</b> \(Z=1+\ee^{-1}=1.3679\); \(p_0=0.7311\), \(p_1=0.2689\).</li>
+<li><b>Vector de Bloch.</b> \(r=p_0-p_1=\tanh\tfrac12=0.4621\).</li>
+<li><b>Pureza.</b> \(p_0^2+p_1^2=0.5344+0.0723=0.6068\).</li>
+<li><b>Entropía.</b> \(-0.7311\log_20.7311-0.2689\log_20.2689=0.3304+0.5095=0.8399\) bits.</li>
+<li><b>Oscilador.</b> \(\bar n=1/(\ee^1-1)=0.5820\); \(S=(\bar n+1)\log_2(\bar n+1)-\bar n\log_2\bar n=1.5013\) bits.</li>
+<li><b>Resultado.</b> <span class="ans">Qubit: \(p=0.7311,0.2689\); \(r=0.4621\); Tr\(\rho^2=0.6068\); \(S=0.8399\) bits. Oscilador: \(\bar n=0.5820\); \(S=1.5013\) bits.</span></li>
+</ol></details></li>
+<li><span class="lvl">Avanzado</span>Muestre que \(\tfrac12\mathbb 1\) es la mezcla de \(\{|0\rangle,|1\rangle\}\), de \(\{|+\rangle,|-\rangle\}\) y de dos estados cualesquiera ortogonales; y que la mezcla de dos estados con una rotación unitaria \(U\) de los pesos da la misma \(\hat\rho\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Con \(\{|0\rangle,|1\rangle\}\).</b> \(\tfrac12|0\rangle\langle0|+\tfrac12|1\rangle\langle1|=\tfrac12\mathbb 1\).</li>
+<li><b>Con \(\{|\pm\rangle\}\).</b> \(\tfrac12|+\rangle\langle+|+\tfrac12|-\rangle\langle-|=\tfrac12\cdot\tfrac12\left[\begin{pmatrix}1&1\\1&1\end{pmatrix}+\begin{pmatrix}1&-1\\-1&1\end{pmatrix}\right]=\tfrac12\mathbb 1\) ✓.</li>
+<li><b>General.</b> Para una base ortonormal \(\{|u\rangle,|v\rangle\}\): \(|u\rangle\langle u|+|v\rangle\langle v|=\mathbb 1\) (completitud): \(\tfrac12\mathbb 1\).</li>
+<li><b>Rotación de pesos (HJW).</b> Si \(|\tilde\psi_j\rangle=\sum_iU_{ji}\sqrt{p_i}|\psi_i\rangle\) con \(U\) unitaria, entonces \(\sum_j|\tilde\psi_j\rangle\langle\tilde\psi_j|=\sum_{i,k}(U^\dagger U)_{ki}\sqrt{p_ip_k}|\psi_i\rangle\langle\psi_k|=\sum_ip_i|\psi_i\rangle\langle\psi_i|\): el mismo \(\hat\rho\).</li>
+<li><b>Resultado.</b> <span class="ans">\(\tfrac12\mathbb 1\) admite infinitas descomposiciones (una por cada base ortonormal), y las colecciones de estados con el mismo \(\hat\rho\) se relacionan por una unitaria (teorema de Hughston–Jozsa–Wootters): ninguna medida distingue entre ellas.</span></li>
+</ol></details></li>
+<li><span class="lvl">Avanzado</span>Un qubit con \(\mathbf r=(0.3980,\,0.2298,\,0.3857)\) evoluciona con \(H=\tfrac\omega2\sigma_z\) durante \(\omega t=\pi/2\). Halle \(\mathbf r(t)\), la pureza y la entropía, y compruebe la ecuación de von Neumann.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Von Neumann.</b> \(\dot{\mathbf r}=\boldsymbol\omega\times\mathbf r\) con \(\boldsymbol\omega=\omega\hat z\): precesión alrededor de \(z\).</li>
+<li><b>Rotación.</b> \((x,y)\to(x\cos\omega t-y\sin\omega t,\ x\sin\omega t+y\cos\omega t)\): con \(\omega t=\pi/2\): \((-0.2298,\ 0.3980)\).</li>
+<li><b>Vector final.</b> \(\mathbf r(t)=(-0.2298,\,0.3980,\,0.3857)\); \(|\mathbf r|=0.6\) se conserva.</li>
+<li><b>Pureza y entropía.</b> \(\tfrac12(1+0.36)=0.68\) y \(S=0.7219\) bits, invariantes (la evolución unitaria no cambia el espectro).</li>
+<li><b>Poblaciones.</b> \(\rho_{00}=\tfrac12(1+z)=0.6928\) no cambia (conmuta con \(H\)); la coherencia \(\rho_{01}\) gira de fase \(\ee^{-\ii\omega t}\).</li>
+<li><b>Resultado.</b> <span class="ans">\(\mathbf r(t)=(-0.2298,\,0.3980,\,0.3857)\); Tr\(\rho^2=0.68\) y \(S=0.7219\) bits constantes; las poblaciones no cambian y la coherencia precesa.</span></li>
+</ol></details></li>
+</ol>
+<div class="box note"><h4>Para profundizar</h4><p>J. von Neumann, <em>Mathematische Grundlagen der Quantenmechanik</em>, 1932. L. D. Landau, <em>Z. Phys.</em> 45, 430 (1927). U. Fano, <em>Rev. Mod. Phys.</em> 29, 74 (1957). E. T. Jaynes, <em>Phys. Rev.</em> 106, 620 (1957). L. P. Hughston, R. Jozsa y W. K. Wootters, <em>Phys. Lett. A</em> 183, 14 (1993). M. A. Nielsen e I. L. Chuang, <em>Quantum Computation and Quantum Information</em>, Cambridge, 2000, cap. 2. J. J. Sakurai y J. Napolitano, <em>Modern Quantum Mechanics</em>, 2.ª ed., 2011, cap. 3.</p></div>
+</section>
+</template>

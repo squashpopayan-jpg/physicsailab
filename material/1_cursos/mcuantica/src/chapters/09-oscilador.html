@@ -1,0 +1,120 @@
+<template class="chapter-src" data-id="oscilador" data-num="9" data-title="El oscilador armónico" data-part="Parte II · Problemas en una dimensión" data-short="Solución por series de Hermite y por operadores de escalera, niveles equiespaciados y energía de punto cero, matrices de x y p, región clásicamente prohibida, dinámica exacta de superposiciones, vibraciones moleculares y efecto isotópico cinético">
+<p class="lead">Cualquier sistema cerca de un mínimo estable de energía se comporta como un oscilador armónico: un enlace químico, un cristal, el campo electromagnético en una cavidad. Por eso es el sistema más importante de la mecánica cuántica. Se resuelve de dos maneras equivalentes: la solución directa de la ecuación diferencial con polinomios de Hermite y el método algebraico de Dirac con operadores de creación y aniquilación, mucho más corto y transferible. Con el segundo se obtienen todos los valores esperados sin una sola integral, y es el germen del formalismo de la segunda cuantización (capítulo 29) y de la cuantización del campo (capítulo 35).</p>
+
+<section>
+<h2>Solución de la ecuación de Schrödinger</h2>
+<p>Con \(V=\tfrac12m\omega^2x^2\), la ecuación estacionaria es \(-\tfrac{\hbar^2}{2m}\psi''+\tfrac12m\omega^2x^2\psi=E\psi\). Se adimensionaliza con la longitud natural \(\ell=\sqrt{\hbar/m\omega}\), \(\xi=x/\ell\), y \(\varepsilon=2E/\hbar\omega\):</p>
+<div class="eq">\[\frac{\dd^2\psi}{\dd\xi^2}+(\varepsilon-\xi^2)\psi=0.\]</div>
+<p>Para \(|\xi|\to\infty\) domina \(\xi^2\), y las soluciones se comportan como \(e^{\pm\xi^2/2}\); solo \(e^{-\xi^2/2}\) es normalizable. Se factoriza \(\psi=h(\xi)e^{-\xi^2/2}\), que lleva a la ecuación de Hermite \(h''-2\xi h'+(\varepsilon-1)h=0\). Con el desarrollo en serie \(h=\sum_ja_j\xi^j\) la recurrencia es</p>
+<div class="eq">\[a_{j+2}=\frac{2j+1-\varepsilon}{(j+1)(j+2)}\,a_j.\]</div>
+<p>Si la serie no termina, para \(j\) grande \(a_{j+2}/a_j\to2/j\), el comportamiento de los coeficientes de \(e^{\xi^2}\), y entonces \(\psi\sim e^{+\xi^2/2}\) diverge. Para que \(\psi\) sea normalizable la serie debe cortarse: existe un entero \(n\) con \(2n+1-\varepsilon=0\). Esa es la cuantización, y es consecuencia de la condición de contorno en el infinito. Los polinomios resultantes son los de Hermite \(H_n\), con \(H_0=1\), \(H_1=2\xi\), \(H_2=4\xi^2-2\), \(H_3=8\xi^3-12\xi\), y la recurrencia \(H_{n+1}=2\xi H_n-2nH_{n-1}\).</p>
+<div class="eq key" data-name="Oscilador armónico">\[E_n=\hbar\omega\left(n+\tfrac12\right),\qquad \psi_n(x)=\frac{1}{\sqrt{2^nn!}}\left(\frac{m\omega}{\pi\hbar}\right)^{1/4}H_n(\xi)\,e^{-\xi^2/2},\qquad n=0,1,2,\dots\]</div>
+<p>Los niveles son <em>equiespaciados</em> (\(\Delta E=\hbar\omega\) entre contiguos), con energía de punto cero \(E_0=\tfrac12\hbar\omega\). \(\psi_n\) tiene paridad \((-1)^n\) y \(n\) nodos. Las funciones son ortonormales y forman una base completa de las funciones de cuadrado integrable.</p>
+</section>
+
+<section>
+<h2>El método de los operadores de escalera</h2>
+<p>El hamiltoniano \(\hat H=\hat p^2/2m+\tfrac12m\omega^2\hat x^2\) es una suma de cuadrados, y se factoriza como \(|u|^2=u^*u\). Se definen el <span class="term">operador de aniquilación</span> \(\hat a\) y su adjunto, el de <span class="term">creación</span> \(\hat a^\dagger\):</p>
+<div class="eq key" data-name="Operadores de escalera">\[\hat a=\frac{1}{\sqrt2}\left(\frac{\hat x}{\ell}+\ii\frac{\ell\hat p}{\hbar}\right),\quad \hat a^\dagger=\frac{1}{\sqrt2}\left(\frac{\hat x}{\ell}-\ii\frac{\ell\hat p}{\hbar}\right),\quad [\hat a,\hat a^\dagger]=1,\quad \hat H=\hbar\omega\left(\hat a^\dagger\hat a+\tfrac12\right).\]</div>
+<p>El conmutador sale de \([\hat x,\hat p]=\ii\hbar\): \([\hat a,\hat a^\dagger]=\tfrac12\left(\tfrac{-\ii}{\hbar}[\hat x,\hat p]+\tfrac{\ii}{\hbar}[\hat p,\hat x]\right)=1\). Con el operador número \(\hat N=\hat a^\dagger\hat a\) y las reglas \([\hat N,\hat a]=-\hat a\) y \([\hat N,\hat a^\dagger]=\hat a^\dagger\), si \(\hat N|n\rangle=n|n\rangle\), entonces \(\hat N(\hat a^\dagger|n\rangle)=(n+1)\hat a^\dagger|n\rangle\) y \(\hat N(\hat a|n\rangle)=(n-1)\hat a|n\rangle\): \(\hat a^\dagger\) sube la energía en \(\hbar\omega\) y \(\hat a\) la baja. Como \(\|\hat a|n\rangle\|^2=\langle n|\hat a^\dagger\hat a|n\rangle=n\ge0\), la escalera debe detenerse abajo: existe un estado \(|0\rangle\) con \(\hat a|0\rangle=0\), y entonces \(n=0,1,2,\dots\) (de otro modo aparecerían números \(n\) negativos con norma negativa). Las relaciones de normalización y la acción se resumen así:</p>
+<div class="eq key" data-name="Acción de los operadores">\[\hat a|n\rangle=\sqrt n\,|n-1\rangle,\quad \hat a^\dagger|n\rangle=\sqrt{n+1}\,|n+1\rangle,\quad |n\rangle=\frac{(\hat a^\dagger)^n}{\sqrt{n!}}|0\rangle,\quad \hat x=\frac{\ell}{\sqrt2}(\hat a+\hat a^\dagger),\quad \hat p=\frac{\ii\hbar}{\sqrt2\ell}(\hat a^\dagger-\hat a).\]</div>
+<p>El estado fundamental sale de \(\hat a|0\rangle=0\): \((\xi+\dd/\dd\xi)\psi_0=0\), una ecuación de primer orden cuya solución normalizada es \(\psi_0=\pi^{-1/4}\ell^{-1/2}e^{-\xi^2/2}\): una gaussiana. Y \(\psi_n\) se obtiene aplicando \(\hat a^\dagger=\tfrac1{\sqrt2}(\xi-\dd/\dd\xi)\) \(n\) veces. Los elementos de matriz son inmediatos: \(\langle m|\hat x|n\rangle=\tfrac{\ell}{\sqrt2}\left(\sqrt n\,\delta_{m,n-1}+\sqrt{n+1}\,\delta_{m,n+1}\right)\), de modo que \(\hat x\) y \(\hat p\) solo conectan estados vecinos (regla de selección \(\Delta n=\pm1\), base de la espectroscopía infrarroja). Para valores esperados:</p>
+<div class="eq">\[\langle x^2\rangle_n=\left(n+\tfrac12\right)\ell^2,\quad \langle p^2\rangle_n=\left(n+\tfrac12\right)\frac{\hbar^2}{\ell^2},\quad \Delta x\,\Delta p=\left(n+\tfrac12\right)\hbar,\quad \langle T\rangle_n=\langle V\rangle_n=\tfrac12E_n.\]</div>
+<p>Se obtienen sin integrar: \(\hat x^2=\tfrac{\ell^2}2(\hat a^2+\hat a^{\dagger2}+\hat a\hat a^\dagger+\hat a^\dagger\hat a)\), y solo los dos últimos términos tienen valor esperado no nulo, \(\langle n|\hat a\hat a^\dagger+\hat a^\dagger\hat a|n\rangle=2n+1\). El estado fundamental cumple \(\Delta x\Delta p=\hbar/2\): es de incertidumbre mínima, como toda gaussiana.</p>
+<div class="box ex"><h4>Escalas de un enlace: HCl y CO</h4>
+<p><strong>Datos.</strong> Constantes espectroscópicas (Huber y Herzberg): HCl, \(\omega_e=2990.95\) cm⁻¹, \(\mu=0.97959\) u; CO, \(2169.81\) cm⁻¹, \(6.8562\) u. <strong>Procedimiento.</strong> (1) Longitud natural \(\ell=\sqrt{\hbar/\mu\omega}\), con \(\omega=2\pi c\tilde\nu\): HCl, \(\ell=0.1073\) Å; CO, \(0.0476\) Å. (2) Energía de punto cero \(\tfrac12hc\tilde\nu\): HCl, 1495.5 cm⁻¹ \(=0.1854\) eV \(=17.89\) kJ/mol; CO, 1084.9 cm⁻¹ \(=0.1345\) eV \(=12.98\) kJ/mol. (3) Puntos de retorno del nivel fundamental, \(\pm\ell\): \(\pm0.107\) Å y \(\pm0.048\) Å, un 8.4 % y un 4.2 % de la longitud de enlace (1.275 y 1.128 Å): la molécula vibra poco, y por eso la aproximación armónica es buena a baja excitación. <strong>Resultado.</strong> Incluso a 0 K el enlace tiene una energía vibracional de 13–18 kJ/mol, comparable a un enlace débil.</p></div>
+<div class="sim" data-sim="oscilador" data-title="Estados del oscilador armónico: niveles, funciones de onda, puntos de retorno y límite clásico"></div>
+<div class="sim-guide"><ul>
+<li>Con \(n=0\): \(\psi_0\) es una gaussiana y la probabilidad de estar fuera de los puntos de retorno \(\pm1\) es erfc(1) \(=15.73\) %: el oscilador cuántico se «escapa» de la región donde la energía cinética sería negativa (efecto túnel). Para \(n=1\) es 11.16 %, \(n=2\) 9.51 %, \(n=5\) 7.40 %, \(n=10\) 6.01 % y \(n=20\) 4.84 %: decrece lentamente, como \(n^{-1/3}\) (el borde de la región permitida está dentro de la zona de Airy).</li>
+<li>Con la densidad clásica activada (línea discontinua): para \(n=10\) y mayores, el promedio de \(|\psi_n|^2\) sigue la forma clásica \(1/(\pi\sqrt{2n+1-\xi^2})\), pero oscila alrededor de ella y no diverge en los puntos de retorno; para \(n=0\) o 1, las dos son muy distintas.</li>
+<li>Seleccione HCl: \(\ell=0.1073\) Å; para \(n=2\), \(E=2.5\hbar\omega=7477\) cm⁻¹ \(=0.927\) eV, y los puntos de retorno están en \(\pm\sqrt5\,\ell=\pm0.240\) Å. \(\langle T\rangle=\langle V\rangle=E/2\) en todo estado.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Dinámica: un reloj perfecto</h2>
+<p>Como los niveles son equiespaciados, \(E_n-E_m=(n-m)\hbar\omega\), todas las frecuencias de Bohr son múltiplos enteros de \(\omega\) y cualquier superposición \(\Psi=\sum c_n|n\rangle e^{-\ii(n+1/2)\omega t}\) es <em>exactamente periódica</em> con periodo \(T=2\pi/\omega\): vuelve a su forma original, sin ensancharse indefinidamente. En el cuadro de Heisenberg los operadores evolucionan sencillamente, \(\hat a_H(t)=\hat a\,e^{-\ii\omega t}\), y los valores esperados de \(x\) y \(p\) siguen exactamente la trayectoria clásica (teorema de Ehrenfest con fuerza lineal, capítulo 4). Es la razón de que los paquetes del oscilador no se dispersen y de que existan estados coherentes (capítulo 10).</p>
+<div class="box ex"><h4>La superposición de los estados 0 y 1 del H₂</h4>
+<p><strong>Procedimiento.</strong> Con \(c_0=c_1=1/\sqrt2\): \(\langle x\rangle(t)=2c_0c_1\langle0|\hat x|1\rangle\cos\omega t=\dfrac{\ell}{\sqrt2}\cos\omega t\) y \(\langle p\rangle(t)=-\dfrac{\hbar}{\sqrt2\,\ell}\sin\omega t\). Para el H\(_2\) (\(\omega_e=4401.21\) cm⁻¹, \(\mu=0.50391\) u, \(\ell=0.1233\) Å): la amplitud es \(\ell/\sqrt2=0.0872\) Å y el periodo \(2\pi/\omega=7.58\) fs. La energía media es \(\langle E\rangle=\tfrac12\left(\tfrac12+\tfrac32\right)\hbar\omega=\hbar\omega\). <strong>Resultado.</strong> Una oscilación del enlace de 0.087 Å cada 7.6 fs, la que se excita con un pulso láser ultracorto.</p></div>
+<div class="sim" data-sim="ho-superpos" data-title="Superposición de estados del oscilador: dinámica periódica y trayectoria de ⟨x⟩ y ⟨p⟩"></div>
+<div class="sim-guide"><ul>
+<li>Pesos 1 y 1 en \(n=0,1\) (por defecto): la densidad es una gaussiana ensanchada que oscila con amplitud \(1/\sqrt2=0.707\) en \(\xi\); \(\langle E\rangle=1\) (en \(\hbar\omega\)) y \(\Delta E=0.5\). \(\langle x\rangle\) y \(\langle p\rangle\) forman una elipse en el espacio de fases.</li>
+<li>Añada \(n=2\) y \(n=3\): la forma de la densidad se complica, pero al cabo de un periodo completo (8 s en la animación) vuelve exacta a sí misma. Con un solo estado (pesos 0 salvo uno) la densidad es estacionaria.</li>
+<li>Con pesos 1, 0, 1, 0 (solo \(n\) par): \(\langle x\rangle\equiv0\) siempre (paridad) aunque la densidad «respire» con periodo \(T/2\).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Vibraciones moleculares, punto cero e isótopos</h2>
+<p>Cerca del mínimo \(r_e\) cualquier potencial de enlace es \(V\approx\tfrac12k(r-r_e)^2\), con \(k=V''(r_e)\), y la vibración tiene \(\omega=\sqrt{k/\mu}\), con \(\mu\) la masa reducida. La molécula absorbe luz infrarroja en \(\Delta n=\pm1\) a la frecuencia \(\omega\): la espectroscopía vibracional (los valores \(\omega_e\) del ejemplo anterior). Dos consecuencias químicas. (i) La <span class="term">energía de punto cero</span> \(\tfrac12\hbar\omega\) hace que la energía de disociación espectroscópica \(D_0\) sea menor que la profundidad del pozo \(D_e\). (ii) Cambiar un isótopo cambia \(\mu\) pero no \(k\) (que depende solo de la estructura electrónica; aproximación de Born–Oppenheimer), de modo que \(\omega\propto1/\sqrt\mu\): al sustituir H por D, la frecuencia baja por \(\approx1/\sqrt2\) y el punto cero también. Si en el estado de transición el enlace C–H se pierde (su vibración deja de ser un modo ligado), la barrera efectiva para H es menor que para D en \(\Delta\)ZPE, y la velocidad cambia en un factor máximo \(k_H/k_D\approx\exp(\Delta\mathrm{ZPE}/RT)\) (efecto isotópico cinético semiclásico).</p>
+<div class="box ex"><h4>El efecto isotópico máximo de un enlace C–H</h4>
+<p><strong>Datos.</strong> \(\tilde\nu_\text{C–H}=2900\) cm⁻¹, \(\mu_\text{CH}=0.92974\) u, \(\mu_\text{CD}=1.72464\) u, \(T=298.15\) K. <strong>Procedimiento.</strong> (1) \(\tilde\nu_\text{C–D}=2900\sqrt{0.92974/1.72464}=2129.3\) cm⁻¹. (2) \(\Delta\mathrm{ZPE}=\tfrac12(2900-2129.3)=385.4\) cm⁻¹ \(=4.61\) kJ/mol. (3) \(k_H/k_D=\exp(4610/(8.3145\times298.15))=e^{1.860}=6.4\). Para O–H, 9.3; para N–H, 8.5; para H\(_2\)/D\(_2\), 22. <strong>Resultado.</strong> Los efectos de 6–7 observados en la ruptura de enlaces C–H a temperatura ambiente concuerdan con este límite; los valores mayores (hasta 50) se atribuyen al túnel (capítulo 8).</p></div>
+<div class="sim" data-sim="ho-isotopo" data-title="Energía de punto cero y efecto isotópico cinético máximo de un enlace"></div>
+<div class="sim-guide"><ul>
+<li>C–H a 298 K: \(\tilde\nu_\text{H}=2900\), \(\tilde\nu_\text{D}=2129.3\) cm⁻¹, \(\Delta\mathrm{ZPE}=4.61\) kJ/mol y \(k_H/k_D=6.42\). Baje a 200 K: sube a 16 (y a 150 K, a 40); a 500 K baja a 3.0: a temperatura alta el cociente tiende a 1.</li>
+<li>O–H: \(\Delta\mathrm{ZPE}=5.53\) kJ/mol, 9.3 a 298 K. H₂/D₂: \(\Delta\mathrm{ZPE}=7.70\) kJ/mol y 22.4 (el D₂ tiene \(\omega=3113.3\) cm⁻¹, frente a 4401.2).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Varias dimensiones</h2>
+<p>El oscilador en tres dimensiones \(V=\tfrac12m(\omega_x^2x^2+\omega_y^2y^2+\omega_z^2z^2)\) se separa en tres osciladores independientes y \(E=\hbar\omega_x(n_x+\tfrac12)+\hbar\omega_y(n_y+\tfrac12)+\hbar\omega_z(n_z+\tfrac12)\). En el caso isótropo, \(E_N=\hbar\omega(N+\tfrac32)\) con \(N=n_x+n_y+n_z\), y el nivel \(N\) tiene degeneración \(\tfrac12(N+1)(N+2)\) (1, 3, 6, 10…), más alta que la del problema de la caja; esa degeneración mayor de la simetría esférica es la clave del modelo de capas del núcleo (capítulo 13). Un cristal de \(N\) átomos es un conjunto de \(3N\) osciladores (fonones), y el campo electromagnético en una cavidad también (fotones, capítulo 35): la energía del cuanto es \(\hbar\omega\).</p>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Para el CO (\(\omega_e=2169.81\) cm⁻¹, \(\mu=6.8562\) u) calcule la energía de punto cero en cm⁻¹, eV y kJ/mol, la longitud de onda de la transición \(0\to1\) y la longitud natural \(\ell\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Punto cero.</b> \(E_0=\tfrac12\hbar\omega=\tfrac12hc\tilde\nu=\tfrac12(2169.81)=1084.9\) cm⁻¹.</li>
+<li><b>Unidades.</b> 1 cm⁻¹ \(=1.239842\times10^{-4}\) eV \(=0.0119627\) kJ/mol. \(E_0=0.13451\) eV \(=12.978\) kJ/mol.</li>
+<li><b>Transición.</b> \(\Delta E=\hbar\omega\): número de onda 2169.81 cm⁻¹, \(\lambda=1/\tilde\nu=4.609\) µm (infrarrojo medio).</li>
+<li><b>Longitud.</b> \(\ell=\sqrt{\hbar/\mu\omega}\), con \(\omega=2\pi c\tilde\nu=2\pi(2.9979\times10^{10}\ \text{cm/s})(2169.81\ \text{cm}^{-1})=4.0870\times10^{14}\) s⁻¹ y \(\mu=6.8562\times1.66054\times10^{-27}=1.1385\times10^{-26}\) kg: \(\ell=\sqrt{1.05457\times10^{-34}/(1.1385\times10^{-26}\times4.0870\times10^{14})}=4.761\times10^{-12}\) m \(=0.0476\) Å.</li>
+<li><b>Resultado.</b> <span class="ans">1084.9 cm⁻¹ \(=0.1345\) eV \(=12.98\) kJ/mol; \(\lambda=4.609\) µm; \(\ell=0.0476\) Å.</span></li>
+</ol></details></li>
+<li><span class="lvl">Básico</span>Calcule la probabilidad de hallar el oscilador fuera de la región clásica en los estados \(n=0\) y \(n=1\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Puntos de retorno.</b> \(E_n=\tfrac12m\omega^2x_t^2\Rightarrow\xi_t=\sqrt{2n+1}\): \(1\) para \(n=0\), \(\sqrt3\) para \(n=1\).</li>
+<li><b>\(n=0\).</b> \(|\psi_0|^2=e^{-\xi^2}/\sqrt\pi\). \(P=2\int_1^\infty\dfrac{e^{-\xi^2}}{\sqrt\pi}\dd\xi=\mathrm{erfc}(1)=0.15730\).</li>
+<li><b>\(n=1\).</b> \(|\psi_1|^2=2\xi^2e^{-\xi^2}/\sqrt\pi\). Con \(\int_a^\infty\xi^2e^{-\xi^2}\dd\xi=\tfrac a2e^{-a^2}+\tfrac{\sqrt\pi}4\mathrm{erfc}(a)\): \(P=\dfrac{4}{\sqrt\pi}\left[\tfrac{\sqrt3}2e^{-3}+\tfrac{\sqrt\pi}4\mathrm{erfc}\sqrt3\right]=\dfrac{2\sqrt3e^{-3}}{\sqrt\pi}+\mathrm{erfc}\sqrt3=0.09730+0.01431=0.1116\).</li>
+<li><b>Interpretación.</b> Es la penetración en la región donde \(E\lt V\), una región «imposible» clásicamente; decae lentamente con \(n\) (6.0 % para \(n=10\)).</li>
+<li><b>Resultado.</b> <span class="ans">\(P_0=15.73\) %, \(P_1=11.16\) %.</span></li>
+</ol></details></li>
+<li><span class="lvl">Intermedio</span>Con los operadores de escalera, calcule \(\langle x^2\rangle\), \(\langle p^2\rangle\) y \(\Delta x\Delta p\) en los estados \(n=0,1,2\), y verifique el teorema del virial.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Operadores.</b> \(\hat x^2=\tfrac{\ell^2}2(\hat a^2+\hat a^{\dagger2}+\hat a\hat a^\dagger+\hat a^\dagger\hat a)\); \(\hat p^2=-\tfrac{\hbar^2}{2\ell^2}(\hat a^2+\hat a^{\dagger2}-\hat a\hat a^\dagger-\hat a^\dagger\hat a)\).</li>
+<li><b>Valores esperados.</b> \(\langle n|\hat a^2|n\rangle=\langle n|\hat a^{\dagger2}|n\rangle=0\); \(\langle n|\hat a\hat a^\dagger|n\rangle=n+1\); \(\langle n|\hat a^\dagger\hat a|n\rangle=n\). Así \(\langle x^2\rangle=\tfrac{\ell^2}2(2n+1)\) y \(\langle p^2\rangle=\tfrac{\hbar^2}{2\ell^2}(2n+1)\).</li>
+<li><b>Incertidumbre.</b> \(\langle x\rangle=\langle p\rangle=0\), luego \(\Delta x\Delta p=\tfrac\hbar2(2n+1)=(n+\tfrac12)\hbar\): \(0.5\hbar\), \(1.5\hbar\), \(2.5\hbar\), es decir \(1,3,5\) veces el mínimo \(\hbar/2\).</li>
+<li><b>Virial.</b> \(\langle T\rangle=\langle p^2\rangle/2m=\tfrac{\hbar^2(2n+1)}{4m\ell^2}=\tfrac{\hbar\omega}4(2n+1)=\tfrac12E_n\) y \(\langle V\rangle=\tfrac12m\omega^2\langle x^2\rangle=\tfrac{\hbar\omega}4(2n+1)=\tfrac12E_n\).</li>
+<li><b>Resultado.</b> <span class="ans">\(\Delta x\Delta p=(n+\tfrac12)\hbar\) (1, 3 y 5 veces \(\hbar/2\)); \(\langle T\rangle=\langle V\rangle=E_n/2\).</span></li>
+</ol></details></li>
+<li><span class="lvl">Intermedio</span>Calcule \(\langle x^4\rangle\) en el estado fundamental usando los operadores de escalera, y compruébelo con la integral gaussiana.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Expresión.</b> \(\hat x^4=\tfrac{\ell^4}4(\hat a+\hat a^\dagger)^4\). Se calcula \(\langle0|(\hat a+\hat a^\dagger)^4|0\rangle=\|(\hat a+\hat a^\dagger)^2|0\rangle\|^2\).</li>
+<li><b>Aplicación.</b> \((\hat a+\hat a^\dagger)|0\rangle=|1\rangle\); \((\hat a+\hat a^\dagger)|1\rangle=|0\rangle+\sqrt2|2\rangle\). Entonces \((\hat a+\hat a^\dagger)^2|0\rangle=|0\rangle+\sqrt2|2\rangle\).</li>
+<li><b>Norma.</b> \(\|\,|0\rangle+\sqrt2|2\rangle\,\|^2=1+2=3\).</li>
+<li><b>Resultado.</b> \(\langle x^4\rangle=\tfrac34\ell^4\).</li>
+<li><b>Comprobación.</b> Con \(\rho=e^{-\xi^2}/\sqrt\pi\): \(\int\xi^4\rho\dd\xi=\tfrac{3}{4}\) (momento de orden 4 de una gaussiana de varianza \(\tfrac12\): \(3\sigma^4=3/4\)). Igual.</li>
+<li><b>Resultado.</b> <span class="ans">\(\langle x^4\rangle_0=\tfrac34\ell^4\); curtosis 3, como la gaussiana.</span></li>
+</ol></details></li>
+<li><span class="lvl">Avanzado</span>Obtenga \(\psi_0\) de \(\hat a\psi_0=0\) y \(\psi_1,\psi_2\) aplicando \(\hat a^\dagger\); verifique la normalización y la ortogonalidad.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Fundamental.</b> En unidades de \(\ell\), \(\hat a=\tfrac1{\sqrt2}(\xi+\partial_\xi)\). \(\hat a\psi_0=0\Rightarrow\psi_0'=-\xi\psi_0\Rightarrow\psi_0=Ae^{-\xi^2/2}\); \(1=A^2\sqrt\pi\Rightarrow A=\pi^{-1/4}\).</li>
+<li><b>Primer excitado.</b> \(\psi_1=\hat a^\dagger\psi_0=\tfrac1{\sqrt2}(\xi-\partial_\xi)\psi_0=\tfrac1{\sqrt2}(2\xi)\psi_0=\sqrt2\,\xi\,\psi_0\). Norma: \(2\int\xi^2\psi_0^2\dd\xi=2\cdot\tfrac12=1\) ✓ (\(\langle\xi^2\rangle_0=\tfrac12\)).</li>
+<li><b>Segundo excitado.</b> \(\psi_2=\tfrac1{\sqrt2}\hat a^\dagger\psi_1\) (porque \(|2\rangle=(\hat a^\dagger)^2|0\rangle/\sqrt{2!}\)). Con \(\hat a^\dagger\psi_1=\tfrac1{\sqrt2}(\xi-\partial_\xi)(\sqrt2\,\xi\psi_0)=(\xi-\partial_\xi)(\xi\psi_0)=\xi^2\psi_0-(\psi_0-\xi^2\psi_0)=(2\xi^2-1)\psi_0\): \(\psi_2=\dfrac{2\xi^2-1}{\sqrt2}\psi_0\), igual a \(H_2/\sqrt{2^2\,2!}\,\psi_0\) con \(H_2=4\xi^2-2\) ✓.</li>
+<li><b>Ortogonalidad.</b> \(\langle\psi_0|\psi_1\rangle=\sqrt2\int\xi\psi_0^2=0\) (integrando impar). \(\langle\psi_0|\psi_2\rangle=\tfrac1{\sqrt2}\int(2\xi^2-1)\psi_0^2=\tfrac1{\sqrt2}(2\cdot\tfrac12-1)=0\) ✓.</li>
+<li><b>Resultado.</b> <span class="ans">\(\psi_0=\pi^{-1/4}e^{-\xi^2/2}\), \(\psi_1=\sqrt2\xi\psi_0\), \(\psi_2=(2\xi^2-1)\psi_0/\sqrt2\).</span></li>
+</ol></details></li>
+<li><span class="lvl">Avanzado</span>El enlace del H₂ se prepara en \((|0\rangle+|1\rangle)/\sqrt2\). Calcule \(\langle x\rangle(t)\), \(\langle p\rangle(t)\), el periodo y la energía media, con \(\omega_e=4401.21\) cm⁻¹ y \(\mu=0.50391\) u.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Estado.</b> \(\Psi(t)=\tfrac1{\sqrt2}\left(|0\rangle e^{-\ii\omega t/2}+|1\rangle e^{-3\ii\omega t/2}\right)\).</li>
+<li><b>Posición.</b> \(\langle x\rangle=2\mathrm{Re}\left[c_0^*c_1e^{-\ii\omega t}\right]\langle0|\hat x|1\rangle=\cos\omega t\cdot\tfrac{\ell}{\sqrt2}\), pues \(c_0^*c_1=\tfrac12\) y \(\langle0|\hat x|1\rangle=\ell/\sqrt2\).</li>
+<li><b>Momento.</b> \(\langle0|\hat p|1\rangle=-\ii\hbar/(\sqrt2\ell)\): \(\langle p\rangle=2\mathrm{Re}\left[\tfrac12e^{-\ii\omega t}\left(-\tfrac{\ii\hbar}{\sqrt2\ell}\right)\right]=-\tfrac{\hbar}{\sqrt2\ell}\sin\omega t\).</li>
+<li><b>Números.</b> \(\omega=2\pi c\tilde\nu=8.2916\times10^{14}\) s⁻¹; \(T=2\pi/\omega=7.579\) fs; \(\ell=\sqrt{\hbar/\mu\omega}=0.1233\) Å; amplitud de \(x\): \(\ell/\sqrt2=0.0872\) Å.</li>
+<li><b>Energía.</b> \(\langle E\rangle=\tfrac12\hbar\omega(\tfrac12\cdot1+\tfrac12\cdot3)=\hbar\omega=0.5457\) eV (\(4401.2\) cm⁻¹); \(\Delta E=\tfrac12\hbar\omega\).</li>
+<li><b>Resultado.</b> <span class="ans">\(\langle x\rangle=0.0872\cos\omega t\) Å; \(T=7.58\) fs; \(\langle E\rangle=\hbar\omega=0.546\) eV.</span></li>
+</ol></details></li>
+</ol>
+<div class="box note"><h4>Para profundizar</h4><p>P. A. M. Dirac, <em>The Principles of Quantum Mechanics</em>, 4.ª ed., 1958, § 34. D. J. Griffiths y D. F. Schroeter, <em>Introduction to Quantum Mechanics</em>, 3.ª ed., 2018, sección 2.3. C. Cohen-Tannoudji, B. Diu y F. Laloë, <em>Quantum Mechanics</em>, vol. 1, 1977, cap. V. K. P. Huber y G. Herzberg, <em>Constants of Diatomic Molecules</em> (NIST Chemistry WebBook). F. H. Westheimer, «The magnitude of the primary kinetic isotope effect», <em>Chem. Rev.</em> 61, 265 (1961). R. P. Bell, <em>The Tunnel Effect in Chemistry</em>, 1980.</p></div>
+</section>
+</template>

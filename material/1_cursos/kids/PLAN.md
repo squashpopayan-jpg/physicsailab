@@ -1,0 +1,39 @@
+# Física KIDS — plan del curso
+
+Curso de Física Fundamental para niñas y niños (6–12 años), todas las ramas, desde los orígenes.
+Autor: Mg. Manuel Alejandro Obando — Departamento de Física, Universidad del Cauca.
+Estilo: colores vivos, 10 personajes (SVG), simulaciones tipo juego, experimentos caseros, preguntas fáciles, «Para mentes curiosas» (nivel mayor), lectura en voz alta.
+
+## Arquitectura (carpeta ConCode/kids)
+- `build.js` → `dist/index.html` (completo), `dist/Fisica-KIDS.html` (copia), `dist/fisica-kids.html` (fragmento para Artifact).
+- `src/shell.html`, `src/styles.css`, `src/core/*.js` (motor FK), `src/chapters/NN-id.html` (plantilla) + `NN-id.js` (sims).
+- `tools/shot.js` (puppeteer: `check`, `shot`), `tests/run.js` (pruebas de física pura contra valores de referencia).
+- Espacio de nombres `FK`. Sims: `FK.sim('id', (g)=>{...})`. Texto en español, tuteo. HTML con la herramienta Write (no heredocs).
+
+## Componentes de plantilla (HTML)
+`<template class="chapter-src" data-id data-num data-title data-world data-short>`; dentro: `<p class="lead">`, `<div class="learn"><ul>` (hoy aprenderás), `<section><h2>`, `<div class="say" data-who="newti" data-mood="happy">` (globo de diálogo), `<div class="fact">` (¿Sabías que?), `<div class="magic">` (fórmula mágica, texto plano), `<details class="curious">` (mentes curiosas), `<div class="sim" data-sim data-title>`, `<div class="exp" data-title data-time data-level data-adult>` con `<ul class="mat">`, `<ol class="steps">`, `<p class="predict">`, `<div class="result">`, `<div class="quiz"><div class="q" data-ans="N"><p>..</p><ol><li>..</li></ol><p class="why">..</p></div></div>`, `<div class="story">` (historia), `<div class="warn">` (seguridad).
+
+## Mundos y personajes
+1 Orígenes — Búho Sabio (turquesa) · 2 Movimiento — Newti, gato (naranja) · 3 Agua y aire — Gotín (azul) · 4 Calor — Flamo (rojo) · 5 Ondas y sonido — Eco, murciélago (violeta) · 6 Luz y color — Lumi, luciérnaga (amarillo) · 7 Electricidad y magnetismo — Chispa (rosa) · 8 Cielo y espacio — Cosmo, perro astronauta (índigo) · 9 Lo muy pequeño — Quarki (esmeralda) · 10 Tierra y vida — Terra (terracota).
+
+## Capítulos (47) — sims / experimento
+**Mundo 1 Orígenes**: 1 ¿Qué es la física? (predice-y-prueba caída; une pregunta–rama; exp papel y libro) · 2 Los primeros curiosos (ordena la historia; quién-fue; exp reloj de sol) · 3 Medir el mundo (estima; escalas de tamaños; reflejos; exp medir con el cuerpo)
+**Mundo 2 Movimiento**: 4 Moverse (carrera de animales; radar) · 5 Caer y acelerar (galería de caída por mundos/aire; cañón al blanco; exp regla que cae) · 6 Fuerzas de Newton (tira y afloja; carrito F=ma; retroceso skate; exp globo cohete) · 7 Fricción (rampa de materiales; frenado; exp rampa y moneda) · 8 Energía (montaña rusa; resorte lanzador; exp pelota que rebota) · 9 Máquinas simples (balancín; poleas; exp balanza de regla) · 10 Girar (patinadora; honda; exp silla giratoria) · 11 Choques (billar; cuna de Newton; exp cápsula del huevo)
+**Mundo 3 Agua y aire**: 12 Flotar y la piel del agua (hundir/flotar; barco; gotas en moneda; exp huevo salado, clip) · 13 Presión (chorros; buceador; exp botella 3 huecos) · 14 Volar (ala; paracaídas; globo; exp avioncitos)
+**Mundo 4 Calor**: 15 Temperatura y calor (mezcla de aguas; termómetros; exp tres tazones) · 16 El calor viaja (conducción; convección; radiación-colores; exp termo casero) · 17 Sólido-líquido-gas-plasma (fiesta de moléculas; curva de calentamiento; exp helado en bolsa) · 18 Motores y flecha del tiempo (máquina de vapor; mezcla entropía; exp colorante)
+**Mundo 5 Ondas y sonido**: 19 Vaivenes (péndulo; resorte; resonancia-columpio; exp péndulo) · 20 Ondas (cuerda; gotas/interferencia; transversal-longitudinal; exp slinky/bañera) · 21 Sonido (tono-volumen con audio; eco; Doppler; exp teléfono de vasos) · 22 Música (cuerda; botellas; pulsos; exp xilófono)
+**Mundo 6 Luz y color**: 23 Luz y sombras (sombras; cámara oscura; exp cámara oscura) · 24 Espejos (láser y espejos; espejo curvo; exp periscopio) · 25 Doblar la luz (pesca con láser; lente; ojo y gafas; exp moneda) · 26 Colores (mezclador RGB; prisma; cielo azul/atardecer; exp arcoíris)
+**Mundo 7 Electricidad y magnetismo**: 27 Cargas y chispas (globo y papelitos; cargas; tormenta; exp globo) · 28 Circuitos (constructor; conductores–aislantes; exp linterna) · 29 Corriente y voltaje (río de electrones; pilas serie/paralelo; enchufe sobrecargado; exp limón) · 30 Imanes (polos; campo/limaduras; brújula; exp aguja magnética) · 31 Electromagnetismo (electroimán; dínamo; red eléctrica; exp electroimán) · 32 Luz invisible (escalera de ondas; ¿qué onda usa?; cámara IR; exp control remoto)
+**Mundo 8 Cielo y espacio**: 33 Día, noche, Luna (Tierra girando; estaciones; fases y eclipses; exp fases) · 34 Sistema solar y órbitas (cañón de Newton; Kepler; escala; exp rollo de papel) · 35 Estrellas (vida de una estrella; color-temperatura; constelaciones; exp planetario) · 36 Galaxias y universo (globo en expansión; mira al pasado; exp galaxia de leche) · 37 Cohetes (etapas Tsiolkovski; alunizaje; exp cohete globo)
+**Mundo 9 Lo muy pequeño**: 38 Átomos (construye átomo; tabla; zoom; exp caja negra Rutherford) · 39 Núcleo y radiactividad (monedas decaen/carbono-14; Geiger/blindaje; fusión; exp 100 monedas) · 40 Mundo cuántico (doble rendija; niveles/colores; fotoeléctrico; exp espectroscopio CD) · 41 Relatividad (trampolín; reloj de luz; GPS; exp trampolín de tela) · 42 Partículas y fuerzas (quarks; acelerador; 4 fuerzas; exp cámara de niebla)
+**Mundo 10 Tierra y vida**: 43 Cuerpo y animales (brazo palanca; torre que se asoma; super-sentidos; exp pulso) · 44 Tierra viva (epicentro; capas; brisa marina; exp edificio antisísmico) · 45 Materiales y chips (estirar materiales; puertas lógicas; copo de nieve; superconductor; exp) · 46 Azar y caos (Galton; péndulo doble; monedas; exp caminata dados) · 47 Tú, físico/a (gran reto mixto; diploma; mapa de ramas)
+Apéndices: A glosario · B cajón de experimentos (autogenerado) · C familias y maestros · D créditos y fuentes.
+
+## Estado
+- **2026-10-31: COMPLETO.** 47 caps + portada/mapa, pasaporte con diploma, glosario, cajón de experimentos, páginas familias y créditos. 126 sims, 188 preguntas, 71 experimentos, 268 pruebas (node tests/run.js), `node tools/shot.js check [--mobile]` sin problemas. Publicado (privado): https://claude.ai/artifact/3fFH6vABSmZ4McTs1r4RFy (icono atom); para actualizar: `node build.js` y republicar dist/artefacto.html con la misma ruta. (En Windows, Fisica-KIDS.html y fisica-kids.html chocan: el fragmento se llama artefacto.html.)
+(actualizar al terminar cada capítulo)
+- 2026-10-30: motor listo (FK). Hechos caps 1–18 (Mundos 1–4 completos): 43 sims, 72 preguntas, 23 experimentos, 74 pruebas (tests/run.js), `node tools/shot.js check` OK. Herramienta extra: tools/probe.js <cap> <archivo.js> (evalúa JS en la página con `sim(nombre)`).
+- 2026-10-31 (noche): hechos caps 1–42 (Mundos 1–9), 112 sims, 168 preguntas, 63 experimentos, 242 pruebas. Siguen Mundo 10 (43–47), apéndices (familias/créditos), revisión visual global y publicar.
+- (anterior) 2026-10-31: hechos caps 1–37 (Mundos 1–8 completos), 96 sims, 148 preguntas, 57 experimentos, 200 pruebas. Siguen Mundo 9 (38–42), Mundo 10 (43–47), apéndices, publicar.
+- (anterior) 2026-10-30 (tarde): hechos caps 1–30 (Mundos 1–6 completos y Mundo 7 hasta el 30), 77 sims, 120 preguntas, 44 experimentos, 139 pruebas. Siguen: 31 electromagnetismo, 32 luz invisible, Mundos 8 (33–37), 9 (38–42), 10 (43–47), apéndices (familias.html data-kind=page, creditos), publicar artefacto.
+- Lecciones: preguntas con `<p class="why">`; experimento con `<p class="predict|result|why|warn">`; calc puro en 40-calc.js + prueba en tests/run.js; `g.show` convierte exponentes unicode a <sup>; FK.pow10(e).

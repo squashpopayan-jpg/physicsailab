@@ -270,9 +270,9 @@
             }
 
             // Scroll suave hacia la sección
-            const sec = document.getElementById('trivia-squash');
-            if (sec && typeof sec.scrollIntoView === 'function') {
-                sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            const targetEl = viewName === 'game' ? (document.getElementById('squash-trivia-view-game') || document.getElementById('trivia-squash')) : document.getElementById('trivia-squash');
+            if (targetEl && typeof targetEl.scrollIntoView === 'function') {
+                targetEl.scrollIntoView({ behavior: 'smooth', block: (viewName === 'game' ? 'center' : 'start') });
             }
         },
 

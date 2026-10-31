@@ -1,0 +1,113 @@
+<template class="chapter-src" data-id="info" data-num="34" data-title="Información y computación cuánticas" data-part="Parte VII · Sistemas abiertos, medida e información" data-short="Puertas y circuitos, el teorema de no clonación, el teletransporte y la codificación superdensa, los algoritmos de Grover y de Shor, la corrección de errores y la distribución cuántica de claves BB84">
+<p class="lead">Los capítulos anteriores trataron el estado cuántico como un objeto físico: algo que se prepara, se hace evolucionar y se mide. La <em>información cuántica</em> da la vuelta a la pregunta: ¿qué se puede <em>hacer</em> con un sistema cuántico que no se pueda hacer con uno clásico? Un <span class="term">qubit</span> es un sistema de dos niveles, \(|\psi\rangle=\alpha|0\rangle+\beta|1\rangle\); \(n\) qubits viven en un espacio de \(2^n\) dimensiones, y la evolución unitaria, el entrelazamiento y la medida bastan para construir protocolos sin análogo clásico: copiar un estado desconocido es imposible, pero transmitirlo con dos bits clásicos y un par entrelazado no; buscar entre \(N\) elementos cuesta \(\sqrt N\) consultas y no \(N\); y factorizar un número de \(L\) cifras es un problema de tiempo polinómico. Este capítulo recorre los resultados centrales con simulaciones exactas del vector de estado.</p>
+
+<section>
+<h2>Puertas, circuitos y no clonación</h2>
+<p>Un <span class="term">circuito cuántico</span> es una secuencia de puertas unitarias sobre unos pocos qubits, seguida de una medida en la base de cálculo. Las puertas de un qubit más usadas son: la de Hadamard \(H=\tfrac1{\sqrt2}\begin{pmatrix}1&1\\1&-1\end{pmatrix}\) (convierte la base \(Z\) en la base \(X\): \(H|0\rangle=|+\rangle\)); las de Pauli \(X,Y,Z\); la de fase \(S=\operatorname{diag}(1,\ii)\) y la \(T=\operatorname{diag}(1,\ee^{\ii\pi/4})\); y las rotaciones \(R_y(\theta)\), \(R_z(\varphi)\). La puerta de dos qubits fundamental es la <span class="term">CNOT</span> (\(\text{CNOT}|c,t\rangle=|c,t\oplus c\rangle\)) y, con ella y \(H\), se obtiene entrelazamiento: \(\text{CNOT}(H\otimes1)|00\rangle=|\Phi^+\rangle=(|00\rangle+|11\rangle)/\sqrt2\). El conjunto \(\{H,T,\text{CNOT}\}\) es <em>universal</em>: cualquier unitaria sobre \(n\) qubits se aproxima con precisión arbitraria con una secuencia suficientemente larga (teorema de Solovay–Kitaev: la longitud crece solo como una potencia de \(\log(1/\epsilon)\)).</p>
+<p>La linealidad de la evolución prohíbe copiar estados desconocidos. Si existiera una unitaria \(U\) tal que \(U|\psi\rangle|0\rangle=|\psi\rangle|\psi\rangle\) para todo \(|\psi\rangle\), aplicándola a dos estados \(|\psi\rangle,|\varphi\rangle\) y tomando el producto interno de los resultados se obtendría \(\langle\psi|\varphi\rangle=\langle\psi|\varphi\rangle^2\), lo que solo admite \(\langle\psi|\varphi\rangle=0\) ó \(1\): únicamente estados <em>ortogonales</em> (conocidos de antemano) pueden clonarse. Es el <span class="term">teorema de no clonación</span> (Wootters–Zurek, Dieks, 1982). Un clonador aproximado universal \(1\to2\) existe, y su fidelidad máxima es \(5/6\) (Bužek–Hillery). El teorema no es una limitación técnica sino el cimiento de la criptografía cuántica: un espía no puede copiar sin perturbar (sección final).</p>
+</section>
+
+<section>
+<h2>Teletransporte y codificación superdensa</h2>
+<p>Alice quiere enviar a Bob el estado desconocido \(|\psi\rangle=\alpha|0\rangle+\beta|1\rangle\) de un qubit sin poder mandarle el qubit. Comparten un par \(|\Phi^+\rangle_{23}\) (el qubit 2 con Alice, el 3 con Bob). El estado conjunto se reescribe en la base de Bell de los qubits 1 y 2:</p>
+<div class="eq key" data-name="Teletransporte">\[|\psi\rangle_1|\Phi^+\rangle_{23}=\tfrac12\Big[|\Phi^+\rangle_{12}|\psi\rangle_3+|\Phi^-\rangle_{12}Z|\psi\rangle_3+|\Psi^+\rangle_{12}X|\psi\rangle_3+|\Psi^-\rangle_{12}XZ|\psi\rangle_3\Big].\]</div>
+<p>Alice mide los qubits 1 y 2 en la base de Bell (con una CNOT \(1\to2\), una \(H\) sobre el 1 y una medida en la base de cálculo), obtiene dos bits \((m_1,m_2)\), <em>cada uno de los cuatro resultados con probabilidad \(\tfrac14\)</em>, y se los envía a Bob por un canal clásico. Bob tiene entonces \(X^{m_2}Z^{m_1}|\psi\rangle\), y aplica primero \(X^{m_2}\) y luego \(Z^{m_1}\) para recuperar exactamente \(|\psi\rangle\). Antes de recibir los bits, el estado de Bob es la mezcla \(\tfrac12\) cualquiera que sea \(|\psi\rangle\) (fidelidad media \(\tfrac12\)): el teletransporte no transmite información más rápido que la luz ni copia el estado (el original queda destruido por la medida). Gastó un ebit y dos bits clásicos. Si el par compartido es un estado de Werner, \(\rho=p|\Phi^+\rangle\langle\Phi^+|+(1-p)\tfrac14\), el protocolo realiza un canal despolarizante \(\vec r\to p\,\vec r\) y la <em>fidelidad media</em> es \(F=(1+p)/2\); superar el máximo clásico (medir y reenviar), \(F=\tfrac23\), exige \(p>\tfrac13\), que es precisamente la condición de entrelazamiento del estado de Werner (capítulo 31).</p>
+<div class="sim" data-sim="teletransporte" data-title="Teletransporte con un par de Werner: fidelidad por resultado y frente a la pureza del recurso"></div>
+<div class="sim-guide"><ul>
+<li>Con \(\theta=70^\circ,\varphi=40^\circ\) y un par perfecto (\(p=1\)): los cuatro resultados son equiprobables (\(0.250\)); sin corregir, Bob tiene fidelidades \(1.000,\,0.518,\,0.117,\,0.365\) con media \(0.5000\); corregidas, todas valen \(1\). El vector de Bloch de salida es idéntico al de entrada, \((0.720,0.604,0.342)\).</li>
+<li>Con \(p=0.5\): fidelidad corregida \(0.7500\) en los cuatro resultados y salida \((0.360,0.302,0.171)\), la mitad de la entrada. Con \(p=0.2\), \(F=0.6000<2/3\): peor que medir y reenviar. El umbral es \(p=1/3\), donde \(F=2/3\).</li>
+</ul></div>
+<p>La <span class="term">codificación superdensa</span> es el protocolo dual: Alice y Bob comparten \(|\Phi^+\rangle\); Alice aplica a su qubit una de \(\{1,X,Z,XZ\}\) y se lo envía a Bob, que mide en la base de Bell y distingue los cuatro estados ortogonales resultantes: <em>dos bits clásicos con un solo qubit transmitido</em>. No contradice el límite de Holevo (un qubit transporta como mucho un bit): el qubit entrelazado previamente enviado aportó la otra mitad.</p>
+</section>
+
+<section>
+<h2>Algoritmos cuánticos: Grover y Shor</h2>
+<p><b>Búsqueda de Grover.</b> Se busca un elemento marcado \(w\) entre \(N=2^n\), con acceso a un oráculo que cambia de signo la amplitud de \(w\). Se prepara la superposición uniforme \(|s\rangle=H^{\otimes n}|0\rangle\) y se repite la <em>iteración de Grover</em>: oráculo seguido de «inversión respecto a la media», \(D=H^{\otimes n}(2|0\rangle\langle0|-1)H^{\otimes n}=2|s\rangle\langle s|-1\). Ambos son reflexiones en el plano generado por \(|w\rangle\) y \(|s\rangle\), así que su producto es una <em>rotación</em> de ángulo \(2\theta\), con \(\sin\theta=1/\sqrt N\):</p>
+<div class="eq key" data-name="Algoritmo de Grover">\[P_w(k)=\sin^2\!\big[(2k+1)\theta\big],\quad\theta=\arcsin\frac1{\sqrt N},\qquad k^*=\Big\lfloor\frac{\pi}{4\theta}\Big\rfloor\simeq\frac\pi4\sqrt N,\quad P_w(k^*)\ge1-\frac1N.\]</div>
+<p>Hacen falta \(O(\sqrt N)\) consultas, frente a las \(N/2\) (en promedio) de la búsqueda clásica. El resultado es óptimo: Bennett, Bernstein, Brassard y Vazirani demostraron que ningún algoritmo cuántico hace menos de \(\Omega(\sqrt N)\) consultas. Hay que parar a tiempo: si se sigue iterando, la rotación sobrepasa el estado marcado y la probabilidad vuelve a bajar.</p>
+<div class="sim" data-sim="grover" data-title="Búsqueda de Grover: la amplitud rota hasta la marcada y luego se pasa"></div>
+<div class="sim-guide"><ul>
+<li>Con \(n=6\) (\(N=64\)): \(\theta=0.12533\), \(k^*=6\), \(P(k^*)=0.99659\); con \(k=3\), \(P=0.59138\) y amplitud \(0.76901\). Si se sigue hasta \(k=12\), la probabilidad cae a \(7\times10^{-5}\): la rotación ha dado casi media vuelta.</li>
+<li>Con \(n=10\) (\(N=1024\)): \(k^*=25\), \(P=0.99946\), frente a 512 consultas clásicas (ahorro de \(20.5\times\)). El simulador de vector de estado y la fórmula \(\sin^2((2k+1)\theta)\) dan el mismo valor en todos los casos.</li>
+</ul></div>
+<p><b>Factorización de Shor.</b> Para factorizar \(N\), se toma \(a\) coprimo con \(N\) y se busca el <em>periodo</em> \(r\) de \(f(x)=a^x\bmod N\). Si \(r\) es par y \(a^{r/2}\not\equiv-1\pmod N\), entonces \(\gcd(a^{r/2}\pm1,N)\) son factores no triviales de \(N\) (porque \(N\mid(a^{r/2}-1)(a^{r/2}+1)\) sin dividir a ninguno por separado). Clásicamente hallar \(r\) es difícil; cuánticamente, se prepara \(\sum_x|x\rangle|a^x\bmod N\rangle\) en dos registros (el primero de \(m\) qubits, \(Q=2^m\ge N^2\)), se mide el segundo, y el primero queda en una superposición de la progresión aritmética \(x_0,x_0+r,\ldots\). La <span class="term">transformada de Fourier cuántica</span> (QFT),</p>
+<div class="eq" data-name="QFT">\[\mathrm{QFT}\,|x\rangle=\frac1{\sqrt Q}\sum_{y=0}^{Q-1}\ee^{2\pi\ii\,xy/Q}|y\rangle,\qquad P(y)=\frac1{Q^2}\sum_{x_0=0}^{r-1}\left|\sum_{j=0}^{K_{x_0}-1}\ee^{2\pi\ii\,yrj/Q}\right|^2,\]</div>
+<p>(un circuito de \(O(m^2)\) puertas: una \(H\) y fases controladas \(\pi/2^{k}\) por qubit) convierte el periodo en <em>picos</em> de \(P(y)\) en \(y\approx jQ/r\), con \(j=0,\dots,r-1\). Al medir \(y\), la fracción continua de \(y/Q\) revela \(j/r\) y, con probabilidad no pequeña, el periodo \(r\) (cuando \(j\) y \(r\) son coprimos). Todo el costo cuántico es polinómico en \(\log N\); el mejor algoritmo clásico conocido es subexponencial.</p>
+<div class="sim" data-sim="shor" data-title="El algoritmo de Shor: la QFT convierte el periodo en picos medibles"></div>
+<div class="sim-guide"><ul>
+<li>\(N=15\), \(a=7\): \(r=4\), \(Q=256\); los picos \(y=0,64,128,192\) valen exactamente \(1/4\). Si se mide \(y=64\) (fracción \(1/4\)) o \(y=192\) (\(3/4\)) se obtiene \(r=4\) y \(15=3\times5\); \(y=128\) (fracción \(1/2\)) da un candidato \(r=2\) que no es el periodo, y \(y=0\) no informa. La probabilidad de éxito en una sola ejecución es \(1/2\).</li>
+<li>\(N=21\), \(a=2\): \(r=6\), \(Q=512\), éxito \(0.3284\) (los picos no caen en enteros, y el pico \(y=256\) da \(1/2\) y falla). \(N=35\), \(a=3\): \(r=12\), \(Q=2048\), éxito \(0.3281\). Se repite el experimento con otra \(a\) hasta conseguirlo.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Corrección de errores y criptografía cuántica</h2>
+<p>Los qubits reales sufren errores continuos y no se pueden copiar para proteger la información por repetición. Aun así hay corrección de errores: se <em>entrelaza</em> el qubit lógico con otros. El ejemplo más sencillo es el <span class="term">código de repetición de tres qubits</span> contra inversiones de bit (\(X\)): \(|0_L\rangle=|000\rangle\), \(|1_L\rangle=|111\rangle\), de modo que \(\alpha|0\rangle+\beta|1\rangle\mapsto\alpha|000\rangle+\beta|111\rangle\) (¡no es tres copias del estado!). Los observables \(Z_1Z_2\) y \(Z_2Z_3\) (el <em>síndrome</em>) dicen <em>cuál</em> qubit se invirtió sin revelar \(\alpha,\beta\); se corrige aplicando \(X\) a ese qubit. Falla únicamente si se invierten dos o tres:</p>
+<div class="eq key" data-name="Código de 3 qubits">\[p_L=3p^2(1-p)+p^3=3p^2-2p^3<p\quad(0<p<\tfrac12).\]</div>
+<p>Para proteger también contra errores de fase se concatenan códigos (el de 9 qubits de Shor, el de 7 de Steane, los códigos de superficie). El <em>teorema del umbral</em> garantiza que, si la tasa de error por puerta es menor que un umbral (\(\sim10^{-2}\) para los códigos de superficie), se puede calcular tan largo como se quiera a costa de un sobrecoste polinómico en qubits.</p>
+<p>El mismo teorema de no clonación protege la <span class="term">distribución cuántica de claves</span> BB84 (Bennett–Brassard, 1984): Alice envía qubits \(|0\rangle,|1\rangle\) (base \(Z\)) o \(|+\rangle,|-\rangle\) (base \(X\)) elegidos al azar; Bob mide en una base al azar; luego comparan por canal público <em>solo las bases</em> y se quedan con los bits donde coincidieron (la mitad). Un espía que intercepte y reenvíe (midiendo en una base al azar) acierta la base la mitad de las veces y, cuando no acierta, introduce un error con probabilidad \(\tfrac12\): la tasa de error en la clave filtrada es \(\tfrac14\) si espía todos los qubits, y \(q/4\) si espía una fracción \(q\). Alice y Bob sacrifican una muestra de la clave para estimar esa tasa. Si es menor que \(\approx11\,\%\) (Shor–Preskill) pueden extraer, por reconciliación y amplificación de privacidad, una clave secreta.</p>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Compruebe el protocolo de teletransporte con \(|\psi\rangle=0.6|0\rangle+0.8|1\rangle\): halle, para cada resultado \((m_1m_2)\) de Alice, el estado que queda en Bob antes de corregir, su fidelidad con \(|\psi\rangle\) y la fidelidad media; explique por qué es \(\tfrac12\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Estado inicial.</b> \(|\psi\rangle_1|\Phi^+\rangle_{23}=\tfrac1{\sqrt2}\big[\alpha|000\rangle+\alpha|011\rangle+\beta|100\rangle+\beta|111\rangle\big]\).</li>
+<li><b>CNOT \(1\to2\).</b> \(\tfrac1{\sqrt2}\big[\alpha|000\rangle+\alpha|011\rangle+\beta|110\rangle+\beta|101\rangle\big]\).</li>
+<li><b>Hadamard en el 1.</b> \(\tfrac12\big[\alpha(|0\rangle+|1\rangle)|00\rangle+\alpha(|0\rangle+|1\rangle)|11\rangle+\beta(|0\rangle-|1\rangle)|10\rangle+\beta(|0\rangle-|1\rangle)|01\rangle\big]\).</li>
+<li><b>Agrupar por \((m_1m_2)\).</b> \(00\): \(\alpha|0\rangle+\beta|1\rangle=|\psi\rangle\). \(01\): \(\beta|0\rangle+\alpha|1\rangle=X|\psi\rangle\). \(10\): \(\alpha|0\rangle-\beta|1\rangle=Z|\psi\rangle\). \(11\): \(-\beta|0\rangle+\alpha|1\rangle=XZ|\psi\rangle\) (cada uno con probabilidad \(\tfrac14\)).</li>
+<li><b>Fidelidades.</b> \(F_{00}=1\); \(F_{01}=(2\alpha\beta)^2=(0.96)^2=0.9216\); \(F_{10}=(\alpha^2-\beta^2)^2=(0.36-0.64)^2=0.0784\); \(F_{11}=|{-\alpha\beta}+\beta\alpha|^2=0\).</li>
+<li><b>Media.</b> \(\tfrac14(1+0.9216+0.0784+0)=0.5\). Es \(\tfrac12\) porque, sin conocer \((m_1m_2)\), el estado de Bob es la mezcla \(\tfrac14\sum\sigma|\psi\rangle\langle\psi|\sigma^\dagger=\tfrac12\), independiente de \(\psi\): ninguna información viaja hasta que llegan los dos bits clásicos.</li>
+<li><b>Corrección.</b> Bob aplica \(X^{m_2}\) y después \(Z^{m_1}\): en cada caso recupera \(|\psi\rangle\) con fidelidad 1.</li>
+<li><b>Resultado.</b> <span class="ans">Estados \(\psi,\ X\psi,\ Z\psi,\ XZ\psi\) con fidelidades \(1,\ 0.9216,\ 0.0784,\ 0\); media \(\tfrac12\); tras corregir, 1.</span></li>
+</ol></details></li>
+<li><span class="lvl">Básico</span>Alice y Bob comparten un estado de Werner \(\rho=p|\Phi^+\rangle\langle\Phi^+|+(1-p)\tfrac14\) con \(p=0.8\). ¿Qué fidelidad media logran al teletransportar? ¿Cuánto vale la concurrencia del recurso y desde qué \(p\) supera el protocolo el límite clásico?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Canal inducido.</b> Con el par de Werner, el teletransporte equivale a mezclar el resultado perfecto con ruido blanco: \(\vec r\to p\,\vec r\) (despolarizante, \(\lambda=p\)).</li>
+<li><b>Fidelidad.</b> Para un estado puro, \(F=\tfrac12(1+\vec r\cdot\vec r_\text{sal})=\tfrac12(1+p)\); con \(p=0.8\): \(F=0.9\).</li>
+<li><b>Concurrencia del recurso.</b> \(C=\max(0,(3p-1)/2)=(2.4-1)/2=0.7\) (capítulo 31).</li>
+<li><b>Umbral clásico.</b> \(F>\tfrac23\Leftrightarrow\tfrac12(1+p)>\tfrac23\Leftrightarrow p>\tfrac13\), que es exactamente la condición \(C>0\) (\(3p-1>0\)): todo recurso entrelazado de esta familia da un teletransporte mejor que el clásico.</li>
+<li><b>Resultado.</b> <span class="ans">\(F=0.9\); \(C=0.7\); el protocolo supera \(2/3\) si y solo si \(p>1/3\).</span></li>
+</ol></details></li>
+<li><span class="lvl">Intermedio</span>Se busca un elemento entre \(N=1024\) con el algoritmo de Grover. Halle \(\theta\), el número óptimo de iteraciones, la probabilidad de éxito y el ahorro respecto a la búsqueda clásica; ¿qué pasa con \(N=4\)? ¿Y con \(N=10^6\)?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Ángulo.</b> \(\theta=\arcsin(1/\sqrt{1024})=\arcsin(1/32)=0.031255\) rad.</li>
+<li><b>Iteraciones.</b> \(k^*=\lfloor\pi/(4\theta)\rfloor=\lfloor25.13\rfloor=25\).</li>
+<li><b>Probabilidad.</b> \(P(25)=\sin^2(51\theta)=\sin^2(1.5940)=0.99946\) (el fallo \(5.4\times10^{-4}<1/N\)).</li>
+<li><b>Ahorro.</b> Clásicamente, \(N/2=512\) consultas en promedio; cuánticamente 25: factor \(20.5\).</li>
+<li><b>\(N=4\).</b> \(\theta=\arcsin\tfrac12=30^\circ\): \(P(1)=\sin^2(90^\circ)=1\): una sola iteración da el elemento con certeza.</li>
+<li><b>\(N=10^6\).</b> \(\theta=10^{-3}\), \(k^*=\lfloor785.4\rfloor=785\), \(P=\sin^2(1571\times10^{-3})=0.99999996\); frente a \(5\times10^5\) consultas clásicas: factor \(637\).</li>
+<li><b>Resultado.</b> <span class="ans">\(\theta=0.031255\), \(k^*=25\), \(P=0.99946\), ahorro \(20.5\times\); para \(N=4\), \(P(1)=1\); para \(N=10^6\), \(k^*=785\) (factor \(637\)).</span></li>
+</ol></details></li>
+<li><span class="lvl">Intermedio</span>Factorice \(N=15\) con \(a=7\) por el algoritmo de Shor: halle el periodo, el tamaño del registro, las posiciones y probabilidades de los picos, qué resultado \(y\) permite factorizar y la probabilidad de éxito.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Periodo.</b> \(7^1=7,\ 7^2=49\equiv4,\ 7^3\equiv28\equiv13,\ 7^4\equiv91\equiv1\pmod{15}\): \(r=4\).</li>
+<li><b>Registro.</b> \(Q=2^m\ge N^2=225\Rightarrow m=8\), \(Q=256\).</li>
+<li><b>Picos.</b> \(y=jQ/r=64j\), \(j=0,1,2,3\), con \(r\mid Q\): cada pico es exacto y vale \(\tfrac1r=\tfrac14\) (entre los cuatro suman 1).</li>
+<li><b>\(y=64\) ó \(192\).</b> \(y/Q=\tfrac14\) ó \(\tfrac34\): el denominador reducido es 4 \(=r\). \(a^{r/2}=7^2\equiv4\not\equiv-1\), así que \(\gcd(4-1,15)=3\) y \(\gcd(4+1,15)=5\): \(15=3\times5\).</li>
+<li><b>\(y=128\).</b> \(y/Q=\tfrac12\) da denominador 2, pero \(7^2\equiv4\neq1\): no es el periodo, hay que repetir. \(y=0\) no informa.</li>
+<li><b>Éxito.</b> \(P=P(64)+P(192)=\tfrac12\); tras \(k\) intentos independientes, el fallo es \(2^{-k}\).</li>
+<li><b>Resultado.</b> <span class="ans">\(r=4\), \(Q=256\); picos en \(0,64,128,192\) con \(\tfrac14\) cada uno; \(y=64,192\) dan \(15=3\times5\); probabilidad de éxito \(\tfrac12\).</span></li>
+</ol></details></li>
+<li><span class="lvl">Intermedio</span>Para el código de repetición de 3 qubits con errores de inversión de bit independientes de probabilidad \(p\) por qubit, halle la probabilidad de error lógico, evalúela para \(p=0.1\) y \(p=0.01\), encuentre el punto de equilibrio con el qubit sin proteger y la fidelidad del estado \(|0_L\rangle\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Patrones de error.</b> Con probabilidad \((1-p)^3\) no hay error; con \(3p(1-p)^2\), un solo qubit invertido (el síndrome lo localiza y se corrige); con \(3p^2(1-p)\), dos (el síndrome apunta al tercero, se «corrige» mal y queda un error lógico \(X_L\)); con \(p^3\), los tres (error lógico sin síndrome).</li>
+<li><b>Error lógico.</b> \(p_L=3p^2(1-p)+p^3=3p^2-2p^3\).</li>
+<li><b>Valores.</b> \(p=0.1\): \(p_L=0.03-0.002=0.028\). \(p=0.01\): \(3\times10^{-4}-2\times10^{-6}=2.98\times10^{-4}\).</li>
+<li><b>Equilibrio.</b> \(p_L=p\Leftrightarrow3p-2p^2=1\Leftrightarrow2p^2-3p+1=0\Leftrightarrow p=\tfrac12\) (o 1): por debajo de \(\tfrac12\) el código mejora; por encima, empeora.</li>
+<li><b>Fidelidad del \(|0_L\rangle\).</b> Con error lógico el estado pasa a \(|1_L\rangle\) (fidelidad 0): \(F=1-p_L=0.972\) para \(p=0.1\), frente a \(0.9\) sin proteger.</li>
+<li><b>Resultado.</b> <span class="ans">\(p_L=3p^2-2p^3\): \(0.028\) (\(p=0.1\)), \(2.98\times10^{-4}\) (\(p=0.01\)); mejora para \(p<\tfrac12\); \(F=0.972\) frente a \(0.9\).</span></li>
+</ol></details></li>
+<li><span class="lvl">Avanzado</span>En BB84, Eve intercepta una fracción \(q\) de los qubits, mide en una base al azar y reenvía lo que midió. Halle la tasa de error en la clave filtrada, la probabilidad de detectarla con una muestra de \(n=20\) bits cuando \(q=1\) y la fracción máxima \(q\) que deja una clave extraíble con el umbral del 11 %.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Base de Eve.</b> Con probabilidad \(\tfrac12\) mide en la base de Alice: obtiene el bit y lo reenvía idéntico (sin error). Con probabilidad \(\tfrac12\) mide en la otra base: obtiene un resultado aleatorio (\(\tfrac12\) cada uno) y reenvía un estado de la base equivocada.</li>
+<li><b>Bob (clave filtrada: misma base que Alice).</b> Si Eve usó la base equivocada, Bob mide un estado de esa base en la base de Alice: resultado aleatorio, error con probabilidad \(\tfrac12\).</li>
+<li><b>Error por qubit interceptado.</b> \(\tfrac12\cdot0+\tfrac12\cdot\tfrac12=\tfrac14\). Con fracción \(q\): \(\text{QBER}=q/4\) (\(25\,\%\) si \(q=1\)).</li>
+<li><b>Detección.</b> Cada bit de la muestra delata a Eve con probabilidad \(\tfrac14\); con \(n\) bits: \(1-(3/4)^n=1-0.00317=0.99683\) para \(n=20\) (y \(0.9437\) para \(n=10\)).</li>
+<li><b>Umbral.</b> \(q/4<0.11\Rightarrow q<0.44\): Eve puede espiar hasta el 44 % de los qubits sin impedir que Alice y Bob destilen una clave (que será secreta tras la amplificación de privacidad, porque la información de Eve está acotada por el error medido).</li>
+<li><b>Resultado.</b> <span class="ans">QBER \(=q/4\) (25 % para \(q=1\)); detección \(0.9968\) con 20 bits; clave extraíble si \(q<0.44\).</span></li>
+</ol></details></li>
+</ol>
+</section>
+</template>

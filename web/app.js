@@ -1174,7 +1174,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <p style="font-size:0.8rem; color:var(--text-muted); line-height:1.4; margin-bottom:0.75rem;">${c.descripcion.substring(0, 95)}...</p>
                         </div>
                         <div style="display:flex; gap:0.5rem; margin-top:auto;">
-                            ${c.demoPath ? `<a href="${c.demoPath}" target="_blank" class="btn btn-primary" style="flex:1; justify-content:center; font-size:0.82rem; padding:0.45rem;">Abrir Curso 🚀</a>` : ''}
+                            ${c.demoPath ? `<a href="${c.demoPath}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="flex:1; justify-content:center; font-size:0.82rem; padding:0.45rem;">Abrir Curso 🚀</a>` : ''}
                             <button class="btn btn-secondary" onclick="closeStudentProfileModal(); openCourseDetails('${c.id}');" style="font-size:0.82rem; padding:0.45rem 0.75rem;">Temario</button>
                         </div>
                     </div>
@@ -1213,7 +1213,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <p style="font-size:0.8rem; color:var(--text-muted); line-height:1.4; margin-bottom:0.75rem;">${c.descripcion.substring(0, 95)}...</p>
                         </div>
                         <div style="display:flex; gap:0.5rem; margin-top:auto;">
-                            ${c.demoPath ? `<a href="${c.demoPath}" target="_blank" class="btn btn-primary" style="flex:1; justify-content:center; font-size:0.82rem; padding:0.45rem;">Abrir 🚀</a>` : ''}
+                            ${c.demoPath ? `<a href="${c.demoPath}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="flex:1; justify-content:center; font-size:0.82rem; padding:0.45rem;">Abrir 🚀</a>` : ''}
                             <button class="btn btn-secondary" onclick="closeStudentProfileModal(); openCourseDetails('${c.id}');" style="font-size:0.82rem; padding:0.45rem 0.75rem;">Temario</button>
                         </div>
                     </div>
@@ -2606,6 +2606,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 openBtnText = courseUnlocked ? 'Abrir Manual de Taller 💡' : 'Vista Previa de Taller 👁️';
             } else if (isArbitraje) {
                 openBtnText = courseUnlocked ? 'Abrir Sistema de Arbitraje ⚖️' : 'Vista Previa del Arbitraje 👁️';
+            } else if (isKids) {
+                openBtnText = '🌈 Abrir Aventura KIDS (Nueva Ventana ↗) 🧒';
+            } else if (isMcuantica) {
+                openBtnText = courseUnlocked ? 'Abrir Mecánica Cuántica (Nueva Ventana ↗) 🌌' : 'Vista Previa Cuántica 👁️';
             } else {
                 openBtnText = courseUnlocked
                     ? (isLab ? 'Abrir Laboratorio 🧪' : (isSquash ? 'Abrir Simulador Completo 🎮' : (c.id === 'historia' ? 'Abrir Tratado Completo 📖' : 'Abrir Curso Completo 📖')))
@@ -2614,7 +2618,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const buyBtnText = isLab ? 'Adquirir Lab 💳' : (isSquash ? 'Adquirir Simulador 💳' : (isArbitraje ? 'Adquirir Sistema Oficial ⚖️' : (isFaro ? 'Adquirir Kit & Manual 💡' : (isDiagnosticas ? 'Cotizar Servicio 🏛️' : 'Comprar Curso 💳'))));
             const detailsBtnText = isLab ? 'Ficha Técnica 📋' : (isSquash ? 'Módulos 📑' : (isArbitraje ? 'Reglamento & Módulos 📑' : (isDiagnosticas ? 'Bancos & Detalles 📋' : 'Temario 📑')));
-            const tagClass = isLab ? 'lab-tag' : (c.destacado ? 'interactive' : '');
+            const isKids = c.id === 'kids' || c.esKids;
+            const isMcuantica = c.id === 'mcuantica';
+            const tagClass = isKids ? 'lab-tag' : (isLab ? 'lab-tag' : (c.destacado ? 'interactive' : ''));
 
             let lockStatusBadge = '';
             if (isPrivado) {
@@ -2624,15 +2630,19 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (adminMode) {
                 lockStatusBadge = `<span class="unlocked-tag admin-badge" title="Liberado con Permisos de Administrador">👑 Modo Docente</span>`;
             } else if (courseUnlocked) {
-                lockStatusBadge = (c.id === 'historia' || c.esCortesia)
-                    ? `<span class="unlocked-tag" style="background:rgba(217,119,6,0.18); color:#f59e0b; border-color:rgba(217,119,6,0.45);" title="Cortesía de Bienvenida · Acceso Libre para todos">🎁 Cortesía Libre</span>`
-                    : `<span class="unlocked-tag" title="Desbloqueado con clave estudiantil">🔓 Desbloqueado</span>`;
+                if (c.id === 'kids') {
+                    lockStatusBadge = `<span class="kids-badge-rainbow" title="Cortesía Educativa para Niños y Familias · 100% Libre">🌈 100% LIBRE · NIÑOS</span>`;
+                } else if (c.id === 'historia' || c.esCortesia) {
+                    lockStatusBadge = `<span class="unlocked-tag" style="background:rgba(217,119,6,0.18); color:#f59e0b; border-color:rgba(217,119,6,0.45);" title="Cortesía de Bienvenida · Acceso Libre para todos">🎁 Cortesía Libre</span>`;
+                } else {
+                    lockStatusBadge = `<span class="unlocked-tag" title="Desbloqueado con clave estudiantil">🔓 Desbloqueado</span>`;
+                }
             } else {
                 lockStatusBadge = `<span class="badge" style="font-size:0.65rem; padding:0.2rem 0.5rem; background:rgba(245,158,11,0.12); color:var(--accent-amber); border-color:rgba(245,158,11,0.25);">👁️ Vista Previa</span>`;
             }
             
             return `
-            <div class="card ${isLab ? 'card-lab-featured' : ''}">
+            <div class="card ${isKids ? 'card-kids-special' : (isLab ? 'card-lab-featured' : '')}">
                 <div>
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
                         <span class="card-tag ${tagClass}">${c.categoria}</span>
@@ -2660,7 +2670,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     </div>
                     <div class="card-actions" style="flex-wrap:wrap; gap:0.4rem;">
-                        ${c.demoPath ? (isPrivado && !adminMode ? `<button type="button" class="btn btn-secondary" onclick="openAdminPanel()" style="flex:1; justify-content:center; border-color:rgba(168,85,247,0.4); color:#c084fc;">${openBtnText}</button>` : `<a href="${c.demoPath}" target="_blank" class="btn btn-primary" style="flex:1; justify-content:center; ${isPrivado ? "background:linear-gradient(135deg, #a855f7, #6366f1); border:none;" : ""}">${openBtnText}</a>`) : ''}
+                        ${c.demoPath ? (isPrivado && !adminMode ? `<button type="button" class="btn btn-secondary" onclick="openAdminPanel()" style="flex:1; justify-content:center; border-color:rgba(168,85,247,0.4); color:#c084fc;">${openBtnText}</button>` : `<a href="${c.demoPath}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="flex:1; justify-content:center; ${isPrivado ? "background:linear-gradient(135deg, #a855f7, #6366f1); border:none;" : ""}">${openBtnText}</a>`) : ''}
                         ${(isDiagnosticas && adminMode) ? `<a href="/material/1_cursos/diagnosticas/dist/public/panel.html" target="_blank" class="btn btn-secondary" style="border-color:rgba(56,189,248,0.5); color:#38bdf8; display:inline-flex; align-items:center; gap:0.35rem;" title="Abrir panel docente de pruebas">📊 Panel Docente</a>` : ''}
                         ${c.id === 'venturi' ? `<button type="button" class="btn btn-secondary" onclick="openVenturiGroupModal()" style="border-color:rgba(56,189,248,0.5); color:#38bdf8; display:inline-flex; align-items:center; gap:0.35rem;" title="Organizar puestos y asignar bancos para grupos (1 al 24)">👥 Puestos Grupos (1-24)</button>` : ''}
                         ${c.id === 'pendulo' ? `<button type="button" class="btn btn-secondary" onclick="openPenduloGroupModal()" style="border-color:rgba(56,189,248,0.5); color:#38bdf8; display:inline-flex; align-items:center; gap:0.35rem;" title="Organizar puestos y asignar bancos para grupos (1 al 24)">👥 Puestos Grupos (1-24)</button>` : ''}
@@ -3911,7 +3921,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <div style="text-align:center; padding:0.45rem; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); border-radius:8px; color:#34D399; font-weight:700; font-size:0.82rem;">
                                     🔬 Laboratorio Virtual 100% Libre y Gratuito
                                 </div>
-                                ${c.demoPath ? `<a href="${c.demoPath}" target="_blank" class="btn btn-primary" style="justify-content:center; background:linear-gradient(135deg, #10b981, #059669); border:none; box-shadow:0 6px 18px rgba(16,185,129,0.35); font-weight:800;">Abrir Laboratorio Virtual 🔬</a>` : ''}
+                                ${c.demoPath ? `<a href="${c.demoPath}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="justify-content:center; background:linear-gradient(135deg, #10b981, #059669); border:none; box-shadow:0 6px 18px rgba(16,185,129,0.35); font-weight:800;">Abrir Laboratorio Virtual 🔬</a>` : ''}
                                 <div style="display:flex; gap:0.4rem;">
                                     <button type="button" class="btn btn-secondary" onclick="openCourseDetails('${c.id}')" style="flex:1; justify-content:center; font-size:0.8rem; padding:0.45rem;">
                                         Ver Temario y Prácticas
@@ -3921,7 +3931,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <div style="text-align:center; padding:0.5rem; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); border-radius:8px; color:#34D399; font-weight:700; font-size:0.82rem;">
                                     ✓ ¡Ya tienes este curso desbloqueado!
                                 </div>
-                                ${c.demoPath ? `<a href="${c.demoPath}" target="_blank" class="btn btn-primary" style="justify-content:center;">Abrir Cuaderno Computacional 🚀</a>` : ''}
+                                ${c.demoPath ? `<a href="${c.demoPath}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="justify-content:center;">Abrir Cuaderno Computacional 🚀</a>` : ''}
                                 <div style="display:flex; gap:0.4rem;">
                                     <button type="button" class="btn btn-secondary" onclick="openCourseDetails('${c.id}')" style="flex:1; justify-content:center; font-size:0.8rem; padding:0.45rem;">
                                         Ver Temario
@@ -9046,7 +9056,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 4. Trivias y Quizzes
         const trivias = [
-            { title: 'Gran Trivia de Física', desc: '1.000 preguntas de física con sistema de 3 vidas y ranking oficial.', link: '#trivia', type: '🎯 Trivia Oficial' },
+            { title: 'Gran Trivia de Física (Nueva Ventana)', desc: '1.000 preguntas de física con sistema de 3 vidas y ranking oficial en ventana dedicada.', link: '/trivia.html', isExternal: true, type: '🎯 Trivia Oficial' },
+            { title: 'Física KIDS (Nueva Ventana)', desc: '10 mundos temáticos, 47 capítulos y 126 juegos interactivos para niños y familias.', link: '/material/1_cursos/kids/dist/index.html', isExternal: true, type: '🌈 Niños & Familias' },
+            { title: 'Tratado de Mecánica Cuántica', desc: '36 capítulos formales, notación Dirac, perturbaciones y problemas resueltos paso a paso.', link: '/material/1_cursos/mcuantica/dist/index.html', isExternal: true, type: '🌌 Cuántica Universitaria' },
             { title: 'Trivia de Historia de la Física', desc: '500 preguntas con personajes, descubrimientos y biografías.', link: '#trivia-historia', type: '📜 Trivia Historia' },
             { title: 'Gran Trivia de Squash', desc: 'Reglamento, física del bote y táctica competitiva.', link: '#trivia-squash', type: '🎾 Trivia Squash' },
             { title: 'Quizzes Universitarios con PIN', desc: 'Evaluaciones de cinemática, dinámica y electromagnetismo con protocolo antifraude.', link: '#quizzes', type: '📝 Quiz Oficial' },
@@ -9137,6 +9149,39 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Cerrar dropdown al hacer clic fuera
+    
+    // Lanzador de Trivias en Nueva Ventana Dedicada
+    window.launchTriviaWindow = function(type) {
+        let targetFile = 'trivia.html';
+        let nameInput = null;
+        let instInput = null;
+
+        if (type === 'historia') {
+            targetFile = 'trivia-historia.html';
+            nameInput = document.getElementById('historia-trivia-player-name');
+            instInput = document.getElementById('historia-trivia-player-inst');
+        } else if (type === 'squash') {
+            targetFile = 'trivia-squash.html';
+            nameInput = document.getElementById('squash-trivia-player-name');
+            instInput = document.getElementById('squash-trivia-player-inst');
+        } else {
+            nameInput = document.getElementById('trivia-player-name');
+            instInput = document.getElementById('trivia-player-inst');
+        }
+
+        const name = (nameInput ? nameInput.value.trim() : '');
+        const inst = (instInput ? instInput.value.trim() : '');
+
+        if (!name) {
+            alert('⚠️ Por favor escribe tu nombre completo para comenzar la Trivia.');
+            if (nameInput) nameInput.focus();
+            return;
+        }
+
+        const url = `${targetFile}?player=${encodeURIComponent(name)}&inst=${encodeURIComponent(inst)}&start=1`;
+        window.open(url, '_blank', 'noopener,noreferrer');
+    };
+
     document.addEventListener('click', (e) => {
         const container = document.getElementById('platform-search-container');
         if (container && !container.contains(e.target)) {

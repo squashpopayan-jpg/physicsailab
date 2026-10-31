@@ -267,9 +267,9 @@
             }
 
             // Scroll suave hacia la sección
-            const triviaSec = document.getElementById('trivia-historia');
-            if (triviaSec && typeof triviaSec.scrollIntoView === 'function') {
-                triviaSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            const targetEl = viewName === 'game' ? (document.getElementById('historia-trivia-view-game') || document.getElementById('trivia-historia')) : document.getElementById('trivia-historia');
+            if (targetEl && typeof targetEl.scrollIntoView === 'function') {
+                targetEl.scrollIntoView({ behavior: 'smooth', block: (viewName === 'game' ? 'center' : 'start') });
             }
         },
 

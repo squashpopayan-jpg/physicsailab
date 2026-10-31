@@ -1,0 +1,117 @@
+<template class="chapter-src" data-id="dirac" data-num="5" data-title="Espacios de Hilbert y notación de Dirac" data-part="Parte I · Los orígenes y la función de onda" data-short="Kets y bras, bases ortonormales y relación de completitud, operadores como matrices, representaciones de posición y de momento, evolución unitaria, cuadros de Schrödinger y de Heisenberg, y la mecánica matricial como método numérico">
+<p class="lead">Las funciones de onda y los operadores diferenciales son una representación concreta de una estructura más general: un espacio vectorial complejo con producto interno (un espacio de Hilbert), donde los estados son vectores y los observables son operadores lineales. Dirac (1939) inventó una notación que hace transparente esa estructura y que se usa en todo el resto del curso. Con ella, la mecánica cuántica se reduce a álgebra lineal: matrices hermíticas, bases, proyectores y transformaciones unitarias. Esto permite además calcular: toda la mecánica matricial de Heisenberg (1925) consiste en escribir el hamiltoniano como una matriz y diagonalizarla.</p>
+
+<section>
+<h2>Kets, bras y completitud</h2>
+<p>Un estado es un <span class="term">ket</span> \(|\psi\rangle\), un vector de un espacio de Hilbert \(\mathcal H\). A cada ket corresponde un <span class="term">bra</span> \(\langle\psi|\), el vector dual (el conjugado hermítico). El <span class="term">producto interno</span> \(\langle\varphi|\psi\rangle\) es un número complejo con las propiedades \(\langle\varphi|\psi\rangle^*=\langle\psi|\varphi\rangle\), linealidad en el ket, y \(\langle\psi|\psi\rangle\ge0\) (solo es nula si \(|\psi\rangle=0\)). Para funciones de onda, \(\langle\varphi|\psi\rangle=\int\varphi^*(x)\psi(x)\,\dd x\), y la desigualdad de Schwarz \(|\langle\varphi|\psi\rangle|^2\le\langle\varphi|\varphi\rangle\langle\psi|\psi\rangle\) (usada en la incertidumbre) vale en general. Un estado físico está normalizado, \(\langle\psi|\psi\rangle=1\).</p>
+<p>Una <span class="term">base ortonormal</span> \(\{|n\rangle\}\) cumple \(\langle m|n\rangle=\delta_{mn}\), y es completa si todo vector se desarrolla en ella, \(|\psi\rangle=\sum_n|n\rangle\langle n|\psi\rangle=\sum_nc_n|n\rangle\) con \(c_n=\langle n|\psi\rangle\) (las componentes). Como \(|\psi\rangle\) es arbitrario, esto equivale a la <span class="term">relación de completitud</span>:</p>
+<div class="eq key" data-name="Completitud">\[\sum_n|n\rangle\langle n|=\mathbb 1,\qquad \hat P_n=|n\rangle\langle n|\ \text{(proyector)},\ \ \hat P_n^2=\hat P_n,\ \ \hat P_n^\dagger=\hat P_n.\]</div>
+<p>Insertar la identidad es el truco central de la notación: \(\langle\varphi|\psi\rangle=\sum_n\langle\varphi|n\rangle\langle n|\psi\rangle=\sum_nb_n^*c_n\), que es el producto escalar de los vectores de componentes. La probabilidad de que una medida de un observable con base propia \(\{|n\rangle\}\) dé el valor \(a_n\) es \(\langle\psi|\hat P_n|\psi\rangle=|\langle n|\psi\rangle|^2\): la regla de Born es el valor esperado del proyector. Y tras la medida el estado colapsa a \(\hat P_n|\psi\rangle/\sqrt{\langle\psi|\hat P_n|\psi\rangle}\).</p>
+<div class="box ex"><h4>Álgebra de Dirac con un ket de tres componentes</h4>
+<p><strong>Problema.</strong> En una base ortonormal \(\{|1\rangle,|2\rangle,|3\rangle\}\) se tiene \(|\psi\rangle=(1+\ii)|1\rangle+2|2\rangle-\ii|3\rangle\). Normalizar, dar el bra y las probabilidades. <strong>Procedimiento.</strong> (1) \(\langle\psi|\psi\rangle=|1+\ii|^2+|2|^2+|-\ii|^2=2+4+1=7\), luego el estado normalizado es \(|\psi\rangle/\sqrt7\). (2) El bra se obtiene conjugando coeficientes: \(\langle\psi|=(1-\ii)\langle1|+2\langle2|+\ii\langle3|\). (3) Probabilidades: \(P_1=2/7=0.2857\), \(P_2=4/7=0.5714\), \(P_3=1/7=0.1429\), con suma 1. (4) Proyector sobre \(|2\rangle\): \(\hat P_2|\psi\rangle=2|2\rangle\); tras medir \(P_2\) el estado queda en \(|2\rangle\).</p></div>
+</section>
+
+<section>
+<h2>Los operadores como matrices</h2>
+<p>Un operador lineal \(\hat A\) queda determinado por sus <span class="term">elementos de matriz</span> en una base, \(A_{mn}=\langle m|\hat A|n\rangle\). Insertando completitud, \(\hat A|\psi\rangle\) tiene componentes \((A\mathbf c)_m=\sum_nA_{mn}c_n\), y el producto de operadores corresponde al producto de matrices: \((\hat A\hat B)_{mn}=\sum_kA_{mk}B_{kn}\). El adjunto tiene como matriz la traspuesta conjugada, \((A^\dagger)_{mn}=A_{nm}^*\), de modo que un observable es una <span class="term">matriz hermítica</span>, \(A=A^\dagger\). Sus valores propios son reales, y sus vectores propios se pueden escoger ortonormales: diagonalizar es pasar a la base propia, con una matriz unitaria \(U\) (\(U^\dagger U=1\)) cuyas columnas son los vectores propios, \(A=UDU^\dagger\). Los invariantes de la transformación son la traza, \(\mathrm{Tr}A=\sum_na_n\), y el determinante, \(\det A=\prod a_n\).</p>
+<p>La matriz depende de la base, pero las predicciones físicas (valores propios y probabilidades) no. Un ejemplo con funciones de onda: en la base de las autofunciones de la caja, los elementos de matriz de la posición son \(x_{nn}=L/2\) y, para \(m\neq n\),</p>
+<div class="eq">\[x_{mn}=\frac2L\int_0^Lx\sin\frac{m\pi x}L\sin\frac{n\pi x}L\dd x=\begin{cases}-\dfrac{8mn\,L}{\pi^2(m^2-n^2)^2},&m+n\ \text{impar},\\ 0,&m+n\ \text{par}.\end{cases}\]</div>
+<p>Los elementos con \(m+n\) par se anulan por paridad. La completitud permite calcular \(\langle x^2\rangle\) sin integrar: \(\langle1|\hat x^2|1\rangle=\sum_m|x_{m1}|^2\).</p>
+<div class="box ex"><h4>Completitud en acción: ⟨x²⟩ del estado fundamental de la caja</h4>
+<p><strong>Datos.</strong> Con \(L=1\): \(x_{11}=0.5\), \(x_{21}=-16/9\pi^2=-0.18013\), \(x_{41}=-0.014410\), \(x_{61}=-0.00397\). <strong>Procedimiento.</strong> (1) \(\langle x^2\rangle=\sum_m|x_{1m}|^2\) (insertar \(\sum|m\rangle\langle m|\)). (2) Suma parcial hasta \(m=1\): \(0.25\); con \(m=2\): \(0.25+0.032446=0.282446\); con \(m=4\): \(0.282653\); con \(m=6\): \(0.282669\). (3) Exacto: \(\tfrac13-\tfrac1{2\pi^2}=0.282673\). <strong>Resultado.</strong> La serie converge rápido porque \(x_{1m}\propto m^{-3}\) para \(m\) par, y con 4 términos ya reproduce 4 cifras. Es la primera vez que se calcula un valor esperado «sin integrales», solo con matrices.</p></div>
+</section>
+
+<section>
+<h2>Representaciones de posición y de momento</h2>
+<p>Los observables con espectro continuo tienen «vectores propios» generalizados: \(\hat x|x\rangle=x|x\rangle\) y \(\hat p|p\rangle=p|p\rangle\), con normalización de Dirac, \(\langle x|x'\rangle=\delta(x-x')\) y \(\langle p|p'\rangle=\delta(p-p')\), y completitud \(\int|x\rangle\langle x|\dd x=\int|p\rangle\langle p|\dd p=\mathbb 1\). La función de onda es la componente del ket en la base de posiciones, \(\psi(x)=\langle x|\psi\rangle\), y en la de momentos, \(\phi(p)=\langle p|\psi\rangle\). El puente es la función de onda del autoestado de momento en la representación de posición:</p>
+<div class="eq key" data-name="Cambio de representación">\[\langle x|p\rangle=\frac{e^{ipx/\hbar}}{\sqrt{2\pi\hbar}}\ \Rightarrow\ \phi(p)=\int\frac{e^{-ipx/\hbar}}{\sqrt{2\pi\hbar}}\psi(x)\,\dd x,\qquad \hat x\to x,\ \hat p\to-\ii\hbar\partial_x\ \ (\text{posición});\qquad \hat x\to\ii\hbar\partial_p,\ \hat p\to p\ \ (\text{momento}).\]</div>
+<p>La transformada de Fourier del capítulo 3 es un cambio de base. En la representación de momentos, \(\hat x=\ii\hbar\,\partial_p\) y el conmutador \([\hat x,\hat p]=\ii\hbar\) se verifica igual: \(\left(\ii\hbar\partial_p\,p-p\,\ii\hbar\partial_p\right)\phi=\ii\hbar\phi\). Una ecuación puede ser más fácil en una representación que en la otra (por ejemplo, un potencial lineal \(V=-Fx\) da una ecuación de primer orden en \(p\)). La física no cambia, y por eso se prefiere escribir las ecuaciones sin elegir representación: \(\hat H|\psi\rangle=E|\psi\rangle\).</p>
+</section>
+
+<section>
+<h2>Evolución unitaria y cuadros</h2>
+<p>La ecuación de Schrödinger \(\ii\hbar\partial_t|\psi\rangle=\hat H|\psi\rangle\) se integra formalmente, para \(\hat H\) independiente del tiempo, con el <span class="term">operador de evolución</span></p>
+<div class="eq key" data-name="Operador de evolución">\[|\psi(t)\rangle=\hat U(t)|\psi(0)\rangle,\qquad \hat U(t)=e^{-\ii\hat Ht/\hbar}=\sum_ne^{-\ii E_nt/\hbar}|n\rangle\langle n|,\qquad \hat U^\dagger\hat U=\mathbb 1.\]</div>
+<p>La forma espectral (con los estados propios \(|n\rangle\) de \(\hat H\)) es la dinámica del capítulo 2: cada componente gira con su fase. Como \(\hat H\) es hermítico, \(\hat U\) es <em>unitario</em> y conserva la norma y los productos internos: la probabilidad total no cambia y la evolución es reversible. A diferencia del colapso de la medida, que no es unitario.</p>
+<p>Lo que se mide son los valores esperados, \(\langle A\rangle(t)=\langle\psi_0|\hat U^\dagger\hat A\hat U|\psi_0\rangle\), y esta expresión admite dos lecturas. En el <span class="term">cuadro de Schrödinger</span> los estados evolucionan y los operadores quedan fijos. En el <span class="term">cuadro de Heisenberg</span> los estados quedan fijos y los operadores evolucionan, \(\hat A_H(t)=\hat U^\dagger\hat A\hat U\), con la ecuación de movimiento (que es la de Ehrenfest sin promediar):</p>
+<div class="eq key" data-name="Ecuación de Heisenberg">\[\frac{\dd\hat A_H}{\dd t}=\frac\ii\hbar\left[\hat H,\hat A_H\right]+\left(\frac{\partial\hat A}{\partial t}\right)_H .\]</div>
+<p>La analogía con la mecánica clásica, \(\dd A/\dd t=\{A,H\}\), con el corchete de Poisson \(\{\ ,\}\to\tfrac{1}{\ii\hbar}[\ ,\ ]\), fue la guía de Dirac para cuantizar. Para el oscilador armónico, \(\dot{\hat x}_H=\hat p_H/m\) y \(\dot{\hat p}_H=-m\omega^2\hat x_H\) son lineales, y su solución es \(\hat x_H(t)=\hat x\cos\omega t+\dfrac{\hat p}{m\omega}\sin\omega t\), idéntica a la trayectoria clásica pero con operadores: de ahí que los valores esperados sigan la trayectoria clásica exacta (capítulo 4).</p>
+<h3>El sistema de dos niveles</h3>
+<p>El espacio más simple es el de dimensión 2: un <em>qubit</em> o un átomo con dos niveles relevantes (el fundamental \(|g\rangle\) y el excitado \(|e\rangle\)) acoplados por un campo. Con las matrices de Pauli \(\sigma_{x,y,z}\), su hamiltoniano más general es \(\hat H=\tfrac\hbar2(\Omega\sigma_x+\Delta\sigma_z)\), donde \(\Omega\) es el acoplamiento y \(\Delta\) la desintonía. Como \((\Omega\sigma_x+\Delta\sigma_z)^2=\Omega_R^2\mathbb 1\) con \(\Omega_R=\sqrt{\Omega^2+\Delta^2}\), la exponencial se suma exactamente:</p>
+<div class="eq key" data-name="Oscilaciones de Rabi">\[\hat U(t)=\cos\frac{\Omega_Rt}2-\ii\sin\frac{\Omega_Rt}2\,\frac{\Omega\sigma_x+\Delta\sigma_z}{\Omega_R},\qquad P_e(t)=\frac{\Omega^2}{\Omega_R^2}\sin^2\frac{\Omega_Rt}2\quad(\text{partiendo de }|g\rangle).\]</div>
+<p>La probabilidad de excitación oscila con la frecuencia generalizada \(\Omega_R\) y con una amplitud máxima \(\Omega^2/\Omega_R^2\le1\): la transferencia es total solo en resonancia (\(\Delta=0\)). Este resultado (Rabi, 1937) es la base de la resonancia magnética, de los relojes atómicos y de las puertas de un computador cuántico (capítulos 15, 24 y 34). El vector de Bloch \(\mathbf B=(\langle\sigma_x\rangle,\langle\sigma_y\rangle,\langle\sigma_z\rangle)\) obedece \(\dot{\mathbf B}=\boldsymbol\Omega_\text{v}\times\mathbf B\) con \(\boldsymbol\Omega_\text{v}=(\Omega,0,\Delta)\): gira con frecuencia \(\Omega_R\) alrededor del eje \((\Omega,0,\Delta)\), como un trompo.</p>
+<div class="sim" data-sim="dosniveles" data-title="Dos niveles acoplados: oscilaciones de Rabi y vector de Bloch"></div>
+<div class="sim-guide"><ul>
+<li>En resonancia (\(\Delta=0\)) y con \(\Omega=1\): \(\Omega_R=1\), periodo \(2\pi=6.283\), y la probabilidad llega a 1 en \(t=\pi/\Omega=3.1416\) (un pulso \(\pi\): invierte la población). El vector de Bloch parte del polo sur y recorre un meridiano completo en el plano \(yz\).</li>
+<li>Con \(\Delta=\Omega=1\): \(\Omega_R=\sqrt2=1.414\), periodo 4.443 y excitación máxima \(\Omega^2/\Omega_R^2=0.5\). Un pulso fuera de resonancia ya no logra la inversión: el eje de giro queda inclinado 45°.</li>
+<li>Con \(\Omega=2\) y \(\Delta=0\): el pulso \(\pi\) se acorta a \(\pi/\Omega=1.5708\). En todo momento la longitud del vector de Bloch es 1 (estado puro, evolución unitaria).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Mecánica matricial como método numérico</h2>
+<p>En la base \(\{|n\rangle\}\) de un problema solucionable (por ejemplo, la caja), un hamiltoniano más complicado \(\hat H=\hat H_0+\hat V\) tiene matriz \(H_{mn}=E_n^{(0)}\delta_{mn}+V_{mn}\). Es infinita, pero se trunca a las primeras \(N\) filas y columnas y se diagonaliza con un computador. Esto es el método de <span class="term">Rayleigh–Ritz</span>, y tiene una propiedad variacional: el valor propio más bajo de la matriz truncada es el mínimo de \(\langle\psi|\hat H|\psi\rangle\) en el subespacio generado por los \(N\) vectores, y como \(\langle\psi|\hat H|\psi\rangle\ge E_0\) para todo \(\psi\) normalizado, \(E_0^{(N)}\ge E_0\), y además \(E_0^{(N+1)}\le E_0^{(N)}\). La energía converge <em>desde arriba</em>, de manera monótona. Lo mismo vale, nivel a nivel, para los demás valores propios (teorema de Hylleraas–Undheim–MacDonald). Más aún: si el error de la función de onda es \(\varepsilon\), el de la energía es \(O(\varepsilon^2)\).</p>
+<div class="sim" data-sim="matriz" data-title="Mecánica matricial: el hamiltoniano de una caja con un potencial añadido, truncado a N estados"></div>
+<div class="sim-guide"><ul>
+<li>Campo uniforme, \(F=30\) (en unidades de \(\hbar^2/mL^3\)): con \(N=1\) el nivel más bajo es \(E_1=4.935\) (por simetría \(\langle V\rangle=0\)); con \(N=2\), 3.172; con \(N=3\), 3.090; con \(N=6\), 3.0828, la misma cifra que el cálculo por diferencias finitas con 2000 puntos (3.083). Las energías bajan de manera monótona, siempre por encima del valor exacto. El acoplamiento \(H_{12}=F\,x_{12}=-5.404\) es el que mezcla \(\psi_1\) y \(\psi_2\).</li>
+<li>Barrera delta (\(g=50\)): ahora la convergencia es lenta, como \(1/N\): con 30 estados el error sigue en 0.48 (18.74 frente a 18.26). La función exacta tiene un pico en \(\psi'\) en el centro, difícil de armar con senos suaves. Con \(N=1\) el desplazamiento es el de primer orden, \(2g=100\) (\(\psi_1(\tfrac12)^2=2\)).</li>
+<li>Parábola \(k=1000\) con \(N=4\): 6.482 · 23.188 · 48.385 · 83.050 frente a los exactos 6.482 · 23.187 · 48.311 · 82.988: los niveles bajos convergen primero, los altos más lento. Es el mismo patrón de cualquier método de bases.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Con \(|\psi\rangle=(1+\ii)|1\rangle+2|2\rangle-\ii|3\rangle\) (base ortonormal), calcule la constante de normalización, \(\langle\psi|\), las tres probabilidades y el valor esperado de \(\hat A=|1\rangle\langle1|+3|2\rangle\langle2|+5|3\rangle\langle3|\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Norma.</b> \(\langle\psi|\psi\rangle=|1+\ii|^2+|2|^2+|\ii|^2=2+4+1=7\). Constante: \(N=1/\sqrt7=0.3780\).</li>
+<li><b>Bra.</b> \(\langle\psi|=(1-\ii)\langle1|+2\langle2|+\ii\langle3|\) (se conjugan los coeficientes).</li>
+<li><b>Probabilidades.</b> \(P_n=|c_n|^2/7\): \(P_1=2/7=0.2857\), \(P_2=4/7=0.5714\), \(P_3=1/7=0.1429\).</li>
+<li><b>Valor esperado.</b> \(\hat A\) es diagonal con valores propios 1, 3, 5. \(\langle A\rangle=\tfrac27(1)+\tfrac47(3)+\tfrac17(5)=\tfrac{2+12+5}{7}=\tfrac{19}7=2.714\).</li>
+<li><b>Resultado.</b> <span class="ans">\(N=1/\sqrt7\); \(P=(2,4,1)/7\); \(\langle A\rangle=19/7=2.714\).</span></li>
+</ol></details></li>
+<li><span class="lvl">Básico</span>Para un qubit con base \(\{|0\rangle,|1\rangle\}\) sea \(|+\rangle=(|0\rangle+|1\rangle)/\sqrt2\). Escriba el proyector \(\hat P_+=|+\rangle\langle+|\) como matriz y demuestre que \(\hat P_+^2=\hat P_+\), halle sus valores propios y la probabilidad de que \(|0\rangle\) dé el resultado «\(+\)».
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Matriz.</b> \(|+\rangle=\tfrac1{\sqrt2}\binom11\), \(\langle+|=\tfrac1{\sqrt2}(1\ \ 1)\). \(\hat P_+=\tfrac12\begin{pmatrix}1&1\\1&1\end{pmatrix}\).</li>
+<li><b>Idempotencia.</b> \(\hat P_+^2=\tfrac14\begin{pmatrix}2&2\\2&2\end{pmatrix}=\hat P_+\) (también \(\langle+|+\rangle=1\) lo implica). Es hermítica: simétrica y real.</li>
+<li><b>Valores propios.</b> Traza \(=1\), determinante \(=\tfrac14-\tfrac14=0\): \(\lambda^2-\lambda=0\), \(\lambda=0,1\). El autovector de 1 es \(|+\rangle\), el de 0 es \(|-\rangle=(|0\rangle-|1\rangle)/\sqrt2\).</li>
+<li><b>Probabilidad.</b> \(\langle0|\hat P_+|0\rangle=|\langle+|0\rangle|^2=\tfrac12\).</li>
+<li><b>Resultado.</b> <span class="ans">\(\hat P_+=\tfrac12\begin{pmatrix}1&1\\1&1\end{pmatrix}\); valores propios 0 y 1; \(P=1/2\).</span></li>
+</ol></details></li>
+<li><span class="lvl">Intermedio</span>Con la matriz de posición de la caja (\(L=1\)), calcule \(x_{23}\) y \(x_{14}\), y compruebe con la completitud que \(\langle x^2\rangle_1=\sum_m|x_{1m}|^2\to\tfrac13-\tfrac1{2\pi^2}\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Fórmula.</b> Para \(m+n\) impar, \(x_{mn}=-\dfrac{8mn}{\pi^2(m^2-n^2)^2}\). Para el par \((2,3)\): \(m^2-n^2=-5\), \(x_{23}=-\dfrac{8\cdot6}{25\pi^2}=-0.19454\).</li>
+<li><b>El par (1,4).</b> \(m^2-n^2=-15\): \(x_{14}=-\dfrac{8\cdot4}{225\pi^2}=-0.014410\).</li>
+<li><b>Clausura.</b> \(\langle x^2\rangle_{11}=\sum_m|x_{1m}|^2=\tfrac14+\left(\tfrac{16}{9\pi^2}\right)^2+\left(\tfrac{32}{225\pi^2}\right)^2+\dots=0.25+0.032446+0.000208+0.000016+\dots\).</li>
+<li><b>Suma.</b> Con los primeros términos pares: \(0.282669\); la suma completa es \(0.2826727\), que coincide con \(\tfrac13-\tfrac1{2\pi^2}=0.2826727\).</li>
+<li><b>Resultado.</b> <span class="ans">\(x_{23}=-0.1945\), \(x_{14}=-0.01441\); \(\sum_m|x_{1m}|^2=0.282673=\tfrac13-\tfrac1{2\pi^2}\).</span></li>
+</ol></details></li>
+<li><span class="lvl">Intermedio</span>Un átomo de dos niveles se acopla a un campo con frecuencia de Rabi \(\Omega=2\pi\times1\) MHz. Calcule el tiempo de un pulso \(\pi\) en resonancia, y para una desintonía \(\Delta=\Omega\) la frecuencia generalizada, el periodo de las oscilaciones y la probabilidad máxima de excitación.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Pulso π.</b> En resonancia, \(P_e=\sin^2(\Omega t/2)\), igual a 1 cuando \(\Omega t=\pi\): \(t_\pi=\pi/\Omega=1/(2\times1\ \text{MHz})=0.5\) µs.</li>
+<li><b>Fuera de resonancia.</b> \(\Omega_R=\sqrt{\Omega^2+\Delta^2}=\sqrt2\,\Omega=2\pi\times1.4142\) MHz \(=8.886\times10^6\) s⁻¹.</li>
+<li><b>Periodo.</b> \(T=2\pi/\Omega_R=1/(1.4142\ \text{MHz})=0.7071\) µs.</li>
+<li><b>Amplitud.</b> \(P_\text{máx}=\Omega^2/\Omega_R^2=1/2\).</li>
+<li><b>Resultado.</b> <span class="ans">\(t_\pi=0.5\) µs; \(\Omega_R=8.89\times10^6\) s⁻¹; \(T=0.707\) µs; \(P_\text{máx}=0.5\).</span></li>
+</ol></details></li>
+<li><span class="lvl">Avanzado</span>Para el oscilador armónico, resuelva las ecuaciones de Heisenberg, halle \(\hat x_H(t)\) y calcule \([\hat x_H(t),\hat x_H(0)]\). Interprete el resultado en términos de incertidumbre.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Ecuaciones.</b> Con \(\hat H=\hat p^2/2m+\tfrac12m\omega^2\hat x^2\): \(\dot{\hat x}_H=\tfrac\ii\hbar[\hat H,\hat x_H]=\hat p_H/m\); \(\dot{\hat p}_H=\tfrac\ii\hbar[\hat H,\hat p_H]=-m\omega^2\hat x_H\) (por \([\hat H,\hat x]=-\ii\hbar\hat p/m\), \([\hat H,\hat p]=\ii\hbar m\omega^2\hat x\)).</li>
+<li><b>Solución.</b> Derivando una vez más, \(\ddot{\hat x}_H=-\omega^2\hat x_H\), con \(\hat x_H(0)=\hat x\) y \(\dot{\hat x}_H(0)=\hat p/m\): \(\hat x_H(t)=\hat x\cos\omega t+\dfrac{\hat p}{m\omega}\sin\omega t\); \(\hat p_H(t)=\hat p\cos\omega t-m\omega\hat x\sin\omega t\).</li>
+<li><b>Conmutador a tiempos distintos.</b> \([\hat x_H(t),\hat x]=\dfrac{\sin\omega t}{m\omega}[\hat p,\hat x]=-\dfrac{\ii\hbar}{m\omega}\sin\omega t\).</li>
+<li><b>Interpretación.</b> Las posiciones en dos instantes distintos no conmutan (salvo en \(\omega t=n\pi\)), y la desigualdad de Robertson da \(\Delta x(t)\Delta x(0)\ge\dfrac{\hbar}{2m\omega}|\sin\omega t|\). En \(t=\pi/2\omega\), \(\hat x_H=\hat p/m\omega\): la posición un cuarto de periodo después equivale al momento inicial, y su producto de incertidumbres da la de \(\hat x\) y \(\hat p\), \(\hbar/2m\omega\).</li>
+<li><b>Resultado.</b> <span class="ans">\(\hat x_H(t)=\hat x\cos\omega t+(\hat p/m\omega)\sin\omega t\); \([\hat x_H(t),\hat x_H(0)]=-\ii\hbar\sin(\omega t)/m\omega\).</span></li>
+</ol></details></li>
+<li><span class="lvl">Avanzado</span>Una partícula en la caja (\(\hbar=m=L=1\)) siente \(V=F(x-\tfrac12)\) con \(F=10\). Estime el nivel más bajo truncando la base a dos estados y compárelo con el cálculo perturbativo de segundo orden y con el resultado casi exacto, 4.71709.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Elementos de matriz.</b> \(E_1^{(0)}=\pi^2/2=4.9348\), \(E_2^{(0)}=4E_1=19.7392\). \(V_{11}=V_{22}=F\langle x-\tfrac12\rangle=0\); \(V_{12}=F\,x_{12}=-10\times0.180127=-1.80127\).</li>
+<li><b>Matriz 2×2.</b> \(H=\begin{pmatrix}4.9348&-1.8013\\-1.8013&19.7392\end{pmatrix}\). Media de la diagonal \(\bar E=12.3370\), semidiferencia \(\delta=7.4022\).</li>
+<li><b>Diagonalización.</b> \(E_\mp=\bar E\mp\sqrt{\delta^2+V_{12}^2}=12.3370\mp\sqrt{54.7926+3.2446}=12.3370\mp7.6182\). Nivel más bajo: \(4.7188\).</li>
+<li><b>Perturbación de segundo orden.</b> \(E\approx E_1+\dfrac{|V_{12}|^2}{E_1-E_2}=4.9348-\dfrac{3.2446}{14.8044}=4.7156\).</li>
+<li><b>Comparación.</b> Exacto (diferencias finitas, 4000 puntos): 4.71709. La base de 2 estados da 4.7188 (error 0.0017, por encima, como exige el principio variacional); la perturbación de segundo orden 4.7156 (error \(-0.0015\), por debajo): el cálculo matricial acota por arriba y la serie perturbativa no tiene cota fija. Con 3 estados: 4.71743; con 4, 4.71711.</li>
+<li><b>Resultado.</b> <span class="ans">2×2: 4.7188; segundo orden: 4.7156; exacto: 4.7171.</span></li>
+</ol></details></li>
+</ol>
+<div class="box note"><h4>Para profundizar</h4><p>P. A. M. Dirac, «A new notation for quantum mechanics», <em>Proc. Camb. Phil. Soc.</em> 35, 416 (1939); <em>The Principles of Quantum Mechanics</em>, 4.ª ed., Oxford, 1958. W. Heisenberg, <em>Z. Phys.</em> 33, 879 (1925); M. Born, W. Heisenberg y P. Jordan, <em>Z. Phys.</em> 35, 557 (1926). I. I. Rabi, <em>Phys. Rev.</em> 51, 652 (1937). J. J. Sakurai y J. Napolitano, <em>Modern Quantum Mechanics</em>, 2.ª ed., 2011, cap. 1 y 2. C. Cohen-Tannoudji, B. Diu y F. Laloë, <em>Quantum Mechanics</em>, vol. 1, 1977, cap. II. A. Szabo y N. S. Ostlund, <em>Modern Quantum Chemistry</em>, Dover, 1996, cap. 1.</p></div>
+</section>
+</template>
