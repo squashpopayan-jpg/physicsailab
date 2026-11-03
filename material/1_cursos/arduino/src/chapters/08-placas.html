@@ -1,0 +1,83 @@
+<template class="chapter-src" data-id="placas" data-num="8" data-title="Las placas: UNO, Nano y ESP32" data-part="Parte II · Arduino y ESP32" data-short="Qué es un microcontrolador, comparación del Arduino UNO, el Nano y el ESP32, sus pines y funciones, la alimentación, los niveles lógicos de 5 V y 3.3 V y los límites de corriente y de tensión de cada pin">
+<p class="lead">Un <b>microcontrolador</b> es un computador diminuto metido en un solo chip: tiene procesador, memoria y patas (pines) para conectarse al mundo, y ejecuta el programa que uno le carga. Una <b>placa</b> como el Arduino UNO o el ESP32 es ese chip más lo que necesita para funcionar sin complicaciones: conector USB, regulador de voltaje, cristal de reloj, LED y las patas organizadas en filas. En este capítulo se conocen las dos placas del curso y, sobre todo, <b>sus límites</b>: lo que un pin aguanta y lo que no.</p>
+
+<section>
+<h2>Las placas del curso</h2>
+<p>El <b>Arduino UNO R3</b> es la placa de aprendizaje por excelencia: usa un chip ATmega328P que trabaja a 5 V y tiene un entorno de programación muy sencillo. El <b>Arduino Nano</b> es el mismo chip en versión pequeña que se enchufa directamente en la protoboard. El <b>ESP32</b> es una familia de chips más potente, con WiFi y Bluetooth incluidos, que trabaja a 3.3 V; la placa de desarrollo más común (la de 30 pines) se enchufa también en la protoboard.</p>
+<div class="tablewrap"><table class="tbl"><tr><th></th><th>Arduino UNO R3</th><th>Arduino Nano</th><th>ESP32 DevKit (30 pines)</th></tr>
+<tr><td>Chip</td><td>ATmega328P</td><td>ATmega328P</td><td>ESP32-WROOM-32 (2 núcleos)</td></tr>
+<tr><td>Reloj</td><td>16 MHz</td><td>16 MHz</td><td>hasta 240 MHz</td></tr>
+<tr><td>Memoria de programa</td><td>32 KB</td><td>32 KB</td><td>4 MB (típico)</td></tr>
+<tr><td>Memoria de datos (RAM)</td><td>2 KB</td><td>2 KB</td><td>520 KB</td></tr>
+<tr><td>Tensión lógica</td><td><b>5 V</b></td><td><b>5 V</b></td><td><b>3.3 V</b></td></tr>
+<tr><td>Entradas analógicas</td><td>6 (10 bits)</td><td>8 (10 bits)</td><td>hasta 18 (12 bits)</td></tr>
+<tr><td>Salidas PWM</td><td>6</td><td>6</td><td>casi todos los pines</td></tr>
+<tr><td>Comunicación inalámbrica</td><td>no</td><td>no</td><td>WiFi y Bluetooth</td></tr>
+<tr><td>Corriente máx. por pin (absoluta)</td><td>40 mA</td><td>40 mA</td><td>40 mA</td></tr>
+<tr><td>Corriente cómoda por pin</td><td>20 mA</td><td>20 mA</td><td>12 mA</td></tr></table></div>
+<p>¿Cuál elegir? El UNO es perfecto para empezar y para circuitos de 5 V; el ESP32 es la elección cuando hay que conectarse a internet, usar Bluetooth o leer muchas señales con más precisión. Como tienen distinta tensión, hay que tenerlo presente al conectar sensores (más adelante en este capítulo).</p>
+</section>
+
+<section>
+<h2>Explorando los pines</h2>
+<p>Cada pin tiene un nombre y varias posibles funciones. Elija una placa y un pin: aparece marcado sobre la placa y se describen sus funciones. En el UNO, los pines <code class="k">D0–D13</code> son digitales, <code class="k">A0–A5</code> son analógicos (y también pueden ser digitales) y los marcados con «~» (3, 5, 6, 9, 10, 11) dan PWM. En el ESP32 se usa el número GPIO.</p>
+<div class="sim" data-sim="pines" data-title="Mapa de pines de las placas"></div>
+<div class="box warn"><h4>Pines con trampa en el ESP32</h4>
+<ul><li><b>GPIO 34, 35, 36 y 39</b> solo sirven como entradas: no pueden dar salida, ni tienen resistencias internas pull-up.</li>
+<li><b>GPIO 0, 2, 5, 12 y 15</b> se leen al arrancar para configurar el chip («strapping»): un circuito conectado a ellos puede impedir que la placa arranque (por ejemplo, GPIO 12 en alto al arrancar da problemas de memoria).</li>
+<li><b>GPIO 6 a 11</b> se usan para la memoria flash y no deben tocarse (no salen en la placa de 30 pines).</li>
+<li>El convertidor <b>ADC2</b> (GPIO 0, 2, 4, 12–15, 25–27) <b>no funciona mientras el WiFi está encendido</b>; use pines del ADC1 (32–39).</li></ul></div>
+</section>
+
+<section>
+<h2>Alimentación</h2>
+<p>Las placas reciben energía por el cable USB (5 V). El UNO también acepta entre 7 y 12 V por el pin <code class="k">VIN</code> o por el conector de la fuente, y un regulador lo baja a 5 V; el UNO ofrece 5 V y 3.3 V a otros circuitos, pero el pin de 3.3 V solo entrega hasta unos 50 mA. En el ESP32, el pin <code class="k">VIN</code> es la entrada de 5 V y un regulador produce los 3.3 V (pin <code class="k">3V3</code>). Todos los GND de la placa son el mismo punto: la referencia de 0 V a la que se conectan los negativos.</p>
+<p>La placa UNO toma de USB un máximo de unos 500 mA y su fusible reajustable corta la alimentación si se supera. Todos los pines de un ATmega328P juntos no deben pasar de 200 mA.</p>
+</section>
+
+<section>
+<h2>5 V contra 3.3 V: los niveles lógicos</h2>
+<p>Una entrada digital interpreta «alto» o «bajo» según la tensión que recibe. El ATmega328P a 5 V lee «alto» desde 3.0 V (60 % de la alimentación) y «bajo» hasta 1.5 V (30 %); el ESP32 a 3.3 V, desde 2.5 V (75 %) y hasta 0.8 V (25 %). Dos consecuencias:</p>
+<ul><li>Una salida de 3.3 V (ESP32) <i>sí</i> es leída como alto por un UNO (3.3 &gt; 3.0 V), con poco margen.</li>
+<li>Una salida de 5 V <b>no debe conectarse nunca a un pin del ESP32</b>: el máximo es 3.6 V y el pin se daña. Hay que bajar la señal con un divisor de tensión (por ejemplo 1 kΩ y 2 kΩ: \(5\times2/3=3.33\) V) o con un módulo conversor de nivel.</li></ul>
+<p>Compruébelo: un módulo infrarrojo alimentado con los 5 V de la placa entrega 5 V en su salida. Conéctelo al pin 4 de un ESP32 directamente y luego con el divisor.</p>
+<div class="sim" data-sim="niveles" data-title="Un sensor de 5 V conectado a un ESP32"></div>
+<div class="sim-guide"><ul>
+<li>Sin divisor, el pin recibe unos 4.7 V (el USB entrega algo menos de 5 V al pasar por el diodo de la placa) y se daña en pocos segundos: el mensaje indica la tensión recibida y el máximo permitido de 3.6 V.</li>
+<li>Con el divisor de 1 kΩ y 2 kΩ el pin recibe 3.1 V: seguro. El programa lee «1» (nivel alto) en ambos casos mientras el pin esté vivo; luego del daño, queda «pegado» o sin responder.</li>
+<li>Pase la tensión al multímetro: con el multímetro (modo V) entre el pin y GND se ve la diferencia.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Cómo se programan</h2>
+<p>Se escribe el programa (el <i>sketch</i>) en el entorno de desarrollo <b>Arduino IDE</b> en el computador, se elige la placa y el puerto y se pulsa «Subir»: el programa se traduce a lenguaje de máquina y se graba en la memoria de la placa por el cable USB. Para el ESP32 hay que instalar primero su «paquete de placas» en el IDE. Desde ese momento la placa ejecuta el programa cada vez que recibe energía, aunque se desconecte del computador. Un sketch tiene dos partes obligatorias: <code class="k">setup()</code>, que se ejecuta una vez al arrancar, y <code class="k">loop()</code>, que se repite para siempre. Eso es lo que se ve en el capítulo 9 con el simulador de código del curso.</p>
+<div class="box fail"><h4>Si no se logra subir el programa</h4>
+<ul><li>Muchos cables USB son «solo carga» y no llevan datos: pruebe con otro.</li><li>Verifique el puerto y la placa elegidos en el menú.</li><li>En algunos ESP32 hay que mantener pulsado el botón BOOT mientras empieza la carga.</li><li>Desconecte lo que esté conectado a los pines 0 y 1 (UNO) antes de subir.</li></ul></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Calcule cuántos milivoltios representa cada paso (cuenta) del convertidor analógico: (a) UNO, 10 bits y referencia de 5 V; (b) ESP32, 12 bits y 3.3 V (valores nominales).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>UNO.</b> \(2^{10}=1024\) pasos: \(5/1024=4.88\) mV.</li>
+<li><b>ESP32.</b> \(2^{12}=4096\) pasos: \(3.3/4096=0.806\) mV.</li>
+<li><b>Resultado.</b> <span class="ans">4.88 mV por cuenta en el UNO y 0.81 mV en el ESP32 (6 veces más fino).</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Un ATmega328P soporta 200 mA en total por sus pines de alimentación. Si cada LED consume 15 mA, ¿cuántos se pueden encender a la vez, como máximo, sin pasar de ese total?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Cociente.</b> \(200/15=13.3\).</li>
+<li><b>Resultado.</b> <span class="ans">13 LED (a los 15 mA cada uno); en la práctica se deja margen.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un sensor de 5 V debe conectarse a un ESP32 con un divisor de tensión que use \(R_1=2.2\) kΩ y \(R_2=3.3\) kΩ. ¿Qué tensión llega al pin si el sensor da 5 V?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Fórmula.</b> \(V=5\times3.3/(2.2+3.3)=3.0\) V.</li>
+<li><b>Comparación.</b> Está por debajo de 3.6 V y por encima del nivel de «alto» (2.475 V).</li>
+<li><b>Resultado.</b> <span class="ans">3.0 V: sirve (alto sin exceder el máximo).</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>Un ESP32 da una señal de 3.3 V a la entrada de un UNO (5 V). ¿La entiende como nivel alto? ¿Y al revés, un UNO de 5 V hacia el ESP32?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>ESP32 → UNO.</b> El mínimo para «alto» en el UNO es 0.6×5 = 3.0 V: 3.3 V cumple, con 0.3 V de margen.</li>
+<li><b>UNO → ESP32.</b> 5 V supera el máximo de 3.6 V: puede dañar el pin.</li>
+<li><b>Resultado.</b> <span class="ans">Sí en el primer caso; no en el segundo: se necesita un divisor o conversor de nivel.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

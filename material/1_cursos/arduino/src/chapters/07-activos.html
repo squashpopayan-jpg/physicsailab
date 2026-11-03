@@ -1,0 +1,106 @@
+<template class="chapter-src" data-id="activos" data-num="7" data-title="Condensadores, diodos y transistores" data-part="Parte I · Los elementos" data-short="La carga y descarga de un condensador y su constante de tiempo; la curva del diodo, el rectificador y el Zener; el transistor como interruptor (bipolar y MOSFET) y cómo calcular su resistencia de base">
+<p class="lead">Las resistencias son las piezas «calmadas»: dan siempre la misma respuesta para la misma tensión. Las tres piezas de este capítulo son más interesantes porque su comportamiento cambia: el <b>condensador</b> responde con el tiempo, el <b>diodo</b> responde distinto según el sentido y el <b>transistor</b> es un interruptor que se maneja con electricidad. Con ellos se entienden desde el retardo de un temporizador hasta por qué un Arduino puede mover un motor.</p>
+
+<section>
+<h2>El condensador: carga que se almacena</h2>
+<p>Un condensador son dos placas metálicas muy próximas, separadas por un aislante. Al aplicarle una tensión, las placas acumulan cargas de signo contrario; esa carga es \(Q=CV\), donde la <b>capacidad</b> \(C\) se mide en faradios (F), y casi siempre en microfaradios (µF) o nanofaradios (nF). Cuando se carga a través de una resistencia \(R\), la tensión no sube de golpe, sino que se acerca poco a poco a la de la fuente, con una rapidez que fija la <b>constante de tiempo</b> \(\tau=RC\):</p>
+<div class="eq key" data-name="Carga y descarga de un condensador">\[V_C(t)=V_0\left(1-e^{-t/RC}\right)\ \ \text{(carga)}\qquad V_C(t)=V_0\,e^{-t/RC}\ \ \text{(descarga)}\]</div>
+<p>Pasado un tiempo \(\tau\), la tensión alcanza el 63.2 % del valor final; a \(3\tau\), el 95 %; a \(5\tau\), el 99.3 %, y se considera cargado. Con \(R=10\ \text{k}\Omega\) y \(C=100\ \mu\text{F}\): \(\tau=1\) s; el condensador llega a 5 V (con fuente de 5 V) en unos 5 s. La energía almacenada es \(E=\tfrac12CV^2\): 100 µF a 5 V guardan 1.25 mJ.</p>
+<p>Un generador de funciones entrega una onda cuadrada (5 V y 0 V alternados). Observe en el osciloscopio virtual cómo la tensión del condensador (en color) persigue a la de entrada con la forma exponencial. Cambie R o C: si \(\tau\) es pequeña respecto del medio periodo, la persecución es rápida; si es grande, casi no sube.</p>
+<div class="sim" data-sim="rc" data-title="Carga y descarga de un condensador (RC)"></div>
+<div class="sim-guide"><ul>
+<li>Con 10 kΩ y 100 µF (\(\tau=1.00\) s) y una onda de 0.2 Hz (2.5 s en alto): el condensador alcanza 4.59 V (91.8 %) justo al final del semiciclo: \(5(1-e^{-2.5})\).</li>
+<li>Con 10 kΩ y 10 µF (\(\tau=0.1\) s) se carga por completo en medio segundo y la señal casi copia la entrada.</li>
+<li>Con 100 kΩ y 100 µF (\(\tau=10\) s) la tensión apenas sube un 22 % en 2.5 s: el condensador «filtra» la señal.</li>
+</ul></div>
+<div class="box tip"><p>El condensador es el corazón de los <b>temporizadores</b> (carga hasta un umbral), de los <b>filtros</b> (deja pasar lo lento y frena lo rápido) y del <b>antirrebote</b> de los pulsadores. Además, los chips llevan uno de 100 nF pegado a su alimentación, que almacena carga para los picos de consumo: se llama condensador de <i>desacoplo</i>.</p></div>
+</section>
+
+<section>
+<h2>El diodo: una válvula de un solo sentido</h2>
+<p>Un diodo de silicio casi no conduce hasta que la tensión directa llega a unos 0.6 V; a partir de ahí la corriente crece de forma exponencial. Es decir, no cumple la ley de Ohm: su corriente no es proporcional a la tensión. En la práctica se comporta como una pila de unos 0.7 V puesta en el camino. Un LED es igual, pero con un umbral mayor (1.8 a 3.3 V, según el color) y emite luz. El diodo <b>Schottky</b> (por ejemplo, 1N5819) cae solo 0.2–0.4 V.</p>
+<p>La gráfica de abajo muestra la curva del diodo elegido y la «recta de carga» de la resistencia (la tensión que sobra, \(V_{fuente}-V_D\), dividida por R). <b>El punto donde se cortan es el punto de funcionamiento</b>: es la forma gráfica de resolver un circuito con un diodo. Mueva la tensión de la fuente o la resistencia y mire cómo se desplaza.</p>
+<div class="sim" data-sim="diodoiv" data-title="Curva del diodo y recta de carga"></div>
+<div class="sim-guide"><ul>
+<li>LED rojo con 5 V y 330 Ω: el punto de funcionamiento cae en 9.2 mA y 1.97 V; la resistencia se queda con 3.03 V. Con 3 V y 100 Ω: 10.2 mA y 1.98 V (la tensión del LED apenas cambia aunque la fuente baje de 5 V a 3 V).</li>
+<li>Diodo 1N4007 con 5 V y 330 Ω: la corriente es 13.0 mA y el diodo cae solo 0.70 V; la resistencia se queda con casi toda la tensión.</li>
+<li>La tensión del diodo casi no cambia aunque la corriente cambie mucho: se mantiene cerca de su valor típico. Esa es la propiedad que se aprovecha para <i>referencias de tensión</i>.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Rectificar: convertir alterna en continua</h2>
+<p>La red eléctrica es <b>alterna</b>: su voltaje cambia de signo 60 veces por segundo (60 Hz en Colombia). Los circuitos electrónicos necesitan <b>continua</b>. El diodo deja pasar solo los semiciclos positivos (rectificador de media onda); con cuatro diodos en «puente» se aprovechan los dos semiciclos. Un condensador en paralelo con la carga almacena energía durante el pico y la entrega cuando la tensión cae, <b>alisando</b> la salida. El rizado (la ondulación que queda) es aproximadamente \(\Delta V\approx I/(f\,C)\) para media onda (con \(f\) la frecuencia de la señal), y la mitad para onda completa.</p>
+<p>Para poder verlo, el generador trabaja a 1 Hz en lugar de 60 Hz: el fenómeno es el mismo, pero lo bastante lento para que se vea.</p>
+<div class="sim" data-sim="rectif" data-title="Rectificador de media onda con condensador de filtro"></div>
+<div class="sim-guide"><ul>
+<li>Sin condensador, la salida es solo la parte positiva de la onda, y menor por la caída del diodo: con una señal de 5 V de pico sale un pico de unos 4.3 V.</li>
+<li>Con el condensador de 470 µF y 1 kΩ, la salida se «cuelga» cerca del pico y baja suavemente entre un pico y el siguiente (descarga con \(\tau=0.47\) s).</li>
+<li>Con una carga más pesada (330 Ω) el condensador se descarga más rápido y el rizado aumenta.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El diodo Zener: una referencia de tensión</h2>
+<p>El diodo Zener está diseñado para trabajar «al revés»: cuando la tensión inversa llega a su valor nominal (por ejemplo, 5.1 V), conduce y la mantiene casi constante. Con una resistencia en serie, sirve para obtener una tensión fija a partir de otra mayor y variable. Pruebe un Zener de 5.1 V alimentado con una resistencia de 330 Ω, mientras sube y baja la tensión de entrada.</p>
+<div class="sim" data-sim="zener" data-title="Regulador con diodo Zener de 5.1 V"></div>
+<div class="sim-guide"><ul>
+<li>Con 9 V de entrada y sin carga: la resistencia de 330 Ω deja pasar unos 11.7 mA que fluyen por el Zener, y la salida es 5.14 V.</li>
+<li>Suba la entrada a 12 V: la salida casi no se mueve (sube unos 0.03 V), porque el Zener absorbe el exceso. Por debajo de unos 5 V el Zener deja de conducir y la salida sigue a la entrada.</li>
+<li>Con una carga de 100 Ω (que pediría 51 mA) la resistencia no alcanza a entregar tanto: el Zener se apaga y la salida cae a unos 2.1 V. El Zener solo regula cargas pequeñas.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El transistor: un interruptor controlado</h2>
+<p>El transistor bipolar (BJT) tiene tres patas: <b>base</b> (B), <b>colector</b> (C) y <b>emisor</b> (E). Una pequeña corriente que entra por la base deja pasar una corriente mucho mayor del colector al emisor: en la zona activa, \(I_C=\beta\,I_B\) (con \(\beta\) entre 100 y 800 para un BC547). Usado como interruptor, funciona en dos estados: <b>corte</b> (sin corriente de base, el transistor no conduce: apagado) y <b>saturación</b> (con corriente de base suficiente, la tensión entre C y E cae a unos 0.1–0.3 V: encendido).</p>
+<p>Para saturar el transistor se da a la base mucha más corriente de la necesaria: la regla práctica es \(I_B\approx I_C/10\). La resistencia de base vale \(R_B=(V_{in}-0.7)/I_B\). Para encender un LED de 20 mA con una señal de 5 V: \(I_B=2\) mA, \(R_B=(5-0.7)/0.002=2.15\ \text{k}\Omega\), y se usa 2.2 kΩ (cualquier valor entre 1 kΩ y 10 kΩ funciona para este caso). Pruebe a subir la tensión de entrada poco a poco y vea los tres estados.</p>
+<div class="sim" data-sim="bjt" data-title="El transistor bipolar como interruptor"></div>
+<div class="sim-guide"><ul>
+<li>Con 0 V en la entrada: la corriente de base es cero, el transistor está en corte y el LED no enciende.</li>
+<li>Entre 0.6 V y 1 V de entrada: la corriente de base crece de 0.25 µA a 28 µA y la de colector sube de 0.08 mA a 8 mA: es la zona activa, una transición muy estrecha (solo unos 0.4 V).</li>
+<li>Con 5 V y una resistencia de base de 10 kΩ: \(I_B=0.43\) mA y el transistor está en saturación (\(V_{CE}\approx0.05\) V): el LED recibe 9.0 mA, unas 21 veces más que los 0.43 mA de entrada.</li>
+</ul></div>
+<p>El <b>MOSFET</b> hace lo mismo pero se controla por <i>tensión</i> y no por corriente: no consume corriente en la compuerta (G) y, cuando la tensión compuerta-fuente supera su umbral (1–2 V en los de «nivel lógico», como el IRLZ44N), conduce con una resistencia de unos 0.03 Ω entre drenaje (D) y fuente (S). Por eso se prefiere para cargas grandes: un motor o una tira de LED casi no calienta el transistor.</p>
+<div class="sim" data-sim="mosfet" data-title="El MOSFET de nivel lógico como interruptor"></div>
+<div class="sim-guide"><ul>
+<li>Con menos de 1.7 V en la compuerta no hay corriente. A partir de 1.8 V ya conduce toda la corriente que el LED permite (9.2 mA), con una tensión drenaje-fuente de apenas 8 mV; con 5 V cae a 0.2 mV. El umbral es muy marcado.</li>
+<li>La compuerta casi no consume corriente: la entrada es como un pequeño condensador.</li>
+</ul></div>
+<div class="box warn"><p>Cuando un transistor maneja una carga inductiva (motor, relé, bobina) se necesita un <b>diodo de rueda libre</b> en paralelo con la carga, o el pico de tensión al apagar lo perfora. Se explica con el motor en el capítulo 18.</p></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un condensador de 470 µF se carga a través de 2.2 kΩ desde 5 V. Calcule \(\tau\) y la tensión después de 1 s.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Constante de tiempo.</b> \(\tau=RC=2200\times470\times10^{-6}=1.034\) s.</li>
+<li><b>Tensión.</b> \(V=5(1-e^{-1/1.034})=5(1-0.380)=3.10\) V.</li>
+<li><b>Resultado.</b> <span class="ans">τ = 1.03 s; a 1 s la tensión es 3.10 V (62 %).</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Para encender un LED de 15 mA con un transistor, desde una señal de 3.3 V (ESP32), ¿qué resistencia de base se usa con la regla \(I_B=I_C/10\)?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Corriente de base.</b> \(I_B=15/10=1.5\) mA.</li>
+<li><b>Resistencia.</b> \(R_B=(3.3-0.7)/0.0015=1733\ \Omega\).</li>
+<li><b>Valor comercial.</b> 1.8 kΩ (E12) o 1.5 kΩ.</li>
+<li><b>Resultado.</b> <span class="ans">≈ 1.73 kΩ; se usa 1.8 kΩ.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un rectificador de media onda a 60 Hz alimenta una carga de 100 mA con un condensador de filtro de 1000 µF. Estime el rizado. ¿Y con onda completa?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Media onda.</b> \(\Delta V\approx I/(fC)=0.1/(60\times0.001)=1.67\) V.</li>
+<li><b>Onda completa.</b> La frecuencia efectiva es 120 Hz: \(\Delta V\approx0.1/(120\times0.001)=0.83\) V.</li>
+<li><b>Resultado.</b> <span class="ans">1.67 V en media onda y 0.83 V en onda completa.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Con un Zener de 5.1 V y una fuente de 9 V se usa una resistencia de 330 Ω. ¿Qué corriente circula por la resistencia? Si la carga consume 10 mA, ¿cuánta corriente queda para el Zener?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Resistencia.</b> \(I=(9-5.1)/330=11.8\) mA.</li>
+<li><b>Carga.</b> Si la carga toma 10 mA, al Zener le quedan \(11.8-10=1.8\) mA.</li>
+<li><b>Interpretación.</b> Con tan poca corriente en el Zener la regulación empeora; si la carga pidiera más de 11.8 mA, el Zener se apagaría y la salida caería.</li>
+<li><b>Resultado.</b> <span class="ans">11.8 mA por la resistencia; 1.8 mA para el Zener.</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>Un condensador de 100 µF cargado a 5 V se descarga a través de una resistencia de 1 kΩ. ¿En cuánto tiempo la tensión baja a 1 V? ¿Cuánta energía se disipa en total en la resistencia?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Descarga.</b> \(V=5e^{-t/\tau}\) con \(\tau=1000\times100\times10^{-6}=0.1\) s.</li>
+<li><b>Tiempo.</b> \(1=5e^{-t/0.1}\Rightarrow t=0.1\ln5=0.161\) s.</li>
+<li><b>Energía.</b> \(E=\tfrac12CV^2=\tfrac12\times100\times10^{-6}\times25=1.25\) mJ; toda se disipa en R.</li>
+<li><b>Resultado.</b> <span class="ans">161 ms y 1.25 mJ.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

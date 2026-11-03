@@ -1,0 +1,95 @@
+<template class="chapter-src" data-id="final" data-num="28" data-title="Proyecto final: diseñar, construir y depurar" data-part="Parte VI · Proyectos de aplicación" data-short="Cómo llevar una idea a un proyecto que funciona: especificación, esquema, prueba por partes y método de depuración; taller con una lámpara nocturna y cinco fallas por encontrar con el multímetro; rúbrica e ideas para el proyecto del curso">
+<p class="lead">Se aprende a programar escribiendo programas, y se aprende electrónica <b>arreglando</b> circuitos que no funcionan. Nadie construye un proyecto sin fallas: la diferencia entre un principiante y alguien con experiencia no es que el segundo no se equivoque, sino que tiene un <b>método</b> para encontrar el error sin desesperarse. Este capítulo reúne ese método, lo practica en un taller de depuración y propone cómo organizar un proyecto final.</p>
+
+<section>
+<h2>De la idea al proyecto: ocho pasos</h2>
+<ol>
+<li><b>Una frase.</b> «Una lámpara que se enciende sola cuando oscurece.» Si no cabe en una frase, el proyecto es demasiado grande para empezar.</li>
+<li><b>Entradas y salidas.</b> ¿Qué medirá (luz, temperatura, distancia, un pulsador)? ¿Qué hará (luz, sonido, motor, pantalla, mensaje)?</li>
+<li><b>Especificaciones con números.</b> «Enciende cuando la luz baja de 50 lux; brillo proporcional; consume menos de 50 mA.» Sin números no se puede probar si funciona.</li>
+<li><b>Lista de materiales y comprobación de tensiones y corrientes.</b> ¿Alguna salida pasa de 40 mA? ¿Algo necesita 5 V y el ESP32 trae 3.3 V? (capítulos 8 y 18).</li>
+<li><b>Esquema en papel</b> antes de tocar la protoboard, con cada pin rotulado.</li>
+<li><b>Montaje por etapas.</b> Primero la alimentación y un LED de prueba; luego el sensor leyendo por el monitor serie; luego la salida; por último la lógica que une todo. Después de cada etapa, probar.</li>
+<li><b>Prueba con casos límite.</b> Luz mínima y máxima, sensor desconectado, batería baja, cable que se afloja.</li>
+<li><b>Documentar.</b> Esquema final, programa comentado, lista de materiales, fotos y una tabla de resultados. Sin documentación, el proyecto desaparece al desarmarlo.</li>
+</ol>
+</section>
+
+<section>
+<h2>El método de depuración</h2>
+<p>Ante una falla hay que resistir la tentación de cambiarlo todo al azar. El método es <b>dividir y descartar</b>, del lado más simple al más complicado:</p>
+<div class="tablewrap"><table class="tbl"><tr><th>Paso</th><th>Pregunta</th><th>Cómo se comprueba</th></tr>
+<tr><td>1. Alimentación</td><td>¿Llega la tensión correcta?</td><td>Multímetro en V entre 5 V (o 3.3 V) y GND del circuito: debe dar el valor esperado. Medirla en el propio componente, no solo en la placa.</td></tr>
+<tr><td>2. Tierra común</td><td>¿Todo comparte el mismo GND?</td><td>Continuidad (pitido) entre el GND de la placa y el GND del módulo problemático.</td></tr>
+<tr><td>3. Conexiones</td><td>¿Cada cable está donde dice el esquema?</td><td>Revisar pin por pin con el esquema en la mano; mirar la protoboard desde el costado (hay cables que no entran del todo).</td></tr>
+<tr><td>4. Polaridad</td><td>¿LED, zumbador, condensadores y sensores van en el sentido correcto?</td><td>Pata larga del LED al positivo; marcas «+» y «−»; el pinout del módulo (no todos coinciden).</td></tr>
+<tr><td>5. Señales</td><td>¿Llega la señal esperada al pin?</td><td>Medir con el multímetro el pin de entrada o salida mientras el programa corre; probar la salida con <code class="k">digitalWrite(pin, HIGH)</code> fijo.</td></tr>
+<tr><td>6. Programa</td><td>¿Hace lo que se creía?</td><td>Escribir valores en el monitor serie en cada punto crítico; comprobar el número de pin y el modo (<code class="k">pinMode</code>).</td></tr>
+<tr><td>7. Componente</td><td>¿Está dañado?</td><td>Cambiarlo por otro de prueba, o medirlo fuera del circuito (resistencia, continuidad, diodo).</td></tr></table></div>
+<p>Dos reglas de oro: <b>cambie una sola cosa cada vez</b> y <b>anote lo que probó</b>. Y una tercera: si el circuito se calienta, huele a quemado o el USB se desconecta, desconecte primero y piense después (capítulo 6).</p>
+</section>
+
+<section>
+<h2>Taller: la lámpara nocturna averiada</h2>
+<p>El circuito de la simulación es el proyecto de ejemplo. Una fotorresistencia (LDR) y una resistencia de 10 kΩ forman un divisor de tensión que llega a A0 (capítulo 12); el programa convierte la luz en brillo con <code class="k">map()</code> y lo envía a un LED por PWM (capítulo 13): cuanto más oscuro, más brillo. Funciona bien. Su tarea es <b>provocar cada falla, observar el síntoma y localizarla</b> con el multímetro, como lo haría en el banco de trabajo.</p>
+<div class="sim" data-sim="final" data-title="Lámpara nocturna con cinco fallas para encontrar"></div>
+<div class="sim-guide"><ul>
+<li><b>Sin fallas.</b> Con 300 lux, A0 marca 4.22 V (lectura 863) y el brillo es solo 40 de 255: el LED casi no luce. Baje la luz a 2 lux: A0 = 0.70 V (lectura 142), el brillo sube a 220 y el LED conduce unos 9.7 mA en promedio.</li>
+<li><b>LED al revés.</b> La corriente es 0 mA aunque el programa mande brillo: un LED no conduce con la polaridad invertida. Se halla mirando que la pata larga (ánodo) vaya hacia el pin de la placa.</li>
+<li><b>Cable de tierra suelto.</b> Mismo síntoma (0 mA), distinta causa: el circuito del LED queda abierto. Con el multímetro, el cátodo del LED tiene tensión pero no hay camino a GND (mida continuidad al riel de tierra).</li>
+<li><b>Resistencia de 22 Ω en vez de 220 Ω.</b> Es la más peligrosa: con poca luz la corriente promedio sube a 37 mA (casi 4 veces más) y con brillo máximo el LED y el pin de la placa superan sus límites (capítulo 6). Se halla leyendo el código de colores de la resistencia (rojo-rojo-negro frente a rojo-rojo-marrón).</li>
+<li><b>Falta la resistencia de 10 kΩ.</b> A0 queda en 5.00 V sin importar la luz (lectura 1023) y el LED siempre apagado. Con el multímetro: la tensión en A0 no cambia al mover la luz. Sin la resistencia, el pin de entrada solo «ve» a la LDR conectada a 5 V.</li>
+<li><b>Pin equivocado en el programa.</b> Todo el circuito está bien (A0 normal, el serie imprime valores razonables), pero el programa mueve el pin 10 y el LED está en el 9. El multímetro en el ánodo del LED marca 0 V; en el pin 10 aparece el PWM. Lo que falla no es el circuito.</li>
+</ul></div>
+<div class="box tip"><h4>Cómo usar el multímetro en este taller</h4>
+<p>Gire el selector a V, ponga la punta negra en GND y toque con la roja los puntos clave: 5 V (debe ser 5.0), el extremo del LED, A0. Compare con lo que debería haber en cada punto (el esquema lo dice) y avance en la dirección donde la tensión «desaparece».</p></div>
+</section>
+
+<section>
+<h2>Proyecto final: ideas y rúbrica</h2>
+<p>El proyecto final integra al menos <b>un sensor, una salida, una decisión en el programa y una forma de comunicación o registro de datos</b> (serie, pantalla, página web o Bluetooth). Algunas ideas, agrupadas como en el curso:</p>
+<div class="tablewrap"><table class="tbl"><tr><th>Física</th><th>Aplicaciones</th><th>Comunicación</th></tr>
+<tr><td>Dinamómetro con celda de carga y HX711</td><td>Riego automático con sensor de humedad del suelo y relé</td><td>Semáforo controlado desde el teléfono por Bluetooth</td></tr>
+<tr><td>Velocímetro de una rueda con sensor magnético (efecto Hall)</td><td>Parqueadero con sensor de distancia, LED y zumbador</td><td>Termómetro que publica en una página web</td></tr>
+<tr><td>Resorte-masa con ultrasonido: periodo contra masa</td><td>Control de ventilador por temperatura con PWM</td><td>Cerradura con clave en teclado y registro en el serie</td></tr>
+<tr><td>Rampa con dos fotopuertas: aceleración</td><td>Cortina automática con servo y sensor de luz</td><td>Estación con varios ESP32 que envían datos a uno central</td></tr></table></div>
+<div class="tablewrap"><table class="tbl"><tr><th>Criterio</th><th>Excelente</th><th>Peso</th></tr>
+<tr><td>Funcionamiento</td><td>Cumple todas las especificaciones numéricas propuestas</td><td>25 %</td></tr>
+<tr><td>Diseño del circuito</td><td>Esquema correcto, resistencias calculadas, tensiones y corrientes verificadas</td><td>20 %</td></tr>
+<tr><td>Programa</td><td>Claro, comentado, sin <code class="k">delay</code> innecesarios, con constantes con nombre</td><td>15 %</td></tr>
+<tr><td>Pruebas y depuración</td><td>Tabla de pruebas con casos límite y registro de las fallas encontradas</td><td>20 %</td></tr>
+<tr><td>Documentación y seguridad</td><td>Esquema, lista de materiales, fotos, advertencias; montaje ordenado</td><td>10 %</td></tr>
+<tr><td>Presentación</td><td>Explica qué hace, cómo y qué aprendió; demuestra una falla y su solución</td><td>10 %</td></tr></table></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>La resistencia del LED es 220 Ω, la salida de la placa 5 V y el LED amarillo cae unos 2.0 V. ¿Qué corriente circula? ¿Y si se monta una de 22 Ω por error?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Con 220 Ω.</b> \(I=(5-2.0)/220=13.6\) mA.</li>
+<li><b>Con 22 Ω.</b> \(I=(5-2.0)/22=136\) mA, diez veces más.</li>
+<li><b>Comparación.</b> El pin del UNO admite 40 mA como máximo absoluto.</li>
+<li><b>Resultado.</b> <span class="ans">13.6 mA contra 136 mA: la segunda daña el LED y el pin.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>El monitor serie muestra siempre 1023 aunque se tape la LDR. Dé dos causas probables y cómo comprobarlas.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Causa 1.</b> Falta la resistencia fija del divisor (o está mal insertada): A0 queda conectado a 5 V solo a través de la LDR.</li>
+<li><b>Causa 2.</b> A0 está conectado directamente a 5 V por un cable en una fila equivocada.</li>
+<li><b>Comprobación.</b> Medir la tensión entre A0 y GND mientras se cambia la luz; revisar con continuidad si la resistencia une A0 con GND.</li>
+<li><b>Resultado.</b> <span class="ans">Resistencia del divisor ausente o A0 puesto a 5 V; se confirma con el multímetro en A0.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>A 10 lux la LDR tiene 10 kΩ y la resistencia fija vale 10 kΩ. ¿Qué tensión hay en A0, qué lee <code class="k">analogRead</code> y qué brillo calcula el programa?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Divisor.</b> \(V_{A0}=5\times10/(10+10)=2.5\) V.</li>
+<li><b>Lectura.</b> \(2.5/5\times1023\approx511\) (o 512).</li>
+<li><b>Brillo.</b> <code class="k">map(511,0,1023,255,0)</code> = \(511\times(-255)/1023+255\): la división entera da \(-127\) y el resultado es 128.</li>
+<li><b>Resultado.</b> <span class="ans">2.5 V, lectura ≈ 511 y brillo ≈ 128 (la mitad).</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>Un compañero armó una lámpara y «no hace nada». Proponga un plan de pruebas por etapas, de modo que cada prueba descarte un grupo de causas.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Etapa 1: alimentación.</b> Medir 5 V entre los rieles. Si no están, el problema es la conexión de la placa.</li>
+<li><b>Etapa 2: salida sola.</b> Cargar un programa que ponga el pin del LED en <code class="k">HIGH</code> fijo. Si no enciende: LED al revés, resistencia, tierra o pin.</li>
+<li><b>Etapa 3: entrada sola.</b> Cargar un programa que solo imprima <code class="k">analogRead(A0)</code> y tapar la LDR. Si no cambia: divisor o conexión de A0.</li>
+<li><b>Etapa 4: unir.</b> Con las dos etapas funcionando, cargar el programa completo; si falla, el error está en la lógica (<code class="k">map</code>, pin o PWM).</li>
+<li><b>Resultado.</b> <span class="ans">Alimentación → salida aislada → entrada aislada → programa completo; cada etapa reduce las causas posibles a la mitad.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

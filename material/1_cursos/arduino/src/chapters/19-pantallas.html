@@ -1,0 +1,61 @@
+<template class="chapter-src" data-id="pantallas" data-num="19" data-title="Pantallas: LCD de 16×2 con I²C" data-part="Parte III · Sensores y actuadores" data-short="Mostrar datos sin computador: la pantalla LCD de 16 columnas y 2 filas con adaptador I²C, su dirección y el escáner de dispositivos, y los fallos típicos (dirección equivocada, SDA y SCL cruzados, contraste)">
+<p class="lead">Hasta ahora todo lo que decía la placa se leía en el monitor serie, con el computador conectado. Un proyecto autónomo necesita su propia pantalla. La más popular es la <b>LCD de 16×2</b> (16 caracteres en dos líneas), que gracias a un adaptador con el chip PCF8574 se maneja con solo dos cables de datos: el bus <b>I²C</b>. Este capítulo la conecta y enseña a encontrar su dirección y a diagnosticar cuando «no escribe nada».</p>
+
+<section>
+<h2>El bus I²C en una página</h2>
+<p>I²C (se lee «i cuadrado c») permite que varios dispositivos compartan <b>dos cables</b>: <code class="k">SDA</code> (datos) y <code class="k">SCL</code> (reloj). Cada dispositivo tiene una <b>dirección</b> de 7 bits y el Arduino (el «maestro») habla con uno por vez. En el UNO, SDA es el pin A4 y SCL el A5; en el ESP32, GPIO 21 y 22. Un bus I²C se puede ampliar con muchos dispositivos mientras sus direcciones sean distintas. Las pantallas LCD con adaptador responden en la dirección <b>0x27</b> o <b>0x3F</b> según el fabricante: hay que averiguarla con un <i>escáner</i>.</p>
+</section>
+
+<section>
+<h2>Escanear y escribir</h2>
+<p>El escáner recorre las direcciones de 1 a 126 y pregunta a cada una si responde (<code class="k">Wire.endTransmission()</code> devuelve 0 si alguien contestó). Pruébelo: el monitor muestra la dirección de la pantalla. Luego cargue el programa que escribe en ella. Use las «fallas» para ver los síntomas de un cableado equivocado.</p>
+<div class="sim" data-sim="lcd" data-title="Pantalla LCD 16×2 con adaptador I²C"></div>
+<div class="sim-guide"><ul>
+<li><b>Todo bien:</b> el escáner informa «Dispositivo I2C en 0x27» y la pantalla muestra «Hola, mundo!» y el tiempo en segundos que lleva encendida la placa.</li>
+<li><b>Dirección distinta (0x3F):</b> el programa sigue usando 0x27 y no escribe nada. El escáner te muestra la dirección verdadera: cambia el número en <code class="k">LiquidCrystal_I2C lcd(0x27, 16, 2);</code>.</li>
+<li><b>SDA y SCL cruzados:</b> el escáner no encuentra ningún dispositivo («No se encontró nada»). Revise el cableado.</li>
+<li><b>Sin alimentación (VCC desconectado):</b> tampoco responde; en la vida real la pantalla se vería apagada.</li>
+</ul></div>
+<div class="box fail"><h4>La pantalla se enciende pero no se ve texto</h4>
+<ul><li>Gire con un destornillador el tornillito azul del adaptador (contraste): si está mal ajustado, se ven bloques negros o nada.</li>
+<li>Compruebe que el programa llama a <code class="k">lcd.init()</code> y <code class="k">lcd.backlight()</code>.</li>
+<li>Verifique la dirección con el escáner.</li>
+<li>Con ESP32 de 3.3 V, la pantalla de 5 V puede verse débil: alimente la pantalla con VIN (5 V) y deje SDA/SCL del ESP32 (con sus pull-ups a 3.3 V).</li></ul></div>
+</section>
+
+<section>
+<h2>Cómo se escribe</h2>
+<ul>
+<li><code class="k">lcd.setCursor(columna, fila)</code>: columna 0–15, fila 0–1 (la cuenta empieza en 0).</li>
+<li><code class="k">lcd.print(valor)</code>: escribe texto o números desde el cursor.</li>
+<li><code class="k">lcd.clear()</code> borra todo (es lenta: evítela en cada vuelta; es mejor escribir encima).</li>
+<li>Para actualizar un número sin que queden dígitos viejos se escriben espacios de relleno: <code class="k">lcd.print(valor); lcd.print("   ");</code></li>
+</ul>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Cuántos caracteres puede mostrar una LCD de 16×2? ¿Qué instrucción coloca el cursor al inicio de la segunda línea?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Caracteres.</b> 16 × 2 = 32.</li>
+<li><b>Cursor.</b> Segunda fila: índice 1, primera columna: 0.</li>
+<li><b>Resultado.</b> <span class="ans">32 caracteres; <code class="k">lcd.setCursor(0, 1);</code>.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>¿Cuántos dispositivos I²C distintos admite un bus con direcciones de 7 bits?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Direcciones.</b> \(2^7=128\), de las que algunas están reservadas (0x00–0x07 y 0x78–0x7F): quedan 112.</li>
+<li><b>Resultado.</b> <span class="ans">Hasta 112 dispositivos (en la práctica, menos, por la capacitancia del cable).</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>La temperatura (en °C con un decimal) debe aparecer en la fila 1 desde la columna 6, y siempre ocupar 5 caracteres (por ejemplo «25.3 »). ¿Qué instrucciones usaría?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Posición.</b> <code class="k">lcd.setCursor(6, 1);</code></li>
+<li><b>Valor.</b> <code class="k">lcd.print(t, 1);</code> escribe, por ejemplo, «25.3» (4 caracteres).</li>
+<li><b>Relleno.</b> <code class="k">lcd.print(" ");</code> borra un posible dígito sobrante del valor anterior.</li>
+<li><b>Resultado.</b> <span class="ans"><code class="k">lcd.setCursor(6,1); lcd.print(t,1); lcd.print(" ");</code></span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>Un bus I²C a 100 kHz envía una dirección y un byte de datos (2 bytes). Cada byte necesita 9 ciclos de reloj (8 bits más el reconocimiento). ¿Cuánto tarda, sin contar el inicio y la parada?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Ciclos.</b> 2 bytes × 9 = 18 ciclos.</li>
+<li><b>Tiempo.</b> \(18/100\,000=180\ \mu\text{s}\).</li>
+<li><b>Resultado.</b> <span class="ans">≈ 180 µs: se pueden enviar unos 5500 bytes por segundo.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

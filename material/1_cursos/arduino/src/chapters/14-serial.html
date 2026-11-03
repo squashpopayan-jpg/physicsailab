@@ -1,0 +1,62 @@
+<template class="chapter-src" data-id="serial" data-num="14" data-title="Comunicación serie y depuración" data-part="Parte II · Arduino y ESP32" data-short="El monitor serie como ventana a la placa: Serial.begin, print y println con formatos, recibir datos del teclado, el graficador serie y cómo depurar un programa imprimiendo variables">
+<p class="lead">Una placa sin pantalla es una caja negra: ¿lee bien el sensor?, ¿entra el programa en esa rama? El <b>puerto serie</b> es el cable de conversación entre la placa y el computador: la placa «escribe» textos y números que se ven en el <b>monitor serie</b> y también puede «escuchar» lo que usted teclea. Es la herramienta de <b>depuración</b> más importante, y ya se ha usado en capítulos anteriores.</p>
+
+<section>
+<h2>Enviar: begin, print y println</h2>
+<p><code class="k">Serial.begin(9600)</code> abre el puerto a 9600 baudios (bits por segundo); el monitor debe estar configurado a la misma velocidad o se ven símbolos extraños (con el ESP32 se usa 115200). <code class="k">Serial.print(x)</code> escribe sin cambiar de renglón y <code class="k">Serial.println(x)</code> añade un salto de línea. Los formatos:</p>
+<div class="tablewrap narrow"><table class="tbl"><tr><th>Instrucción</th><th>Salida</th></tr>
+<tr><td><code class="k">Serial.println(42)</code></td><td>42</td></tr><tr><td><code class="k">Serial.println(3.14159)</code></td><td>3.14 (dos decimales por omisión)</td></tr>
+<tr><td><code class="k">Serial.println(3.14159, 4)</code></td><td>3.1416</td></tr><tr><td><code class="k">Serial.println(255, HEX)</code></td><td>FF</td></tr>
+<tr><td><code class="k">Serial.println(5, BIN)</code></td><td>101</td></tr><tr><td><code class="k">Serial.println('A')</code></td><td>A (un carácter)</td></tr>
+<tr><td><code class="k">Serial.println("Hola")</code></td><td>Hola</td></tr></table></div>
+<p>A 9600 baudios cada carácter ocupa 10 bits (8 de datos, uno de inicio y otro de parada), así que se transmiten unos 960 caracteres por segundo: imprimir mucho en cada vuelta del <code class="k">loop</code> frena el programa.</p>
+</section>
+
+<section>
+<h2>Recibir: Serial.available y readStringUntil</h2>
+<p>Lo que se teclea llega a la placa carácter a carácter y se acumula en un búfer. <code class="k">Serial.available()</code> dice cuántos caracteres hay esperando; <code class="k">Serial.readStringUntil('\n')</code> lee una línea completa, y <code class="k">.toInt()</code> la convierte en número. En el programa de abajo, escriba un número en el cuadro y pulse Enviar: la placa responde con su doble y su valor en hexadecimal.</p>
+<div class="sim" data-sim="serial" data-title="Hablar con la placa por el monitor serie"></div>
+<div class="sim-guide"><ul>
+<li>Envíe <code class="k">100</code>: responde «Recibí 100 -> doble: 200 -> HEX: 64».</li>
+<li>Envíe <code class="k">-7</code>: el doble es −14; el hexadecimal de un número negativo se muestra como entero sin signo de 32 bits (FFFFFFF9).</li>
+<li>Envíe un texto como <code class="k">hola</code>: <code class="k">toInt()</code> devuelve 0; la conversión falla en silencio, un error típico.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Depurar imprimiendo</h2>
+<p>Depurar es encontrar por qué un programa no hace lo que se espera. La técnica universal: imprimir el valor de las variables sospechosas y compararlo con lo que se esperaba. Ejemplos: la lectura de un sensor antes de convertirla; el estado de un pulsador; un contador. Un buen mensaje dice <i>qué</i> es cada número: <code class="k">Serial.print("lectura=");</code> y no un número solitario. Cuando todo funcione, conviene comentar o quitar los mensajes.</p>
+<p>El <b>graficador serie</b> del IDE dibuja los números que se envían, separados por espacios o comas: sirve para ver cómo cambia una señal. En esta simulación se lee un potenciómetro con un ESP32 y se imprimen dos columnas: la lectura cruda (ruidosa) y la filtrada con un promedio móvil exponencial, \(y_n=0.9\,y_{n-1}+0.1\,x_n\).</p>
+<div class="sim" data-sim="graficador" data-title="Graficador serie: lectura cruda y filtrada"></div>
+<div class="sim-guide"><ul>
+<li>La lectura cruda (azul) tiembla unas cuentas; la filtrada (naranja) es suave pero llega más tarde a un cambio brusco: el filtro siempre cuesta un retraso.</li>
+<li>Mueva el potenciómetro de golpe: la curva filtrada tarda unas 20 lecturas (1 s a 50 ms por lectura) en alcanzarlo; con un factor 0.5 sería mucho más rápida pero ruidosa.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>A 9600 baudios, ¿cuánto tarda en enviarse el mensaje «Temperatura: 25.5» (17 caracteres más el salto de línea de 2 caracteres)?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Caracteres.</b> 17 + 2 = 19.</li>
+<li><b>Bits.</b> 19 × 10 = 190 bits.</li>
+<li><b>Tiempo.</b> \(190/9600=19.8\) ms.</li>
+<li><b>Resultado.</b> <span class="ans">≈ 19.8 ms.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>¿Qué imprime <code class="k">Serial.println(10, BIN)</code>?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Conversión.</b> 10 = 8 + 2 = 1010 en binario.</li>
+<li><b>Resultado.</b> <span class="ans">1010.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Con el filtro \(y_n=0.9y_{n-1}+0.1x_n\) y una entrada que salta de 0 a 100, ¿cuánto vale la salida tras 1, 5 y 20 lecturas?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Fórmula.</b> \(y_n=100(1-0.9^n)\).</li>
+<li><b>Valores.</b> n=1: 10; n=5: \(100(1-0.5905)=40.95\); n=20: \(100(1-0.1216)=87.84\).</li>
+<li><b>Resultado.</b> <span class="ans">10, 40.95 y 87.84.</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>Una placa imprime 10 caracteres cada 5 ms a 9600 baudios. ¿Se satura el canal?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Capacidad.</b> 9600/10 = 960 caracteres por segundo.</li>
+<li><b>Demanda.</b> 10 caracteres cada 5 ms = 2000 caracteres por segundo.</li>
+<li><b>Resultado.</b> <span class="ans">Sí: 2000 &gt; 960; la placa se retrasa porque el búfer se llena. Hay que subir los baudios o imprimir menos.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

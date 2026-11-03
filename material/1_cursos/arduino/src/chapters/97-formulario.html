@@ -1,0 +1,90 @@
+<template class="chapter-src" data-id="formulario" data-num="A" data-title="Formulario y pinouts" data-part="Apéndices" data-short="Fórmulas, constantes y tablas de pines del curso para consulta rápida, con el capítulo donde se explica cada una">
+<p class="lead">Resumen de consulta rápida. El número entre paréntesis indica el capítulo donde se explica cada resultado y se discute su alcance. Todas las tensiones en V, corrientes en A (o mA si se indica), resistencias en Ω.</p>
+
+<section>
+<h2>Electricidad básica (capítulos 1, 4, 5, 6)</h2>
+<div class="tablewrap"><table class="tbl"><tr><th>Concepto</th><th>Fórmula</th><th>Nota</th></tr>
+<tr><td>Ley de Ohm (1)</td><td>\(V=IR\)</td><td>Solo para resistencias; un LED o un diodo no la cumplen.</td></tr>
+<tr><td>Potencia (1)</td><td>\(P=VI=I^2R=V^2/R\)</td><td>Resistencia de ¼ W: no pasar de 0.25 W (conviene la mitad).</td></tr>
+<tr><td>Resistencias en serie (5)</td><td>\(R=R_1+R_2+\dots\)</td><td>Misma corriente en todas.</td></tr>
+<tr><td>Resistencias en paralelo (5)</td><td>\(1/R=1/R_1+1/R_2+\dots\)</td><td>Misma tensión; el total es menor que la menor.</td></tr>
+<tr><td>Divisor de tensión (5)</td><td>\(V_\text{out}=V_\text{in}\,R_2/(R_1+R_2)\)</td><td>Con carga conectada, \(R_2\) pasa a \(R_2\parallel R_\text{carga}\).</td></tr>
+<tr><td>Divisor de corriente (5)</td><td>\(I_1=I\,R_2/(R_1+R_2)\)</td><td>Dos ramas en paralelo.</td></tr>
+<tr><td>Resistencia para un LED (1, 6)</td><td>\(R=(V_\text{fuente}-V_\text{LED})/I_\text{LED}\)</td><td>LED rojo ≈ 1.9–2.0 V, verde ≈ 2.1 V, azul/blanco ≈ 3 V.</td></tr>
+<tr><td>Duración de una batería (1)</td><td>\(t=\text{capacidad (mAh)}/I\ \text{(mA)}\)</td><td>Teórica; en la práctica 70–80 %.</td></tr>
+<tr><td>Cortocircuito de una pila (6)</td><td>\(I=V/(r_\text{int}+R_\text{cable})\)</td><td>Una pila de 9 V puede dar más de 5 A: se calienta.</td></tr></table></div>
+</section>
+
+<section>
+<h2>Condensadores, diodos y transistores (capítulo 7)</h2>
+<div class="tablewrap"><table class="tbl"><tr><th>Concepto</th><th>Fórmula</th></tr>
+<tr><td>Constante de tiempo RC</td><td>\(\tau=RC\)</td></tr>
+<tr><td>Carga y descarga</td><td>\(V=V_0\left(1-e^{-t/\tau}\right)\) (carga); \(V=V_0\,e^{-t/\tau}\) (descarga)</td></tr>
+<tr><td>Energía en un condensador</td><td>\(E=\tfrac12 CV^2\)</td></tr>
+<tr><td>Rizado de un rectificador con filtro</td><td>\(\Delta V\approx I/(fC)\) con \(f\) = 60 Hz (media onda) o 120 Hz (onda completa)</td></tr>
+<tr><td>Transistor como interruptor</td><td>\(I_B\approx I_C/10\); \(R_B=(V_\text{señal}-0.7)/I_B\)</td></tr>
+<tr><td>Regulación con Zener</td><td>\(I_R=(V_\text{in}-V_Z)/R\); \(I_Z=I_R-I_\text{carga}\)</td></tr>
+<tr><td>Energía en una bobina</td><td>\(E=\tfrac12LI^2\)</td></tr></table></div>
+</section>
+
+<section>
+<h2>Arduino: convertidor, PWM, tiempo, serie (capítulos 9–15)</h2>
+<div class="tablewrap"><table class="tbl"><tr><th>Concepto</th><th>Fórmula</th></tr>
+<tr><td>Paso del ADC</td><td>UNO: \(5/1024=4.88\) mV; ESP32: \(3.3/4096=0.81\) mV (nominal)</td></tr>
+<tr><td>Tensión desde la lectura</td><td>\(V=\text{lectura}\times V_\text{ref}/(2^n)\) (con 1023 o 4095 en el denominador según la convención del programa)</td></tr>
+<tr><td>Ciclo de trabajo del PWM</td><td>\(D=\text{valor}/255\); \(V_\text{media}=D\,V_\text{cc}\)</td></tr>
+<tr><td>Frecuencia PWM por omisión</td><td>UNO: 490 Hz (pines 3, 9, 10, 11) y 980 Hz (pines 5 y 6); ESP32: 1 kHz (configurable)</td></tr>
+<tr><td>Servo estándar</td><td>Pulso de 544 a 2400 µs cada 20 ms para 0° a 180°</td></tr>
+<tr><td>Frecuencia y periodo</td><td>\(f=1/T\); parpadeo con <code class="k">delay(x)</code> en cada estado: \(f=1/(2x)\)</td></tr>
+<tr><td>Frecuencia de una nota</td><td>\(f_n=440\times2^{(n-9)/12}\) Hz (do central: 261.6 Hz)</td></tr>
+<tr><td>Capacidad del puerto serie</td><td>\(\text{caracteres/s}=\text{baudios}/10\) (8N1)</td></tr>
+<tr><td>Desbordamiento de <code class="k">millis()</code></td><td>\(2^{32}\) ms = 49.7 días; usar siempre <code class="k">unsigned long</code> y <code class="k">ahora - ultimo</code></td></tr>
+<tr><td><code class="k">map(x, a, b, c, d)</code></td><td>\((x-a)(d-c)/(b-a)+c\), con división entera</td></tr>
+<tr><td>Enteros</td><td>UNO: <code class="k">int</code> 16 bits (−32768 a 32767); ESP32: 32 bits</td></tr></table></div>
+</section>
+
+<section>
+<h2>Comunicación (capítulos 19–21, 27)</h2>
+<div class="tablewrap"><table class="tbl"><tr><th>Concepto</th><th>Fórmula o dato</th></tr>
+<tr><td>Bit UART</td><td>\(1/\text{baudios}\); un byte = 10 bits (inicio + 8 datos + parada)</td></tr>
+<tr><td>Dirección I²C</td><td>7 bits (112 utilizables); byte enviado \(=\text{dirección}\ll1\,|\,R/W\)</td></tr>
+<tr><td>Tiempo I²C</td><td>\(t=9\times\text{bytes}/f_\text{SCL}\) (100 kHz estándar, 400 kHz rápido)</td></tr>
+<tr><td>SPI</td><td>Un bit por pulso de SCK: \(t=8\times\text{bytes}/f_\text{SCK}\)</td></tr>
+<tr><td>HTTP</td><td>200 correcto; 404 no encontrado; JSON = texto <code class="k">{"clave":valor}</code></td></tr>
+<tr><td>Corriente media con sueño</td><td>\(I_\text{media}=d\,I_\text{activo}+(1-d)\,I_\text{sueño}\)</td></tr></table></div>
+</section>
+
+<section>
+<h2>Sensores (capítulos 12, 16, 17, 25)</h2>
+<div class="tablewrap"><table class="tbl"><tr><th>Sensor</th><th>Relación</th></tr>
+<tr><td>LM35</td><td>\(T=100\,V_\text{out}\) (10 mV/°C)</td></tr>
+<tr><td>NTC (ecuación β)</td><td>\(R=R_{25}\,e^{\beta(1/T-1/T_{25})}\), \(T\) en kelvin; \(1/T=1/T_{25}+\ln(R/R_{25})/\beta\)</td></tr>
+<tr><td>LDR en divisor</td><td>\(V_\text{out}=V_\text{cc}\,R_\text{fija}/(R_\text{LDR}+R_\text{fija})\)</td></tr>
+<tr><td>HC-SR04</td><td>\(d=vt/2\) con \(v=331.3+0.606\,T\) m/s; en cm: \(d=t\,(\mu\text{s})\times0.0343/2\) a 20 °C</td></tr>
+<tr><td>Velocidad del sonido (medida)</td><td>Pendiente \(m\) de \(t\) contra \(d\): \(v=2/m\)</td></tr></table></div>
+</section>
+
+<section>
+<h2>Proyectos de física (capítulos 22–25)</h2>
+<div class="tablewrap"><table class="tbl"><tr><th>Proyecto</th><th>Relación</th></tr>
+<tr><td>Caída libre</td><td>\(g=2d/t^2\); \(\Delta g/g=\Delta d/d+2\,\Delta t/t\)</td></tr>
+<tr><td>Péndulo simple</td><td>\(T=2\pi\sqrt{L/g}\); \(T\approx T_0(1+\theta_0^2/16)\); exacto: \(T=2\pi\sqrt{L/g}\big/\text{AGM}(1,\cos(\theta_0/2))\)</td></tr>
+<tr><td>Enfriamiento de Newton</td><td>\(T=T_a+(T_0-T_a)e^{-kt}\); \(\ln(T-T_a)\) es lineal en \(t\) con pendiente \(-k\); vida media \(\ln2/k\)</td></tr>
+<tr><td>Valor local de \(g\)</td><td>9.777 m/s² en Popayán (valor de trabajo; la fórmula internacional con corrección de altura de 1760 m da 9.775 m/s², diferencia del 0.02 %)</td></tr></table></div>
+</section>
+
+<section>
+<h2>Pines de las placas (capítulo 8)</h2>
+<div class="tablewrap"><table class="tbl"><tr><th>Función</th><th>Arduino UNO</th><th>ESP32 DevKit (30 pines)</th></tr>
+<tr><td>Lógica / tensión máxima en un pin</td><td>5 V / 5.5 V</td><td>3.3 V / 3.6 V</td></tr>
+<tr><td>Corriente por pin (recomendada / máxima)</td><td>20 mA / 40 mA</td><td>12 mA / 40 mA</td></tr>
+<tr><td>ADC</td><td>A0–A5, 10 bits</td><td>12 bits; usar ADC1 (GPIO 32–39) si se usa WiFi</td></tr>
+<tr><td>PWM</td><td>3, 5, 6, 9, 10, 11</td><td>Casi todos los pines de salida (LEDC)</td></tr>
+<tr><td>I²C</td><td>A4 (SDA), A5 (SCL)</td><td>21 (SDA), 22 (SCL)</td></tr>
+<tr><td>SPI</td><td>11 MOSI, 12 MISO, 13 SCK, 10 SS</td><td>23 MOSI, 19 MISO, 18 SCK, 5 SS</td></tr>
+<tr><td>UART</td><td>0 (RX), 1 (TX): ocupados por el USB</td><td>UART0: 3 (RX), 1 (TX) para el USB; UART2: 16 (RX), 17 (TX)</td></tr>
+<tr><td>Interrupciones externas</td><td>2 y 3</td><td>Casi todos los pines de entrada</td></tr>
+<tr><td>LED incorporado</td><td>13</td><td>2 (según el modelo)</td></tr>
+<tr><td>Pines con cuidado</td><td>0 y 1 (USB)</td><td>6–11 (memoria flash, no usar); 34–39 solo entrada; 0, 2, 12, 15 afectan el arranque</td></tr></table></div>
+</section>
+</template>

@@ -1,0 +1,117 @@
+<template class="chapter-src" data-id="multimetro" data-num="4" data-title="El multímetro" data-part="Parte I · Los elementos" data-short="Medir voltaje, corriente, resistencia, continuidad y diodos con un multímetro digital; dónde conectar las puntas, el selector y los errores que queman el fusible del aparato">
+<p class="lead">El multímetro es los ojos del electrónico: un aparato que, con dos puntas, mide lo que no se ve. Con él se comprueba una pila, se descubre un cable roto, se encuentra la resistencia equivocada y se sabe cuánta corriente consume un circuito. Se aprende a usar en media hora, pero tiene reglas que hay que respetar: medir voltaje es <i>en paralelo</i>, medir corriente es <i>en serie</i>, y medir resistencia es <i>sin energía</i>. Aquí puede equivocarse a propósito, incluso quemarle el fusible, sin pagar el aparato.</p>
+
+<section>
+<h2>Las partes del multímetro</h2>
+<p>El multímetro digital tiene una pantalla, un selector giratorio, tres conectores y dos cables con punta. El <b>cable negro</b> siempre va en el conector <b>COM</b> (común). El <b>cable rojo</b> va en el conector <b>VΩmA</b> para casi todo (voltaje, resistencia, continuidad y corrientes pequeñas) y se cambia al de <b>10 A</b> solo para medir corrientes grandes. Mover el selector cambia lo que mide:</p>
+<div class="tablewrap"><table class="tbl"><tr><th>Posición</th><th>Mide</th><th>Cómo se conecta</th></tr>
+<tr><td>V⎓</td><td>Voltaje continuo (pilas, USB, pines)</td><td>En <b>paralelo</b>: las puntas tocan los dos puntos entre los que se quiere medir</td></tr>
+<tr><td>A⎓</td><td>Corriente continua</td><td>En <b>serie</b>: se abre el circuito y el multímetro se intercala</td></tr>
+<tr><td>Ω</td><td>Resistencia</td><td>Con el circuito <b>apagado</b> y la pieza aislada</td></tr>
+<tr><td>•))</td><td>Continuidad: pita si hay un camino de poca resistencia (menos de unos 50 Ω)</td><td>Circuito apagado</td></tr>
+<tr><td>▷|</td><td>Diodos y LED: muestra la tensión de conducción</td><td>Rojo al ánodo, negro al cátodo</td></tr></table></div>
+<p>Los multímetros baratos de 3½ dígitos muestran hasta 1999. Casi todos eligen solos el rango («autorrango»), y si lo que se mide excede el rango muestran <b>OL</b> (<i>overload</i>, fuera de rango) o un «1» a la izquierda.</p>
+<p>Explore el instrumento: gire el selector (arrastre la perilla o toque una posición), cambie el cable rojo de conector tocando su enchufe y arrastre las puntas hasta los agujeros de la protoboard. Hay un circuito sencillo de dos resistencias en serie con una pila de 9 V para practicar.</p>
+<div class="sim" data-sim="dmm" data-title="Conozca el multímetro: medir voltaje en un circuito de dos resistencias"></div>
+<div class="sim-guide"><ul>
+<li>Con 9 V y dos resistencias en serie de 1 kΩ y 2 kΩ, circulan \(9/3000=3.0\) mA. La tensión se reparte en proporción a las resistencias: 3.0 V en la de 1 kΩ y 6.0 V en la de 2 kΩ (suman 9 V).</li>
+<li>Ponga las puntas en los dos extremos de <i>una</i> resistencia (el selector en V⎓): marca su caída de tensión. Si pone la punta roja en el riel «+» y la negra en el riel «−», marca la pila: 8.995 V (un poco menos de 9 V, porque la pila tiene una pequeña resistencia interna y la corriente de 3 mA produce una pequeña caída).</li>
+<li>Si invierte las puntas, el multímetro marca el mismo valor con signo negativo: la punta roja está en el punto de <i>menor</i> potencial.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Medir voltaje: siempre en paralelo</h2>
+<p>El voltaje es una <i>diferencia</i> entre dos puntos, así que el multímetro se conecta «en paralelo», sin abrir el circuito, tocando los dos puntos. Por dentro, el multímetro en modo voltaje se comporta como una resistencia enorme (unos 10 MΩ), de modo que casi no roba corriente al circuito y no lo altera, salvo que el circuito tenga resistencias comparables a esa. Pasos: (1) negro en COM y rojo en VΩmA; (2) selector en V⎓; (3) punta roja al punto de mayor voltaje y la negra al de menor; (4) leer.</p>
+<p>Para medir el voltaje de un punto cualquiera («el voltaje en A0») se pone la punta negra en GND y la roja en el punto: el multímetro mide la diferencia con respecto a tierra.</p>
+</section>
+
+<section>
+<h2>Medir corriente: en serie, con cuidado</h2>
+<p>La corriente es lo que <i>pasa</i> por un punto, así que para medirla hay que hacerla pasar por el multímetro: se abre el circuito y el aparato se intercala, como si fuera un tramo más de cable. Por eso, en modo corriente el multímetro es casi un cable (menos de 1 Ω) y está protegido por un <b>fusible</b> en su entrada (el de la entrada «mA» suele ser de 200 mA, y el de 10 A, de 10 A). Si se conecta en <i>paralelo</i> con una fuente, la corriente es enorme: el fusible se quema y deja de medir corriente. Es el error más frecuente de los principiantes.</p>
+<p>En esta práctica el circuito del LED tiene un hueco entre las columnas 20 y 22 (un cable cortado): el LED no enciende hasta que el multímetro cierre el circuito. Pruebe la forma correcta y después la incorrecta.</p>
+<div class="sim" data-sim="amper" data-title="Medir corriente en serie… y el error que quema el fusible"></div>
+<div class="sim-guide"><ul>
+<li><b>Correcto (en serie):</b> el multímetro cierra el circuito y marca 14.8 mA, y el LED enciende: la corriente pasa por el aparato y sigue su camino.</li>
+<li><b>Incorrecto (en paralelo con la pila):</b> el multímetro en modo mA se comporta como un cable de 1 Ω y la pila de 9 V, con su resistencia interna de 1.7 Ω, empuja más de 3 A: el fusible de 200 mA se quema al instante. Después de esto, el multímetro seguirá midiendo voltaje, pero en modo corriente marcará siempre 0.</li>
+<li>Para corrientes por encima de 200 mA se cambia el cable rojo al conector de 10 A.</li>
+</ul></div>
+<div class="box safe"><p>La regla: <b>nunca ponga el multímetro en modo corriente (o con el cable en «10 A») para medir voltaje.</b> Para saber de qué lado está, piense: «¿estoy midiendo la diferencia entre dos puntos (voltaje, paralelo) o lo que pasa por un cable (corriente, serie)?».</p></div>
+</section>
+
+<section>
+<h2>Medir resistencia: con el circuito apagado</h2>
+<p>Para medir una resistencia, el multímetro le aplica su propia tensión pequeña (de unos 0.4 V) y mide la corriente que circula. Por eso hay tres reglas: (1) <b>sin energía</b>: si hay otra fuente conectada, la lectura no sirve; (2) <b>sin otras piezas en paralelo</b>: si la resistencia sigue conectada a un circuito, la corriente puede tomar otros caminos y la lectura será menor; (3) <b>sin tocar las puntas con los dedos</b>, porque la piel también conduce y se suma en paralelo. Una resistencia de 330 Ω con otra de 1 kΩ en paralelo marca \(330\cdot1000/(330+1000)=248\ \Omega\), no 330 Ω.</p>
+<div class="sim" data-sim="ohmios" data-title="Medir resistencias: solas, en paralelo, en un potenciómetro y con la pila conectada"></div>
+<div class="sim-guide"><ul>
+<li>Resistencia sola: marca 330 Ω (el color dice 330 Ω ±5 %: la lectura puede diferir unos ohmios).</li>
+<li>Con la segunda resistencia de 1 kΩ en paralelo: marca 248 Ω. El valor menor que el esperado es la señal de que «hay otro camino».</li>
+<li>Potenciómetro de 10 kΩ: entre los extremos marca 10 kΩ siempre; entre un extremo y el cursor marca el valor que corresponde a la posición (al 30 %: 3 kΩ y 7 kΩ; sumadas dan 10 kΩ).</li>
+<li>Con la pila conectada el multímetro avisa: la lectura no tiene sentido y podría dañarse.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Continuidad: la prueba del pitido</h2>
+<p>La continuidad (•)) ) es la prueba más usada: comprueba si dos puntos están unidos por un conductor. Si la resistencia entre ambos es pequeña (menos de unos 50 Ω), el multímetro <b>pita</b>. Sirve para verificar cables, fusibles, interruptores, pistas de una placa y también para encontrar cortocircuitos sin energía. En el simulador hay cinco piezas: dos fusibles, un interruptor, y dos cables. Algunas están dañadas. Encuéntrelas con el multímetro.</p>
+<div class="sim" data-sim="conti" data-title="Continuidad: ¿cuál de estas piezas está dañada?"></div>
+<div class="sim-guide"><ul>
+<li>Un fusible en buen estado pita (resistencia casi cero); uno quemado no pita: la lámina interna está fundida.</li>
+<li>El interruptor pita solo cuando está cerrado (haga clic para cambiarlo).</li>
+<li>Un cable por dentro puede estar cortado aunque por fuera se vea perfecto; la continuidad es la única manera de saberlo.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Probar diodos y LED</h2>
+<p>El modo de diodos hace pasar una corriente muy pequeña (alrededor de 1 mA) y muestra la tensión que cae en el diodo. Si la punta roja va al ánodo y la negra al cátodo, el diodo conduce y se lee su tensión de conducción; al revés no conduce y se lee <b>OL</b>. Así se comprueba si un LED o un diodo están buenos y en qué sentido van. Los valores típicos: diodo de silicio 1N4007, unos 0.57 V; LED rojo, 1.77 V; amarillo, 1.86 V; verde, 1.91 V; azul, 2.68 V y blanco, 2.75 V. Con corrientes mayores (20 mA) las tensiones suben unas décimas de voltio.</p>
+<div class="sim" data-sim="diodo" data-title="Probar diodos y LED con el multímetro"></div>
+</section>
+
+<section>
+<h2>Reglas de oro para medir sin accidentes</h2>
+<ol>
+<li><b>Empiece siempre por conectar los cables al multímetro</b> en los conectores correctos y el selector en la función correcta, y <i>luego</i> toque el circuito.</li>
+<li><b>Voltaje: paralelo; corriente: serie; resistencia y continuidad: sin energía.</b></li>
+<li>Si no conoce el valor, empiece por un rango grande (con autorrango no hace falta) y no pase de la tensión máxima del aparato (600–1000 V para los de uso general).</li>
+<li>Al terminar, ponga el selector en <b>OFF</b> y quite los cables de los conectores de corriente; así nadie lo usa con el selector en «A» por descuido.</li>
+<li>No mida circuitos conectados a la red eléctrica a menos que sea un técnico capacitado; con 120 V el error se paga con la vida.</li>
+</ol>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Una resistencia de 2.2 kΩ y otra de 3.3 kΩ están en serie con una pila de 5.5 V. ¿Qué marca un multímetro en V⎓ entre los extremos de cada resistencia?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Corriente.</b> \(R=2200+3300=5500\ \Omega\); \(I=5.5/5500=1.0\) mA.</li>
+<li><b>Tensiones.</b> \(V_1=1.0\ \text{mA}\times2.2\ \text{k}\Omega=2.2\) V; \(V_2=1.0\times3.3=3.3\) V.</li>
+<li><b>Comprobación.</b> 2.2 + 3.3 = 5.5 V.</li>
+<li><b>Resultado.</b> <span class="ans">2.2 V y 3.3 V.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Para medir la corriente de un circuito, ¿el multímetro va en serie o en paralelo? ¿En qué conector va el cable rojo para una corriente de 50 mA? ¿Y para una de 2 A?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Conexión.</b> En serie: la corriente debe pasar por el aparato.</li>
+<li><b>50 mA.</b> Está por debajo de 200 mA: conector VΩmA (el de miliamperios).</li>
+<li><b>2 A.</b> Supera los 200 mA que soporta ese fusible: conector de 10 A.</li>
+<li><b>Resultado.</b> <span class="ans">Serie; 50 mA en VΩmA y 2 A en el de 10 A.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un multímetro de 10 MΩ de entrada mide un divisor de dos resistencias de 1 MΩ conectado a 10 V. ¿Qué marca entre los extremos de una de ellas? ¿Cuál sería el valor sin multímetro?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Valor ideal.</b> Dos resistencias iguales dividen la tensión por la mitad: 5 V.</li>
+<li><b>Con el multímetro.</b> En paralelo con una de las resistencias, 1 MΩ || 10 MΩ = \(1\times10/(1+10)=0.909\) MΩ.</li>
+<li><b>Nuevo divisor.</b> \(V=10\times0.909/(0.909+1)=4.76\) V.</li>
+<li><b>Resultado.</b> <span class="ans">4.76 V en vez de 5 V: error de casi 5 %. Con resistencias de 10 kΩ el efecto sería mil veces menor.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>El multímetro en continuidad pita entre los terminales de un fusible de 200 mA y también entre los terminales de un cable de la protoboard, pero no entre los dos extremos de un tercer cable. ¿Qué concluye?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Lectura.</b> Pita = camino de baja resistencia = buena conducción.</li>
+<li><b>Cable sin pitido.</b> No hay camino entre los extremos: el cable está roto por dentro, aunque su aislante esté intacto.</li>
+<li><b>Resultado.</b> <span class="ans">El fusible y el primer cable están bien; el tercer cable está cortado y debe reemplazarse.</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>Un multímetro tiene en modo mA una resistencia interna de 1 Ω y se conecta por error entre los terminales de una pila de 9 V con resistencia interna de 1.7 Ω. Calcule la corriente que intenta pasar y la potencia que se disiparía en el fusible si resistiera. ¿Se quema el fusible de 200 mA?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Circuito.</b> Pila (1.7 Ω) en serie con el multímetro (1 Ω): resistencia total 2.7 Ω.</li>
+<li><b>Corriente.</b> \(I=9/2.7=3.33\) A.</li>
+<li><b>Potencia en el multímetro.</b> \(P=I^2R=3.33^2\times1=11.1\) W.</li>
+<li><b>Fusible.</b> 3.33 A es 16.7 veces su límite de 0.2 A: se funde casi al instante.</li>
+<li><b>Resultado.</b> <span class="ans">3.33 A y 11.1 W: el fusible se quema; sin él, el aparato se destruiría.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

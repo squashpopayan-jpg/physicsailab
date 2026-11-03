@@ -1,0 +1,59 @@
+<template class="chapter-src" data-id="estacion" data-num="27" data-title="Proyecto de aplicación: estación meteorológica con página web" data-part="Parte VI · Proyectos de aplicación" data-short="ESP32 con sensor DHT11, pantalla LCD I²C y servidor web: mide cada 2 s sin bloquear, muestra los datos en la pantalla y en una página y en JSON; fallas de sensor, pantalla y red">
+<p class="lead">Este proyecto reúne lo aprendido en las partes anteriores: un sensor (capítulo 16), una pantalla I²C (capítulo 19), WiFi y un servidor web (capítulo 21). El resultado es una <b>estación meteorológica</b> de escritorio: muestra la temperatura y la humedad en su propia pantalla y, además, cualquier teléfono de la misma red puede consultarla abriendo una página. Es la base de los proyectos del «internet de las cosas» (IoT).</p>
+
+<section>
+<h2>Qué hace y cómo se organiza</h2>
+<p>El ESP32 hace tres cosas a la vez, ninguna de las cuales puede bloquear a las otras:</p>
+<ol>
+<li><b>Medir.</b> Cada 2 s lee el DHT11. El sensor necesita al menos 1 s entre lecturas y tarda unos milisegundos en responder; por eso el programa usa <code class="k">millis()</code> (capítulo 15) y no <code class="k">delay</code>.</li>
+<li><b>Mostrar.</b> Escribe en la pantalla la temperatura, la humedad y el número de visitas a la página.</li>
+<li><b>Servir.</b> Atiende el navegador con <code class="k">server.handleClient()</code> en cada vuelta del <code class="k">loop</code>: la ruta <code class="k">/</code> devuelve una página web legible y <code class="k">/datos</code> devuelve los mismos números en formato <b>JSON</b>, que es el que usan los programas (otra aplicación, una hoja de cálculo o una página con gráficas) para leer datos de un dispositivo.</li>
+</ol>
+<p>Si el sensor falla, el programa no inventa datos: marca una bandera <code class="k">error</code>, la pantalla dice «Sensor sin datos» y la página lo advierte. Un instrumento que miente es peor que uno apagado.</p>
+<p>Conexiones: el DHT11 va a 3.3 V, GND y el pin 4, con una resistencia de 10 kΩ entre su alimentación y el pin de datos (pull-up). La pantalla va a GND, a 5 V (VIN), y a los pines de I²C del ESP32: SDA = 21, SCL = 22.</p>
+<div class="sim" data-sim="estacion" data-title="Estación meteorológica con pantalla y página web"></div>
+<div class="sim-guide"><ul>
+<li>Espere a que el monitor serie muestre la IP. La pantalla pasa de «Conectando…» a los valores medidos. Pulse «Página» en el navegador del teléfono: aparece la página y la pantalla cuenta una visita.</li>
+<li>Pulse «Datos JSON»: la respuesta es <code class="k">{"temperatura":24.0,"humedad":60}</code>, con tipo <code class="k">application/json</code>.</li>
+<li>Mueva el control de temperatura a 35 °C y pida otra vez la página: en menos de 2 s refleja el cambio (el DHT11 solo da números enteros).</li>
+<li><b>Falla 1:</b> «Quitar la resistencia pull-up». Sin ella la línea de datos queda al aire y las lecturas fallan: la pantalla dice «Sensor sin datos» y la página avisa. Con un multímetro, el pin de datos mostraría un voltaje errático en vez de 3.3 V.</li>
+<li><b>Falla 2:</b> «Cable SCL suelto». La pantalla se queda sin comunicación: el resto (sensor, página) sigue funcionando. Un escáner I²C (capítulo 19) no encontraría el dispositivo 0x27.</li>
+<li><b>Falla 3:</b> «Contraseña equivocada». El programa se queda esperando la red (puntos en el serie) y la pantalla se queda en «Conectando…». Considere cómo mejorar el programa para que muestre el error o reintente.</li>
+</ul></div>
+<div class="box warn"><h4>Niveles lógicos: 5 V contra 3.3 V</h4>
+<p>Los pines del ESP32 aguantan como máximo 3.6 V (capítulo 8). Muchas pantallas I²C traen resistencias pull-up a 5 V en su pequeña placa: con ellas, SDA y SCL suben a 5 V y pueden dañar el ESP32 con el tiempo. Soluciones: alimentar la pantalla con 3.3 V (se verá menos brillante), quitar los puentes de pull-up de la placa, o usar un adaptador de niveles lógicos de 4 canales.</p></div>
+<div class="box pract"><h4>Para hacerlo con piezas reales</h4>
+<ol><li>Arme el circuito como se indica; use cables cortos y una protoboard de 830 puntos para que el ESP32 tenga sitio.</li>
+<li>Cambie en el programa el nombre y la clave de su red WiFi (el ESP32 solo usa la banda de 2.4 GHz).</li>
+<li>Abra el monitor serie a 115200 baudios para ver la IP y escríbala en el navegador del teléfono (conectado a la misma red).</li>
+<li>Mejoras: añadir <code class="k">&lt;meta http-equiv='refresh' content='5'&gt;</code> a la página para que se actualice sola; guardar las últimas 24 horas en una lista; encender un LED si la temperatura supera un umbral.</li></ol>
+<p class="ctrl-note">Materiales: ESP32 DevKit, DHT11 (con resistencia de 10 kΩ o en módulo de 3 pines), pantalla LCD 16×2 con adaptador I²C, protoboard, cables, cable USB.</p></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Una persona abre <code class="k">/datos</code> cuando la temperatura es 28.0 °C y la humedad 55 %. ¿Qué texto recibe?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Formato.</b> El programa construye <code class="k">{"temperatura":</code> + temperatura con un decimal + <code class="k">,"humedad":</code> + humedad entera + <code class="k">}</code>.</li>
+<li><b>Resultado.</b> <span class="ans"><code class="k">{"temperatura":28.0,"humedad":55}</code></span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Un programa consulta <code class="k">/datos</code> cada 10 s durante un día. El texto tiene 33 caracteres. ¿Cuántos datos útiles recibe (sin contar los encabezados HTTP)?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Consultas.</b> \(86400/10=8640\) al día.</li>
+<li><b>Datos.</b> \(8640\times33=285\,120\) bytes.</li>
+<li><b>Resultado.</b> <span class="ans">≈ 0.29 MB al día: muy poco; el WiFi no es el problema, sí lo sería la batería.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>El ESP32 conectado a WiFi consume en promedio unos 100 mA, y la pantalla con su luz de fondo, 23.5 mA (valor que muestra el simulador). ¿Cuánto dura con una batería de 2000 mAh con y sin pantalla?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Con pantalla.</b> \(2000/(100+23.5)=16.2\) h.</li>
+<li><b>Sin pantalla.</b> \(2000/100=20\) h.</li>
+<li><b>Diferencia.</b> La pantalla le quita 3.8 h (19 %).</li>
+<li><b>Resultado.</b> <span class="ans">16.2 h con pantalla y 20 h sin ella; para meses de autonomía hay que dormir el ESP32 entre medidas (capítulo 21).</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>La pantalla I²C lleva pull-ups de 4.7 kΩ a 5 V en SDA. Con el ESP32 en alto (3.3 V), ¿en qué valor queda la línea cuando el ESP32 la suelta, y por qué puede dañarlo?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Línea suelta.</b> Cuando nadie la baja, la pull-up la lleva a 5 V.</li>
+<li><b>Límite.</b> El pin del ESP32 tolera 3.6 V como máximo; 5 V supera el límite por 1.4 V. Los diodos de protección internos conducen y fluye corriente hacia el pin.</li>
+<li><b>Corriente.</b> Hacia el diodo interno, limitada solo por los 4.7 kΩ: \((5-3.6)/4700\approx0.3\) mA; es pequeña, pero fuera de especificación y deja el chip trabajando en zona prohibida.</li>
+<li><b>Resultado.</b> <span class="ans">La línea queda a 5 V y excede el límite del pin. Se resuelve alimentando la pantalla a 3.3 V, quitando los pull-ups o usando un adaptador de niveles.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

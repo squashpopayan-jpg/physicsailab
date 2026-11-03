@@ -2593,6 +2593,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const isKids = c.id === 'kids' || c.esKids;
             const isMcuantica = c.id === 'mcuantica';
             const isModerna = c.id === 'moderna';
+            const isArduino = c.id === 'arduino';
             const isPrivado = !!c.esPrivado;
             const isDiagnosticas = c.id === 'diagnosticas';
             const isFaro = c.id === 'faro';
@@ -9067,6 +9068,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const trivias = [
             { title: 'Gran Trivia de Física (Nueva Ventana)', desc: '1.000 preguntas de física con sistema de 3 vidas y ranking oficial en ventana dedicada.', link: '/trivia.html', isExternal: true, type: '🎯 Trivia Oficial' },
             { title: 'Física KIDS (Nueva Ventana)', desc: '10 mundos temáticos, 47 capítulos y 126 juegos interactivos para niños y familias.', link: '/material/1_cursos/kids/dist/index.html', isExternal: true, type: '🌈 Niños & Familias' },
+            { title: 'Circuitos Vivos: Arduino & ESP32 (Nueva Ventana)', desc: '28 capítulos, protoboard virtual, simulador SPICE con cortocircuitos reales, sensores y proyectos de física.', link: '/material/1_cursos/arduino/dist/index.html', isExternal: true, type: '⚡ Arduino & Hardware' },
             { title: 'Tratado de Física Moderna (Nueva Ventana)', desc: '28 capítulos interactivos, 95 simuladores, relatividad de Einstein, cuántica, física nuclear y cosmología del Big Bang.', link: '/material/1_cursos/moderna/dist/index.html', isExternal: true, type: '🌌 Física Moderna' },
             { title: 'Tratado de Mecánica Cuántica', desc: '36 capítulos formales, notación Dirac, perturbaciones y problemas resueltos paso a paso.', link: '/material/1_cursos/mcuantica/dist/index.html', isExternal: true, type: '🌌 Cuántica Universitaria' },
             { title: 'Trivia de Historia de la Física', desc: '500 preguntas con personajes, descubrimientos y biografías.', link: '#trivia-historia', type: '📜 Trivia Historia' },

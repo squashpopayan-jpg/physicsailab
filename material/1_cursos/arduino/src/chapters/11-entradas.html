@@ -1,0 +1,69 @@
+<template class="chapter-src" data-id="entradas" data-num="11" data-title="Entradas digitales: pulsadores, pull-up y rebote" data-part="Parte II · Arduino y ESP32" data-short="Leer un pulsador con digitalRead y if; por qué una entrada al aire da lecturas aleatorias; resistencias pull-down y pull-up (INPUT_PULLUP); el rebote de los contactos y cómo eliminarlo con software">
+<p class="lead">Un pin configurado como <b>entrada</b> es un oído: dice si lo que está conectado tiene tensión alta (<code class="k">HIGH</code>) o baja (<code class="k">LOW</code>). Con un pulsador parece trivial, pero esconde dos trampas que arruinan muchos proyectos: la <b>entrada flotante</b> (un pin sin conexión definida lee cualquier cosa) y el <b>rebote</b> (un pulsador mecánico no cierra una vez, sino varias en pocos milisegundos).</p>
+
+<section>
+<h2>Leer un pin: digitalRead e if</h2>
+<pre class="code">pinMode(2, INPUT);
+int estado = digitalRead(2);   // HIGH (1) o LOW (0)
+if (estado == HIGH) {
+  // el pin está en alto
+} else {
+  // el pin está en bajo
+}</pre>
+<p>Dos cuidados: <code class="k">==</code> compara (un solo <code class="k">=</code> asigna: error muy común) y <code class="k">HIGH</code> es 1 y <code class="k">LOW</code> es 0. Un pulsador conectado entre el pin y 5 V da HIGH al pulsarlo… <i>pero ¿y cuando no está pulsado?</i></p>
+</section>
+
+<section>
+<h2>La entrada flotante y las resistencias pull-down y pull-up</h2>
+<p>Cuando el pulsador está abierto, el pin no está conectado a nada: «flota». Un pin al aire es una antena muy sensible: capta ruido eléctrico (incluida la señal de 60 Hz de la red que hay en cualquier habitación) y la lectura cambia al azar. La solución es darle siempre un nivel definido con una resistencia:</p>
+<ul>
+<li><b>Pull-down</b> (hacia abajo): resistencia de 10 kΩ del pin a GND. Sin pulsar, el pin lee LOW; al pulsar (pulsador a 5 V) lee HIGH. Al pulsar pasan \(5/10\,000=0.5\) mA por la resistencia.</li>
+<li><b>Pull-up</b> (hacia arriba): resistencia del pin a 5 V; el pulsador va a GND. Sin pulsar, lee HIGH; al pulsar, LOW (lógica invertida). El Arduino y el ESP32 traen estas resistencias <b>dentro del chip</b> (unos 20–50 kΩ en el UNO): se activan con <code class="k">pinMode(pin, INPUT_PULLUP)</code>, y no hace falta ninguna resistencia externa.</li>
+</ul>
+<p>Compare las tres conexiones. En la protoboard, el pulsador está a horcajadas sobre el canal. Pulse con el cursor y observe el monitor serie: el programa solo escribe cuando la lectura <i>cambia</i>.</p>
+<div class="sim" data-sim="boton" data-title="Pulsador: flotante, pull-down y pull-up interno"></div>
+<div class="sim-guide"><ul>
+<li><b>Flotante:</b> el monitor se llena de cambios entre «0» y «1» sin tocar nada. Es el síntoma típico de una entrada al aire.</li>
+<li><b>Pull-down:</b> sin pulsar escribe «0»; al pulsar, «1»; al soltar, «0»: un solo cambio por acción.</li>
+<li><b>Pull-up interno:</b> el código usa <code class="k">INPUT_PULLUP</code>: sin pulsar, «1»; al pulsar, «0». No hay resistencia en la protoboard: la del chip hace el trabajo.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El rebote</h2>
+<p>Un pulsador es una lámina metálica que choca contra otra. Al chocar, rebota unas cuantas veces en uno a cinco milisegundos antes de asentarse: el pin ve una ráfaga de «abierto, cerrado, abierto, cerrado…». El Arduino lee miles de veces por segundo, así que contará <b>varias pulsaciones por cada una real</b>. Las soluciones: un condensador de unos 100 nF en paralelo con el pulsador (filtro RC) o, más fácil, esperar a que se asiente con software: tras detectar un cambio, un <code class="k">delay(30)</code> (o la comparación con <code class="k">millis()</code> del capítulo 15) ignora la ráfaga.</p>
+<div class="sim" data-sim="rebote" data-title="Contar pulsaciones: sin y con antirrebote"></div>
+<div class="sim-guide"><ul>
+<li>Sin antirrebote, cada pulsación suma 2 a 5 en el contador (varía en cada intento, porque el rebote simulado es aleatorio).</li>
+<li>Con el <code class="k">delay(30)</code> tras detectar el flanco, cada pulsación suma exactamente 1.</li>
+<li>El tiempo de espera debe ser mayor que el rebote (unos 5–10 ms) y menor que lo más rápido que alguien puede pulsar (≈ 100 ms). 20–50 ms es un valor seguro.</li>
+</ul></div>
+<div class="box fail"><h4>Si el pulsador «no responde bien»</h4>
+<ul><li>¿Lecturas aleatorias? Falta el pull-up o pull-down. Active <code class="k">INPUT_PULLUP</code>.</li><li>¿Siempre encendido o siempre apagado? Revise que el pulsador cruce el canal central (capítulo 3).</li><li>¿Cuenta de más? Es el rebote: añada antirrebote.</li><li>¿Lógica al revés? Con <code class="k">INPUT_PULLUP</code>, pulsar da <code class="k">LOW</code>.</li></ul></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un pulsador con pull-down de 10 kΩ a 5 V: ¿qué corriente circula por la resistencia al pulsar? ¿Qué potencia disipa?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Corriente.</b> \(I=5/10\,000=0.5\) mA.</li>
+<li><b>Potencia.</b> \(P=VI=5\times0.0005=2.5\) mW.</li>
+<li><b>Resultado.</b> <span class="ans">0.5 mA y 2.5 mW: consumo despreciable.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Con <code class="k">INPUT_PULLUP</code>, el pulsador entre el pin y GND, ¿qué lee <code class="k">digitalRead</code> sin pulsar y pulsado?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Sin pulsar.</b> La resistencia interna sube el pin a 5 V: HIGH.</li>
+<li><b>Pulsado.</b> El pulsador lo une a GND: LOW.</li>
+<li><b>Resultado.</b> <span class="ans">HIGH sin pulsar, LOW pulsado.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Con la resistencia interna de 35 kΩ (INPUT_PULLUP) y el pulsador cerrado, ¿qué corriente pasa a GND?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Cálculo.</b> \(I=5/35\,000=0.143\) mA.</li>
+<li><b>Resultado.</b> <span class="ans">0.14 mA: despreciable.</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>Un rebote dura hasta 5 ms y el Arduino ejecuta un lazo de lectura cada 10 µs. ¿Cuántas lecturas «caen» dentro del rebote y por qué cuenta de más?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Lecturas.</b> \(5\ \text{ms}/10\ \mu\text{s}=500\) lecturas durante el rebote.</li>
+<li><b>Contaje.</b> Cada transición alto→bajo se cuenta como una pulsación; un rebote de 3 cierres produce 3 flancos.</li>
+<li><b>Resultado.</b> <span class="ans">Unas 500 lecturas ven la señal inestable, y cada flanco cuenta: de ahí las pulsaciones múltiples. El antirrebote ignora esa ráfaga.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

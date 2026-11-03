@@ -1,0 +1,59 @@
+<template class="chapter-src" data-id="enfriamiento" data-num="24" data-title="Proyecto de física: la ley de enfriamiento de Newton" data-part="Parte V · Proyectos de física" data-short="Registrar la temperatura de agua caliente con un LM35 durante una hora, ajustar una exponencial por mínimos cuadrados y obtener la constante de enfriamiento; vaso, vaso tapado y termo">
+<p class="lead">Un café se enfría rápido al principio y cada vez más despacio. Newton describió este comportamiento: un cuerpo caliente pierde calor más rápido cuanto mayor sea su diferencia de temperatura con el ambiente. En este proyecto el Arduino hace de <b>registrador de datos</b> (<i>data logger</i>): mide la temperatura del agua cada 30 segundos durante una hora y, con esos datos, se obtiene la constante de enfriamiento del recipiente.</p>
+
+<section>
+<h2>La física</h2>
+<p>La ley de enfriamiento de Newton dice que \(dT/dt=-k\,(T-T_a)\), donde \(T_a\) es la temperatura ambiente y \(k\) una constante que depende del recipiente (de su superficie, de si tiene tapa o aislante). La solución es una exponencial que tiende al ambiente:</p>
+<div class="eq key" data-name="Enfriamiento de Newton">\[T(t)=T_a+(T_0-T_a)\,e^{-kt}\]</div>
+<p>Para extraer \(k\) de los datos se toma el logaritmo: \(\ln(T-T_a)=\ln(T_0-T_a)-k\,t\). Es una <b>recta</b> cuya pendiente vale \(-k\). Se hace entonces una regresión lineal de \(\ln(T-T_a)\) contra \(t\) con los puntos medidos. La «vida media» térmica, el tiempo en que la diferencia con el ambiente se reduce a la mitad, es \(t_{1/2}=\ln2/k\).</p>
+<p>Con agua a 80 °C y aire a 20 °C, un vaso de vidrio tiene \(k\approx0.001\) s⁻¹ (vida media 11.6 min); con tapa, 0.0006 s⁻¹ (19.3 min); un termo, 0.0001 s⁻¹ (115 min). Tras una hora el vaso está casi a la temperatura ambiente (21.6 °C), mientras que el termo mantiene el agua a 61.9 °C.</p>
+</section>
+
+<section>
+<h2>El montaje y el programa</h2>
+<p>El sensor es el LM35 del capítulo 16: entrega 10 mV por grado, conectado a A0. Se sumerge en una bolsita o funda impermeable dentro del agua (el LM35 no es sumergible: sus patas se oxidarían). Cada 30 s el programa imprime «tiempo temperatura» en el monitor serie; esas dos columnas se pueden copiar a una hoja de cálculo. En la simulación el tiempo corre acelerado (60×, 300× o 1200×): con 300× la hora entera pasa en 12 s, y el panel dibuja los puntos y la curva que mejor se ajusta.</p>
+<div class="sim" data-sim="enfria" data-title="Registrador de temperatura: enfriamiento de agua caliente"></div>
+<div class="sim-guide"><ul>
+<li>Deje correr con el vaso de vidrio. Los puntos azules son las lecturas del Arduino y la curva naranja es el ajuste exponencial. Al terminar, la «k estimada» debe quedar muy cerca de 0.0010 s⁻¹ (el error viene de la resolución del convertidor: 0.49 °C por escalón).</li>
+<li>Cambie a «Termo»: se reinicia con agua a 80 °C. La curva es mucho más plana; en una hora solo baja a 62 °C. Con tan poca caída el ajuste es menos preciso: un experimento de enfriamiento lento necesita más tiempo para medir bien \(k\).</li>
+<li>La línea punteada es la temperatura ambiente (20 °C). El programa de ajuste solo usa puntos con más de 5 °C de diferencia sobre el ambiente: cerca de él, la resolución del sensor domina y el logaritmo se vuelve ruidoso.</li>
+</ul></div>
+<div class="box warn"><h4>Cuidado con el agua caliente</h4>
+<p>Use agua caliente de la llave o de una jarra eléctrica con la supervisión de un adulto, nunca agua hirviendo a mano. Mantenga el Arduino, la protoboard y los cables lejos del agua; el LM35 va dentro de una bolsa cerrada.</p></div>
+<div class="box pract"><h4>Para hacerlo con piezas reales</h4>
+<ol><li>Conecte el LM35 como en el capítulo 16 (patas de 5 V, salida y GND) y alárguelo con cables sin cambiar el orden de las patas.</li>
+<li>Meta el sensor en un globo o bolsa pequeña cerrada, con una gota de aceite o pasta térmica dentro para que haga buen contacto con el agua.</li>
+<li>Mida primero la temperatura del aire (sin agua) para tener \(T_a\). Llene un vaso con agua a unos 60–70 °C, ponga el sensor en el centro y empiece a registrar.</li>
+<li>Registre 60 minutos. Copie las columnas al computador, calcule \(\ln(T-T_a)\) y dibuje: debe salir una recta.</li>
+<li>Repita con el vaso tapado y con el vaso envuelto en una toalla, y compare las constantes \(k\).</li></ol>
+<p class="ctrl-note">Materiales: Arduino UNO, LM35, cables, bolsa o globo pequeño, vaso, agua caliente, termómetro de referencia (opcional).</p></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Agua a 80 °C en un cuarto a 20 °C con \(k=0.001\) s⁻¹. ¿Qué temperatura tiene a los 10 minutos?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Tiempo.</b> 10 min = 600 s, así que \(kt=0.6\).</li>
+<li><b>Fórmula.</b> \(T=20+60\,e^{-0.6}=20+60\times0.5488\).</li>
+<li><b>Resultado.</b> <span class="ans">T ≈ 52.9 °C.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Con el vaso tapado (\(k=0.0006\) s⁻¹), ¿cuánto tarda el agua en llegar de 80 °C a 40 °C si el ambiente es de 20 °C?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Planteamiento.</b> \(40=20+60\,e^{-kt}\Rightarrow e^{-kt}=1/3\).</li>
+<li><b>Despeje.</b> \(t=\ln3/k=1.0986/0.0006\).</li>
+<li><b>Resultado.</b> <span class="ans">t ≈ 1831 s ≈ 30.5 min.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>En un experimento el agua pasa de 80.0 °C a 49.2 °C en 20 minutos (ambiente 20 °C). Calcule \(k\) y la vida media.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Diferencias.</b> Inicial: 60 °C. Final: 29.2 °C.</li>
+<li><b>Constante.</b> \(k=\ln(60/29.2)/1200=0.7202/1200=6.0\times10^{-4}\) s⁻¹.</li>
+<li><b>Vida media.</b> \(t_{1/2}=\ln2/k=0.693/0.0006=1155\) s.</li>
+<li><b>Resultado.</b> <span class="ans">k = 6.0×10⁻⁴ s⁻¹; vida media ≈ 19.3 min (es el vaso tapado).</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>El LM35 conectado al ADC de 10 bits del UNO con referencia de 5 V resuelve escalones de 4.88 mV. ¿Cuántos °C es un escalón? ¿Qué error relativo tiene una diferencia de 2 °C sobre el ambiente, y qué se podría cambiar para mejorarlo?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Escalón.</b> \(4.88\) mV \(/\,10\) mV/°C \(=0.488\) °C.</li>
+<li><b>Error relativo.</b> \(0.488/2=24\ \%\): el logaritmo de esa diferencia sería muy impreciso.</li>
+<li><b>Mejora.</b> Usar la referencia interna de 1.1 V (<code class="k">analogReference(INTERNAL)</code>): el escalón baja a \(1.1/1024=1.07\) mV, o sea 0.107 °C; sirve hasta 110 °C. También se promedian varias lecturas.</li>
+<li><b>Resultado.</b> <span class="ans">0.49 °C por escalón, 24 % de error en 2 °C; con referencia de 1.1 V mejora a 0.11 °C.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

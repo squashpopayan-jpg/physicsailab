@@ -1,0 +1,65 @@
+<template class="chapter-src" data-id="alarma" data-num="26" data-title="Proyecto de aplicación: alarma antirrobo con sensor PIR" data-part="Parte VI · Proyectos de aplicación" data-short="Una alarma con sensor de movimiento PIR, pulsador de armado, luces y sirena: máquina de estados con millis() sin bloquear el programa, tiempo de salida, retardo de rearmado y fallas típicas">
+<p class="lead">Hasta aquí cada programa hacía una cosa. Una alarma de verdad hace varias a la vez: espera una orden, da tiempo para salir de la habitación, vigila, grita cuando detecta algo y se calla sola. Para organizar un programa así no se usan cadenas interminables de <code class="k">if</code> y <code class="k">delay</code>, sino una <b>máquina de estados</b>: en cada momento el sistema está en <i>uno</i> de unos pocos estados, y unos eventos precisos lo llevan de uno a otro.</p>
+
+<section>
+<h2>Los cuatro estados</h2>
+<div class="tablewrap"><table class="tbl"><tr><th>Estado</th><th>Qué hace</th><th>Qué lo cambia</th></tr>
+<tr><td>DESARMADA</td><td>LED verde fijo; ignora el sensor</td><td>Pulsador → ARMANDO</td></tr>
+<tr><td>ARMANDO</td><td>LED rojo parpadeando; da 5 s para salir de la habitación</td><td>Pasan 5 s → ARMADA; pulsador → DESARMADA</td></tr>
+<tr><td>ARMADA</td><td>LED rojo fijo; vigila el sensor PIR</td><td>PIR en alto → DISPARADA; pulsador → DESARMADA</td></tr>
+<tr><td>DISPARADA</td><td>Sirena intermitente y LED rojo rápido</td><td>Pulsador → DESARMADA; 10 s sin pulsar → ARMADA</td></tr></table></div>
+<p>La clave del programa es que <b>no usa <code class="k">delay</code></b>. Cada vuelta del <code class="k">loop</code> es muy corta (microsegundos), mira el estado y hace lo que toca. El tiempo se mide con <code class="k">millis()</code>: al entrar en un estado se guarda <code class="k">desde = millis()</code>, y la condición <code class="k">ahora - desde &gt; 5000</code> dice si ya pasaron 5 s. Así el pulsador responde de inmediato incluso mientras la sirena suena. El parpadeo sale de la aritmética: <code class="k">(ahora / 250) % 2</code> vale 0 durante 250 ms, 1 durante los siguientes 250 ms, y así sucesivamente.</p>
+<p>El pulsador usa <code class="k">INPUT_PULLUP</code> (capítulo 11) y el programa detecta el <b>flanco</b> de bajada (alto → bajo) guardando la lectura anterior, de modo que una pulsación larga cuenta una sola vez.</p>
+</section>
+
+<section>
+<h2>El sensor PIR</h2>
+<p>El <b>PIR</b> (infrarrojo pasivo, módulo HC-SR501) no emite nada: detecta los <i>cambios</i> en el calor infrarrojo que recibe su lente de Fresnel, como cuando un cuerpo caliente cruza de una zona a otra. Tiene tres pines (VCC 5 V, OUT y GND) y dos potenciómetros: uno ajusta la sensibilidad (hasta unos 7 m) y otro cuánto tiempo (de 3 s a 5 min) permanece la salida en alto después de detectar. Cosas que conviene saber:</p>
+<ul>
+<li>Su salida es de 3.3 V, suficiente para que el UNO la lea como alto (necesita más de 3.0 V).</li>
+<li>Tras conectarlo necesita <b>30–60 s de calentamiento</b> para estabilizarse; en ese tiempo puede dar falsas alarmas.</li>
+<li>Una persona quieta no se detecta bien (no hay cambio), y una corriente de aire caliente o la luz del sol sobre el sensor sí lo disparan.</li>
+</ul>
+<div class="sim" data-sim="alarma" data-title="Alarma con PIR, luces y sirena: máquina de estados"></div>
+<div class="sim-guide"><ul>
+<li>Pulse «Pulsar el botón» (o haga clic sobre el pulsador): el estado pasa a ARMANDO y el LED rojo parpadea; 5 s después queda fijo (ARMADA). Con la velocidad 3× es más rápido.</li>
+<li>Pulse «Pasa una persona (3 s)» estando ARMADA: la salida del PIR sube, el programa pasa a DISPARADA y suena la sirena (active el sonido en la configuración del laboratorio si quiere oírla). A los 10 s se rearma sola.</li>
+<li>Si pasa una persona estando DESARMADA o ARMANDO, no ocurre nada: es la razón de existir de los estados. Compruébelo.</li>
+<li><b>Falla 1:</b> «PIR sin cable de tierra». El sensor no se alimenta; el programa nunca ve movimiento y la alarma queda armada pero ciega. Lo peor de una falla de seguridad es que no avisa. Con el multímetro habría bastado medir 5 V entre VCC y GND del sensor.</li>
+<li><b>Falla 2:</b> «Zumbador al revés». Los zumbadores activos tienen polaridad; el programa funciona y el LED parpadea, pero la sirena es muda.</li>
+</ul></div>
+<div class="box pract"><h4>Para hacerlo con piezas reales</h4>
+<ol><li>Monte los dos LED con resistencia de 220 Ω (pines 13 y 12), el zumbador al pin 6 y GND, el pulsador entre el pin 3 y GND, y el PIR a 5 V, GND y pin 2.</li>
+<li>Gire los dos potenciómetros del PIR al mínimo para pruebas (alcance corto y retardo corto), y espere un minuto tras encender.</li>
+<li>Cargue el programa y pruebe cada transición con el monitor serie abierto: cada cambio de estado se imprime.</li>
+<li>Mejoras: un segundo pulsador para cambiar el tiempo de salida; una clave con tres pulsaciones; un relé (capítulo 18) para encender una luz al disparar.</li></ol>
+<p class="ctrl-note">Materiales: Arduino UNO, sensor PIR HC-SR501, zumbador activo, pulsador, 2 LED (rojo y verde), 2 resistencias de 220 Ω, protoboard, cables.</p></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Cuántos destellos completos da el LED rojo durante los 5 s de ARMANDO? ¿Y cuántos ciclos de sirena en 10 s de DISPARADA?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Destellos.</b> \((ahora/250)\%2\) tiene periodo de \(2\times250=500\) ms: en 5000 ms caben \(5000/500=10\) ciclos.</li>
+<li><b>Sirena.</b> \((ahora/150)\%2\) tiene periodo de 300 ms: en 10 000 ms caben \(10000/300=33.3\) ciclos, o sea una frecuencia de 3.3 Hz.</li>
+<li><b>Resultado.</b> <span class="ans">10 destellos y unos 33 ciclos de sirena.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>El sistema está ARMADA y alguien pulsa el botón; luego el PIR detecta movimiento. ¿Qué pasa?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Primer evento.</b> Botón en ARMADA → DESARMADA.</li>
+<li><b>Segundo evento.</b> En DESARMADA no se mira el PIR.</li>
+<li><b>Resultado.</b> <span class="ans">No suena nada: el sistema quedó desarmado.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>El PIR entrega 3.3 V en alto y el ATmega328P reconoce un nivel alto a partir de \(0.6\,V_{CC}\). ¿Se lee bien? ¿Qué margen hay?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Umbral.</b> \(0.6\times5=3.0\) V.</li>
+<li><b>Margen.</b> \(3.3-3.0=0.3\) V.</li>
+<li><b>Resultado.</b> <span class="ans">Sí se lee como alto, con 0.3 V de margen: poco, por lo que no se debe alargar el cable ni compartir el pin con otro dispositivo.</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>Al encender la alarma, el PIR se calienta 60 s y dispara falsas alarmas. Modifique el programa para ignorarlo durante el primer minuto.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Idea.</b> <code class="k">millis()</code> cuenta desde el arranque: basta exigir <code class="k">ahora &gt; 60000</code> antes de aceptar el sensor.</li>
+<li><b>Código.</b> En ARMADA: <code class="k">if (digitalRead(PIR) == HIGH &amp;&amp; ahora &gt; 60000) cambiar(DISPARADA);</code></li>
+<li><b>Opción mejor.</b> Añadir un quinto estado CALENTANDO con LED amarillo que pasa a DESARMADA a los 60 s.</li>
+<li><b>Resultado.</b> <span class="ans">Condición adicional con <code class="k">millis()</code> (o un estado nuevo), sin usar <code class="k">delay(60000)</code>, que bloquearía el pulsador.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

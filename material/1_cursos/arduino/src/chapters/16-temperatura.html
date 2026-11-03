@@ -1,0 +1,63 @@
+<template class="chapter-src" data-id="temperatura" data-num="16" data-title="Temperatura y humedad: NTC, LM35 y DHT11" data-part="Parte III · Sensores y actuadores" data-short="Tres maneras de medir temperatura: el termistor NTC con la ecuación beta, el sensor lineal LM35 y el digital DHT11 con humedad; precisión, resolución y errores típicos">
+<p class="lead">La temperatura es la magnitud más medida del mundo: termostatos, incubadoras, estaciones meteorológicas, invernaderos. Con piezas de pocos pesos se puede medir de tres formas distintas, cada una con su compromiso entre precio, precisión y facilidad. Aquí se usan las tres y se comparan.</p>
+
+<section>
+<h2>El termistor NTC: barato pero no lineal</h2>
+<p>El NTC (capítulo 2) cambia su resistencia con la temperatura según \(R=R_{25}\,e^{\beta(1/T-1/T_{25})}\), con \(T\) en kelvin, \(R_{25}=10\ \text{k}\Omega\) y \(\beta\approx3950\) K. Con una resistencia fija de 10 kΩ forma un divisor; la lectura \(L\) de un UNO da la resistencia del NTC, \(R_{NTC}=10\,\text{k}\Omega\,(1023/L-1)\) si el NTC va a 5 V, y se invierte la ecuación para obtener la temperatura:</p>
+<div class="eq key" data-name="Temperatura de un NTC (ecuación β)">\[T=\left[\frac{1}{T_{25}}+\frac{1}{\beta}\ln\frac{R_{NTC}}{R_{25}}\right]^{-1}-273.15\ \ (^\circ\text{C})\]</div>
+<div class="sim" data-sim="ntc" data-title="Termómetro con termistor NTC de 10 kΩ"></div>
+<div class="sim-guide"><ul>
+<li>A 25 °C el NTC vale 10 kΩ, el divisor da 2.5 V y la lectura es 512; el programa calcula 25.0 °C.</li>
+<li>A 50 °C el NTC vale 3.59 kΩ, el divisor da 3.68 V (lectura 753) y el programa calcula 50 °C. A 0 °C vale 33.6 kΩ y la lectura baja a 234.</li>
+<li>La sensibilidad no es constante: a 25 °C cada grado cambia la lectura en unas 11 cuentas; a 80 °C solo unas 3: el NTC es más preciso cerca del punto en que su resistencia iguala a la fija.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El LM35: lineal y fácil</h2>
+<p>El LM35 es un circuito integrado que entrega <b>10 mV por cada grado Celsius</b>: 250 mV a 25 °C, 500 mV a 50 °C. Basta convertir la lectura en voltios y multiplicar por 100: \(T=V\times100\). Con el ADC de 10 bits del UNO, un escalón de 4.88 mV equivale a 0.49 °C: esa es la resolución. Para medir mejor se usa el voltaje de referencia interno de 1.1 V (resolución de 0.11 °C) o se promedian lecturas.</p>
+<div class="sim" data-sim="lm35" data-title="Termómetro con LM35"></div>
+<div class="sim-guide"><ul>
+<li>A 25 °C el LM35 entrega 0.250 V; la lectura es 51 y el programa calcula 24.9 °C (el escalón de 0.49 °C se nota).</li>
+<li>A 37 °C entrega 0.370 V (lectura 75): 36.7 °C. El error de cuantización máximo es medio escalón, ±0.24 °C.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El DHT11: temperatura y humedad por un solo cable</h2>
+<p>El DHT11 mide temperatura (0–50 °C, ±2 °C) y <b>humedad relativa</b> (20–90 %, ±5 %) y entrega los datos de forma digital por un solo pin, con un protocolo propio que la biblioteca <code class="k">DHT.h</code> maneja. Reglas: el pin de datos necesita una resistencia <i>pull-up</i> de unos 4.7–10 kΩ a VCC (los módulos de tres pines ya la traen); no se debe leer más de una vez por segundo (el DHT11) o cada 2 s (DHT22, más preciso: ±0.5 °C y ±2 %); y la función devuelve <code class="k">NaN</code> («no es un número») si falla, algo que se debe revisar con <code class="k">isnan()</code>.</p>
+<div class="sim" data-sim="dht" data-title="Estación con DHT11: temperatura y humedad"></div>
+<div class="sim-guide"><ul>
+<li>Con la resistencia pull-up conectada, el monitor muestra la temperatura y la humedad elegidas; el DHT11 redondea la temperatura a grados enteros.</li>
+<li>Active «Quitar la resistencia pull-up»: la lectura falla y el programa escribe «Error de lectura». Es una de las causas más frecuentes de «mi DHT no funciona».</li>
+</ul></div>
+<div class="box tip"><p><b>¿Cuál elegir?</b> NTC: casi gratis y rápido, pero hay que calcular y calibrar. LM35: sencillo y lineal, analógico. DHT11/DHT22: da también humedad, pero es lento. Para un termómetro serio, un DS18B20 digital (±0.5 °C) o un BME280.</p></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un LM35 da 0.312 V. ¿Qué temperatura mide? ¿Qué lectura da un UNO?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Temperatura.</b> \(T=0.312\times100=31.2\) °C.</li>
+<li><b>Lectura.</b> \(0.312/5\times1024=63.9\to63\).</li>
+<li><b>Resultado.</b> <span class="ans">31.2 °C y lectura 63 (que convertida da 30.8 °C).</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>¿Qué resolución en °C tiene el LM35 con el ADC de un ESP32 (12 bits, 3.3 V nominal)?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Escalón.</b> \(3.3/4096=0.806\) mV.</li>
+<li><b>Grados.</b> 0.806 mV / (10 mV/°C) = 0.081 °C.</li>
+<li><b>Resultado.</b> <span class="ans">≈ 0.08 °C por cuenta (más fino que en el UNO, aunque el ruido del ESP32 lo empeora).</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un NTC de 10 kΩ (β = 3950) mide 6.8 kΩ. ¿A qué temperatura está?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Logaritmo.</b> \(\ln(6.8/10)=-0.3857\).</li>
+<li><b>Suma.</b> \(1/298.15+(-0.3857)/3950=0.0033540-0.0000976=0.0032564\).</li>
+<li><b>Kelvin.</b> \(T=1/0.0032564=307.1\) K → 33.94 °C.</li>
+<li><b>Resultado.</b> <span class="ans">≈ 34 °C.</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>Con el NTC a 5 V, 10 kΩ fija a GND y 5 V de referencia, ¿qué lectura da a 50 °C (3.59 kΩ)? ¿Y a 0 °C?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>50 °C.</b> \(V=5\times10/(10+3.588)=3.680\) V → \(\lfloor3.680/5\times1024\rfloor=753\).</li>
+<li><b>0 °C.</b> NTC de 33.62 kΩ: \(V=5\times10/43.62=1.146\) V → 234.</li>
+<li><b>Resultado.</b> <span class="ans">753 a 50 °C y 234 a 0 °C.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

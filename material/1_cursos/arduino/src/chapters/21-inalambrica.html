@@ -1,0 +1,65 @@
+<template class="chapter-src" data-id="inalambrica" data-num="21" data-title="Bluetooth y WiFi con el ESP32" data-part="Parte IV · Comunicación y módulos" data-short="Controlar un LED desde un teléfono por Bluetooth serie y por una página web servida por el propio ESP32: red WiFi, dirección IP, solicitudes HTTP, rutas y argumentos; seguridad y límites">
+<p class="lead">Lo que distingue al ESP32 del UNO no es su velocidad, sino que trae <b>WiFi y Bluetooth</b> dentro del chip. Con eso, un proyecto puede recibir órdenes desde un teléfono, publicar sus mediciones en internet o servir su propia página web. Este capítulo muestra los dos caminos más sencillos: un <b>terminal Bluetooth</b> para mandar comandos y un <b>servidor web</b> que el teléfono o el computador abre con el navegador.</p>
+
+<section>
+<h2>Bluetooth serie: el puerto serie sin cable</h2>
+<p>El ESP32 puede comportarse como un módulo «Bluetooth clásico» con el perfil serie (SPP): desde el teléfono, una aplicación de terminal Bluetooth se empareja con la placa y todo lo que se escribe llega por <code class="k">SerialBT</code>, que se usa igual que <code class="k">Serial</code>: <code class="k">available()</code>, <code class="k">read()</code>, <code class="k">println()</code>. Tiene un alcance de unos 10 metros. (Los iPhone no soportan el perfil SPP clásico; para ellos se usa Bluetooth de baja energía, BLE, con una aplicación específica.)</p>
+<p>En la simulación, el «teléfono» es el panel inferior. Escriba <code class="k">1</code> para encender el LED y <code class="k">0</code> para apagarlo; la placa responde con un mensaje.</p>
+<div class="sim" data-sim="bluetooth" data-title="Controlar un LED desde el teléfono por Bluetooth"></div>
+<div class="sim-guide"><ul>
+<li>Enviar «1»: el programa recibe el carácter <code class="k">'1'</code> (código ASCII 49) y enciende el LED; responde «LED encendido».</li>
+<li>Enviar «hola»: como no es ni 1 ni 0, el programa lo ignora. Por eso conviene que el programa responda también a los comandos desconocidos.</li>
+<li>Un módulo HC-05 (con un UNO) se comporta igual, pero conectado a los pines RX/TX y con su propia biblioteca <code class="k">SoftwareSerial</code>; su pin RX admite solo 3.3 V.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>WiFi y un servidor web en el ESP32</h2>
+<p>Para usar WiFi, el ESP32 se conecta a una <b>red</b> (el nombre, SSID, y la contraseña) y recibe una <b>dirección IP</b> (por ejemplo 192.168.1.57), que es su dirección en esa red. El ESP32 trabaja solo en la banda de <b>2.4 GHz</b> (no en la de 5 GHz). Un <b>servidor web</b> es un programa que espera solicitudes HTTP: cuando el navegador pide una dirección (<code class="k">/</code>, <code class="k">/led?estado=1</code>), el servidor ejecuta una función y responde con una página HTML.</p>
+<ul>
+<li><code class="k">server.on("/ruta", función)</code> asocia una dirección con la función que la atiende.</li>
+<li><code class="k">server.send(200, "text/html", html)</code> envía la respuesta (200 significa «correcto»; 404, «no encontrado»).</li>
+<li><code class="k">server.arg("nombre")</code> lee los argumentos de la dirección (lo que va después del <code class="k">?</code>).</li>
+<li><code class="k">server.handleClient()</code> debe llamarse en cada vuelta del <code class="k">loop</code> para atender; por eso no se puede usar <code class="k">delay</code> largos (capítulo 15).</li>
+</ul>
+<p>El simulador tiene una red «CasaWiFi» con clave «12345678». La placa tarda unos segundos en conectarse; luego el «navegador» puede pedir páginas. Pulse los enlaces.</p>
+<div class="sim" data-sim="servidor" data-title="Servidor web en el ESP32: control del LED desde un navegador"></div>
+<div class="sim-guide"><ul>
+<li>Al terminar de conectarse, el monitor serie muestra la IP: 192.168.1.57. En la vida real esa IP se escribe en el navegador del teléfono (estando en la misma red WiFi).</li>
+<li>El enlace «Encender» pide <code class="k">/led?estado=1</code>: la función <code class="k">controlLed</code> lee el argumento, enciende el LED y devuelve la página actualizada.</li>
+<li>Pida una ruta inexistente, por ejemplo <code class="k">/nada</code>: la respuesta es 404.</li>
+<li>Use el botón «Contraseña equivocada»: el programa nunca se conecta (los puntos se repiten) y el navegador responde «Sin conexión».</li>
+</ul></div>
+<div class="box warn"><h4>Seguridad básica</h4>
+<ul><li>No publique su contraseña de WiFi en un código que comparta; use un archivo aparte que no se suba a internet.</li>
+<li>Un servidor sin contraseña lo puede usar cualquier persona de la red: no controle con él nada peligroso.</li>
+<li>Para acceder desde fuera de casa se necesitan servicios en la nube (por ejemplo MQTT con un servidor intermedio), no abrir la red doméstica.</li></ul></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Qué significa el código de respuesta 404 y cuándo lo devuelve el servidor del ejemplo?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Significado.</b> «No encontrado»: la dirección pedida no existe.</li>
+<li><b>Cuándo.</b> Si el navegador pide una ruta sin función asociada con <code class="k">server.on</code>.</li>
+<li><b>Resultado.</b> <span class="ans">404 = página inexistente; ocurre con rutas como <code class="k">/nada</code>.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Un ESP32 se conecta a la red «MiCasa» con la clave equivocada. ¿Qué ocurre en el programa del ejemplo?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Bucle.</b> <code class="k">while (WiFi.status() != WL_CONNECTED)</code> sigue verdadero.</li>
+<li><b>Resultado.</b> <span class="ans">Se queda en el bucle de espera imprimiendo puntos; nunca llega a <code class="k">server.begin()</code>.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Con Bluetooth a 115200 baudios se envían 10 mensajes de 20 caracteres por segundo. ¿Qué fracción de la capacidad se usa?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Demanda.</b> 200 caracteres por segundo.</li>
+<li><b>Capacidad.</b> 115200/10 = 11520 caracteres por segundo.</li>
+<li><b>Fracción.</b> 200/11520 = 1.7 %.</li>
+<li><b>Resultado.</b> <span class="ans">1.7 %: sobra muchísima capacidad.</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>El ESP32 consume unos 160–260 mA con el WiFi transmitiendo. ¿Cuánto dura con una batería de 2000 mAh si transmite siempre? ¿Y si pasa dormido el 99 % del tiempo con 0.01 mA y transmite 1 % con 200 mA?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Siempre activo.</b> \(2000/200=10\) h.</li>
+<li><b>Con sueño.</b> Consumo medio: \(0.99\times0.01+0.01\times200=2.01\) mA.</li>
+<li><b>Duración.</b> \(2000/2.01=995\) h ≈ 41 días.</li>
+<li><b>Resultado.</b> <span class="ans">10 h contra unos 41 días: dormir lo cambia todo (se aprovecha al ahorrar energía).</span></li></ol></details></li>
+</ol>
+</section>
+</template>

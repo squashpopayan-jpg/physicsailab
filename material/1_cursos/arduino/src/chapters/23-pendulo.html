@@ -1,0 +1,60 @@
+<template class="chapter-src" data-id="pendulo" data-num="23" data-title="Proyecto de física: el péndulo simple" data-part="Parte V · Proyectos de física" data-short="Medir el periodo de un péndulo con una fotopuerta y calcular g: el periodo no depende de la masa, la dependencia con la longitud y el error de la fórmula de ángulos pequeños a amplitudes grandes">
+<p class="lead">Galileo observó una lámpara oscilando en la catedral de Pisa y, según la historia, la midió con su propio pulso. Un péndulo es el reloj más antiguo de la física, y también un excelente laboratorio: su <b>periodo</b> (lo que tarda en ir y volver) depende de la longitud del hilo y de la gravedad, y con una fotopuerta y un Arduino se mide con precisión de milisegundos. En este proyecto se mide el periodo, se calcula \(g\) y se descubre dónde falla la fórmula de los libros.</p>
+
+<section>
+<h2>La física</h2>
+<p>Para oscilaciones de poca amplitud (menos de unos 10°) el periodo es</p>
+<div class="eq key" data-name="Periodo del péndulo simple">\[T=2\pi\sqrt{\frac{L}{g}}\qquad\Longrightarrow\qquad g=\frac{4\pi^2 L}{T^2}\]</div>
+<p>Dos hechos sorprendentes: el periodo <b>no depende de la masa</b> de la lenteja ni (a amplitudes pequeñas) de la amplitud. Solo cuentan la longitud \(L\), medida desde el punto de suspensión hasta el centro de la lenteja, y \(g\). Con \(L=0.50\) m y \(g=9.777\) m/s² (Popayán) resulta \(T=1.4209\) s; con \(L=1.00\) m, \(T=2.0094\) s. Cuadruplicar la longitud solo duplica el periodo.</p>
+<p>Cuando la amplitud crece, la fuerza restauradora (\(\propto\sin\theta\)) deja de ser proporcional al ángulo y el periodo aumenta. Una buena aproximación es \(T\approx T_0\,(1+\theta_0^2/16)\) con \(\theta_0\) en radianes; el valor exacto se calcula con una integral elíptica (que el simulador usa para la línea «periodo teórico exacto»).</p>
+<div class="tablewrap"><table class="tbl"><tr><th>Amplitud \(\theta_0\)</th><th>5°</th><th>20°</th><th>40°</th><th>60°</th><th>80°</th></tr>
+<tr><td>\(T/T_0\)</td><td>1.0005</td><td>1.0077</td><td>1.0313</td><td>1.0732</td><td>1.1375</td></tr></table></div>
+</section>
+
+<section>
+<h2>El montaje</h2>
+<p>Un hilo delgado e inextensible sostiene una lenteja pequeña y pesada (una tuerca, una bola de acero). Justo bajo la posición de reposo se coloca una <b>fotopuerta</b>: la lenteja bloquea el haz infrarrojo cada vez que pasa por el punto más bajo, es decir, <b>dos veces por periodo</b>, una en cada sentido. La salida de la fotopuerta va al pin 2 del UNO y una interrupción (<code class="k">attachInterrupt</code>, capítulo 22) guarda el instante de cada flanco ascendente con <code class="k">micros()</code>. La diferencia entre dos pasos consecutivos es medio periodo; el programa la duplica y calcula \(g\).</p>
+<div class="sim" data-sim="pendulo" data-title="Péndulo con fotopuerta: medir el periodo y calcular g"></div>
+<div class="sim-guide"><ul>
+<li>Con 50 cm y 20° pulse «Soltar el péndulo»: el monitor serie imprime \(T\) cada medio periodo. Debe obtener 1.432 s (el valor exacto para 20°; la fórmula de ángulos pequeños daría 1.4209 s) y un \(g\) de unos 9.63 m/s²: un 1.5 % por debajo del real, precisamente porque la fórmula ignora que 20° ya no es «pequeño». Con 5° el \(g\) calculado sube a 9.77 m/s².</li>
+<li>Suba la amplitud a 60°: el periodo medido sube a 1.52 s y el \(g\) calculado cae a unos 8.5 m/s², ¡un 13 % por debajo del valor real! No falla el sensor: falla la fórmula. Para medir \(g\) hay que soltar el péndulo desde menos de 10°.</li>
+<li>Cambie la longitud a 30 cm y a 1 m: \(T\) cambia como \(\sqrt{L}\). La lenteja no tiene masa en el programa: el resultado no depende de ella.</li>
+<li>El osciloscopio muestra el ángulo en función del tiempo, una sinusoide casi perfecta a amplitud pequeña que se «achata» en los extremos a 80°.</li>
+</ul></div>
+<div class="box pract"><h4>Para hacerlo con piezas reales</h4>
+<ol><li>Cuelgue una lenteja de un hilo de coser de 1 m, fijado en un soporte rígido (un clavo no, que se mueve; mejor dos tablillas que pellizquen el hilo para que el punto de suspensión sea fijo).</li>
+<li>Mida \(L\) hasta el centro de la lenteja con una cinta métrica (±1 mm).</li>
+<li>Ponga un módulo fotointerruptor (el mismo del capítulo 22) de modo que la lenteja cruce el haz por el punto más bajo. Conecte VCC a 5 V, GND a GND y OUT al pin 2.</li>
+<li>Suelte desde unos 8° (una desviación de 14 cm en 1 m) sin empujar, y promedie al menos 10 periodos.</li>
+<li>Repita con L = 25, 50, 75 y 100 cm y dibuje \(T^2\) contra \(L\): debe salir una recta de pendiente \(4\pi^2/g\).</li></ol>
+<p class="ctrl-note">Materiales: Arduino UNO, fotointerruptor de ranura, hilo, lenteja metálica, soporte, cinta métrica.</p></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Calcule el periodo de un péndulo de 0.80 m con \(g=9.777\) m/s² (amplitud pequeña).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Fórmula.</b> \(T=2\pi\sqrt{L/g}\).</li>
+<li><b>Cálculo.</b> \(L/g=0.8/9.777=0.08182\); \(\sqrt{0.08182}=0.2861\); \(2\pi\times0.2861=1.797\) s.</li>
+<li><b>Resultado.</b> <span class="ans">T ≈ 1.80 s.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Un péndulo tiene un periodo medido de 1.40 s. ¿Cuánto mide, si \(g=9.777\) m/s²?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Despeje.</b> \(L=gT^2/4\pi^2\).</li>
+<li><b>Cálculo.</b> \(9.777\times1.96/39.478=0.4854\) m.</li>
+<li><b>Resultado.</b> <span class="ans">L ≈ 0.485 m (unos 48.5 cm).</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un estudiante suelta un péndulo de 1.00 m desde 60° y usa la fórmula de ángulos pequeños para calcular \(g\). ¿Qué valor obtiene si \(g\) real es 9.777 m/s²?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Periodo real.</b> Es 1.0732 veces el de ángulos pequeños: \(2.0094\times1.0732=2.1565\) s.</li>
+<li><b>Fórmula usada.</b> \(g_\text{calc}=4\pi^2L/T^2=39.478/2.1565^2=39.478/4.650\).</li>
+<li><b>Cálculo.</b> \(g_\text{calc}=8.49\) m/s².</li>
+<li><b>Resultado.</b> <span class="ans">8.49 m/s²: 13 % por debajo. El error crece como el cuadrado de la razón de periodos (\(1/1.0732^2=0.868\)).</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>Un péndulo de 0.50 m se suelta desde 20°. La lenteja mide 12 mm de ancho y pasa por la fotopuerta en su punto más bajo. ¿Cuánto tiempo bloquea el haz?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Energía.</b> En el punto más bajo \(v=\sqrt{2gL(1-\cos\theta_0)}\).</li>
+<li><b>Cálculo de v.</b> \(1-\cos20^\circ=0.0603\); \(v=\sqrt{2\times9.777\times0.5\times0.0603}=0.768\) m/s.</li>
+<li><b>Tiempo.</b> \(0.012/0.768=15.6\) ms.</li>
+<li><b>Resultado.</b> <span class="ans">≈ 16 ms: breve, pero la interrupción no lo pierde. Un lazo de <code class="k">digitalRead</code> con <code class="k">delay(50)</code> sí lo perdería.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

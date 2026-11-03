@@ -1,0 +1,61 @@
+<template class="chapter-src" data-id="sonido" data-num="25" data-title="Proyecto de física: la velocidad del sonido" data-part="Parte V · Proyectos de física" data-short="Medir la velocidad del sonido con el sensor ultrasónico HC-SR04: tiempo de ida y vuelta contra distancia, regresión lineal, efecto de la temperatura del aire y fuentes de error">
+<p class="lead">El sensor ultrasónico del capítulo 17 convierte distancias en tiempos; aquí se hace al revés. Si se conoce la distancia a una pared con una regla, el tiempo que tarda el pulso en ir y volver permite medir la <b>velocidad del sonido</b>. Es un experimento clásico, antes hecho con pistolas de salida y cronómetros, que con un Arduino se resuelve con una tabla de datos y una recta.</p>
+
+<section>
+<h2>La física</h2>
+<p>El sensor emite un pulso de ultrasonido (40 kHz) y mide cuánto tarda el eco. El sonido recorre la distancia \(d\) hasta la pared y vuelve: \(2d\) en total. Por tanto</p>
+<div class="eq key" data-name="Tiempo de ida y vuelta">\[t=\frac{2d}{v}\]</div>
+<p>Si se mide \(t\) para varias distancias y se dibuja \(t\) contra \(d\), sale una recta que pasa por el origen con pendiente \(2/v\). Medir la pendiente de una recta con varios puntos es mucho mejor que dividir un solo par de valores, porque los errores aleatorios se promedian y un error sistemático constante (por ejemplo, un pequeño retraso del sensor) solo desplaza la recta sin cambiar su pendiente.</p>
+<p>La velocidad del sonido en el aire depende de la temperatura:</p>
+<div class="eq key" data-name="Velocidad del sonido en el aire">\[v\approx331.3+0.606\,T\ \text{(m/s, con }T\text{ en °C)}\]</div>
+<p>A 20 °C resulta 343.4 m/s; a 0 °C, 331.3 m/s; a 40 °C, 355.5 m/s. En Popayán, con 18–22 °C durante el día, se espera entre 342 y 345 m/s. (La altura sobre el mar casi no importa: la velocidad del sonido en un gas ideal depende de la temperatura y no de la presión.)</p>
+</section>
+
+<section>
+<h2>El montaje y el programa</h2>
+<p>El sensor se conecta como en el capítulo 17: TRIG al pin 9, ECHO al pin 10. El programa imprime el tiempo de ida y vuelta en microsegundos (sin convertirlo a distancia: la conversión es justamente lo que se quiere medir). Una pared lisa (o una tabla) perpendicular al sensor da un eco limpio.</p>
+<div class="sim" data-sim="sonido" data-title="Medir la velocidad del sonido con el HC-SR04"></div>
+<div class="sim-guide"><ul>
+<li>Con 100 cm, el monitor muestra unos 5824 µs. Espere a que aparezca una medida nueva después de mover la distancia, y pulse «Anotar». Repita con 50, 100, 150, 200, 250, 300 cm.</li>
+<li>Con 5 o 6 puntos, la recta se ajusta sola y el simulador calcula \(v=2/\)pendiente. Debe resultar entre 342 y 345 m/s con 20 °C. Cada medida varía unas décimas de por ciento (el reloj de 4 µs del UNO y el ruido del eco).</li>
+<li>Mueva la temperatura a 0 °C o 40 °C: los datos se borran (otra experiencia) y la pendiente cambia. A 40 °C el tiempo en 1 m baja a 5625 µs.</li>
+<li>Pruebe con solo dos puntos muy cercanos (100 y 110 cm): la recta sigue pasando, pero el valor de \(v\) oscila más. Para medir una pendiente conviene que los puntos abarquen un rango grande.</li>
+</ul></div>
+<div class="box pract"><h4>Para hacerlo con piezas reales</h4>
+<ol><li>Fije el sensor sobre una mesa mirando una pared o un tablero vertical. Marque con una cinta métrica distancias de 30 a 300 cm desde la cara del sensor (donde están los dos «ojos»).</li>
+<li>Con el programa de arriba, anote el tiempo del monitor serie para cada distancia (tome varias lecturas y promedie).</li>
+<li>Haga la gráfica de \(t\) contra \(d\) en una hoja de cálculo y use la línea de tendencia. La pendiente \(m\) (µs/cm) da \(v=2\times10^4/m\) m/s.</li>
+<li>Mida también la temperatura del aire (por ejemplo con el LM35 o el DHT11) y compare con \(331.3+0.606\,T\).</li></ol>
+<p class="ctrl-note">Materiales: Arduino UNO, HC-SR04, cables, cinta métrica, pared o tablero.</p></div>
+<div class="box note"><h4>¿Por qué el sensor calcula mal con calor o con frío?</h4>
+<p>Los programas típicos suponen \(v=340\) m/s (o 0.034 cm/µs). Si el aire está a 30 °C, el sonido va a 349.5 m/s y el sensor «ve» las paredes más cerca de lo que están (error del 2.7 %). Un sensor de temperatura (capítulo 16) permite corregirlo: basta calcular (v) con la fórmula anterior en lugar de suponer 340 m/s.</p></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Cuánto tarda el eco de una pared a 2.00 m a 20 °C (v = 343.4 m/s)?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Recorrido.</b> Ida y vuelta: 4.00 m.</li>
+<li><b>Tiempo.</b> \(t=4.00/343.4=0.011648\) s.</li>
+<li><b>Resultado.</b> <span class="ans">≈ 11 650 µs (11.6 ms).</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>¿Cuál es la velocidad del sonido a 35 °C?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Fórmula.</b> \(v=331.3+0.606\,T\).</li>
+<li><b>Cálculo.</b> \(331.3+0.606\times35=331.3+21.2\).</li>
+<li><b>Resultado.</b> <span class="ans">v ≈ 352.5 m/s.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un estudiante mide 2915 µs a 50 cm y 17 450 µs a 300 cm. Calcule la velocidad del sonido a partir de la pendiente.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Pendiente.</b> \(m=(17450-2915)/(300-50)=14535/250=58.14\) µs/cm.</li>
+<li><b>Fórmula.</b> \(v=2/m\) con \(m\) en s/m: \(58.14\) µs/cm \(=5.814\times10^{-3}\) s/m.</li>
+<li><b>Cálculo.</b> \(v=2/(5.814\times10^{-3})=344.0\) m/s.</li>
+<li><b>Resultado.</b> <span class="ans">≈ 344 m/s, coherente con aire a unos 21 °C.</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>La función <code class="k">pulseIn</code> del UNO tiene resolución de 4 µs. ¿Qué diferencia mínima de distancia distingue el sensor a 20 °C? ¿Y qué error relativo introduce en una medida de 1 m?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Distancia mínima.</b> \(\Delta d=v\,\Delta t/2=343.4\times4\times10^{-6}/2=0.69\) mm.</li>
+<li><b>Error relativo a 1 m.</b> El tiempo es 5824 µs, así que \(4/5824=0.07\ \%\).</li>
+<li><b>Comparación.</b> Una regla con ±1 mm sobre 1 m tiene 0.1 %: el error de la regla es mayor que el del reloj.</li>
+<li><b>Resultado.</b> <span class="ans">0.69 mm y 0.07 %. El error dominante del experimento es medir la distancia y alinear el sensor, no el reloj del Arduino.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

@@ -1,0 +1,115 @@
+<template class="chapter-src" data-id="fallos" data-num="6" data-title="Cortocircuitos y fallos: ver para evitar" data-part="Parte I · Los elementos" data-short="Qué pasa cuando falta la resistencia del LED, se invierte la polaridad, se pasa el voltaje de un condensador, se cortocircuita una fuente o se sobrecarga un pin; cómo se protegen las fuentes y cómo diagnosticar un circuito que no funciona">
+<p class="lead">Aprender electrónica sin quemar nada es imposible; lo que sí se puede es quemarlo aquí, en la pantalla, y entender por qué. Este capítulo reúne los fallos que más piezas destruyen: un LED sin resistencia, una polaridad invertida, un condensador con exceso de tensión, un cortocircuito entre positivo y negativo y un pin del Arduino sobrecargado. Para cada uno se verá qué se siente (humo, calor, pitidos), qué dicen los números y qué se hace para evitarlo.</p>
+
+<section>
+<h2>Por qué se rompe una pieza: el exceso de corriente o de tensión</h2>
+<p>Toda pieza tiene unos límites, escritos en su hoja de datos: una <b>corriente máxima</b>, una <b>tensión máxima</b> y una <b>potencia máxima</b>. Dentro de esos límites vive muchos años. Fuera, se calienta, y el calor es lo que la destruye: el material se funde, se carboniza o se deforma. El daño es progresivo: a un 20 % sobre el límite puede tardar horas; al doble, segundos; a diez veces, un instante. En el simulador, cada pieza acumula «daño» según cuánto se pasa de su límite, y cuando llega al máximo se rompe: cambia de color, humea y se comporta como un circuito abierto, o como un cortocircuito, según el tipo de pieza.</p>
+<div class="box note"><p>Hay dos formas de fallar: <b>abierto</b> (la pieza deja de conducir: resistencia carbonizada, LED muerto, fusible fundido) o en <b>cortocircuito</b> (la pieza queda como un cable: diodo o transistor perforados, condensador en corto). Un circuito abierto apaga todo y es fácil de ver; un cortocircuito eleva la corriente y arrastra otras piezas.</p></div>
+</section>
+
+<section>
+<h2>Fallo 1: el LED sin resistencia</h2>
+<p>El LED es el rey de las víctimas. Una vez que la tensión supera su umbral (unos 1.95 V en el rojo), su resistencia interna es de apenas unos 6 Ω y la corriente crece muy deprisa con pequeños aumentos de tensión. Si no hay una resistencia en serie, solo lo limita la fuente. Con una fuente de 5 V, esto es lo que pasa para distintos valores de resistencia (LED rojo, máximo recomendado 20 mA y absoluto 30 mA):</p>
+<div class="tablewrap narrow"><table class="tbl"><tr><th>Resistencia</th><th>Corriente por el LED</th><th>¿Es seguro?</th></tr>
+<tr><td>0 Ω (sin resistencia)</td><td>471 mA</td><td>No: 16 veces su máximo</td></tr><tr><td>47 Ω</td><td>56 mA</td><td>No: casi el doble del máximo</td></tr>
+<tr><td>100 Ω</td><td>28.6 mA</td><td>En el límite</td></tr><tr><td>150 Ω</td><td>19.5 mA</td><td>Sí (brillo máximo)</td></tr>
+<tr><td>220 Ω</td><td>13.6 mA</td><td>Sí (brillante)</td></tr><tr><td>330 Ω</td><td>9.2 mA</td><td>Sí (la recomendada)</td></tr>
+<tr><td>1 kΩ</td><td>3.1 mA</td><td>Sí (brilla poco)</td></tr></table></div>
+<p>Pruebe usted mismo cada valor. Con 0 Ω el LED se quema en menos de un segundo; con 330 Ω puede estar encendido toda la vida.</p>
+<div class="sim" data-sim="sinr" data-title="El LED y su resistencia: ¿cuánto es suficiente?"></div>
+<div class="box tip"><p>Fórmula para escoger la resistencia: \(R=\dfrac{V_{fuente}-V_{LED}}{I_{LED}}\). Con 5 V, un LED rojo de 1.95 V y 15 mA: \(R=(5-1.95)/0.015=203\ \Omega\), y se usa 220 Ω. Con 3.3 V: \(R=(3.3-1.95)/0.015=90\ \Omega\), y se usa 100 Ω.</p></div>
+</section>
+
+<section>
+<h2>Fallo 2: polaridad invertida y exceso de tensión en un condensador</h2>
+<p>Un condensador electrolítico tiene una película de óxido que se forma con el voltaje en el sentido correcto. Al invertirlo la película se disuelve, la corriente se dispara, el interior se calienta, el electrolito hierve y la válvula superior (esas ranuras en forma de cruz) se abre con un estallido y un chorro de vapor. Lo mismo ocurre, más lentamente, si se supera el voltaje impreso en su cuerpo. Un 16 V puede trabajar con 12 V, pero no con 20 V.</p>
+<div class="sim" data-sim="ecap" data-title="Condensador electrolítico: polaridad y voltaje máximo"></div>
+<div class="sim-guide"><ul>
+<li>Normal (9 V, 16 V de rango, polaridad correcta): el condensador se carga y no pasa nada.</li>
+<li>Invertido a 9 V: se daña en menos de un segundo; la pieza humea y queda con una resistencia de 5 kΩ («fuga»).</li>
+<li>A 24 V con un condensador de 16 V: aguanta unos 4 s antes de fallar; a 20 V tarda unos 8 s. Siempre elija un voltaje máximo al menos <b>1.5 a 2 veces</b> mayor que el que va a recibir.</li>
+</ul></div>
+<p>Con los <b>diodos</b> y los <b>LED</b>, el problema de la polaridad es otro: un LED soporta apenas unos 5 V al revés. Una solución barata para proteger circuitos de una pila puesta al revés es un diodo en serie con la alimentación (un 1N4007 de 1 A); cuesta 0.6 V de caída, pero un error de polaridad ya no destruye nada.</p>
+</section>
+
+<section>
+<h2>Fallo 3: el cortocircuito</h2>
+<p>Un <b>cortocircuito</b> es un camino de resistencia casi nula entre los dos polos de una fuente: un cable que une el positivo con el negativo, una pata que toca otra, dos filas puenteadas. Como \(I=V/R\) y R es casi cero, la corriente solo la limita lo poco que opone la propia fuente. Una pila de 9 V tiene una resistencia interna de 1 a 2 Ω; en corto entrega varios amperios y se calienta hasta quedar inservible (y si es de litio, puede incendiarse). Por eso las fuentes buenas tienen protecciones:</p>
+<ul>
+<li>La <b>placa Arduino UNO</b> toma su alimentación del puerto USB a través de un <i>fusible reajustable</i> (PTC) de 500 mA: si se supera, aumenta su resistencia y corta la alimentación hasta que se quita el cortocircuito.</li>
+<li>Una <b>fuente de laboratorio</b> tiene un límite de corriente ajustable: pasa a modo «corriente constante» (C.C.) y mantiene la corriente en el valor fijado mientras su tensión baja a casi cero.</li>
+<li>Un <b>fusible</b> en serie se funde cuando la corriente supera su valor.</li>
+</ul>
+<p>Compare las tres fuentes: elija una, ponga el cable de cortocircuito entre los rieles (el rojo con el azul) y observe la corriente, la tensión y lo que pasa con cada una.</p>
+<div class="sim" data-sim="corto" data-title="Cortocircuito: pila, USB y fuente de laboratorio"></div>
+<div class="sim-guide"><ul>
+<li><b>Pila de 9 V:</b> en corto circulan 5.3 A; la pila arde de calor y, pasado un segundo y medio, queda inservible.</li>
+<li><b>USB (5 V, 500 mA):</b> la corriente sube hasta 500 mA, tensión cae a casi 0 V y el fusible reajustable corta la alimentación: la placa se apaga. Al quitar el cable y reponer, vuelve a funcionar.</li>
+<li><b>Fuente de laboratorio con límite de 1 A:</b> pasa a modo C.C., muestra 1.00 A y casi 0 V. No se daña ni se apaga: así se protegen los circuitos en experimentos.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Fallo 4: sobrecargar un pin del Arduino</h2>
+<p>Un pin de un Arduino UNO puede entregar hasta 20 mA de forma cómoda; a 40 mA (valor absoluto máximo del ATmega328P) se daña. Un ESP32 soporta algo similar (40 mA como máximo absoluto y 12 mA recomendados como corriente cómoda), pero trabaja a 3.3 V. Conectar un LED sin resistencia a un pin lo sobrecarga por partida doble: el LED y el pin pueden fallar. Un pin dañado queda «pegado» (siempre bajo o alto) o simplemente no responde, y entonces hay que cambiar de pin o de placa. Pruebe, mirando el pin D8:</p>
+<div class="sim" data-sim="pinfalla" data-title="LED directo a un pin del Arduino: sin resistencia y con ella"></div>
+<div class="box warn"><p>Lo mismo vale para <b>cualquier carga que consuma más de 20 mA</b>: un motor, un relé, una tira de LED o un altavoz no se conectan directamente a un pin. Se usan un transistor y una fuente adecuada (capítulo 18).</p></div>
+</section>
+
+<section>
+<h2>Detective de circuitos</h2>
+<p>Ahora, a trabajar como técnico. En cada caso hay un circuito de LED con pila que no enciende bien, y hay <b>una</b> causa entre cuatro posibles: cable suelto, LED invertido, resistencia equivocada o pila agotada. Mida con el multímetro, razone y elija su diagnóstico. Pistas: sin corriente y con toda la tensión «en el hueco» hay un circuito abierto; con una pila de solo 1.5 V el LED no puede encender; con una resistencia enorme la corriente es de microamperios.</p>
+<div class="sim" data-sim="diagnostico" data-title="Detective de circuitos: ¿por qué no enciende?"></div>
+<div class="box fail"><h4>Ya se quemó algo: qué hacer</h4>
+<ul><li><b>Desconecte la alimentación</b> al primer olor a quemado, humo o calor. No toque las piezas: pueden estar a más de 100 °C.</li>
+<li><b>No reponga la pieza dañada sin buscar la causa</b>: si no, se quemará la nueva.</li>
+<li>Mida con el multímetro (en continuidad y en resistencia) los puntos sospechosos y compare con el esquema.</li>
+<li>Revise la polaridad de las piezas con polaridad: LED, diodos, electrolíticos, zumbadores, módulos.</li></ul></div>
+</section>
+
+<section>
+<h2>Seguridad en el laboratorio de electrónica</h2>
+<ul>
+<li><b>Nunca experimente con la red eléctrica</b> (120 V). Todo el curso se hace con 5 V, 3.3 V o una pila.</li>
+<li><b>Baterías de litio</b> (LiPo, 18650, celulares): no las cortocircuite, no las perfore, no las cargue sin supervisión y no las deje dentro del equipo caliente. Un corto puede provocar un incendio.</li>
+<li><b>Gafas de seguridad</b> al probar condensadores electrolíticos de gran valor y al cortar patas con el alicate (las puntas salen disparadas).</li>
+<li><b>Electricidad estática:</b> toque una superficie metálica puesta a tierra antes de coger un ESP32 o un MOSFET; los chips modernos son delicados.</li>
+<li><b>Soldador:</b> a más de 300 °C; con adulto responsable, en lugar ventilado y sobre una superficie que no se queme.</li>
+</ul>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Calcule la resistencia (y el valor comercial más cercano de la serie E12) para un LED verde (2.1 V) con 15 mA alimentado a 5 V.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Tensión en la resistencia.</b> \(5-2.1=2.9\) V.</li>
+<li><b>Valor.</b> \(R=2.9/0.015=193.3\ \Omega\).</li>
+<li><b>Serie E12.</b> El valor más cercano es 180 Ω (6.9 % menos) o 220 Ω (13.8 % más); con 220 Ω: \(I=2.9/220=13.2\) mA, brillo suficiente y menor riesgo.</li>
+<li><b>Resultado.</b> <span class="ans">193 Ω calculados; se usa 220 Ω (13.2 mA) o 180 Ω (16.1 mA).</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Un LED rojo se conecta con una resistencia de 47 Ω a 5 V. ¿Qué corriente circula (usando 1.95 V para el LED y 6 Ω de resistencia interna) y por qué falla?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Resistencia total.</b> 47 + 6 = 53 Ω.</li>
+<li><b>Corriente.</b> \(I=(5-1.95)/53=57.5\) mA.</li>
+<li><b>Comparación.</b> El máximo del LED es 30 mA: está al 192 %.</li>
+<li><b>Resultado.</b> <span class="ans">Unos 57 mA, casi el doble del máximo: el LED se sobrecalienta y se quema en pocos segundos.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Una pila de 9 V con resistencia interna de 1.7 Ω se cortocircuita con un cable de 0.05 Ω. ¿Qué corriente circula, qué potencia se disipa en la pila y cuál en el cable?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Resistencia total.</b> 1.7 + 0.05 = 1.75 Ω.</li>
+<li><b>Corriente.</b> \(I=9/1.75=5.14\) A.</li>
+<li><b>Potencias.</b> En la pila: \(I^2\times1.7=45.0\) W. En el cable: \(I^2\times0.05=1.32\) W.</li>
+<li><b>Resultado.</b> <span class="ans">5.14 A; la pila disipa 45 W (se calienta rápidamente) y el cable 1.3 W.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un condensador electrolítico de 25 V se usa en un circuito de 12 V y se invierte por error. ¿Está en peligro por exceso de tensión? ¿Y por la polaridad?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Tensión.</b> 12 V es menos de la mitad de 25 V: el margen de seguridad es amplio.</li>
+<li><b>Polaridad.</b> Un electrolítico tolera como mucho alrededor de 1 V inversos; a 12 V al revés se destruye.</li>
+<li><b>Resultado.</b> <span class="ans">La tensión no es problema, pero la polaridad invertida sí: se dañará y puede estallar.</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>Un Arduino UNO tiene un LED con resistencia de 220 Ω en cada uno de 8 pines, todos encendidos. Cada uno consume 13.6 mA. ¿Cuál es el consumo total de los pines? ¿Hay algún problema con los límites del ATmega328P (20 mA por pin recomendado, 40 mA absoluto por pin, 200 mA total por los pines de alimentación)?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Total.</b> \(8\times13.6=108.8\) mA.</li>
+<li><b>Por pin.</b> 13.6 mA &lt; 20 mA: bien.</li>
+<li><b>Total.</b> 108.8 mA &lt; 200 mA: bien.</li>
+<li><b>Resultado.</b> <span class="ans">109 mA en total, dentro de todos los límites. Con 15 LED de 20 mA (300 mA) se superaría el total de 200 mA, aun con pines individuales correctos.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

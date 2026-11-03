@@ -1,0 +1,62 @@
+<template class="chapter-src" data-id="protocolos" data-num="20" data-title="Protocolos de comunicación: UART, I²C y SPI" data-part="Parte IV · Comunicación y módulos" data-short="Cómo conversan los chips: el puerto serie asíncrono (UART), el bus I²C de dos cables con direcciones y el SPI rápido de cuatro cables; formas de onda de cada uno con un analizador lógico virtual y cómo elegir el protocolo">
+<p class="lead">Un sensor, una pantalla y una placa son chips que tienen que entenderse mediante cables. Para no inventar un idioma por cada pareja existen <b>protocolos</b> estándar: reglas sobre qué señal va por cada cable y cuánto dura cada bit. Tres dominan el mundo de los microcontroladores: <b>UART</b> (el puerto serie), <b>I²C</b> y <b>SPI</b>. Conviene reconocer cada uno por su forma de onda; para eso se usa un <b>analizador lógico</b>, un instrumento que dibuja los ceros y unos de los cables en el tiempo.</p>
+
+<section>
+<h2>Los tres protocolos de un vistazo</h2>
+<div class="tablewrap"><table class="tbl"><tr><th></th><th>UART</th><th>I²C</th><th>SPI</th></tr>
+<tr><td>Cables</td><td>2 (TX, RX) + GND</td><td>2 (SDA, SCL) + GND</td><td>4 (MOSI, MISO, SCK, CS) + GND</td></tr>
+<tr><td>Reloj</td><td>no (asíncrono: ambos acuerdan los baudios)</td><td>sí (SCL, lo da el maestro)</td><td>sí (SCK, lo da el maestro)</td></tr>
+<tr><td>Dispositivos</td><td>2 (punto a punto)</td><td>muchos, con dirección de 7 bits</td><td>muchos, uno con su línea CS cada uno</td></tr>
+<tr><td>Velocidad típica</td><td>9600–115200 baudios</td><td>100 kHz (estándar), 400 kHz (rápido)</td><td>1–20 MHz</td></tr>
+<tr><td>Se usa en</td><td>monitor serie, GPS, Bluetooth HC-05</td><td>LCD, OLED, MPU-6050, reloj RTC</td><td>tarjetas SD, RFID RC522, radios nRF24, pantallas TFT</td></tr></table></div>
+<ul>
+<li><b>UART:</b> cada byte va en un «paquete» de 10 bits: un bit de <i>inicio</i> (bajo), 8 de datos (empezando por el menos significativo) y uno de <i>parada</i> (alto). A 9600 baudios, cada bit dura 104.2 µs y un byte, 1.04 ms. TX de uno va a RX del otro (se cruzan).</li>
+<li><b>I²C:</b> el maestro genera la condición de <i>inicio</i> (SDA baja con SCL alto), envía 7 bits de dirección y un bit de lectura/escritura, el esclavo responde con <i>ACK</i> (baja SDA en el noveno pulso) y siguen los bytes de datos; termina con la condición de <i>parada</i>. Las líneas necesitan resistencias pull-up (casi todos los módulos las traen).</li>
+<li><b>SPI:</b> el maestro baja CS (selección) y genera pulsos de SCK; por MOSI sale un bit por pulso (el más significativo primero) y simultáneamente entra otro por MISO.</li>
+</ul>
+</section>
+
+<section>
+<h2>Analizador lógico virtual</h2>
+<p>Elija el protocolo y el byte a transmitir. Verá las señales tal como las mostraría un analizador real, con cada bit rotulado. Compare cuántos hilos y cuánto tiempo necesita cada protocolo para enviar el mismo byte.</p>
+<div class="sim" data-sim="analizador" data-title="Formas de onda de UART, I²C y SPI"></div>
+<div class="sim-guide"><ul>
+<li><b>UART con la letra «A» (0x41 = 01000001):</b> inicio (0), luego los bits 1, 0, 0, 0, 0, 0, 1, 0 (el menos significativo primero) y parada (1). Dura 1.04 ms a 9600 baudios.</li>
+<li><b>I²C con la dirección 0x27 y el dato 0x41:</b> después del inicio se envía \(0x27\ll1=0x4E\) (dirección + bit de escritura), un ACK, 0x41 y otro ACK. A 100 kHz los 18 pulsos de reloj duran 180 µs.</li>
+<li><b>SPI a 1 MHz:</b> el mismo byte se envía en 8 µs: 22 veces más rápido que el I²C y 130 veces más que el UART a 9600.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>¿Cuál escoger?</h2>
+<p>La decisión casi siempre la impone el módulo: una pantalla I²C se conecta por I²C. Si hay opciones: I²C cuando faltan pines o hay varios sensores lentos; SPI cuando importa la velocidad (tarjeta SD, pantalla gráfica); UART para hablar con un computador o con módulos inalámbricos. En el UNO los pines del I²C son A4 (SDA) y A5 (SCL); los del SPI, 11 (MOSI), 12 (MISO), 13 (SCK) y 10 (CS); el UART, 0 (RX) y 1 (TX) — ocupados por el USB. En el ESP32: I²C 21/22, SPI 23 (MOSI), 19 (MISO), 18 (SCK), 5 (CS) y UART2 en 16 (RX) y 17 (TX).</p>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Cuánto dura un bit y cuánto dura un byte en un UART a 115200 baudios?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Bit.</b> \(1/115200=8.68\ \mu\text{s}\).</li>
+<li><b>Byte (10 bits).</b> \(86.8\ \mu\text{s}\).</li>
+<li><b>Resultado.</b> <span class="ans">8.68 µs por bit y 86.8 µs por byte (≈ 11 520 bytes por segundo).</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>La letra «C» es el código ASCII 67. Escriba su byte en binario y diga qué bits se transmiten primero en un UART.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Binario.</b> 67 = 64 + 2 + 1 = 01000011.</li>
+<li><b>Orden.</b> El UART envía primero el bit menos significativo: 1, 1, 0, 0, 0, 0, 1, 0.</li>
+<li><b>Resultado.</b> <span class="ans">01000011; se transmite como 1-1-0-0-0-0-1-0 (entre el bit de inicio y el de parada).</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un OLED I²C a 400 kHz recibe una imagen de 128×64 píxeles monocromos (1 bit por píxel). ¿Cuánto tarda, suponiendo 9 bits de reloj por byte y sin contar los encabezados?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Bytes.</b> \(128\times64/8=1024\) bytes.</li>
+<li><b>Bits de reloj.</b> \(1024\times9=9216\).</li>
+<li><b>Tiempo.</b> \(9216/400\,000=23\) ms.</li>
+<li><b>Resultado.</b> <span class="ans">≈ 23 ms por imagen completa (unos 43 cuadros por segundo como máximo).</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>Dos dispositivos I²C tienen la misma dirección (0x68). ¿Qué opciones hay para usarlos en el mismo UNO?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Opción 1.</b> Cambiar la dirección de uno si el módulo lo permite (el MPU-6050 tiene el pin AD0: 0x68 o 0x69).</li>
+<li><b>Opción 2.</b> Usar un multiplexor I²C (TCA9548A), que da 8 canales independientes.</li>
+<li><b>Opción 3.</b> Usar otro puerto: el ESP32 tiene dos controladores I²C.</li>
+<li><b>Resultado.</b> <span class="ans">Cambiar la dirección con el pin AD0, o usar un multiplexor, o un segundo bus.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

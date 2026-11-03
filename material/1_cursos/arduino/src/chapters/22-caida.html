@@ -1,0 +1,59 @@
+<template class="chapter-src" data-id="caida" data-num="22" data-title="Proyecto de física: la gravedad con fotopuertas" data-part="Parte V · Proyectos de física" data-short="Medir la aceleración de la gravedad dejando caer una bola entre dos fotopuertas: interrupciones, micros() y la ecuación d = ½ g t²; análisis de errores y comparación con el valor local de Popayán">
+<p class="lead">Galileo midió la caída de los cuerpos con una rampa y un reloj de agua. Hoy, con dos <b>fotopuertas</b> (sensores de ranura que detectan cuando algo interrumpe su haz infrarrojo) y un Arduino se mide el tiempo con precisión de microsegundos. En este proyecto se suelta una bola desde la primera compuerta y se mide cuánto tarda en llegar a la segunda, situada a una distancia conocida. De ese tiempo sale la <b>aceleración de la gravedad</b>.</p>
+
+<section>
+<h2>La física</h2>
+<p>Si la bola parte del reposo y cae una distancia \(d\) con aceleración constante \(g\) (se desprecia el aire), \(d=\tfrac12\,g\,t^2\), y por tanto</p>
+<div class="eq key" data-name="Gravedad a partir de una caída">\[g=\frac{2d}{t^2}\]</div>
+<p>Con \(d=0.50\) m y \(g=9.777\) m/s² (valor local de Popayán, a unos 1760 m de altura) el tiempo de caída es \(t=\sqrt{2d/g}=0.3198\) s: poco más de un tercio de segundo, imposible de medir a mano con precisión de centésimas, pero fácil para el Arduino. Fíjese que un error de 1 ms en el tiempo produce un error en \(g\) de \(2\times0.001/0.3198=0.6\ \%\): el tiempo manda en la precisión.</p>
+</section>
+
+<section>
+<h2>El montaje</h2>
+<p>Cada fotopuerta (módulo de ranura con salida digital) tiene tres pines: VCC, OUT y GND. Su salida está en alto cuando algo bloquea el haz. La primera compuerta sostiene la bola (haz bloqueado); al soltarla, la salida baja y el <b>flanco descendente</b> marca el inicio del tiempo. Al pasar por la segunda compuerta, su salida sube: el <b>flanco ascendente</b> marca el final. Para no perder estos eventos tan rápidos (la bola bloquea la segunda compuerta apenas 6 ms) se usan <b>interrupciones</b>: el hardware detiene un instante el programa, ejecuta una función breve y sigue. Se conectan a los pines 2 y 3 del UNO.</p>
+<ul>
+<li><code class="k">attachInterrupt(digitalPinToInterrupt(2), inicio, FALLING)</code>: llama a <code class="k">inicio()</code> en cada flanco descendente del pin 2.</li>
+<li><code class="k">micros()</code> devuelve los microsegundos desde el arranque (en el UNO, con resolución de 4 µs).</li>
+<li>Las variables compartidas entre la interrupción y el programa principal se declaran <code class="k">volatile</code>.</li>
+</ul>
+<div class="sim" data-sim="caida" data-title="Caída libre entre dos fotopuertas"></div>
+<div class="sim-guide"><ul>
+<li>Con 50 cm el programa mide unos 0.319 s y calcula g ≈ 9.80 m/s²: un 0.3 % por encima del valor de partida (9.777), por la resolución del tiempo (el reloj de la simulación avanza en pasos de 0.2 ms). Pulse «Soltar» varias veces: los valores cambian en la tercera cifra.</li>
+<li>Cambie la distancia a 30 cm (t = 0.2477 s) y a 80 cm (t = 0.4045 s): \(g\) debe salir igual; con tiempos más largos la incertidumbre relativa es menor.</li>
+<li>En un experimento real aparecen otros errores: la bola no parte exactamente en reposo, el aire la frena, las compuertas tienen un retraso (decenas de microsegundos) y la distancia se mide con una regla (±1 mm → ±0.2 % en \(g\)).</li>
+</ul></div>
+<div class="box pract"><h4>Para hacerlo con piezas reales</h4>
+<ol><li>Fije en un tubo vertical dos módulos de ranura (fotointerruptores) a 50 cm uno del otro, con la bola de acero (o canica) pasando por el centro de la ranura.</li>
+<li>Conecte VCC y GND de ambos a 5 V y GND; las salidas, a los pines 2 y 3.</li>
+<li>Sujete la bola en la primera compuerta (por ejemplo, con un electroimán o con el dedo) y suéltela.</li>
+<li>Repita 10 veces, promedie y calcule la desviación estándar de \(g\). Compare con el valor local.</li></ol>
+<p class="ctrl-note">Materiales: Arduino UNO, 2 fotointerruptores de ranura, cables, bola de acero, tubo, regla.</p></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Una bola tarda 0.452 s en caer 1.00 m desde el reposo. Calcule \(g\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Fórmula.</b> \(g=2d/t^2\).</li>
+<li><b>Cálculo.</b> \(2\times1.00/0.452^2=9.789\) m/s².</li>
+<li><b>Resultado.</b> <span class="ans">9.79 m/s².</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>¿Cuánto tarda en caer 0.80 m con \(g=9.777\) m/s²?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Fórmula.</b> \(t=\sqrt{2d/g}\).</li>
+<li><b>Cálculo.</b> \(\sqrt{1.6/9.777}=0.4045\) s.</li>
+<li><b>Resultado.</b> <span class="ans">0.405 s.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>La distancia entre las compuertas se mide con ±1 mm (d = 500 mm) y el tiempo con ±0.2 ms (t = 0.3198 s). Estime la incertidumbre relativa de \(g\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Propagación.</b> \(g=2d/t^2\): \(\Delta g/g=\Delta d/d+2\Delta t/t\).</li>
+<li><b>Valores.</b> \(1/500=0.2\ \%\); \(2\times0.0002/0.3198=0.125\ \%\).</li>
+<li><b>Suma.</b> 0.325 %.</li>
+<li><b>Resultado.</b> <span class="ans">≈ 0.33 %, es decir, ±0.03 m/s².</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>La bola cruza la segunda compuerta a velocidad \(v=gt\). Si su diámetro es 2.0 cm, ¿cuánto tiempo bloquea la compuerta?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Velocidad.</b> \(v=9.777\times0.3198=3.127\) m/s.</li>
+<li><b>Tiempo.</b> \(0.020/3.127=6.4\) ms.</li>
+<li><b>Resultado.</b> <span class="ans">6.4 ms: las interrupciones son necesarias, porque <code class="k">digitalRead</code> en un lazo lento podría perderlo.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

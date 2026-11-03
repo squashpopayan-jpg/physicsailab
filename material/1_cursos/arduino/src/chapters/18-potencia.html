@@ -1,0 +1,59 @@
+<template class="chapter-src" data-id="potencia" data-num="18" data-title="Motores, relés y cargas de potencia" data-part="Parte III · Sensores y actuadores" data-short="Cómo mover un motor desde un pin que solo da 20 mA: transistor o MOSFET, fuente aparte con tierra común, diodo de rueda libre, control de velocidad con PWM, el módulo de relé y el puente H para invertir el giro">
+<p class="lead">Un pin de Arduino entrega, como mucho, 20 mA. Un motor pequeño consume 100–500 mA y el doble o más al arrancar; una tira de LED, un ventilador o una electroválvula, mucho más. Se resuelve con el patrón universal de la electrónica de control: <b>el pin manda una señal pequeña y un interruptor de potencia</b> (un transistor, un MOSFET o un relé) <b>maneja la corriente grande</b> desde una fuente aparte. Este capítulo muestra cómo hacerlo bien y qué pasa cuando se hace mal.</p>
+
+<section>
+<h2>El motor con un MOSFET y PWM</h2>
+<p>El MOSFET de nivel lógico (IRLZ44N) se enciende con los 5 V del pin; su compuerta no consume corriente. El motor (6 V, aquí un modelo de 8 Ω de resistencia de bobina) se conecta a una <b>fuente propia</b> y al drenaje del MOSFET; la fuente de la fuente y la del Arduino comparten <b>GND</b> (tierra común), o la señal del pin no tiene referencia. Una resistencia de 10 kΩ de la compuerta a GND evita que quede flotando al arrancar (el motor no se mueve solo). Con PWM se varía la tensión media y por tanto la velocidad.</p>
+<div class="sim" data-sim="motor" data-title="Motor de corriente continua con MOSFET, PWM y potenciómetro"></div>
+<div class="sim-guide"><ul>
+<li>A plena potencia (6 V): el motor llega a unas 12 000 rpm y consume poco: \(I=(V-k_e\omega)/R_a\approx\) decenas de mA, porque al girar genera una <b>fuerza contraelectromotriz</b> que se opone a la tensión aplicada.</li>
+<li>Active «Frenar el eje con el dedo»: el motor se detiene y la corriente salta a \(6/8=0.75\) A, la <b>corriente de rotor bloqueado</b>. Un motor frenado se calienta y quema: por eso un robot atascado debe apagarse.</li>
+<li>Con el potenciómetro al 50 % (PWM 127) la velocidad baja a la mitad aproximadamente y la corriente cae.</li>
+</ul></div>
+<div class="box note"><p>El motor en marcha se comporta como una resistencia que crece con la velocidad. Al arrancar parado, la corriente es máxima (\(V/R_a\)); eso causa los parpadeos de luces cuando se arranca un motor y es la razón de poner un condensador de 100 µF cerca del motor.</p></div>
+</section>
+
+<section>
+<h2>El diodo de rueda libre</h2>
+<p>Un motor, un relé y cualquier bobina almacenan energía magnética: \(E=\tfrac12LI^2\). Al cortar la corriente de golpe con el transistor, la bobina intenta mantenerla y su tensión sube hasta lo necesario: \(V=L\,\Delta I/\Delta t\). Con \(L=100\) mH, \(\Delta I=0.1\) A y un corte de 10 µs, serían \(0.1\times0.1/10^{-5}=1000\) V: suficiente para perforar el transistor. La solución es un <b>diodo en paralelo con la bobina</b>, con el cátodo hacia el positivo: cuando el transistor corta, el diodo ofrece un camino a la corriente y la tensión se limita a unos 0.7 V por encima de la fuente. Se llama diodo de <i>rueda libre</i> (o <i>flyback</i>); un 1N4007 sirve. Los módulos de relé y los puentes H ya lo traen.</p>
+</section>
+
+<section>
+<h2>El relé</h2>
+<p>El <b>relé</b> es un interruptor mecánico accionado por un electroimán: una bobina de 5 V cierra un contacto que puede manejar corrientes y tensiones mucho mayores y que está <b>aislado eléctricamente</b> del circuito de control. Los módulos comunes de un canal traen el relé, un transistor y un diodo, y se activan con un nivel <b>bajo</b> en el pin <code class="k">IN</code> (se pone <code class="k">LOW</code> para encender). Se oye un «clic». La bobina consume unos 70 mA y por eso los módulos se alimentan de los 5 V, no de un pin.</p>
+<div class="sim" data-sim="rele" data-title="Módulo de relé controlado por el Arduino"></div>
+<div class="box safe"><p>Los contactos de un relé pueden manejar 120 V de la red, pero <b>no se conectan cargas de la red sin la supervisión de un técnico capacitado</b>. En este curso solo se usan cargas de bajo voltaje (lámparas de 6 o 12 V, ventiladores, bombas pequeñas).</p></div>
+</section>
+
+<section>
+<h2>Cambiar el sentido: el puente H</h2>
+<p>Para que un motor gire en los dos sentidos se invierte la polaridad con un <b>puente H</b>: cuatro interruptores en forma de H que se activan de dos en dos. El módulo L298N (o el más moderno TB6612) trae los dos puentes y se maneja con tres pines por motor: <code class="k">IN1</code>, <code class="k">IN2</code> (dirección) y <code class="k">ENA</code> (velocidad, PWM). Con IN1 = HIGH e IN2 = LOW gira en un sentido; al invertirlas, en el otro; con ambas iguales, el motor frena. Recuerde que el L298N «gasta» unos 2 V en sus transistores bipolares: a 6 V de entrada, el motor recibe cerca de 4 V.</p>
+<div class="tablewrap narrow"><table class="tbl"><tr><th>IN1</th><th>IN2</th><th>ENA</th><th>Motor</th></tr><tr><td>HIGH</td><td>LOW</td><td>PWM</td><td>adelante (velocidad variable)</td></tr><tr><td>LOW</td><td>HIGH</td><td>PWM</td><td>atrás</td></tr><tr><td>LOW</td><td>LOW</td><td>—</td><td>se detiene (rueda libre)</td></tr><tr><td>HIGH</td><td>HIGH</td><td>—</td><td>frena en seco</td></tr></table></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un motor de 6 V tiene una resistencia de bobina de 8 Ω. ¿Qué corriente consume con el rotor bloqueado? ¿Puede un pin de Arduino manejarlo directamente?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Corriente.</b> \(I=6/8=0.75\) A = 750 mA.</li>
+<li><b>Pin.</b> Un pin da como mucho 40 mA absolutos.</li>
+<li><b>Resultado.</b> <span class="ans">750 mA, unas 19 veces lo que soporta un pin: se necesita un transistor.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Un módulo de relé es activo en bajo. ¿Qué escribe <code class="k">digitalWrite(7, LOW)</code>?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Lógica.</b> El módulo energiza la bobina con nivel bajo en IN.</li>
+<li><b>Resultado.</b> <span class="ans">Enciende el relé (cierra el contacto).</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un motor consume 0.3 A a 6 V. Con PWM al 40 %, ¿cuál es la tensión media y cuál la corriente media aproximada (suponiendo carga resistiva)?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Tensión media.</b> \(0.40\times6=2.4\) V.</li>
+<li><b>Corriente media.</b> Carga resistiva: \(0.40\times0.3=0.12\) A.</li>
+<li><b>Resultado.</b> <span class="ans">2.4 V y 0.12 A (en un motor real la inductancia suaviza la corriente).</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>La bobina de un relé es de 70 mA y 5 V; ¿qué resistencia tiene y qué potencia consume? ¿Cuánta energía magnética guarda si \(L=0.2\) H?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Resistencia.</b> \(R=5/0.07=71.4\ \Omega\).</li>
+<li><b>Potencia.</b> \(P=5\times0.07=0.35\) W.</li>
+<li><b>Energía.</b> \(E=\tfrac12\times0.2\times0.07^2=0.49\) mJ.</li>
+<li><b>Resultado.</b> <span class="ans">71.4 Ω, 0.35 W y 0.49 mJ (sin diodo, ese pequeño almacén de energía genera un pico de cientos de voltios al cortar).</span></li></ol></details></li>
+</ol>
+</section>
+</template>

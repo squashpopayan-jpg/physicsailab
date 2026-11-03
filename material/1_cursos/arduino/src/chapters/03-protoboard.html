@@ -1,0 +1,112 @@
+<template class="chapter-src" data-id="protoboard" data-num="3" data-title="La protoboard" data-part="Parte I · Los elementos" data-short="Cómo está conectada por dentro una protoboard: columnas, mitades, canal central y rieles; cómo construir un circuito sin soldar y los errores de conexión más frecuentes">
+<p class="lead">La protoboard (o tablero de pruebas sin soldadura) es la mesa de trabajo de todo aficionado a la electrónica: permite armar y cambiar un circuito en segundos, sin soldar nada. Pero parece una cuadrícula de agujeros sin sentido hasta que se descubre lo que esconde por debajo: unas tiras metálicas que unen ciertos agujeros entre sí. Con ese mapa en la cabeza, la mitad de los errores de montaje desaparecen.</p>
+
+<section>
+<h2>Por dentro de la protoboard</h2>
+<p>Bajo cada agujero hay un pequeño clip metálico que aprieta la pata de la pieza. Los clips no están sueltos: van montados en <b>tiras</b> de metal, y todos los agujeros de una misma tira quedan unidos eléctricamente. La separación entre agujeros es de 2.54 mm (0.1 pulgadas), la misma que la de las patas de los chips y de los pines de Arduino.</p>
+<p>Una protoboard «media» de 400 puntos tiene tres zonas:</p>
+<ul>
+<li><b>Las columnas del centro.</b> Hay 30 columnas numeradas. En cada columna, los cinco agujeros de arriba (<code class="k">f g h i j</code>) están unidos entre sí, y los cinco de abajo (<code class="k">a b c d e</code>) también. Pero la mitad de arriba y la de abajo <i>no están unidas</i>: las separa el canal central.</li>
+<li><b>El canal central</b> es un surco de 7.62 mm de ancho (0.3 pulgadas) que sirve para montar circuitos integrados a horcajadas, de modo que cada pata caiga en una columna distinta.</li>
+<li><b>Los rieles de alimentación.</b> Son las dos filas largas de arriba y las dos de abajo, marcadas con rojo (+) y azul (−). Todos los agujeros de un riel están unidos entre sí en horizontal: se usan para repartir los 5 V (o 3.3 V) y la tierra a todo el circuito. <i>Atención:</i> en algunas protoboards grandes de 830 puntos el riel se interrumpe a la mitad; compruebe con el multímetro. Este simulador usa rieles continuos.</li>
+</ul>
+<p>Pase el cursor sobre cualquier agujero y vea qué otros agujeros comparten tira con él.</p>
+<div class="sim" data-sim="mapa" data-title="Mapa de conexiones de la protoboard"></div>
+<div class="sim-guide"><ul>
+<li>Señale <code class="k">e12</code>: se iluminan <code class="k">a12 b12 c12 d12</code> (los cuatro agujeros de abajo en la misma columna). El agujero <code class="k">f12</code>, justo al otro lado del canal, no se ilumina: son tiras distintas.</li>
+<li>Señale cualquier agujero del riel de arriba marcado con «+»: se ilumina todo el riel, 25 agujeros.</li>
+<li>Cuente: 30 columnas × 2 mitades × 5 agujeros = 300 puntos, más 4 rieles × 25 agujeros = 100: en total <b>400 puntos de conexión</b>, de ahí su nombre.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>La regla de oro: dos patas en la misma tira se tocan</h2>
+<p>Todo se reduce a una frase: <b>dos agujeros están conectados si pertenecen a la misma tira</b>. Dos patas de una resistencia en la misma columna quedan unidas por un alambre de metal, es decir, cortocircuitadas: la resistencia «desaparece» del circuito. Para que una pieza haga su trabajo, sus patas deben ir a columnas <i>distintas</i>. Y para unir dos columnas se usan resistencias, otras piezas o cables puente.</p>
+<div class="box note"><p>Una forma de verlo: en cada columna, la tira es un <b>nudo</b> del circuito, un punto donde confluyen varias patas. Dibuje el circuito en el esquema y cada nudo del esquema será una columna (o un riel) en la protoboard.</p></div>
+<p>Ponga a prueba su ojo. En cada pregunta se marcan dos agujeros: decida si están conectados y después compruébelo con el multímetro en modo <b>continuidad</b> (pita cuando hay un camino de baja resistencia).</p>
+<div class="sim" data-sim="conectados" data-title="¿Están conectados estos dos agujeros?"></div>
+<div class="sim-guide"><ul>
+<li>Pregunta 1 (<code class="k">e5</code> y <code class="k">a5</code>): misma columna y misma mitad: pita.</li>
+<li>Pregunta 2 (<code class="k">e5</code> y <code class="k">f5</code>): están frente a frente pero separados por el canal central: no pita.</li>
+<li>Pregunta 4 (<code class="k">T+3</code> y <code class="k">T−3</code>): riel positivo y riel negativo. Si pitaran, habría un cortocircuito; la protoboard los mantiene aislados.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Construya su primer circuito</h2>
+<p>Ahora es su turno. Una pila de 9 V ya está conectada a los rieles de arriba (rojo = +, azul = −). Su tarea: encender un LED sin quemarlo. Necesita una resistencia en serie, el LED con su pata larga (ánodo) del lado del positivo, y dos cables que lleven la energía desde los rieles hasta las columnas de sus piezas. Elija una pieza de la bandeja, toque un agujero para colocarla y arrastre sus patas (los círculos) para ajustarla. El panel le dirá qué falta.</p>
+<div class="sim" data-sim="construye" data-title="Armar un circuito con LED en la protoboard"></div>
+<div class="box pract"><h4>El mismo montaje con piezas reales</h4>
+<ol><li>Clave la pila en su clip y conecte el cable rojo al riel «+» superior y el negro al riel «−» superior.</li>
+<li>Ponga un cable puente desde el riel «+» hasta una columna de la mitad de arriba (por ejemplo la 10).</li>
+<li>Inserte una resistencia de 470 Ω entre la columna 10 y la columna 14 (patas en columnas distintas).</li>
+<li>Inserte el LED con la pata larga en la columna 14 y la corta en la 15.</li>
+<li>Ponga otro cable puente desde la columna 15 hasta el riel «−». El LED debe encender.</li></ol>
+<p class="ctrl-note">Materiales: protoboard, pila de 9 V con clip, resistencia de 330 Ω a 1 kΩ, LED, dos cables puente.</p></div>
+</section>
+
+<section>
+<h2>Los errores de montaje más comunes</h2>
+<p>Casi todos los circuitos que «no funcionan» tienen un error de conexión, y casi siempre es uno de los cuatro siguientes. Actívelos de uno en uno y use el multímetro para encontrarlos: el síntoma siempre es que el LED no enciende, pero cada causa deja una «huella» distinta en las tensiones.</p>
+<div class="sim" data-sim="errores" data-title="Fallas de montaje: encuentre el error con el multímetro"></div>
+<div class="sim-guide"><ul>
+<li><b>Sin fallas:</b> la tensión entre los rieles es 9 V; la resistencia «gasta» unos 7 V y el LED unos 2 V, y circulan 14.8 mA.</li>
+<li><b>Un cable de más, en paralelo con el LED:</b> el LED queda en cortocircuito: no enciende y su tensión es 0 V. La resistencia se queda con casi los 9 V: la corriente sube a 19.1 mA y la resistencia disipa 0.17 W; se calienta, pero aguanta.</li>
+<li><b>Un cable de más, en paralelo con la resistencia:</b> la resistencia queda anulada y el LED recibe toda la tensión: pasa casi un amperio (0.89 A), unas treinta veces lo que soporta, y se quema en un instante. Es el error más caro de todos.</li>
+<li><b>Resistencia en la otra mitad:</b> el camino se rompe en el canal central: la corriente es 0, y entre los dos extremos rotos hay 9 V. Siempre que la corriente es cero y aparece toda la tensión entre dos puntos, el error está <i>entre esos dos puntos</i>.</li>
+<li><b>Pata floja:</b> igual que el caso anterior, pero provocado por una pata que no entró del todo. Pruebe a presionar cada pieza en la vida real.</li>
+<li><b>Cable al riel equivocado:</b> los dos cables van al negativo, así que no hay diferencia de potencial. El multímetro marca 0 V entre las columnas de las piezas.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Buenas costumbres de cableado</h2>
+<ul>
+<li><b>Colores con significado:</b> rojo para el positivo, negro para tierra, y otros colores para señales. Cualquier persona que mire su montaje entenderá el circuito.</li>
+<li><b>Cables cortos y pegados a la placa.</b> Un enredo de cables largos es la causa número uno de montajes imposibles de depurar.</li>
+<li><b>Alimente primero los rieles.</b> Lleve +5 V y GND a los rieles al empezar; luego conecte cada pieza a un riel con el cable más corto.</li>
+<li><b>Alambre sólido</b> de 0.5–0.65 mm (calibre 24–22 AWG) para los puentes y para las patas: el cable multifilar no se mete bien y hace mal contacto.</li>
+<li><b>Apague antes de cambiar.</b> Desconecte la alimentación antes de mover piezas, sobre todo si hay un chip.</li>
+<li><b>Verifique con el multímetro.</b> Antes de conectar un Arduino o un ESP32, mida con el multímetro la tensión de los rieles y busque cortos entre + y −.</li>
+</ul>
+<div class="box warn"><p>La protoboard no es para altas corrientes (más de 1 A por punto se calienta y deforma los clips), ni para tensiones de la red eléctrica, ni para circuitos de alta frecuencia. Para esos casos se sueldan las conexiones sobre una placa de circuito impreso.</p></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Una protoboard completa tiene 63 columnas y rieles de 50 agujeros. ¿Cuántos puntos de conexión tiene?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Columnas.</b> 63 columnas × 10 agujeros = 630.</li>
+<li><b>Rieles.</b> 4 rieles × 50 agujeros = 200.</li>
+<li><b>Resultado.</b> <span class="ans">830 puntos, el número que aparece en la caja de las protoboards grandes.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Indique cuáles pares de agujeros están conectados: (a) c7 y e7, (b) c7 y c8, (c) g20 y d20, (d) i3 y h3, (e) el riel superior «+» en la posición 2 y en la 24.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>(a)</b> Misma columna y misma mitad (a–e): sí.</li>
+<li><b>(b)</b> Columnas distintas: no.</li>
+<li><b>(c)</b> Columna 20, pero g está en la mitad superior y d en la inferior: no.</li>
+<li><b>(d)</b> Misma columna y misma mitad (f–j): sí.</li>
+<li><b>(e)</b> El mismo riel: sí (si el riel no está partido).</li>
+<li><b>Resultado.</b> <span class="ans">Conectados: (a), (d) y (e). No conectados: (b) y (c).</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un circuito integrado de 8 patas (DIP-8) se pone sobre el canal central con la pata 1 en la columna 10 (fila e). ¿En qué columnas quedan las demás patas y por qué no se cortocircuitan?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Geometría.</b> Un DIP-8 tiene 4 patas por lado, con separación de 2.54 mm y 7.62 mm entre las dos filas.</li>
+<li><b>Lado de la pata 1.</b> Las patas 1 a 4 quedan en la fila e, columnas 10, 11, 12 y 13.</li>
+<li><b>Lado opuesto.</b> Las patas 8 a 5 quedan frente a ellas, en la fila f, columnas 10 a 13.</li>
+<li><b>Aislamiento.</b> Cada pata cae en una tira distinta de su columna: la pata 1 (e10) y la 8 (f10) están en la misma columna, pero en mitades distintas separadas por el canal.</li>
+<li><b>Resultado.</b> <span class="ans">Las patas ocupan las columnas 10 a 13 en ambas filas, y no se tocan porque el canal central separa las dos mitades de cada columna.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Con la pila de 9 V conectada, el multímetro marca 9 V entre las dos patas de una resistencia y 0 mA de corriente en el circuito. ¿Qué indica? ¿Dónde está la falla?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Dato.</b> Sin corriente no hay caída de tensión en la resistencia (\(V=IR=0\)). Si aun así se miden 9 V, esa tensión no puede estar «sobre» una resistencia conduciendo.</li>
+<li><b>Interpretación.</b> Entre los puntos medidos hay una interrupción: toda la tensión de la pila cae en el hueco abierto, porque no circula corriente por el resto.</li>
+<li><b>Búsqueda.</b> Mueva las puntas hacia un lado y otro del hueco: la lectura baja a 0 V cuando ambas puntas quedan del mismo lado.</li>
+<li><b>Resultado.</b> <span class="ans">Hay un circuito abierto (pata floja, cable suelto o pieza en la mitad equivocada) justo entre los puntos que marcan 9 V.</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>Una resistencia de 470 Ω y un LED rojo se alimentan con 9 V. Por descuido se pone un cable en paralelo con el LED, que queda cortocircuitado. ¿Qué corriente circula y qué potencia disipa la resistencia? ¿Corre peligro?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Circuito.</b> Con el LED en cortocircuito por el cable, la resistencia queda sola entre 9 V y 0 V.</li>
+<li><b>Corriente.</b> \(I=9/470=0.01915\) A = 19.1 mA.</li>
+<li><b>Potencia.</b> \(P=V^2/R=81/470=0.172\) W, el 69 % de ¼ W.</li>
+<li><b>Resultado.</b> <span class="ans">19.1 mA y 0.17 W: la resistencia se calienta pero aguanta; el LED simplemente no enciende. Si la resistencia fuera de 100 Ω la potencia sería 0.81 W y sí se quemaría.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

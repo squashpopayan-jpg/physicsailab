@@ -1,0 +1,69 @@
+<template class="chapter-src" data-id="tiempo" data-num="15" data-title="Tiempo sin bloqueo: millis y máquinas de estados" data-part="Parte II · Arduino y ESP32" data-short="Por qué delay detiene todo el programa; medir el tiempo con millis para hacer varias cosas a la vez, el desbordamiento de unsigned long y el diseño de un semáforo peatonal como máquina de estados">
+<p class="lead">La instrucción <code class="k">delay()</code> es cómoda pero tiene un defecto grave: mientras espera, la placa <b>no hace nada más</b>. No lee el pulsador, no atiende el sensor, no parpadea otro LED. Un programa de verdad tiene que hacer varias cosas «a la vez». La solución es preguntarle al reloj de la placa cuánto tiempo ha pasado y decidir qué hacer en cada vuelta del <code class="k">loop</code>, sin esperar: la función <code class="k">millis()</code>.</p>
+
+<section>
+<h2>millis(): el cronómetro de la placa</h2>
+<p><code class="k">millis()</code> devuelve cuántos milisegundos han pasado desde que la placa arrancó (un <code class="k">unsigned long</code>). Para actuar cada cierto intervalo se guarda el instante de la última vez y se compara:</p>
+<pre class="code">unsigned long ultimo = 0;
+const unsigned long INTERVALO = 500;
+
+void loop() {
+  unsigned long ahora = millis();
+  if (ahora - ultimo >= INTERVALO) {   // ¿ya pasaron 500 ms?
+    ultimo = ahora;
+    // ... hacer algo (por ejemplo, invertir un LED)
+  }
+  // el loop sigue libre para hacer otras cosas
+}</pre>
+<p>La resta <code class="k">ahora - ultimo</code> funciona <b>incluso cuando el contador desborda</b> (a los 49.7 días: \(2^{32}\) ms): como las dos variables son <code class="k">unsigned long</code>, la aritmética «da la vuelta» y la diferencia sigue siendo correcta. En cambio, comparar <code class="k">ahora &gt;= ultimo + INTERVALO</code> falla en el desbordamiento. Siempre use la resta.</p>
+</section>
+
+<section>
+<h2>Dos LED y un pulsador, sin que se estorben</h2>
+<p>Un LED parpadea cada 500 ms, otro cada 130 ms y un pulsador enciende un tercero mientras se pulsa. Con <code class="k">delay</code>, el pulsador responde con retraso (solo se mira una vez por vuelta, después de esperar) y los dos parpadeos no pueden tener ritmos independientes. Con <code class="k">millis</code>, todo funciona a la vez. Cambie de programa y pulse el botón (clic sostenido) en cada caso.</p>
+<div class="sim" data-sim="millis" data-title="Hacer tres cosas a la vez: delay contra millis"></div>
+<div class="sim-guide"><ul>
+<li><b>Con delay:</b> el pulsador solo se atiende al final de cada ciclo de 1 s; si lo pulsa y suelta entre dos lecturas, ¡la placa ni se entera!</li>
+<li><b>Con millis:</b> el lazo da miles de vueltas por segundo; el pulsador responde casi al instante y los dos LED mantienen sus ritmos (130 ms y 500 ms) sin molestarse.</li>
+<li>El truco: cada tarea tiene su propia variable «último instante» y solo actúa cuando le toca.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Máquinas de estados: semáforo con pulsador peatonal</h2>
+<p>Cuando un proyecto tiene fases (como un semáforo), lo más claro es una <b>máquina de estados</b>: una variable guarda el estado actual y un <code class="k">switch</code> decide qué hacer en cada uno y cuándo pasar al siguiente. Aquí: el semáforo está en verde para los carros (mínimo 6 s); si un peatón pulsa, pasa a amarillo (2 s), luego a rojo (5 s) y vuelve a verde. Todo con <code class="k">millis</code>, así el pulsador se atiende siempre.</p>
+<div class="sim" data-sim="estados" data-title="Semáforo con pulsador de peatones"></div>
+<div class="sim-guide"><ul>
+<li>Si pulsa antes de que pasen los 6 s mínimos, el semáforo recuerda la petición y cambia apenas se cumple el tiempo.</li>
+<li>Cada estado tiene tres cosas: qué LED encender, cuánto durar y a qué estado ir después. Para añadir una fase solo se agrega un caso.</li>
+<li>Ventaja frente a los <code class="k">delay</code>: el pulsador y el resto del programa siguen funcionando durante cualquier fase.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Cuántos días pasan antes de que <code class="k">millis()</code> desborde?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Máximo.</b> \(2^{32}=4\,294\,967\,296\) ms.</li>
+<li><b>Días.</b> \(4\,294\,967\,296/(1000\times86400)=49.7\).</li>
+<li><b>Resultado.</b> <span class="ans">49.7 días.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Un LED debe parpadear cada 250 ms (apagado y encendido alternados). ¿Qué valor de <code class="k">INTERVALO</code> se usa y cuál es su frecuencia?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Intervalo.</b> Se invierte el estado cada 250 ms.</li>
+<li><b>Periodo.</b> Dos cambios por ciclo: 500 ms.</li>
+<li><b>Frecuencia.</b> 2 Hz.</li>
+<li><b>Resultado.</b> <span class="ans"><code class="k">INTERVALO = 250</code>, frecuencia de 2 Hz.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Si <code class="k">ultimo = 4294967000</code> y <code class="k">ahora = 200</code> (tras el desbordamiento), ¿cuánto vale <code class="k">ahora - ultimo</code> con <code class="k">unsigned long</code>?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Resta.</b> \(200-4\,294\,967\,000=-4\,294\,966\,800\).</li>
+<li><b>Módulo \(2^{32}\).</b> \(-4\,294\,966\,800+4\,294\,967\,296=496\).</li>
+<li><b>Resultado.</b> <span class="ans">496 ms: justo los que pasaron (296 ms hasta el desbordamiento y 200 después).</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>Un programa con <code class="k">delay(1000)</code> lee un pulsador una vez por segundo. Si una persona pulsa durante 150 ms en un instante aleatorio, ¿con qué probabilidad el programa detecta la pulsación?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Ventana.</b> La lectura ocurre cada 1000 ms; la pulsación dura 150 ms.</li>
+<li><b>Probabilidad.</b> La lectura cae dentro de la pulsación si esta empieza en los 150 ms anteriores: \(150/1000=15\ \%\).</li>
+<li><b>Resultado.</b> <span class="ans">15 %: se pierde el 85 % de las pulsaciones.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

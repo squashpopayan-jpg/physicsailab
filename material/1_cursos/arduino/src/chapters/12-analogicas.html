@@ -1,0 +1,76 @@
+<template class="chapter-src" data-id="analogicas" data-num="12" data-title="Entradas analógicas: el convertidor y los sensores" data-part="Parte II · Arduino y ESP32" data-short="El convertidor analógico-digital de 10 y 12 bits, analogRead, convertir lecturas en voltios, map y constrain, el potenciómetro y el divisor con LDR, y las particularidades del ADC del ESP32">
+<p class="lead">El mundo real no es de unos y ceros: la luz, la temperatura y el giro de una perilla varían de forma continua. Un pin analógico mide una tensión entre 0 y la de referencia y la entrega como un número. El <b>convertidor analógico-digital</b> (ADC) del UNO usa 10 bits: devuelve un entero de 0 a 1023. El del ESP32 usa 12 bits: de 0 a 4095. Con una resistencia que cambia (potenciómetro, LDR, termistor) y un divisor de tensión se convierte cualquier magnitud en un número.</p>
+
+<section>
+<h2>Del voltaje al número</h2>
+<p>Un ADC de \(n\) bits divide el rango de entrada en \(2^n\) escalones. En el UNO, con 5 V de referencia, cada escalón vale \(5/1024=4.88\) mV. La lectura es \(\text{lectura}\approx V_{in}/V_{ref}\times1023\), y para volver a voltios:</p>
+<div class="eq key" data-name="Conversión de la lectura a voltios">\[V=\text{lectura}\times\frac{V_{ref}}{1023}\qquad(\text{UNO: }V_{ref}=5\text{ V};\ \text{ESP32: }V_{ref}\approx3.3\text{ V},\ \text{lectura máx. }4095)\]</div>
+<p>Dos detalles: se escribe <code class="k">5.0</code> (con decimal) y no <code class="k">5</code> para que la división sea con decimales (con enteros, <code class="k">lectura * 5 / 1023</code> daría el entero truncado); y en el UNO <code class="k">lectura * 5</code> con <code class="k">int</code> de 16 bits puede desbordarse si el factor es grande (1023 × 100 = 102300 no cabe).</p>
+</section>
+
+<section>
+<h2>El potenciómetro: la perilla analógica</h2>
+<p>Un potenciómetro de 10 kΩ con los extremos a 5 V y GND y el cursor a <code class="k">A0</code> forma un divisor de tensión que va de 0 a 5 V al girarlo. Mueva el cursor con el deslizador (o arrastre la perilla) y compare el voltaje calculado con el medido.</p>
+<div class="sim" data-sim="pot" data-title="Leer un potenciómetro con analogRead"></div>
+<div class="sim-guide"><ul>
+<li>Con la perilla a la mitad (50 %): tensión 2.5 V y lectura de 512 (± 1 por el ruido).</li>
+<li>Al 25 %: 1.25 V y lectura de 256. Al 100 %: 5 V y lectura de 1023; al 0 %: 0 V y 0.</li>
+<li>La lectura oscila ±1 entre medidas: el ruido eléctrico real. Para estabilizarla se promedian varias lecturas.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>map y constrain: cambiar de escala</h2>
+<p>Casi nunca interesa el número crudo, sino otra magnitud: un brillo (0–255), un ángulo (0–180), un porcentaje. <code class="k">map(x, in_min, in_max, out_min, out_max)</code> cambia de escala linealmente: <code class="k">map(lectura, 0, 1023, 0, 255)</code> lleva 512 a 127. <code class="k">map</code> trabaja con enteros (trunca) y <b>no limita</b> la salida: si la entrada se sale del rango, también la salida. <code class="k">constrain(x, a, b)</code> la fuerza a quedarse entre a y b. Un indicador de barras con cinco LED usa <code class="k">map(lectura, 0, 1023, 0, 5)</code> para saber cuántos encender.</p>
+<div class="sim" data-sim="barra" data-title="Medidor de barras con cinco LED"></div>
+<div class="sim-guide"><ul>
+<li>Con el cursor al 50 %: <code class="k">map(512, 0, 1023, 0, 5)</code> es 2, y se encienden dos LED. Al máximo (1023) se enciende la barra completa porque se llega a 5.</li>
+<li>Cambie el 5 por 6 y vea que el último escalón requiere el tope exacto: <code class="k">map</code> reparte el rango en partes iguales, pero la lectura 1023 es la única que llega al valor máximo.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Sensores resistivos: el divisor con LDR o termistor</h2>
+<p>Una LDR (o un NTC) cambia su resistencia. Con una resistencia fija forma un divisor y la tensión en <code class="k">A0</code> cambia con la luz o la temperatura (lámpara automática del capítulo 2). Elija la resistencia fija parecida al valor del sensor en el punto medio de interés: así se aprovecha todo el rango del ADC. Para convertir la lectura de un NTC a grados se despeja su resistencia y se usa la ecuación β (capítulo 16).</p>
+</section>
+
+<section>
+<h2>Lo particular del ADC del ESP32</h2>
+<ul>
+<li><b>12 bits</b> (0–4095), pero <b>no es lineal</b> cerca de los extremos: por debajo de unos 0.1 V lee 0 y por encima de unos 3.1 V se satura en 4095 (con la atenuación de 11 dB por defecto). Para medidas exactas se calibra o se evita el 5 % de cada extremo.</li>
+<li>Es más <b>ruidoso</b>: la lectura fluctúa unas decenas de cuentas. Se promedian 16 o 32 lecturas.</li>
+<li>La entrada máxima es 3.3 V: ¡nunca 5 V!</li>
+<li>Con el <b>WiFi</b> activo, los pines del ADC2 (GPIO 0, 2, 4, 12–15, 25–27) no funcionan: use el ADC1 (GPIO 32–39).</li>
+</ul>
+<div class="sim" data-sim="espadc" data-title="Leer un potenciómetro con un ESP32 (ADC de 12 bits)"></div>
+<div class="sim-guide"><ul>
+<li>Con 50 % el pin tiene 1.65 V y la lectura sale cerca de 2155 (≈ 1.74 V con la fórmula nominal, 5 % de más): la escala efectiva del ADC llega a unos 3.1 V y no a 3.3 V, y el ruido hace oscilar el valor unas unidades.</li>
+<li>Pruebe el promedio de 16 lecturas: el valor se estabiliza y el ruido baja unas 4 veces (√16).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un UNO lee 768 en A0. ¿Cuántos voltios hay en el pin?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Fórmula.</b> \(V=768\times5/1023=3.754\) V.</li>
+<li><b>Resultado.</b> <span class="ans">3.75 V.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>¿Qué devuelve <code class="k">map(300, 0, 1023, 0, 180)</code>?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Cálculo.</b> \((300-0)(180-0)/(1023-0)+0=54000/1023=52.8\).</li>
+<li><b>Truncamiento.</b> Con enteros se trunca: 52.</li>
+<li><b>Resultado.</b> <span class="ans">52 (grados).</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un ESP32 lee 3000 en un pin de ADC1. Estime la tensión con \(V=\text{lectura}\times3.3/4095\) y explique por qué la medida real puede diferir.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Cálculo.</b> \(3000\times3.3/4095=2.418\) V.</li>
+<li><b>Diferencia.</b> El ADC no es lineal y su escala efectiva llega a unos 3.1 V, no a 3.3 V; el valor medido con multímetro puede diferir unas decenas de milivoltios.</li>
+<li><b>Resultado.</b> <span class="ans">≈ 2.42 V nominales; el multímetro permite calibrarlo.</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>Una LDR de 20 kΩ a 10 lux está en serie con 10 kΩ (a GND) y 5 V. ¿Qué lectura da un UNO a 10 lux y a 100 lux (LDR ≈ 4 kΩ)?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>A 10 lux.</b> \(V=5\times10/(10+20)=1.667\) V → lectura \(\lfloor1.667/5\times1024\rfloor=341\).</li>
+<li><b>A 100 lux.</b> \(V=5\times10/(10+4)=3.571\) V → \(\lfloor3.571/5\times1024\rfloor=731\).</li>
+<li><b>Resultado.</b> <span class="ans">341 a 10 lux y 731 a 100 lux: más luz, mayor lectura.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

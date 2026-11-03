@@ -1,0 +1,93 @@
+<template class="chapter-src" data-id="componentes" data-num="2" data-title="Conociendo los componentes" data-part="Parte I · Los elementos" data-short="Un recorrido por las piezas de un kit de electrónica: resistencias, potenciómetros, LDR, termistores, condensadores, diodos, LED, transistores, pulsadores, zumbadores, motores, servos y módulos; cómo leer los símbolos de un esquema">
+<p class="lead">Un kit de electrónica parece un montón de piezas misteriosas, pero casi todas hacen una de tres cosas: <b>limitar</b> la corriente, <b>sentir</b> algo del mundo (luz, calor, distancia, un toque) o <b>actuar</b> (encender una luz, sonar, mover algo). En este capítulo se conoce cada pieza por su aspecto real, por su símbolo en los esquemas y por lo que nunca debe hacerse con ella.</p>
+
+<section>
+<h2>Un catálogo para tocar</h2>
+<p>Elija una pieza de la lista. Verá cómo luce puesta en una protoboard, su símbolo, a qué sirve y qué datos importantes debe recordar. Algunas se pueden mover: gire el potenciómetro arrastrándolo, pulse el botón, o cambie la luz de la fotorresistencia con el deslizador.</p>
+<div class="sim" data-sim="catalogo" data-title="Catálogo de componentes"></div>
+</section>
+
+<section>
+<h2>Las piezas que limitan y miden: resistencias y compañeras</h2>
+<p>La <b>resistencia</b> es la pieza más sencilla y la más usada. No tiene polaridad (se puede conectar de cualquier lado), y su valor se lee por colores (capítulo 1). Sirve para limitar corriente, para fijar niveles de voltaje y para repartirlo.</p>
+<p>El <b>potenciómetro</b> es una resistencia con perilla. Tiene tres terminales: los dos extremos (A y B) tienen entre sí una resistencia fija (por ejemplo, 10 kΩ) y el terminal central, el <i>cursor</i>, se desplaza sobre la pista y toma una fracción de la tensión. Al girar la perilla se obtiene una tensión que va de 0 al máximo: es la forma más fácil de entregarle a un Arduino un valor «analógico».</p>
+<p>La <b>fotorresistencia o LDR</b> baja su resistencia cuando le llega luz: unos 10–20 kΩ con luz tenue (10 lux) y más de 1 MΩ en completa oscuridad, para una LDR típica de 5 mm. El <b>termistor NTC</b> baja su resistencia cuando sube la temperatura: uno de 10 kΩ a 25 °C vale unos 33.6 kΩ a 0 °C y 3.6 kΩ a 50 °C. Ambos se usan siempre junto a otra resistencia fija formando un <i>divisor de tensión</i> (capítulo 5) que convierte el cambio de resistencia en un cambio de voltaje que el Arduino sí puede leer.</p>
+<p>El <b>condensador</b> almacena carga eléctrica como un pequeño depósito. El cerámico (por ejemplo, el «104», de 100 nF) no tiene polaridad y se pone cerca de los chips para filtrar el ruido. El <b>electrolítico</b> sí tiene polaridad: la franja marca el negativo y su pata es la corta. Conectado al revés, o con más voltaje del marcado en su cuerpo, se calienta y puede estallar: es la pieza más peligrosa de este kit.</p>
+</section>
+
+<section>
+<h2>Semiconductores: diodos, LED y transistores</h2>
+<p>El <b>diodo</b> deja pasar la corriente en un solo sentido (del ánodo al cátodo; la franja del cuerpo marca el cátodo) y para ello «gasta» unos 0.7 V. Se usa para proteger circuitos de polaridad invertida y para absorber picos de voltaje de bobinas y motores. El <b>LED</b> es un diodo que además emite luz: según el color cae entre 1.8 V (rojo, amarillo, verde) y 3.3 V (azul, blanco), se alimenta con unos 10–20 mA y <i>siempre</i> lleva una resistencia en serie. La pata larga es el ánodo (+).</p>
+<p>El <b>transistor</b> es un interruptor electrónico: una corriente pequeña en un terminal (la base del bipolar, la compuerta del MOSFET) controla una corriente grande entre los otros dos. Gracias a él un pin del Arduino, que da apenas 20 mA, puede encender un motor o una tira de LED. Cuidado con las patas: en el BC547 el orden (con la cara plana hacia usted) es colector–base–emisor, mientras que en el 2N2222 es emisor–base–colector. <b>Revise siempre la hoja de datos de su pieza.</b></p>
+<div class="box warn"><p>Las dos averías más frecuentes entre estudiantes son un LED sin resistencia (se quema o daña el pin) y un condensador electrolítico al revés. Ambas se provocan y se observan, sin riesgo, en el capítulo 6.</p></div>
+</section>
+
+<section>
+<h2>Piezas de entrada y de salida</h2>
+<p>El <b>pulsador</b> de cuatro patas tiene las patas unidas de dos en dos por dentro; al presionarlo se unen los dos pares y la corriente pasa. Si se pone girado 90° en la protoboard queda siempre cerrado o siempre abierto: un error clásico que el multímetro (en continuidad) descubre en segundos. El <b>interruptor deslizante</b> hace lo mismo pero mantiene su posición.</p>
+<p>El <b>zumbador activo</b> trae un oscilador dentro y suena con un tono fijo (hacia 2.7 kHz) apenas se le da 3–5 V. El <b>pasivo (piezo)</b> es solo un transductor: hay que enviarle una señal con la frecuencia deseada y así produce notas. El <b>motor de corriente continua</b> gira al recibir corriente, invierte el giro si se invierte la polaridad y, sobre todo, consume cientos de miliamperios al arrancar: nunca va conectado directamente a un pin del Arduino. El <b>servomotor</b> (SG90) gira hasta un ángulo entre 0° y 180° según el ancho de un pulso que recibe en su cable naranja; tiene tres cables: marrón (GND), rojo (5 V) y naranja (señal).</p>
+</section>
+
+<section>
+<h2>Módulos y placas</h2>
+<p>Muchas piezas llegan ya montadas en una pequeña tarjeta con sus resistencias y condensadores: son los <b>módulos</b>. El sensor de distancia <b>HC-SR04</b> (ultrasonido), el sensor de temperatura y humedad <b>DHT11</b>, el detector de movimiento <b>PIR</b>, la pantalla <b>LCD 16×2 con I²C</b> y el acelerómetro <b>MPU-6050</b> se conectan con tres o cuatro cables y una biblioteca de programación. Los módulos hay que alimentarlos con la tensión correcta: los de 5 V no deben recibir menos de lo que indica su hoja de datos para funcionar, y muchos de 3.3 V (radios, RFID) se dañan con 5 V.</p>
+<p>En cuanto a las <b>placas</b>, el curso usa dos: el <b>Arduino UNO</b> (5 V) y la <b>ESP32</b> (3.3 V, con WiFi y Bluetooth). Se estudian en la Parte II.</p>
+</section>
+
+<section>
+<h2>Leer un esquema</h2>
+<p>Los planos de los circuitos no dibujan las piezas con su aspecto, sino con <b>símbolos</b> universales. Un esquema es como un mapa de metro: no importa dónde queda cada pieza en la protoboard, sino cómo se unen. Aprender los símbolos es aprender a leer cualquier circuito del mundo.</p>
+<div class="sim" data-sim="simbolos" data-title="Los símbolos de un esquema"></div>
+<p>Los cables se dibujan como líneas; un punto grueso indica una unión de cables; el símbolo de tierra (varias rayas decrecientes) marca el punto de referencia, el 0 V al que se conectan los negativos.</p>
+</section>
+
+<section>
+<h2>¿Reconoce las piezas?</h2>
+<p>Practique con una pieza al azar. Mírela con cuidado: ¿cuántas patas tiene?, ¿tiene franja?, ¿qué forma tiene el cuerpo? Después elija su nombre.</p>
+<div class="sim" data-sim="identifica" data-title="Reto: ¿qué pieza es?"></div>
+</section>
+
+<section>
+<h2>Del dibujo al esquema: una lámpara que se enciende sola</h2>
+<p>Para terminar, un circuito completo con varias piezas del catálogo: una fotorresistencia y una resistencia de 10 kΩ forman un divisor de tensión que lee el Arduino; un LED con su resistencia de 220 Ω brilla más cuando hay menos luz. No se preocupe aún por el programa: en las partes II y III lo entenderá línea por línea. Alterne entre <i>Protoboard</i> y <i>Esquema</i> y observe que es <b>el mismo circuito</b> dibujado de dos maneras.</p>
+<div class="sim" data-sim="lampara" data-title="Lámpara automática: fotorresistencia, resistencias y LED"></div>
+<div class="sim-guide"><ul>
+<li>Con 300 lux (una habitación iluminada) la LDR vale unos 1.85 kΩ, la tensión en A0 es 4.22 V (lectura 864) y el LED brilla poco, con un valor PWM de 40 sobre 255.</li>
+<li>Baje la luz a 1 lux (casi oscuridad): la LDR sube a unos 100 kΩ, A0 baja a 0.45 V (lectura 92) y el LED se enciende casi al máximo (valor PWM 233).</li>
+<li>Pase a la vista <i>Esquema</i> y vea cómo la LDR queda arriba y la resistencia de 10 kΩ abajo; el punto entre ambas va al pin A0.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un LED tiene la pata larga conectada al negativo de la fuente y la corta al positivo. ¿Encenderá? ¿Cuál es el ánodo?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Planteamiento.</b> El ánodo es la pata larga; la corriente solo circula del ánodo al cátodo.</li>
+<li><b>Análisis.</b> Aquí el ánodo (larga) está en el negativo y el cátodo (corta) en el positivo: el LED queda en inverso.</li>
+<li><b>Resultado.</b> <span class="ans">No enciende (bloquea la corriente); el ánodo es la pata larga y debe ir hacia el positivo.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Un condensador cerámico está marcado «104». ¿Cuál es su capacidad?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Código.</b> Las dos primeras cifras son «10» y la tercera es el número de ceros: 4.</li>
+<li><b>Cálculo.</b> 10 y cuatro ceros = 100 000 pF = 100 nF = 0.1 µF.</li>
+<li><b>Resultado.</b> <span class="ans">100 nF (0.1 µF).</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un termistor NTC de 10 kΩ a 25 °C tiene β = 3950 K. Calcule su resistencia a 50 °C con \(R=R_{25}\,e^{\beta(1/T-1/T_{25})}\), con temperaturas en kelvin.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Temperaturas.</b> \(T=50+273.15=323.15\) K y \(T_{25}=298.15\) K.</li>
+<li><b>Exponente.</b> \(\beta(1/T-1/T_{25})=3950\,(0.0030945-0.0033540)=-1.0249\).</li>
+<li><b>Resistencia.</b> \(R=10000\,e^{-1.0249}=3.59\) kΩ.</li>
+<li><b>Resultado.</b> <span class="ans">3.59 kΩ: al calentarse 25 °C la resistencia cae a casi un tercio.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>En el circuito de la lámpara automática, ¿qué valor tendría la tensión en A0 si la LDR valiera 10 kΩ? ¿Y qué lectura daría el convertidor de 10 bits de un UNO (referencia 5 V)?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Divisor.</b> LDR y resistencia fija (10 kΩ) en serie desde 5 V: \(V_{A0}=5\cdot\dfrac{10}{10+10}=2.5\) V.</li>
+<li><b>Lectura.</b> \(2.5/5\times1024=512\).</li>
+<li><b>Resultado.</b> <span class="ans">2.5 V y una lectura de 512, justo a la mitad de la escala.</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>Un pulsador de cuatro patas ya montado en la protoboard hace que el LED esté siempre encendido, sin pulsar. Con el multímetro en continuidad, las dos filas que el pulsador debía separar pitan entre sí. ¿Qué pasó y cómo se corrige?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Interpretación.</b> Las patas del mismo lado están unidas por dentro. Si el pulsador está girado 90°, esas patas unidas quedan una a cada lado del canal central y conectan las dos filas permanentemente.</li>
+<li><b>Prueba.</b> Con continuidad, el pitido sin pulsar entre las dos filas lo confirma: el contacto está «puenteado» por dentro.</li>
+<li><b>Corrección.</b> Girar el pulsador 90° para que cruce el canal con cada par interno en un lado distinto, y volver a probar: solo debe pitar mientras se presiona.</li>
+<li><b>Resultado.</b> <span class="ans">El pulsador estaba girado y siempre cerrado; se gira 90° y se verifica con continuidad.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

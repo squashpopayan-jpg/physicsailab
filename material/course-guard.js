@@ -56,6 +56,7 @@
         "fisicoquimica": ["FISICOQUIMICA-2026", "FQ-UNICAUCA-26", "OBANDO-FQ-26", "FQ-5XKP-26"],
         "mcuantica": ["MCUANTICA-2026", "DIRAC-QM-26", "OBANDO-QM-26", "MCQ-7821-26"],
         "moderna": ["MODERNA-2026", "RELATIVIDAD-26", "OBANDO-MOD-26", "MOD-9341-26"],
+        "arduino": ["ARDUINO-2026", "CIRCUITOS-VIVOS-26", "OBANDO-ARD-26", "ARD-7291-26"],
         "kids": ["KIDS-2026", "FISICA-KIDS-26", "EXPLORADORES-26", "OBANDO-KIDS-26"],
         "historia": ["HISTORIA-2026", "CIENCIA-HIST-26", "OBANDO-HISTORIA-26", "SABER-2026", "BIENVENIDA-2026"]
     };
@@ -69,6 +70,7 @@
             if (raw === 'squash' || raw === 'squash-sim') return 'squash_sim';
             if (raw === 'hbn-mc' || raw === 'hbn_mc') return 'hbn_mc';
             if (raw === 'moderna') return 'moderna';
+            if (raw === 'arduino') return 'arduino';
             if (raw === 'fisicoquimica') return 'fisicoquimica';
             if (raw === 'mcuantica') return 'mcuantica';
             if (raw === 'kids') return 'kids';
@@ -102,6 +104,7 @@
         if (p.includes('/ml/')) return 'ml';
         if (p.includes('/neuro/')) return 'neuro';
         if (p.includes('moderna')) return 'moderna';
+        if (p.includes('arduino') || p.includes('circuitos-vivos')) return 'arduino';
         if (p.includes('fisicoquimica')) return 'fisicoquimica';
         if (p.includes('mcuantica')) return 'mcuantica';
         if (p.includes('kids')) return 'kids';
@@ -132,6 +135,7 @@
         if (t.includes('english') || t.includes('inglés')) return 'ingles';
         if (t.includes('recorrido')) return 'recorrido';
         if (t.includes('moderna') || t.includes('relatividad')) return 'moderna';
+        if (t.includes('arduino') || t.includes('circuitos vivos')) return 'arduino';
         if (t.includes('fisicoquímica') || t.includes('fisicoquimica')) return 'fisicoquimica';
 
         return 'general';

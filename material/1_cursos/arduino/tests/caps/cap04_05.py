@@ -1,0 +1,31 @@
+# -*- coding: utf-8 -*-
+"""Cifras de los capítulos 4–5 (problemas)."""
+# ---------- 4 ----------
+chk(4, 'P1: corriente en serie (mA)', 5.5/5500*1000, '1.0')
+chk(4, 'P1: V1 (V)', 1.0*2.2, '2.2')
+chk(4, 'P1: V2 (V)', 1.0*3.3, '3.3')
+rp = 1*10/(1+10)
+chk(4, 'P3: 1 MΩ ∥ 10 MΩ (MΩ)', rp, '0.909')
+chk(4, 'P3: tensión medida (V)', 10*rp/(rp+1), '4.76')
+chk(4, 'P3: error relativo (%)', (5-10*rp/(rp+1))/5*100, '4.8', tol=0.05)
+chk(4, 'P5: resistencia total (Ω)', 9/9 and 1.7+1.0, '2.7')
+chk(4, 'P5: corriente (A)', 9/2.7, '3.33')
+chk(4, 'P5: potencia en el multímetro (W)', (9/2.7)**2*1, '11.1')
+chk(4, 'P5: veces el límite del fusible', (9/2.7)/0.2, '16.7')
+# ---------- 5 ----------
+chk(5, 'P1: serie (Ω)', 220+330+470, '1020')
+g = 1/220+1/330+1/470
+chk(5, 'P1: 1/220', 1/220, '0.004545')
+chk(5, 'P1: 1/330', 1/330, '0.003030')
+chk(5, 'P1: 1/470', 1/470, '0.002128')
+chk(5, 'P1: suma de conductancias (S)', g, '0.009703')
+chk(5, 'P1: paralelo (Ω)', 1/g, '103.1')
+chk(5, 'P2: divisor 4.7k/10k (V)', 5*10/14.7, '3.401')
+chk(5, 'P3: salida del divisor 1k/2.2k (V)', 5*2.2/3.2, '3.4375')
+chk(5, 'P3: error absoluto (V)', 5*2.2/3.2-3.3, '0.1375')
+chk(5, 'P3: error relativo (%)', (5*2.2/3.2-3.3)/3.3*100, '4.2')
+chk(5, 'P4: I1 (mA)', 30*300/400, '22.5')
+chk(5, 'P4: I2 (mA)', 30*100/400, '7.5')
+chk(5, 'P4: tensión común (V)', 22.5e-3*100, '2.25')
+chk(5, 'P5: corriente con dos LED (mA)', (5-2*1.95)/100*1000, '11')
+chk(5, 'P5: suma de caídas con tres LED (V)', 3*1.95, '5.85')

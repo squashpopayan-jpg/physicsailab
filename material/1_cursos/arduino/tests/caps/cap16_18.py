@@ -1,0 +1,35 @@
+# -*- coding: utf-8 -*-
+"""Cifras de los capítulos 16–18 (problemas)."""
+ntc = lambda Tc, R25=10e3, b=3950: R25*math.exp(b*(1/(Tc+273.15)-1/298.15))
+# ---------- 16 ----------
+chk(16, 'P1: temperatura del LM35 (°C)', 0.312*100, '31.2')
+chk(16, 'P1: lectura del UNO (sin truncar)', 0.312/5*1024, '63.9')
+chk(16, 'P1: temperatura que corresponde a la lectura 63', 63*5/1024*100, '30.8')
+chk(16, 'P2: escalón del ADC del ESP32 (mV)', 3300/4096, '0.806')
+chk(16, 'P2: resolución en °C', 3300/4096/10, '0.081')
+x = 1/298.15 + math.log(6.8/10)/3950
+chk(16, 'P3: ln(6.8/10)', math.log(0.68), '-0.3857')
+chk(16, 'P3: suma 1/T', x, '0.0032564')
+chk(16, 'P3: temperatura (K)', 1/x, '307.1')
+chk(16, 'P3: temperatura (°C)', 1/x-273.15, '33.94')
+chk(16, 'P4: NTC a 50 °C (kΩ)', ntc(50)/1e3, '3.588', tol=1e-3)
+chk(16, 'P4: tensión a 50 °C (V)', 5*10e3/(10e3+ntc(50)), '3.680')
+chk(16, 'P4: lectura a 50 °C', int(5*10e3/(10e3+ntc(50))/5*1024), '753')
+chk(16, 'P4: NTC a 0 °C (kΩ)', ntc(0)/1e3, '33.62', tol=1e-3)
+chk(16, 'P4: tensión a 0 °C (V)', 5*10/43.62, '1.146', tol=1e-3)
+chk(16, 'P4: lectura a 0 °C', int(5*10e3/(10e3+ntc(0))/5*1024), '234')
+# ---------- 17 ----------
+chk(17, 'P1: distancia con 2915 µs (cm)', 2915*0.0343/2, '49.99')
+chk(17, 'P2: tiempo a 3 m (ms)', 6/343*1000, '17.5')
+chk(17, 'P3: v a 35 °C', 331.3+0.606*35, '352.5')
+chk(17, 'P3: error relativo (%)', (343.4-352.5)/352.5*100, '-2.6')
+chk(17, 'P4: avance por medida (cm)', 0.5*0.1*100, '5')
+chk(17, 'P4: distancia de frenado (cm)', 0.5*0.4*100, '20')
+# ---------- 18 ----------
+chk(18, 'P1: corriente con el rotor bloqueado (mA)', 6/8*1000, '750')
+chk(18, 'P1: veces el límite del pin', 750/40, '19', tol=0.02)
+chk(18, 'P3: tensión media con PWM 40 % (V)', 0.4*6, '2.4')
+chk(18, 'P3: corriente media (A)', 0.4*0.3, '0.12')
+chk(18, 'P4: resistencia de la bobina (Ω)', 5/0.07, '71.4')
+chk(18, 'P4: potencia (W)', 5*0.07, '0.35')
+chk(18, 'P4: energía magnética (mJ)', 0.5*0.2*0.07**2*1000, '0.49')

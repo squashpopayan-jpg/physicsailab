@@ -1,0 +1,66 @@
+<template class="chapter-src" data-id="pwm" data-num="13" data-title="PWM: brillo, servo y sonido" data-part="Parte II · Arduino y ESP32" data-short="Cómo un pin digital simula una salida analógica con modulación por ancho de pulso: atenuar un LED con analogWrite, mover un servo con la señal de 50 Hz y tocar notas con tone; ciclo de trabajo, frecuencia y tensión media">
+<p class="lead">Un pin digital solo conoce dos estados: 0 V y 5 V. Para entregar «la mitad de la potencia» no hace falta una tensión intermedia: basta con alternar muy rápido entre encendido y apagado y variar el tiempo de cada estado. Esa técnica, la <b>modulación por ancho de pulso</b> (PWM), permite atenuar un LED, regular la velocidad de un motor, mandar una posición a un servo y hasta producir música.</p>
+
+<section>
+<h2>Ciclo de trabajo, frecuencia y tensión media</h2>
+<p>Una señal PWM es una onda cuadrada con dos números: la <b>frecuencia</b> (cuántos ciclos por segundo) y el <b>ciclo de trabajo</b> (el porcentaje del ciclo en que está en alto). Su valor promedio es el ciclo de trabajo por la tensión alta:</p>
+<div class="eq key" data-name="Tensión media de una señal PWM">\[V_{\text{media}}=D\cdot V_{\text{alto}}\qquad D=\frac{t_{\text{alto}}}{T}\]</div>
+<p>Con \(D=50\ \%\) y 5 V, la tensión media es 2.5 V. En el UNO, <code class="k">analogWrite(pin, valor)</code> acepta valores de 0 a 255 (8 bits) y el ciclo de trabajo es \(D=\text{valor}/255\); la frecuencia es de unos 490 Hz (980 Hz en los pines 5 y 6) y solo funciona en los pines marcados con «~» (3, 5, 6, 9, 10, 11). Para el ojo, 490 Hz es tan rápido que el LED parece encendido con un brillo intermedio. En el ESP32 casi cualquier pin puede dar PWM con el periférico LEDC: se elige la frecuencia y la resolución con <code class="k">ledcAttach(pin, frecuencia, bits)</code> y se escribe con <code class="k">ledcWrite</code> (en las versiones antiguas del paquete: <code class="k">ledcSetup</code> y <code class="k">ledcAttachPin</code>).</p>
+</section>
+
+<section>
+<h2>Atenuar un LED</h2>
+<p>La gráfica de abajo es la señal real del pin 9. Cambie el programa y mire cómo el ciclo de trabajo se refleja en el brillo y en la corriente media del LED. En el programa «fundido», el brillo sube de 0 a 255 en pasos de 5 y baja de nuevo.</p>
+<div class="sim" data-sim="fade" data-title="PWM: brillo de un LED y forma de la señal"></div>
+<div class="sim-guide"><ul>
+<li>Con <code class="k">analogWrite(9, 64)</code> el ciclo de trabajo es \(64/255=25.1\ \%\) y la corriente media del LED baja a la cuarta parte: unos 2.9 mA frente a 11.6 mA.</li>
+<li>Con 128: 50.2 %; con 230: 90.2 %; con 255, la señal queda fija en alto (100 %); con 0, fija en bajo.</li>
+<li>El ojo no percibe el brillo de forma lineal: a la mitad de potencia el LED parece más claro de lo que se espera. Por eso los efectos de fundido suelen aplicar una corrección (gamma).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El servomotor: posición con pulsos</h2>
+<p>El servo SG90 no gira continuamente: va a un ángulo y se queda allí. Se le envía un pulso cada 20 ms (50 Hz) y el <b>ancho del pulso</b> indica el ángulo: alrededor de 1 ms es 0° y 2 ms es 180° (la biblioteca <code class="k">Servo.h</code> usa 544 µs a 2400 µs). Con 90°, el pulso mide 1472 µs. La biblioteca se encarga de todo: <code class="k">miServo.attach(9)</code> y <code class="k">miServo.write(ángulo)</code>. Gire el potenciómetro y el brazo lo sigue.</p>
+<div class="sim" data-sim="servo" data-title="Servo controlado con un potenciómetro"></div>
+<div class="sim-guide"><ul>
+<li>Con el potenciómetro al 50 %, <code class="k">analogRead</code> da 512, el ángulo es <code class="k">map(512, 0, 1023, 0, 180)</code> = 90° y el pulso dura 1472 µs.</li>
+<li>Mientras el servo se mueve, la placa entrega 0.2 A al motor: ¡un servo grande no se alimenta del pin de 5 V del UNO sino de una fuente aparte, con GND común!</li>
+<li>La gráfica de abajo muestra el pulso de 20 ms; el ancho de la parte alta es lo que cambia.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Sonido: tone y las notas</h2>
+<p>Un zumbador pasivo vibra a la frecuencia de la señal que recibe, y la altura de una nota es su frecuencia: do = 262 Hz, re = 294, mi = 330, fa = 349, sol = 392, la = 440 (la nota de afinación) y si = 494 Hz. <code class="k">tone(pin, frecuencia, duración)</code> genera una onda cuadrada de 50 % de ciclo de trabajo en ese pin. Active el sonido y escuche «Estrellita». (El sonido solo se activa cuando usted marca la casilla, por las reglas de los navegadores.)</p>
+<div class="sim" data-sim="melodia" data-title="Una melodía con un zumbador pasivo"></div>
+<div class="box note"><p>En el UNO, <code class="k">tone()</code> usa uno de los temporizadores del chip y por eso deja sin PWM los pines 3 y 11 mientras suena. El zumbador <i>activo</i> (capítulo 2) no necesita <code class="k">tone</code>: con <code class="k">digitalWrite(pin, HIGH)</code> suena con su tono fijo.</p></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Cuál es el ciclo de trabajo y la tensión media de <code class="k">analogWrite(9, 191)</code> en un UNO?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Ciclo.</b> \(D=191/255=0.749\) = 74.9 %.</li>
+<li><b>Media.</b> \(5\times0.749=3.745\) V.</li>
+<li><b>Resultado.</b> <span class="ans">74.9 % y 3.75 V.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Una señal de 490 Hz tiene un ciclo de trabajo de 30 %. ¿Cuánto dura cada ciclo y cuánto el estado alto?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Periodo.</b> \(T=1/490=2.041\) ms.</li>
+<li><b>Alto.</b> \(0.30\times2.041=0.612\) ms.</li>
+<li><b>Resultado.</b> <span class="ans">2.04 ms por ciclo; 0.61 ms en alto.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>El servo recibe un pulso de 1.7 ms. Con la relación lineal 544 µs → 0° y 2400 µs → 180°, ¿qué ángulo ordena?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Interpolación.</b> \(\text{ángulo}=180\times(1700-544)/(2400-544)\).</li>
+<li><b>Cálculo.</b> \(180\times1156/1856=112.1^\circ\).</li>
+<li><b>Resultado.</b> <span class="ans">≈ 112°.</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>La nota «la» de 440 Hz se toca 0.5 s. ¿Cuántos ciclos completos tiene la onda? ¿Cuánto vale el periodo de las notas do (262 Hz) y sol (392 Hz)?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Ciclos.</b> \(440\times0.5=220\) ciclos.</li>
+<li><b>Periodos.</b> do: \(1/262=3.82\) ms; sol: \(1/392=2.55\) ms.</li>
+<li><b>Relación.</b> 392/262 = 1.496 ≈ 3/2: la quinta justa.</li>
+<li><b>Resultado.</b> <span class="ans">220 ciclos; 3.82 ms y 2.55 ms.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

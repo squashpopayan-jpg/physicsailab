@@ -1,0 +1,77 @@
+<template class="chapter-src" data-id="primer" data-num="9" data-title="El primer sketch y el simulador de código" data-part="Parte II · Arduino y ESP32" data-short="La estructura de un programa de Arduino (setup y loop), pinMode, digitalWrite y delay, el parpadeo del LED paso a paso, los errores de compilación más comunes y las diferencias con el ESP32">
+<p class="lead">Todo programa de Arduino se llama <b>sketch</b> y tiene siempre la misma forma: una parte que se ejecuta <i>una vez</i> al encender (<code class="k">setup</code>) y otra que se repite <i>sin parar</i> (<code class="k">loop</code>). Con solo tres instrucciones más se enciende y apaga un LED, el «hola mundo» de la electrónica. Las simulaciones de este curso ejecutan el código <b>de verdad</b>: puede cambiarlo, compilarlo y ver cómo la placa virtual reacciona, incluso con los errores que le mostrarán los mensajes de compilación.</p>
+
+<section>
+<h2>Anatomía de un sketch</h2>
+<pre class="code">void setup() {
+  // aquí va lo que se hace una sola vez
+}
+
+void loop() {
+  // aquí va lo que se repite para siempre
+}</pre>
+<p><code class="k">void</code> significa que la función no devuelve ningún valor; los paréntesis vacíos, que no recibe datos; las llaves <code class="k">{ }</code> encierran las instrucciones. Cada instrucción termina en <b>punto y coma</b> (<code class="k">;</code>). Todo lo que sigue a <code class="k">//</code> es un comentario: el computador lo ignora y sirve para explicar el código. Las mayúsculas importan: <code class="k">digitalWrite</code> no es lo mismo que <code class="k">digitalwrite</code>.</p>
+<p>Las tres instrucciones del primer proyecto:</p>
+<ul>
+<li><code class="k">pinMode(pin, OUTPUT)</code>: declara que el pin será una <b>salida</b> (<code class="k">INPUT</code> sería una entrada). Se pone en <code class="k">setup</code>.</li>
+<li><code class="k">digitalWrite(pin, HIGH)</code>: pone el pin en <b>alto</b> (5 V en el UNO, 3.3 V en el ESP32). Con <code class="k">LOW</code> lo pone en bajo (0 V).</li>
+<li><code class="k">delay(ms)</code>: espera ese número de <b>milisegundos</b> (1000 ms = 1 s) sin hacer nada más.</li>
+</ul>
+</section>
+
+<section>
+<h2>Parpadeo de un LED</h2>
+<p>El Arduino UNO trae un LED soldado a la placa conectado al pin 13 (la constante <code class="k">LED_BUILTIN</code> vale 13); en la simulación hay además un LED externo con su resistencia de 220 Ω en el pin 8. El programa enciende el pin, espera medio segundo, lo apaga, espera otro medio segundo y repite: un ciclo de un segundo. Pulse <b>Compilar y subir</b> después de cada cambio (o Ctrl+Enter dentro del editor).</p>
+<div class="sim" data-sim="blink" data-title="Parpadeo: el LED de la placa y un LED externo"></div>
+<div class="sim-guide"><ul>
+<li>Cambie <code class="k">500</code> por <code class="k">100</code> en los dos <code class="k">delay</code>: el LED parpadea cinco veces más rápido (cinco ciclos por segundo). Con <code class="k">10</code> el ojo ya no lo distingue y parece fijo, aunque más tenue (la luz promedio).</li>
+<li>Pruebe tiempos distintos para encender y apagar: <code class="k">delay(100)</code> encendido y <code class="k">delay(900)</code> apagado dan un destello corto cada segundo.</li>
+<li>La corriente del LED externo con 220 Ω es de unos 11.6 mA a 5 V; el pin D8 entrega esa corriente sin problemas (límite cómodo, 20 mA).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Cuando el compilador protesta</h2>
+<p>Antes de cargarse en la placa, el sketch se <b>compila</b>: un programa traductor lo revisa y lo convierte en instrucciones de máquina. Si algo está mal escrito, no compila y el IDE muestra el error con la línea. Aprender a leer esos mensajes ahorra horas. Pulse cada botón para cargar un programa con un fallo típico, intente compilarlo, lea el mensaje y corríjalo en el editor.</p>
+<div class="sim" data-sim="errcod" data-title="Errores de compilación: lea el mensaje y corrija"></div>
+<div class="sim-guide"><ul>
+<li><b>Falta un punto y coma:</b> el mensaje suele señalar la línea <i>siguiente</i> a la que falló, porque el compilador se da cuenta al ver la instrucción que sigue.</li>
+<li><b>Variable o función mal escrita:</b> «no se declaró en este ámbito». Revise mayúsculas y minúsculas.</li>
+<li><b>Llave sin cerrar:</b> «se esperaba '}' al final del archivo». Cuente las llaves o use la sangría para ver dónde falta.</li>
+<li><b>El error silencioso:</b> sin <code class="k">pinMode</code>, el programa compila, pero el LED casi no enciende. En el ATmega328P, escribir HIGH en un pin de entrada activa una resistencia interna de unos 35 kΩ («pull-up»): pasa apenas 0.1 mA. ¡El compilador no se queja porque el código es válido, aunque no haga lo que usted quiere!</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Lo mismo con un ESP32</h2>
+<p>El programa casi no cambia. Las diferencias: (1) los pines se nombran por su número GPIO (<code class="k">4</code>, <code class="k">2</code>…), no por «D4»; (2) el LED de la placa suele estar en el GPIO 2 (<code class="k">LED_BUILTIN</code>); (3) la salida es de 3.3 V, así que para el mismo LED basta una resistencia menor (\(R=(3.3-1.95)/0.010=135\ \Omega\); se usan 100 a 150 Ω); (4) en la comunicación serie se usa 115200 baudios en lugar de 9600.</p>
+<div class="sim" data-sim="espblink" data-title="Parpadeo con un ESP32"></div>
+<div class="box tip"><p><b>Buenas prácticas desde el primer día:</b> dé nombres a los pines con constantes (<code class="k">const int ledPin = 8;</code>); comente lo que no sea obvio; sangre el código (dos espacios dentro de cada llave) y pruebe cada cambio pequeño antes de hacer el siguiente.</p></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un LED debe encender 2 s y apagar 1 s, repetidamente. Escriba el <code class="k">loop</code> y calcule su frecuencia.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Código.</b> <code class="k">digitalWrite(8, HIGH); delay(2000); digitalWrite(8, LOW); delay(1000);</code></li>
+<li><b>Periodo.</b> 2 + 1 = 3 s por ciclo (sin contar los pocos microsegundos de cada instrucción).</li>
+<li><b>Frecuencia.</b> \(f=1/3=0.333\) Hz.</li>
+<li><b>Resultado.</b> <span class="ans">Periodo 3 s, frecuencia 0.33 Hz.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>¿Qué falla en <code class="k">void loop() { digitalWrite(13, HIGH) delay(500); }</code>?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Lectura.</b> La instrucción <code class="k">digitalWrite(13, HIGH)</code> no termina en <code class="k">;</code>.</li>
+<li><b>Resultado.</b> <span class="ans">Falta el punto y coma después de <code class="k">HIGH)</code>; el compilador lo informa en la línea del <code class="k">delay</code>.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Con <code class="k">delay(500)</code> en alto y en bajo, el LED parpadea a 1 Hz. ¿Qué valor de <code class="k">delay</code> da 5 Hz con ciclo de trabajo del 50 %?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Periodo.</b> \(T=1/5=0.2\) s = 200 ms.</li>
+<li><b>Mitad.</b> En alto 100 ms y en bajo 100 ms.</li>
+<li><b>Resultado.</b> <span class="ans"><code class="k">delay(100)</code> en cada estado.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un LED rojo conectado a un pin de ESP32 (3.3 V) con una resistencia de 330 Ω, ¿qué corriente recibe? ¿Brillará mucho?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Cálculo.</b> Con 1.9 V en el LED y unos 30 Ω de resistencia de salida del pin: \(I=(3.3-1.9)/(330+30+6)=3.8\) mA.</li>
+<li><b>Interpretación.</b> Es una corriente pequeña: el LED brilla, pero poco (un 20 % de su luz máxima).</li>
+<li><b>Resultado.</b> <span class="ans">Unos 3.8 mA: brillo bajo; con 100–150 Ω se llega a 8–10 mA.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

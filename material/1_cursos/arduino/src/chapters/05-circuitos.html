@@ -1,0 +1,92 @@
+<template class="chapter-src" data-id="circuitos" data-num="5" data-title="Serie, paralelo y divisor de voltaje" data-part="Parte I · Los elementos" data-short="Resistencias en serie y en paralelo, las leyes de Kirchhoff, el divisor de tensión (con su efecto de carga) y su uso para leer sensores, bajar de 5 V a 3.3 V y conectar LED">
+<p class="lead">Casi ningún circuito tiene una sola resistencia: las piezas se conectan unas con otras. Hay solo dos maneras básicas de unir dos piezas, <b>en serie</b> y <b>en paralelo</b>, y con ellas (más dos leyes sencillas de Kirchhoff) se puede calcular cualquier circuito de este curso. El resultado más útil es el <b>divisor de voltaje</b>, que convierte una resistencia cambiante en una tensión que el Arduino sabe leer.</p>
+
+<section>
+<h2>En serie: una detrás de otra</h2>
+<p>Dos piezas están en <b>serie</b> cuando la corriente que sale de una entra completa en la otra: no hay ramas entre ellas. Por eso, <b>la corriente es la misma en todas</b>, y las resistencias <b>se suman</b>:</p>
+<div class="eq key" data-name="Resistencias en serie">\[R_{\text{serie}}=R_1+R_2+R_3+\cdots\qquad V_{\text{fuente}}=V_1+V_2+V_3+\cdots\]</div>
+<p>La tensión de la fuente se reparte entre las piezas, y cada una se queda con la parte proporcional a su resistencia: la mayor resistencia se lleva la mayor caída. Esa suma de caídas igual a la tensión de la fuente es la <b>ley de las tensiones de Kirchhoff</b>: al dar la vuelta a un lazo cerrado, las subidas y bajadas de tensión suman cero.</p>
+<div class="sim" data-sim="serie" data-title="Tres resistencias en serie"></div>
+<div class="sim-guide"><ul>
+<li>Con 1 kΩ, 2.2 kΩ y 4.7 kΩ en serie (7.9 kΩ en total) y 9 V: \(I=9/7900=1.139\) mA, la misma en todas. Las caídas son 1.139 V, 2.506 V y 5.354 V, que suman 9 V.</li>
+<li>Cambie R3 a 470 Ω: la resistencia total baja a 3.67 kΩ y la corriente sube a 2.45 mA; la caída en R3 pasa de 5.35 V a 1.15 V. La corriente depende de <i>todas</i> las resistencias.</li>
+<li>Si se abre el circuito en cualquier punto, la corriente es cero en todas las piezas: una cadena en serie falla entera, como las viejas luces de Navidad.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>En paralelo: varios caminos</h2>
+<p>Dos piezas están en <b>paralelo</b> cuando comparten los mismos dos nudos: sus extremos están unidos entre sí. Todas tienen <b>la misma tensión</b>, y la corriente se divide entre los caminos. La corriente total es la suma de las corrientes de las ramas (<b>ley de las corrientes de Kirchhoff</b>: la corriente que llega a un nudo es igual a la que sale) y la resistencia equivalente es menor que la más pequeña de las ramas:</p>
+<div class="eq key" data-name="Resistencias en paralelo">\[\frac{1}{R_{\text{par}}}=\frac{1}{R_1}+\frac{1}{R_2}+\frac{1}{R_3}\qquad \text{(dos ramas: } R_{\text{par}}=\tfrac{R_1R_2}{R_1+R_2}\text{)}\qquad I_{\text{total}}=I_1+I_2+I_3\]</div>
+<div class="sim" data-sim="paralelo" data-title="Tres resistencias en paralelo"></div>
+<div class="sim-guide"><ul>
+<li>Con 1 kΩ, 2.2 kΩ y 4.7 kΩ en paralelo y 9 V: las corrientes son 9.00 mA, 4.09 mA y 1.91 mA; suman 15.0 mA, y la resistencia equivalente es 600 Ω, menor que cualquiera de las tres.</li>
+<li>Apague una rama (abra su interruptor): las demás siguen funcionando igual, y la corriente total baja. Así están conectadas las lámparas de una casa.</li>
+<li>Poner dos resistencias iguales en paralelo da la mitad: 330 Ω ∥ 330 Ω = 165 Ω; tres de 330 Ω dan 110 Ω.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El divisor de voltaje</h2>
+<p>Dos resistencias en serie conectadas a una tensión \(V_{in}\) «dividen» la tensión: entre ellas se puede tomar una fracción, \(V_{out}\):</p>
+<div class="eq key" data-name="Divisor de tensión">\[V_{out}=V_{in}\,\frac{R_2}{R_1+R_2}\]</div>
+<p>Si \(R_1=R_2\), sale la mitad. Es la herramienta más importante de la electrónica de sensores: una fotorresistencia, un termistor, un potenciómetro o un sensor de humedad del suelo son <i>resistencias que cambian</i>; puestas en un divisor, convierten ese cambio en una tensión entre 0 y 5 V (o 0 y 3.3 V) que el conversor analógico del Arduino lee directamente. También sirve para <b>bajar de nivel</b>: el sensor HC-SR04 entrega 5 V por su pin ECHO, y una ESP32 admite 3.3 V; con \(R_1=1\ \text{k}\Omega\) y \(R_2=2\ \text{k}\Omega\) la salida es \(5\times2/3=3.33\) V.</p>
+<p>Hay una trampa: la fórmula es válida solo si <b>nada</b> carga la salida. Si se conecta a la salida una carga \(R_L\), esta queda en paralelo con \(R_2\) y la tensión baja. La regla práctica: la resistencia de carga debe ser al menos diez veces mayor que \(R_2\).</p>
+<div class="sim" data-sim="divisor" data-title="Divisor de tensión y efecto de la carga"></div>
+<div class="sim-guide"><ul>
+<li>Con 5 V y \(R_1=R_2=10\) kΩ, sin carga: \(V_{out}=2.5\) V.</li>
+<li>Conecte una carga de 10 kΩ: queda en paralelo con \(R_2\) (equivalen a 5 kΩ) y la salida baja a 1.67 V. Con una carga de 1 kΩ baja a 0.42 V: el divisor «no aguanta» la carga.</li>
+<li>Con \(R_1=R_2=1\) kΩ y la misma carga de 10 kΩ la salida es 2.38 V: el divisor de resistencias pequeñas resiste mejor la carga, a costa de gastar más corriente (2.5 mA en vez de 0.25 mA).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Circuitos mixtos y las leyes de Kirchhoff</h2>
+<p>Cuando en un circuito hay tramos en serie y en paralelo se resuelve por partes: primero se reemplaza cada paralelo por su resistencia equivalente, se suman las series, se calcula la corriente total y luego se «vuelve atrás» repartiendo tensiones y corrientes. Las dos leyes de Kirchhoff sirven de comprobación: <b>(1)</b> la suma de corrientes que entran a un nudo es cero; <b>(2)</b> la suma de las tensiones en un lazo cerrado es cero.</p>
+<div class="sim" data-sim="mixto" data-title="Circuito mixto: serie con un paralelo, y las comprobaciones de Kirchhoff"></div>
+<div class="sim-guide"><ul>
+<li>Con 9 V, R1 = 330 Ω en serie con R2 = 470 Ω ∥ R3 = 680 Ω: el paralelo equivale a 277.9 Ω; la resistencia total es 607.9 Ω y la corriente de la fuente es 14.8 mA.</li>
+<li>La caída en R1 es 4.89 V y en el paralelo 4.11 V. Por R2 pasan 8.75 mA y por R3, 6.05 mA, que suman los 14.8 mA que llegan al nudo.</li>
+<li>Cambie R3 a 100 Ω: la rama de R3 «roba» corriente; el paralelo baja a 82.5 Ω y casi toda la tensión queda en R1.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>LED en serie y en paralelo</h2>
+<p>Con los LED se aplica todo lo anterior. <b>En serie</b>, una sola resistencia limita la corriente de todos, pero las caídas de tensión se suman: dos LED rojos (1.95 V cada uno) necesitan más de 3.9 V; tres, más de 5.85 V, y ya no encienden con 5 V. <b>En paralelo</b>, la tensión es la misma pero las corrientes se reparten de forma desigual: no hay dos LED idénticos, y el de menor tensión de conducción se llevaría casi toda la corriente. Por eso, en paralelo, <b>cada LED lleva su propia resistencia</b>.</p>
+<div class="sim" data-sim="leds" data-title="Dos y tres LED con 5 V: serie contra paralelo"></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Calcule la resistencia total de 220 Ω, 330 Ω y 470 Ω (a) en serie y (b) en paralelo.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>(a) Serie.</b> 220 + 330 + 470 = 1020 Ω.</li>
+<li><b>(b) Paralelo.</b> \(1/R=1/220+1/330+1/470=0.004545+0.003030+0.002128=0.009703\) S; \(R=103.1\ \Omega\).</li>
+<li><b>Resultado.</b> <span class="ans">1020 Ω en serie y 103.1 Ω en paralelo (menor que la menor, 220 Ω).</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Un divisor con \(R_1=4.7\) kΩ y \(R_2=10\) kΩ se alimenta con 5 V. ¿Cuánto vale \(V_{out}\)?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Fórmula.</b> \(V_{out}=5\times10/(4.7+10)\).</li>
+<li><b>Cálculo.</b> \(5\times10/14.7=3.401\) V.</li>
+<li><b>Resultado.</b> <span class="ans">3.40 V.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un divisor para pasar de 5 V a 3.3 V usa \(R_1=1\) kΩ y \(R_2=2.2\) kΩ (valores comerciales). ¿Cuánto da, y qué error tiene respecto de 3.3 V?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Salida.</b> \(V_{out}=5\times2.2/3.2=3.4375\) V.</li>
+<li><b>Error.</b> \(3.4375-3.3=0.1375\) V, un 4.2 % por encima.</li>
+<li><b>Opinión.</b> Para una entrada digital de 3.3 V es aceptable (la entrada admite hasta 3.6 V según su hoja de datos).</li>
+<li><b>Resultado.</b> <span class="ans">3.44 V, 4.2 % por encima de 3.3 V.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Dos resistencias de 100 Ω y 300 Ω están en paralelo y la corriente total es 30 mA. ¿Cuánta corriente pasa por cada una?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Divisor de corriente.</b> \(I_1=I\,R_2/(R_1+R_2)\), \(I_2=I\,R_1/(R_1+R_2)\).</li>
+<li><b>Cálculo.</b> \(I_1=30\times300/400=22.5\) mA y \(I_2=30\times100/400=7.5\) mA.</li>
+<li><b>Comprobación.</b> La tensión común es \(22.5\ \text{mA}\times100\ \Omega=2.25\) V y \(7.5\ \text{mA}\times300\ \Omega=2.25\) V.</li>
+<li><b>Resultado.</b> <span class="ans">22.5 mA por la de 100 Ω y 7.5 mA por la de 300 Ω.</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>Dos LED rojos (1.95 V a 20 mA) se conectan en serie a 5 V con una resistencia de 100 Ω. ¿Qué corriente pasa, aproximadamente? ¿Y si fueran tres LED?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Dos LED.</b> La resistencia recibe \(5-2\times1.95=1.1\) V: \(I=1.1/100=11\) mA.</li>
+<li><b>Tres LED.</b> Las caídas suman \(3\times1.95=5.85\) V, mayor que 5 V: no hay tensión suficiente para que conduzcan; la corriente es prácticamente cero.</li>
+<li><b>Resultado.</b> <span class="ans">Unos 11 mA con dos LED; con tres, no encienden (la fuente de 5 V es insuficiente).</span></li></ol></details></li>
+</ol>
+</section>
+</template>

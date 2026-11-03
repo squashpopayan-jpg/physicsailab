@@ -1,0 +1,129 @@
+<template class="chapter-src" data-id="electricidad" data-num="1" data-title="Electricidad sin miedo" data-part="Parte I · Los elementos" data-short="Carga, voltaje, corriente y resistencia con la analogía del agua; la ley de Ohm, la potencia y el calor; el código de colores de las resistencias y el primer circuito cerrado">
+<p class="lead">Antes de conectar un Arduino hay que entender tres ideas: <b>voltaje</b>, <b>corriente</b> y <b>resistencia</b>. Son tan sencillas como el agua que corre por una manguera, y con ellas se explica casi todo lo que verá en este curso: por qué un LED necesita una resistencia, por qué se calienta una pieza, por qué un cable no debe unir el positivo con el negativo. Aquí todo se prueba en un banco virtual: puede equivocarse tantas veces como quiera, y lo peor que pasará es una nube de humo en la pantalla.</p>
+
+<section>
+<h2>La electricidad como agua en una manguera</h2>
+<p>Todo material está hecho de átomos, y los metales como el cobre tienen electrones que casi no están atados a ningún átomo: se pueden mover. Si algo los empuja todos en la misma dirección, hay <b>corriente eléctrica</b>. La mejor manera de imaginarlo es con tuberías llenas de agua:</p>
+<div class="tablewrap"><table class="tbl"><tr><th>En la tubería</th><th>En el circuito</th><th>Se mide en…</th></tr>
+<tr><td>La bomba que empuja el agua</td><td>La pila o la fuente (da <b>voltaje</b>, o tensión)</td><td>voltios (V)</td></tr>
+<tr><td>El caudal: litros por segundo</td><td>La <b>corriente</b>: cuántas cargas pasan por segundo</td><td>amperios (A)</td></tr>
+<tr><td>Un estrechamiento que frena el flujo</td><td>La <b>resistencia</b></td><td>ohmios (Ω)</td></tr>
+<tr><td>El tubo</td><td>El cable</td><td></td></tr></table></div>
+<p>Pruebe la analogía. Con más presión de la bomba pasa más caudal; con un estrechamiento mayor, menos. Esa es toda la ley de Ohm, solo que todavía sin números.</p>
+<div class="sim" data-sim="agua" data-title="La analogía del agua: bomba, tubería y estrechamiento"></div>
+<div class="sim-guide"><ul>
+<li>Con 6 V y 200 Ω la corriente es de 30 mA: las gotas avanzan a ritmo medio. Baje la resistencia a 50 Ω y la corriente sube a 120 mA; el estrechamiento casi desaparece.</li>
+<li>Ponga la tensión en 0 V: no hay empuje, no hay corriente, por más ancho que sea el tubo. Una resistencia no hace circular nada por sí sola; solo limita lo que la fuente empuja.</li>
+<li>Con 12 V y 1000 Ω circulan 12 mA, y la potencia que se convierte en calor es 0.144 W: un valor pequeño. Mire cómo cambia si usa 12 V y 10 Ω (1.2 A y 14.4 W).</li>
+</ul></div>
+<div class="box note"><p>Una curiosidad que sorprende: en un cable de cobre de 1 mm² por el que pasa 1 A, los electrones avanzan a unos <b>0.07 mm por segundo</b>, más despacio que un caracol. La luz de la lámpara no se enciende cuando llega un electrón desde la pila, sino porque el campo eléctrico se propaga por todo el cable a velocidad casi igual a la de la luz y empuja <i>a la vez</i> a todos los electrones que ya están allí, como cuando se empuja la columna entera de agua en una manguera llena.</p></div>
+</section>
+
+<section>
+<h2>Voltaje, corriente y resistencia: las unidades</h2>
+<p>El <b>voltaje</b> (símbolo \(V\)) es la «presión eléctrica» entre dos puntos. Una pila AA nueva da unos 1.5 V; una batería de 9 V da 9 V; el puerto USB de un computador da 5 V; el ESP32 funciona con 3.3 V. La <b>corriente</b> (símbolo \(I\)) es la cantidad de carga que pasa por segundo: 1 amperio es una carga de 6.24×10¹⁸ electrones cada segundo. La <b>resistencia</b> (símbolo \(R\)) mide cuánto se opone un material al paso de la corriente.</p>
+<p>Los circuitos de este curso manejan valores muy pequeños o muy grandes, así que se usan prefijos:</p>
+<div class="tablewrap"><table class="tbl"><tr><th>Prefijo</th><th>Significa</th><th>Ejemplo</th></tr>
+<tr><td>m (mili)</td><td>una milésima (0.001)</td><td>20 mA = 0.020 A (corriente típica de un LED)</td></tr>
+<tr><td>k (kilo)</td><td>mil (1000)</td><td>4.7 kΩ = 4700 Ω</td></tr>
+<tr><td>M (mega)</td><td>un millón</td><td>10 MΩ = 10 000 000 Ω (lo que «ve» un multímetro)</td></tr>
+<tr><td>µ (micro)</td><td>una millonésima</td><td>100 µF (un condensador)</td></tr></table></div>
+<div class="box safe"><p>Las pilas y los puertos USB manejan tensiones bajas y son inofensivos para las personas. <b>La toma de la pared (120 V en Colombia) puede matar.</b> En este curso no se hace ningún experimento con la red eléctrica: todo se alimenta con USB, pilas o una fuente de laboratorio de bajo voltaje. Lo que sí se puede romper son las piezas, y para eso está la sección de fallos.</p></div>
+</section>
+
+<section>
+<h2>La ley de Ohm</h2>
+<p>En 1827, Georg Ohm encontró que en muchos materiales la corriente es proporcional al voltaje aplicado. Para una resistencia:</p>
+<div class="eq key" data-name="Ley de Ohm">\[V = I\cdot R\qquad\Longleftrightarrow\qquad I=\frac{V}{R}\qquad\Longleftrightarrow\qquad R=\frac{V}{I}\]</div>
+<p>Si se conoce cualquiera de las dos magnitudes se calcula la tercera. Un truco para no confundirse: la tensión se escribe arriba y siempre es el producto o el cociente de los otros dos.</p>
+<div class="box ex"><h4>Una resistencia de 330 Ω conectada a una pila de 9 V</h4>
+<p>\(I = V/R = 9/330 = 0.02727\) A = <b>27.3 mA</b>. Si se duplica la tensión a 18 V, la corriente se duplica a 54.5 mA: la relación es una recta. Si en cambio la resistencia sube a 660 Ω con los mismos 9 V, la corriente baja a la mitad: 13.6 mA.</p></div>
+<p>La simulación siguiente es un circuito simple: una fuente, una resistencia y nada más. Mueva la tensión y la resistencia; la gráfica de abajo es la recta \(I=V/R\) de esa resistencia, con un punto que marca dónde está ahora. Cuanto mayor es \(R\), más «acostada» es la recta.</p>
+<div class="sim" data-sim="ohm" data-title="Ley de Ohm: corriente, tensión y resistencia"></div>
+<div class="sim-guide"><ul>
+<li>Con 5 V y 330 Ω: \(I=5/330=15.15\) mA. Con 10 V la corriente es 30.3 mA: el doble.</li>
+<li>Con 5 V y 1 kΩ: 5 mA. Con 5 V y 10 kΩ: 0.5 mA. La de 10 kΩ deja pasar 21 veces menos corriente que la de 470 Ω a igual voltaje (que daría 10.6 mA).</li>
+<li>Conecte el multímetro (modo V) entre los dos extremos de la resistencia: marca el mismo valor que la fuente, porque en este circuito toda la tensión «cae» en la única resistencia.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Potencia: por qué se calientan las cosas</h2>
+<p>Cuando una corriente atraviesa una resistencia, la energía eléctrica se transforma en calor. La rapidez con que ocurre se llama <b>potencia</b> y se mide en vatios (W):</p>
+<div class="eq key" data-name="Potencia eléctrica">\[P = V\cdot I = I^2R = \frac{V^2}{R}\]</div>
+<p>Las resistencias pequeñas de electrónica («de carbón» o «de película») soportan <b>¼ W</b> (0.25 W) sin dañarse. Más allá se calientan, cambian de color, huelen mal y, si la sobrecarga continúa, se carbonizan y se abren, quedando el circuito interrumpido. Una resistencia de 100 Ω conectada a 5 V disipa \(V^2/R=0.25\) W: justo en su límite. A 9 V disipará 0.81 W, más de tres veces lo que aguanta. Pruébelo: suba el voltaje poco a poco y vea qué pasa.</p>
+<div class="sim" data-sim="potencia" data-title="Potencia y calentamiento de una resistencia"></div>
+<div class="sim-guide"><ul>
+<li>Con 5 V, la resistencia de 100 Ω y ¼ W trabaja al 100 % de su límite: ya está al borde. Con 3 V solo disipa 0.09 W (36 %).</li>
+<li>Con 9 V la potencia es 0.81 W, el 324 % del límite: la pieza se pone al rojo, humea y se quema en un par de segundos. Cuando se abre, la corriente cae a cero. Use «Reponer piezas dañadas» para cambiarla por una nueva.</li>
+<li>Cambie la potencia nominal a ½ W y repita: a 9 V sigue excediendo el límite, pero a 5 V trabaja holgada (50 %). Las piezas de mayor potencia son más grandes porque necesitan más superficie para disipar el calor.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El código de colores de las resistencias</h2>
+<p>Las resistencias son tan pequeñas que no cabe el número impreso, así que se pintan con <b>franjas de colores</b>. En las de cuatro franjas: las dos primeras son las cifras, la tercera es el multiplicador (cuántos ceros se añaden) y la cuarta es la tolerancia (dorado = ±5 %, plateado = ±10 %). Por ejemplo, <i>amarillo, violeta, rojo, dorado</i> es 4-7 seguido de dos ceros: 4700 Ω = 4.7 kΩ, con ±5 %.</p>
+<div class="tablewrap narrow"><table class="tbl"><tr><th>Color</th><th>Cifra</th><th>Multiplicador</th></tr>
+<tr><td>Negro</td><td>0</td><td>×1</td></tr><tr><td>Marrón</td><td>1</td><td>×10</td></tr><tr><td>Rojo</td><td>2</td><td>×100</td></tr><tr><td>Naranja</td><td>3</td><td>×1 000</td></tr><tr><td>Amarillo</td><td>4</td><td>×10 000</td></tr><tr><td>Verde</td><td>5</td><td>×100 000</td></tr><tr><td>Azul</td><td>6</td><td>×1 000 000</td></tr><tr><td>Violeta</td><td>7</td><td>×10 000 000</td></tr><tr><td>Gris</td><td>8</td><td></td></tr><tr><td>Blanco</td><td>9</td><td></td></tr><tr><td>Dorado</td><td></td><td>×0.1 (tolerancia ±5 %)</td></tr></table></div>
+<p>Las resistencias no se fabrican con cualquier valor, sino con series estándar: los valores más comunes (serie E12) son 1.0, 1.2, 1.5, 1.8, 2.2, 2.7, 3.3, 3.9, 4.7, 5.6, 6.8 y 8.2 multiplicados por 10, 100, 1000… Por eso existen 220 Ω y 330 Ω pero no «250 Ω». Practique con el decodificador: elija las franjas o use el modo de práctica.</p>
+<div class="sim" data-sim="colores" data-title="Decodificador de resistencias de cuatro franjas"></div>
+<div class="sim-guide"><ul>
+<li>Marrón-negro-rojo-dorado: 10 y dos ceros = 1000 Ω = 1 kΩ. Naranja-naranja-marrón: 33 y un cero = 330 Ω. Rojo-rojo-marrón: 220 Ω.</li>
+<li>Marrón-negro-naranja: 10 y tres ceros = 10 kΩ, la resistencia más usada con pulsadores. Verde-azul-marrón: 560 Ω.</li>
+<li>Mire siempre desde el lado donde las franjas están más juntas; la franja dorada o plateada debe quedar a la derecha.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El primer circuito: cerrado, abierto y al revés</h2>
+<p>La corriente solo circula si existe un <b>camino completo</b> que sale del positivo de la pila, atraviesa las piezas y regresa al negativo: un circuito <b>cerrado</b>. Si el camino se interrumpe en cualquier punto (un interruptor abierto, un cable que se soltó), el circuito está <b>abierto</b> y no pasa corriente, así que no se enciende nada. La corriente convencional se dibuja yendo del positivo al negativo, aunque los electrones se muevan en sentido contrario; esa convención es anterior al descubrimiento del electrón y todos los esquemas la siguen.</p>
+<p>Un LED es un diodo emisor de luz: <b>solo conduce en un sentido</b> (del ánodo, la pata larga, al cátodo, la pata corta con el lado plano) y casi no tiene resistencia una vez que conduce, por eso <b>siempre necesita una resistencia en serie</b> que limite la corriente. Con una pila de 9 V, un LED rojo (que «consume» unos 2 V) y una resistencia de 470 Ω, la corriente es \(I=(9-2)/470\approx15\) mA, cómoda para el LED. En el capítulo 6 verá qué pasa si falta esa resistencia.</p>
+<div class="sim" data-sim="lazo" data-title="Un circuito completo: pila, interruptor, resistencia y LED"></div>
+<div class="sim-guide"><ul>
+<li>Pulse el interruptor deslizante: al cerrarlo se enciende el LED y la corriente es de unos 14 mA. Al abrirlo, la corriente es exactamente cero en todo el circuito, también en la resistencia: la corriente es la misma en todas las piezas de un lazo sin ramas.</li>
+<li>Active «Cable desconectado»: se corta el cable de regreso. Aunque el interruptor esté cerrado, no hay camino, y el multímetro entre los extremos del cable roto marca casi los 9 V de la pila.</li>
+<li>Active «LED al revés»: el LED bloquea la corriente y se apaga. Como un LED solo aguanta unos 5 V en sentido inverso, con 9 V puede dañarse si se deja así; respete siempre la polaridad.</li>
+</ul></div>
+<div class="box pract"><h4>Para hacerlo en la vida real</h4>
+<ol><li>Conecte la pila de 9 V a su clip y fije los cables (rojo al riel «+» y negro al riel «−» de la protoboard).</li>
+<li>Ponga la resistencia de 470 Ω (amarillo-violeta-marrón) cruzando entre dos columnas distintas.</li>
+<li>Inserte el LED con la pata larga en la columna donde sale la resistencia y la pata corta en la columna que cierra al riel «−».</li>
+<li>Cierre el circuito con el interruptor. Si no enciende: revise el sentido del LED y que ningún cable quede flojo.</li></ol>
+<p class="ctrl-note">Materiales: pila de 9 V con clip, resistencia 470 Ω, LED rojo, interruptor, protoboard y cables. Costo aproximado: menos de 10 000 pesos colombianos.</p></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un LED rojo (que cae 2 V al conducir) se alimenta con 5 V. Calcule la resistencia para que circulen 20 mA y escoja el valor comercial más cercano de la serie E12.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Planteamiento.</b> La resistencia debe tener la tensión que el LED no usa: \(5-2=3\) V.</li>
+<li><b>Cálculo.</b> \(R=V/I=3/0.020=150\ \Omega\).</li>
+<li><b>Serie E12.</b> 150 Ω es un valor de la serie (1.5 × 100). La potencia es \(P=I^2R=0.02^2\times150=0.06\) W: sobra con ¼ W.</li>
+<li><b>Resultado.</b> <span class="ans">150 Ω (marrón-verde-marrón), P = 0.06 W.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>¿Cuánto vale una resistencia con franjas marrón, negro, naranja y dorado? ¿Entre qué valores puede estar realmente?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Cifras.</b> Marrón = 1, negro = 0 → «10».</li>
+<li><b>Multiplicador.</b> Naranja = ×1000 → 10 000 Ω = 10 kΩ.</li>
+<li><b>Tolerancia.</b> Dorado = ±5 %: 10 000 × 0.05 = 500 Ω.</li>
+<li><b>Resultado.</b> <span class="ans">10 kΩ, entre 9.5 kΩ y 10.5 kΩ.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Una resistencia de 47 Ω de ¼ W se conecta a 5 V. ¿Qué corriente circula, qué potencia disipa y qué le pasará?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Corriente.</b> \(I=5/47=0.1064\) A = 106.4 mA.</li>
+<li><b>Potencia.</b> \(P=VI=5\times0.1064=0.532\) W (también \(V^2/R=25/47\)).</li>
+<li><b>Comparación.</b> 0.532/0.25 = 2.13 veces el límite.</li>
+<li><b>Resultado.</b> <span class="ans">106.4 mA y 0.53 W: más del doble de lo que soporta; se calentará mucho y terminará quemándose.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Una pila AA de 2000 mAh alimenta un circuito que consume 25 mA. ¿Cuánto dura, en teoría?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Idea.</b> Capacidad (mAh) = corriente (mA) × tiempo (h).</li>
+<li><b>Cálculo.</b> \(t=2000/25=80\) h.</li>
+<li><b>Resultado.</b> <span class="ans">80 h (≈ 3.3 días); en la práctica menos, porque la pila pierde capacidad con corrientes grandes.</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>Un motor pequeño de 12 V consume 40 mA. ¿Qué resistencia equivalente tiene y cuánta potencia usa? ¿Y si su corriente al arrancar fuera 5 veces mayor?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Resistencia equivalente.</b> \(R=V/I=12/0.040=300\ \Omega\).</li>
+<li><b>Potencia.</b> \(P=VI=12\times0.040=0.48\) W.</li>
+<li><b>Arranque.</b> Con 200 mA: \(P=12\times0.2=2.4\) W; el motor «parado» se comporta como una resistencia mucho menor (60 Ω).</li>
+<li><b>Resultado.</b> <span class="ans">300 Ω y 0.48 W en marcha; 60 Ω y 2.4 W durante el arranque.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

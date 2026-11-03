@@ -1,0 +1,67 @@
+<template class="chapter-src" data-id="distancia" data-num="17" data-title="Distancia con ultrasonido: el HC-SR04" data-part="Parte III · Sensores y actuadores" data-short="Cómo mide un sensor ultrasónico: el pulso de disparo, el eco y pulseIn; de microsegundos a centímetros con la velocidad del sonido, el efecto de la temperatura, los límites del sensor y un sensor de parqueo con zumbador">
+<p class="lead">Los murciélagos y los submarinos miden distancias con el eco. El sensor <b>HC-SR04</b> hace lo mismo con un chirrido de 40 kHz que el oído no oye: emite una ráfaga de ultrasonido, espera el eco que rebota en el objeto y mide cuánto tardó. Como el sonido viaja a una velocidad conocida, el tiempo se convierte en distancia. Cuesta poco y es la base de los robots que esquivan obstáculos.</p>
+
+<section>
+<h2>Cómo funciona</h2>
+<p>El sensor tiene cuatro pines: <code class="k">VCC</code> (5 V), <code class="k">TRIG</code> (disparo), <code class="k">ECHO</code> (eco) y <code class="k">GND</code>. El procedimiento:</p>
+<ol>
+<li>El Arduino pone <code class="k">TRIG</code> en alto durante <b>10 µs</b> (<code class="k">delayMicroseconds(10)</code>).</li>
+<li>El sensor emite 8 pulsos de 40 kHz y pone <code class="k">ECHO</code> en alto.</li>
+<li><code class="k">ECHO</code> permanece en alto hasta que vuelve el eco: la duración de ese pulso es el <b>tiempo de ida y vuelta</b>. <code class="k">pulseIn(ECHO, HIGH)</code> lo mide en microsegundos.</li>
+</ol>
+<p>Como el sonido recorre la distancia dos veces, \(d=\dfrac{v\,t}{2}\). A 20 °C, \(v=343\) m/s = 0.0343 cm/µs, de modo que \(d\ (\text{cm})=t\ (\mu\text{s})\times0.0343/2\approx t/58.3\). A 1 m el eco tarda \(2\times1/343.4=5.82\) ms; a 4 m (el límite), 23.3 ms.</p>
+<div class="sim" data-sim="sonar" data-title="Medir distancias con el HC-SR04"></div>
+<div class="sim-guide"><ul>
+<li>A 100 cm el pulso de eco dura unos 5824 µs y el programa calcula 99.9 cm (la medida se pierde la fracción por el entero de <code class="k">pulseIn</code>).</li>
+<li>A 10 cm: 582 µs. Cerca del límite inferior (2 cm), el sensor ya no logra medir bien. Por encima de 4 m el eco no regresa a tiempo: <code class="k">pulseIn</code> devuelve 0 (agotó el tiempo de espera).</li>
+<li>Suba la temperatura de 20 a 35 °C: el sonido es más rápido (\(v=331.3+0.606\,T\)), el eco tarda menos y, sin compensar, el programa subestima la distancia un 2.6 %.</li>
+</ul></div>
+<div class="box warn"><p>El pin <code class="k">ECHO</code> entrega <b>5 V</b>. En un UNO no hay problema; en un ESP32 hay que bajarlo a 3.3 V con un divisor (1 kΩ y 2 kΩ, capítulo 8) o con un conversor de nivel. Además, un sensor alimentado con menos de unos 4.5 V puede medir mal.</p></div>
+</section>
+
+<section>
+<h2>Límites y errores del sensor</h2>
+<ul>
+<li><b>Alcance:</b> de 2 a 400 cm; ángulo útil de unos 15° (un cono estrecho).</li>
+<li><b>Superficies:</b> la tela, la espuma y las superficies inclinadas absorben o desvían el sonido: miden mal o nada. Las paredes lisas y perpendiculares, muy bien.</li>
+<li><b>Frecuencia:</b> espere al menos 60 ms entre medidas para que el eco anterior se apague.</li>
+<li><b>Ruido:</b> promediar varias medidas o usar la mediana elimina lecturas anómalas.</li>
+</ul>
+</section>
+
+<section>
+<h2>Un sensor de parqueo</h2>
+<p>Con un zumbador se hace un sensor de parqueo: cuanto más cerca está el obstáculo, más rápido suena. El programa mide la distancia cada vuelta y convierte la distancia en la pausa entre pitidos (\(\text{pausa}=4\times\text{cm}\) ms). Active el sonido y acerque el obstáculo.</p>
+<div class="sim" data-sim="parqueo" data-title="Sensor de parqueo con zumbador"></div>
+<div class="sim-guide"><ul>
+<li>A 80 cm la pausa es de 320 ms: pitidos lentos. A 20 cm, 80 ms: casi un zumbido continuo. Por debajo de 10 cm, el zumbador queda encendido de forma permanente.</li>
+<li>Más de 100 cm: silencio (el vehículo está lejos).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>El eco de un HC-SR04 dura 2915 µs. ¿A qué distancia está el objeto? (v = 343 m/s)
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Fórmula.</b> \(d=t\times0.0343/2\).</li>
+<li><b>Cálculo.</b> \(2915\times0.0343/2=49.99\) cm.</li>
+<li><b>Resultado.</b> <span class="ans">≈ 50 cm.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>¿Cuánto tarda el eco desde un obstáculo a 3 m? (v = 343 m/s)
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Recorrido.</b> Ida y vuelta: 6 m.</li>
+<li><b>Tiempo.</b> \(6/343=0.01749\) s = 17.5 ms.</li>
+<li><b>Resultado.</b> <span class="ans">17.5 ms.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Con la velocidad del sonido a 20 °C (343.4 m/s) se calibra un sensor; en un día de 35 °C, ¿qué error relativo comete?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Velocidad a 35 °C.</b> \(331.3+0.606\times35=352.5\) m/s.</li>
+<li><b>Error.</b> El programa usa 343.4: \((343.4-352.5)/352.5=-2.6\ \%\).</li>
+<li><b>Resultado.</b> <span class="ans">Subestima la distancia un 2.6 %; a 1 m, 2.6 cm.</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>Un robot a 0.5 m/s mide la distancia a una pared cada 100 ms. ¿Cuánto se acerca entre dos medidas y cuál debe ser la distancia mínima de frenado si frena en 0.4 s?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Avance por medida.</b> \(0.5\times0.1=5\) cm.</li>
+<li><b>Frenado.</b> A velocidad (casi constante) 0.5 m/s durante 0.4 s: \(0.5\times0.4=20\) cm (más lo que avance antes de detectar: 5 cm).</li>
+<li><b>Resultado.</b> <span class="ans">5 cm entre medidas y unos 25 cm de distancia mínima para empezar a frenar.</span></li></ol></details></li>
+</ol>
+</section>
+</template>
