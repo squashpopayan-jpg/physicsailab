@@ -3190,7 +3190,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
                     ${!isCourseUnlocked(course.id) ? `<button class="btn btn-secondary" onclick="closeModal(); openPaymentModal('${course.id}');" style="border-color:rgba(0,234,144,0.5); color:#00EA90; display:inline-flex; align-items:center; gap:0.4rem; font-weight:700;"><img src="./wompi-iso-secondary.svg" style="height:15px; width:15px;" /> Comprar con Wompi (${course.precioEstimado})</button>` : ''}
-                    ${course.demoPath ? `<a href="${course.demoPath}" target="_blank" class="btn btn-primary">Abrir ${entityWord} 🚀</a>` : ''}
+                    ${course.demoPath ? `<a href="${course.demoPath}" target="_blank" rel="noopener noreferrer" class="btn btn-primary">Abrir ${entityWord} 🚀</a>` : ''}
                 </div>
             </div>
         `;
