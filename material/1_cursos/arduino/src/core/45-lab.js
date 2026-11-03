@@ -127,7 +127,7 @@
       /* restaurar posiciones de puntas del multímetro */
       this.scene.meters.forEach((m) => { m.redTip = m.redRest.slice(); m.blackTip = m.blackRest.slice(); if (m.red) m.redTip = BB.worldPos(BB.normalize(this.scene), m.red).slice(); });
       this.scene = BB.normalize(this.scene);
-      this.t = 0; this.alerts = []; this.serialText = ''; this.serialPre.textContent = ''; this.alertBox.innerHTML = '';
+      this.t = 0; this.alerts = []; this.serialText = ''; if (this.serialPre) this.serialPre.textContent = ''; this.alertBox.innerHTML = '';
       this.faultState = {};
       this.reload();
       (this.cfg.controls || []).forEach((c) => c._api && c._api.apply && c._api.apply());
@@ -782,7 +782,8 @@
       const sc = this.scene;
       for (const p of sc.parts) {
         if (PT[p.type].module || PT[p.type].power) continue;
-        const q = p.pins.filter(Boolean).map((r) => BB.worldPos(sc, r));
+        let q;
+        try { q = p.pins.filter(Boolean).map((r) => BB.worldPos(sc, r)); } catch (e) { continue; } /* pines de nodo (#n), sin agujero que rotular */
         if (!q.length) continue;
         const cx = q.reduce((s, a) => s + a[0], 0) / q.length, cy = Math.min(...q.map((a) => a[1])) - 5.5;
         let txt = p.id;
