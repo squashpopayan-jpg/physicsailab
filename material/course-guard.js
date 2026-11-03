@@ -25,7 +25,8 @@
         "venturi",
         "recorrido",
         "historia",
-        "kids"
+        "kids",
+        "riel"
     ];
     const DEFAULT_COURSE_KEYS = {
         "mecanica": ["MECANICA-2026", "OBANDO-MEC-26", "MEC-QXN7-26"],
@@ -43,6 +44,7 @@
         "torneos": ["TORNEOS-2026", "SQUASH-POPAYAN-26", "SQUASH-TORNEOS-26", "TOR-KX9Q-26"],
         "laboratorio": ["LAB-PROYECTO-2026", "PROYECTO-LAB-26", "OBANDO-LAB-26", "LAB-7RAG-26"],
         "fluidos": ["FLUIDOS-2026", "BERNOULLI-26", "OBANDO-FLUIDOS-26", "FLU-CJTO-26"],
+        "riel": ["RIEL-2026", "OBANDO-RIEL-26", "RIEL-AIRE-26", "MECANICA-RIEL-26", "RIE-9XKL-26"],
         "venturi": ["VENTURI-2026", "BERNOULLI-VENTURI-26", "OBANDO-VENTURI-26", "BERNOULLI-2026", "VEN-BQS2-26"],
         "pendulo": ["PENDULO-2026", "GRAVEDAD-26", "OBANDO-PENDULO-26", "FISICA-10-26", "PEN-A66O-26"],
         "guias": ["GUIAS-2026", "MONTAJES-26", "LAB-MONTAJES-26", "GUI-8MEI-26"],
@@ -84,6 +86,7 @@
         if (p.includes('diagnostica')) return 'diagnosticas';
         if (p.includes('optica')) return 'optica';
         if (p.includes('mecanica')) return 'mecanica';
+        if (p.includes('riel')) return 'riel';
         if (p.includes('pendulo')) return 'pendulo';
         if (p.includes('venturi')) return 'venturi';
         if (p.includes('transformador')) return 'transformadores';
@@ -117,6 +120,7 @@
         if (t.includes('diagnostica')) return 'diagnosticas';
         if (t.includes('óptica') || t.includes('optica')) return 'optica';
         if (t.includes('mecánica') || t.includes('mecanica')) return 'mecanica';
+        if (t.includes('riel')) return 'riel';
         if (t.includes('péndulo') || t.includes('pendulo')) return 'pendulo';
         if (t.includes('venturi')) return 'venturi';
         if (t.includes('transformador')) return 'transformadores';
@@ -144,7 +148,7 @@
     function isUnlocked() {
         const cId = getCurrentCourseId();
         // Cursos 100% liberados y cortesías de bienvenida:
-        if (cId === 'venturi' || cId === 'pendulo' || cId === 'recorrido' || cId === 'historia' || cId === 'kids') return true;
+        if (cId === 'venturi' || cId === 'pendulo' || cId === 'recorrido' || cId === 'historia' || cId === 'kids' || cId === 'riel') return true;
         if (LAB_COURSE_IDS.includes(cId)) return true;
 
         try {
@@ -1883,7 +1887,7 @@
     function checkCurrentHashLock() {
         if (isUnlocked()) return;
         const cId = getCurrentCourseId();
-        if (cId === 'venturi' || cId === 'pendulo' || isVenturi || isPendulo) return;
+        if (cId === 'venturi' || cId === 'pendulo' || cId === 'riel' || isVenturi || isPendulo) return;
         const rawHash = decodeURIComponent(location.hash.replace(/^#/, '')).split('.')[0].toLowerCase();
         if (!rawHash || rawHash === 'inicio') return;
 

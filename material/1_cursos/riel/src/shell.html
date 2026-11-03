@@ -1,0 +1,114 @@
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 48 48" aria-hidden="true"><path d="M3 34 24 12l21 22" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round"/><rect x="14" y="14" width="20" height="9" rx="2" fill="var(--c1)"/><path d="M9 41h30" stroke="currentColor" stroke-width="2.4" stroke-dasharray="1.5 4" stroke-linecap="round"/></svg>
+      <div><h1>Riel de aire</h1><p>Laboratorio de Mecánica · Departamento de Física, Universidad del Cauca</p></div>
+    </div>
+    <nav id="montajes" class="montajes" role="tablist" aria-label="Montajes del riel"></nav>
+  </header>
+
+  <div class="cuerpo">
+    <section class="escenario" aria-label="Laboratorio">
+      <div class="vista">
+        <canvas id="gl" aria-label="Laboratorio de mecánica en 3D: riel de aire, carrito y fotocompuertas"></canvas>
+
+        <div class="hud lect" aria-live="off">
+          <div class="estado" id="estado" data-e="listo">Carrito sujeto</div>
+          <dl class="lec">
+            <div><dt>t</dt><dd><span id="r-t">0,00</span><i>s</i></dd></div>
+            <div><dt>x</dt><dd><span id="r-x">0,0</span><i>cm</i></dd></div>
+            <div><dt>v</dt><dd><span id="r-v">0,000</span><i>m/s</i></dd></div>
+            <div><dt>a</dt><dd><span id="r-a">0,00</span><i>m/s²</i></dd></div>
+          </dl>
+          <dl class="lec seg2" id="r2" hidden>
+            <div><dt>x₂</dt><dd><span id="r-x2">0,0</span><i>cm</i></dd></div>
+            <div><dt>v₂</dt><dd><span id="r-v2">0,000</span><i>m/s</i></dd></div>
+            <div><dt>a₂</dt><dd><span id="r-a2">0,00</span><i>m/s²</i></dd></div>
+          </dl>
+        </div>
+
+        <div class="hud cams" id="camaras" role="group" aria-label="Cámara">
+          <button type="button" data-c="general" aria-pressed="true">General</button>
+          <button type="button" data-c="carrito" aria-pressed="false">Seguir carrito</button>
+          <button type="button" data-c="compuerta" aria-pressed="false">Fotocompuerta</button>
+          <button type="button" data-c="polea" aria-pressed="false">Polea y masa</button>
+          <button type="button" data-c="arriba" aria-pressed="false">Desde arriba</button>
+          <button type="button" data-c="lateral" aria-pressed="false">Lateral</button>
+          <button type="button" data-c="equipos" aria-pressed="false">Equipos</button>
+          <button type="button" data-c="laptop" aria-pressed="false">Pantalla</button>
+        </div>
+
+        <div class="hud transp">
+          <button type="button" id="btn-soltar" class="primario"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12-7.5z" fill="currentColor"/></svg><span>Soltar</span></button>
+          <button type="button" id="btn-pausa" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h4v14H6zM14 5h4v14h-4z" fill="currentColor"/></svg><span>Pausa</span></button>
+          <button type="button" id="btn-reiniciar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5a7 7 0 1 1-6.7 9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M12 1.5 7.8 5 12 8.6z" fill="currentColor"/></svg><span>Reiniciar</span></button>
+          <div class="seg" id="velocidad" role="group" aria-label="Velocidad de la animación">
+            <button type="button" data-v="0.1" aria-pressed="false">0,1×</button>
+            <button type="button" data-v="0.25" aria-pressed="false">0,25×</button>
+            <button type="button" data-v="0.5" aria-pressed="false">0,5×</button>
+            <button type="button" data-v="1" aria-pressed="true">1×</button>
+          </div>
+        </div>
+
+        <div class="hud opts">
+          <label class="sw"><input type="checkbox" id="tg-v" checked><span class="sw-b"></span><span class="sw-t"><i class="pt" style="background:#18d6c3"></i>Vector velocidad</span></label>
+          <label class="sw"><input type="checkbox" id="tg-a"><span class="sw-b"></span><span class="sw-t"><i class="pt" style="background:#ff9d1c"></i>Vector aceleración</span></label>
+        </div>
+        <p class="ayuda">Arrastra para girar · rueda para acercar · Mayús + arrastrar para desplazar · arrastra una fotocompuerta para moverla</p>
+        <p id="sinwebgl" class="sinwebgl" hidden>Este navegador no pudo iniciar WebGL. Abre el archivo en Chrome, Edge o Firefox actualizados.</p>
+      </div>
+
+      <div class="graficas">
+        <div class="gbox"><canvas id="gx" aria-label="Gráfica de posición contra tiempo"></canvas></div>
+        <div class="gbox"><canvas id="gv" aria-label="Gráfica de velocidad contra tiempo"></canvas></div>
+      </div>
+    </section>
+
+    <aside class="panel">
+      <section>
+        <h2>Montaje</h2>
+        <p id="guia" class="guia"></p>
+      </section>
+
+      <section>
+        <h2>Parámetros</h2>
+        <div id="controles" class="controles"></div>
+        <label class="sw auto"><input type="checkbox" id="tg-auto" checked><span class="sw-b"></span><span class="sw-t">Soltar solo al cambiar un valor</span></label>
+        <label class="sw auto"><input type="checkbox" id="tg-snd"><span class="sw-b"></span><span class="sw-t">Sonido del laboratorio</span></label>
+        <button type="button" id="btn-borrar" class="lnk" hidden></button>
+      </section>
+
+      <section>
+        <h2>Fotocompuertas</h2>
+        <div id="compuertas-ctl" class="controles"></div>
+        <div class="tabla-w">
+          <table class="tabla">
+            <thead><tr><th>Puerta</th><th>Carro</th><th>t (s)</th><th>Δt (ms)</th><th>v (m/s)</th></tr></thead>
+            <tbody id="tb-ev"></tbody>
+          </table>
+        </div>
+        <p class="nota">v = ancho de la bandera ÷ tiempo que tapa el haz. Es una velocidad media sobre la bandera; el cronómetro resuelve 0,1 ms.</p>
+        <button type="button" id="btn-csv" class="lnk">Copiar los datos (CSV)</button>
+      </section>
+
+      <section>
+        <h2>Resultados</h2>
+        <div id="resultados" class="resultados"></div>
+      </section>
+
+      <section>
+        <h2>Qué lo hace real</h2>
+        <ul class="real">
+          <li><b>Colchón de aire.</b> Apaga el soplador: el carrito se arrastra sobre el aluminio (μ ≈ 0,12) y en pendientes pequeñas ni arranca.</li>
+          <li><b>Polea con masa.</b> Equivale a 6 g más de inercia y su eje roza con 1,6 mN, así que la aceleración medida queda por debajo de m·g/(M+m).</li>
+          <li><b>Turbulencia.</b> El soplador agita el carrito unos ±3 mm/s²; por eso la gráfica x(t) no es una curva perfecta.</li>
+          <li><b>Nivelación.</b> Un desnivel de 1 mm en un metro son 0,06°. El tornillo de nivelación parte de 0,02°; ajústalo y mira el efecto.</li>
+          <li><b>La masa cae y para.</b> Al tocar la bandeja el hilo se afloja y el carrito sigue con velocidad constante hasta el tope.</li>
+          <li><b>g local.</b> En Popayán (1760 m, 2,4° N) g = 9,775 m/s², no 9,81.</li>
+        </ul>
+      </section>
+      <footer class="pie">Elaborado por Mg. Manuel Alejandro Obando · Departamento de Física, Universidad del Cauca</footer>
+    </aside>
+  </div>
+  <div id="toast" role="status"></div>
+</div>

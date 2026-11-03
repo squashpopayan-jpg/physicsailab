@@ -2604,6 +2604,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const isModerna = c.id === 'moderna';
             const isArduino = c.id === 'arduino';
             const isVenturi = c.id === 'venturi';
+            const isRiel = c.id === 'riel';
             const isPendulo = c.id === 'pendulo';
             const isTransformadores = c.id === 'transformadores';
             const isRecorrido = c.id === 'recorrido';
@@ -2632,7 +2633,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 openBtnText = courseUnlocked ? 'Abrir Física Moderna (Nueva Ventana ↗) 🌌' : 'Vista Previa Moderna 👁️';
             } else if (isArduino) {
                 openBtnText = courseUnlocked ? 'Abrir Circuitos Vivos (Nueva Ventana ↗) ⚡' : 'Vista Previa Arduino 👁️';
-            } else if (isVenturi || isPendulo) {
+            } else if (isVenturi || isPendulo || isRiel) {
                 openBtnText = '🧪 Abrir Laboratorio Libre (Nueva Ventana ↗)';
             } else if (isTransformadores) {
                 openBtnText = '⚡ Abrir Laboratorio Libre (Nueva Ventana ↗)';
@@ -2660,7 +2661,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (courseUnlocked) {
                 if (c.id === 'kids') {
                     lockStatusBadge = `<span class="kids-badge-rainbow" title="Cortesía Educativa para Niños y Familias · 100% Libre">🌈 100% LIBRE · NIÑOS</span>`;
-                } else if (c.id === 'venturi' || c.id === 'pendulo') {
+                } else if (c.id === 'venturi' || c.id === 'pendulo' || c.id === 'riel') {
                     lockStatusBadge = `<span class="unlocked-tag" style="background:rgba(16,185,129,0.18); color:#34d399; border-color:rgba(16,185,129,0.45); font-weight:800;" title="Laboratorio Virtual Universitario · Acceso 100% Abierto y Libre">🧪 Laboratorio Liberado</span>`;
                 } else if (c.id === 'historia' || c.esCortesia) {
                     lockStatusBadge = `<span class="unlocked-tag" style="background:rgba(217,119,6,0.18); color:#f59e0b; border-color:rgba(217,119,6,0.45);" title="Cortesía de Bienvenida · Acceso Libre para todos">🎁 Cortesía Libre</span>`;
@@ -2700,7 +2701,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     </div>
                     <div class="card-actions" style="flex-wrap:wrap; gap:0.4rem;">
-                        ${c.demoPath ? (isPrivado && !adminMode ? `<button type="button" class="btn btn-secondary" onclick="openAdminPanel()" style="flex:1; justify-content:center; border-color:rgba(168,85,247,0.4); color:#c084fc;">${openBtnText}</button>` : `<a href="${c.demoPath}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="flex:1; justify-content:center; ${(c.id === 'venturi' || c.id === 'pendulo') ? 'background:linear-gradient(135deg, #059669, #10b981); border:none;' : ''} ${isPrivado ? "background:linear-gradient(135deg, #a855f7, #6366f1); border:none;" : ""}">${openBtnText}</a>`) : ''}
+                        ${c.demoPath ? (isPrivado && !adminMode ? `<button type="button" class="btn btn-secondary" onclick="openAdminPanel()" style="flex:1; justify-content:center; border-color:rgba(168,85,247,0.4); color:#c084fc;">${openBtnText}</button>` : `<a href="${c.demoPath}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="flex:1; justify-content:center; ${(c.id === 'venturi' || c.id === 'pendulo' || c.id === 'riel') ? 'background:linear-gradient(135deg, #059669, #10b981); border:none;' : ''} ${isPrivado ? "background:linear-gradient(135deg, #a855f7, #6366f1); border:none;" : ""}">${openBtnText}</a>`) : ''}
                         ${(isDiagnosticas && adminMode) ? `<a href="/material/1_cursos/diagnosticas/dist/public/panel.html" target="_blank" class="btn btn-secondary" style="border-color:rgba(56,189,248,0.5); color:#38bdf8; display:inline-flex; align-items:center; gap:0.35rem;" title="Abrir panel docente de pruebas">📊 Panel Docente</a>` : ''}
                         ${c.id === 'venturi' ? `<button type="button" class="btn btn-secondary" onclick="openVenturiGroupModal()" style="border-color:rgba(56,189,248,0.5); color:#38bdf8; display:inline-flex; align-items:center; gap:0.35rem;" title="Organizar puestos y asignar bancos para grupos (1 al 24)">👥 Puestos Grupos (1-24)</button>` : ''}
                         ${c.id === 'pendulo' ? `<button type="button" class="btn btn-secondary" onclick="openPenduloGroupModal()" style="border-color:rgba(56,189,248,0.5); color:#38bdf8; display:inline-flex; align-items:center; gap:0.35rem;" title="Organizar puestos y asignar bancos para grupos (1 al 24)">👥 Puestos Grupos (1-24)</button>` : ''}
@@ -9105,6 +9106,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const trivias = [
             { title: 'Gran Trivia de Física (Nueva Ventana)', desc: '1.000 preguntas de física con sistema de 3 vidas y ranking oficial en ventana dedicada.', link: '/trivia.html', isExternal: true, type: '🎯 Trivia Oficial' },
             { title: 'Física KIDS (Nueva Ventana)', desc: '10 mundos temáticos, 47 capítulos y 126 juegos interactivos para niños y familias.', link: '/material/1_cursos/kids/dist/index.html', isExternal: true, type: '🌈 Niños & Familias' },
+            { title: 'Laboratorio Virtual 3D: Riel de Aire (Nueva Ventana)', desc: '7 montajes de mecánica, colisiones, Segunda Ley, plano inclinado y fotocompuertas en 3D.', link: '/material/1_cursos/riel/dist/Riel_de_Aire.html', isExternal: true, type: '🧪 Lab Liberado' },
             { title: 'Circuitos Vivos: Arduino & ESP32 (Nueva Ventana)', desc: '28 capítulos, protoboard virtual, simulador SPICE con cortocircuitos reales, sensores y proyectos de física.', link: '/material/1_cursos/arduino/dist/index.html', isExternal: true, type: '⚡ Arduino & Hardware' },
             { title: 'Tratado de Física Moderna (Nueva Ventana)', desc: '28 capítulos interactivos, 95 simuladores, relatividad de Einstein, cuántica, física nuclear y cosmología del Big Bang.', link: '/material/1_cursos/moderna/dist/index.html', isExternal: true, type: '🌌 Física Moderna' },
             { title: 'Tratado de Mecánica Cuántica', desc: '36 capítulos formales, notación Dirac, perturbaciones y problemas resueltos paso a paso.', link: '/material/1_cursos/mcuantica/dist/index.html', isExternal: true, type: '🌌 Cuántica Universitaria' },
