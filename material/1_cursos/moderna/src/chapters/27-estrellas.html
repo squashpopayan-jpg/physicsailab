@@ -1,0 +1,117 @@
+<template class="chapter-src" data-id="estrellas" data-num="27" data-title="Estrellas, enanas blancas y estrellas de neutrones" data-part="Parte VII · Partículas, estrellas y cosmos" data-short="El equilibrio hidrostático y los politropos de Lane–Emden, la secuencia principal y el límite de Eddington, las enanas blancas y el límite de Chandrasekhar, las estrellas de neutrones y la ecuación de Tolman–Oppenheimer–Volkoff, y la energía de las supernovas">
+<p class="lead">Una estrella es un equilibrio entre la gravedad, que quiere comprimirla, y la presión del gas caliente de su interior, mantenida por la fusión nuclear del capítulo 24. Cuando se agota el combustible, la presión térmica desaparece y solo queda la que no depende de la temperatura: la <em>presión de degeneración</em> de los fermiones (capítulo 19). Si la sostienen los electrones se tiene una enana blanca, que tiene una masa máxima, el límite de Chandrasekhar; si los neutrones, una estrella de neutrones, con una masa máxima aún menor para un gas ideal. Este capítulo integra numéricamente las ecuaciones de equilibrio de estos objetos (Lane–Emden, la ecuación de Chandrasekhar y la de Tolman–Oppenheimer–Volkoff), compara con soluciones independientes de SciPy y con las masas y radios observados, y calcula la energía de una supernova, que durante unos segundos libera cientos de veces lo que el Sol irradia en toda su vida.</p>
+
+<section>
+<h2>Equilibrio hidrostático y politropos</h2>
+<p>En una estrella esférica estática, la presión equilibra el peso de cada capa: \(dP/dr=-Gm\rho/r^2\), con \(dm/dr=4\pi r^2\rho\). Cuando la presión es una potencia de la densidad, \(P=K\rho^{1+1/n}\) (<span class="term">politropo</span> de índice \(n\)), con \(\rho=\rho_c\theta^n\) y \(r=\alpha\xi\), las dos ecuaciones se combinan en la <em>ecuación de Lane–Emden</em></p>
+<div class="eq key" data-name="Ecuación de Lane–Emden">\[\frac1{\xi^2}\frac d{d\xi}\Bigl(\xi^2\frac{d\theta}{d\xi}\Bigr)=-\theta^n,\qquad\theta(0)=1,\ \theta'(0)=0;\qquad R=\alpha\xi_1,\quad M=4\pi\alpha^3\rho_c(-\xi^2\theta')_{\xi_1},\quad \frac{\rho_c}{\bar\rho}=\frac{\xi_1}{3|\theta'_1|}.\]</div>
+<p>donde \(\xi_1\) es el primer cero de \(\theta\) (la superficie). Hay soluciones analíticas para \(n=0\) (esfera de densidad uniforme, \(\xi_1=\sqrt6=2.4495\)) y \(n=1\) (\(\xi_1=\pi\)); para los demás índices se integra numéricamente. Se verificó la integración (Runge–Kutta de cuarto orden) contra scipy.integrate.solve_ivp (DOP853) para cinco índices, a \(10^{-6}\), y contra los valores clásicos de Chandrasekhar (1939):</p>
+<table class="data"><thead><tr><th>\(n\)</th><th>\(\xi_1\)</th><th>\(-\xi_1^2\theta_1'\)</th><th>\(\rho_c/\bar\rho\)</th><th>Modelo</th></tr></thead><tbody>
+<tr><td>0</td><td>2.44949</td><td>4.89898</td><td>1.000</td><td>densidad uniforme</td></tr>
+<tr><td>1</td><td>3.14159</td><td>3.14159</td><td>3.290</td><td>planetas gaseosos</td></tr>
+<tr><td>3/2</td><td>3.65375</td><td>2.71406</td><td>5.991</td><td>enanas blancas no relativistas</td></tr>
+<tr><td>3</td><td>6.89685</td><td>2.01824</td><td>54.18</td><td>modelo estándar de Eddington; enanas blancas relativistas</td></tr>
+<tr><td>7/2</td><td>9.53581</td><td>1.89056</td><td>152.9</td><td>estrellas masivas radiativas</td></tr>
+</tbody></table>
+<p>El modelo \(n=3\) describe razonablemente el Sol: da una densidad central \(54.18\bar\rho=7.6\times10^4\) kg/m\(^3\) (el valor real es \(1.5\times10^5\)). El \(n=3/2\) corresponde a un gas de electrones degenerado no relativista (\(P\propto\rho^{5/3}\)): su relación masa–radio, \(R\propto M^{-1/3}\), indica que una enana blanca más masiva es más pequeña.</p>
+<div class="sim" data-sim="politropos" data-title="Politropos de Lane–Emden: perfiles de densidad y masa"></div>
+<div class="sim-guide"><ul>
+<li>Con \(n=3\): la densidad cae desde el centro (azul) mucho más deprisa que en \(n=0\) (uniforme); el 50 % de la masa está en el 18 % interior del radio, y \(\rho_c/\bar\rho=54.2\).</li>
+<li>Con \(n=1.5\): estructura menos concentrada (\(\rho_c/\bar\rho=5.99\)). El panel derecho muestra cómo la concentración central crece con \(n\) y tiende a infinito para \(n\to5\).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Secuencia principal y límite de Eddington</h2>
+<p>La mayor parte de la vida de una estrella transcurre fusionando hidrógeno en el núcleo (secuencia principal). Aproximadamente, la luminosidad crece con una potencia de la masa, \(L/L_\odot\approx(M/M_\odot)^{3.5}\) (la ley es más plana para las masas bajas y más suave para las más grandes), y como el combustible es proporcional a \(M\), la vida es \(t\approx10^{10}\,(M/M_\odot)^{-2.5}\) años. El Sol, que convierte el 10 % de su masa con una eficiencia del 0.7 % (4H → He), vive \(0.1\times0.007M_\odot c^2/L_\odot=1.04\times10^{10}\) años; una estrella de 2 \(M_\odot\) vive \(1.8\times10^9\) años y una de 20 \(M_\odot\), solo \(5.6\times10^6\). Hay un límite superior a la luminosidad de una estrella estable: la presión de la radiación sobre los electrones (sección de Thomson \(\sigma_T=6.65\times10^{-29}\) m\(^2\)) no puede superar la gravedad sobre los protones que los acompañan, lo que da la <span class="term">luminosidad de Eddington</span> \(L_{\rm Edd}=4\pi GMm_pc/\sigma_T=1.26\times10^{31}\,(M/M_\odot)\) W \(=3.28\times10^4\,(M/M_\odot)L_\odot\) (comprobada con las constantes de astropy). Una estrella de \(60M_\odot\) se acerca a su límite de Eddington y pierde masa con vientos intensos.</p>
+<div class="sim" data-sim="secuencia" data-title="Secuencia principal: luminosidad, vida y límite de Eddington"></div>
+<div class="sim-guide"><ul>
+<li>Con 1 \(M_\odot\): \(L=L_\odot\), \(t=10^{10}\) años, y \(L/L_{\rm Edd}=3\times10^{-5}\). Con 20 \(M_\odot\): \(L=3.6\times10^4L_\odot\) y vive solo 5.6 millones de años.</li>
+<li>La relación masa–luminosidad es aproximada: para Sirius A (2 \(M_\odot\)) da 11 \(L_\odot\), frente a las 25 \(L_\odot\) observadas.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Enanas blancas y el límite de Chandrasekhar</h2>
+<p>Una estrella de masa pequeña (\(<8M_\odot\)) acaba sus reacciones nucleares y deja un núcleo de carbono y oxígeno del tamaño de la Tierra: una <span class="term">enana blanca</span>. Los electrones, de densidad \(n_e=\rho/\mu_em_u\) con \(\mu_e=2\) (dos nucleones por electrón), están degenerados y su presión, \(P=\dfrac{\pi m_e^4c^5}{3h^3}\bigl[x(2x^2-3)\sqrt{1+x^2}+3\operatorname{asinh}x\bigr]\) con \(x=p_F/m_ec\), soporta la gravedad (Fowler, 1926; Chandrasekhar, 1931). Para \(x\ll1\) es \(P\propto\rho^{5/3}\) y para \(x\gg1\), \(P=K\rho^{4/3}\) (\(n=3\)), con \(K=(\hbar c/4)(3\pi^2)^{1/3}/(\mu_em_u)^{4/3}\). En ese límite relativista, la masa de un politropo \(n=3\) no depende de la densidad central: \(M_{Ch}=4\pi(K/\pi G)^{3/2}(-\xi^2\theta')_{n=3}=1.456\,M_\odot\) para \(\mu_e=2\) (1.457 en la literatura, \(5.83/\mu_e^2\)), y 1.26 \(M_\odot\) para una enana de hierro (\(\mu_e=56/26\)). Por encima de ese valor ninguna presión de degeneración sostiene la estrella: colapsa.</p>
+<p>Se integró numéricamente el equilibrio hidrostático con la ecuación de estado exacta (Runge–Kutta adaptativo) y se comparó con scipy DOP853 para cinco densidades centrales (acuerdo de \(10^{-4}\)):</p>
+<table class="data"><thead><tr><th>\(x_c\)</th><th>\(\rho_c\) (kg/m\(^3\))</th><th>\(M\) (\(M_\odot\))</th><th>\(R\) (km)</th></tr></thead><tbody>
+<tr><td>0.3</td><td>\(5.3\times10^7\)</td><td>0.110</td><td>18 253</td></tr>
+<tr><td>1</td><td>\(1.9\times10^9\)</td><td>0.510</td><td>9 704</td></tr>
+<tr><td>3</td><td>\(5.3\times10^{10}\)</td><td>1.096</td><td>4 998</td></tr>
+<tr><td>10</td><td>\(1.9\times10^{12}\)</td><td>1.395</td><td>2 073</td></tr>
+<tr><td>30</td><td>\(5.3\times10^{13}\)</td><td>1.448</td><td>806</td></tr>
+<tr><td>100</td><td>\(1.9\times10^{15}\)</td><td>1.4555</td><td>259</td></tr>
+</tbody></table>
+<p>La masa tiende al límite de Chandrasekhar sin superarlo y el radio tiende a cero; a baja densidad, \(R\propto M^{-1/3}\) (pendiente numérica \(-0.34\)). Con la masa de Sirius B (1.02 \(M_\odot\)), el modelo da \(R=0.0080R_\odot=5570\) km (observado: 0.0084 \(R_\odot\)), con densidad media \(2.8\times10^9\) kg/m\(^3\): una cucharadita de su materia pesaría 14 toneladas; para 40 Eri B (0.573 \(M_\odot\)) da 0.0131 \(R_\odot\) (observado: 0.0136). La gravedad superficial de Sirius B es \(4.0\times10^6\) m/s\(^2\) (\(4\times10^5\) veces la de la Tierra) y la velocidad de escape, 6800 km/s (2.3 % de \(c\)). El límite es la base de las supernovas de tipo Ia, que explotan al acercarse a 1.4 \(M_\odot\) y sirven de «candelas estándar» (cap. 28).</p>
+<div class="sim" data-sim="compactas" data-title="Objetos compactos: enanas blancas y estrellas de neutrones"></div>
+<div class="sim-guide"><ul>
+<li>En el modo «enana blanca» la curva masa–radio muestra el límite de Chandrasekhar (línea punteada); los puntos son Sirius B y 40 Eri B con sus masas y radios observados, cerca de la curva teórica.</li>
+<li>Aumente \(x_c\) (hasta 100): la masa se aproxima a 1.456 \(M_\odot\) y el radio se reduce a unos centenares de km.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Estrellas de neutrones y la ecuación TOV</h2>
+<p>Si el núcleo de una estrella masiva (\(>8M_\odot\)) supera el límite de Chandrasekhar, los electrones se comprimen contra los protones (\(e^-+p\to n+\nu_e\)) y el núcleo se convierte casi todo en neutrones, con una densidad media de \(4\times10^{17}\) kg/m\(^3\) (la del núcleo atómico). Los neutrones, también fermiones, se sostienen por su presión de degeneración, que a esa escala exige la relatividad general: la ecuación de <span class="term">Tolman–Oppenheimer–Volkoff</span> (TOV) sustituye \(Gm\rho/r^2\) por</p>
+<div class="eq key" data-name="Ecuación de Tolman–Oppenheimer–Volkoff">\[\frac{dP}{dr}=-\frac{G(\varepsilon+P)}{c^2}\,\frac{m+4\pi r^3P/c^2}{r^2\,(1-2Gm/rc^2)},\qquad\frac{dm}{dr}=\frac{4\pi r^2\varepsilon}{c^2}.\]</div>
+<p>(\(\varepsilon\) es la densidad de energía, incluida la masa en reposo.) La presión y la densidad de energía de un gas ideal de neutrones tienen la misma forma paramétrica que las de electrones, con \(m_n\) en vez de \(m_e\). Con esa ecuación de estado, Oppenheimer y Volkoff (1939) hallaron una masa máxima de 0.71 \(M_\odot\): la integración numérica (RK4 adaptativo) coincide con scipy DOP853 en cinco densidades centrales (\(10^{-4}\)) y da \(M_{\max}=0.710M_\odot\) con \(R=9.16\) km y \(\rho_c=4.2\times10^{18}\) kg/m\(^3\). Las estrellas de neutrones observadas tienen unos 1.4 \(M_\odot\) (hasta más de 2 \(M_\odot\)): esto muestra que la repulsión de las fuerzas nucleares añade presión al gas ideal. Un objeto de 1.4 \(M_\odot\) y 12 km tiene una densidad media de \(3.8\times10^{17}\) kg/m\(^3\), una compacidad \(2GM/Rc^2=0.34\) (a un tercio de ser un agujero negro de radio de Schwarzschild de 4.13 km) y una velocidad de escape de 0.59 \(c\).</p>
+<p><strong>La energía de la supernova.</strong> El colapso de un núcleo de 1.4 \(M_\odot\) desde el tamaño de una enana blanca a 12 km libera la energía de ligadura gravitatoria \(3GM^2/5R=2.6\times10^{46}\) J, que se emite casi toda (≈ 99 %) en neutrinos durante unos 10 s: 214 veces lo que el Sol irradia en \(10^{10}\) años (\(1.2\times10^{44}\) J). En la supernova SN 1987A se detectaron unos 25 neutrinos en tres detectores, a 168 000 años luz, tres horas antes de verse la luz.</p>
+<div class="sim" data-sim="neutrones" data-title="Estrellas de neutrones: relación masa–radio del gas ideal"></div>
+<div class="sim-guide"><ul>
+<li>Cambie al modo «estrella de neutrones»: la curva masa–radio muestra un máximo de 0.71 \(M_\odot\) (línea punteada) con \(R=9.16\) km. Aumentar la densidad central más allá del máximo da configuraciones inestables.</li>
+<li>La compacidad de los objetos cercanos al máximo es 0.3–0.4: están al borde de la relatividad general fuerte.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Calcule la luminosidad de Eddington del Sol en vatios y en \(L_\odot\), con \(\sigma_T=6.652\times10^{-29}\) m\(^2\), \(m_p=1.6726\times10^{-27}\) kg y \(M_\odot=1.989\times10^{30}\) kg.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Fórmula.</b> \(L_{\rm Edd}=4\pi GMm_pc/\sigma_T\).</li>
+<li><b>Cálculo.</b> \(4\pi(6.674\times10^{-11})(1.989\times10^{30})(1.6726\times10^{-27})(2.998\times10^8)/6.652\times10^{-29}=1.26\times10^{31}\) W.</li>
+<li><b>En L☉.</b> \(1.26\times10^{31}/3.828\times10^{26}=3.28\times10^4\).</li>
+<li><b>Resultado.</b> <span class="ans">\(1.26\times10^{31}\) W \(=3.28\times10^4L_\odot\).</span></li>
+</ol></details></li>
+<li><span class="lvl">Básico</span>Con el modelo \(n=3\) y la densidad media del Sol (1410 kg/m\(^3\)), estime la densidad central, y calcule la vida del Sol y de una estrella de 20 \(M_\odot\) con \(t\approx10^{10}(M/M_\odot)^{-2.5}\) años.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Densidad central.</b> \(\rho_c=54.18\bar\rho=54.18\times1410=7.6\times10^4\) kg/m\(^3\).</li>
+<li><b>Vida del Sol.</b> \(10^{10}\) años (con 10 % de la masa y 0.7 % de eficiencia: 1.04×10¹⁰).</li>
+<li><b>20 M☉.</b> \(10^{10}\times20^{-2.5}=5.6\times10^6\) años.</li>
+<li><b>Resultado.</b> <span class="ans">\(7.6\times10^4\) kg/m³; \(10^{10}\) años; 5.6 millones de años.</span></li>
+</ol></details></li>
+<li><span class="lvl">Intermedio</span>Calcule el límite de Chandrasekhar para \(\mu_e=2\) a partir de \(M=4\pi(K/\pi G)^{3/2}(-\xi^2\theta')\) con \(n=3\), \((-\xi^2\theta')=2.01824\) y \(K=(\hbar c/4)(3\pi^2)^{1/3}/(\mu_em_u)^{4/3}\); ¿y para una enana de hierro (\(\mu_e=56/26\))?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>K.</b> \(K=(1.0546\times10^{-34}\times2.998\times10^8/4)(3\pi^2)^{1/3}/(2\times1.6605\times10^{-27})^{4/3}=4.93\times10^{9}\) (SI).</li>
+<li><b>Masa.</b> \(M=4\pi(K/\pi G)^{3/2}\times2.01824=2.896\times10^{30}\) kg \(=1.456M_\odot\).</li>
+<li><b>Hierro.</b> \(M\propto\mu_e^{-2}\): \(1.456\times(2/2.1538)^2=1.256M_\odot\).</li>
+<li><b>Resultado.</b> <span class="ans">1.456 \(M_\odot\); 1.26 \(M_\odot\).</span></li>
+</ol></details></li>
+<li><span class="lvl">Intermedio</span>Para Sirius B (\(M=1.02M_\odot\), \(R=0.0084R_\odot\)): densidad media, gravedad superficial y velocidad de escape.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Radio.</b> \(0.0084\times6.957\times10^8=5.84\times10^6\) m.</li>
+<li><b>Densidad.</b> \(M/(\tfrac43\pi R^3)=2.4\times10^9\) kg/m\(^3\).</li>
+<li><b>Gravedad.</b> \(GM/R^2=3.96\times10^6\) m/s\(^2\) (\(4\times10^5g\)).</li>
+<li><b>Escape.</b> \(\sqrt{2GM/R}=6.8\times10^6\) m/s (0.023 \(c\)).</li>
+<li><b>Resultado.</b> <span class="ans">\(2.4\times10^9\) kg/m³; \(4.0\times10^6\) m/s²; 6800 km/s.</span></li>
+</ol></details></li>
+<li><span class="lvl">Intermedio</span>Para una estrella de neutrones de 1.4 \(M_\odot\) y 12 km: densidad media, compacidad, velocidad de escape, energía de ligadura \(3GM^2/5R\) y su cociente con la energía que emite el Sol en \(10^{10}\) años.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Densidad.</b> \(M/(\tfrac43\pi R^3)=3.8\times10^{17}\) kg/m\(^3\).</li>
+<li><b>Compacidad.</b> \(2GM/Rc^2=0.345\) (\(R_s=4.13\) km).</li>
+<li><b>Escape.</b> \(\sqrt{2GM/R}=0.587c\).</li>
+<li><b>Ligadura.</b> \(3GM^2/5R=2.59\times10^{46}\) J; el Sol emite \(3.828\times10^{26}\times3.156\times10^{17}=1.21\times10^{44}\) J: cociente 214.</li>
+<li><b>Resultado.</b> <span class="ans">\(3.8\times10^{17}\) kg/m³; 0.345; 0.59 c; \(2.6\times10^{46}\) J; 214 veces.</span></li>
+</ol></details></li>
+<li><span class="lvl">Avanzado</span>Explique, con la ecuación TOV, por qué el gas ideal de neutrones tiene una masa máxima de 0.71 \(M_\odot\) y por qué las estrellas de neutrones reales llegan a 2 \(M_\odot\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Aumento de gravedad.</b> En TOV, la presión misma gravita (\(\varepsilon+P\), \(m+4\pi r^3P/c^2\)) y aparece el factor \(1/(1-2Gm/rc^2)\): una presión mayor para sostener la estrella genera más gravedad.</li>
+<li><b>Colapso.</b> A densidades altas la gravedad crece más deprisa que el soporte, y no hay equilibrio estable por encima de un valor: \(M_{\max}=0.710M_\odot\) (\(R=9.16\) km, \(\rho_c=4.2\times10^{18}\) kg/m³, de la integración numérica).</li>
+<li><b>Estrellas reales.</b> La repulsión de las fuerzas nucleares a corto alcance endurece la ecuación de estado (mayor \(P\) con igual \(\rho\)) y eleva el máximo por encima de 2 \(M_\odot\) (PSR J0740+6620: 2.08 \(M_\odot\)).</li>
+<li><b>Resultado.</b> <span class="ans">\(M_{\max}=0.71M_\odot\) para neutrones libres; ≳ 2 \(M_\odot\) con interacciones.</span></li>
+</ol></details></li>
+</ol>
+<div class="box note"><h4>Para profundizar</h4><p>J. H. Lane, <em>Am. J. Sci.</em> 50, 57 (1870); R. Emden, <em>Gaskugeln</em> (1907). S. Chandrasekhar, <em>Astrophys. J.</em> 74, 81 (1931) y <em>An Introduction to the Study of Stellar Structure</em> (1939). J. R. Oppenheimer y G. M. Volkoff, <em>Phys. Rev.</em> 55, 374 (1939). A. S. Eddington, <em>The Internal Constitution of the Stars</em> (1926). Textos: Carroll y Ostlie, <em>An Introduction to Modern Astrophysics</em>, caps. 10, 16 y 18; Shapiro y Teukolsky, <em>Black Holes, White Dwarfs and Neutron Stars</em>; Kippenhahn et al., <em>Stellar Structure and Evolution</em>.</p></div>
+</section>
+</template>

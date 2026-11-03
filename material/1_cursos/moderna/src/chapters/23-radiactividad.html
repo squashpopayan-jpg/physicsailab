@@ -1,0 +1,113 @@
+<template class="chapter-src" data-id="radiactividad" data-num="23" data-title="Radiactividad: alfa, beta y gamma" data-part="Parte VI · Física nuclear" data-short="La ley de desintegración y su naturaleza estadística, las cadenas de Bateman y los equilibrios, la desintegración alfa como efecto túnel (Gamow), la desintegración beta y su espectro continuo, y la datación radiométrica">
+<p class="lead">Los núcleos inestables se transforman espontáneamente, sin que nada externo los empuje, y lo hacen al azar: es imposible predecir cuándo se desintegrará un núcleo concreto, pero con muchos la fracción que sobrevive obedece una ley exacta. Este capítulo presenta esa ley y su ruido de Poisson, las cadenas de desintegraciones sucesivas (ecuaciones de Bateman), y los tres modos principales: la emisión alfa, explicada por Gamow como efecto túnel a través de la barrera de Coulomb (capítulo 12), la emisión beta, con su espectro continuo que llevó a postular el neutrino, y la gamma. Los valores Q se calculan con masas atómicas, las cadenas se comprueban con la exponencial matricial y con DOP853, y el modelo de Gamow se verifica contra una integral numérica y contra las semividas medidas.</p>
+
+<section>
+<h2>La ley de desintegración</h2>
+<p>La probabilidad de que un núcleo se desintegre en un intervalo \(dt\) es \(\lambda\,dt\), independiente de su edad y de lo que ocurra alrededor. Para \(N\) núcleos, \(dN/dt=-\lambda N\):</p>
+<div class="eq key" data-name="Ley de desintegración radiactiva">\[N(t)=N_0e^{-\lambda t},\qquad T_{1/2}=\frac{\ln2}\lambda,\qquad \tau=\frac1\lambda=\frac{T_{1/2}}{\ln2},\qquad \text{actividad }\ \mathcal A=\lambda N\ \ (1\ \text{Bq}=1\ \text{s}^{-1};\ 1\ \text{Ci}=3.7\times10^{10}\ \text{Bq}).\]</div>
+<p>El curie nació como la actividad de un gramo de radio-226. Con \(T_{1/2}=1600\) años (\(\lambda=1.373\times10^{-11}\) s\(^{-1}\), \(\tau=2308\) años) y \(N=N_A/226.0254=2.664\times10^{21}\) átomos, la actividad es \(3.66\times10^{10}\) Bq, es decir, 0.989 Ci. En un cuerpo humano de 70 kg hay unos 140 g de potasio, de los cuales el 0.0117 % es ⁴⁰K (\(T_{1/2}=1.248\times10^9\) años): \(2.5\times10^{20}\) átomos que dan unos 4.3 kBq: cuatro mil desintegraciones por segundo en cada uno de nosotros. Y el carbono vivo contiene un ¹⁴C por cada \(8\times10^{11}\) átomos de ¹²C (\(1.2\times10^{-12}\) en la relación isotópica): 0.23 Bq por gramo, que cae a la mitad cada 5730 años tras la muerte del organismo: de ahí la <span class="term">datación por radiocarbono</span>, \(t=(T_{1/2}/\ln2)\ln(\mathcal A_0/\mathcal A)\). Una muestra con el 25 % de la actividad inicial tiene 11 460 años (dos semividas); con el 30 %, 9953 años; con el 1 %, 38 069 años (el límite práctico ronda los 50 000). La datación K–Ar usa el ⁴⁰Ar que se acumula: con \(^{40}\text{Ar}/^{40}\text{K}=0.0107\), la edad es \((1/\lambda)\ln[1+\text{Ar}/(0.1072\,\text{K})]=171\) millones de años (10.7 % del ⁴⁰K decae a ⁴⁰Ar por captura electrónica).</p>
+<p>Como la desintegración es un proceso aleatorio, el número de núcleos supervivientes fluctúa: cada uno sobrevive con probabilidad \(p=e^{-\lambda t}\), y el número de supervivientes sigue una distribución binomial con desviación típica \(\sqrt{N_0p(1-p)}\); la fluctuación relativa de la cuenta es \(\sim1/\sqrt N\) (ley de Poisson). Para \(N_0=10^4\) en \(t=T_{1/2}\): \(5000\pm50\). Una simulación Monte Carlo de 400 experimentos reproduce la media (5000) y la varianza (2500) esperadas.</p>
+<div class="sim" data-sim="desintegracion" data-title="Desintegración radiactiva: ley exponencial y fluctuaciones de Poisson"></div>
+<div class="sim-guide"><ul>
+<li>Con \(N_0=100\) las trayectorias (azules) se dispersan bastante de la exponencial (curva gruesa): la fluctuación relativa en una semivida es \(1/\sqrt{50}\approx14\) %. Con \(N_0=10^6\) las trayectorias se confunden con la curva ideal.</li>
+<li>Pulse «Repetir el experimento»: el mismo \(N_0\) da trayectorias distintas, pero la media sigue \(N_0e^{-\lambda t}\).</li>
+<li>El panel derecho muestra que el ruido relativo crece al final, cuando quedan pocos núcleos (\(\propto1/\sqrt N\)).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Cadenas de desintegración: ecuaciones de Bateman</h2>
+<p>Con frecuencia el núcleo hijo también es radiactivo. Para una cadena \(A_1\to A_2\to\cdots\to A_n\) con constantes distintas, la población del \(n\)-ésimo miembro, con \(N_1(0)=N_0\) y los demás en cero, es (Bateman, 1910)</p>
+<div class="eq key" data-name="Ecuaciones de Bateman">\[N_n(t)=N_0\Bigl(\prod_{i=1}^{n-1}\lambda_i\Bigr)\sum_{i=1}^n\frac{e^{-\lambda_it}}{\prod_{j\ne i}(\lambda_j-\lambda_i)}.\]</div>
+<p>Se verificó contra la exponencial matricial \(e^{\mathbf Mt}\) (<code>scipy.linalg.expm</code>) para tres cadenas (⁹⁹Mo, ²²²Rn con tres hijos y una cadena de cinco miembros con constantes arbitrarias), en cinco instantes cada una (precisión \(10^{-6}\)), y contra DOP853. Para dos miembros hay tres regímenes. Si el padre vive más que el hijo (\(\lambda_1<\lambda_2\)), la actividad del hijo alcanza su máximo en \(t_{\max}=\ln(\lambda_2/\lambda_1)/(\lambda_2-\lambda_1)\), donde es igual a la del padre, y después se establece el <em>equilibrio transitorio</em>, con \(\mathcal A_2/\mathcal A_1\to\lambda_2/(\lambda_2-\lambda_1)\). Si el padre vive mucho más (\(\lambda_1\ll\lambda_2\)) hay <em>equilibrio secular</em>: \(\mathcal A_2=\mathcal A_1\). Ejemplos:</p>
+<ul>
+<li>El generador médico de ⁹⁹Mo (\(T_{1/2}=65.94\) h) → ⁹⁹ᵐTc (6.0067 h): el hijo, que emite un gamma de 140 keV usado en diagnóstico por imagen, llega a su máximo a \(t=22.8\) h (con el 78.7 % del ⁹⁹Mo restante y el 7.2 % del inicial convertido en ⁹⁹ᵐTc); la razón de actividades es 1.011 a las 24 h, 1.093 a las 48 h y se estabiliza en 1.100: el generador se «ordeña» cada día.</li>
+<li>El ²²⁶Ra (1600 años) y su hijo ²²²Rn (3.8235 días): \(\lambda_2/(\lambda_2-\lambda_1)=1.0000065\): equilibrio secular; por eso en una roca con radio el radón se genera con la misma actividad que el radio.</li>
+</ul>
+<div class="sim" data-sim="cadena" data-title="Cadenas radiactivas: equilibrio transitorio y secular"></div>
+<div class="sim-guide"><ul>
+<li>Con «⁹⁹Mo → ⁹⁹ᵐTc»: la actividad del hijo (rojo) crece, corta a la del padre (azul) en 22.8 h y la sigue con un 10 % de exceso. Active la escala logarítmica para ver que ambas decaen con la semivida del padre.</li>
+<li>Con ²²⁶Ra → ²²²Rn, tome 400 días: el radón sube a la actividad del radio en unas 3 semividas (≈ 11 días) y la iguala (equilibrio secular).</li>
+<li>La cadena de cuatro miembros del radón muestra cómo las actividades de los descendientes cortos se alinean con la de su padre inmediato.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Desintegración alfa: el túnel de Gamow</h2>
+<p>El núcleo emite una partícula α (⁴He) si \(Q_\alpha=[M(Z,A)-M(Z-2,A-4)-M(^4\text{He})]c^2>0\). Con las masas atómicas, \(Q\) se obtiene con precisión: ²³⁸U, 4.270 MeV; ²²⁶Ra, 4.871 MeV; ²¹⁰Po, 5.408 MeV; ²¹²Po, 8.954 MeV; ²³²Th, 4.082 MeV (iguales a los publicados a mejor que 0.2 %). Pero la barrera de Coulomb entre el α y el núcleo hijo es mucho más alta que \(Q\): en el ²³⁸U, \(2(Z-2)e^2/4\pi\varepsilon_0R=27.9\) MeV en \(r=R=9.30\) fm, frente a \(Q=4.27\) MeV: clásicamente la partícula no podría salir. Gamow (1928) mostró que sale por efecto túnel, y que la probabilidad por intento es \(e^{-2G}\), con el exponente WKB (cap. 12)</p>
+<div class="eq key" data-name="Teoría de Gamow de la desintegración alfa">\[2G=\frac2\hbar\int_R^b\sqrt{2\mu\Bigl(\frac{2(Z-2)e^2}{4\pi\varepsilon_0r}-Q\Bigr)}\,dr=\frac{2\sqrt{2\mu Q}}\hbar\,b\Bigl[\arccos\sqrt x-\sqrt{x(1-x)}\Bigr],\quad b=\frac{2(Z-2)e^2}{4\pi\varepsilon_0Q},\ x=\frac Rb,\qquad \lambda=\nu_0e^{-2G},\ \nu_0=\frac v{2R}.\]</div>
+<p>Se comprobó la fórmula analítica con la integral numérica (scipy.integrate.quad) para cinco núcleos, a \(10^{-8}\). Con \(R=1.2(A_d^{1/3}+4^{1/3})\) fm y \(v\) calculada con \(Q+35\) MeV de energía cinética dentro, el modelo da, para el ²³⁸U, \(b=60.7\) fm, \(2G=87.98\) y una semivida de \(1.5\times10^9\) años (medida: \(4.47\times10^9\)); para el ²¹²Po, \(b=26.4\) fm, \(2G=32.28\) y \(2.8\times10^{-8}\) s (medida: \(3\times10^{-7}\) s). Con un cambio de energía de solo 4.7 MeV (de 4.27 a 8.95 MeV) la semivida cambia \(4.7\times10^{23}\) veces (de \(1.4\times10^{17}\) s a \(3\times10^{-7}\) s): el modelo reproduce esa variación brutal (ley de Geiger–Nuttall) con errores de un factor 3 a 110, es decir, dentro de dos órdenes de magnitud en 24 órdenes. Es uno de los primeros éxitos de la mecánica cuántica aplicada al núcleo: explica que una pequeña variación de \(Q\) produzca una enorme variación de la vida media.</p>
+<div class="sim" data-sim="alfa" data-title="Desintegración alfa: barrera de Coulomb, efecto túnel y semivida de Gamow"></div>
+<div class="sim-guide"><ul>
+<li>Con ²³⁸U: la línea de \(Q=4.27\) MeV corta el potencial en \(R=9.3\) fm y en \(b=60.7\) fm; la región sombreada es la barrera (27.9 MeV de alto). Cambie a ²¹²Po: \(Q=8.95\) MeV, barrera más delgada (de 9 a 26 fm) y semivida de sub-microsegundos.</li>
+<li>La barra de la derecha compara la semivida medida (azul) con la de Gamow (verde) en escala logarítmica: el modelo falla un factor de 3 a 100 en rangos de \(10^{-7}\) a \(10^{17}\) s.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Desintegración beta y espectro continuo</h2>
+<p>En la desintegración \(\beta^-\), un neutrón se convierte en un protón con emisión de un electrón y un antineutrino: \(^A_ZX\to{}^A_{Z+1}Y+e^-+\bar\nu_e\); en la \(\beta^+\), un protón se convierte en un neutrón con emisión de un positrón y un neutrino, y en la <em>captura electrónica</em> el núcleo absorbe un electrón de su capa K. Con masas atómicas: \(Q_{\beta^-}=[M(Z)-M(Z+1)]c^2\); \(Q_{EC}=[M(Z)-M(Z-1)]c^2\); \(Q_{\beta^+}=Q_{EC}-2m_ec^2\) (1.022 MeV). Valores calculados: ³H, 18.6 keV; ¹⁴C, 156.5 keV; ³²P, 1.711 MeV; ⁴⁰K, 1.311 MeV (β⁻) y 1.504 MeV (captura); ⁶⁰Co, 2.823 MeV; ¹³⁷Cs, 1.176 MeV; ¹³¹I, 0.971 MeV; ⁹⁹Mo, 1.358 MeV; para el ²²Na, \(Q_{EC}=2.843\) MeV y \(Q_{\beta^+}=1.821\) MeV; todos coinciden con los valores publicados (error menor que 0.5 %).</p>
+<p>El espectro de energía del electrón es <em>continuo</em> entre 0 y \(Q\) (a diferencia de los de α y γ, que son líneas). En 1930 Pauli propuso, «desesperadamente», una partícula neutra que se llevara el resto de la energía y el momento (el neutrino, detectado en 1956). Fermi dio la forma del espectro: \(dN/dT\propto F(Z',T)\,p\,W\,(Q-T)^2\), donde \(p\) y \(W\) son el momento y la energía total del electrón, \((Q-T)^2\) el factor de espacio de fases del neutrino (sin masa) y \(F\) la función de Fermi, que recoge la atracción (\(\beta^-\)) o repulsión (\(\beta^+\)) de Coulomb del núcleo hijo: \(F=2\pi\eta/(1-e^{-2\pi\eta})\), \(\eta=\pm Z'\alpha W/p\). Con esta forma (no relativista), la energía media resulta 5.70 keV para el ³H (publicada: 5.69), 49.4 keV para el ¹⁴C (publicada: 49.5), 48.9 keV para el ³⁵S (48.8), 697 keV para el ³²P (695) y 217 keV para el ²²Na (rama del 90 %, con \(Q=0.547\) MeV; publicada: 215 keV), contrastada además con la integral numérica (scipy.integrate.quad) a \(2\times10^{-3}\). Sin la función de Fermi, la energía media sería \(\simeq Q/3\). Para elementos pesados la forma no relativista deja de valer (para ⁹⁰Sr da 177 keV frente a 196 keV).</p>
+<div class="sim" data-sim="beta" data-title="Espectro beta continuo con la función de Fermi"></div>
+<div class="sim-guide"><ul>
+<li>Con el ¹⁴C (\(Q=156.5\) keV) la media es 49.4 keV; el neutrino se lleva en promedio \(156.5-49.4=107\) keV. Desactive la función de Fermi (línea punteada): la atracción de Coulomb de un \(\beta^-\) lo desplaza hacia bajas energías; compare con el \(\beta^+\) del ²²Na, empujado a energías mayores.</li>
+<li>El tritio (\(Q=18.6\) keV) se usa para buscar la masa del neutrino: una masa no nula recortaría el extremo del espectro.</li>
+</ul></div>
+<h3>Desintegración gamma</h3>
+<p>Tras una desintegración α o β el núcleo hijo suele quedar excitado y emite un fotón de energía igual a la diferencia entre niveles (de unos keV a unos MeV; ⁶⁰Ni* emite 1.173 y 1.333 MeV tras el decaimiento del ⁶⁰Co). Los estados «isoméricos» como el ⁹⁹ᵐTc tienen vidas de horas porque la transición está prohibida por el momento angular; en la <em>conversión interna</em> la energía se transfiere a un electrón atómico en lugar de a un fotón.</p>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Calcule el número de átomos, la constante de desintegración y la actividad de 1 g de ²²⁶Ra (\(T_{1/2}=1600\) años), en Bq y en Ci.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Átomos.</b> \(N=N_A/226.0254=2.664\times10^{21}\).</li>
+<li><b>Constante.</b> \(\lambda=\ln2/(1600\times3.15576\times10^7\ \text{s})=1.373\times10^{-11}\) s\(^{-1}\).</li>
+<li><b>Actividad.</b> \(\lambda N=3.66\times10^{10}\) Bq; entre \(3.7\times10^{10}\): 0.989 Ci.</li>
+<li><b>Resultado.</b> <span class="ans">\(2.664\times10^{21}\); \(1.373\times10^{-11}\) s⁻¹; \(3.66\times10^{10}\) Bq = 0.989 Ci.</span></li>
+</ol></details></li>
+<li><span class="lvl">Básico</span>Un fragmento de madera tiene el 30 % de la actividad de ¹⁴C del carbono moderno. ¿Cuántos años tiene (\(T_{1/2}=5730\) años)?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Fórmula.</b> \(t=(T_{1/2}/\ln2)\ln(1/0.3)\).</li>
+<li><b>Vida media.</b> \(\tau=5730/0.6931=8267\) años; \(\ln(1/0.3)=1.204\).</li>
+<li><b>Edad.</b> \(8267\times1.204=9953\) años.</li>
+<li><b>Resultado.</b> <span class="ans">≈ 9950 años.</span></li>
+</ol></details></li>
+<li><span class="lvl">Intermedio</span>Estime la actividad del ⁴⁰K en el cuerpo de una persona con 140 g de potasio (0.0117 % de ⁴⁰K; \(T_{1/2}=1.248\times10^9\) años).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Masa de ⁴⁰K.</b> \(140\times1.17\times10^{-4}=0.01638\) g.</li>
+<li><b>Átomos.</b> \(N=0.01638/40\times6.022\times10^{23}=2.47\times10^{20}\).</li>
+<li><b>Constante.</b> \(\lambda=\ln2/(1.248\times10^9\times3.15576\times10^7)=1.760\times10^{-17}\) s\(^{-1}\).</li>
+<li><b>Actividad.</b> \(\lambda N=4.34\times10^3\) Bq.</li>
+<li><b>Resultado.</b> <span class="ans">\(4.34\times10^3\) Bq (≈ 4.3 kBq).</span></li>
+</ol></details></li>
+<li><span class="lvl">Intermedio</span>En un generador \(^{99}\text{Mo}\) (65.94 h) → \(^{99m}\)Tc (6.0067 h), halle el instante de máxima población del hijo, el cociente de actividades en equilibrio y la fracción del ⁹⁹Mo inicial presente en ese instante.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Constantes.</b> \(\lambda_1=\ln2/65.94\ \text{h}=0.010512\) h\(^{-1}\); \(\lambda_2=0.11540\) h\(^{-1}\).</li>
+<li><b>Máximo.</b> \(t_{\max}=\ln(\lambda_2/\lambda_1)/(\lambda_2-\lambda_1)=\ln(10.98)/0.10488=22.8\) h.</li>
+<li><b>Equilibrio.</b> \(\lambda_2/(\lambda_2-\lambda_1)=1.100\).</li>
+<li><b>Fracción de ⁹⁹Mo.</b> \(e^{-\lambda_1t_{\max}}=0.787\); el hijo, \(N_2/N_0=0.0716\).</li>
+<li><b>Resultado.</b> <span class="ans">22.8 h; 1.100; 78.7 % de ⁹⁹Mo restante (7.2 % de ⁹⁹ᵐTc).</span></li>
+</ol></details></li>
+<li><span class="lvl">Intermedio</span>Para el ²³⁸U (\(Q_\alpha=4.270\) MeV): el radio \(R\), el punto de retorno \(b\), la altura de la barrera en \(R\), el exponente de Gamow y la semivida estimada (\(\nu_0=2.36\times10^{21}\) s\(^{-1}\)).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Radio.</b> \(R=1.2(234^{1/3}+4^{1/3})=1.2(6.162+1.587)=9.30\) fm.</li>
+<li><b>Barrera.</b> \(2\times90\times1.43996/9.30=27.9\) MeV.</li>
+<li><b>Retorno.</b> \(b=2\times90\times1.43996/4.270=60.7\) fm.</li>
+<li><b>Exponente.</b> \(2G=87.98\) (integral WKB).</li>
+<li><b>Semivida.</b> \(T_{1/2}=\ln2/(\nu_0e^{-2G})=4.75\times10^{16}\) s \(=1.5\times10^9\) años (medida: \(4.47\times10^9\)).</li>
+<li><b>Resultado.</b> <span class="ans">9.30 fm; 27.9 MeV; 60.7 fm; 87.98; \(1.5\times10^9\) años.</span></li>
+</ol></details></li>
+<li><span class="lvl">Avanzado</span>La energía media de los electrones de la desintegración del ¹⁴C (\(Q=156.5\) keV) es 49.5 keV (publicada). ¿Cuánto se lleva el antineutrino, y qué fracción de \(Q\) es cada uno? ¿Cuál sería la media sin la función de Fermi?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Energía media del electrón.</b> \(\langle T\rangle=49.43\) keV (integración del espectro de Fermi).</li>
+<li><b>Antineutrino.</b> \(Q-\langle T\rangle=156.5-49.43=107.07\) keV.</li>
+<li><b>Fracciones.</b> \(\langle T\rangle/Q=0.316\); el neutrino, 0.684.</li>
+<li><b>Sin Coulomb.</b> Con \(F=1\): \(\langle T\rangle\approx54.4\) keV (el efecto de atracción baja la media en un 9 %).</li>
+<li><b>Resultado.</b> <span class="ans">107 keV al antineutrino (68 %); 49.4 keV al electrón (32 %); 54.4 keV sin la función de Fermi.</span></li>
+</ol></details></li>
+</ol>
+<div class="box note"><h4>Para profundizar</h4><p>H. Becquerel, <em>C. R. Acad. Sci.</em> 122, 420 (1896). E. Rutherford y F. Soddy, <em>Phil. Mag.</em> 4, 370 (1902). H. Bateman, <em>Proc. Cambridge Phil. Soc.</em> 15, 423 (1910). G. Gamow, <em>Z. Phys.</em> 51, 204 (1928). E. Fermi, <em>Z. Phys.</em> 88, 161 (1934). C. Cowan et al., <em>Science</em> 124, 103 (1956). W. F. Libby, <em>Radiocarbon Dating</em> (1952). Textos: Krane, <em>Introductory Nuclear Physics</em>, caps. 6–9; Wong, caps. 6–8; Eisberg y Resnick, cap. 13.</p></div>
+</section>
+</template>

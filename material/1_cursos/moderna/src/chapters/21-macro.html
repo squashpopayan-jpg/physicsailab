@@ -1,0 +1,108 @@
+<template class="chapter-src" data-id="macro" data-num="21" data-title="Superconductividad, superfluidez y condensados" data-part="Parte V · Estadística cuántica y materia condensada" data-short="La superconductividad y la teoría BCS (pares de Cooper, brecha, longitud de London, cuanto de flujo), el efecto Josephson y el SQUID, la superfluidez del helio y el criterio de Landau, y la condensación de Bose–Einstein de gases atómicos en una trampa">
+<p class="lead">En un puñado de sistemas la mecánica cuántica se manifiesta a escala macroscópica: una corriente eléctrica que circula años sin resistencia, un líquido que fluye sin viscosidad, una nube de millones de átomos descrita por una sola función de onda. Todos comparten una idea, la ocupación macroscópica de un estado cuántico por bosones: átomos de ⁴He o de rubidio, o pares de electrones (pares de Cooper), que se comportan como bosones. Este capítulo presenta la teoría BCS de la superconductividad con la ecuación de la brecha resuelta numéricamente, el efecto Josephson y la interferencia de flujo, el criterio de Landau para la superfluidez y la condensación de Bose–Einstein en una trampa. Cada resultado numérico se comprobó con un cálculo independiente (ecuación de la brecha con corte, integración de ecuaciones diferenciales con DOP853, minimización y suma exacta sobre los niveles).</p>
+
+<section>
+<h2>Superconductividad y la teoría BCS</h2>
+<p>En 1911 Kamerlingh Onnes halló que la resistencia del mercurio se anula de manera abrupta por debajo de \(T_c=4.15\) K. Además de resistencia nula, un superconductor expulsa el campo magnético de su interior (efecto Meissner, 1933): es un diamagnetismo perfecto, no solo un conductor perfecto. Las ecuaciones de London (1935) explican que el campo penetra solo una longitud</p>
+<div class="eq key" data-name="Longitud de penetración de London">\[\lambda_L=\sqrt{\frac{m}{\mu_0n_se^2}}\ ,\qquad \Phi_0=\frac h{2e}=2.0678\times10^{-15}\ \text{Wb}\ \ (\text{cuanto de flujo}).\]</div>
+<p>(Con \(n_s=n=18.1\times10^{28}\) m\(^{-3}\) del aluminio da 12.5 nm; el valor medido, 16 nm, es del mismo orden: no todos los electrones son superfluidos, y la masa efectiva difiere.) El flujo atrapado en un anillo superconductor está cuantizado en múltiplos de \(h/2e\): la carga de los portadores es \(2e\), prueba directa de que son pares.</p>
+<p>La teoría de Bardeen, Cooper y Schrieffer (BCS, 1957) lo explica: cerca de la superficie de Fermi, el intercambio de fonones produce una atracción neta entre electrones de espín y momento opuestos, y estos forman <span class="term">pares de Cooper</span> aunque la atracción sea débil. Los pares, de espín cero, son bosones que condensan en un estado coherente. Un efecto es una brecha \(\Delta\) en el espectro de excitaciones: para romper un par hay que dar al menos \(2\Delta\), y los electrones no pueden dispersarse con energías por debajo de la brecha: sin resistencia. En el límite de acoplamiento débil la ecuación autoconsistente de la brecha, con \(t=T/T_c\) y energías en unidades de \(k_BT_c\), es</p>
+<div class="eq key" data-name="Ecuación de la brecha BCS">\[\int_0^\infty\Bigl[\frac{\tanh(\xi/2)}{\xi}-\frac{\tanh(E/2t)}{E}\Bigr]d\xi=0,\quad E=\sqrt{\xi^2+\Delta^2};\qquad \Delta(0)=\pi e^{-\gamma}k_BT_c=1.764\,k_BT_c,\quad \Delta\simeq3.06\,k_BT_c\sqrt{1-T/T_c}.\]</div>
+<p>Se resolvió la ecuación y se comparó con la forma original con un corte \(\hbar\omega_D=300\,k_BT_c\) (scipy.quad + brentq): coinciden a \(5\times10^{-4}\) en seis temperaturas. Por ejemplo, \(\Delta(0.5T_c)=1.688\,k_BT_c\) (\(0.957\Delta(0)\)), \(\Delta(0.9T_c)=0.928\,k_BT_c\) (\(0.526\Delta(0)\)) y \(\Delta(0.99T_c)=0.305\,k_BT_c\), cerca del valor \(3.06\sqrt{0.01}=0.306\) de la ley de Tc (el coeficiente es \(\sqrt{8\pi^2/7\zeta(3)}=3.063\)). La misma teoría predice un salto del calor específico en \(T_c\) de \(12/7\zeta(3)=1.43\) veces el valor normal \(\gamma T_c\). Con \(T_c=1.175\) K (aluminio), \(\Delta(0)=0.179\) meV (medido: 0.17–0.18 meV) y el fotón mínimo capaz de romper un par, \(2\Delta=0.357\) meV, tiene 86.4 GHz (λ = 3.47 mm). Para metales de acoplamiento fuerte (plomo: \(2\Delta/k_BT_c\approx4.3\) medido, frente a 3.53 de BCS) la teoría necesita correcciones. En el espectro, la densidad de estados de las cuasipartículas es \(N_s(E)/N_n=|E|/\sqrt{E^2-\Delta^2}\) para \(|E|>\Delta\) y cero dentro de la brecha, que se observa por tunelamiento (Giaever, 1960).</p>
+<div class="sim" data-sim="bcs" data-title="Teoría BCS: brecha de energía y densidad de estados"></div>
+<div class="sim-guide"><ul>
+<li>Con \(T/T_c=0.5\), \(\Delta=0.957\Delta(0)\): la brecha es casi constante a baja temperatura (por la exponencial de Boltzmann \(e^{-\Delta/kT}\), pocos pares se rompen) y cae a cero en \(T_c\) con pendiente vertical (\(\propto\sqrt{1-t}\), línea punteada).</li>
+<li>En la densidad de estados hay una divergencia en el borde de la brecha y no hay estados dentro. Cambiar de material desplaza las escalas (Δ(0) = 0.179 meV en Al, 1.09 en Pb, 1.41 en Nb) pero la forma es universal en BCS.</li>
+<li>Con \(T\ge T_c\) la brecha desaparece y \(N_s=N_n\): el metal normal.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Efecto Josephson y SQUID</h2>
+<p>Dos superconductores separados por una barrera delgada (unos nm) forman una <span class="term">unión Josephson</span>. Como cada uno tiene una función de onda macroscópica con fase propia, los pares tunelan con una corriente determinada por la diferencia de fase \(\varphi\) (Josephson, 1962):</p>
+<div class="eq key" data-name="Relaciones de Josephson">\[I=I_c\sin\varphi\quad(\text{DC}),\qquad \frac{d\varphi}{dt}=\frac{2eV}\hbar\quad(\text{AC}),\qquad \nu=\frac{2e}hV=483.598\ \text{GHz/mV},\qquad I_cR_n=\frac{\pi\Delta}{2e}\tanh\frac\Delta{2k_BT}\ \ (\text{Ambegaokar–Baratoff}).\]</div>
+<p>Con una corriente menor que \(I_c\) la unión conduce sin tensión; con \(V\ne0\) la corriente oscila con la frecuencia \(2eV/h\): 1 µV equivale a 483.6 MHz, y por eso la constante de Josephson \(K_J=2e/h\) fija el patrón del voltio. En el modelo RCSJ sobreamortiguado, \(\dot\varphi=i-\sin\varphi\) (en unidades de \(\tau_J=\hbar/2eI_cR_n\), \(i=I/I_c\)), cuya solución da la característica \(\langle V\rangle=R_n\sqrt{I^2-I_c^2}\) para \(I>I_c\); se integró con RK4 y se comparó con scipy (DOP853) a cuatro corrientes, y con la fórmula analítica. Para una unión de aluminio, \(I_cR_n=\pi\Delta/2e=0.28\) mV, y con \(I=1.5I_c\), \(\langle V\rangle=1.118\,I_cR_n=0.314\) mV, que oscila a 151.7 GHz. Si se irradia con microondas de frecuencia \(f\), aparecen escalones de tensión constante \(V_n=nhf/2e\) (escalones de Shapiro): con 10 GHz, \(V_1=20.68\) µV.</p>
+<p>El campo magnético modula la fase: una unión «larga» tiene \(I_c(\Phi)=I_c(0)|\sin(\pi\Phi/\Phi_0)/(\pi\Phi/\Phi_0)|\) (patrón de Fraunhofer, comprobado contra la maximización numérica de la integral de la corriente), y un anillo con dos uniones iguales (<span class="term">SQUID</span>), \(I_c\propto|\cos(\pi\Phi/\Phi_0)|\): cada fracción de cuanto de flujo se lee como una variación de \(I_c\). Un SQUID mide campos de \(10^{-15}\) T (en magnetoencefalografía, los campos del cerebro, de \(10^{-13}\)–\(10^{-12}\) T).</p>
+<div class="sim" data-sim="josephson" data-title="Efecto Josephson (I–V y oscilación) e interferencia de flujo (SQUID)"></div>
+<div class="sim-guide"><ul>
+<li>Con \(I/I_c<1\) no hay tensión: corriente continua sin caída. Con \(I/I_c=1.5\), la tensión media es \(1.118\,I_cR_n\) y la instantánea oscila entre valores por encima y debajo de ese promedio (a 151.7 GHz con el aluminio).</li>
+<li>Con \(I\gg I_c\) la curva I–V se aproxima a la recta óhmica de la resistencia normal \(R_n\) (línea punteada).</li>
+<li>En el modo interferencia, el SQUID tiene \(I_c=0\) en \(\Phi=\Phi_0/2\) y máximos en \(\Phi=n\Phi_0\), mientras que el patrón de la unión decae como \(1/f\) con ceros en \(f=1,2,3\).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Superfluidez</h2>
+<p>El ⁴He líquido, por debajo de 2.17 K (punto \(\lambda\)), fluye sin viscosidad por capilares finos (Kapitza, Allen y Misener, 1938). El hecho de que el ⁴He sea un bosón sugiere la condensación de Bose (el gas ideal con la densidad del helio líquido daría \(T_c=3.13\) K, cap. 19), pero la interacción es fuerte y el estado es más sutil. Landau (1941) mostró que un objeto que se mueve con velocidad \(v\) en el fluido solo puede disipar energía creando una excitación de energía \(\varepsilon(p)\) si \(\varepsilon(p)\le vp\); por tanto, por debajo de la <span class="term">velocidad crítica de Landau</span> \(v_c=\min\varepsilon(p)/p\) no se crean excitaciones y no hay fricción. En el espectro del helio las excitaciones son fonones (\(\varepsilon=cp\), \(c=238\) m/s) y, a \(p_0/\hbar=1.91\) Å\(^{-1}\), <em>rotones</em> con una brecha \(\Delta/k_B=8.65\) K y \(\varepsilon\simeq\Delta+(p-p_0)^2/2\mu\), \(\mu=0.16\,m_{He}\). El mínimo de \(\varepsilon/p\) se alcanza en \(p/\hbar=1.97\) Å\(^{-1}\), con \(v_c=58.4\) m/s, mucho menor que la de los fonones; en la práctica, los vórtices lo reducen aún más (los valores medidos son de cm/s a metros por segundo según la geometría). Se calculó con minimización numérica (scipy.optimize) y se obtiene el mismo valor.</p>
+<div class="sim" data-sim="superfluido" data-title="Superfluidez: espectro de excitaciones del ⁴He y criterio de Landau"></div>
+<div class="sim-guide"><ul>
+<li>La recta \(\varepsilon=vp\) con \(v=40\) m/s queda por debajo del espectro: nunca lo corta, no hay disipación. Con \(v=58.4\) m/s es tangente al espectro en el rotón; con \(v>58.4\) m/s corta el espectro y se pueden crear rotones.</li>
+<li>En el espectro de fonones (recta de pendiente \(c=238\) m/s) la restricción sería mucho menos exigente: es la rama de roton la que fija \(v_c\).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Condensación de Bose–Einstein en una trampa</h2>
+<p>En 1995 los grupos de Cornell y Wieman (rubidio), Ketterle (sodio) y Hulet (litio) enfriaron gases de \(10^4\)–\(10^7\) átomos alcalinos por debajo de unos \(10^{-7}\) K en trampas magnéticas y observaron la condensación de Bose–Einstein predicha 70 años antes. En una trampa armónica (frecuencia media \(\bar\omega\)) la densidad de estados es cuadrática y la temperatura crítica de \(N\) bosones es</p>
+<div class="eq key" data-name="Temperatura crítica en una trampa armónica">\[k_BT_c=\hbar\bar\omega\Bigl(\frac N{\zeta(3)}\Bigr)^{1/3}\Bigl[1-0.73\,\frac{\omega_m}{\bar\omega}N^{-1/3}\Bigr],\qquad \frac{N_0}N=1-\Bigl(\frac T{T_c}\Bigr)^3.\]</div>
+<p>Para \(N=10^6\) átomos de \(^{87}\)Rb en una trampa isótropa de \(\nu=100\) Hz: \(\hbar\omega/k_B=4.80\) nK, \(T_c^0=451.4\) nK y, con la corrección de tamaño finito, \(T_c=448.1\) nK; la suma exacta sobre los niveles da 448.05 nK (acuerdo de \(10^{-4}\)). El tamaño del oscilador es \(a_{ho}=\sqrt{\hbar/m\omega}=1.08\) µm. A 300 nK, el 70.0 % de los átomos está en el condensado, y la longitud de onda térmica es 0.342 µm. La energía de interacción no incluida en el modelo ideal desplaza \(T_c\) unos pocos por ciento. Cuando \(T<T_c\) aparece en el perfil de densidad un pico estrecho (el condensado, de ancho \(a_{ho}\)) sobre la nube térmica ancha (de ancho \(\sqrt{k_BT/m\omega^2}\)), lo que se observa en las imágenes por expansión libre.</p>
+<div class="sim" data-sim="bec" data-title="Condensado de Bose–Einstein en una trampa armónica"></div>
+<div class="sim-guide"><ul>
+<li>Con \(N=10^6\) y 100 Hz: \(T_c=448\) nK; a \(T=300\) nK, 70 % condensado, con un pico estrecho sobre la nube térmica. Suba la temperatura sobre \(T_c\): el pico desaparece.</li>
+<li>\(T_c\propto N^{1/3}\bar\nu\): con trampas más rígidas (500 Hz) o más átomos, la condensación ocurre a mayor temperatura. La curva de gas uniforme (punteada) cae más despacio que la de la trampa.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Calcule, para el aluminio (\(T_c=1.175\) K), la brecha \(\Delta(0)\) de BCS, la energía \(2\Delta\), y la frecuencia y la longitud de onda del fotón que rompe un par de Cooper.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Brecha.</b> \(\Delta(0)=1.764\,k_BT_c=1.764\times1.175\times8.617\times10^{-5}\) eV \(=0.1786\) meV.</li>
+<li><b>Par.</b> \(2\Delta=0.357\) meV.</li>
+<li><b>Frecuencia.</b> \(\nu=2\Delta/h=86.4\) GHz.</li>
+<li><b>Longitud de onda.</b> \(\lambda=c/\nu=3.47\) mm.</li>
+<li><b>Resultado.</b> <span class="ans">0.179 meV; 0.357 meV; 86.4 GHz; 3.47 mm.</span></li>
+</ol></details></li>
+<li><span class="lvl">Básico</span>Un anillo superconductor de 1 cm\(^2\) está inmerso en un campo de 1 µT. ¿Cuántos cuantos de flujo lo atraviesan? ¿A qué frecuencia oscila una unión Josephson con 1 µV y con 10 µV?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Flujo.</b> \(\Phi=BA=10^{-6}\times10^{-4}=10^{-10}\) Wb.</li>
+<li><b>Cuantos.</b> \(\Phi/\Phi_0=10^{-10}/2.0678\times10^{-15}=4.84\times10^4\).</li>
+<li><b>Frecuencias.</b> \(\nu=2eV/h=483.598\) MHz (1 µV) y 4.836 GHz (10 µV).</li>
+<li><b>Resultado.</b> <span class="ans">\(4.84\times10^4\) cuantos; 483.6 MHz y 4.836 GHz.</span></li>
+</ol></details></li>
+<li><span class="lvl">Intermedio</span>Con la ecuación de la brecha, \(\Delta(T)\) vale 1.688, 0.928 y 0.305 \(k_BT_c\) a \(T/T_c=0.5,0.9,0.99\). Exprese \(\Delta\) relativa a \(\Delta(0)\) y en meV para el aluminio, y compárela con la ley \(3.06\sqrt{1-t}\) cerca de \(T_c\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Relativas.</b> \(1.688/1.764=0.957\); \(0.928/1.764=0.526\); \(0.305/1.764=0.173\).</li>
+<li><b>En meV (Al).</b> \(k_BT_c=0.1013\) meV: \(0.1709\), \(0.0940\) y \(0.0309\) meV.</li>
+<li><b>Ley.</b> \(3.063\sqrt{1-0.99}=0.306\,k_BT_c\), cuando el cálculo exacto da 0.305: coinciden.</li>
+<li><b>Coeficiente.</b> \(\sqrt{8\pi^2/(7\zeta(3))}=3.063\); el salto de calor específico es \(12/(7\zeta(3))=1.43\).</li>
+<li><b>Resultado.</b> <span class="ans">0.957, 0.526, 0.173 de \(\Delta(0)\); 0.171, 0.094, 0.031 meV; la ley cerca de \(T_c\) concuerda.</span></li>
+</ol></details></li>
+<li><span class="lvl">Intermedio</span>Para una unión Josephson de aluminio (\(I_cR_n=\pi\Delta/2e\) a \(T\ll T_c\)) polarizada con \(I=1.5I_c\): halle \(I_cR_n\), \(\langle V\rangle\), la frecuencia de oscilación, y la tensión del primer escalón de Shapiro con microondas de 10 GHz.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>I_cR_n.</b> \(\pi\times0.17860\ \text{meV}/2=0.2805\) mV.</li>
+<li><b>Tensión media.</b> \(\sqrt{1.5^2-1}=1.118\Rightarrow\langle V\rangle=1.118\times0.2805=0.3137\) mV.</li>
+<li><b>Frecuencia.</b> \(\nu=483.598\ \text{GHz/mV}\times0.3137=151.7\) GHz.</li>
+<li><b>Shapiro.</b> \(V_1=hf/2e=\Phi_0f=2.0678\times10^{-15}\times10^{10}=20.68\) µV.</li>
+<li><b>Resultado.</b> <span class="ans">0.2805 mV; 0.3137 mV; 151.7 GHz; 20.68 µV.</span></li>
+</ol></details></li>
+<li><span class="lvl">Intermedio</span>Halle la longitud de penetración de London del aluminio (\(n=18.1\times10^{28}\) m\(^{-3}\)) y la longitud de coherencia \(\xi_0=\hbar v_F/\pi\Delta(0)\) con \(v_F=2.03\times10^6\) m/s; ¿es de tipo I o II?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>London.</b> \(\lambda_L=\sqrt{m/\mu_0ne^2}=12.5\) nm.</li>
+<li><b>Coherencia.</b> \(\xi_0=1.0546\times10^{-34}\times2.03\times10^6/(\pi\times0.17860\times10^{-3}\times1.602\times10^{-19})=2.38\) µm.</li>
+<li><b>Cociente.</b> \(\kappa=\lambda_L/\xi_0\approx5\times10^{-3}\ll1/\sqrt2\): tipo I (el campo penetra poco; la transición al estado normal es abrupta).</li>
+<li><b>Resultado.</b> <span class="ans">12.5 nm; 2.38 µm; superconductor de tipo I.</span></li>
+</ol></details></li>
+<li><span class="lvl">Avanzado</span>(a) Calcule la velocidad crítica de Landau con el espectro de rotones del helio. (b) Para \(N=10^6\) átomos de \(^{87}\)Rb en una trampa armónica de 100 Hz: halle \(T_c\) con la corrección de tamaño finito y la fracción condensada a 300 nK.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>(a) Mínimo.</b> Minimizando \(\varepsilon(p)/p\) con \(\varepsilon=\Delta+(p-p_0)^2/2\mu\), \(\Delta/k=8.65\) K, \(p_0/\hbar=1.91\) Å\(^{-1}\), \(\mu=0.16\,m_{He}\): \(p^*/\hbar=1.97\) Å\(^{-1}\), \(v_c=58.4\) m/s.</li>
+<li><b>(b) T_c ideal.</b> \((\hbar\omega/k_B)(N/\zeta(3))^{1/3}=4.799\ \text{nK}\times94.05=451.4\) nK.</li>
+<li><b>Corrección.</b> \(1-0.73\times10^{-2}=0.9927\Rightarrow T_c=448.1\) nK.</li>
+<li><b>Fracción.</b> \(1-(300/448.1)^3=0.700\).</li>
+<li><b>Resultado.</b> <span class="ans">58.4 m/s; 448.1 nK; 70.0 %.</span></li>
+</ol></details></li>
+</ol>
+<div class="box note"><h4>Para profundizar</h4><p>H. Kamerlingh Onnes, <em>Comm. Leiden</em> 120b (1911). W. Meissner y R. Ochsenfeld, <em>Naturwiss.</em> 21, 787 (1933). J. Bardeen, L. N. Cooper y J. R. Schrieffer, <em>Phys. Rev.</em> 108, 1175 (1957). B. D. Josephson, <em>Phys. Lett.</em> 1, 251 (1962). L. D. Landau, <em>J. Phys. USSR</em> 5, 71 (1941). M. H. Anderson et al., <em>Science</em> 269, 198 (1995); K. B. Davis et al., <em>Phys. Rev. Lett.</em> 75, 3969 (1995). S. Grossmann y M. Holthaus, <em>Phys. Lett. A</em> 208, 188 (1995) (corrección de tamaño finito). Textos: Tinkham, <em>Introduction to Superconductivity</em>; Kittel, caps. 10 y 11; Pethick y Smith, <em>Bose–Einstein Condensation in Dilute Gases</em>; Krane, cap. 11.</p></div>
+</section>
+</template>

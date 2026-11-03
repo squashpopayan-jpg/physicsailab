@@ -1,0 +1,123 @@
+<template class="chapter-src" data-id="laser" data-num="17" data-title="Emisión estimulada y láser" data-part="Parte IV · Átomos, luz y moléculas" data-short="Los coeficientes de Einstein, por qué una lámpara no es un láser, ganancia e inversión de población, la cavidad y sus modos, las ecuaciones de balance, los haces gaussianos y los pulsos ultracortos">
+<p class="lead">En 1917 Einstein mostró que la luz de Planck exige un proceso que nadie había considerado: un fotón puede <em>inducir</em> a un átomo excitado a emitir otro fotón idéntico (misma frecuencia, fase, dirección y polarización). Amplificado en una cavidad, es el láser. Este capítulo parte del argumento de Einstein, explica por qué un cuerpo caliente no puede ser un láser, construye las condiciones de ganancia y umbral, calcula los modos de la cavidad y la forma del haz, integra las ecuaciones de balance (que reproducen el umbral, el estado estacionario y las oscilaciones de relajación) y termina con los pulsos de femtosegundos. Cada resultado se compara con una integración numérica independiente.</p>
+
+<section>
+<h2>Los coeficientes de Einstein</h2>
+<p>Un átomo con dos niveles, \(E_1\) y \(E_2\) (\(h\nu=E_2-E_1\)), inmerso en radiación con densidad espectral de energía \(u(\nu)\), puede absorber, emitir espontáneamente o emitir de manera estimulada:</p>
+<div class="eq key" data-name="Tasas de Einstein">\[\frac{dN_2}{dt}=-A_{21}N_2-B_{21}u\,N_2+B_{12}u\,N_1.\]</div>
+<p>En equilibrio térmico (\(dN_2/dt=0\) y \(N_2/N_1=(g_2/g_1)e^{-h\nu/k_BT}\)) la densidad de energía debe ser la de Planck, \(u=\dfrac{8\pi h\nu^3}{c^3}\dfrac1{e^{h\nu/k_BT}-1}\), para cualquier temperatura. Esto solo es posible si</p>
+<div class="eq key" data-name="Relaciones de Einstein">\[g_1B_{12}=g_2B_{21},\qquad \frac{A_{21}}{B_{21}}=\frac{8\pi h\nu^3}{c^3}.\]</div>
+<p>La emisión estimulada <em>existe</em> y está determinada por la espontánea. Además, la razón entre las dos en equilibrio es \(A_{21}/(B_{21}u)=e^{h\nu/k_BT}-1\): a 6000 K (la superficie del Sol) y 500 nm vale 120, de modo que la luz de las estrellas es casi toda espontánea e incoherente; en cambio, para un maser de 10 GHz a 300 K vale 0.0016 y lo estimulado domina por un factor 625. En el visible, ni a 6000 K podría una fuente térmica emitir con predominio estimulado (la razón crece exponencialmente al subir la frecuencia): por eso el láser exige un sistema fuera del equilibrio.</p>
+<div class="sim" data-sim="einstein" data-title="Emisión espontánea frente a estimulada y población de equilibrio"></div>
+<div class="sim-guide"><ul>
+<li>Con «He–Ne (632.8 nm)» y 300 K: \(h\nu=1.959\) eV, la razón espontánea/estimulada es \(8.2\times10^{32}\) y \(N_2/N_1=1.2\times10^{-33}\): en equilibrio no hay ningún átomo excitado. Habría que subir a 32 800 K para igualar las dos emisiones.</li>
+<li>Con la línea de CO₂ (10.6 µm) y 300 K, la razón es 91; con el maser de NH₃ (1.25 cm), menor que 1: los dispositivos de microondas pueden funcionar casi en equilibrio, los ópticos no.</li>
+<li>La curva de la derecha (\(N_2/N_1=e^{-h\nu/kT}\)) crece con \(T\) pero nunca supera 1: una población invertida (\(N_2/N_1>1\)) es una «temperatura negativa», imposible en equilibrio.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Ganancia, ensanchamiento y umbral</h2>
+<p>Un haz que atraviesa un medio con \(N_2\) átomos excitados y \(N_1\) en el nivel inferior (por unidad de volumen) cambia de intensidad como \(dI/dz=\gamma I\), con el <span class="term">coeficiente de ganancia</span></p>
+<div class="eq key" data-name="Ganancia y sección eficaz de emisión estimulada">\[\gamma(\nu)=\sigma(\nu)\Bigl(N_2-\frac{g_2}{g_1}N_1\Bigr),\qquad \sigma(\nu)=\frac{\lambda^2A_{21}}{8\pi n^2}\,g(\nu),\]</div>
+<p>donde \(g(\nu)\) es el perfil normalizado de la línea (\(\int g\,d\nu=1\)). La ganancia positiva exige \(N_2>(g_2/g_1)N_1\): <span class="term">inversión de población</span>. El perfil tiene un ancho natural \(\Delta\nu_N=A/2\pi\) (0.54 MHz en la línea de 632.8 nm del neón) y, en un gas, un ensanchamiento Doppler gaussiano, bastante mayor:</p>
+<div class="eq key" data-name="Ensanchamiento Doppler">\[\Delta\nu_D=2\nu_0\sqrt{\frac{2k_BT\ln2}{mc^2}}\ \ (\text{FWHM}),\qquad \Delta\nu_D(\text{Ne},632.8\ \text{nm})=1.31\ \text{GHz a }300\ \text{K},\ 1.51\ \text{GHz a }400\ \text{K}.\]</div>
+<p>Con el pico gaussiano \(g_0=0.939/\Delta\nu_D\) a 400 K, la sección eficaz del He–Ne vale \(\sigma=3.4\times10^{-17}\) m\(^2\) (\(3.4\times10^{-13}\) cm\(^2\)), consistente con los valores publicados. Para que haya oscilación, la ganancia por vuelta debe compensar las pérdidas: con espejos de reflectividades \(R_1,R_2\) y una pérdida interna \(\alpha_i\), el <span class="term">umbral de ganancia</span> es</p>
+<div class="eq key" data-name="Umbral y tiempo de vida del fotón">\[\gamma_{th}=\alpha_i-\frac{\ln(R_1R_2)}{2L},\qquad \tau_c=\frac{1}{c\,\gamma_{th}},\qquad Q=2\pi\nu\,\tau_c.\]</div>
+<p>Por ejemplo, una cavidad de 30 cm con \(R_1=0.999\) y \(R_2=0.98\) tiene \(\gamma_{th}=0.0353\) m\(^{-1}\) (1.06 % por paso), \(\tau_c=94.4\) ns y \(Q=2.8\times10^8\); con \(R_2=0.99\), \(\gamma_{th}=0.0184\) m\(^{-1}\), \(\tau_c=181\) ns.</p>
+<h3>Modos longitudinales</h3>
+<p>Las ondas estacionarias en la cavidad exigen \(\nu_q=q\,c/2L\): una familia de frecuencias separadas por el <em>intervalo espectral libre</em> \(c/2L\) (499.65 MHz para 30 cm). Oscilan los modos cuya ganancia (el perfil Doppler) excede el umbral: un He–Ne de 30 cm, con ancho 1.5 GHz, tiene unos tres modos bajo la curva; uno de 10 cm, con intervalo de 1.5 GHz, uno solo o dos (se busca el modo único en metrología).</p>
+<div class="sim" data-sim="cavidad" data-title="Cavidad Fabry–Pérot: curva de ganancia, umbral y modos"></div>
+<div class="sim-guide"><ul>
+<li>Con los valores iniciales (30 cm, \(R_2=0.99\), \(\gamma_0=0.08\) m⁻¹, 400 K) el umbral es 0.0184 m⁻¹, \(\tau_c=181\) ns y oscilan 5 modos separados 499.7 MHz bajo un ancho Doppler de 1.51 GHz.</li>
+<li>Acorte la cavidad a 10 cm: el intervalo entre modos sube a 1.5 GHz y, con ganancia moderada, queda un modo.</li>
+<li>Reduzca \(R_2\) (más acoplamiento de salida): sube el umbral y se apagan los modos de las alas; si la ganancia queda por debajo del umbral, no hay láser.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Ecuaciones de balance</h2>
+<p>La dinámica de un láser de cuatro niveles con inversión \(N\) y \(\varphi\) fotones en el modo se describe con dos ecuaciones acopladas:</p>
+<div class="eq key" data-name="Ecuaciones de balance">\[\frac{dN}{dt}=R-\frac N\tau-BN\varphi,\qquad \frac{d\varphi}{dt}=\Bigl(BN-\frac1{\tau_c}\Bigr)\varphi+\beta\frac N\tau,\]</div>
+<p>con la tasa de bombeo \(R\), la vida \(\tau\) del nivel superior, el acoplamiento \(B\) y una pequeña fracción \(\beta\) de la emisión espontánea que cae en el modo. El estado estacionario por encima del umbral fija la inversión en su valor umbral \(N_{th}=1/(B\tau_c)\) (la ganancia queda «anclada» a las pérdidas) y el exceso de bombeo se convierte en fotones: \(\varphi=\tau_c(R-R_{th})\), con \(R_{th}=N_{th}/\tau\). Al linealizar alrededor de ese estado, con \(r=R/R_{th}\), se obtienen las <span class="term">oscilaciones de relajación</span>, amortiguadas, de frecuencia</p>
+<div class="eq key" data-name="Oscilaciones de relajación">\[\omega=\sqrt{\frac{r-1}{\tau\,\tau_c}-\Bigl(\frac r{2\tau}\Bigr)^2},\qquad \text{amortiguamiento }e^{-rt/2\tau}.\]</div>
+<p>Con parámetros de un láser de Nd:YAG (\(\tau=230\) µs, \(\tau_c=1\) ns, \(B=10^{-5}\) s\(^{-1}\)) y \(r=2.5\): \(N_{th}=10^{14}\), \(R_{th}=4.35\times10^{17}\) s\(^{-1}\), \(\varphi=6.5\times10^8\) fotones, frecuencia de oscilación 406 kHz y tiempo de amortiguamiento \(2\tau/r=184\) µs. La integración de las ecuaciones (Runge–Kutta de cuarto orden) se verificó contra <code>scipy.integrate.solve_ivp</code> (DOP853) en todo el transitorio, y la frecuencia contra el periodo medido en la solución numérica.</p>
+<div class="sim" data-sim="balance" data-title="Ecuaciones de balance: encendido, oscilaciones de relajación y estado estacionario"></div>
+<div class="sim-guide"><ul>
+<li>Con \(r=2.5\) la inversión crece casi linealmente hasta el umbral, tras \(\tau\ln[r/(r-1)]=117.5\) µs (el simulador marca 118.9 µs al cruzar la mitad del valor estacionario); entonces el láser dispara un primer pico gigante (9.5 veces el valor estacionario), \(N\) baja y sigue una secuencia de picos con periodo de 2.5 µs (406 kHz), cada vez menores, hasta estabilizarse en \(N=N_{th}\), \(\varphi=\varphi_{ss}\). Reduzca la ventana temporal para distinguirlos.</li>
+<li>Suba \(r\): las oscilaciones son más rápidas (\(\propto\sqrt{r-1}\)) y el retraso de encendido disminuye. Con \(r<1\), no hay láser.</li>
+<li>Alargue \(\tau_c\): la frecuencia de oscilación baja como \(1/\sqrt{\tau_c}\) y el umbral de bombeo \(R_{th}\propto1/\tau_c\) también.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Haces gaussianos y resonadores</h2>
+<p>El modo transversal fundamental de una cavidad es un <span class="term">haz gaussiano</span>: \(w(z)=w_0\sqrt{1+(z/z_R)^2}\), con alcance de Rayleigh \(z_R=\pi w_0^2/\lambda\) y divergencia \(\theta=\lambda/\pi w_0\). Para un He–Ne con \(w_0=0.3\) mm, \(z_R=0.447\) m y \(\theta=0.671\) mrad. Un resonador de dos espejos esféricos de radios \(R_1,R_2\) y longitud \(L\) admite un modo autoconsistente solo si es estable: \(0\le g_1g_2\le1\), con \(g_i=1-L/R_i\). Su cintura es</p>
+<div class="eq key" data-name="Modo fundamental de un resonador estable">\[w_0^2=\frac\lambda\pi\,\frac{\sqrt{L(R_1-L)(R_2-L)(R_1+R_2-L)}}{R_1+R_2-2L},\qquad z_w=\frac{L(R_2-L)}{R_1+R_2-2L}.\]</div>
+<p>Se verificó contra la condición de autoconsistencia del parámetro \(q\) del haz con la matriz de ida y vuelta (\(q=(Aq+B)/(Cq+D)\), NumPy) para cuatro configuraciones; por ejemplo, la cavidad simétrica de 30 cm con espejos de \(R=1\) m a 632.8 nm tiene \(w_0=0.268\) mm en el centro y \(w=0.291\) mm en los espejos.</p>
+<div class="sim" data-sim="haz" data-title="Resonador con espejos esféricos: estabilidad y haz gaussiano"></div>
+<div class="sim-guide"><ul>
+<li>Con \(L=0.5\) m, \(R_1=2\) m, \(R_2=3\) m (632.8 nm): \(g_1=0.75\), \(g_2=0.833\), \(g_1g_2=0.625\), estable; la cintura queda a \(z_w=0.3125\) m del espejo 1, es decir, más cerca del espejo de mayor radio de curvatura.</li>
+<li>Acerque \(R_1\) y \(R_2\) a \(L/2\): se llega al borde del diagrama de estabilidad y el haz se estrecha mucho en uno de los espejos; más allá, el resonador es inestable y no hay modo.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Pulsos ultracortos</h2>
+<p>Si muchos modos longitudinales oscilan con fases fijas (<em>mode-locking</em>) se obtiene un tren de pulsos. La duración está limitada por el ancho de banda: \(\Delta t\,\Delta\nu\ge\) 0.4413 para un pulso gaussiano y 0.3148 para uno de forma \(\operatorname{sech}^2\) (anchos totales de la intensidad y del espectro de potencia; valores comprobados por FFT numérica). Un láser de Ti:zafiro (800 nm) con 100 nm de ancho tiene \(\Delta\nu=46.8\) THz y produce pulsos de hasta 9.4 fs, apenas 3.5 ciclos de la luz, de periodo \(\lambda/c=2.67\) fs.</p>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Calcule el cociente emisión espontánea/estimulada \(e^{h\nu/kT}-1\) para (a) luz de 500 nm emitida por un cuerpo a 6000 K; (b) una microonda de 10 GHz a 300 K, e indique cuál proceso domina en cada caso.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>(a).</b> \(x=hc/(\lambda k_BT)=2.4797\ \text{eV}/0.51704\ \text{eV}=4.796\); \(e^{4.796}-1=120\).</li>
+<li><b>(b).</b> \(x=h\nu/k_BT=1.5997\times10^{-3}\); \(e^x-1=0.0016\).</li>
+<li><b>Interpretación.</b> (a) la espontánea domina 120 veces: la luz solar es incoherente. (b) la estimulada domina: \(1/0.0016=625\) veces.</li>
+<li><b>Resultado.</b> <span class="ans">120 (espontánea); 0.0016 (estimulada, 625 veces mayor).</span></li>
+</ol></details></li>
+<li><span class="lvl">Básico</span>Halle el ancho Doppler del neón (20.18 u) en 632.8 nm a 300 K y a 400 K, el intervalo espectral libre de una cavidad de 30 cm y cuántos modos caben dentro del ancho a 400 K.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Frecuencia.</b> \(\nu_0=c/\lambda=4.738\times10^{14}\) Hz.</li>
+<li><b>Ancho.</b> \(\Delta\nu_D=2\nu_0\sqrt{2k_BT\ln2/mc^2}\): 1.308 GHz a 300 K y 1.511 GHz a 400 K.</li>
+<li><b>FSR.</b> \(c/2L=2.998\times10^8/0.6=499.65\) MHz.</li>
+<li><b>Modos.</b> \(1511/499.65=3.02\): unos tres modos en el ancho a 400 K.</li>
+<li><b>Resultado.</b> <span class="ans">1.308 GHz; 1.511 GHz; 499.65 MHz; ≈ 3 modos.</span></li>
+</ol></details></li>
+<li><span class="lvl">Intermedio</span>Una cavidad láser de 30 cm tiene espejos con \(R_1=0.999\) y \(R_2=0.98\) y no hay otras pérdidas. Calcule el umbral de ganancia (por metro y por paso), el tiempo de vida del fotón y el factor de calidad a 632.8 nm.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Umbral.</b> \(\gamma_{th}=-\ln(R_1R_2)/2L=-\ln(0.97902)/0.6=0.03534\) m\(^{-1}\).</li>
+<li><b>Por paso.</b> \(\gamma_{th}L=0.0106\): 1.06 %.</li>
+<li><b>Vida del fotón.</b> \(\tau_c=1/(c\gamma_{th})=1/(2.998\times10^8\times0.03534)=94.4\) ns.</li>
+<li><b>Q.</b> \(Q=2\pi\nu\tau_c=2\pi(4.738\times10^{14})(94.4\times10^{-9})=2.81\times10^8\).</li>
+<li><b>Resultado.</b> <span class="ans">0.0353 m⁻¹ (1.06 % por paso); 94.4 ns; \(2.81\times10^8\).</span></li>
+</ol></details></li>
+<li><span class="lvl">Intermedio</span>Para un láser con \(\tau=230\) µs, \(\tau_c=1\) ns, \(B=10^{-5}\) s\(^{-1}\) y bombeo \(r=2.5\) veces el umbral, calcule \(N_{th}\), \(R_{th}\), el número de fotones estacionario, la frecuencia de las oscilaciones de relajación y el tiempo de amortiguamiento.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Inversión umbral.</b> \(N_{th}=1/(B\tau_c)=10^{14}\).</li>
+<li><b>Bombeo umbral.</b> \(R_{th}=N_{th}/\tau=4.348\times10^{17}\) s\(^{-1}\).</li>
+<li><b>Fotones.</b> \(\varphi=\tau_c(R-R_{th})=10^{-9}(1.5)(4.348\times10^{17})=6.52\times10^8\).</li>
+<li><b>Frecuencia.</b> \(\omega^2=(r-1)/(\tau\tau_c)-(r/2\tau)^2\Rightarrow f=406.4\) kHz.</li>
+<li><b>Amortiguamiento.</b> \(2\tau/r=184\) µs.</li>
+<li><b>Resultado.</b> <span class="ans">\(10^{14}\); \(4.35\times10^{17}\) s⁻¹; \(6.52\times10^8\); 406 kHz; 184 µs.</span></li>
+</ol></details></li>
+<li><span class="lvl">Intermedio</span>Un haz de He–Ne tiene cintura \(w_0=0.3\) mm. Halle \(z_R\), la divergencia y el radio del haz a 10 m.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Rayleigh.</b> \(z_R=\pi w_0^2/\lambda=\pi(0.3\times10^{-3})^2/632.8\times10^{-9}=0.4468\) m.</li>
+<li><b>Divergencia.</b> \(\theta=\lambda/\pi w_0=0.6714\) mrad.</li>
+<li><b>A 10 m.</b> \(w=w_0\sqrt{1+(10/0.4468)^2}=0.3\times22.40=6.72\) mm.</li>
+<li><b>Resultado.</b> <span class="ans">0.447 m; 0.671 mrad; 6.72 mm.</span></li>
+</ol></details></li>
+<li><span class="lvl">Avanzado</span>Un oscilador de Ti:zafiro (800 nm) tiene un ancho de 100 nm. Halle el ancho en frecuencia, la duración mínima del pulso gaussiano y el número de ciclos ópticos que contiene; calcule también la sección eficaz del He–Ne con \(A=3.4\times10^6\) s\(^{-1}\) y perfil Doppler a 400 K.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Ancho.</b> \(\Delta\nu=c\Delta\lambda/\lambda^2=(2.998\times10^8)(100\times10^{-9})/(800\times10^{-9})^2=46.84\) THz.</li>
+<li><b>Duración.</b> \(\Delta t=0.4413/\Delta\nu=9.42\) fs.</li>
+<li><b>Ciclos.</b> Periodo \(\lambda/c=2.669\) fs; \(9.42/2.669=3.5\) ciclos.</li>
+<li><b>Sección eficaz.</b> \(g_0=0.939/1.511\ \text{GHz}=6.2\times10^{-10}\) s; \(\sigma=\lambda^2Ag_0/8\pi=(632.8\times10^{-9})^2(3.4\times10^6)(6.2\times10^{-10})/(8\pi)=3.4\times10^{-17}\) m\(^2\).</li>
+<li><b>Resultado.</b> <span class="ans">46.8 THz; 9.42 fs; 3.5 ciclos; \(3.4\times10^{-17}\) m² (\(3.4\times10^{-13}\) cm²).</span></li>
+</ol></details></li>
+</ol>
+<div class="box note"><h4>Para profundizar</h4><p>A. Einstein, <em>Phys. Z.</em> 18, 121 (1917). T. H. Maiman, <em>Nature</em> 187, 493 (1960). A. Schawlow y C. H. Townes, <em>Phys. Rev.</em> 112, 1940 (1958). H. Kogelnik y T. Li, <em>Appl. Opt.</em> 5, 1550 (1966) (resonadores). Textos: A. E. Siegman, <em>Lasers</em>; O. Svelto, <em>Principles of Lasers</em>; Saleh y Teich, <em>Fundamentals of Photonics</em>, caps. 11–15; Krane, cap. 10.</p></div>
+</section>
+</template>

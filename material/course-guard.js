@@ -21,11 +21,11 @@
     } catch(e) {}
 
     const LAB_COURSE_IDS = [
-        "transformadores",
         "pendulo",
         "venturi",
         "recorrido",
-        "historia"
+        "historia",
+        "kids"
     ];
     const DEFAULT_COURSE_KEYS = {
         "mecanica": ["MECANICA-2026", "OBANDO-MEC-26", "MEC-QXN7-26"],
@@ -53,6 +53,10 @@
         "faro": ["FARO-2026", "PODS-REACCION-26", "LUZ-FARO-26", "OBANDO-FARO-26", "FAR-PCK1-26"],
         "diagnosticas": ["DIAGNOSTICAS-2026", "PRUEBAS-26", "OBANDO-DIAG-26", "DIA-GHNR-26"],
         "squash_arbitraje": ["ARBITRAJE-2026", "SQUASH-REF-26", "MANU-REF-26", "WSF-REGLAS-26"],
+        "fisicoquimica": ["FISICOQUIMICA-2026", "FQ-UNICAUCA-26", "OBANDO-FQ-26", "FQ-5XKP-26"],
+        "mcuantica": ["MCUANTICA-2026", "DIRAC-QM-26", "OBANDO-QM-26", "MCQ-7821-26"],
+        "moderna": ["MODERNA-2026", "RELATIVIDAD-26", "OBANDO-MOD-26", "MOD-9341-26"],
+        "kids": ["KIDS-2026", "FISICA-KIDS-26", "EXPLORADORES-26", "OBANDO-KIDS-26"],
         "historia": ["HISTORIA-2026", "CIENCIA-HIST-26", "OBANDO-HISTORIA-26", "SABER-2026", "BIENVENIDA-2026"]
     };
 
@@ -64,6 +68,10 @@
             if (raw === 'manu_squash_arbitraje' || raw === 'squash_arbitraje' || raw === 'arbitraje') return 'squash_arbitraje';
             if (raw === 'squash' || raw === 'squash-sim') return 'squash_sim';
             if (raw === 'hbn-mc' || raw === 'hbn_mc') return 'hbn_mc';
+            if (raw === 'moderna') return 'moderna';
+            if (raw === 'fisicoquimica') return 'fisicoquimica';
+            if (raw === 'mcuantica') return 'mcuantica';
+            if (raw === 'kids') return 'kids';
             return raw;
         }
 
@@ -93,6 +101,10 @@
         if (p.includes('recorrido')) return 'recorrido';
         if (p.includes('/ml/')) return 'ml';
         if (p.includes('/neuro/')) return 'neuro';
+        if (p.includes('moderna')) return 'moderna';
+        if (p.includes('fisicoquimica')) return 'fisicoquimica';
+        if (p.includes('mcuantica')) return 'mcuantica';
+        if (p.includes('kids')) return 'kids';
 
         const t = (document.title || '').toLowerCase();
         if (t.includes('historia') || t.includes('llegamos a saber') || t.includes('saber')) return 'historia';
@@ -119,6 +131,8 @@
         if (t.includes('guía') || t.includes('guia')) return 'guias';
         if (t.includes('english') || t.includes('inglés')) return 'ingles';
         if (t.includes('recorrido')) return 'recorrido';
+        if (t.includes('moderna') || t.includes('relatividad')) return 'moderna';
+        if (t.includes('fisicoquímica') || t.includes('fisicoquimica')) return 'fisicoquimica';
 
         return 'general';
     }
@@ -810,28 +824,30 @@
         const fallbackId = firstThematic || 'inicio';
         const fallbackTarget = '#' + fallbackId;
 
-        const homeLink = document.querySelector(`#toc > a[href="#inicio"], #toc > a[data-id="inicio"]`) ||
-                         (firstThematic ? document.querySelector(`#toc > a[href="#${firstThematic}"], #toc > a[data-id="${firstThematic}"]`) : null);
+        try {
+            history.replaceState(null, '', window.location.pathname + '#inicio');
+        } catch(e) {}
+        try {
+            location.hash = 'inicio';
+        } catch(e) {}
+        try {
+            window.dispatchEvent(new HashChangeEvent('hashchange'));
+            window.dispatchEvent(new Event('hashchange'));
+        } catch(e) {}
 
+        const homeLink = document.querySelector(`#toc a[href="#inicio"], #toc a[data-id="inicio"], .toc a[href="#inicio"], .toc a[data-id="inicio"]`);
         if (homeLink) {
-            homeLink.click();
-        } else {
-            try {
-                history.replaceState(null, '', window.location.pathname + fallbackTarget);
-                window.dispatchEvent(new HashChangeEvent('hashchange'));
-            } catch(e) {
-                location.hash = fallbackTarget;
-            }
+            try { homeLink.click(); } catch(e) {}
         }
 
         // Ocultar forzosamente cualquier capítulo bloqueado en el DOM
         try {
-            document.querySelectorAll('.chapter').forEach(art => {
-                const id = art.dataset.id;
+            document.querySelectorAll('.chapter, article[id^="cap-"]').forEach(art => {
+                const id = art.dataset.id || (art.id || '').replace(/^cap-/, '');
                 if (id && id !== 'inicio' && (!firstThematic || id !== firstThematic)) {
                     art.hidden = true;
                     art.style.display = 'none';
-                } else if (id === 'inicio' || (firstThematic && id === firstThematic)) {
+                } else if (id === 'inicio') {
                     art.hidden = false;
                     art.style.display = '';
                 }
@@ -922,13 +938,26 @@
         document.body.classList.add('pg-barrier-active');
 
         const closeModal = () => {
+            if (!isUnlocked()) {
+                enforceFreePreviewState();
+            }
             document.body.classList.remove('pg-barrier-active');
             if (activeModal) {
                 activeModal.remove();
                 activeModal = null;
             }
             if (!isUnlocked()) {
-                enforceFreePreviewState();
+                // Re-verificar tras 60ms por si el enrutador intentó retener el capítulo bloqueado
+                setTimeout(() => {
+                    if (!isUnlocked()) {
+                        const curH = decodeURIComponent(location.hash.replace(/^#/, '')).split('.')[0].toLowerCase();
+                        const firstThem = (getFirstThematicId() || '').toLowerCase();
+                        if (curH && curH !== 'inicio' && (!firstThem || curH !== firstThem)) {
+                            enforceFreePreviewState();
+                            openPaywall(curH);
+                        }
+                    }
+                }, 60);
             }
         };
 
@@ -1283,10 +1312,10 @@
         if (firstThematic && h === firstThematic) return;
 
         // Intentó entrar por hash directamente a un capítulo bloqueado
+        enforceFreePreviewState();
         setTimeout(() => {
-            enforceFreePreviewState();
             openPaywall(h);
-        }, 80);
+        }, 60);
     }
 
     // ----------------------------------------------------

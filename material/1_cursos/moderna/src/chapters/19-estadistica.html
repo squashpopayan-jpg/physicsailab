@@ -1,0 +1,110 @@
+<template class="chapter-src" data-id="estadistica" data-num="19" data-title="Estadística cuántica y calores específicos" data-part="Parte V · Estadística cuántica y materia condensada" data-short="Partículas idénticas y las tres distribuciones (Maxwell–Boltzmann, Fermi–Dirac, Bose–Einstein), el gas de electrones libres en un metal, el calor específico electrónico, los modelos de Einstein y Debye para la red y el condensado de Bose ideal">
+<p class="lead">La mecánica estadística clásica falla en dos lugares: los electrones de un metal no aportan al calor específico lo que dice el teorema de equipartición, y el calor específico de los sólidos cae a cero cuando la temperatura baja. Ambos problemas, que dejaron perplejos a los físicos hasta 1900–1930, se resuelven al contar los estados correctamente: las partículas idénticas obedecen la estadística de Fermi–Dirac (fermiones, con exclusión de Pauli) o la de Bose–Einstein (bosones). Este capítulo parte de las tres distribuciones, construye el gas de electrones libres y su energía de Fermi, calcula el calor específico electrónico y de la red (Einstein, Debye), y llega a la condensación de Bose. Las distribuciones se comprueban contra el conteo directo de microestados, las integrales de Fermi–Dirac contra mpmath, y los calores específicos contra la cuadratura numérica y las tablas de la literatura.</p>
+
+<section>
+<h2>Las tres distribuciones</h2>
+<p>Una partícula puede ocupar niveles de energía \(\varepsilon_i\). Para un sistema en contacto con un baño a temperatura \(T\) y con potencial químico \(\mu\), la ocupación media de un nivel depende de qué tipo de partículas sean:</p>
+<div class="eq key" data-name="Ocupación media de un nivel">\[\langle n\rangle=\frac1{e^{(\varepsilon-\mu)/k_BT}+a},\qquad a=\begin{cases}+1&\text{Fermi–Dirac (fermiones)}\\-1&\text{Bose–Einstein (bosones)}\\0&\text{Maxwell–Boltzmann (clásico)}\end{cases}\]</div>
+<p>Se obtiene sumando los pesos de Boltzmann \(e^{-n(\varepsilon-\mu)/k_BT}\) sobre los valores permitidos de la ocupación: \(n=0,1\) para fermiones (principio de exclusión) y \(n=0,1,2,\dots\) para bosones. Se comprobó por suma directa, sin usar la fórmula cerrada, para varios valores de \(x=(\varepsilon-\mu)/k_BT\). Para \(x=1\): \(\langle n\rangle_{FD}=0.2689\), \(\langle n\rangle_{MB}=0.3679\), \(\langle n\rangle_{BE}=0.5820\): los bosones se amontonan y los fermiones se excluyen. Para \(x\gg1\) (nivel poco ocupado) las tres coinciden: es el límite clásico, válido cuando la densidad es baja o la temperatura alta, \(n\lambda_T^3\ll1\) con la longitud de onda térmica \(\lambda_T=h/\sqrt{2\pi mk_BT}\). Para \(x\to0^+\) la ocupación de Bose crece sin límite (\(x=0.05\): 19.5), el germen de la condensación; para los fermiones nunca supera 1 (\(x=0.05\): 0.4875).</p>
+<div class="sim" data-sim="distribuciones" data-title="Las tres distribuciones y el escalón de Fermi"></div>
+<div class="sim-guide"><ul>
+<li>En el panel izquierdo, en \(x=1\) se ven las tres ocupaciones (0.269, 0.368, 0.582); a \(x\to0\) la de Bose diverge y la de Fermi vale ½.</li>
+<li>En el derecho, con \(T/T_F=0.05\) la distribución de Fermi es casi un escalón: solo los electrones a menos de unos \(kT\) de \(E_F\) pueden cambiar de estado. Suba \(T/T_F\) hasta 1: el escalón se borra y se acerca a Maxwell–Boltzmann.</li>
+<li>El potencial químico \(\mu\) decrece levemente al subir la temperatura (por el ensanchamiento de la distribución sobre la densidad de estados creciente).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El gas de electrones libres</h2>
+<p>En un metal, los electrones de conducción se pueden modelar como un gas de fermiones libres en una caja. Con espín, cada vector de onda \(\mathbf k\) admite dos electrones y los estados llenos a \(T=0\) forman una esfera de radio \(k_F\) con \(n=k_F^3/3\pi^2\). Las magnitudes de Fermi son</p>
+<div class="eq key" data-name="Magnitudes de Fermi">\[k_F=(3\pi^2n)^{1/3},\qquad E_F=\frac{\hbar^2k_F^2}{2m},\qquad T_F=\frac{E_F}{k_B},\qquad v_F=\frac{\hbar k_F}m,\qquad g(\varepsilon)=\frac1{2\pi^2}\Bigl(\frac{2m}{\hbar^2}\Bigr)^{3/2}\sqrt\varepsilon.\]</div>
+<p>Para el cobre (\(n=8.47\times10^{28}\) m\(^{-3}\)): \(E_F=7.03\) eV, \(T_F=8.16\times10^4\) K (80 veces la temperatura ambiente: los electrones forman un gas muy degenerado) y \(v_F=1.57\times10^6\) m/s (0.52 % de \(c\)), valores que coinciden con las tablas de Kittel. El potencial químico \(\mu(T)\) se obtiene resolviendo numéricamente \(n=\int g(\varepsilon)f(\varepsilon)d\varepsilon\) y se compara con la cuadratura de scipy; para \(k_BT\ll E_F\) se obtiene el desarrollo de Sommerfeld \(\mu=E_F[1-(\pi^2/12)(k_BT/E_F)^2]\): a 300 K la desviación del cobre es solo \(7.8\times10^{-5}\) eV.</p>
+<h3>Calor específico electrónico</h3>
+<p>A \(T\ll T_F\) solo una fracción \(\sim k_BT/E_F\) de los electrones se puede excitar (en el cobre a 300 K, el 0.38 % tiene \(\varepsilon>E_F\)), cada uno con energía \(\sim k_BT\). El resultado de Sommerfeld, \(C_{el}=\tfrac{\pi^2}2\,zR\,\dfrac T{T_F}=\gamma T\), es lineal en \(T\) y mucho menor que el clásico \(\tfrac32R\) por electrón: a 300 K, el calor específico electrónico del cobre es el 1.2 % del clásico. Explica por qué el calor específico de los metales no incluye el de los electrones (Dulong y Petit dan \(3R\) también para los metales). Los valores de \(\gamma\) del modelo concuerdan con los medidos a pocos por ciento en los metales alcalinos y nobles, y el cociente \(\gamma_{\rm exp}/\gamma_{\rm libre}\equiv m^*/m\) mide la «masa térmica» que absorbe el efecto de la red y de las interacciones:</p>
+<table class="data"><thead><tr><th>Metal</th><th>\(E_F\) (eV)</th><th>\(\gamma_{\rm libre}\) (mJ mol\(^{-1}\)K\(^{-2}\))</th><th>\(\gamma_{\rm exp}\)</th><th>\(m^*/m\)</th></tr></thead><tbody>
+<tr><td>Na</td><td>3.24</td><td>1.09</td><td>1.38</td><td>1.27</td></tr>
+<tr><td>K</td><td>2.12</td><td>1.67</td><td>2.08</td><td>1.25</td></tr>
+<tr><td>Cu</td><td>7.03</td><td>0.503</td><td>0.695</td><td>1.38</td></tr>
+<tr><td>Ag</td><td>5.50</td><td>0.643</td><td>0.646</td><td>1.01</td></tr>
+<tr><td>Al</td><td>11.67</td><td>0.909</td><td>1.35</td><td>1.48</td></tr>
+</tbody></table>
+<div class="sim" data-sim="fermi" data-title="Gas de electrones libres: energía de Fermi, potencial químico y calor específico"></div>
+<div class="sim-guide"><ul>
+<li>Con el cobre a 300 K, la curva ocupada \(g(\varepsilon)f(\varepsilon)\) es la parábola \(\sqrt\varepsilon\) cortada en \(E_F=7.03\) eV, con el borde difuminado en apenas \(\pm0.1\) eV.</li>
+<li>Suba la temperatura hasta \(T_F\sim10^5\) K: el calor específico por electrón se acerca al clásico, y la fórmula de Sommerfeld deja de valer. A bajas \(T\) cae linealmente.</li>
+<li>Cambie al sodio, al aluminio: la energía de Fermi aumenta con la densidad como \(n^{2/3}\) (el aluminio, con tres electrones por átomo, 11.67 eV).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Calor específico de la red: Einstein y Debye</h2>
+<p>La red cristalina almacena energía en vibraciones, que se cuantizan en <em>fonones</em> (bosones con \(\mu=0\)). La teoría clásica da el valor de <span class="term">Dulong y Petit</span>, \(C_V=3R=24.94\) J/(mol K), correcto a temperatura ambiente para la mayoría de los metales, pero los experimentos muestran que cae a cero al enfriar. Einstein (1907) supuso que todos los osciladores tienen la misma frecuencia (\(\theta_E=\hbar\omega/k_B\)): \(C_V=3R(\theta_E/T)^2e^{\theta_E/T}/(e^{\theta_E/T}-1)^2\), que explica la caída, pero demasiado deprisa (exponencial). Debye (1912) trató la red como un continuo elástico con frecuencias hasta un corte \(\omega_D\):</p>
+<div class="eq key" data-name="Calor específico de Debye">\[C_V=9R\Bigl(\frac T{\theta_D}\Bigr)^3\int_0^{\theta_D/T}\frac{x^4e^x}{(e^x-1)^2}\,dx\ \xrightarrow{T\ll\theta_D}\ \frac{12\pi^4}5R\Bigl(\frac T{\theta_D}\Bigr)^3\qquad(\theta_D=\hbar\omega_D/k_B).\]</div>
+<p>La ley \(T^3\) (observada en los cristales a baja temperatura) sale del espectro de ondas acústicas. Se comprobó la integral con <code>scipy.integrate.quad</code> para siete combinaciones \((T,\theta_D)\), y los límites: a \(T=20\theta_D\), \(C_V=3R\) con error \(10^{-3}\), y a \(T=\theta_D/50\) la ley \(T^3\) coincide con la integral completa (1 %). Para el cobre (\(\theta_D=343\) K): a 300 K, \(C_V=23.39\) J/(mol K) (\(T/\theta_D=0.875\), 93.8 % del valor clásico; el \(C_P\) medido, 24.4, incluye dilatación y electrones); a 10 K, \(C_V=0.0482\) J/(mol K), exactamente la ley \(T^3\). El silicio (\(\theta_D=645\) K) da 20.0 J/(mol K) a 300 K (medido 19.8). A \(T\lesssim3.8\) K en el cobre, el término electrónico lineal \(\gamma T\) supera al de la red \(\beta T^3\) con \(\beta=4.82\times10^{-5}\) J mol\(^{-1}\)K\(^{-4}\), y por eso el calor específico a muy baja temperatura se escribe \(C/T=\gamma+\beta T^2\): la ordenada da \(\gamma\) y la pendiente, \(\theta_D\).</p>
+<div class="sim" data-sim="calorico" data-title="Calor específico de la red: Dulong–Petit, Einstein y Debye"></div>
+<div class="sim-guide"><ul>
+<li>Con el cobre a 300 K, \(T/\theta_D=0.875\) y Debye da 23.39 J/(mol K), el 93.8 % de \(3R\). En el diamante (\(\theta_D=2230\) K) a 300 K, solo un 17 % del valor clásico.</li>
+<li>Con la escala logarítmica, a baja \(T\) Debye sigue la recta \(T^3\) y Einstein cae mucho más rápido: el modelo de Einstein subestima la red porque ignora los modos de baja frecuencia.</li>
+<li>La temperatura de Debye separa los regímenes: por debajo de \(\theta_D/50\) la ley \(T^3\) es exacta; por encima de \(\sim\theta_D\), Dulong–Petit.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Gas de Bose y condensación</h2>
+<p>Un gas de bosones tiene un número de partículas \(N=\sum\langle n_i\rangle\) que, con \(\mu\le0\) (para que la ocupación sea positiva), no puede aumentar sin límite en los niveles excitados: a una densidad dada, por debajo de una temperatura crítica el exceso de partículas se acumula en el estado fundamental (condensación de Bose–Einstein, predicha por Einstein en 1925):</p>
+<div class="eq key" data-name="Temperatura crítica de un gas de Bose ideal">\[T_c=\frac{2\pi\hbar^2}{mk_B}\Bigl(\frac n{\zeta(3/2)}\Bigr)^{2/3}\quad\Longleftrightarrow\quad n\lambda_T^3=\zeta(3/2)=2.612.\]</div>
+<p>Para el helio-4 líquido (\(\rho=145\) kg/m\(^3\), \(n=2.18\times10^{28}\) m\(^{-3}\)): \(T_c=3.13\) K, cerca de la temperatura (punto \(\lambda\), 2.17 K) a la que el helio se vuelve superfluido: la interacción entre átomos desplaza el valor. En \(T_c\), la longitud de onda térmica es 0.493 nm y \(n\lambda_T^3=2.612\), de modo que las ondas de materia de los átomos se solapan. La condensación y la superfluidez, y los gases atómicos ultrafríos, se estudian en el capítulo 21.</p>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Calcule la ocupación media de un nivel con \(\varepsilon-\mu=k_BT\) para fermiones, bosones y partículas clásicas; y para \(\varepsilon-\mu=0.05\,k_BT\), para fermiones y bosones.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>x = 1.</b> FD: \(1/(e+1)=0.2689\); MB: \(e^{-1}=0.3679\); BE: \(1/(e-1)=0.5820\).</li>
+<li><b>x = 0.05.</b> FD: \(1/(e^{0.05}+1)=0.4875\); BE: \(1/(e^{0.05}-1)=19.50\).</li>
+<li><b>Interpretación.</b> Los bosones se agrupan (más que MB) y los fermiones se excluyen (menos); la BE diverge cuando \(\varepsilon\to\mu\).</li>
+<li><b>Resultado.</b> <span class="ans">0.2689, 0.3679, 0.5820; 0.4875 y 19.50.</span></li>
+</ol></details></li>
+<li><span class="lvl">Básico</span>Calcule \(E_F\), \(T_F\) y \(v_F\) del cobre con \(n=8.47\times10^{28}\) m\(^{-3}\), y \(v_F/c\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>k_F.</b> \((3\pi^2n)^{1/3}=1.3586\times10^{10}\) m\(^{-1}\).</li>
+<li><b>E_F.</b> \(\hbar^2k_F^2/2m=1.1268\times10^{-18}\) J \(=7.03\) eV.</li>
+<li><b>T_F.</b> \(E_F/k_B=8.16\times10^4\) K.</li>
+<li><b>v_F.</b> \(\hbar k_F/m=1.57\times10^6\) m/s; \(v_F/c=0.00525\).</li>
+<li><b>Resultado.</b> <span class="ans">7.03 eV; \(8.16\times10^4\) K; \(1.57\times10^6\) m/s; 0.525 % de \(c\).</span></li>
+</ol></details></li>
+<li><span class="lvl">Intermedio</span>Para el cobre a 300 K: (a) el corrimiento del potencial químico \(E_F-\mu\); (b) el calor específico electrónico \(\gamma T\) y su razón con el clásico \(\tfrac32R\); (c) la fracción de electrones con \(\varepsilon>E_F\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>(a).</b> \(k_BT/E_F=0.025852/7.0328=3.676\times10^{-3}\); \(E_F-\mu=(\pi^2/12)(k_BT/E_F)^2E_F=7.8\times10^{-5}\) eV.</li>
+<li><b>(b).</b> \(\gamma=(\pi^2/2)R/T_F=0.503\) mJ mol\(^{-1}\)K\(^{-2}\); \(C_{el}(300)=0.151\) J/(mol K); razón \(=\pi^2T/(3T_F)=0.0121\).</li>
+<li><b>(c).</b> \(\int_{E_F}^\infty gf\,d\varepsilon/n=0.38\) % (estimación \(\tfrac32k_BT/E_F=0.55\) %).</li>
+<li><b>Resultado.</b> <span class="ans">\(7.8\times10^{-5}\) eV; \(\gamma=0.503\) mJ mol⁻¹K⁻², razón 1.2 %; 0.38 %.</span></li>
+</ol></details></li>
+<li><span class="lvl">Intermedio</span>El calor específico medido del sodio es \(\gamma=1.38\) mJ mol\(^{-1}\)K\(^{-2}\). Con \(n=2.65\times10^{28}\) m\(^{-3}\) calcule \(\gamma\) de electrones libres y la masa térmica \(m^*/m\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>E_F, T_F.</b> \(E_F=3.24\) eV; \(T_F=3.76\times10^4\) K.</li>
+<li><b>γ.</b> \((\pi^2/2)R/T_F=1.091\) mJ mol\(^{-1}\)K\(^{-2}\).</li>
+<li><b>Masa térmica.</b> \(m^*/m=1.38/1.091=1.27\).</li>
+<li><b>Resultado.</b> <span class="ans">1.09 mJ mol⁻¹K⁻²; \(m^*/m=1.27\).</span></li>
+</ol></details></li>
+<li><span class="lvl">Intermedio</span>Con \(\theta_D=343\) K para el cobre, calcule \(C_V\) de Debye a 300 K y a 10 K, la constante \(\beta\) de la ley \(T^3\) y la temperatura a la que el término electrónico (\(\gamma=0.695\) mJ mol\(^{-1}\)K\(^{-2}\)) iguala al de la red.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>300 K.</b> \(T/\theta_D=0.8746\): integral numérica \(\Rightarrow C_V=23.39\) J/(mol K) (93.8 % de \(3R=24.94\)).</li>
+<li><b>10 K.</b> \(C_V=0.0482\) J/(mol K) (la ley \(T^3\)).</li>
+<li><b>β.</b> \(\beta=(12\pi^4/5)R/\theta_D^3=233.78\times8.3145/343^3=4.82\times10^{-5}\) J mol\(^{-1}\)K\(^{-4}\).</li>
+<li><b>Cruce.</b> \(\gamma T=\beta T^3\Rightarrow T=\sqrt{\gamma/\beta}=\sqrt{6.95\times10^{-4}/4.82\times10^{-5}}=3.80\) K.</li>
+<li><b>Resultado.</b> <span class="ans">23.39 J/(mol K); 0.0482 J/(mol K); \(4.82\times10^{-5}\); 3.80 K.</span></li>
+</ol></details></li>
+<li><span class="lvl">Avanzado</span>Estime la temperatura crítica de condensación de un gas de Bose ideal con la densidad del helio-4 líquido (145 kg/m\(^3\)), y la longitud de onda térmica en ese punto; verifique que \(n\lambda_T^3=\zeta(3/2)\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Densidad.</b> \(n=\rho/m=145/(4.0026\times1.66054\times10^{-27})=2.18\times10^{28}\) m\(^{-3}\).</li>
+<li><b>T_c.</b> \(\dfrac{2\pi\hbar^2}{mk_B}\bigl(n/2.612\bigr)^{2/3}=3.13\) K.</li>
+<li><b>λ_T.</b> \(h/\sqrt{2\pi mk_BT_c}=0.493\) nm.</li>
+<li><b>Verificación.</b> \(n\lambda_T^3=2.612=\zeta(3/2)\).</li>
+<li><b>Resultado.</b> <span class="ans">\(T_c=3.13\) K; \(\lambda_T=0.493\) nm; \(n\lambda_T^3=2.612\). (Punto \(\lambda\) real: 2.17 K.)</span></li>
+</ol></details></li>
+</ol>
+<div class="box note"><h4>Para profundizar</h4><p>E. Fermi, <em>Z. Phys.</em> 36, 902 (1926). P. A. M. Dirac, <em>Proc. R. Soc. A</em> 112, 661 (1926). S. N. Bose, <em>Z. Phys.</em> 26, 178 (1924). A. Einstein, <em>Ann. Phys.</em> 22, 180 (1907) y <em>Sitzungsber. Preuss. Akad.</em> (1925). P. Debye, <em>Ann. Phys.</em> 39, 789 (1912). A. Sommerfeld, <em>Z. Phys.</em> 47, 1 (1928). Textos: C. Kittel, <em>Introduction to Solid State Physics</em>, caps. 5 y 6; Ashcroft y Mermin, caps. 2 y 23; Eisberg y Resnick, caps. 9 y 11; Krane, caps. 10 y 11; Pathria, <em>Statistical Mechanics</em>.</p></div>
+</section>
+</template>

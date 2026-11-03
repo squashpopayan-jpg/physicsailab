@@ -1,0 +1,93 @@
+<template class="chapter-src" data-id="aceleradores" data-num="26" data-title="Aceleradores, interacciones y detectores" data-part="Parte VII · Partículas, estrellas y cosmos" data-short="El ciclotrón y el sincrotrón, la radiación de sincrotrón, colisionadores y blancos fijos, umbrales de producción, la luminosidad del LHC, la pérdida de energía por ionización y la curva de Bragg, y la electrodinámica cuántica en e⁺e⁻: la razón R y la constante de estructura fina que «corre»">
+<p class="lead">Para explorar la materia a distancias de \(10^{-18}\) m hacen falta partículas con energías de teraelectronvoltios, y para producir partículas pesadas (como el Higgs, de 125 GeV) hay que concentrar mucha energía en una colisión. Este capítulo explica cómo se logra: los campos magnéticos que doblan el haz (la rigidez magnética del LHC), las pérdidas por radiación de sincrotrón que limitan a los electrones, por qué un colisionador es tanto más eficaz que un blanco fijo, cuántas colisiones se obtienen (la luminosidad), cómo las partículas ceden energía a los detectores (Bethe–Bloch y la curva de Bragg, de la que vive la protonterapia) y qué enseña la reacción \(e^+e^-\to\) hadrones sobre los quarks y sobre la carga eléctrica efectiva. Los resultados numéricos se verifican con integrales y ecuaciones diferenciales resueltas con SciPy y con tablas del NIST y del PDG.</p>
+
+<section>
+<h2>Cómo se acelera y se guía una partícula</h2>
+<p>Una partícula de carga \(q\) y momento \(p\) en un campo magnético \(B\) describe una circunferencia de radio \(\rho=p/(qB)\): la <span class="term">rigidez magnética</span> es \(p\,[\text{GeV}/c]=0.2998\,B[\text{T}]\,\rho[\text{m}]\) para carga unidad. Para el LHC, con \(B=8.33\) T en los imanes superconductores y un radio de curvatura efectivo \(\rho=2803.95\) m (los dipolos ocupan solo parte de los 26 658.9 m del anillo), \(p=7.00\) TeV/c. La frecuencia de giro es \(c/L=11\,245.5\) Hz: cada protón da once mil vueltas por segundo.</p>
+<p>El <span class="term">ciclotrón</span> (Lawrence, 1930) usa un campo constante y un campo eléctrico de radiofrecuencia: la frecuencia de giro \(f=qB/2\pi\gamma m\) es independiente de la velocidad mientras \(\gamma\simeq1\) (para un protón en 1.5 T, 22.87 MHz y un periodo de 43.7 ns). Con \(r=0.5\) m se alcanza \(p=0.2248\) GeV/c, 26.6 MeV; a más energía, la masa relativista aumenta y se pierde el sincronismo (con \(\gamma=1.5\) el periodo es de 65.6 ns y con \(\gamma=3\), de 131 ns): el periodo, calculado por \(2\pi\gamma m/qB\), se comprobó con la integración numérica de la fuerza de Lorentz relativista (scipy, DOP853). Los <em>sincrotrones</em> aumentan el campo y la frecuencia a medida que crece la energía, con el radio fijo.</p>
+<p>Toda partícula cargada que describe una órbita radia: la <span class="term">radiación de sincrotrón</span> hace que se pierda por vuelta la energía</p>
+<div class="eq key" data-name="Radiación de sincrotrón por vuelta">\[\Delta E=\frac{e^2}{3\varepsilon_0}\frac{\beta^3\gamma^4}\rho,\qquad \gamma=\frac E{mc^2},\qquad \Delta E\propto\frac{E^4}{m^4\rho}.\]</div>
+<p>Depende de la cuarta potencia de \(\gamma\), de modo que para igual energía un protón radia \((m_e/m_p)^4=8.8\times10^{-14}\) veces lo que un electrón. En el LEP (electrones de 100 GeV en un anillo de \(\rho=3026\) m), \(\Delta E=2.92\) GeV por vuelta, y con 104.5 GeV, 3.49 GeV: la potencia de radiofrecuencia necesaria hizo imposible superar los 105 GeV por haz, y de ahí que los futuros colisionadores de electrones sean lineales. Un protón de 7 TeV en el LHC radia solo 6.7 keV por vuelta (\(10^{-9}\) de su energía), pero con \(3.2\times10^{14}\) protones almacenados se disipan unos 3.8 kW, que hay que evacuar a 1.9 K.</p>
+<div class="sim" data-sim="maquinas" data-title="Rigidez magnética, radiación de sincrotrón y colisionadores"></div>
+<div class="sim-guide"><ul>
+<li>Con el LHC y 6.8 TeV por haz: campo necesario \(6800/(0.2998\times2803.95)=8.09\) T, \(\sqrt s=13.6\) TeV y pérdida de 5.9 keV por vuelta. En la gráfica, la curva roja (electrones) está muchos órdenes de magnitud por encima de la azul (protones) a la misma energía.</li>
+<li>Con LEP-II a 104.5 GeV: 3.49 GeV por vuelta (3.3 % de la energía), y el campo de solo 0.115 T. Para igualar el \(\sqrt s\) del LHC con un blanco fijo haría falta un protón de \(9.9\times10^7\) GeV = 98.6 PeV.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Colisionador y blanco fijo; umbrales; luminosidad</h2>
+<p>Lo que cuenta para crear nuevas partículas es la energía en el centro de masas, \(\sqrt s=\sqrt{(p_1+p_2)^2}\). Contra un blanco en reposo de masa \(m\), \(s=m_1^2+m_2^2+2Em_2\): crece solo como \(\sqrt{2mE}\); en un colisionador de haces iguales, \(\sqrt s=2E\). Para igualar los 13.6 TeV del LHC con un blanco fijo, un protón necesitaría \(E=(s-2m^2)/2m=9.86\times10^7\) GeV (98.6 PeV), un millón de veces más que lo que se acelera en la Tierra. El <em>umbral</em> de una reacción es la energía a la que \(\sqrt s\) iguala la suma de las masas finales: para \(p+p\to p+p+p+\bar p\) en blanco fijo, \(s=(4m_p)^2\Rightarrow T_{th}=6m_pc^2=5.63\) GeV, razón por la que el Bevatrón de Berkeley se diseñó para 6.2 GeV y descubrió el antiprotón en 1955 (la comprobación numérica del invariante da el mismo umbral por brentq).</p>
+<p>El número de sucesos por segundo es \(R=\sigma\mathcal L\), producto de la sección eficaz y la <span class="term">luminosidad</span>, que para dos haces gaussianos que chocan de frente es \(\mathcal L=N_1N_2fn_b/(4\pi\sigma_x\sigma_y)\). Con \(N=1.15\times10^{11}\) protones por paquete, \(n_b=2808\) paquetes, \(f=11\,245.5\) Hz y \(\sigma=16.6\) µm, resulta \(\mathcal L=1.2\times10^{34}\) cm\(^{-2}\)s\(^{-1}\) (el valor de diseño es \(10^{34}\)), verificada con la integral de solapamiento \(\int\rho_1\rho_2\,dx\,dy\) por <code>scipy.integrate.dblquad</code> en dos casos (uno con haces no circulares). Con \(\sigma(pp\to H)\approx55\) pb a 13 TeV y \(\mathcal L=2\times10^{34}\) cm\(^{-2}\)s\(^{-1}\), el LHC produce 1.1 bosones de Higgs por segundo: unos \(10^7\) por año de funcionamiento.</p>
+</section>
+
+<section>
+<h2>Pérdida de energía y detectores</h2>
+<p>Una partícula cargada pesada que atraviesa la materia pierde energía por ionización de los átomos; la pérdida por unidad de longitud la da la fórmula de <span class="term">Bethe–Bloch</span>:</p>
+<div class="eq key" data-name="Fórmula de Bethe–Bloch">\[-\frac{dE}{dx}=K\,z^2\frac ZA\frac1{\beta^2}\Bigl[\frac12\ln\frac{2m_ec^2\beta^2\gamma^2T_{\max}}{I^2}-\beta^2\Bigr],\qquad K=0.307075\ \text{MeV cm}^2/\text{mol},\]</div>
+<p>con la energía media de excitación \(I\) del material (75 eV en el agua, 286 eV en el hierro). Disminuye como \(1/\beta^2\) a baja velocidad, tiene un mínimo cerca de \(\beta\gamma\approx3\)–4 (partícula de ionización mínima) y sube suavemente al aumentar la energía (la corrección de densidad, que aquí se omite, la aplana). Los mínimos calculados para el muón son 2.04 (agua), 1.69 (Si), 1.50 (Fe), 1.46 (Cu), 1.14 (Pb) y 1.64 (Al) MeV cm\(^2\)/g, algo más (1–4 %) que los valores del PDG con corrección de densidad (1.992, 1.664, 1.451, 1.403, 1.123, 1.615). Para protones en agua, el poder de frenado de 100 MeV es 7.291 MeV cm\(^2\)/g (NIST PSTAR: 7.289).</p>
+<p>Al frenarse, el protón pierde energía cada vez más deprisa (\(\propto1/\beta^2\)) y deposita la mayor parte justo al final de su recorrido: el <span class="term">pico de Bragg</span>. El rango CSDA \(R=\int dT/S(T)\) calculado con la fórmula coincide con el de PSTAR: 10 MeV, 0.121 g/cm\(^2\) (0.123); 50 MeV, 2.221 (2.227); 100 MeV, 7.710 (7.718); 150 MeV, 15.77 (15.77); 200 MeV, 25.95 (25.96). Un protón de 100 MeV recorre 7.7 cm de agua y deposita el 32 % de su energía en el último centímetro; al final, el poder de frenado es 270 MeV cm\(^2\)/g (a 1 MeV), 37 veces el de entrada (7.3). Por eso la <em>protonterapia</em> concentra la dosis en el tumor y respeta los tejidos de delante y de detrás, a diferencia de los fotones, cuya dosis decae exponencialmente.</p>
+<div class="sim" data-sim="bragg" data-title="Curva de Bragg de un protón en agua"></div>
+<div class="sim-guide"><ul>
+<li>Con 100 MeV, el pico de Bragg está a 7.7 cm de profundidad; con 200 MeV, a 25.9 cm: para tratar un tumor a una profundidad dada, se elige la energía del haz.</li>
+<li>La fracción de energía depositada en el último centímetro (\(\sim32\) % a 100 MeV) muestra lo localizado que es el depósito; la curva punteada es la de un haz de fotones.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Electrodinámica cuántica en e⁺e⁻</h2>
+<p>La reacción más limpia de la física de partículas es \(e^+e^-\to\mu^+\mu^-\), mediada por un fotón. A orden más bajo, \(d\sigma/d\Omega=\alpha^2(1+\cos^2\theta)/4s\), de donde, integrando en todos los ángulos (comprobado con <code>scipy.integrate.quad</code>), \(\sigma=4\pi\alpha^2/3s=86.9\) nb\(/s[\text{GeV}^2]\): a \(\sqrt s=10\) GeV, 0.869 nb; a 3 GeV, 9.65 nb; a 30 GeV, 0.0965 nb. La misma reacción con quarks, \(e^+e^-\to q\bar q\to\) hadrones, tiene una sección eficaz mayor en un factor \(R=3\sum_fq_f^2\) (el 3 es el número de colores): \(R=3(\tfrac49+\tfrac19+\tfrac19)=2\) por debajo del umbral del charm (\(\sqrt s<3\) GeV), \(\tfrac{10}3\) con el charm y \(\tfrac{11}3\) con el quark b. Las medidas (Richter y Ting, 1974; SPEAR y PETRA) confirmaron el factor 3 de color y las cargas fraccionarias.</p>
+<p>Los lazos de partículas virtuales (pares \(e^+e^-\), quarks) apantallan la carga: la constante de estructura fina «corre» con la escala \(Q\). A un lazo, \(1/\alpha(Q)=1/\alpha(0)-\tfrac1{3\pi}\sum_fN_cq_f^2\ln(Q^2/m_f^2)\), sumando los fermiones con masa menor que \(Q\). Con masas constituyentes para los quarks ligeros, se obtiene \(1/\alpha(1\ \text{GeV})=134.5\) y \(1/\alpha(M_Z)=128.4\) (PDG: 127.95; \(\alpha(M_Z)/\alpha(0)=1.067\)): a mayor energía se ve la carga más cerca del electrón «desnudo». Se comprobó con la integración numérica de la ecuación del grupo de renormalización con umbrales (scipy.integrate.solve_ivp). (El tratamiento preciso de los lazos hadrónicos usa los propios datos de \(e^+e^-\).)</p>
+<div class="sim" data-sim="electrones" data-title="Razón R de e⁺e⁻ y evolución de la constante de estructura fina"></div>
+<div class="sim-guide"><ul>
+<li>La escalera de \(R\): 2 hasta unos 3 GeV, \(10/3\) con el charm, \(11/3\) con el b. El valor de \(R\) cuenta los quarks accesibles y sus cargas.</li>
+<li>La curva de \(1/\alpha\) baja de 137.036 en baja energía a 128.4 en \(M_Z\): el electromagnetismo se hace más intenso al aumentar la energía.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>El LHC tiene dipolos de \(B=8.33\) T y radio de curvatura \(\rho=2803.95\) m. ¿Cuál es el momento máximo de un protón y su frecuencia de revolución (\(L=26\,658.9\) m)?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Rigidez.</b> \(p=0.29979\times8.33\times2803.95=7002\) GeV/c.</li>
+<li><b>Frecuencia.</b> \(f=c/L=2.998\times10^8/26\,658.9=11\,245.5\) Hz.</li>
+<li><b>Resultado.</b> <span class="ans">7.00 TeV/c; 11.2455 kHz.</span></li>
+</ol></details></li>
+<li><span class="lvl">Básico</span>Calcule la pérdida por radiación de sincrotrón por vuelta de un protón de 7 TeV (\(\rho=2803.95\) m) y de un electrón de 104.5 GeV (\(\rho=3026\) m).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Fórmula.</b> \(\Delta E=(e^2/3\varepsilon_0)\beta^3\gamma^4/\rho\).</li>
+<li><b>Protón.</b> \(\gamma=7000/0.93827=7461\); \(\Delta E=6.66\) keV.</li>
+<li><b>Electrón.</b> \(\gamma=104.5/0.000511=2.045\times10^5\); \(\Delta E=3.49\) GeV.</li>
+<li><b>Resultado.</b> <span class="ans">6.7 keV; 3.49 GeV.</span></li>
+</ol></details></li>
+<li><span class="lvl">Intermedio</span>Halle la energía de un protón contra blanco fijo (protón) que daría \(\sqrt s=13.6\) TeV, y el umbral cinético de \(p+p\to p+p+p+\bar p\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Blanco fijo.</b> \(E=(s-2m^2)/(2m)=(13600^2-2(0.938272)^2)/(2\times0.938272)=9.856\times10^7\) GeV.</li>
+<li><b>Umbral.</b> \(s=(4m)^2\Rightarrow E=7m\), \(T=6m=6\times0.938272=5.63\) GeV.</li>
+<li><b>Resultado.</b> <span class="ans">\(9.86\times10^7\) GeV (98.6 PeV); 5.63 GeV.</span></li>
+</ol></details></li>
+<li><span class="lvl">Intermedio</span>Con \(N=1.15\times10^{11}\), \(n_b=2808\), \(f=11\,245.5\) Hz, \(\sigma_x=\sigma_y=16.6\) µm, calcule la luminosidad y el número de bosones de Higgs por segundo si \(\sigma=55\) pb con \(\mathcal L=2\times10^{34}\) cm\(^{-2}\)s\(^{-1}\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Luminosidad.</b> \(N^2fn_b/(4\pi\sigma^2)\): \(N^2=1.3225\times10^{22}\); \(fn_b=3.158\times10^7\); \(4\pi(16.6\times10^{-4}\ \text{cm})^2=3.463\times10^{-5}\ \text{cm}^2\); \(\mathcal L=1.206\times10^{34}\) cm\(^{-2}\)s\(^{-1}\).</li>
+<li><b>Ritmo de Higgs.</b> \(55\times10^{-36}\ \text{cm}^2\times2\times10^{34}=1.1\) s\(^{-1}\).</li>
+<li><b>Resultado.</b> <span class="ans">\(1.2\times10^{34}\) cm⁻²s⁻¹; 1.1 por segundo.</span></li>
+</ol></details></li>
+<li><span class="lvl">Intermedio</span>Con Bethe–Bloch (agua, \(Z/A=0.5551\), \(I=75\) eV), halle el poder de frenado de un protón de 100 MeV y su rango. ¿Qué energía le queda a 1 cm del final?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Frenado.</b> \(S(100\ \text{MeV})=7.291\) MeV cm\(^2\)/g.</li>
+<li><b>Rango.</b> \(R=\int dT/S=7.71\) g/cm\(^2\) (PSTAR: 7.718).</li>
+<li><b>A 1 cm del final.</b> Es la energía cuyo rango es 1 g/cm\(^2\): 32.2 MeV, el 32 % de la energía inicial.</li>
+<li><b>Resultado.</b> <span class="ans">7.29 MeV cm²/g; 7.71 g/cm²; 32.2 MeV.</span></li>
+</ol></details></li>
+<li><span class="lvl">Avanzado</span>Calcule \(\sigma(e^+e^-\to\mu^+\mu^-)\) a \(\sqrt s=10\) GeV, la razón \(R\) por debajo del charm y entre el charm y el b, y \(1/\alpha(M_Z)\) con un lazo.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Sección eficaz.</b> \(4\pi\alpha^2/3s=4\pi(1/137.036)^2/(3\times100)=2.23\times10^{-6}\) GeV\(^{-2}\); por \((\hbar c)^2=0.3894\) GeV\(^2\) mb: 0.869 nb.</li>
+<li><b>R.</b> Por debajo del charm, \(3(4/9+1/9+1/9)=2\); entre charm y b, \(3(4/9+1/9+1/9+4/9)=10/3\).</li>
+<li><b>α en M_Z.</b> \(1/\alpha=137.036-(1/3\pi)\sum N_cq_f^2\ln(M_Z^2/m_f^2)=128.4\) (con masas constituyentes de los quarks ligeros; PDG: 127.95).</li>
+<li><b>Resultado.</b> <span class="ans">0.869 nb; 2 y 10/3; 128.4.</span></li>
+</ol></details></li>
+</ol>
+<div class="box note"><h4>Para profundizar</h4><p>E. O. Lawrence y M. S. Livingston, <em>Phys. Rev.</em> 40, 19 (1932). O. Chamberlain, E. Segrè et al., <em>Phys. Rev.</em> 100, 947 (1955) (antiprotón). H. Bethe, <em>Ann. Phys.</em> 397, 325 (1930). R. R. Wilson, <em>Radiology</em> 47, 487 (1946) (protonterapia). LHC Design Report, CERN-2004-003. Berger et al., NIST PSTAR (<em>physics.nist.gov/PhysRefData/Star</em>). Textos: Wille, <em>The Physics of Particle Accelerators</em>; Leo, <em>Techniques for Nuclear and Particle Physics Experiments</em>; Griffiths, cap. 6 y 7; Krane, cap. 14.</p></div>
+</section>
+</template>

@@ -1,0 +1,112 @@
+<template class="chapter-src" data-id="solidos" data-num="20" data-title="Bandas, semiconductores y unión pn" data-part="Parte V · Estadística cuántica y materia condensada" data-short="Bandas de energía por el modelo de Kronig–Penney y de enlace fuerte, metales, aislantes y semiconductores, portadores y dopaje, la unión pn y el diodo de Shockley, y el límite de eficiencia de una celda solar">
+<p class="lead">Un cristal tiene \(10^{23}\) electrones, pero se entiende con una sola idea: en un potencial periódico, los niveles de energía forman bandas permitidas separadas por brechas prohibidas. Que un material sea metal, aislante o semiconductor depende solo de cuánto se llenan las bandas. Este capítulo construye las bandas desde la ecuación de Schrödinger con un modelo exactamente soluble (Kronig–Penney) y con enlace fuerte, calcula los portadores de un semiconductor y su dopaje, analiza la unión pn (potencial de contacto, zona de vaciamiento, diodo) y termina con el límite de eficiencia de la conversión fotovoltaica. Cada modelo se contrasta con una solución numérica independiente: ondas planas, la ecuación de Poisson–Boltzmann completa, la ecuación de difusión y la integración numérica de la radiación de cuerpo negro.</p>
+
+<section>
+<h2>Bandas de energía</h2>
+<p>Un electrón en un potencial periódico \(V(x+a)=V(x)\) tiene funciones de Bloch \(\psi_k(x)=e^{ikx}u_k(x)\) y una energía \(E_n(k)\) periódica en \(k\) con periodo \(2\pi/a\). Para un peine de deltas, \(V(x)=V_0'\sum_n\delta(x-na)\), la ecuación de Schrödinger se resuelve exactamente (Kronig y Penney, 1931): las energías \(E=\hbar^2q^2/2m\) permitidas son las que cumplen</p>
+<div class="eq key" data-name="Relación de dispersión de Kronig–Penney">\[\cos ka=\cos\beta+P\,\frac{\sin\beta}{\beta},\qquad\beta=qa,\qquad P=\frac{mV_0'a}{\hbar^2},\qquad E=\frac{\hbar^2}{2ma^2}\beta^2.\]</div>
+<p>Solo existen soluciones reales para \(|\cos\beta+P\sin\beta/\beta|\le1\): las <span class="term">bandas permitidas</span>; en las demás energías la onda decae (<span class="term">brechas</span>), y esto ocurre en los bordes de la zona de Brillouin, \(\beta=n\pi\), donde la reflexión de Bragg de las ondas (\(k=n\pi/a\)) crea ondas estacionarias con energías distintas según se concentren en los iones o entre ellos. Para \(P\to0\) se recupera el electrón libre y desaparecen las brechas; al aumentar \(P\), las bandas se estrechan y las brechas crecen. Con \(P=2\) y \(a=0.3\) nm (unidad de energía \(E_1=\hbar^2\pi^2/2ma^2=4.18\) eV) la primera banda va de \(0.300E_1\) a \(E_1\), la primera brecha de \(E_1\) a \(1.668E_1\) (\(2.79\) eV) y la segunda banda a \(4E_1\); la segunda brecha mide \(0.756E_1\). Los bordes de las bandas se comprobaron contra la diagonalización del hamiltoniano en una base de 601 ondas planas (precisión \(2\times10^{-3}\)) para \(P=0.5,2,5\).</p>
+<p>El modelo de <span class="term">enlace fuerte</span> parte del extremo opuesto, los electrones ligados a átomos con saltos \(t\) entre vecinos: \(E(k)=\varepsilon_0-2t\cos ka\). El ancho de banda es \(4t\) y cerca del fondo \(E\approx\varepsilon_0-2t+ta^2k^2\): una parábola de masa efectiva \(m^*=\hbar^2/2ta^2\). Para \(t=1\) eV y \(a=3\) Å, \(m^*=0.423\,m_e\): una banda estrecha (\(t\) pequeño) da masa efectiva grande: electrones «pesados».</p>
+<div class="sim" data-sim="bandas" data-title="Bandas de energía en el modelo de Kronig–Penney"></div>
+<div class="sim-guide"><ul>
+<li>Con \(P=2\) se ven las cuatro primeras bandas, separadas por brechas de \(0.668E_1\) y \(0.756E_1\); en las bandas bajas las curvas se separan de la parábola del electrón libre (línea punteada) cerca de \(k=\pm\pi/a\).</li>
+<li>Reduzca \(P\) hacia 0.05: las brechas casi se cierran y la masa efectiva del fondo se acerca a 1.</li>
+<li>Aumente \(P\): las bandas se aplanan (masa efectiva grande) y los electrones se acercan al límite de átomos aislados.</li>
+</ul></div>
+<h3>Metales, aislantes y semiconductores</h3>
+<p>Cada banda tiene tantos estados como celdas unidad (dos por celda con espín). Un cristal con un número impar de electrones por celda tiene la última banda medio llena, y es un metal; con un número par suele llenar justo bandas completas: un <span class="term">aislante</span> si la brecha que sigue es grande (diamante, 5.5 eV) y un <span class="term">semiconductor</span> si es del orden de 1 eV (silicio 1.12 eV, germanio 0.66 eV, GaAs 1.42 eV). Aun sin electrones libres en el cero absoluto, la excitación térmica promueve electrones a la banda de conducción, dejando huecos en la de valencia.</p>
+</section>
+
+<section>
+<h2>Portadores y dopaje en los semiconductores</h2>
+<p>Con el potencial químico dentro de la brecha, a más de unos pocos \(k_BT\) de los bordes, la estadística de Fermi–Dirac se reduce a la de Boltzmann (semiconductor no degenerado), y las concentraciones son \(n=N_ce^{-(E_c-E_F)/k_BT}\) y \(p=N_ve^{-(E_F-E_v)/k_BT}\), con las densidades efectivas de estados \(N_c=2(2\pi m_e^*k_BT/h^2)^{3/2}\) y \(N_v\) análoga con \(m_h^*\) (para el silicio, con \(m_e^*=1.08\,m_e\), a 300 K: \(N_c=2.82\times10^{19}\) cm\(^{-3}\) y, con \(m_h^*=0.56\,m_e\), \(N_v=1.05\times10^{19}\) cm\(^{-3}\)). Su producto es la <span class="term">ley de acción de masas</span> \(np=n_i^2\) con \(n_i=\sqrt{N_cN_v}\,e^{-E_g/2k_BT}\) (silicio a 300 K: \(6.7\times10^{9}\) cm\(^{-3}\); el valor aceptado, \(\approx10^{10}\), depende de las masas de densidad de estados que se tomen), y la pendiente de \(\ln(n_i/T^{3/2})\) frente a \(1/T\) es \(-E_g/2k_B\). Se añaden impurezas: un donador (P en Si) aporta un electrón a la banda de conducción y un aceptor (B) un hueco. Con ionización completa, la neutralidad de la carga da</p>
+<div class="eq key" data-name="Neutralidad de carga">\[n=\frac{N_D-N_A}2+\sqrt{\Bigl(\frac{N_D-N_A}2\Bigr)^2+n_i^2},\qquad p=\frac{n_i^2}n,\qquad E_F-E_i=k_BT\ln\frac n{n_i}.\]</div>
+<p>Se comprobó este resultado contra la solución con integrales de Fermi–Dirac completas (scipy), a 300, 400 y 500 K y con varios dopajes (acuerdo mejor que 0.5 %). Silicio con \(N_D=10^{16}\) cm\(^{-3}\) a 300 K: \(n=10^{16}\) cm\(^{-3}\), \(p=4.5\times10^3\) cm\(^{-3}\) (esto es, el dopaje aumenta la conductividad en seis órdenes de magnitud), \(E_F-E_i=0.367\) eV, y el material se comporta como extrínseco hasta que \(n_i=N_D\), a unos 738 K. Con dopajes muy altos (\(\sim10^{19}\) cm\(^{-3}\)) el nivel de Fermi entra en la banda y hay que usar la estadística completa (semiconductor degenerado).</p>
+<div class="sim" data-sim="semiconductores" data-title="Portadores en un semiconductor: dopaje y temperatura"></div>
+<div class="sim-guide"><ul>
+<li>Con silicio dopado \(N_D=10^{15}\) cm⁻³ a 300 K, \(n\) es constante hasta cerca de 600 K (\(n_i=10^{15}\) cm\(^{-3}\) a 602 K), y a más temperatura se une a la línea \(n_i\) (región intrínseca). Los huecos \(p=n_i^2/n\) son 6–10 órdenes de magnitud menores.</li>
+<li>El germanio (\(E_g=0.66\) eV) tiene \(n_i=2.2\times10^{13}\) cm⁻³ a 300 K; el GaAs (1.42 eV), \(2.2\times10^{6}\) cm⁻³: la brecha ancha da muy pocos portadores intrínsecos y permite trabajar a altas temperaturas.</li>
+<li>La línea naranja del diagrama de bandas, \(E_F\), sube con los donadores y baja con los aceptores; si queda a menos de unos \(3k_BT\) del borde, o dentro de la banda, la aproximación de Boltzmann deja de valer (la simulación lo avisa).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>La unión pn</h2>
+<p>Al unir un semiconductor p con uno n, los electrones del lado n difunden al p y los huecos al revés, y dejan iones fijos sin compensar: una zona de carga espacial (<span class="term">zona de vaciamiento</span>) con un campo eléctrico que frena la difusión hasta el equilibrio. En la aproximación de vaciamiento (carga \(+eN_D\) en \(0<x<x_n\) y \(-eN_A\) en \(-x_p<x<0\), sin portadores móviles) la ecuación de Poisson da</p>
+<div class="eq key" data-name="Unión pn (aproximación de vaciamiento)">\[V_{bi}=\frac{k_BT}e\ln\frac{N_AN_D}{n_i^2},\quad W=\sqrt{\frac{2\varepsilon(V_{bi}-V)}e\Bigl(\frac1{N_A}+\frac1{N_D}\Bigr)},\quad x_n=\frac{WN_A}{N_A+N_D},\quad E_{\max}=\frac{eN_Dx_n}\varepsilon,\quad \frac CA=\frac\varepsilon W.\]</div>
+<p>(\(V>0\) en polarización directa.) Para silicio con \(10^{16}\) cm\(^{-3}\) a cada lado: \(V_{bi}=0.714\) V, \(W=0.430\) µm, \(x_n=x_p=0.215\) µm, \(E_{\max}=3.32\times10^4\) V/cm y \(C/A=24.1\) nF/cm\(^2\); con \(-5\) V, \(W=1.22\) µm y \(C/A=8.5\) nF/cm\(^2\) (varía como \((V_{bi}-V)^{-1/2}\), base de los varactores). Se contrastaron \(V_{bi}\) y \(E_{\max}\) con la solución numérica de la ecuación completa de Poisson–Boltzmann (\(\psi''=-(e/\varepsilon)(p-n+N_D-N_A)\), con las densidades de portadores móviles \(n=n_ie^{\psi/V_t}\), \(p=n_ie^{-\psi/V_t}\)) por <code>scipy.integrate.solve_bvp</code>: \(V_{bi}\) coincide a \(10^{-6}\) y el campo máximo de la aproximación difiere un 4.6 % en la unión simétrica por la cola de portadores. En una unión \(p^+n\) con relación de dopajes 100:1, el lado muy dopado (\(x_p\approx10\) nm) es comparable a la longitud de Debye y la aproximación subestima el campo máximo un 24 %: en uniones tan asimétricas no debe usarse sin cuidado.</p>
+<p><strong>Corriente.</strong> En polarización directa, la barrera baja y los portadores minoritarios se inyectan al otro lado, donde difunden y se recombinan en una longitud \(L=\sqrt{D\tau}\). El resultado, la ecuación del <span class="term">diodo de Shockley</span>, es \(J=J_s\,(e^{eV/k_BT}-1)\) con \(J_s=en_i^2\bigl(D_p/L_pN_D+D_n/L_nN_A\bigr)\). Se comprobó el perfil de minoritarios resolviendo numéricamente la ecuación de difusión (scipy) para cuatro tensiones. Para el silicio simétrico, con \(D_n=35\), \(D_p=12\) cm\(^2\)/s y \(\tau=1\) µs (\(L_n=59.2\) µm, \(L_p=34.6\) µm): \(J_s=1.5\times10^{-11}\) A/cm\(^2\) y a 0.6 V, \(J=0.18\) A/cm\(^2\). La corriente se multiplica por 10 cada \(\ln10\,k_BT/e=59.5\) mV a 300 K.</p>
+<div class="sim" data-sim="union" data-title="Unión pn: carga, campo, potencial y característica del diodo"></div>
+<div class="sim-guide"><ul>
+<li>Con \(10^{16}\) cm⁻³ a cada lado y tensión nula: \(V_{bi}=0.714\) V, \(W=0.430\) µm; la carga es un par de rectángulos de igual área, el campo una tienda de campaña con máximo \(3.3\times10^4\) V/cm, y el potencial sube 0.714 V.</li>
+<li>Polarización inversa (negativa): \(W\) crece como \(\sqrt{V_{bi}-V}\) y la capacidad cae; la corriente se satura en \(-J_s\) (ínfima).</li>
+<li>Directa: \(W\) disminuye y la corriente crece exponencialmente. Con \(N_A=10^{18}\), \(N_D=10^{14}\) la zona de vaciamiento está casi toda en el lado poco dopado (\(x_n\gg x_p\)).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>La celda solar y el límite de Shockley–Queisser</h2>
+<p>Una unión pn con brecha \(E_g\) absorbe fotones con \(E\ge E_g\) y entrega la energía \(eV\) por electrón. La energía de los fotones por debajo de \(E_g\) se pierde (no se absorbe), la de los fotones con \(E>E_g\) se pierde como calor en exceso de \(E_g\), y la recombinación radiativa (la celda a temperatura \(T_c\) también emite luz) reduce la corriente. Shockley y Queisser (1961) hicieron el balance detallado con un Sol de cuerpo negro. La <em>eficiencia última</em> (cada fotón por encima de la brecha produce un electrón de energía \(E_g\)) es, para \(E_g=1.1\) eV y un Sol de 6000 K, el \(43.9\) % (Shockley y Queisser: 44 %). Con el balance detallado, \(J(V)=e[\dot n_{\rm sol}(E_g)-\dot n_{\rm cel}(E_g,V)]\), donde \(\dot n_{\rm cel}\) es el flujo de fotones que emite la celda, \(\propto\int E^2/(e^{(E-eV)/k_BT_c}-1)\,dE\), y la eficiencia máxima, para \(E_g=1.1\) eV a 6000 K, es del \(30.0\) % (a \(V_{mp}=0.778\) V), y para 1.34 eV a 5800 K, \(30.5\) %. Cada punto se comprobó con una integración numérica independiente (scipy.quad) y una maximización de la potencia.</p>
+<div class="sim" data-sim="solar" data-title="Límite de Shockley–Queisser de una celda solar"></div>
+<div class="sim-guide"><ul>
+<li>Con \(E_g=1.34\) eV y 5800 K se lee el máximo de la curva, 30.5 %, en un óptimo ancho entre 1.1 y 1.5 eV: el silicio (1.12 eV, \(\lambda=1107\) nm) y el GaAs (1.42 eV) caen en la zona óptima.</li>
+<li>Con una brecha pequeña, la tensión máxima es baja (\(V<E_g/e\)); con una grande, se pierden fotones. En ambos extremos la eficiencia cae.</li>
+<li>La eficiencia última (línea punteada) es mayor porque no incluye la recombinación radiativa ni la caída entre \(E_g/e\) y \(V_{mp}\).</li>
+</ul></div>
+<p>La misma física gobierna los diodos emisores de luz: al recombinarse en la unión, el electrón y el hueco emiten un fotón con \(\lambda=hc/E_g\): 873 nm (infrarrojo) en el GaAs y 365 nm (ultravioleta) en el GaN puro, que con aleaciones de InGaN da el azul del Nobel de 2014.</p>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un modelo de Kronig–Penney con \(P=2\) y \(a=0.3\) nm tiene su primera brecha entre \(\beta=\pi\) y \(\beta=4.058\). Calcule \(E_1\), la anchura de la brecha en eV y la anchura de la primera banda en unidades de \(E_1\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Unidad de energía.</b> \(E_1=\hbar^2\pi^2/2ma^2=3.81\ \text{eV Å}^2\times\pi^2/(3\ \text{Å})^2=4.18\) eV.</li>
+<li><b>Brecha.</b> \((4.058^2-\pi^2)/\pi^2=(16.47-9.87)/9.87=0.668\) \(E_1\) \(=2.79\) eV.</li>
+<li><b>Primera banda.</b> De \(\beta=1.721\) a \(\pi\): \((\pi^2-1.721^2)/\pi^2=0.700E_1\).</li>
+<li><b>Resultado.</b> <span class="ans">\(E_1=4.18\) eV; brecha 2.79 eV; banda de \(0.300E_1\) a \(E_1\) (\(0.700E_1\) de ancho).</span></li>
+</ol></details></li>
+<li><span class="lvl">Básico</span>En el modelo de enlace fuerte con \(t=1\) eV y \(a=3\) Å, halle el ancho de banda y la masa efectiva en el fondo.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Ancho.</b> \(E(\pi/a)-E(0)=2t-(-2t)=4t=4\) eV.</li>
+<li><b>Curvatura.</b> \(E\approx\varepsilon_0-2t+ta^2k^2\Rightarrow\hbar^2/2m^*=ta^2\).</li>
+<li><b>Masa.</b> \(m^*=\hbar^2/(2ta^2)=3.81\ \text{eV Å}^2/(2\times1\ \text{eV}\times9\ \text{Å}^2)\,m_e=0.423\,m_e\).</li>
+<li><b>Resultado.</b> <span class="ans">4 eV; \(0.423\,m_e\).</span></li>
+</ol></details></li>
+<li><span class="lvl">Intermedio</span>Para silicio (\(m_e^*=1.08\), \(m_h^*=0.56\), \(E_g=1.12\) eV) a 300 K dopado con \(10^{16}\) cm\(^{-3}\) de donadores, calcule \(N_c\), \(N_v\), \(n_i\), \(n\), \(p\) y \(E_F-E_i\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Densidades.</b> \(N_c=2(2\pi m^*k_BT/h^2)^{3/2}=2.82\times10^{19}\) cm\(^{-3}\); \(N_v=1.05\times10^{19}\).</li>
+<li><b>n_i.</b> \(\sqrt{N_cN_v}\,e^{-1.12/(2\times0.025852)}=6.7\times10^9\) cm\(^{-3}\).</li>
+<li><b>Portadores.</b> \(N_D\gg n_i\Rightarrow n\simeq10^{16}\) cm\(^{-3}\); \(p=n_i^2/n=4.5\times10^3\) cm\(^{-3}\).</li>
+<li><b>Nivel de Fermi.</b> \(E_F-E_i=k_BT\ln(n/n_i)=0.025852\times\ln(1.49\times10^6)=0.367\) eV.</li>
+<li><b>Resultado.</b> <span class="ans">\(2.82\times10^{19}\); \(1.05\times10^{19}\); \(6.7\times10^9\); \(10^{16}\); \(4.5\times10^3\) cm⁻³; 0.367 eV.</span></li>
+</ol></details></li>
+<li><span class="lvl">Intermedio</span>Una unión pn de silicio (\(\varepsilon_r=11.7\), \(n_i=10^{10}\) cm\(^{-3}\)) con \(N_A=N_D=10^{16}\) cm\(^{-3}\) a 300 K. Calcule \(V_{bi}\), \(W\), \(x_n\), \(E_{\max}\) y \(C/A\) sin polarización, y \(W\) y \(C/A\) con \(-5\) V.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>V_bi.</b> \(N_AN_D/n_i^2=10^{32}/10^{20}=10^{12}\) (en cm\(^{-3}\)); \(V_{bi}=0.025852\ln10^{12}=0.025852\times27.63=0.714\) V.</li>
+<li><b>W.</b> \(\sqrt{2\varepsilon V_{bi}(2/N)/e}=\sqrt{2(1.036\times10^{-10})(0.714)(2\times10^{-22})/1.602\times10^{-19}}=0.430\) µm; \(x_n=0.215\) µm.</li>
+<li><b>Campo.</b> \(E_{\max}=eN_Dx_n/\varepsilon=3.32\times10^4\) V/cm.</li>
+<li><b>Capacidad.</b> \(C/A=\varepsilon/W=24.1\) nF/cm\(^2\).</li>
+<li><b>Con −5 V.</b> \(W=0.430\sqrt{5.714/0.714}=1.22\) µm; \(C/A=8.5\) nF/cm\(^2\).</li>
+<li><b>Resultado.</b> <span class="ans">0.714 V; 0.430 µm; 0.215 µm; \(3.32\times10^4\) V/cm; 24.1 nF/cm²; 1.22 µm y 8.5 nF/cm².</span></li>
+</ol></details></li>
+<li><span class="lvl">Intermedio</span>Con \(D_n=35\), \(D_p=12\) cm\(^2\)/s y \(\tau=1\) µs, estime la corriente de saturación del diodo de la pregunta anterior, y la corriente a 0.6 V.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Longitudes.</b> \(L_n=\sqrt{D_n\tau}=59.2\) µm; \(L_p=34.6\) µm.</li>
+<li><b>J_s.</b> \(en_i^2=1.602\times10^{-19}\times10^{20}=16.0\); \(D_p/(L_pN_D)=12/(34.6\times10^{-4}\times10^{16})=3.46\times10^{-13}\) y \(D_n/(L_nN_A)=5.92\times10^{-13}\) (unidades CGS): \(J_s=16.0\times9.38\times10^{-13}=1.5\times10^{-11}\) A/cm\(^2\).</li>
+<li><b>A 0.6 V.</b> \(J=J_s(e^{0.6/0.025852}-1)=0.18\) A/cm\(^2\).</li>
+<li><b>Decena.</b> Un factor 10 en \(J\) corresponde a \(\ln10\times25.852=59.5\) mV.</li>
+<li><b>Resultado.</b> <span class="ans">\(1.5\times10^{-11}\) A/cm²; 0.18 A/cm²; 59.5 mV por década.</span></li>
+</ol></details></li>
+<li><span class="lvl">Avanzado</span>Calcule la longitud de onda de emisión de un LED de GaAs (\(E_g=1.42\) eV) y de GaN (3.4 eV), y estime con el límite de Shockley–Queisser el rendimiento máximo de una celda de silicio (1.12 eV) bajo un Sol de 6000 K frente a una de 1.34 eV a 5800 K.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>LED.</b> \(\lambda=hc/E_g=1239.84/1.42=873\) nm; \(1239.84/3.4=365\) nm.</li>
+<li><b>Silicio.</b> \(\lambda_g=1239.84/1.12=1107\) nm.</li>
+<li><b>Eficiencias (balance detallado).</b> 1.1 eV y 6000 K: 30.0 %; 1.34 eV y 5800 K: 30.5 %.</li>
+<li><b>Interpretación.</b> El silicio está cerca del óptimo; la diferencia entre 1.1 y 1.34 eV es de unas décimas de punto.</li>
+<li><b>Resultado.</b> <span class="ans">873 nm; 365 nm; 1107 nm; 30.0 % y 30.5 %.</span></li>
+</ol></details></li>
+</ol>
+<div class="box note"><h4>Para profundizar</h4><p>F. Bloch, <em>Z. Phys.</em> 52, 555 (1929). R. de L. Kronig y W. G. Penney, <em>Proc. R. Soc. A</em> 130, 499 (1931). W. Shockley, <em>Bell Syst. Tech. J.</em> 28, 435 (1949). W. Shockley y H. J. Queisser, <em>J. Appl. Phys.</em> 32, 510 (1961). Textos: Kittel, <em>Introduction to Solid State Physics</em>, caps. 7 a 9; Ashcroft y Mermin, caps. 8 a 12 y 28; S. M. Sze y K. K. Ng, <em>Physics of Semiconductor Devices</em>; Neamen, <em>Semiconductor Physics and Devices</em>; Krane, caps. 11 y 12.</p></div>
+</section>
+</template>

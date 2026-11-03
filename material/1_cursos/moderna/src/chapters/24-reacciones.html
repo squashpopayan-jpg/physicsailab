@@ -1,0 +1,111 @@
+<template class="chapter-src" data-id="reacciones" data-num="24" data-title="Reacciones nucleares, fisión y fusión" data-part="Parte VI · Física nuclear" data-short="Valores Q y cinemática de las reacciones nucleares, la fusión y el pico de Gamow (la energía del Sol), la fisión y la fisionabilidad, y la dinámica de las cadenas de neutrones y de un reactor con neutrones retardados">
+<p class="lead">La curva de energía de ligadura por nucleón (capítulo 22) dice dónde está la energía: si dos núcleos ligeros se unen, o uno muy pesado se parte, el sistema pasa a estar más ligado y libera la diferencia, millones de veces más que una reacción química. Este capítulo calcula la energía de las reacciones con masas atómicas, explica cómo la fusión ocurre en el Sol a pesar de la barrera de Coulomb (el pico de Gamow), analiza la fisión con el modelo de la gota y estudia la dinámica de una cadena de neutrones: la probabilidad de que se apague sola y la cinética de un reactor, donde los neutrones retardados hacen controlable lo que sin ellos sería instantáneo.</p>
+
+<section>
+<h2>Reacciones nucleares: energía y cinemática</h2>
+<p>En una reacción \(a+X\to Y+b\) se conservan la energía total, el momento, la carga y el número de nucleones. La energía liberada es el <span class="term">valor Q</span>, \(Q=(\sum m_{\rm ini}-\sum m_{\rm fin})c^2\), que con masas atómicas (los electrones se cancelan) se calcula directamente. Con la tabla de masas del curso resultan, y coinciden con los publicados a mejor que \(2\times10^{-3}\):</p>
+<table class="data"><thead><tr><th>Reacción</th><th>\(Q\) (MeV)</th></tr></thead><tbody>
+<tr><td>D + T → ⁴He + n</td><td>17.589</td></tr>
+<tr><td>D + D → T + p</td><td>4.033</td></tr>
+<tr><td>D + D → ³He + n</td><td>3.269</td></tr>
+<tr><td>D + ³He → ⁴He + p</td><td>18.353</td></tr>
+<tr><td>p + ⁷Li → ⁴He + ⁴He (Cockcroft y Walton, 1932)</td><td>17.346</td></tr>
+<tr><td>⁴He + ⁹Be → n + ¹²C (fuente de neutrones de Chadwick)</td><td>5.702</td></tr>
+<tr><td>⁴He + ¹⁴N → p + ¹⁷O (Rutherford, 1919)</td><td>\(-1.192\)</td></tr>
+<tr><td>4 ¹H → ⁴He (balance de la cadena protón–protón)</td><td>26.731</td></tr>
+</tbody></table>
+<p>Con \(Q<0\) la reacción es <em>endotérmica</em> y exige un umbral de energía cinética del proyectil: \(T_{th}=-Q(m_a+m_X)/m_X\) (no relativista); para ⁴He + ¹⁴N, 1.533 MeV, de modo que las α de 5.3 MeV del ²¹⁰Po bastaban para la primera transmutación artificial. Con \(Q>0\) y los reactivos en reposo, la energía se reparte entre los dos productos en proporción inversa a sus masas (por la conservación del momento). Se resolvió con la cinemática relativista exacta, comprobada con la conservación de energía y momento resuelta numéricamente (scipy.optimize.fsolve): en D + T, el neutrón se lleva 14.03 MeV y la partícula α 3.56 MeV; en D + ³He, el protón 14.64 MeV y la α 3.71 MeV; en p + ⁷Li, cada α 8.67 MeV.</p>
+<div class="sim" data-sim="reacciones" data-title="Reacciones nucleares: valor Q y energías de los productos"></div>
+<div class="sim-guide"><ul>
+<li>Con D + T se ve el balance de masa: los productos pesan 17.59 MeV menos que los reactivos; esa energía aparece como cinética (14.03 y 3.56 MeV). La energía por kilogramo de combustible es \(3.37\times10^{14}\) J/kg: cuatro veces la de la fisión del uranio-235 (\(8.2\times10^{13}\) J/kg) y unos ocho millones de veces la de la combustión del petróleo (\(4.2\times10^7\) J/kg).</li>
+<li>Con ⁴He + ¹⁴N (Rutherford) \(Q<0\): no ocurre sin proyectil energético; el panel indica el umbral.</li>
+<li>La reacción p + ⁷Li, con la que Cockcroft y Walton rompieron núcleos con protones de unos 0.5 MeV en 1932, produce dos α de 8.67 MeV cada una.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Fusión y el pico de Gamow</h2>
+<p>Para fusionarse, dos núcleos deben acercarse hasta que actúe la fuerza fuerte, a unos 1–3 fm, pero la repulsión de Coulomb tiene entonces una altura de \(\sim0.5\) MeV (a 3 fm, para dos cargas unidad) hasta 1.4 MeV (a 1 fm), mientras que la energía térmica en el centro del Sol (\(1.5\times10^7\) K) es de solo \(kT=1.29\) keV: cuatrocientas veces menor. La fusión solar existe gracias al efecto túnel. La sección eficaz es \(\sigma(E)=\dfrac{S(E)}Ee^{-\sqrt{E_G/E}}\), con la <span class="term">energía de Gamow</span> \(E_G=2\mu c^2(\pi\alpha Z_1Z_2)^2\) (\(B_G=\sqrt{E_G}\)), y la tasa de reacciones es proporcional a la integral de \(\sigma\) por la cola de la distribución de Maxwell, \(e^{-E/kT}\). El integrando es el producto de una función decreciente (Maxwell) y otra creciente (túnel), con un máximo estrecho, el <span class="term">pico de Gamow</span>:</p>
+<div class="eq key" data-name="Pico de Gamow">\[\frac{d}{dE}\Bigl[\frac E{kT}+\sqrt{\frac{E_G}E}\Bigr]=0\ \Rightarrow\ E_0=\Bigl(\frac{E_G(kT)^2}4\Bigr)^{1/3},\qquad \Delta=4\sqrt{\frac{E_0kT}3}.\]</div>
+<p>Valores: p + p, \(E_G=493.1\) keV (\(B_G=22.2\) keV\(^{1/2}\)); en el Sol (kT = 1.29 keV), \(E_0=5.90\) keV (4.6 kT; solo el 1.2 % de \(E_G\)) y \(\Delta=6.4\) keV: las reacciones ocurren a una energía mucho mayor que \(kT\) y mucho menor que la barrera. D + T: \(E_G=1182.2\) keV (\(B_G=34.38\) keV\(^{1/2}\), el valor de la literatura), y a 20 keV, \(E_0=49.1\) keV, \(\Delta=72\) keV; D + D: 985.8 keV; p + ¹¹B (\(Z_1Z_2=5\)): 22.6 MeV, con \(E_0=384\) keV a 100 keV: por eso la fusión D–T es la más fácil. Se comprobaron \(E_G\), \(E_0\) (maximizando numéricamente el integrando con scipy.optimize) y el ancho (por la curvatura) para cuatro reacciones.</p>
+<p><strong>El Sol.</strong> En su núcleo, cuatro protones se transforman en un helio-4 con \(Q=26.731\) MeV (la energía de los dos neutrinos que escapan, \(\sim0.52\) MeV en promedio, no se aprovecha): con una luminosidad \(L=3.828\times10^{26}\) W, ocurren \(9.1\times10^{37}\) ciclos por segundo, y se consumen \(6.1\times10^{11}\) kg de hidrógeno por segundo (\(610\) millones de toneladas). Los neutrinos llegan a la Tierra con un flujo de \(6.5\times10^{10}\) cm\(^{-2}\) s\(^{-1}\) (cada ciclo emite dos).</p>
+<div class="sim" data-sim="fusion" data-title="Pico de Gamow: por qué se fusionan los núcleos a temperaturas bajas"></div>
+<div class="sim-guide"><ul>
+<li>Con p + p y \(kT=1.29\) keV (el Sol): el pico de Gamow (naranja) está en 5.9 keV, donde la cola de Maxwell (azul) ya ha caído mucho y la probabilidad de túnel (verde) todavía es minúscula: el equilibrio entre las dos da una tasa pequeña pero suficiente en \(10^{10}\) años.</li>
+<li>Con D + T y \(kT=20\) keV (\(2.3\times10^8\) K): \(E_0=49\) keV, \(E_0/kT=2.5\). Suba la temperatura: el pico se acerca a la cola y la tasa crece enormemente (\(\propto T^{n}\) con \(n\) de 4 a 20).</li>
+<li>Con p + ¹¹B, \(E_G=22.6\) MeV: el pico queda a 384 keV incluso con \(kT=100\) keV: la barrera es mucho más difícil.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Fisión</h2>
+<p>Un núcleo pesado, como el ²³⁶U* formado al capturar un neutrón el ²³⁵U, puede deformarse y partirse en dos fragmentos de masas parecidas (Hahn, Strassmann y Meitner, 1938). El modelo de la gota (cap. 22) explica la inestabilidad: al deformarse, la energía de superficie crece como \(E_S(1+\tfrac25\varepsilon^2)\) y la de Coulomb decrece como \(E_C(1-\tfrac15\varepsilon^2)\); si \(E_C>2E_S\) el núcleo es inestable. La razón \(x=E_C/2E_S\) es la <span class="term">fisionabilidad</span>, que para el ²³⁶U con los coeficientes del ajuste (\(E_S=694.2\) MeV, \(E_C=971.0\) MeV) vale 0.699 (\(Z^2/A=35.9\); el valor crítico \(2a_S/a_C=50.7\), unos 49 en la literatura), 0.718 para el ²⁴⁰Pu, 0.63 para el ²⁰⁸Pb y 0.23 para el ⁵⁶Fe: por eso solo los núcleos más pesados se fisionan con facilidad; la barrera de unos 6 MeV se supera con la energía de ligadura del neutrón capturado (6.5 MeV en el ²³⁶U).</p>
+<p>La energía liberada, \(\sim200\) MeV por fisión, sale de la diferencia de \(B/A\) (8.5 MeV de los fragmentos frente a 7.6 del uranio: \(0.9\times236=212\) MeV): con la fórmula de masas, la fisión ²³⁶U* → ¹⁴⁰Xe + ⁹⁶Sr libera 180 MeV (la fórmula no contiene las capas, que dan unos MeV adicionales). De los \(\sim200\) MeV, unos 168 MeV son energía cinética de los fragmentos (repulsión de Coulomb) que se convierte en calor, unos 5 MeV van a los 2–3 neutrones prontos, 7 MeV a gammas inmediatos y el resto a desintegraciones \(\beta\) de los fragmentos y a los neutrinos. Un kilogramo de ²³⁵U que se fisiona libera \(8.2\times10^{13}\) J, equivalente a 2000 toneladas de petróleo.</p>
+<h3>Cadenas de neutrones y reactores</h3>
+<p>La fisión emite en promedio \(\nu=2.43\) neutrones (²³⁵U térmico), que pueden inducir otras fisiones: una reacción en cadena. Si, de promedio, cada neutrón produce \(k\) nuevos, la población crece como \(k^g\) por generación \(g\): \(k<1\) (subcrítico), \(k=1\) (crítico), \(k>1\) (supercrítico). Pero la cadena es aleatoria: aun con \(k>1\), un neutrón aislado puede no tener descendencia. En un proceso de ramificación con descendencia de Poisson de media \(k\), la probabilidad de extinción es la raíz \(q<1\) de \(q=e^{k(q-1)}\): para \(k=1.05\), \(q=0.906\) (la cadena solo se sostiene con probabilidad 9.4 %), para \(k=1.1\), \(q=0.824\), para \(k=1.5\), 0.417; para \(k=2\), 0.203; para \(\nu=2.43\), \(q=0.117\) y la cadena se inicia con probabilidad 0.883. Se comprobó con scipy.optimize.brentq y con un Monte Carlo de 20 000 cadenas (NumPy).</p>
+<p>En un reactor, el tiempo entre generaciones de neutrones prontos es \(\Lambda\sim10^{-4}\) s: con \(k=1.001\) la potencia se multiplicaría por \(e^{10}\) en un segundo, imposible de controlar. Lo salva el 0.65 % de neutrones emitidos con retraso (de segundos a un minuto) por los productos de fisión (\(\beta=0.0065\)). La <span class="term">cinética puntual</span> con un grupo retardado (\(\lambda=0.08\) s\(^{-1}\)) es</p>
+<div class="eq key" data-name="Cinética puntual de un reactor">\[\frac{dn}{dt}=\frac{\rho-\beta}\Lambda n+\lambda C,\qquad \frac{dC}{dt}=\frac\beta\Lambda n-\lambda C,\qquad \rho=\Lambda\omega+\frac{\beta\omega}{\omega+\lambda}\ \ (\text{inversa horaria}).\]</div>
+<p>La raíz dominante \(\omega\) da el período \(1/\omega\): con \(\rho=0.001\) (0.15 \$, con 1 \$ \(=\beta\)) el período es 68.9 s; con \(\rho=0.003\), 14.6 s; con \(\rho=0.005\), 3.84 s; con \(\rho=\beta=0.0065\) (1 \$, crítico inmediato), 0.45 s, y con \(\rho=0.0075\) (1.15 \$) la reacción es controlada solo por los prontos: período de 95 ms. Con \(\rho=-0.002\), la potencia cae con un período de 53 s. La integración (RK4) se comprobó con scipy.integrate.solve_ivp (Radau) en cuatro reactividades, y las raíces de la inversa horaria con brentq. El accidente de Chernóbil (1986) fue una excursión de reactividad por encima de \(\beta\).</p>
+<div class="sim" data-sim="reactor" data-title="Cinética de un reactor y fluctuaciones de la cadena de neutrones"></div>
+<div class="sim-guide"><ul>
+<li>Con \(\rho=0.001\) (100 pcm, 0.15 \$) el período es 68.9 s: en 20 s la potencia solo se multiplica por 1.3. Suba \(\rho\) hasta 0.0065: el período cae a 0.45 s; por encima de \(\beta\), el reactor es crítico inmediato y la potencia se dispara en milisegundos.</li>
+<li>Con reactividad negativa (\(\rho=-0.002\)) la potencia cae con la constante de los retardados, no con \(\Lambda\): tras un «scram» no se apaga instantáneamente.</li>
+<li>En el modo «cadena», con \(k=1.1\) y 5 neutrones iniciales, la mayoría de las 12 trayectorias crece como \(1.1^g\), pero alguna se extingue: un neutrón aislado se extingue con probabilidad 0.82 y cinco independientes, con \(0.82^5=0.38\).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Calcule el valor Q de D + T → ⁴He + n con masas atómicas, las energías cinéticas de los productos y la energía por kilogramo de combustible.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Masas (u).</b> D 2.0141018, T 3.0160493, ⁴He 4.0026033, n 1.0086649.</li>
+<li><b>Q.</b> \((2.0141018+3.0160493-4.0026033-1.0086649)\times931.494=0.0188829\times931.494=17.59\) MeV.</li>
+<li><b>Cinética.</b> Conservación del momento: \(T_n=14.03\) MeV, \(T_\alpha=3.56\) MeV.</li>
+<li><b>Por kilogramo.</b> \(17.589\times1.602\times10^{-13}\ \text{J}/(5.0301\ \text{u}\times1.6605\times10^{-27})=3.37\times10^{14}\) J/kg.</li>
+<li><b>Resultado.</b> <span class="ans">17.59 MeV; 14.03 y 3.56 MeV; \(3.37\times10^{14}\) J/kg.</span></li>
+</ol></details></li>
+<li><span class="lvl">Básico</span>Calcule el umbral de la reacción ⁴He + ¹⁴N → p + ¹⁷O (\(Q=-1.192\) MeV) en el laboratorio.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Fórmula.</b> \(T_{th}=-Q(m_a+m_X)/m_X\).</li>
+<li><b>Masas.</b> \(m_a=4.0026\) u, \(m_X=14.0031\) u.</li>
+<li><b>Cálculo.</b> \(1.192\times18.0057/14.0031=1.533\) MeV.</li>
+<li><b>Resultado.</b> <span class="ans">1.533 MeV: las α de 5.3 MeV del ²¹⁰Po bastan.</span></li>
+</ol></details></li>
+<li><span class="lvl">Intermedio</span>En el centro del Sol (\(kT=1.29\) keV) calcule la energía de Gamow de p + p, el pico de Gamow y su ancho; compare el pico con \(kT\) y con la barrera a 1 fm (1.44 MeV).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Masa reducida.</b> \(\mu c^2=938.272/2=469.14\) MeV.</li>
+<li><b>Energía de Gamow.</b> \(E_G=2\mu c^2(\pi\alpha)^2=2(469.14)(0.022925)^2=0.4931\) MeV \(=493.1\) keV.</li>
+<li><b>Pico.</b> \(E_0=(493.1\times1.29^2/4)^{1/3}=(205.15)^{1/3}=5.90\) keV (4.57 kT).</li>
+<li><b>Ancho.</b> \(\Delta=4\sqrt{5.90\times1.29/3}=6.37\) keV.</li>
+<li><b>Comparación.</b> \(E_0/(1440\ \text{keV})=0.4\) %: la reacción ocurre muy por debajo de la barrera, por túnel.</li>
+<li><b>Resultado.</b> <span class="ans">493.1 keV; 5.90 keV; 6.37 keV.</span></li>
+</ol></details></li>
+<li><span class="lvl">Intermedio</span>El Sol emite \(L=3.828\times10^{26}\) W con 26.2 MeV útiles por cada cuatro protones consumidos. Calcule los ciclos por segundo, la masa de hidrógeno consumida y el flujo de neutrinos en la Tierra (1 UA \(=1.496\times10^{11}\) m).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Energía por ciclo.</b> \(26.211\ \text{MeV}=4.199\times10^{-12}\) J.</li>
+<li><b>Ciclos.</b> \(3.828\times10^{26}/4.199\times10^{-12}=9.1\times10^{37}\) s\(^{-1}\).</li>
+<li><b>Masa.</b> \(4\times1.00728\ \text{u}\times9.1\times10^{37}=6.1\times10^{11}\) kg/s.</li>
+<li><b>Neutrinos.</b> \(2\times9.1\times10^{37}/(4\pi(1.496\times10^{11})^2)=6.5\times10^{14}\) m\(^{-2}\)s\(^{-1}\) \(=6.5\times10^{10}\) cm\(^{-2}\)s\(^{-1}\).</li>
+<li><b>Resultado.</b> <span class="ans">\(9.1\times10^{37}\) s⁻¹; \(6.1\times10^{11}\) kg/s; \(6.5\times10^{10}\) cm⁻² s⁻¹.</span></li>
+</ol></details></li>
+<li><span class="lvl">Intermedio</span>Calcule la fisionabilidad del ²³⁶U con \(a_S=18.18\) y \(a_C=0.717\) MeV, y estime la energía de la fisión con la diferencia de \(B/A\) (8.5 MeV frente a 7.6 MeV).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Superficie.</b> \(E_S=18.177\times236^{2/3}=18.177\times38.19=694.2\) MeV.</li>
+<li><b>Coulomb.</b> \(E_C=0.7167\times92\times91/236^{1/3}=971.0\) MeV (\(236^{1/3}=6.180\)).</li>
+<li><b>Fisionabilidad.</b> \(x=971.0/(2\times694.2)=0.699\).</li>
+<li><b>Energía.</b> \((8.5-7.6)\times236\approx212\) MeV (con las energías exactas, unos 200 MeV).</li>
+<li><b>Resultado.</b> <span class="ans">\(x=0.699\); ≈ 210 MeV por fisión.</span></li>
+</ol></details></li>
+<li><span class="lvl">Avanzado</span>En un reactor con \(\beta=0.0065\), \(\Lambda=10^{-4}\) s y \(\lambda=0.08\) s\(^{-1}\): halle el período para \(\rho=0.003\) y \(\rho=0.0075\) y la probabilidad de que un neutrón aislado inicie una cadena con \(k=1.1\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Inversa horaria.</b> \(\rho=\Lambda\omega+\beta\omega/(\omega+\lambda)\).</li>
+<li><b>ρ = 0.003.</b> \(\omega=0.0683\) s\(^{-1}\): período 14.6 s (0.46 $).</li>
+<li><b>ρ = 0.0075.</b> \(\omega=10.49\) s\(^{-1}\): período 95 ms (1.15 $: crítico inmediato, \(\omega\simeq(\rho-\beta)/\Lambda\)).</li>
+<li><b>Cadena.</b> \(q=e^{1.1(q-1)}\Rightarrow q=0.824\): se inicia con probabilidad \(1-q=0.176\).</li>
+<li><b>Resultado.</b> <span class="ans">14.6 s; 95 ms; 17.6 %.</span></li>
+</ol></details></li>
+</ol>
+<div class="box note"><h4>Para profundizar</h4><p>E. Rutherford, <em>Phil. Mag.</em> 37, 581 (1919). J. D. Cockcroft y E. T. S. Walton, <em>Proc. R. Soc. A</em> 137, 229 (1932). O. Hahn y F. Strassmann, <em>Naturwiss.</em> 27, 11 (1939); L. Meitner y O. R. Frisch, <em>Nature</em> 143, 239 (1939). N. Bohr y J. A. Wheeler, <em>Phys. Rev.</em> 56, 426 (1939). H. A. Bethe, <em>Phys. Rev.</em> 55, 434 (1939). Textos: Krane, caps. 11–13; Clayton, <em>Principles of Stellar Evolution and Nucleosynthesis</em>; Lamarsh y Baratta, <em>Introduction to Nuclear Engineering</em>; Duderstadt y Hamilton, <em>Nuclear Reactor Analysis</em>.</p></div>
+</section>
+</template>

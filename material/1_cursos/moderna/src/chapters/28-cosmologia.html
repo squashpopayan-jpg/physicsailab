@@ -1,0 +1,106 @@
+<template class="chapter-src" data-id="cosmologia" data-num="28" data-title="Cosmología: del Big Bang al universo acelerado" data-part="Parte VII · Partículas, estrellas y cosmos" data-short="La expansión del universo y las ecuaciones de Friedmann, las distancias cosmológicas y la aceleración medida con supernovas, el fondo cósmico de microondas (recombinación, horizonte sonoro), la nucleosíntesis primordial, y la materia y la energía oscuras">
+<p class="lead">La física moderna tiene su prueba más grande en el universo mismo. En 1929 Hubble mostró que las galaxias se alejan con una velocidad proporcional a su distancia, y la relatividad general (capítulo 6) tenía desde 1922 las ecuaciones que lo describen: Friedmann y Lemaître. Hoy el modelo \(\Lambda\)CDM, con unos seis parámetros, explica el fondo de microondas, la abundancia de los elementos ligeros, la distribución de las galaxias y las distancias a las supernovas lejanas. Este capítulo integra las ecuaciones de Friedmann para obtener la edad y las distancias (comprobadas con <code>astropy.cosmology</code> en cuatro universos y cinco corrimientos), calcula con las constantes de la física de los capítulos anteriores las propiedades del fondo cósmico (fotones, recombinación de Saha, horizonte sonoro y ángulo acústico) y la era de radiación, y muestra por qué la materia visible no basta: la materia oscura y la energía oscura son hoy el 95 % del contenido del universo.</p>
+
+<section>
+<h2>La expansión y las ecuaciones de Friedmann</h2>
+<p>Para un universo homogéneo e isótropo con factor de escala \(a(t)\) (\(a_0=1\) hoy) y corrimiento al rojo \(1+z=1/a\), la ley de Hubble es \(v=H_0d\), con \(H_0=\dot a/a\) hoy. La ecuación de Friedmann relaciona la tasa de expansión con el contenido:</p>
+<div class="eq key" data-name="Ecuación de Friedmann">\[\frac{H^2}{H_0^2}=\Omega_ra^{-4}+\Omega_ma^{-3}+\Omega_ka^{-2}+\Omega_\Lambda,\qquad \Omega_i=\frac{\rho_i}{\rho_c},\quad \rho_c=\frac{3H_0^2}{8\pi G},\quad\Omega_r+\Omega_m+\Omega_k+\Omega_\Lambda=1.\]</div>
+<p>Con los parámetros del satélite Planck (2018), \(H_0=67.4\) km/s/Mpc, \(\Omega_m=0.315\) (de los cuales los bariones son \(\Omega_b=0.049\) y la materia oscura fría, 0.266), \(\Omega_\Lambda=0.685\) y \(\Omega_r=9.2\times10^{-5}\) (fotones y neutrinos), se obtiene: la densidad crítica \(\rho_c=8.53\times10^{-27}\) kg/m\(^3\) (unos 5.1 átomos de hidrógeno por metro cúbico), el tiempo de Hubble \(1/H_0=14.51\) Gyr y la <em>edad del universo</em> \(t_0=\int_0^1da/(aH)=13.79\) Gyr; el parámetro de desaceleración \(q_0=\Omega_m/2-\Omega_\Lambda=-0.527<0\): la expansión se acelera. La materia y la radiación fueron iguales en \(1+z_{eq}=\Omega_m/\Omega_r=3420\). En un universo con solo materia (Einstein–de Sitter) la edad sería \(2/3H_0\) (9.31 Gyr para \(H_0=70\)), menor que la de las estrellas más viejas: una de las razones por las que se necesitó la energía oscura. Con \(H_0=73.0\) km/s/Mpc (medidas locales con supernovas y cefeidas) el tiempo de Hubble sería 13.39 Gyr: la «tensión de Hubble» entre medidas locales y las del fondo cósmico sigue sin explicación (2026).</p>
+<h3>Distancias y supernovas</h3>
+<p>La distancia comóvil a una fuente de corrimiento \(z\) es \(D_C=(c/H_0)\int_0^zdz'/E(z')\); la de luminosidad, \(D_L=(1+z)D_C\) (en el universo plano), y la de diámetro angular, \(D_A=D_C/(1+z)\). El brillo de una candela estándar disminuye como \(1/D_L^2\) y se expresa con el <em>módulo de distancia</em> \(\mu=5\log_{10}(D_L/10\ \text{pc})\). Resultados del modelo de Planck, iguales a los de astropy a mejor que \(2\times10^{-6}\):</p>
+<table class="data"><thead><tr><th>\(z\)</th><th>\(D_C\) (Mpc)</th><th>\(D_L\) (Mpc)</th><th>\(D_A\) (Mpc)</th><th>\(\mu\)</th><th>retrospección (Gyr)</th></tr></thead><tbody>
+<tr><td>0.1</td><td>434.1</td><td>477.5</td><td>394.6</td><td>38.395</td><td>1.35</td></tr>
+<tr><td>0.5</td><td>1951.3</td><td>2926.9</td><td>1300.9</td><td>42.332</td><td>5.21</td></tr>
+<tr><td>1</td><td>3400.9</td><td>6801.9</td><td>1700.5</td><td>44.163</td><td>7.95</td></tr>
+<tr><td>2</td><td>5311.2</td><td>15933.5</td><td>1770.4</td><td>46.012</td><td>10.52</td></tr>
+<tr><td>5</td><td>7943.5</td><td>47661.1</td><td>1323.9</td><td>48.391</td><td>12.62</td></tr>
+</tbody></table>
+<p>(\(D_A\) tiene un máximo en \(z\approx1.6\): más allá, un objeto del mismo tamaño aparece mayor.) En 1998, dos grupos (Perlmutter; Riess y Schmidt) midieron supernovas de tipo Ia (explosiones de enanas blancas que llegan al límite de Chandrasekhar, cap. 27, con luminosidad casi constante) y las hallaron más débiles que lo esperado en un universo de materia: a \(z=0.5\), por 0.40 magnitudes respecto de Einstein–de Sitter, es decir, más lejos de lo esperado. Concluyeron que la expansión se acelera (Nobel 2011).</p>
+<div class="sim" data-sim="friedmann" data-title="Ecuación de Friedmann: edad del universo y diagrama de Hubble"></div>
+<div class="sim-guide"><ul>
+<li>Con \(H_0=67.4\) y \(\Omega_m=0.315\): edad 13.79 Gyr, \(q_0=-0.527\), \(D_L(z=1)=6802\) Mpc y \(\mu=44.16\), con edad de 5.84 Gyr en \(z=1\). El factor de escala (panel izquierdo) se acelera hacia el futuro; la curva punteada (solo materia) se curva siempre hacia abajo.</li>
+<li>Suba \(\Omega_m\) a 1: la edad cae a 9.7 Gyr (con \(H_0=67.4\)), y la curva del diagrama de Hubble se une a la de Einstein–de Sitter. Con \(\Omega_m\) bajo, las supernovas lejanas se ven mucho más débiles (\(\mu\) mayor).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El fondo cósmico de microondas</h2>
+<p>En 1965, Penzias y Wilson hallaron un ruido de microondas isótropo de 3.5 K, que Dicke y sus colegas interpretaron como el resto de radiación del universo primitivo caliente. Hoy se mide con precisión: espectro de cuerpo negro perfecto (FIRAS, 1990) a \(T_0=2.7255\) K. Con la distribución de Bose–Einstein de los fotones (cap. 19 y 7), su densidad numérica es \(n_\gamma=(2\zeta(3)/\pi^2)(k_BT/\hbar c)^3=410.7\) cm\(^{-3}\), la densidad de energía \((\pi^2/15)(k_BT)^4/(\hbar c)^3=0.2606\) eV/cm\(^3\), la energía media por fotón \(2.70\,k_BT=6.3\times10^{-4}\) eV y el máximo de la emisión en frecuencia, 58.79 GHz/K \(\times\) 2.7255 K = 160.2 GHz. Hay unos \(1.6\times10^9\) fotones por cada barión (\(\eta=n_b/n_\gamma=6.1\times10^{-10}\)).</p>
+<p>Cuando el universo tenía unos 370 000 años, se enfrió lo bastante para que los electrones se unieran a los protones (<em>recombinación</em>) y los fotones quedaran libres. La ionización del hidrógeno en equilibrio la da la ecuación de Saha, \(\dfrac{x^2}{1-x}=\dfrac1{n_b}\Bigl(\dfrac{m_ek_BT}{2\pi\hbar^2}\Bigr)^{3/2}e^{-13.6\ \text{eV}/k_BT}\): con \(\eta=6.1\times10^{-10}\) el hidrógeno está ionizado a la mitad a \(T=3762\) K (\(z=1380\)), mucho menos que los 13.6 eV por ser la densidad de fotones tan alta que los de la cola de Wien ionizan; el resultado se comprobó con scipy.optimize.brentq y con las constantes de scipy (a \(10^{-6}\)). La luz que vemos viene de la «última dispersión», en \(z=1090\) (\(T=2970\) K, edad 371 000 años): la dinámica de la recombinación fuera de equilibrio la retrasa respecto de Saha.</p>
+<p>Las ondas sonoras del plasma primordial dejan una escala característica, el <em>horizonte sonoro</em> \(r_s=\int_{z_*}^\infty c_s\,dz/H\), con la velocidad del sonido \(c_s=c/\sqrt{3(1+R)}\) y \(R=3\rho_b/4\rho_\gamma\): con \(\Omega_bh^2=0.02237\), \(r_s=144.26\) Mpc (Planck: 144.4). La distancia comóvil hasta la última dispersión es \(D_M=13.86\) Gpc (comprobada con astropy), de modo que su ángulo es \(\theta_*=r_s/D_M=0.010405\) rad \(=0.596^\circ\) (medido: \(100\theta_*=1.0411\)). Este «metro patrón» angular mide la geometría del universo: su valor, junto con los otros picos acústicos, da \(\Omega_k=0.001\pm0.002\): el universo es plano.</p>
+<div class="sim" data-sim="fondo" data-title="Espectro del fondo cósmico de microondas y recombinación"></div>
+<div class="sim-guide"><ul>
+<li>Con \(T_0=2.7255\) K: \(n_\gamma=410.7\) cm\(^{-3}\) y el pico del espectro en 160.2 GHz. La curva de Saha (derecha) pasa de ionizado a neutro entre \(z\approx1500\) y 1200, con \(x_e=0.5\) en \(z=1380\).</li>
+<li>Aumente \(\eta\) (más bariones por fotón): la recombinación ocurre antes (a mayor temperatura), porque hay menos fotones energéticos por barión.</li>
+<li>El horizonte sonoro y el ángulo acústico se calculan con los parámetros de Planck (con \(\Omega_bh^2=0.02237\)): 144.26 Mpc y \(100\theta_*=1.0405\) (0.596°).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>La era de radiación y la nucleosíntesis</h2>
+<p>En la era dominada por la radiación, \(H^2=(8\pi G/3)\rho\) con \(\rho=(\pi^2/30)g_*(k_BT)^4/(\hbar c)^3c^2\) da la relación tiempo–temperatura \(t=1/2H\): \(t=0.738\) s\((1\ \text{MeV}/k_BT)^2\) con \(g_*=10.75\) (fotones, electrones, positrones y tres neutrinos) y 1.32 s\((1\ \text{MeV}/k_BT)^2\) con \(g_*=3.36\), después de la aniquilación de pares \(e^+e^-\). Alrededor de \(k_BT\approx0.7\) MeV (\(t\approx1.4\) s), las reacciones débiles \(n\leftrightarrow p\) dejan de ser rápidas y la razón queda «congelada» en \(n/p=e^{-\Delta m c^2/k_BT}\), con \(\Delta mc^2=1.2933\) MeV: \(n/p\approx1/6\). Los neutrones libres se desintegran (\(\tau=878\) s) hasta que a unos 3 minutos el deuterio deja de ser destruido por los fotones y se forma ⁴He, que incorpora casi todos los neutrones: con \(n/p\approx1/7\), la fracción de masa de helio es \(Y_p=2(n/p)/(1+n/p)=0.25\), el valor observado en nubes de gas primordial (\(0.245\pm0.003\)); quedan además trazas de deuterio (\(2.5\times10^{-5}\) del hidrógeno), ³He y ⁷Li. La coincidencia entre las abundancias medidas, que abarcan nueve órdenes de magnitud, y las de un modelo con un solo parámetro (\(\eta\)) es una de las pruebas más fuertes del Big Bang, con un único desacuerdo, el del litio-7.</p>
+</section>
+
+<section>
+<h2>Materia oscura y energía oscura</h2>
+<p>La velocidad circular de una estrella a distancia \(R\) del centro de una galaxia es \(v^2=GM(<R)/R\); si la masa estuviera concentrada en las estrellas visibles, \(v\) decaería como \(R^{-1/2}\) fuera del disco (movimiento kepleriano). Rubin y Ford (1970–1980) midieron curvas de rotación planas hasta radios mucho mayores, lo que exige masa adicional que crece como \(R\): un <em>halo de materia oscura</em>. Con un disco exponencial de Freeman (masa \(M_d=5\times10^{10}M_\odot\), \(R_d=3\) kpc, cuya velocidad circular máxima es 167 km/s y ocurre en \(R=2.15R_d\); calculada con funciones de Bessel y comprobada con scipy.special) y un halo NFW (\(\rho_s=1.5\times10^7M_\odot/\text{kpc}^3\), \(r_s=15\) kpc) se obtienen curvas como las observadas: a 8 kpc, 164 km/s del disco, 165 del halo y 233 km/s en total (la Vía Láctea: \(\approx230\)), y plana en \(\sim210\)–230 km/s hasta 40 kpc, mientras que el disco solo daría 87 km/s a 30 kpc. La masa dentro de 30 kpc, \(v^2R/G=3.3\times10^{11}M_\odot\), es en un 85 % oscura. Otras pruebas: lentes gravitatorias, el cúmulo Bala, los picos acústicos del CMB y el crecimiento de estructuras. La materia oscura no es bariónica (la nucleosíntesis limita los bariones a \(\Omega_b=0.049\)) y no interacciona con la luz: partículas todavía no identificadas (neutrinos con masa, demasiado ligeros; ¿WIMPs, axiones?).</p>
+<p>La aceleración cósmica exige una componente con presión negativa, \(P\approx-\rho c^2\), que no se diluye al expandirse: la <em>energía oscura</em>, compatible con una constante cosmológica \(\Lambda\) (de densidad \(\rho_\Lambda=0.685\rho_c=5.8\times10^{-27}\) kg/m\(^3\), es decir, la energía de unos 3.5 protones por metro cúbico). Su valor es unos 120 órdenes de magnitud menor que el que estima la teoría cuántica de campos para la energía del vacío: el mayor desacuerdo conocido entre teoría y experimento. El contenido actual del universo es 4.9 % de materia ordinaria, 26.6 % de materia oscura y 68.5 % de energía oscura.</p>
+<div class="sim" data-sim="galaxias" data-title="Curvas de rotación de galaxias y materia oscura"></div>
+<div class="sim-guide"><ul>
+<li>Con los valores iniciales la curva total (naranja) es plana a ≈ 210–233 km/s entre 5 y 40 kpc; el disco (azul) cae a 87 km/s a 30 kpc y la línea punteada de Kepler muestra lo que se esperaría con la masa visible.</li>
+<li>Ponga \(\rho_s=0\): sin halo, la curva decrece. Aumente la masa del disco: la velocidad máxima aumenta pero la curva no se aplana; solo el halo sostiene la velocidad hasta radios grandes.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas propuestos</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Para \(H_0=67.4\) km/s/Mpc calcule el tiempo de Hubble, la densidad crítica y su equivalente en átomos de hidrógeno por metro cúbico. Repita el tiempo de Hubble con \(H_0=73.0\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>H₀ en SI.</b> \(67.4\times10^3/3.0857\times10^{22}=2.184\times10^{-18}\) s\(^{-1}\).</li>
+<li><b>Tiempo de Hubble.</b> \(1/H_0=4.578\times10^{17}\) s \(=14.51\) Gyr (con 73.0: 13.39 Gyr).</li>
+<li><b>Densidad crítica.</b> \(3H_0^2/8\pi G=8.53\times10^{-27}\) kg/m\(^3\).</li>
+<li><b>Átomos de H.</b> \(8.53\times10^{-27}/1.674\times10^{-27}=5.1\) por m\(^3\).</li>
+<li><b>Resultado.</b> <span class="ans">14.51 Gyr (13.39 Gyr); \(8.53\times10^{-27}\) kg/m³; 5.1 átomos/m³.</span></li>
+</ol></details></li>
+<li><span class="lvl">Básico</span>En el modelo de Planck, halle la distancia de luminosidad y el módulo de distancia de una supernova a \(z=1\), y la edad del universo cuando se emitió su luz.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Distancia comóvil.</b> \((c/H_0)\int_0^1dz/E(z)=3400.9\) Mpc.</li>
+<li><b>Luminosidad.</b> \(D_L=(1+z)D_C=6801.9\) Mpc.</li>
+<li><b>Módulo.</b> \(\mu=5\log_{10}(6.8019\times10^9/10)=44.163\).</li>
+<li><b>Edad en \(z=1\).</b> \(t(z=1)=5.84\) Gyr: el tiempo de retrospección es \(13.79-5.84=7.95\) Gyr.</li>
+<li><b>Resultado.</b> <span class="ans">6802 Mpc; 44.16; 5.84 Gyr.</span></li>
+</ol></details></li>
+<li><span class="lvl">Intermedio</span>Calcule la densidad numérica de fotones del CMB a 2.7255 K, la densidad de energía y la frecuencia del máximo del espectro.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Fotones.</b> \(n_\gamma=(2\zeta(3)/\pi^2)(k_BT/\hbar c)^3=410.7\) cm\(^{-3}\).</li>
+<li><b>Energía.</b> \(u=(\pi^2/15)(k_BT)^4/(\hbar c)^3=0.2606\) eV/cm\(^3\); por fotón: \(u/n_\gamma=6.3\times10^{-4}\) eV.</li>
+<li><b>Máximo.</b> \(\nu_{\max}=58.79\ \text{GHz/K}\times2.7255\ \text{K}=160.2\) GHz.</li>
+<li><b>Resultado.</b> <span class="ans">410.7 cm⁻³; 0.2606 eV/cm³; 160.2 GHz.</span></li>
+</ol></details></li>
+<li><span class="lvl">Intermedio</span>Con el ángulo acústico \(\theta_*=r_s/D_M\) halle el ángulo para \(r_s=144.26\) Mpc y \(D_M=13\,864\) Mpc, y el valor del corrimiento al rojo en que la temperatura del CMB es 3762 K.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Ángulo.</b> \(\theta_*=144.26/13\,864=0.010405\) rad \(=0.596^\circ\).</li>
+<li><b>Convención.</b> \(100\theta_*=1.0405\), frente al valor medido 1.0411.</li>
+<li><b>Corrimiento.</b> \(1+z=3762/2.7255=1380\).</li>
+<li><b>Resultado.</b> <span class="ans">\(\theta_*=0.010405\) rad = 0.596° (\(100\theta_*=1.0405\)); \(z=1379\).</span></li>
+</ol></details></li>
+<li><span class="lvl">Intermedio</span>Con \(M_d=5\times10^{10}M_\odot\) y un halo cuya contribución a 30 kpc es de 198.5 km/s (disco: 87.1 km/s), halle la masa total dentro de 30 kpc y la fracción oscura.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Velocidad total.</b> \(v=\sqrt{87.1^2+198.5^2}=216.8\) km/s.</li>
+<li><b>Masa dinámica.</b> \(M=v^2R/G=(2.168\times10^5)^2(30\times3.0857\times10^{19})/6.674\times10^{-11}=6.52\times10^{41}\) kg \(=3.28\times10^{11}M_\odot\).</li>
+<li><b>Fracción oscura.</b> \(1-0.5/3.28=0.85\).</li>
+<li><b>Resultado.</b> <span class="ans">\(3.3\times10^{11}M_\odot\); 85 % oscura.</span></li>
+</ol></details></li>
+<li><span class="lvl">Avanzado</span>En un universo con \(\Omega_m=1\) y \(H_0=70\) km/s/Mpc: ¿cuál sería su edad? ¿Por cuántas magnitudes difiere el módulo de distancia de \(z=0.5\) de un universo \(\Omega_m=0.3\), \(\Omega_\Lambda=0.7\)?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Edad.</b> \(t_0=2/(3H_0)=2/3\times13.97\) Gyr \(=9.31\) Gyr.</li>
+<li><b>Modelo plano de materia.</b> \(\mu(z=0.5)=41.86\) (con \(H_0=70\)).</li>
+<li><b>ΛCDM.</b> \(\mu(z=0.5)=42.26\).</li>
+<li><b>Diferencia.</b> \(0.40\) mag: la supernova es 45 % más débil que en el universo sin energía oscura.</li>
+<li><b>Resultado.</b> <span class="ans">9.31 Gyr; 0.40 magnitudes.</span></li>
+</ol></details></li>
+</ol>
+<div class="box note"><h4>Para profundizar</h4><p>A. Friedmann, <em>Z. Phys.</em> 10, 377 (1922); G. Lemaître, <em>Ann. Soc. Sci. Bruxelles</em> 47, 49 (1927). E. Hubble, <em>PNAS</em> 15, 168 (1929). A. A. Penzias y R. W. Wilson, <em>Astrophys. J.</em> 142, 419 (1965). A. G. Riess et al., <em>Astron. J.</em> 116, 1009 (1998); S. Perlmutter et al., <em>Astrophys. J.</em> 517, 565 (1999). V. C. Rubin y W. K. Ford, <em>Astrophys. J.</em> 159, 379 (1970). Planck Collaboration, <em>Astron. Astrophys.</em> 641, A6 (2020). Textos: Ryden, <em>Introduction to Cosmology</em>; Weinberg, <em>Cosmology</em>; Carroll y Ostlie, caps. 29–30.</p></div>
+</section>
+</template>
