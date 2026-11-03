@@ -2542,10 +2542,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const toggleContainer = document.getElementById('courses-toggle-controls');
         if (!coursesGrid || !data.cursos) return;
 
-        const f = (filter || 'all').toLowerCase();
+        let f = (filter || 'all').toLowerCase();
+        if (f === 'materiales') f = 'labs';
+        if (f === 'ia') f = 'aplicada';
+
         let filtered = f === 'all'
             ? data.cursos
-            : data.cursos.filter(c => (c.categoriaFiltro || '').toLowerCase() === f || (c.categoria || '').toLowerCase().includes(f));
+            : data.cursos.filter(c => {
+                const cf = (c.categoriaFiltro || '').toLowerCase();
+                if (cf === f) return true;
+                if (f === 'labs' && (cf === 'materiales' || (c.categoria || '').toLowerCase().includes('lab'))) return true;
+                if (f === 'aplicada' && (cf === 'ia' || (c.categoria || '').toLowerCase().includes('aplicada'))) return true;
+                return false;
+            });
 
         if (currentCourseSearchQuery) {
             const tokens = normalizeSearchText(currentCourseSearchQuery).split(' ').filter(Boolean);
@@ -2594,6 +2603,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const isMcuantica = c.id === 'mcuantica';
             const isModerna = c.id === 'moderna';
             const isArduino = c.id === 'arduino';
+            const isVenturi = c.id === 'venturi';
+            const isPendulo = c.id === 'pendulo';
+            const isTransformadores = c.id === 'transformadores';
+            const isRecorrido = c.id === 'recorrido';
+            const isCuantica = c.id === 'cuantica';
             const isPrivado = !!c.esPrivado;
             const isDiagnosticas = c.id === 'diagnosticas';
             const isFaro = c.id === 'faro';
@@ -2614,9 +2628,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 openBtnText = '🌈 Abrir Aventura KIDS (Nueva Ventana ↗) 🧒';
             } else if (isMcuantica) {
                 openBtnText = courseUnlocked ? 'Abrir Mecánica Cuántica (Nueva Ventana ↗) 🌌' : 'Vista Previa Cuántica 👁️';
+            } else if (isModerna) {
+                openBtnText = courseUnlocked ? 'Abrir Física Moderna (Nueva Ventana ↗) 🌌' : 'Vista Previa Moderna 👁️';
+            } else if (isArduino) {
+                openBtnText = courseUnlocked ? 'Abrir Circuitos Vivos (Nueva Ventana ↗) ⚡' : 'Vista Previa Arduino 👁️';
+            } else if (isVenturi || isPendulo) {
+                openBtnText = '🧪 Abrir Laboratorio Libre (Nueva Ventana ↗)';
+            } else if (isTransformadores) {
+                openBtnText = '⚡ Abrir Laboratorio Libre (Nueva Ventana ↗)';
+            } else if (isRecorrido) {
+                openBtnText = '🏛️ Abrir Tour 3D (Nueva Ventana ↗)';
+            } else if (isCuantica) {
+                openBtnText = courseUnlocked ? 'Abrir Cuántica Interactiva (Nueva Ventana ↗) ⚛️' : 'Vista Previa Cuántica 👁️';
             } else {
                 openBtnText = courseUnlocked
-                    ? (isLab ? 'Abrir Laboratorio 🧪' : (isSquash ? 'Abrir Simulador Completo 🎮' : (c.id === 'historia' ? 'Abrir Tratado Completo 📖' : 'Abrir Curso Completo 📖')))
+                    ? (isLab ? 'Abrir Laboratorio 🧪' : (isSquash ? 'Abrir Simulador Completo 🎮' : (c.id === 'historia' ? 'Abrir Tratado Libre (Nueva Ventana ↗) 📖' : 'Abrir Curso Completo (Nueva Ventana ↗) 📖')))
                     : (isLab ? 'Vista Previa del Banco 👁️' : (isSquash ? 'Vista Previa de Rutinas 👁️' : 'Vista Previa Gratuita 👁️'));
             }
 
@@ -8646,10 +8672,21 @@ document.addEventListener('DOMContentLoaded', () => {
         if (sectionId === 'mis-cursos') {
             window.navigateToSection('cursos', pushToHistory);
             setTimeout(() => {
+                const enrolled = (typeof getEnrolledCourses === 'function') ? getEnrolledCourses() : [];
+                const saved = (typeof getSavedCourses === 'function') ? getSavedCourses() : [];
                 const mc = document.getElementById('mis-cursos');
-                if (mc) {
-                    mc.style.display = 'block';
-                    mc.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                if ((enrolled && enrolled.length > 0) || (saved && saved.length > 0)) {
+                    if (mc) {
+                        mc.style.display = 'block';
+                        mc.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                } else {
+                    if (typeof window.openStudentProfileModal === 'function') {
+                        window.openStudentProfileModal('courses');
+                    } else if (mc) {
+                        mc.style.display = 'block';
+                        mc.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
                 }
             }, 120);
             return;
@@ -9184,13 +9221,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const name = (nameInput ? nameInput.value.trim() : '');
         const inst = (instInput ? instInput.value.trim() : '');
 
-        if (!name) {
-            alert('⚠️ Por favor escribe tu nombre completo para comenzar la Trivia.');
-            if (nameInput) nameInput.focus();
-            return;
+        let url = targetFile;
+        if (name) {
+            url += `?player=${encodeURIComponent(name)}&inst=${encodeURIComponent(inst)}&start=1`;
         }
-
-        const url = `${targetFile}?player=${encodeURIComponent(name)}&inst=${encodeURIComponent(inst)}&start=1`;
         window.open(url, '_blank', 'noopener,noreferrer');
     };
 

@@ -340,7 +340,7 @@ window.PLATFORM_DATA = {
             nivel: "Universitario / Maestría / Ingeniería",
             modulos: "27 Capítulos Interactivos + Formulario + Validación SciPy",
             categoria: "Ciencia de Materiales & Sólidos",
-            categoriaFiltro: "materiales",
+            categoriaFiltro: "avanzada",
             descripcion: "Obra insignia de maestría del autor: desde el enlace químico, defectos cristalinos y difusión hasta diagramas de fases (Fe-C), tratamientos térmicos, fractura, fatiga, cerámicos, polímeros, propiedades magnéticas, corrosión y mapas de selección de Ashby.",
             temas: [
                 "01. Introducción y Familias de Materiales",
@@ -389,7 +389,7 @@ window.PLATFORM_DATA = {
             nivel: "Ingeniería / Tecnología Eléctrica",
             modulos: "Banco Libre con 24 Kits Calibrados",
             categoria: "Laboratorio Virtual",
-            categoriaFiltro: "materiales",
+            categoriaFiltro: "labs",
             descripcion: "Entorno de laboratorio virtual de alta precisión con cableado libre y equipos de medición reales. Modela saturación del núcleo (Steinmetz), armónicos, cálculo de reluctancia, osciloscopio digital, multímetros de 6000 cuentas y preinformes autocalificados.",
             temas: [
                 "Ensayos de resistencia de devanados (R)", "Ensayos de vacío (A y B)",
@@ -444,7 +444,7 @@ window.PLATFORM_DATA = {
             nivel: "Universitario / Multidisciplinar / Ciencias del Deporte",
             modulos: "31 Capítulos Interactivos + Test de Hábitos + Medidor Personal",
             categoria: "Neurociencia & Biomecánica Motora",
-            categoriaFiltro: "ia",
+            categoriaFiltro: "aplicada",
             descripcion: "Tratado exhaustivo de neuroplasticidad, sinapsis y aprendizaje motor con evidencia científica contrastada. Desmonta neuromitos, modela la regla de Hebb y circuitos de dopamina, optimiza la formación de hábitos, control del movimiento atlético y recuperación cognitiva.",
             temas: [
                 "01. La Neurona, Canales Iónicos y Potencial de Acción",
@@ -506,7 +506,7 @@ window.PLATFORM_DATA = {
             nivel: "Universitario / Profesional / IA Aplicada",
             modulos: "12 Módulos Interactivos + Prácticas Validadas con scikit-learn",
             categoria: "Inteligencia Artificial & Ciencia de Datos",
-            categoriaFiltro: "ia",
+            categoriaFiltro: "aplicada",
             descripcion: "Fundamento matemático y computacional del aprendizaje automático moderno: regresión, descenso de gradiente estocástico, clasificación logística, árboles de decisión, Random Forest, K-Means, PCA, redes neuronales profundas (MLP) y diagnóstico de overfitting.",
             temas: [
                 "01. Fundamentos y Taxonomía del Aprendizaje Automático",
@@ -539,7 +539,7 @@ window.PLATFORM_DATA = {
             nivel: "Avanzado / Universitario",
             modulos: "Simulaciones Cuánticas Numéricas",
             categoria: "Física Cuántica Moderna",
-            categoriaFiltro: "fundamental",
+            categoriaFiltro: "avanzada",
             descripcion: "Visualización de funciones de onda, dualidad onda-partícula, pozos de potencial y el principio de incertidumbre a través de modelos numéricos interactivos.",
             temas: [
                 "Ecuación de Schrödinger 1D", "Barreras y Efecto Túnel",
@@ -563,7 +563,7 @@ window.PLATFORM_DATA = {
             nivel: "Ingenieros y Técnicos Electricistas",
             modulos: "Auditoría, Diseño e Instalaciones",
             categoria: "Ingeniería Eléctrica Aplicada",
-            categoriaFiltro: "materiales",
+            categoriaFiltro: "aplicada",
             descripcion: "Guía técnica e interactiva para la aplicación del Reglamento Técnico de Instalaciones Eléctricas en Colombia. Cálculos de apantallamiento, puesta a tierra, protecciones y certificación.",
             temas: [
                 "Fundamentos legales y campo de aplicación del RETIE", "Diseño de sistemas de puesta a tierra (SPT)",
@@ -678,7 +678,7 @@ window.PLATFORM_DATA = {
             nivel: "Universitario / Física Pura, Ingeniería Física & Posgrado",
             modulos: "36 Capítulos Exhaustivos + Soluciones Paso a Paso + Simulaciones Numéricas",
             categoria: "Física Cuántica Moderna",
-            categoriaFiltro: "fundamental",
+            categoriaFiltro: "avanzada",
             descripcion: "Tratado formal, computacional y exhaustivo de Mecánica Cuántica desarrollado por el Mg. Manuel Alejandro Obando (Universidad del Cauca). Aborda con máximo rigor matemático y conceptual los fundamentos y aplicaciones de la física cuántica: función de onda, operadores lineales, espacios de Hilbert, notación de Dirac (brakets), pozos y barreras de potencial con efecto túnel, oscilador armónico y estados coherentes, potenciales periódicos y bandas de Bloch, momento angular formal y átomo de hidrógeno, espín 1/2 y suma de momentos angulares, teoría de perturbaciones independiente y dependiente del tiempo (regla de oro de Fermi, Stark, Zeeman, WKB, variacional), teoría de la dispersión, sistemas de muchos cuerpos y segunda cuantización, matriz densidad, entrelazamiento, desigualdades de Bell, computación cuántica (qubits, puertas lógicas) e integrales de camino de Feynman. Incluye cientos de problemas propuestos con solución detallada paso a paso y simuladores numéricos.",
             temas: [
                 "01. Crisis de la física clásica: del cuerpo negro al átomo de Bohr",
@@ -920,7 +920,7 @@ window.PLATFORM_DATA = {
             nivel: "Universitario / Ingeniería / Física Experimental",
             modulos: "38 Capítulos Interactivos + 36 Simuladores + Banco LEGO & ESP32",
             categoria: "Laboratorio Virtual & Maker",
-            categoriaFiltro: "materiales",
+            categoriaFiltro: "labs",
             descripcion: "Kits de física de bajo costo con el celular, la placa microcontroladora ESP32, MIT App Inventor y estructuras LEGO. Contiene 38 guías prácticas experimentales paso a paso, simuladores interactivos, analizador de mínimos cuadrados e incertidumbres, y generador automático de informes para mecánica, electromagnetismo y fluidos.",
             temas: [
                 "00. Inicio & Metodología de Laboratorio de Bolsillo",
@@ -980,7 +980,7 @@ window.PLATFORM_DATA = {
             nivel: "Secundaria, Universidad & Makers / Grados 8-11 e Ingenierías",
             modulos: "28 Capítulos Interactivos + 73 Simuladores Numéricos SPICE + 755 Pruebas Científicas",
             categoria: "Electrónica, Arduino & Hardware Maker",
-            categoriaFiltro: "materiales",
+            categoriaFiltro: "labs",
             descripcion: "Aprende electrónica práctica construyendo proyectos reales con Arduino UNO, Nano y ESP32. Incluye protoboard interactiva con resolución paso a paso, motor SPICE con detección de fallos y cortocircuitos reales (humo y sobrecorriente), multímetro virtual con puntas arrastrables (V, A, R y continuidad), simulador de código C/C++ en tiempo real con monitor serie, sensores (ultrasonido HC-SR04, temperatura DHT11/NTC, LDR, PIR), actuadores (servos, relés, pantallas LCD 16x2 I2C) y proyectos experimentales de física aplicada (caída libre con fotopuertas, péndulo, ley de enfriamiento, velocidad del sonido y estación meteorológica IoT con servidor web). Desarrollado por el Mg. Manuel Alejandro Obando (Universidad del Cauca).",
             temas: [
                 "01. Electricidad sin miedo: Carga, Voltaje, Corriente y Resistencia",
@@ -1078,7 +1078,7 @@ window.PLATFORM_DATA = {
             nivel: "Universitario / Ingeniería / Física de Fluidos",
             modulos: "Banco Hidráulico Virtual con 24 Puestos Independientes para Grupos",
             categoria: "Laboratorio Virtual",
-            categoriaFiltro: "fundamental",
+            categoriaFiltro: "labs",
             descripcion: "Banco hidráulico didáctico para la práctica «Tubo de Venturi: principio de Bernoulli y ecuación de continuidad» según la guía del Mg. Manuel Alejandro Obando (Universidad del Cauca). Diseñado con 24 puestos de trabajo independientes (bancos 1 al 24) con variaciones físicas determinísticas por grupo (temperatura de agua, calibración de rotámetro clase 2.5, burbujas a purgar en tomas A–H, capilaridad y fugas de unión) para evitar copia entre estudiantes. Incluye lectura con lupa y paralaje en menisco, cuaderno digital de datos (Tablas 2, 3 y 4 de la guía oficial), verificación de cero, calibración volumétrica con tanque y cronómetro, exportación CSV/JSON y panel docente de calibración teórica.",
             temas: [
                 "01. Asignación de Puestos: 24 Bancos con Parámetros Físicos Únicos para Grupos",
@@ -1113,7 +1113,7 @@ window.PLATFORM_DATA = {
             nivel: "Universitario / Educación Media / Física Fundamental",
             modulos: "Simulador Físico con 24 Puestos para Grupos + Tratamiento de Errores & Regresión Lineal",
             categoria: "Laboratorio Virtual",
-            categoriaFiltro: "fundamental",
+            categoriaFiltro: "labs",
             descripcion: "Laboratorio virtual riguroso para la práctica «Péndulo simple y gravedad local» según la guía del Mg. Manuel Alejandro Obando (Universidad del Cauca). Diseñado con 24 puestos de trabajo independientes para grupos con variaciones físicas determinísticas (calibración de flexómetro, masa de plomada y tiempos de reacción) para evitar copia. Incluye simulación en tiempo real (RK4), transportador de precisión, sensor de fotocompuerta infrarroja, cronómetro digital de mano con split por oscilación, cuaderno digital con cálculo automático de promedios, desviaciones estándar e incertidumbres combinadas, gráficas interactivas SVG con barras de error, ajuste por mínimos cuadrados (T² vs L), cálculo de g con incertidumbre propagada, evaluación de compatibilidad Z-score y una sección completa de análisis teórico del péndulo matemático (aproximación armónica vs amplitudes grandes con series de Legendre).",
             temas: [
                 "01. Asignación de 24 Puestos de Trabajo con Parámetros Únicos para Grupos",
@@ -1149,7 +1149,7 @@ window.PLATFORM_DATA = {
             nivel: "Educación Media & Universitaria (Grados 10.°, 11.° y Universidad)",
             modulos: "46 Prácticas Experimentales + Generador Word + NTC 4595:2025",
             categoria: "Física Experimental & Didáctica",
-            categoriaFiltro: "materiales",
+            categoriaFiltro: "labs",
             descripcion: "Cuaderno interactivo para elaborar guías y montajes experimentales de física conforme a los lineamientos curriculares del MEN, estándares ICFES Saber 11.°, NTC 4595:2025 y seguridad GTC 45. Incluye 46 montajes con materiales de bajo costo y equipos avanzados, tratamiento riguroso de incertidumbres, bancos virtuales y generador automatizado de guías en Word.",
             temas: [
                 "01. Marco Normativo MEN, Derechos Básicos de Aprendizaje (DBA) y Prueba Saber 11.°",
@@ -1226,7 +1226,7 @@ window.PLATFORM_DATA = {
             nivel: "Universitario / Estudiantes / Comunidad Científica",
             modulos: "Maqueta 3D Interactiva + Simulación de Rotación por Estaciones + Plano 2D",
             categoria: "Laboratorio Virtual",
-            categoriaFiltro: "materiales",
+            categoriaFiltro: "labs",
             descripcion: "Gemelo digital tridimensional y maqueta interactiva a escala real (1 paso ≈ 0.75 m) del Departamento de Física de la Universidad del Cauca. Permite caminar en primera persona por los pasillos, acceder a los laboratorios de Mecánica 1, Mecánica 2, Fluidos, Óptica y Sala de Sistemas, subir las gradas exteriores al segundo piso, explorar los patios y experimentar la simulación pedagógica de rotación simultánea de grupos con reloj de estaciones y roles (divisor, guías, encargados y expositores).",
             temas: [
                 "01. Vista en Primera Persona: Caminar por Pasillos, Patios y Salas",
