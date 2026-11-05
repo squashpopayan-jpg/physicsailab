@@ -552,11 +552,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const wrapper = document.getElementById('comic-canvas-wrapper');
             const containerWidth = wrapper ? Math.max(300, wrapper.clientWidth - 32) : 800;
+            const containerHeight = wrapper ? Math.max(300, wrapper.clientHeight - 32) : 600;
 
             const unscaledViewport = page.getViewport({ scale: 1.0 });
-            let fitScale = (containerWidth > 0 && unscaledViewport.width > 0) ? (containerWidth / unscaledViewport.width) : 1.0;
-            if (fitScale > 2.0) fitScale = 2.0;
-            if (fitScale < 0.5) fitScale = 0.5;
+            const scaleW = (containerWidth > 0 && unscaledViewport.width > 0) ? (containerWidth / unscaledViewport.width) : 1.0;
+            const scaleH = (containerHeight > 0 && unscaledViewport.height > 0) ? (containerHeight / unscaledViewport.height) : 1.0;
+            let fitScale = Math.min(scaleW, scaleH);
+            if (fitScale > 2.5) fitScale = 2.5;
+            if (fitScale < 0.3) fitScale = 0.3;
 
             const appliedScale = fitScale * currentPdfScale;
             const viewport = page.getViewport({ scale: appliedScale });
@@ -679,6 +682,10 @@ document.addEventListener('DOMContentLoaded', () => {
             downloadBtn.href = cleanPath;
             downloadBtn.setAttribute('download', safeFilename);
             downloadBtn.onclick = () => trackDownload(comic.titulo);
+        const fullpageLink = document.getElementById('comic-viewer-fullpage-link');
+        if (fullpageLink) {
+            fullpageLink.href = 'comic-reader.html?id=' + encodeURIComponent(comic.id);
+        }
         }
 
         if (spinner) {
@@ -1259,7 +1266,7 @@ window.renderEnrolledCourses = renderEnrolledCourses;
                             <p style="font-size:0.8rem; color:var(--text-muted); line-height:1.4; margin-bottom:0.75rem;">${c.descripcion.substring(0, 95)}...</p>
                         </div>
                         <div style="display:flex; gap:0.5rem; margin-top:auto;">
-                            <button onclick="openComicViewer('${c.id}')" class="btn btn-primary" style="flex:1; justify-content:center; font-size:0.82rem; padding:0.45rem;">Leer Cómic 📖</button>
+                            <a href="comic-reader.html?id=${encodeURIComponent(c.id)}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="flex:1; justify-content:center; font-size:0.82rem; padding:0.45rem; text-decoration:none; font-weight:700;">Leer Cómic 📖 ↗</a>
                             <a href="${cleanUrl}" download="${safeDownloadName}" class="btn btn-secondary" style="font-size:0.82rem; padding:0.45rem 0.75rem;" title="Descargar PDF">⬇️</a>
                         </div>
                     </div>
@@ -3042,14 +3049,14 @@ window.renderEnrolledCourses = renderEnrolledCourses;
                 <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:1.25rem;">
                     <!-- Cómic de la Semana -->
                     <div style="background:rgba(15,23,42,0.8); border:1px solid rgba(245,158,11,0.25); border-radius:14px; padding:1.25rem; display:flex; gap:1.1rem; align-items:center;">
-                        <div style="width:90px; height:120px; border-radius:8px; overflow:hidden; flex-shrink:0; border:1px solid rgba(255,255,255,0.15); box-shadow:0 4px 12px rgba(0,0,0,0.4); cursor:pointer;" onclick="openComicViewer('${featuredComic.id}')">
+                        <div style="width:90px; height:120px; border-radius:8px; overflow:hidden; flex-shrink:0; border:1px solid rgba(255,255,255,0.15); box-shadow:0 4px 12px rgba(0,0,0,0.4); cursor:pointer;" onclick="window.open('comic-reader.html?id=' + encodeURIComponent('${featuredComic.id}'), '_blank', 'noopener,noreferrer')" title="Leer en página dedicada">
                             <img src="${featuredComic.portada}" alt="${featuredComic.titulo}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'90\' height=\'120\'><rect width=\'90\' height=\'120\' fill=\'%23111827\'/><text x=\'50%\' y=\'50%\' fill=\'%23F59E0B\' font-size=\'24\' text-anchor=\'middle\' dy=\'.3em\'>🎨</text></svg>';">
                         </div>
                         <div style="flex:1; min-width:0;">
                             <span style="font-size:0.7rem; background:rgba(245,158,11,0.18); color:#fbbf24; border:1px solid rgba(245,158,11,0.35); padding:0.15rem 0.5rem; border-radius:6px; font-weight:700; text-transform:uppercase;">
                                 🎨 Cómic de la Semana
                             </span>
-                            <h4 style="color:#fff; font-size:1.02rem; margin:0.35rem 0 0.25rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer;" onclick="openComicViewer('${featuredComic.id}')">
+                            <h4 style="color:#fff; font-size:1.02rem; margin:0.35rem 0 0.25rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer;" onclick="window.open('comic-reader.html?id=' + encodeURIComponent('${featuredComic.id}'), '_blank', 'noopener,noreferrer')" title="Leer en página dedicada">
                                 ${featuredComic.titulo}
                             </h4>
                             <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.45rem;">
@@ -3149,7 +3156,7 @@ window.renderEnrolledCourses = renderEnrolledCourses;
             const safeDownloadName = (c.titulo || 'comic').replace(/[^a-zA-Z0-9_\-áéíóúÁÉÍÓÚñÑ ]/g, '').trim().replace(/\s+/g, '_') + '.pdf';
             return `
             <div class="comic-card">
-                <div class="comic-cover-wrap" onclick="openComicViewer('${c.id}')" style="cursor:pointer;" title="Abrir lector interactivo">
+                <div class="comic-cover-wrap" onclick="window.open('comic-reader.html?id=' + encodeURIComponent('${c.id}'), '_blank', 'noopener,noreferrer')" style="cursor:pointer;" title="Leer cómic completo en nueva página">
                     <img src="${c.portada}" alt="${c.titulo}" loading="lazy" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'300\\' height=\\'400\\' viewBox=\\'0 0 300 400\\'><rect width=\\'300\\' height=\\'400\\' fill=\\'%23111827\\'/><text x=\\'50%\\' y=\\'50%\\' fill=\\'%23F59E0B\\' font-family=\\'sans-serif\\' font-size=\\'48\\' text-anchor=\\'middle\\' dy=\\'.3em\\'>🎨</text></svg>';" />
                     <span class="comic-cover-badge">🎨 ${c.categoria}</span>
                 </div>
@@ -3159,7 +3166,7 @@ window.renderEnrolledCourses = renderEnrolledCourses;
                             <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">📖 Divulgación Estudiantil</span>
                             <span style="font-size:0.75rem; color:var(--accent-emerald); font-weight:700;">PDF Libre</span>
                         </div>
-                        <h3 class="comic-title" onclick="openComicViewer('${c.id}')" style="cursor:pointer;" title="Abrir lector interactivo">${c.titulo}</h3>
+                        <h3 class="comic-title" onclick="window.open('comic-reader.html?id=' + encodeURIComponent('${c.id}'), '_blank', 'noopener,noreferrer')" style="cursor:pointer;" title="Leer cómic completo en nueva página">${c.titulo}</h3>
                         
                         <div class="comic-authors-box">
                             <span class="comic-authors-icon">✍️</span>
@@ -3178,7 +3185,7 @@ window.renderEnrolledCourses = renderEnrolledCourses;
                     </div>
 
                     <div class="card-actions" style="margin-top:auto; flex-wrap:wrap; gap:0.4rem;">
-                        <button onclick="openComicViewer('${c.id}')" class="btn btn-primary" style="flex:1; justify-content:center; text-decoration:none;">Leer Cómic 📖</button>
+                        <a href="comic-reader.html?id=${encodeURIComponent(c.id)}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="flex:1; justify-content:center; text-decoration:none; font-weight:700;" title="Abrir en página dedicada para lectura completa y ordenada">Leer Cómic en Nueva Página 📖 ↗</a>
                         <a href="${cleanUrl}" download="${safeDownloadName}" class="btn btn-secondary" onclick="trackDownload('${c.titulo.replace(/'/g, "\\'")}')" style="font-size:0.82rem; padding:0.45rem 0.65rem; text-decoration:none;" title="Descargar PDF">⬇️</a>
                         <button class="bookmark-btn ${isSaved ? 'saved' : ''}" onclick="toggleSaveComic('${c.id}', event)" title="${isSaved ? 'Quitar de guardados' : 'Guardar en mi perfil'}">
                             ${isSaved ? '🔖 Guardado' : '🔖 Guardar'}
