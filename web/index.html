@@ -182,19 +182,23 @@
                 Un ecosistema educativo universitario donde las fórmulas cobran vida. Laboratorios con bancos de prueba virtuales, simuladores dinámicos y canales de divulgación científica abierta impulsados por el talento de nuestros estudiantes.
             </p>
             <!-- 1. BUSCADOR GLOBAL INTELIGENTE DE CONTENIDOS CON SUGERENCIAS POPULARES EN PANTALLA -->
-            <div class="platform-search-container" id="platform-search-container">
-                <div class="search-input-wrapper">
-                    <span style="position:absolute; left:1.15rem; font-size:1.25rem; pointer-events:none; opacity:0.85;">🔍</span>
+            <div class="platform-search-container" id="platform-search-container" style="position:relative; max-width:780px; margin:1.5rem auto 1.25rem; width:100%; z-index:50;">
+                <div class="search-input-wrapper" id="search-input-wrapper" style="position:relative; width:100%; display:flex; align-items:center;">
+                    <span class="search-input-icon" style="position:absolute; left:1.15rem; font-size:1.25rem; pointer-events:none; opacity:0.85; z-index:2;">🔍</span>
                     <input type="text" id="global-content-search" 
                            placeholder="¿Qué deseas aprender hoy? Escribe un curso, tema, laboratorio, cómic o trivia..." 
-                           style="width:100%; background:rgba(15,23,42,0.92); border:1.5px solid rgba(99,102,241,0.45); border-radius:14px; padding:0.95rem 2.8rem 0.95rem 3.1rem; color:#fff; font-size:1rem; box-shadow:0 8px 30px rgba(0,0,0,0.35); outline:none; transition:all 0.2s ease; font-family:inherit;"
+                           style="width:100%; background:rgba(15,23,42,0.95); border:1.5px solid rgba(99,102,241,0.55); border-radius:14px; padding:0.95rem 3rem 0.95rem 3.1rem; color:#fff; font-size:1.02rem; box-shadow:0 8px 30px rgba(0,0,0,0.45); outline:none; transition:all 0.2s ease; font-family:inherit; box-sizing:border-box;"
                            autocomplete="off" 
                            oninput="handleGlobalSearch(this.value)" 
                            onfocus="handleGlobalSearchFocus()" 
                            onkeydown="handleGlobalSearchKeydown(event)">
-                    <kbd id="global-search-kbd" style="position:absolute; right:2.9rem; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); border-radius:6px; padding:0.15rem 0.45rem; font-size:0.72rem; color:#94a3b8; font-family:monospace; pointer-events:none;" title="Atajo de teclado: presiona / o Ctrl+K">/</kbd>
+                    <kbd id="global-search-kbd" style="position:absolute; right:3rem; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); border-radius:6px; padding:0.15rem 0.45rem; font-size:0.72rem; color:#94a3b8; font-family:monospace; pointer-events:none; z-index:2;" title="Atajo de teclado: presiona / o Ctrl+K">/</kbd>
                     <button id="global-search-clear-btn" type="button" onclick="clearGlobalSearch()" 
-                            style="position:absolute; right:1.1rem; background:transparent; border:none; color:var(--text-muted); font-size:1.15rem; cursor:pointer; display:none;" title="Limpiar búsqueda">✕</button>
+                            style="position:absolute; right:1.1rem; background:transparent; border:none; color:var(--text-muted); font-size:1.15rem; cursor:pointer; display:none; z-index:3; padding:0.2rem;" title="Limpiar búsqueda">✕</button>
+
+                    <!-- Dropdown Flotante PEGADO DIRECTAMENTE DEBAJO DEL INPUT (z-index 99999) -->
+                    <div id="global-search-results-dropdown" style="display:none; position:absolute; top:calc(100% + 6px); left:0; right:0; width:100%; background:#0b1325; border:1.5px solid rgba(99,102,241,0.65); border-radius:14px; box-shadow:0 25px 70px rgba(0,0,0,0.95), 0 0 45px rgba(99,102,241,0.4); max-height:500px; overflow-y:auto; z-index:99999; padding:0.85rem; box-sizing:border-box; backdrop-filter:blur(14px); text-align:left;">
+                    </div>
                 </div>
 
                 <!-- SUGERENCIAS RÁPIDAS EN PANTALLA (CHIPS DE BÚSQUEDA INMEDIATA) -->
@@ -211,10 +215,6 @@
                     <button type="button" class="search-suggestion-chip" onclick="setGlobalSearchQuery('Cómics Científicos')">🎨 Cómics (56)</button>
                     <button type="button" class="search-suggestion-chip" onclick="setGlobalSearchQuery('Squash Biomecánica')">🎾 Squash & Deporte</button>
                     <button type="button" class="search-suggestion-chip" onclick="setGlobalSearchQuery('Historia de la Física')">📜 Historia</button>
-                </div>
-
-                <!-- Dropdown Flotante de Resultados Instantáneos o Sugerencias al Enfocar -->
-                <div id="global-search-results-dropdown" style="display:none; position:absolute; top:calc(100% + 8px); left:0; right:0; background:#0b1325; border:1px solid rgba(99,102,241,0.45); border-radius:14px; box-shadow:0 20px 50px rgba(0,0,0,0.75), 0 0 35px rgba(99,102,241,0.25); max-height:480px; overflow-y:auto; z-index:1000; padding:0.85rem; box-sizing:border-box;">
                 </div>
             </div>
 
