@@ -2560,149 +2560,7 @@ window.renderEnrolledCourses = renderEnrolledCourses;
 
 
     // ==========================================================================
-    // DICCIONARIO DE SINÓNIMOS CIENTÍFICOS Y MOTOR DE BÚSQUEDA INTELIGENTE
-    // ==========================================================================
-    const SCIENTIFIC_THESAURUS = {
-        'mecanica': ['newton', 'cinematica', 'dinamica', 'proyectil', 'vectores', 'caida libre', 'choque', 'colision', 'segunda ley', 'plano inclinado', 'riel', 'fuerza', 'aceleracion', 'velocidad', 'momento', 'energia'],
-        'newton': ['mecanica', 'segunda ley', 'riel', 'fuerza', 'inercia', 'accion reaccion', 'gravedad'],
-        'riel': ['riel de aire', 'fotocompuertas', 'colisiones', 'segunda ley', 'newton', 'oscilador', 'polea', 'mecanica', 'carrito', 'plano inclinado'],
-        'colision': ['riel', 'choque', 'momento lineal', 'conservacion', 'mecanica'],
-        'choque': ['riel', 'colision', 'momento', 'energia', 'mecanica'],
-        'venturi': ['bernoulli', 'fluidos', 'tubo de venturi', 'presion', 'caudal', 'manometro', 'rotametro', 'continuidad', 'hidrodinamica'],
-        'bernoulli': ['venturi', 'fluidos', 'presion', 'caudal', 'tubo de venturi', 'hidrodinamica'],
-        'fluido': ['venturi', 'bernoulli', 'presion', 'caudal', 'viscosidad', 'mecanica de fluidos'],
-        'fluidos': ['venturi', 'bernoulli', 'presion', 'caudal', 'viscosidad', 'mecanica de fluidos'],
-        'pendulo': ['gravedad', 'g local', 'periodo', 'longitud', 'oscilacion', 'armonico', 'amplitud'],
-        'gravedad': ['pendulo', 'caida libre', 'g local', 'newton', 'relatividad', 'moderna'],
-        'arduino': ['circuitos', 'esp32', 'electronica', 'protoboard', 'sensores', 'leds', 'pwm', 'resistencias', 'hardware', 'spice', 'maker'],
-        'dispositivos': ['activos', 'pasivos', 'resistores', 'condensadores', 'inductores', 'transformadores', 'diodos', 'bjt', 'mosfet', 'jfet', 'operacional', 'spice', 'taller de circuitos', 'fallas', 'cortocircuito', 'electronica'],
-        'pasivos': ['dispositivos', 'resistores', 'condensadores', 'inductores', 'filtros', 'transformadores'],
-        'activos': ['dispositivos', 'diodos', 'bjt', 'mosfet', 'jfet', 'transistores', 'operacional', 'amplificador', '555', 'tiristores'],
-        'transistor': ['bjt', 'mosfet', 'jfet', 'transistores', 'polarizacion', 'amplificadores', 'dispositivos', 'activos'],
-        'transistores': ['bjt', 'mosfet', 'jfet', 'transistor', 'polarizacion', 'amplificadores', 'dispositivos', 'activos'],
-        'diodo': ['diodos', 'zener', 'led', 'rectificacion', 'union pn', 'shockley', 'dispositivos'],
-        'diodos': ['diodo', 'zener', 'led', 'rectificacion', 'union pn', 'shockley', 'dispositivos'],
-        'operacional': ['opamp', 'amplificador operacional', '741', 'sallen-key', 'comparador', '555', 'filtros activos', 'dispositivos'],
-        'cortocircuito': ['fallas', 'sobrecorriente', 'dispositivos', 'taller', 'crowbar', 'proteccion'],
-        'esp32': ['arduino', 'circuitos', 'electronica', 'protoboard', 'sensores', 'hardware', 'iot'],
-        'circuito': ['arduino', 'esp32', 'electronica', 'transformadores', 'protoboard', 'ohm', 'kirchhoff', 'resistencia', 'voltaje', 'corriente', 'spice'],
-        'circuitos': ['arduino', 'esp32', 'electronica', 'transformadores', 'protoboard', 'ohm', 'kirchhoff', 'resistencia', 'voltaje', 'corriente', 'spice'],
-        'electronica': ['arduino', 'esp32', 'circuitos', 'protoboard', 'sensores', 'hardware'],
-        'transformador': ['transformadores', 'electromagnetismo', 'induccion', 'faraday', 'bobina', 'voltaje', 'corriente'],
-        'transformadores': ['transformador', 'electromagnetismo', 'induccion', 'faraday', 'bobina', 'voltaje', 'corriente'],
-        'moderna': ['relatividad', 'einstein', 'foton', 'big bang', 'cosmologia', 'dilatacion temporal', 'e=mc2', 'lorentz', 'cuantica', 'efecto fotoelectrico'],
-        'relatividad': ['moderna', 'einstein', 'dilatacion', 'espacio tiempo', 'e=mc2', 'lorentz'],
-        'einstein': ['moderna', 'relatividad', 'dilatacion', 'espacio tiempo', 'foton', 'big bang'],
-        'foton': ['moderna', 'cuantica', 'luz', 'einstein', 'planck'],
-        'cuantica': ['mcuantica', 'schrodinger', 'dirac', 'planck', 'qubit', 'funcion de onda', 'efecto tunel', 'espacio de hilbert', 'postulados'],
-        'mcuantica': ['cuantica', 'dirac', 'schrodinger', 'perturbaciones', 'pozo de potencial', 'cuantizacion'],
-        'schrodinger': ['cuantica', 'mcuantica', 'funcion de onda', 'ecuacion'],
-        'dirac': ['mcuantica', 'cuantica', 'bra ket', 'notacion'],
-        'ondas': ['sonido', 'doppler', 'armonicos', 'interferencia', 'difraccion', 'vibraciones', 'resonancia'],
-        'sonido': ['ondas', 'doppler', 'frecuencia', 'acustica'],
-        'optica': ['luz', 'lente', 'espejo', 'refraccion', 'reflexion', 'laser', 'prisma', 'snell'],
-        'luz': ['optica', 'foton', 'refraccion', 'reflexion', 'laser'],
-        'termo': ['termodinamica', 'carnot', 'entropia', 'gas ideal', 'calor', 'temperatura', 'primera ley', 'fisicoquimica'],
-        'termodinamica': ['termo', 'carnot', 'entropia', 'gas ideal', 'calor', 'temperatura', 'fisicoquimica'],
-        'squash': ['deporte', 'biomecanica', 'wsf', 'arbitraje', 'manu', 'raqueta', 'pelota', 'cancha', 'torneo', 'articulaciones'],
-        'biomecanica': ['squash', 'articulaciones', 'cinematica angular', 'fuerza', 'deporte', 'manu squash'],
-        'arbitraje': ['squash', 'wsf', 'reglamento', 'let', 'stroke', 'no let'],
-        'faro': ['pods', 'reaccion', 'tof', 'esp32-s3', 'hardware', 'taller'],
-        'hbn': ['grafeno', 'monte carlo', 'nanoporos', 'dft', 'materiales'],
-        'kids': ['ninos', 'infantil', 'familias', 'juegos', 'experimentos', 'mundos', 'aventura', 'primaria'],
-        'historia': ['epistemologia', 'personajes', 'galileo', 'kepler', 'copernico', 'newton', 'maxwell', 'feynman', 'grecia'],
-        'quizzes': ['evaluaciones', 'examenes', 'pin', 'quizizz', 'wayground', 'parcial', 'antifraude'],
-        'tienda': ['cupones', 'descuento', 'comprar', 'precio', 'wompi', 'fisica30', 'obando40', 'mentores']
-    };
-
-    function normalizeSearchText(str) {
-        if (!str) return '';
-        return str
-            .toString()
-            .toLowerCase()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .replace(/[^a-z0-9\s]/g, ' ')
-            .replace(/\s+/g, ' ')
-            .trim();
-    }
-    window.normalizeSearchText = normalizeSearchText;
-
-    function getSearchSynonyms(token) {
-        const norm = normalizeSearchText(token);
-        const syns = new Set([norm]);
-        if (SCIENTIFIC_THESAURUS[norm]) {
-            SCIENTIFIC_THESAURUS[norm].forEach(s => syns.add(normalizeSearchText(s)));
-        }
-        for (const [key, list] of Object.entries(SCIENTIFIC_THESAURUS)) {
-            if (list.some(s => normalizeSearchText(s) === norm || s.includes(norm))) {
-                syns.add(normalizeSearchText(key));
-            }
-        }
-        return Array.from(syns);
-    }
-
-    function matchTokenSmart(token, targetText) {
-        if (!token || !targetText) return false;
-        const t = normalizeSearchText(token);
-        const text = normalizeSearchText(targetText);
-        if (text.includes(t)) return true;
-
-        const synonyms = getSearchSynonyms(t);
-        for (const syn of synonyms) {
-            if (text.includes(syn)) return true;
-        }
-
-        if (t.length >= 5) {
-            const words = text.split(' ');
-            for (const w of words) {
-                if (w.length >= 4 && (w.startsWith(t.substring(0, 4)) || t.startsWith(w.substring(0, 4)))) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    function highlightSearchMatches(text, query) {
-        if (!text || !query) return escapeHtml(text || '');
-        const tokens = normalizeSearchText(query).split(' ').filter(t => t.length >= 2);
-        if (tokens.length === 0) return escapeHtml(text);
-
-        let escaped = escapeHtml(text);
-        tokens.forEach(tok => {
-            const syns = getSearchSynonyms(tok).filter(s => s.length >= 3);
-            const searchTerms = [tok, ...syns.slice(0, 2)];
-            searchTerms.forEach(term => {
-                const regex = new RegExp('(' + term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
-                escaped = escaped.replace(regex, '<mark class="search-match">$1</mark>');
-            });
-        });
-        return escaped;
-    }
-    window.highlightSearchMatches = highlightSearchMatches;
-
-    function filterCoursesBySmartQuery(coursesList, query) {
-        if (!query || !query.trim()) return coursesList;
-        const tokens = normalizeSearchText(query).split(' ').filter(Boolean);
-        if (tokens.length === 0) return coursesList;
-
-        return coursesList.filter(c => {
-            const searchable = [
-                c.titulo || '',
-                c.id || '',
-                (c.id || '').replace(/_/g, ' '),
-                c.categoria || '',
-                c.descripcion || '',
-                c.modulos || '',
-                (c.temas || []).join(' ')
-            ].join(' ');
-
-            return tokens.every(tok => matchTokenSmart(tok, searchable));
-        });
-    }
-    window.filterCoursesBySmartQuery = filterCoursesBySmartQuery;
-
+    // (Search engine and thesaurus moved to top-level for immediate synchronous availability)
     function renderCourses(filter = 'all') {
         currentCourseFilter = filter;
         const coursesGrid = document.getElementById('courses-grid');
@@ -2831,8 +2689,8 @@ window.renderEnrolledCourses = renderEnrolledCourses;
                         <span class="card-tag ${tagClass}">${c.categoria}</span>
                         ${lockStatusBadge}
                     </div>
-                    <h3>${c.titulo}</h3>
-                    <p>${c.descripcion}</p>
+                    <h3>${currentCourseSearchQuery ? highlightSearchMatches(c.titulo, currentCourseSearchQuery) : c.titulo}</h3>
+                    <p>${currentCourseSearchQuery ? highlightSearchMatches(c.descripcion, currentCourseSearchQuery) : c.descripcion}</p>
                     <div style="background:rgba(255,255,255,0.03); border-radius:8px; padding:0.75rem; margin-bottom:1rem; font-size:0.85rem;">
                         <strong style="color:var(--text-main);">${isLab ? 'Equipamiento:' : (isSquash ? 'Contenido:' : 'Estructura:')}</strong> <span style="color:var(--accent-indigo);">${c.modulos}</span>
                         <br>
@@ -8798,19 +8656,18 @@ window.renderEnrolledCourses = renderEnrolledCourses;
     const PAGE_CATALOG = [
         { id: 'inicio', title: 'Portal de Bienvenida', short: 'Inicio', icon: '🏠', order: 1 },
         { id: 'cursos', title: 'Cursos & Laboratorios (34)', short: 'Cursos & Labs', icon: '🚀', order: 2 },
-        { id: 'tienda', title: 'Tienda Oficial & Cupones', short: 'Tienda & Cupones', icon: '🎟️', order: 3 },
-        { id: 'quizzes', title: 'Evaluaciones & Quizzes con PIN', short: 'Quizzes PIN', icon: '📝', order: 4 },
-        { id: 'trivia', title: 'Gran Trivia de Física (1.000 preg.)', short: 'Trivia Física', icon: '🎯', order: 5 },
-        { id: 'trivia-historia', title: 'Historia de la Física (500 preg.)', short: 'Historia Física', icon: '📜', order: 6 },
-        { id: 'trivia-squash', title: 'Gran Trivia de Squash', short: 'Trivia Squash', icon: '🎾', order: 7 },
-        { id: 'juegos', title: 'Simuladores & Minijuegos de Física', short: 'Juegos Física', icon: '🎮', order: 8 },
-        { id: 'comics', title: 'Cómics Científicos en PDF (56)', short: 'Cómics', icon: '🎨', order: 9 },
-        { id: 'podcasts', title: 'Canales en Spotify (6)', short: 'Podcasts', icon: '🎙️', order: 10 },
-        { id: 'curiosidades', title: 'Datos Curiosos Diarios (31)', short: 'Curiosidades', icon: '💡', order: 11 },
-        { id: 'articulos', title: 'Física & Biomecánica del Squash', short: 'Artículos', icon: '📰', order: 12 },
-        { id: 'profesor', title: 'Sobre el Docente Mg. Manuel Obando', short: 'Docente', icon: '👤', order: 13 },
-        { id: 'recorrido', title: 'Recorrido Virtual 3D por el Laboratorio', short: 'Recorrido 3D', icon: '🧪', order: 14 },
-        { id: 'comentarios', title: 'Buzón de Opiniones & Comunidad', short: 'Opiniones', icon: '💬', order: 15 }
+        { id: 'quizzes', title: 'Evaluaciones & Quizzes con PIN', short: 'Quizzes PIN', icon: '📝', order: 3 },
+        { id: 'trivia', title: 'Gran Trivia de Física (1.000 preg.)', short: 'Trivia Física', icon: '🎯', order: 4 },
+        { id: 'trivia-historia', title: 'Historia de la Física (500 preg.)', short: 'Historia Física', icon: '📜', order: 5 },
+        { id: 'trivia-squash', title: 'Gran Trivia de Squash', short: 'Trivia Squash', icon: '🎾', order: 6 },
+        { id: 'juegos', title: 'Simuladores & Minijuegos de Física', short: 'Juegos Física', icon: '🎮', order: 7 },
+        { id: 'comics', title: 'Cómics Científicos en PDF (56)', short: 'Cómics', icon: '🎨', order: 8 },
+        { id: 'podcasts', title: 'Canales en Spotify (6)', short: 'Podcasts', icon: '🎙️', order: 9 },
+        { id: 'curiosidades', title: 'Datos Curiosos Diarios (31)', short: 'Curiosidades', icon: '💡', order: 10 },
+        { id: 'articulos', title: 'Física & Biomecánica del Squash', short: 'Artículos', icon: '📰', order: 11 },
+        { id: 'profesor', title: 'Sobre el Docente Mg. Manuel Obando', short: 'Docente', icon: '👤', order: 12 },
+        { id: 'recorrido', title: 'Recorrido Virtual 3D por el Laboratorio', short: 'Recorrido 3D', icon: '🧪', order: 13 },
+        { id: 'comentarios', title: 'Buzón de Opiniones & Comunidad', short: 'Opiniones', icon: '💬', order: 14 }
     ];
     window.PAGE_CATALOG = PAGE_CATALOG;
 
@@ -8916,8 +8773,8 @@ window.renderEnrolledCourses = renderEnrolledCourses;
         if (!sectionId) sectionId = 'inicio';
         sectionId = sectionId.replace(/^#/, '');
 
-        if (sectionId === 'cupones') {
-            sectionId = 'tienda';
+        if (sectionId === 'cupones' || sectionId === 'tienda') {
+            sectionId = 'cursos';
         }
 
         if (sectionId === 'mis-cursos') {
@@ -9245,6 +9102,251 @@ window.renderEnrolledCourses = renderEnrolledCourses;
     // ========================================================
     // BUSCADOR GLOBAL INSTANTÁNEO DE CONTENIDOS Y SIMULADORES
     // ========================================================
+    // DICCIONARIO DE SINÓNIMOS CIENTÍFICOS Y MOTOR DE BÚSQUEDA INTELIGENTE
+    // ==========================================================================
+    const SCIENTIFIC_THESAURUS = {
+        'mecanica': ['newton', 'cinematica', 'dinamica', 'proyectil', 'vectores', 'caida libre', 'choque', 'colision', 'segunda ley', 'plano inclinado', 'riel', 'fuerza', 'aceleracion', 'velocidad', 'momento', 'energia', 'lagrange'],
+        'newton': ['mecanica', 'segunda ley', 'riel', 'fuerza', 'inercia', 'accion reaccion', 'gravedad'],
+        'riel': ['riel de aire', 'fotocompuertas', 'colisiones', 'segunda ley', 'newton', 'oscilador', 'polea', 'mecanica', 'carrito', 'plano inclinado', 'choques', 'momento lineal'],
+        'colision': ['riel', 'choque', 'momento lineal', 'conservacion', 'mecanica'],
+        'choque': ['riel', 'colision', 'momento', 'energia', 'mecanica'],
+        'venturi': ['bernoulli', 'fluidos', 'tubo de venturi', 'presion', 'caudal', 'manometro', 'rotametro', 'continuidad', 'hidrodinamica'],
+        'bernoulli': ['venturi', 'fluidos', 'presion', 'caudal', 'tubo de venturi', 'hidrodinamica'],
+        'fluido': ['venturi', 'bernoulli', 'presion', 'caudal', 'viscosidad', 'mecanica de fluidos', 'turbulencia'],
+        'fluidos': ['venturi', 'bernoulli', 'presion', 'caudal', 'viscosidad', 'mecanica de fluidos', 'turbulencia'],
+        'pendulo': ['gravedad', 'g local', 'periodo', 'longitud', 'oscilacion', 'armonico', 'amplitud'],
+        'gravedad': ['pendulo', 'caida libre', 'g local', 'newton', 'relatividad', 'moderna'],
+        'arduino': ['circuitos', 'esp32', 'electronica', 'protoboard', 'sensores', 'leds', 'pwm', 'resistencias', 'hardware', 'spice', 'maker', 'robotica', 'circuitos vivos'],
+        'dispositivos': ['activos', 'pasivos', 'resistores', 'condensadores', 'inductores', 'transformadores', 'diodos', 'bjt', 'mosfet', 'jfet', 'operacional', 'spice', 'taller de circuitos', 'fallas', 'cortocircuito', 'electronica', 'amplificador', 'fuente'],
+        'pasivos': ['dispositivos', 'resistores', 'condensadores', 'inductores', 'filtros', 'transformadores', 'resistencias', 'capacitores', 'bobinas'],
+        'activos': ['dispositivos', 'diodos', 'bjt', 'mosfet', 'jfet', 'transistores', 'operacional', 'amplificador', '555', 'tiristores'],
+        'transistor': ['bjt', 'mosfet', 'jfet', 'transistores', 'polarizacion', 'amplificadores', 'dispositivos', 'activos'],
+        'transistores': ['bjt', 'mosfet', 'jfet', 'transistor', 'polarizacion', 'amplificadores', 'dispositivos', 'activos'],
+        'diodo': ['diodos', 'zener', 'led', 'rectificacion', 'union pn', 'shockley', 'dispositivos'],
+        'diodos': ['diodo', 'zener', 'led', 'rectificacion', 'union pn', 'shockley', 'dispositivos'],
+        'operacional': ['opamp', 'amplificador operacional', '741', 'sallen-key', 'comparador', '555', 'filtros activos', 'dispositivos'],
+        'cortocircuito': ['fallas', 'sobrecorriente', 'dispositivos', 'taller', 'crowbar', 'proteccion'],
+        'esp32': ['arduino', 'circuitos', 'electronica', 'protoboard', 'sensores', 'hardware', 'iot'],
+        'circuito': ['arduino', 'esp32', 'electronica', 'transformadores', 'protoboard', 'ohm', 'kirchhoff', 'resistencia', 'voltaje', 'corriente', 'spice', 'dispositivos'],
+        'circuitos': ['arduino', 'esp32', 'electronica', 'transformadores', 'protoboard', 'ohm', 'kirchhoff', 'resistencia', 'voltaje', 'corriente', 'spice', 'dispositivos'],
+        'electronica': ['arduino', 'esp32', 'circuitos', 'protoboard', 'sensores', 'hardware', 'dispositivos'],
+        'transformador': ['transformadores', 'electromagnetismo', 'induccion', 'faraday', 'bobina', 'voltaje', 'corriente'],
+        'transformadores': ['transformador', 'electromagnetismo', 'induccion', 'faraday', 'bobina', 'voltaje', 'corriente'],
+        'moderna': ['relatividad', 'einstein', 'foton', 'big bang', 'cosmologia', 'dilatacion temporal', 'e=mc2', 'lorentz', 'cuantica', 'efecto fotoelectrico'],
+        'relatividad': ['moderna', 'einstein', 'dilatacion', 'espacio tiempo', 'e=mc2', 'lorentz'],
+        'einstein': ['moderna', 'relatividad', 'dilatacion', 'espacio tiempo', 'foton', 'big bang'],
+        'foton': ['moderna', 'cuantica', 'luz', 'einstein', 'planck'],
+        'cuantica': ['mcuantica', 'schrodinger', 'dirac', 'planck', 'qubit', 'funcion de onda', 'efecto tunel', 'espacio de hilbert', 'postulados'],
+        'mcuantica': ['cuantica', 'dirac', 'schrodinger', 'perturbaciones', 'pozo de potencial', 'cuantizacion'],
+        'schrodinger': ['cuantica', 'mcuantica', 'funcion de onda', 'ecuacion'],
+        'dirac': ['mcuantica', 'cuantica', 'bra ket', 'notacion'],
+        'ondas': ['sonido', 'doppler', 'armonicos', 'interferencia', 'difraccion', 'vibraciones', 'resonancia'],
+        'sonido': ['ondas', 'doppler', 'frecuencia', 'acustica'],
+        'optica': ['luz', 'lente', 'espejo', 'refraccion', 'reflexion', 'laser', 'prisma', 'snell', 'foton'],
+        'luz': ['optica', 'foton', 'refraccion', 'reflexion', 'laser'],
+        'termo': ['termodinamica', 'carnot', 'entropia', 'gas ideal', 'calor', 'temperatura', 'primera ley', 'fisicoquimica'],
+        'termodinamica': ['termo', 'carnot', 'entropia', 'gas ideal', 'calor', 'temperatura', 'fisicoquimica'],
+        'squash': ['deporte', 'biomecanica', 'wsf', 'arbitraje', 'manu', 'raqueta', 'pelota', 'cancha', 'torneo', 'articulaciones', 'faro'],
+        'biomecanica': ['squash', 'articulaciones', 'cinematica angular', 'fuerza', 'deporte', 'manu squash'],
+        'arbitraje': ['squash', 'wsf', 'reglamento', 'let', 'stroke', 'no let'],
+        'faro': ['pods', 'reaccion', 'tof', 'esp32-s3', 'hardware', 'taller'],
+        'hbn': ['grafeno', 'monte carlo', 'nanoporos', 'dft', 'materiales'],
+        'kids': ['ninos', 'infantil', 'familias', 'juegos', 'experimentos', 'mundos', 'aventura', 'primaria'],
+        'ninos': ['kids', 'infantil', 'familias', 'juegos', 'experimentos'],
+        'historia': ['epistemologia', 'personajes', 'galileo', 'kepler', 'copernico', 'newton', 'maxwell', 'feynman', 'grecia'],
+        'quizzes': ['evaluaciones', 'examenes', 'pin', 'quizizz', 'wayground', 'parcial', 'antifraude'],
+        'comic': ['comics', 'historietas', 'manga', 'ilustrado', 'lectura', 'novela grafica', 'pdf'],
+        'comics': ['comic', 'historietas', 'manga', 'ilustrado', 'lectura', 'pdf'],
+        'podcast': ['podcasts', 'spotify', 'audio', 'episodio', 'voz', 'escuchar'],
+        'podcasts': ['podcast', 'spotify', 'audio', 'episodios'],
+        'recorrido': ['tour 3d', 'gemelo digital', 'laboratorio unicauca', 'departamento de fisica']
+    };
+
+    const SPANISH_STOP_WORDS = new Set([
+        'el', 'la', 'los', 'las', 'un', 'una', 'unos', 'unas',
+        'de', 'del', 'al', 'a', 'y', 'e', 'o', 'u', 'en', 'para',
+        'por', 'con', 'sin', 'sobre', 'que', 'como', 'su', 'sus',
+        'mi', 'mis', 'tu', 'tus'
+    ]);
+
+    function normalizeSearchText(str) {
+        if (!str) return '';
+        return str
+            .toString()
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9\s]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+    window.normalizeSearchText = normalizeSearchText;
+
+    function stemSpanishWord(word) {
+        if (!word || word.length < 4) return word;
+        if (word.endsWith('es') && word.length > 5) return word.slice(0, -2);
+        if (word.endsWith('s') && !word.endsWith('is') && !word.endsWith('us')) return word.slice(0, -1);
+        return word;
+    }
+
+    function getSearchSynonyms(token) {
+        const norm = normalizeSearchText(token);
+        const syns = new Set([norm]);
+        const st = stemSpanishWord(norm);
+        syns.add(st);
+
+        if (SCIENTIFIC_THESAURUS[norm]) {
+            SCIENTIFIC_THESAURUS[norm].forEach(s => syns.add(normalizeSearchText(s)));
+        }
+        if (SCIENTIFIC_THESAURUS[st]) {
+            SCIENTIFIC_THESAURUS[st].forEach(s => syns.add(normalizeSearchText(s)));
+        }
+        for (const [key, list] of Object.entries(SCIENTIFIC_THESAURUS)) {
+            if (key === norm || key === st || list.some(s => normalizeSearchText(s) === norm || normalizeSearchText(s) === st)) {
+                syns.add(normalizeSearchText(key));
+                list.forEach(s => syns.add(normalizeSearchText(s)));
+            }
+        }
+        return Array.from(syns);
+    }
+
+    function buildAccentInsensitivePattern(term) {
+        const map = {
+            'a': '[aáàäâã]',
+            'e': '[eéèëê]',
+            'i': '[iíìïî]',
+            'o': '[oóòöôõ]',
+            'u': '[uúùüû]',
+            'n': '[nñ]',
+            'c': '[cç]'
+        };
+        return term.split('').map(ch => {
+            const lower = ch.toLowerCase();
+            return map[lower] || ch.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+        }).join('');
+    }
+
+    function highlightSearchMatches(text, query) {
+        if (!text) return '';
+        if (!query) return escapeHtml(text);
+        const qClean = normalizeSearchText(query);
+        const rawTokens = qClean.split(' ').filter(Boolean);
+        const contentTokens = rawTokens.filter(t => !SPANISH_STOP_WORDS.has(t) && t.length >= 2);
+        const tokens = contentTokens.length > 0 ? contentTokens : rawTokens.filter(t => t.length >= 2);
+        let escaped = escapeHtml(text);
+        if (tokens.length === 0) return escaped;
+
+        tokens.forEach(tok => {
+            const st = stemSpanishWord(tok);
+            const candidateTerms = [tok];
+            if (st !== tok && st.length >= 3) candidateTerms.push(st);
+            candidateTerms.forEach(term => {
+                const pattern = buildAccentInsensitivePattern(term);
+                const regex = new RegExp('(' + pattern + ')', 'gi');
+                escaped = escaped.replace(regex, '<mark class="search-match">$1</mark>');
+            });
+        });
+        return escaped;
+    }
+        window.normalizeSearchText = normalizeSearchText;
+    window.highlightSearchMatches = highlightSearchMatches;
+    window.calculateItemSearchScore = calculateItemSearchScore;
+    window.SPANISH_STOP_WORDS = SPANISH_STOP_WORDS;
+    window.stemSpanishWord = stemSpanishWord;
+    window.getSearchSynonyms = getSearchSynonyms;
+    window.buildAccentInsensitivePattern = buildAccentInsensitivePattern;
+
+    function calculateItemSearchScore(item, queryClean, tokens) {
+        let score = 0;
+        const matchReasons = [];
+
+        if (item.normTitle === queryClean) {
+            score += 1600;
+            matchReasons.push('Título exacto');
+        } else if (item.normTitle.includes(queryClean)) {
+            score += 900;
+            matchReasons.push('Título');
+        } else if (item.normDesc.includes(queryClean)) {
+            score += 450;
+            matchReasons.push('Descripción');
+        }
+
+        let matchedTokensCount = 0;
+        tokens.forEach(tok => {
+            const st = stemSpanishWord(tok);
+            const syns = getSearchSynonyms(tok);
+            let tokenMatched = false;
+
+            if (item.normTitle.includes(tok) || item.normTitle.includes(st)) {
+                score += 450;
+                tokenMatched = true;
+                if (!matchReasons.includes('Título')) matchReasons.push('Título');
+            } else if (item.normId.includes(tok) || item.normId.includes(st)) {
+                score += 350;
+                tokenMatched = true;
+                if (!matchReasons.includes('Identificador')) matchReasons.push('Identificador');
+            } else if (item.normTopics && (item.normTopics.includes(tok) || item.normTopics.includes(st))) {
+                score += 200;
+                tokenMatched = true;
+                if (!matchReasons.includes('Temas & Labs')) matchReasons.push('Temas & Labs');
+            } else if (item.normCat && (item.normCat.includes(tok) || item.normCat.includes(st))) {
+                score += 160;
+                tokenMatched = true;
+                if (!matchReasons.includes('Categoría')) matchReasons.push('Categoría');
+            } else if (item.normDesc && (item.normDesc.includes(tok) || item.normDesc.includes(st))) {
+                score += 120;
+                tokenMatched = true;
+                if (!matchReasons.includes('Descripción')) matchReasons.push('Descripción');
+            } else {
+                for (const syn of syns) {
+                    if (syn.length >= 3 && (item.normTitle.includes(syn) || (item.normTopics && item.normTopics.includes(syn)) || (item.normDesc && item.normDesc.includes(syn)))) {
+                        score += 90;
+                        tokenMatched = true;
+                        if (!matchReasons.includes('Concepto clave')) matchReasons.push('Concepto clave');
+                        break;
+                    }
+                }
+            }
+
+            if (tokenMatched) matchedTokensCount++;
+        });
+
+        if (tokens.length > 1 && matchedTokensCount === tokens.length) {
+            score += 350;
+        }
+
+        return { score, matchedTokensCount, matchReasons };
+    }
+
+    function filterCoursesBySmartQuery(coursesList, query) {
+        if (!query || !query.trim()) return coursesList;
+        const qClean = normalizeSearchText(query);
+        const rawTokens = qClean.split(' ').filter(Boolean);
+        const contentTokens = rawTokens.filter(t => !SPANISH_STOP_WORDS.has(t));
+        const tokens = contentTokens.length > 0 ? contentTokens : rawTokens;
+        if (tokens.length === 0) return coursesList;
+
+        const scored = [];
+        coursesList.forEach(c => {
+            const item = {
+                normTitle: normalizeSearchText(c.titulo || ''),
+                normDesc: normalizeSearchText(c.descripcion || ''),
+                normCat: normalizeSearchText(c.categoria || ''),
+                normTopics: normalizeSearchText([c.modulos || '', (c.temas || []).join(' ')].join(' ')),
+                normId: normalizeSearchText(c.id || '').replace(/_/g, ' ')
+            };
+            const res = calculateItemSearchScore(item, qClean, tokens);
+            if (res.score > 60 && res.matchedTokensCount > 0) {
+                scored.push({ course: c, score: res.score });
+            }
+        });
+
+        scored.sort((a, b) => b.score - a.score);
+        return scored.map(s => s.course);
+    }
+    window.filterCoursesBySmartQuery = filterCoursesBySmartQuery;
+
+    
     let currentHighlightedResultIndex = -1;
 
     window.handleGlobalSearchKeydown = function(e) {
@@ -9313,7 +9415,135 @@ window.renderEnrolledCourses = renderEnrolledCourses;
         }
     });
 
+    window.setGlobalSearchQuery = function(query) {
+        const inp = document.getElementById('global-content-search');
+        if (!inp) return;
+        inp.value = query;
+        inp.focus();
+        if (typeof window.handleGlobalSearch === 'function') {
+            window.handleGlobalSearch(query);
+        }
+        const container = document.getElementById('platform-search-container');
+        if (container) {
+            container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    };
+
+    window.setCoursesSearchQuery = function(query) {
+        const inp = document.getElementById('courses-search-input');
+        if (!inp) return;
+        inp.value = query;
+        inp.focus();
+        if (typeof window.handleCoursesSearchInput === 'function') {
+            window.handleCoursesSearchInput(query);
+        }
+        const wrapper = document.querySelector('.courses-search-wrapper');
+        if (wrapper) {
+            wrapper.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    };
+
+    window.handleGlobalSearchFocus = function() {
+        const inp = document.getElementById('global-content-search');
+        const dropdown = document.getElementById('global-search-results-dropdown');
+        if (!inp || !dropdown) return;
+        const qRaw = (inp.value || '').trim();
+        if (qRaw.length >= 2) {
+            window.handleGlobalSearch(qRaw);
+            return;
+        }
+
+        dropdown.innerHTML = `
+            <div style="padding: 0.45rem 0.65rem 0.65rem; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 0.78rem; color: #cbd5e1; display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-weight: 800; color: #38bdf8; display:flex; align-items:center; gap:0.35rem;">
+                    💡 ¿Qué deseas explorar hoy en PhysicsAILab?
+                </span>
+                <span style="color: #94a3b8; font-size: 0.72rem;">34 Cursos · 56 Cómics · Trivias · Labs</span>
+            </div>
+            <div style="padding: 0.75rem 0.4rem; display:grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 0.85rem;">
+                <div style="background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.07); border-radius: 10px; padding: 0.75rem;">
+                    <div style="font-size: 0.8rem; font-weight: 800; color: #38bdf8; margin-bottom: 0.5rem; display:flex; align-items:center; gap:0.3rem;">
+                        <span>🚀</span> Cursos & Labs Destacados
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:0.35rem;">
+                        <button type="button" class="search-quick-item" onclick="setGlobalSearchQuery('Dispositivos Activos y Pasivos')">
+                            🔌 <strong>Dispositivos Activos & Pasivos</strong> <small style="color:#94a3b8;">(128 SPICE)</small>
+                        </button>
+                        <button type="button" class="search-quick-item" onclick="setGlobalSearchQuery('Circuitos Vivos Arduino ESP32')">
+                            ⚡ <strong>Circuitos Vivos: Arduino & ESP32</strong>
+                        </button>
+                        <button type="button" class="search-quick-item" onclick="setGlobalSearchQuery('Riel de Aire 3D')">
+                            🏎️ <strong>Riel de Aire 3D</strong> <small style="color:#34d399;">(Newton libre)</small>
+                        </button>
+                        <button type="button" class="search-quick-item" onclick="setGlobalSearchQuery('Mecánica Clásica')">
+                            ⚛️ <strong>Mecánica Clásica Computacional</strong>
+                        </button>
+                        <button type="button" class="search-quick-item" onclick="setGlobalSearchQuery('Física Cuántica')">
+                            🌌 <strong>Física Cuántica & Qubits</strong>
+                        </button>
+                        <button type="button" class="search-quick-item" onclick="setGlobalSearchQuery('Tubo de Venturi Bernoulli')">
+                            🌊 <strong>Tubo de Venturi & Bernoulli</strong>
+                        </button>
+                    </div>
+                </div>
+
+                <div style="background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.07); border-radius: 10px; padding: 0.75rem;">
+                    <div style="font-size: 0.8rem; font-weight: 800; color: #f472b6; margin-bottom: 0.5rem; display:flex; align-items:center; gap:0.3rem;">
+                        <span>🌈</span> Divulgación & Cómics
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:0.35rem;">
+                        <button type="button" class="search-quick-item" onclick="setGlobalSearchQuery('Física KIDS')">
+                            🌈 <strong>Física KIDS</strong> <small style="color:#f472b6;">(100% Libre familiar)</small>
+                        </button>
+                        <button type="button" class="search-quick-item" onclick="setGlobalSearchQuery('Cómics Científicos')">
+                            🎨 <strong>56 Cómics Científicos en PDF</strong>
+                        </button>
+                        <button type="button" class="search-quick-item" onclick="setGlobalSearchQuery('Podcasts Spotify')">
+                            🎙️ <strong>Canales Oficiales en Spotify</strong>
+                        </button>
+                        <button type="button" class="search-quick-item" onclick="setGlobalSearchQuery('Recorrido 3D')">
+                            🧪 <strong>Tour Virtual 3D & Gemelo Digital</strong>
+                        </button>
+                    </div>
+                </div>
+
+                <div style="background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.07); border-radius: 10px; padding: 0.75rem;">
+                    <div style="font-size: 0.8rem; font-weight: 800; color: #fbbf24; margin-bottom: 0.5rem; display:flex; align-items:center; gap:0.3rem;">
+                        <span>🎯</span> Retos, Trivias & Deporte
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:0.35rem;">
+                        <button type="button" class="search-quick-item" onclick="setGlobalSearchQuery('Gran Trivia de Física')">
+                            🎯 <strong>Gran Trivia de Física</strong> <small style="color:#fbbf24;">(1.000 preg)</small>
+                        </button>
+                        <button type="button" class="search-quick-item" onclick="setGlobalSearchQuery('Historia de la Física')">
+                            📜 <strong>Trivia Historia de la Física</strong> <small style="color:#f59e0b;">(500 preg)</small>
+                        </button>
+                        <button type="button" class="search-quick-item" onclick="setGlobalSearchQuery('Gran Trivia de Squash')">
+                            🎾 <strong>Trivia de Squash WSF</strong>
+                        </button>
+                        <button type="button" class="search-quick-item" onclick="setGlobalSearchQuery('Quizzes con PIN')">
+                            📝 <strong>Evaluaciones Universitarias PIN</strong>
+                        </button>
+                        <button type="button" class="search-quick-item" onclick="setGlobalSearchQuery('Squash Biomecánica')">
+                            🎾 <strong>Física y Biomecánica del Squash</strong>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div style="padding: 0.45rem 0.6rem; border-top: 1px solid rgba(255,255,255,0.08); text-align: center; font-size: 0.74rem; color: #94a3b8;">
+                O escribe directamente cualquier palabra: <em>electrónica, oscilaciones, óptica, calor, newton, einstein, diodos, transistores...</em>
+            </div>
+        `;
+        dropdown.style.display = 'block';
+    };
+
     window.handleGlobalSearch = function(query) {
+        const normalizeSearchText = window.normalizeSearchText || (s => (s || '').toString().toLowerCase().trim());
+        const highlightSearchMatches = window.highlightSearchMatches || (s => s);
+        const calculateItemSearchScore = window.calculateItemSearchScore || (() => ({ score: 0, matchedTokensCount: 0, matchReasons: [] }));
+        const SPANISH_STOP_WORDS = window.SPANISH_STOP_WORDS || new Set();
+        const escapeHtml = window.escapeHtml || (s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'));
+
         const dropdown = document.getElementById('global-search-results-dropdown');
         const clearBtn = document.getElementById('global-search-clear-btn');
         const kbdHint = document.getElementById('global-search-kbd');
@@ -9327,160 +9557,192 @@ window.renderEnrolledCourses = renderEnrolledCourses;
         currentHighlightedResultIndex = -1;
 
         if (qClean.length < 2) {
-            dropdown.style.display = 'none';
-            dropdown.innerHTML = '';
+            window.handleGlobalSearchFocus();
             return;
         }
 
-        const tokens = qClean.split(' ').filter(Boolean);
-        const results = [];
+        const rawTokens = qClean.split(' ').filter(Boolean);
+        const contentTokens = rawTokens.filter(t => !SPANISH_STOP_WORDS.has(t));
+        const tokens = contentTokens.length > 0 ? contentTokens : rawTokens;
 
-        // 1. Cursos y Laboratorios Oficiales (Catálogo de 34 materias)
+        // Intent detection
+        const isLookingForCourse = rawTokens.some(t => ['curso', 'cursos', 'materia', 'materias', 'laboratorio', 'laboratorios', 'lab'].includes(t));
+        const isLookingForComic = rawTokens.some(t => ['comic', 'comics', 'historieta', 'historietas', 'manga'].includes(t));
+        const isLookingForPodcast = rawTokens.some(t => ['podcast', 'podcasts', 'spotify', 'audio'].includes(t));
+        const isLookingForTrivia = rawTokens.some(t => ['trivia', 'trivias', 'quiz', 'quizzes', 'pregunta', 'preguntas'].includes(t));
+
         const pData = (typeof data !== 'undefined' && data) ? data : (window.PLATFORM_DATA || {});
+        const candidateItems = [];
+
+        // 1. Cursos Oficiales (34 materias)
         const courses = (pData && pData.cursos) ? pData.cursos : [];
         courses.forEach(c => {
-            const searchable = [
-                c.titulo || '',
-                c.id || '',
-                (c.id || '').replace(/_/g, ' '),
-                c.categoria || '',
-                c.descripcion || '',
-                c.modulos || '',
-                (c.temas || []).join(' ')
-            ].join(' ');
+            let badgeLabel = 'Curso Oficial';
+            let badgeColor = '#38bdf8';
+            let badgeBg = 'rgba(56,189,248,0.18)';
+            let icon = '🚀';
 
-            if (tokens.every(tok => matchTokenSmart(tok, searchable))) {
-                let badgeLabel = 'Curso Oficial';
-                let badgeColor = '#38bdf8';
-                let badgeBg = 'rgba(56,189,248,0.18)';
-                let icon = '🚀';
-
-                if (c.id === 'kids') {
-                    badgeLabel = '🌈 Niños & Familia (100% Libre)';
-                    badgeColor = '#f472b6';
-                    badgeBg = 'rgba(236,72,153,0.2)';
-                    icon = '🌈';
-                } else if (c.id === 'riel') {
-                    badgeLabel = '🧪 Lab 3D Liberado';
-                    badgeColor = '#34d399';
-                    badgeBg = 'rgba(16,185,129,0.2)';
-                    icon = '🧪';
-                } else if (c.id === 'venturi' || c.id === 'pendulo' || c.id === 'transformadores') {
-                    badgeLabel = '🧪 Lab Liberado';
-                    badgeColor = '#34d399';
-                    badgeBg = 'rgba(16,185,129,0.2)';
-                    icon = '🧪';
-                } else if (c.id === 'moderna' || c.id === 'mcuantica' || c.id === 'cuantica') {
-                    badgeLabel = '🌌 Cuántica & Moderna';
-                    badgeColor = '#c084fc';
-                    badgeBg = 'rgba(168,85,247,0.2)';
-                    icon = '🌌';
-                } else if (c.id === 'arduino') {
-                    badgeLabel = '⚡ Circuitos & Hardware';
-                    badgeColor = '#fbbf24';
-                    badgeBg = 'rgba(251,191,36,0.2)';
-                    icon = '⚡';
-                } else if (c.esPrivado) {
-                    badgeLabel = '🔬 Privado Docente';
-                    badgeColor = '#c084fc';
-                    badgeBg = 'rgba(168,85,247,0.2)';
-                    icon = '🔬';
-                }
-
-                results.push({
-                    id: c.id,
-                    type: badgeLabel,
-                    icon: icon,
-                    title: c.titulo,
-                    desc: c.descripcion,
-                    link: c.demoPath || '#cursos',
-                    isExternal: !!c.demoPath,
-                    isCourse: true,
-                    badgeColor: badgeColor,
-                    badgeBg: badgeBg,
-                    score: c.titulo.toLowerCase().includes(qClean) ? 100 : 50
-                });
+            if (c.id === 'kids') {
+                badgeLabel = '🌈 Niños & Familia (100% Libre)';
+                badgeColor = '#f472b6';
+                badgeBg = 'rgba(236,72,153,0.2)';
+                icon = '🌈';
+            } else if (c.id === 'riel') {
+                badgeLabel = '🧪 Lab 3D Liberado';
+                badgeColor = '#34d399';
+                badgeBg = 'rgba(16,185,129,0.2)';
+                icon = '🧪';
+            } else if (c.id === 'venturi' || c.id === 'pendulo' || c.id === 'transformadores') {
+                badgeLabel = '🧪 Lab Liberado';
+                badgeColor = '#34d399';
+                badgeBg = 'rgba(16,185,129,0.2)';
+                icon = '🧪';
+            } else if (c.id === 'moderna' || c.id === 'mcuantica' || c.id === 'cuantica') {
+                badgeLabel = '🌌 Cuántica & Moderna';
+                badgeColor = '#c084fc';
+                badgeBg = 'rgba(168,85,247,0.2)';
+                icon = '🌌';
+            } else if (c.id === 'arduino' || c.id === 'dispositivos') {
+                badgeLabel = '🔌 Circuitos & Hardware';
+                badgeColor = '#fbbf24';
+                badgeBg = 'rgba(251,191,36,0.2)';
+                icon = '🔌';
+            } else if (c.esPrivado) {
+                badgeLabel = '🔬 Privado Docente';
+                badgeColor = '#c084fc';
+                badgeBg = 'rgba(168,85,247,0.2)';
+                icon = '🔬';
             }
+
+            candidateItems.push({
+                id: c.id,
+                title: c.titulo,
+                desc: c.descripcion,
+                link: c.demoPath || '#cursos',
+                isExternal: !!c.demoPath,
+                isCourse: true,
+                type: badgeLabel,
+                icon: icon,
+                badgeColor: badgeColor,
+                badgeBg: badgeBg,
+                categoryType: 'curso',
+                normTitle: normalizeSearchText(c.titulo || ''),
+                normDesc: normalizeSearchText(c.descripcion || ''),
+                normCat: normalizeSearchText(c.categoria || ''),
+                normTopics: normalizeSearchText([c.modulos || '', (c.temas || []).join(' ')].join(' ')),
+                normId: normalizeSearchText(c.id || '').replace(/_/g, ' ')
+            });
         });
 
-        // 2. Biblioteca de Cómics Científicos (56 cómics)
+        // 2. Cómics Científicos (56)
         const comics = (pData && pData.comics) ? pData.comics : [];
         comics.forEach(cm => {
-            const searchable = [cm.titulo || '', cm.descripcion || '', cm.categoria || ''].join(' ');
-            if (tokens.every(tok => matchTokenSmart(tok, searchable))) {
-                results.push({
-                    type: '🎨 Cómic Científico PDF',
-                    icon: '🎨',
-                    title: cm.titulo,
-                    desc: cm.descripcion,
-                    link: cm.pdfPath || '#comics',
-                    isExternal: !!cm.pdfPath,
-                    badgeColor: '#fbbf24',
-                    badgeBg: 'rgba(251,191,36,0.18)',
-                    score: 40
-                });
-            }
+            candidateItems.push({
+                id: 'comic_' + cm.id,
+                title: cm.titulo,
+                desc: cm.descripcion,
+                link: cm.pdfPath || '#comics',
+                isExternal: !!cm.pdfPath,
+                isCourse: false,
+                type: '🎨 Cómic Científico PDF',
+                icon: '🎨',
+                badgeColor: '#fbbf24',
+                badgeBg: 'rgba(251,191,36,0.18)',
+                categoryType: 'comic',
+                normTitle: normalizeSearchText(cm.titulo || ''),
+                normDesc: normalizeSearchText(cm.descripcion || ''),
+                normCat: normalizeSearchText(cm.categoria || ''),
+                normTopics: normalizeSearchText(cm.categoria || ''),
+                normId: normalizeSearchText(cm.titulo || '')
+            });
         });
 
-        // 3. Podcasts Oficiales en Spotify (6 canales)
+        // 3. Podcasts en Spotify (10)
         const podcasts = (pData && pData.podcasts) ? pData.podcasts : [];
         podcasts.forEach(p => {
-            const searchable = [p.titulo || '', p.descripcion || ''].join(' ');
-            if (tokens.every(tok => matchTokenSmart(tok, searchable))) {
-                results.push({
-                    type: '🎙️ Podcast en Spotify',
-                    icon: '🎙️',
-                    title: p.titulo,
-                    desc: p.descripcion,
-                    link: p.audioPath || '#podcasts',
-                    isExternal: !!p.audioPath,
-                    badgeColor: '#4ade80',
-                    badgeBg: 'rgba(74,222,128,0.18)',
-                    score: 35
-                });
-            }
+            candidateItems.push({
+                id: 'podcast_' + p.id,
+                title: p.titulo,
+                desc: p.descripcion,
+                link: p.audioPath || '#podcasts',
+                isExternal: !!p.audioPath,
+                isCourse: false,
+                type: '🎙️ Podcast en Spotify',
+                icon: '🎙️',
+                badgeColor: '#4ade80',
+                badgeBg: 'rgba(74,222,128,0.18)',
+                categoryType: 'podcast',
+                normTitle: normalizeSearchText(p.titulo || ''),
+                normDesc: normalizeSearchText(p.descripcion || ''),
+                normCat: 'podcast spotify',
+                normTopics: 'audio ciencia divulgacion',
+                normId: normalizeSearchText(p.titulo || '')
+            });
         });
 
-        // 4. Módulos Interactivos, Trivias, Quizzes, Simuladores y Tienda
+        // 4. Módulos & Trivias
         const modules = [
-            { title: 'Gran Trivia de Física (1.000 Preguntas)', desc: 'Desafío interactivo de física con 3 vidas, racha de 10 y ranking oficial en vivo.', link: '/trivia.html', isExternal: true, type: '🎯 Trivia Oficial', icon: '🎯', badgeColor: '#f59e0b', badgeBg: 'rgba(245,158,11,0.2)' },
-            { title: 'Trivia de Historia de la Física (500 Preguntas)', desc: 'Epistemología, científicos históricos, personajes, fechas clave y biografías completas.', link: '#trivia-historia', type: '📜 Historia de la Física', icon: '📜', badgeColor: '#f59e0b', badgeBg: 'rgba(245,158,11,0.2)' },
-            { title: 'Gran Trivia de Squash', desc: 'Reglamento WSF, física del bote, biomecánica y táctica deportiva universitaria.', link: '#trivia-squash', type: '🎾 Trivia de Squash', icon: '🎾', badgeColor: '#34d399', badgeBg: 'rgba(16,185,129,0.2)' },
-            { title: 'Evaluaciones & Quizzes Universitarios con PIN', desc: 'Sala de exámenes tipo Quizizz/Wayground con PIN docente y protocolo antifraude.', link: '#quizzes', type: '📝 Quiz con PIN', icon: '📝', badgeColor: '#fb7185', badgeBg: 'rgba(244,63,94,0.2)' },
-            { title: 'Tienda Oficial de Descuentos & Cupones (-30% y -40%)', desc: 'Aplica códigos promocionales como FISICA30 u OBANDO40 con nuestros mentores.', link: '#tienda', type: '🎟️ Tienda & Descuentos', icon: '🎟️', badgeColor: '#34d399', badgeBg: 'rgba(52,211,153,0.2)' },
-            { title: 'Simuladores y Juegos de Física en Canvas', desc: 'Tiro parabólico con cañón, péndulo armónico y órbita gravitacional interactiva.', link: '#juegos', type: '🎮 Juegos de Física', icon: '🎮', badgeColor: '#38bdf8', badgeBg: 'rgba(56,189,248,0.2)' },
-            { title: 'Recorrido Virtual 3D por el Laboratorio', desc: 'Tour interactivo 3D con gemelo digital del laboratorio de física de la Universidad del Cauca.', link: '#recorrido', type: '🧪 Tour Virtual 3D', icon: '🧪', badgeColor: '#34d399', badgeBg: 'rgba(16,185,129,0.2)' },
-            { title: 'Física y Biomecánica del Squash', desc: 'Artículos científicos de cinemática articular y dinámica de impacto en pista.', link: '#articulos', type: '📰 Artículos Científicos', icon: '📰', badgeColor: '#fbbf24', badgeBg: 'rgba(251,191,36,0.2)' },
-            { title: 'Sobre el Docente Mg. Manuel Alejandro Obando', short: 'Perfil Académico', desc: 'Ingeniero Físico (Unicauca), M.Sc. en Física de Materiales (UFOP Brasil) y docente.', link: '#profesor', type: '👤 Perfil Docente', icon: '👤', badgeColor: '#a78bfa', badgeBg: 'rgba(167,139,250,0.2)' }
+            { title: 'Gran Trivia de Física (1.000 Preguntas)', desc: 'Desafío interactivo de física con 3 vidas, racha de 10 y ranking oficial en vivo.', link: '/trivia.html', isExternal: true, type: '🎯 Trivia Oficial', icon: '🎯', badgeColor: '#f59e0b', badgeBg: 'rgba(245,158,11,0.2)', categoryType: 'trivia' },
+            { title: 'Trivia de Historia de la Física (500 Preguntas)', desc: 'Epistemología, científicos históricos, personajes, fechas clave y biografías completas.', link: '#trivia-historia', type: '📜 Historia de la Física', icon: '📜', badgeColor: '#f59e0b', badgeBg: 'rgba(245,158,11,0.2)', categoryType: 'trivia' },
+            { title: 'Gran Trivia de Squash', desc: 'Reglamento WSF, física del bote, biomecánica y táctica deportiva universitaria.', link: '#trivia-squash', type: '🎾 Trivia de Squash', icon: '🎾', badgeColor: '#34d399', badgeBg: 'rgba(16,185,129,0.2)', categoryType: 'trivia' },
+            { title: 'Evaluaciones & Quizzes Universitarios con PIN', desc: 'Sala de exámenes tipo Quizizz/Wayground con PIN docente y protocolo antifraude.', link: '#quizzes', type: '📝 Quiz con PIN', icon: '📝', badgeColor: '#fb7185', badgeBg: 'rgba(244,63,94,0.2)', categoryType: 'quiz' },
+            { title: 'Simuladores y Juegos de Física en Canvas', desc: 'Tiro parabólico con cañón, péndulo armónico y órbita gravitacional interactiva.', link: '#juegos', type: '🎮 Juegos de Física', icon: '🎮', badgeColor: '#38bdf8', badgeBg: 'rgba(56,189,248,0.2)', categoryType: 'juego' },
+            { title: 'Recorrido Virtual 3D por el Laboratorio', desc: 'Tour interactivo 3D con gemelo digital del laboratorio de física de la Universidad del Cauca.', link: '#recorrido', type: '🧪 Tour Virtual 3D', icon: '🧪', badgeColor: '#34d399', badgeBg: 'rgba(16,185,129,0.2)', categoryType: 'recorrido' },
+            { title: 'Física y Biomecánica del Squash', desc: 'Artículos científicos de cinemática articular y dinámica de impacto en pista.', link: '#articulos', type: '📰 Artículos Científicos', icon: '📰', badgeColor: '#fbbf24', badgeBg: 'rgba(251,191,36,0.2)', categoryType: 'articulo' },
+            { title: 'Sobre el Docente Mg. Manuel Alejandro Obando', desc: 'Ingeniero Físico (Unicauca), M.Sc. en Física de Materiales (UFOP Brasil) y docente.', link: '#profesor', type: '👤 Perfil Docente', icon: '👤', badgeColor: '#a78bfa', badgeBg: 'rgba(167,139,250,0.2)', categoryType: 'profesor' }
         ];
 
         modules.forEach(m => {
-            const searchable = [m.title, m.desc, m.type].join(' ');
-            if (tokens.every(tok => matchTokenSmart(tok, searchable))) {
-                results.push({
-                    type: m.type,
-                    icon: m.icon,
-                    title: m.title,
-                    desc: m.desc,
-                    link: m.link,
-                    isExternal: !!m.isExternal,
-                    badgeColor: m.badgeColor,
-                    badgeBg: m.badgeBg,
-                    score: 30
+            candidateItems.push({
+                id: normalizeSearchText(m.title).replace(/\s+/g, '_'),
+                title: m.title,
+                desc: m.desc,
+                link: m.link,
+                isExternal: !!m.isExternal,
+                isCourse: false,
+                type: m.type,
+                icon: m.icon,
+                badgeColor: m.badgeColor,
+                badgeBg: m.badgeBg,
+                categoryType: m.categoryType,
+                normTitle: normalizeSearchText(m.title || ''),
+                normDesc: normalizeSearchText(m.desc || ''),
+                normCat: normalizeSearchText(m.type || ''),
+                normTopics: normalizeSearchText(m.desc || ''),
+                normId: normalizeSearchText(m.title || '')
+            });
+        });
+
+        // Scoring
+        const scoredResults = [];
+        candidateItems.forEach(item => {
+            const res = calculateItemSearchScore(item, qClean, tokens);
+            let finalScore = res.score;
+            if (isLookingForCourse && item.categoryType === 'curso') finalScore += 250;
+            if (isLookingForComic && item.categoryType === 'comic') finalScore += 350;
+            if (isLookingForPodcast && item.categoryType === 'podcast') finalScore += 350;
+            if (isLookingForTrivia && item.categoryType === 'trivia') finalScore += 350;
+
+            if (finalScore > 60 && res.matchedTokensCount > 0) {
+                scoredResults.push({
+                    item: item,
+                    score: finalScore,
+                    matchReasons: res.matchReasons
                 });
             }
         });
 
-        results.sort((a, b) => (b.score || 0) - (a.score || 0));
+        scoredResults.sort((a, b) => b.score - a.score);
+        const results = scoredResults.slice(0, 16);
 
         if (results.length === 0) {
             dropdown.innerHTML = `
-                <div style="text-align:center; padding:1.5rem 1rem; color:var(--text-muted);">
-                    <div style="font-size:2rem; margin-bottom:0.4rem;">🔍</div>
-                    <div style="font-weight:700; color:#fff; font-size:0.95rem; margin-bottom:0.3rem;">No se encontraron resultados</div>
-                    <div style="font-size:0.8rem; line-height:1.4;">
-                        No encontramos coincidencias para "<strong>${escapeHtml(qRaw)}</strong>".<br>
-                        Prueba con términos como: <em>mecánica, riel, venturi, arduino, cuántica, péndulo, einstein, squash, trivia</em>.
+                <div style="text-align:center; padding:1.75rem 1rem; color:var(--text-muted);">
+                    <div style="font-size:2.2rem; margin-bottom:0.4rem;">🔍</div>
+                    <div style="font-weight:700; color:#fff; font-size:1rem; margin-bottom:0.35rem;">No se encontraron coincidencias directas</div>
+                    <div style="font-size:0.82rem; line-height:1.45; max-width:440px; margin:0 auto;">
+                        No encontramos resultados para "<strong>${escapeHtml(qRaw)}</strong>".<br>
+                        Te sugerimos buscar: <em>dispositivos, circuitos, arduino, riel, mecánica, cuántica, venturi, péndulo, comics, trivia, squash</em>.
                     </div>
                 </div>
             `;
@@ -9488,34 +9750,40 @@ window.renderEnrolledCourses = renderEnrolledCourses;
             return;
         }
 
-        const courseResultsCount = results.filter(r => r.isCourse).length;
+        const courseResultsCount = results.filter(r => r.item.isCourse).length;
 
         dropdown.innerHTML = `
-            <div style="padding:0.4rem 0.6rem 0.6rem; border-bottom:1px solid rgba(255,255,255,0.08); font-size:0.75rem; color:var(--text-muted); display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-weight:700; color:#cbd5e1;">🎯 ${results.length} resultado${results.length === 1 ? '' : 's'} encontrado${results.length === 1 ? '' : 's'}</span>
+            <div style="padding:0.45rem 0.65rem 0.65rem; border-bottom:1px solid rgba(255,255,255,0.08); font-size:0.75rem; color:var(--text-muted); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.4rem;">
+                <span style="font-weight:700; color:#cbd5e1;">🎯 ${results.length} coincidencia${results.length === 1 ? '' : 's'} encontrada${results.length === 1 ? '' : 's'}</span>
                 <span style="color:#a5b4fc; font-size:0.7rem;">Navega con flechas ↑ ↓ y pulsa <strong>Enter</strong> para abrir</span>
             </div>
-            <div style="max-height:360px; overflow-y:auto; padding:0.4rem 0;">
-                ${results.map((r, index) => `
-                    <a href="${r.link}" ${r.isExternal ? 'target="_blank" rel="noopener noreferrer"' : ''} 
+            <div style="max-height:380px; overflow-y:auto; padding:0.4rem 0;">
+                ${results.map((r, index) => {
+                    const it = r.item;
+                    return `
+                    <a href="${it.link}" ${it.isExternal ? 'target="_blank" rel="noopener noreferrer"' : ''} 
                        class="global-search-result-item" data-index="${index}"
-                       onclick="closeGlobalSearchDropdown(); ${!r.isExternal && r.link.startsWith('#') ? 'window.navigateToSection(\'' + r.link.replace('#', '') + '\'); return false;' : ''}">
+                       onclick="closeGlobalSearchDropdown(); ${!it.isExternal && it.link.startsWith('#') ? 'window.navigateToSection(\'' + it.link.replace('#', '') + '\'); return false;' : ''}">
                         <div style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem; margin-bottom:0.25rem;">
                             <div style="display:flex; align-items:center; gap:0.45rem; overflow:hidden;">
-                                <span style="font-size:1.15rem; flex-shrink:0;">${r.icon || '🚀'}</span>
+                                <span style="font-size:1.15rem; flex-shrink:0;">${it.icon || '🚀'}</span>
                                 <strong style="color:#fff; font-size:0.92rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                                    ${highlightSearchMatches(r.title, qRaw)}
+                                    ${highlightSearchMatches(it.title, qRaw)}
                                 </strong>
                             </div>
-                            <span class="search-badge" style="background:${r.badgeBg}; color:${r.badgeColor}; border:1px solid ${r.badgeColor}55;">
-                                ${escapeHtml(r.type)} ${r.isExternal ? '↗' : '↓'}
+                            <span class="search-badge" style="background:${it.badgeBg}; color:${it.badgeColor}; border:1px solid ${it.badgeColor}55;">
+                                ${escapeHtml(it.type)} ${it.isExternal ? '↗' : '↓'}
                             </span>
                         </div>
-                        <p style="margin:0; font-size:0.78rem; color:#94a3b8; line-height:1.35; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                            ${highlightSearchMatches(r.desc, qRaw)}
+                        <p style="margin:0 0 0.35rem 0; font-size:0.78rem; color:#94a3b8; line-height:1.35; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                            ${highlightSearchMatches(it.desc, qRaw)}
                         </p>
+                        <div style="display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap;">
+                            ${(r.matchReasons || []).map(reason => `<span class="match-reason-tag">✓ ${escapeHtml(reason)}</span>`).join('')}
+                        </div>
                     </a>
-                `).join('')}
+                    `;
+                }).join('')}
             </div>
             ${courseResultsCount > 0 ? `
                 <div style="padding:0.5rem 0.5rem 0.2rem; border-top:1px solid rgba(255,255,255,0.08); margin-top:0.35rem; text-align:center;">
@@ -9544,6 +9812,15 @@ window.renderEnrolledCourses = renderEnrolledCourses;
         const dropdown = document.getElementById('global-search-results-dropdown');
         if (dropdown) dropdown.style.display = 'none';
     };
+
+    // Close global search dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        const searchContainer = document.getElementById('platform-search-container');
+        const dropdown = document.getElementById('global-search-results-dropdown');
+        if (searchContainer && dropdown && !searchContainer.contains(e.target)) {
+            dropdown.style.display = 'none';
+        }
+    });
 
     window.launchTriviaWindow = function(type) {
         let targetFile = 'trivia.html';
