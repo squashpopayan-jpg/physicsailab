@@ -1,0 +1,141 @@
+<template class="chapter-src" data-id="aplicaciones" data-num="23" data-title="Aplicaciones del A.O. y filtros activos" data-part="Parte V · Circuitos analógicos y control" data-short="Sumador, restador y amplificador de instrumentación con rechazo en modo común, integrador y derivador, filtros activos de segundo orden Sallen–Key (Butterworth, Bessel, Chebyshev), rectificador de precisión, convertidor corriente–tensión y amplificador logarítmico">
+<p class="lead">Con las dos reglas de oro del capítulo anterior se puede analizar y diseñar casi cualquier circuito con amplificadores operacionales. Las resistencias y condensadores que se colocan en la realimentación y en la entrada deciden la <b>función matemática</b> que el circuito realiza sobre la señal: suma, resta, integración, derivación, filtrado, rectificación, logaritmo. Este capítulo recorre las aplicaciones más usadas y, para cada una, enseña qué límites de los componentes reales (tolerancia de los resistores, velocidad de respuesta, ancho de banda) determinan su calidad.</p>
+
+<section>
+<h2>Sumador inversor</h2>
+<p>Si se conectan varias entradas, cada una con su resistor, al nudo de tierra virtual de un inversor, las corrientes se suman sin interactuar (cada entrada ve una carga fija \(R_k\) porque el nudo está a 0 V). La corriente total la convierte \(R_f\) en tensión:</p>
+<div class="eq key" data-name="Sumador inversor con pesos">\[v_o=-\left(\frac{R_f}{R_1}v_1+\frac{R_f}{R_2}v_2+\cdots+\frac{R_f}{R_n}v_n\right)\]</div>
+<p>Cada entrada tiene su ganancia \(-R_f/R_k\): eligiendo valores distintos se obtiene una <b>suma ponderada</b> (mezclador de audio, convertidor digital–analógico de resistores ponderados: con \(R,2R,4R,8R\) los pesos son 8, 4, 2, 1 y un código binario de cuatro bits se convierte en una tensión analógica). Con la versión «<i>no inversora</i>» (entradas por un divisor a la entrada \(+\)) se suma sin invertir, pero los pesos interactúan y el diseño es menos cómodo.</p>
+<div class="sim" data-sim="c23-suma" data-title="Sumador inversor de dos entradas con pesos"></div>
+<div class="sim-guide"><ul>
+<li>Con \(V_1=1\) V, \(V_2=0.5\) V, \(R_1=10\) kΩ, \(R_2=R_f=20\) kΩ: las ganancias son −2 y −1 y la salida es \(-(2\cdot1+1\cdot0.5)=-2.5\) V (el panel coincide con la teoría: −2.4999 V).</li>
+<li>Cambie \(V_2\): la salida cambia en \(-R_f/R_2\) veces el incremento, sin que se modifique la aportación de \(V_1\): las entradas no interactúan.</li>
+<li>Haga \(R_2=5\) kΩ (peso −4) y \(V_1=V_2=3\) V: la salida teórica es \(-(6+12)=-18\) V, pero el A.O. se satura en ≈ −13.5 V: el panel indica «saturado». El límite de salida condiciona los valores de los pesos.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Amplificador diferencial (restador) y amplificador de instrumentación</h2>
+<p>El <b>restador</b> amplifica la diferencia \(v_2-v_1\). Con \(R_1=R_3\) y \(R_f=R_4\) y por superposición:</p>
+<div class="eq key" data-name="Restador">\[v_o=\frac{R_f}{R_1}\,(v_2-v_1)\qquad A_d=\frac{R_f}{R_1}\qquad A_{cm}=\left(1+\frac{R_f}{R_1}\right)\frac{R_4}{R_3+R_4}-\frac{R_f}{R_1}\qquad\mathrm{CMRR}=\frac{A_d}{|A_{cm}|}\]</div>
+<p>Si los cuatro resistores están perfectamente apareados, \(A_{cm}=0\): una señal común a las dos entradas (ruido de red, tensión de masa) no aparece en la salida. Con resistores reales, el apareamiento limita el CMRR: un desajuste relativo \(\delta\) en un resistor da \(A_{cm}\approx\delta\,A_d/(A_d+1)\), es decir, \(\mathrm{CMRR}\approx(A_d+1)/\delta\). Con \(\delta=1\) % y ganancia 10: \(A_{cm}=0.009\) y CMRR = 1111 (60.9 dB); con 0.1 %, 80.8 dB; con 5 %, 47.2 dB. Resistores de película metálica de 0.1 % o redes integradas son necesarios para más de 60 dB.</p>
+<div class="sim" data-sim="c23-dif" data-title="Restador: ganancia diferencial, ganancia en modo común y CMRR frente al apareamiento"></div>
+<div class="sim-guide"><ul>
+<li>En modo «Diferencial» (la señal en \(V_1\), \(V_2\) a masa) la ganancia es 10.00 con inversión (la entrada inversora). El desapareamiento del 1 % casi no afecta (9.9987).</li>
+<li>Pase a «Modo común» (la misma señal en las dos entradas, 0.1 V de pico): la salida casi desaparece; con δ = 1 % la ganancia de modo común es 0.009 (teórica 0.00901) y la salida de 0.5 V de entrada común es 4.5 mV de pico. Con δ = 0.1 % baja a 0.001 (0.5 mV) y con δ = 5 % sube a 0.043 (21.7 mV).</li>
+<li>Con δ = 0 la salida es nula exactamente: el CMRR teórico es infinito; en un A.O. real el CMRR propio (90–100 dB) lo limita.</li>
+</ul></div>
+<p>Una limitación del restador es su resistencia de entrada baja y distinta en las dos entradas (\(R_1\) frente a \(R_3+R_4\)), por lo que fuentes de impedancia no nula se desequilibran. La solución es el <b>amplificador de instrumentación</b>: dos seguidores amplificadores (primera etapa) que dan alta resistencia de entrada y toda la ganancia diferencial, seguidos de un restador de ganancia unidad:</p>
+<div class="eq key" data-name="Amplificador de instrumentación de tres A.O.">\[A_d=\left(1+\frac{2R}{R_G}\right)\frac{R_3}{R_2}\qquad R_{in}\to\infty\qquad\mathrm{CMRR}\ \text{de la primera etapa}\approx\ \text{ganancia}\ \cdot\ \mathrm{CMRR}_{\text{restador}}\]</div>
+<p>Una sola resistencia \(R_G\) fija la ganancia (circuitos integrados como el INA128 o el AD620: \(G=1+49.4\text{ k}\Omega/R_G\)); la primera etapa amplifica sólo la señal diferencial, y el CMRR del conjunto es la ganancia de la primera etapa multiplicada por el del restador. Es el amplificador estándar para puentes de sensores (galgas extensométricas, termopares, bioseñales: ECG).</p>
+</section>
+
+<section>
+<h2>Integrador y derivador</h2>
+<p>Si el elemento de realimentación es un <b>condensador</b>, la corriente \(v_i/R\) que entra por el nodo de tierra virtual carga \(C\) y la tensión de salida es la integral de la entrada:</p>
+<div class="eq key" data-name="Integrador (inversor)">\[v_o(t)=-\frac{1}{RC}\int_0^tv_i(t')\,\mathrm{d}t'+v_o(0)\qquad H(j\omega)=-\frac{1}{j\omega RC}\qquad|H|=\frac{1}{\omega RC}\]</div>
+<p>Es un filtro pasabajos con corte en cero y pendiente de −20 dB/década; con una entrada cuadrada da una triangular; con una senoidal, una cosenoidal de amplitud \(1/(\omega RC)\). Aplicaciones: generadores de rampa y de diente de sierra, computadoras analógicas, el término integral del control PID, convertidores A/D de doble rampa. En la práctica, un integrador ideal es inestable en continua: cualquier tensión de desplazamiento o corriente de polarización cargaría el condensador hasta saturar la salida. Se añade una <b>resistencia \(R_p\) en paralelo con \(C\)</b> (típicamente 10 \(R\) a 100 \(R\)), que limita la ganancia en continua a \(R_p/R\) y estabiliza el punto de reposo (a costa de un error en frecuencias bajas, por debajo de \(1/(2\pi R_pC)\)).</p>
+<p>Si, en cambio, el condensador va en la entrada y el resistor en la realimentación se obtiene el <b>derivador</b>: \(v_o=-RC\,\mathrm{d}v_i/\mathrm{d}t\), con ganancia \(\omega RC\) que <b>crece</b> con la frecuencia (+20 dB/década): amplifica el ruido de alta frecuencia y se vuelve inestable por la interacción del condensador con el polo del A.O. Se estabiliza con un resistor en serie con el condensador de entrada (limita la ganancia a \(R_f/R_s\) en alta frecuencia) y un condensador pequeño \(C_f\) en paralelo con \(R_f\).</p>
+<div class="sim" data-sim="c23-int" data-title="Integrador y derivador: de la onda cuadrada al triángulo y viceversa"></div>
+<div class="sim-guide"><ul>
+<li><b>Integrador</b> (\(R=10\) kΩ, \(C=10\) nF, \(RC=100\ \mu\)s) con una cuadrada de 0.5 V de pico y 1 kHz: la salida es un <b>triángulo</b> de pendiente \(V_{pk}/RC=5\) V/ms (5 kV/s): sube durante el semiciclo negativo y baja durante el positivo (la inversión), con una amplitud pico a pico de \(0.5\cdot0.5\text{ ms}/0.1\text{ ms}\cdot2=5\) V. Espere unos milisegundos tras iniciar para que el nivel de continua se asiente (la constante \(R_pC=10\) ms con 1 MΩ y 10 nF).</li>
+<li>Cambie la entrada a senoidal: la salida es una cosenoidal desfasada 90° con amplitud \(0.5/(2\pi f RC)=0.8\) V. Suba \(f\): la amplitud baja como \(1/f\).</li>
+<li><b>Derivador</b> con triangular de 1 V de pico y 1 kHz: la salida es una <b>cuadrada</b> de ±0.4 V (\(RC\,\mathrm{d}v/\mathrm{d}t=10^{-4}\cdot4000\)); con senoidal, una cosenoidal de amplitud \(\omega RC\,V_{pk}=0.63\) V. Suba la frecuencia: la salida crece proporcionalmente (con un tope por \(R_s\) y \(C_f\)).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Filtros activos</h2>
+<p>Los filtros pasivos RC (capítulo 9) tienen una pendiente de sólo −20 dB/década por etapa, se cargan unos a otros y no pueden tener ganancia. Los <b>filtros activos</b> incorporan un A.O. que aísla las etapas, aporta ganancia y permite realizar polos complejos (respuesta con pendiente −40 dB/década o más) <b>sin inductores</b>, que son voluminosos e imprecisos. La función de transferencia de una etapa de segundo orden queda determinada por dos números:</p>
+<div class="eq key" data-name="Filtro de segundo orden (pasabajos y pasaaltos)">\[H_{LP}(s)=\frac{K\,\omega_0^2}{s^2+\dfrac{\omega_0}{Q}s+\omega_0^2}\qquad H_{HP}(s)=\frac{K\,s^2}{s^2+\dfrac{\omega_0}{Q}s+\omega_0^2}\qquad|H(j\omega_0)|_{LP}=K\,Q\]</div>
+<p>La frecuencia característica \(f_0\) es donde cambia el comportamiento; el <b>factor de calidad \(Q\)</b> controla la forma de la respuesta cerca de \(f_0\) (un máximo si \(Q>0.707\)). La topología más popular con un solo A.O. es la de <b>Sallen–Key</b> (1955): dos resistores en serie en la rama de entrada, un condensador a masa y otro realimentado desde la salida. Con \(R_1=R_2=R\), \(C_1=C_2=C\) y el A.O. como amplificador no inversor de ganancia \(K=1+R_b/R_a\):</p>
+<div class="eq key" data-name="Sallen–Key de componentes iguales">\[f_0=\frac{1}{2\pi RC}\qquad Q=\frac{1}{3-K}\qquad K=1+\frac{R_b}{R_a}<3\]</div>
+<p>(\(K=3\) daría \(Q=\infty\): oscilador.) La ganancia \(K\) fija \(Q\): con \(K=1\) (seguidor) \(Q=0.5\), respuesta sobreamortiguada con corte a 0.64 \(f_0\); con \(K=1.586\), \(Q=0.707\): <b>Butterworth</b>, la respuesta más plana en la banda de paso, con corte exactamente en \(f_0\); con \(K=2.5\), \(Q=2\) y un máximo de \(KQ=5\) (14 dB) en \(f_0\). El tipo de aproximación se escoge por el equilibrio entre selectividad, planicidad y respuesta transitoria:</p>
+<div class="tablewrap"><table class="tbl"><tr><th>Aproximación</th><th>\(Q\) (2.º orden)</th><th>Característica</th><th>Sobreimpulso al escalón</th></tr>
+<tr><td><b>Bessel</b></td><td>0.577</td><td>fase lineal, retardo de grupo plano</td><td>≈ 0 %</td></tr>
+<tr><td><b>Butterworth</b></td><td>0.707</td><td>máxima planicidad en la banda de paso</td><td>4 %</td></tr>
+<tr><td><b>Chebyshev 0.5 dB</b></td><td>0.864</td><td>rizado de 0.5 dB, corte más abrupto</td><td>11 %</td></tr>
+<tr><td><b>Chebyshev 1 dB</b></td><td>0.957</td><td>rizado de 1 dB</td><td>16 %</td></tr>
+<tr><td><b>Chebyshev 3 dB</b></td><td>1.30</td><td>rizado de 3 dB, el más abrupto</td><td>≈ 30 %</td></tr></table></div>
+<p>Un filtro de orden superior se obtiene conectando etapas de segundo orden en cascada con distintas \(Q\) (por ejemplo, Butterworth de cuarto orden: \(Q_1=0.541\), \(Q_2=1.307\); de sexto orden: 0.518, 0.707, 1.932). Un <b>pasabanda</b> se realiza con la topología de realimentación múltiple (MFB) o con el filtro de variables de estado (tres A.O.), que ofrecen \(Q\) elevados y sintonización independiente de \(f_0\), \(Q\) y ganancia. Para el diseño: se fija \(C\) (decenas de nF), se calcula \(R=1/(2\pi f_0C)\), y se toman valores de las series E24/E96 con tolerancias del 1 % y condensadores de película o COG (no cerámicos de alta permitividad): por ejemplo, \(f_0=1\) kHz con \(C=16\) nF da \(R=9.95\) kΩ ≈ 10 kΩ. El A.O. debe tener un GBW de al menos 100 \(f_0Q\).</p>
+<div class="sim" data-sim="c23-sallen" data-title="Filtro Sallen–Key pasabajos y pasaaltos: f₀, Q y respuesta en frecuencia"></div>
+<div class="sim-guide"><ul>
+<li>Con \(R=10\) kΩ, \(C=16\) nF y \(K=1\): \(f_0=995\) Hz y \(Q=0.5\). El Bode (calculado al abrir) coincide con la curva teórica (línea discontinua): −3 dB en 640 Hz y pendiente −40 dB/década por encima de 2 kHz (−27 dB a 4.6 kHz, −44.6 dB a 12.9 kHz).</li>
+<li>Suba \(K\) a 1.586: \(Q=0.707\) (Butterworth) y el corte de −3 dB pasa a coincidir con \(f_0=995\) Hz con una respuesta plana hasta ese punto. Suba \(K\) a 2.5: aparece un máximo de +14 dB en \(f_0\) y la respuesta se vuelve resonante.</li>
+<li>Pase a «Pasaaltos» (resistores y condensadores intercambiados): la pendiente es +40 dB/década por debajo de \(f_0\) y el corte −3 dB sigue la misma ley con \(Q\). Cambie \(R\) o \(C\): \(f_0\) se desplaza proporcionalmente a \(1/RC\).</li>
+<li>Por encima de unos 30 kHz la curva simulada se aparta de la ideal (−69 dB frente a −80 dB a 100 kHz): el A.O. real, con su resistencia de salida y su GBW finito, deja pasar parte de la señal a través del condensador de realimentación. Es la razón de elegir un A.O. con GBW mucho mayor que \(f_0\).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Rectificador de precisión</h2>
+<p>Un diodo de silicio no conduce hasta \(\approx0.6\) V, de modo que un rectificador de media onda ordinario pierde las señales de pequeña amplitud y las deforma. Si se coloca el diodo <b>dentro del lazo de realimentación</b> de un A.O. (<b>superdiodo</b>), el A.O. «hace el trabajo» de compensar la caída: cuando \(v_i>0\) la salida del A.O. sube hasta \(v_i+0.65\) V y el diodo conduce, con \(v_o=v_i\); cuando \(v_i<0\) el A.O. se satura en negativo, el diodo se bloquea y \(v_o=0\). La caída efectiva queda dividida por la ganancia de lazo abierto: de 0.65 V a \(0.65/A_0\) (unos microvoltios).</p>
+<div class="sim" data-sim="c23-rect" data-title="Rectificador de media onda de precisión (superdiodo) frente a un diodo solo"></div>
+<div class="sim-guide"><ul>
+<li>Con el <b>superdiodo</b> y una senoidal de 0.3 V de pico, la salida alcanza 0.300 V de pico (pérdida de 5.5 µV) y es una media onda perfecta. Con «Diodo solo», los mismos 0.3 V producen sólo 12.5 mV de pico (no llega a conducir bien); con 1 V de pico, 0.54 V (pérdida de 0.46 V).</li>
+<li>Suba la frecuencia con el TL081 (13 V/µs): la media onda es perfecta hasta 100 kHz (0.9993 V para 1 V de pico). Con el <b>LM741</b> (0.5 V/µs) la salida tiene 1.000 V a 1 kHz, 0.94 V a 10 kHz y sólo 0.046 V a 100 kHz: el A.O. tiene que pasar de −13.5 V (saturación negativa, durante el semiciclo bloqueado) a +0.65 V en cada ciclo, 14 V que a 0.5 V/µs requieren 28 µs; a 100 kHz no hay tiempo.</li>
+<li>Este es el defecto de todos los circuitos de precisión de «conmutación»: la <b>recuperación de la saturación</b> y la velocidad de respuesta limitan la banda. Los diseños de onda completa utilizan una segunda etapa sumadora con ganancia 2 que evita la saturación del A.O. en un solo sentido.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Otras aplicaciones</h2>
+<ul>
+<li><b>Convertidor corriente–tensión (amplificador de transimpedancia).</b> Con la señal de corriente de un fotodiodo conectada a la entrada inversora y una resistencia \(R_f\) de realimentación, \(v_o=-i_pR_f\): con 20 µA y 100 kΩ, −2 V. La capacitancia del fotodiodo (\(C_d\) = 100 pF) forma con \(R_f\) un polo en el lazo que puede causar oscilaciones: se estabiliza con un condensador \(C_f=\sqrt{C_{in}/(2\pi R_f\,\mathrm{GBW})}\) en paralelo con \(R_f\) (con \(C_{in}=100\) pF, \(R_f=100\) kΩ y GBW = 3 MHz, \(C_f\approx7\) pF; ancho de banda \(1/(2\pi R_fC_f)\approx220\) kHz). La polarización en inversa del fotodiodo reduce \(C_d\) y mejora la velocidad.</li>
+<li><b>Amplificador logarítmico.</b> Un diodo (o un transistor con la base a tierra) en la realimentación, \(i=I_S\,e^{v/V_T}\), invierte la relación: \(v_o=-V_T\ln\left(\dfrac{v_i}{I_SR}\right)\). Una década de entrada produce una variación fija de 59.5 mV (\(V_T\ln10\)) a 25 °C, y comprime varias décadas (6–8) en una señal manejable; el término \(I_S\) y \(V_T\) dependen de la temperatura, por lo que los circuitos prácticos usan pares apareados y compensación. Intercambiando diodo y resistor se tiene el <b>amplificador antilogarítmico</b>; con ellos se construyen multiplicadores y divisores analógicos.</li>
+<li><b>Fuente de corriente de Howland y convertidor tensión–corriente.</b> Con realimentación positiva y negativa en proporción se hace que la corriente por la carga dependa de la tensión de entrada, no de la carga: se emplea para excitar sensores (RTD de platino) y electrodos.</li>
+<li><b>Comparadores y osciladores.</b> Si se usa realimentación positiva o ninguna, el A.O. se convierte en un comparador y, con una red RC, en un oscilador (capítulo 24).</li>
+</ul>
+</section>
+
+<section>
+<h2>Medidas de laboratorio</h2>
+<ul>
+<li><b>Sumador.</b> Con dos potenciómetros y tres resistores monte \(v_o=-(2v_1+v_2)\); verifique la linealidad y la saturación con entradas que sumen más de 6.5 V.</li>
+<li><b>Integrador.</b> Aplique una onda cuadrada de 0.5 V de pico y 1 kHz al integrador de la simulación y mida la amplitud del triángulo; quite el resistor \(R_p\): la salida deriva hasta saturarse en unos segundos (por \(V_{os}\) e \(I_B\)). Con un derivador, aplique una triangular y observe la cuadrada; mida el ruido que añade el derivador.</li>
+<li><b>Filtro Sallen–Key.</b> Monte el pasabajos con \(f_0=1\) kHz y K = 1.586 (Ra = 10 kΩ y Rb = 5.9 kΩ ≈ 5.6 kΩ + 0.3 kΩ) y trace el Bode punto a punto con el generador y el osciloscopio: debe haber −3 dB en ≈ 1 kHz y −40 dB/década; verifique la dependencia con la tolerancia de los componentes (5 % ⇒ \(f_0\) variable en ±5 %).</li>
+<li><b>Rectificador de precisión.</b> Con 0.2 V de pico a 1 kHz, compare la salida con un diodo solo y con el superdiodo; aumente la frecuencia hasta que aparezca el recorte por la velocidad de respuesta.</li>
+</ul>
+</section>
+
+<section>
+<h2>Problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Diseñe un sumador inversor con \(v_o=-(2v_1+4v_2+8v_3)\) usando \(R_f=40\) kΩ.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(R_f/R_1=2\Rightarrow R_1=20\) kΩ.</li>
+<li>\(R_f/R_2=4\Rightarrow R_2=10\) kΩ.</li>
+<li>\(R_f/R_3=8\Rightarrow R_3=5\) kΩ.</li>
+<li><b>Resultado.</b> <span class="ans">\(R_1=20\) kΩ, \(R_2=10\) kΩ y \(R_3=5\) kΩ.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Un restador con \(R_1=R_3=10\) kΩ y \(R_f=R_4\) nominal 100 kΩ tiene \(R_4\) 2 % por encima. Halle \(A_{cm}\) y el CMRR en dB (con \(A_d=10\)).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(R_4=102\) kΩ; \(A_{cm}=11\cdot\dfrac{102}{112}-10=10.018-10=0.0179\).</li>
+<li>CMRR = \(A_d/A_{cm}=10/0.0179=559\).</li>
+<li>\(20\log559=54.9\) dB.</li>
+<li><b>Resultado.</b> <span class="ans">\(A_{cm}=0.018\) y CMRR = 55 dB.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un integrador con \(R=100\) kΩ y \(C=1\ \mu\)F recibe un escalón de 1 V en \(t=0\) (A.O. con salida máxima ±13.5 V). Halle \(v_o(t)\) y el tiempo que tarda en saturarse.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(RC=0.1\) s; \(v_o(t)=-(1/RC)\int1\,\mathrm{d}t=-10\,t\) V.</li>
+<li>Saturación en \(|v_o|=13.5\) V: \(t=1.35\) s.</li>
+<li><b>Resultado.</b> <span class="ans">\(v_o=-10t\) V; se satura a los 1.35 s.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Diseñe un Sallen–Key pasabajos Butterworth de 2.º orden con \(f_0=2\) kHz (C₁ = C₂ = 10 nF) y calcule \(R\), \(K\) y \(R_b\) con \(R_a=10\) kΩ.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(R=1/(2\pi f_0C)=1/(2\pi\cdot2000\cdot10^{-8})=7.96\) kΩ → 8.2 kΩ (\(f_0=1.94\) kHz).</li>
+<li>Butterworth: \(Q=0.707\Rightarrow K=3-1/Q=3-1.414=1.586\).</li>
+<li>\(K=1+R_b/R_a\Rightarrow R_b=0.586\cdot10\text{ k}=5.86\) kΩ → 5.9 kΩ.</li>
+<li><b>Resultado.</b> <span class="ans">\(R\approx8.2\) kΩ (7.96 kΩ exacto), \(K=1.586\), \(R_b\approx5.9\) kΩ.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un superdiodo con LM741 (0.5 V/µs, salida ±13.5 V) debe rectificar una senoidal. Calcule el tiempo de recuperación de la saturación y la frecuencia máxima si este tiempo debe ser menos del 5 % del período. Compare con el TL081 (13 V/µs).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>Excursión: de −13.5 V a +0.65 V = 14.15 V.</li>
+<li>LM741: \(t=14.15/0.5=28.3\ \mu\)s; \(T\ge28.3/0.05=566\ \mu\)s ⇒ \(f\le1.77\) kHz.</li>
+<li>TL081: \(t=14.15/13=1.09\ \mu\)s; \(T\ge21.8\ \mu\)s ⇒ \(f\le46\) kHz.</li>
+<li><b>Resultado.</b> <span class="ans">LM741: 1.8 kHz; TL081: 46 kHz (el límite práctico es todavía menor: el rectificador de precisión exige A.O. rápidos).</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>Un fotodiodo produce 20 µA con \(C_d=100\) pF. Diseñe el amplificador de transimpedancia para 2 V de salida con un A.O. de GBW = 3 MHz: calcule \(R_f\), \(C_f\) y el ancho de banda.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(R_f=2\text{ V}/20\ \mu\text{A}=100\) kΩ.</li>
+<li>\(C_f=\sqrt{C_{in}/(2\pi R_f\,\text{GBW})}=\sqrt{10^{-10}/(2\pi\cdot10^5\cdot3\cdot10^6)}=7.3\) pF.</li>
+<li>Ancho de banda: \(f=1/(2\pi R_fC_f)=1/(2\pi\cdot10^5\cdot7.3\cdot10^{-12})=218\) kHz.</li>
+<li><b>Resultado.</b> <span class="ans">\(R_f=100\) kΩ, \(C_f\approx7\) pF y \(f_{-3\text{dB}}\approx220\) kHz (la salida es −2 V; invierta con una segunda etapa si se necesita positiva).</span></li></ol></details></li>
+</ol>
+</section>
+</template>

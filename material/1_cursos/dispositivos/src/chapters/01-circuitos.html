@@ -1,0 +1,136 @@
+<template class="chapter-src" data-id="circuitos" data-num="1" data-title="Circuitos, leyes y modelos" data-part="Parte I · Fundamentos" data-short="Del dispositivo físico al modelo de circuito: variables y convenios, fuentes reales, leyes de Kirchhoff, análisis nodal, teoremas de Thévenin y Norton, máxima transferencia de potencia, recta de carga y cómo calcula el simulador">
+<p class="lead">Un <b>dispositivo electrónico</b> es un objeto físico —un trozo de carbón, una lámina de aluminio enrollada, un cristal de silicio dopado— que se conecta a otros mediante terminales. No se puede calcular un circuito con átomos: se sustituye cada dispositivo por un <b>modelo</b>, una relación matemática entre las tensiones y las corrientes de sus terminales. Todo este curso consiste en dos tareas que se repiten: <i>construir buenos modelos</i> de cada dispositivo (pasivo o activo) y <i>resolver circuitos</i> hechos con ellos. Este capítulo reúne las herramientas de la segunda tarea, que se necesitan desde la primera página, y explica cómo las usa el simulador que acompaña al curso.</p>
+
+<section>
+<h2>Variables, convenios y energía</h2>
+<p>Un circuito de <b>parámetros concentrados</b> es aquel en que las dimensiones físicas son mucho menores que la longitud de onda de las señales: a 1 MHz la longitud de onda en el aire es de 300 m, de modo que un circuito de 10 cm puede tratarse como un conjunto de nodos y ramas; a 1 GHz (30 cm) ya no. En este régimen basta con dos variables por cada par de terminales:</p>
+<ul>
+<li>la <b>tensión</b> \(v\) (voltios, V) entre dos terminales: energía por unidad de carga, \(v=\mathrm{d}w/\mathrm{d}q\);</li>
+<li>la <b>corriente</b> \(i\) (amperios, A) que entra por un terminal: carga por unidad de tiempo, \(i=\mathrm{d}q/\mathrm{d}t\).</li>
+</ul>
+<div class="box def"><p><b>Convenio de signos pasivo.</b> Para un elemento de dos terminales se define la corriente \(i\) como positiva cuando entra por el terminal de mayor tensión (+) y sale por el otro. Con este convenio, la <b>potencia absorbida</b> es \(p=v\,i\). Si \(p>0\) el elemento <i>recibe</i> energía (un resistor, un condensador que se carga); si \(p<0\) la <i>entrega</i> (una batería que alimenta, un condensador que se descarga).</p></div>
+<div class="eq key" data-name="Potencia y energía">\[p(t)=v(t)\,i(t)\qquad w(t_1,t_2)=\int_{t_1}^{t_2}p(t)\,\mathrm{d}t\qquad [\mathrm{W}]=[\mathrm{V}][\mathrm{A}]=[\mathrm{J/s}]\]</div>
+<p>La conservación de la energía exige que, en todo circuito, <b>la suma de las potencias absorbidas sea cero</b> en cada instante (teorema de Tellegen). El simulador lo verifica: en el panel «Operación» puede sumar la potencia de todos los componentes, y las fuentes aparecerán con signo negativo. Esta regla sirve para detectar errores de cálculo.</p>
+<div class="box note"><p>Por <b>tierra</b> o referencia se entiende el nodo al que se asigna 0 V. No es necesariamente la Tierra física: es solo el punto desde el que se miden las demás tensiones. En el Taller, un circuito sin símbolo de tierra no tiene referencia y el simulador lo avisa.</p></div>
+</section>
+
+<section>
+<h2>Fuentes ideales y fuentes reales</h2>
+<p>Una <b>fuente de tensión ideal</b> mantiene entre sus terminales una tensión \(V_S\) sin importar la corriente que entregue; una <b>fuente de corriente ideal</b> entrega \(I_S\) sin importar la tensión que aparezca entre sus terminales. Ninguna existe: una pila de 9 V alcalina cae a 7.7 V cuando alimenta 10 Ω, y una fuente de corriente real tiene un límite de tensión. El modelo de primer orden de una fuente real añade una <b>resistencia interna</b>:</p>
+<div class="eq key" data-name="Equivalentes de Thévenin y Norton de una fuente real">\[V_T=V_{OC}-R_S\,I\qquad\Longleftrightarrow\qquad I=I_{N}-\frac{V_T}{R_S}\qquad V_{OC}=R_S\,I_N\]</div>
+<p>Aquí \(V_{OC}\) es la tensión en circuito abierto, \(I_N=V_{OC}/R_S\) es la corriente de cortocircuito y \(V_T\) es la tensión en terminales. Ambas descripciones (<b>Thévenin</b>: fuente de tensión en serie con \(R_S\); <b>Norton</b>: fuente de corriente en paralelo con \(R_S\)) son equivalentes desde fuera. Una pila AA alcalina nueva tiene \(R_S\approx0.15\ \Omega\), una batería de 9 V cerca de 1.7 Ω, un acumulador de plomo de arranque de automóvil menos de 10 mΩ: por eso este último puede entregar cientos de amperios y la de 9 V no.</p>
+<p>En la simulación, la fuente es una batería de 9 V con resistencia interna ajustable que alimenta una carga. Con \(R_S=1.7\ \Omega\) y \(R_L=10\ \Omega\) circulan \(9/11.7=0.769\) A y en los terminales quedan 7.69 V; la carga recibe 5.92 W y el rendimiento \(\eta=R_L/(R_S+R_L)\) es 85.5 %. Con la carga en cortocircuito casi toda la potencia se disipa dentro de la fuente.</p>
+<div class="sim" data-sim="c1-bateria" data-title="Fuente real: tensión en terminales, pérdidas y rendimiento"></div>
+<div class="sim-guide"><ul>
+<li>Con \(R_L=R_S=1.7\ \Omega\) circulan 2.65 A y la carga recibe la máxima potencia posible (11.9 W), pero el rendimiento cae a 50 %: la mitad de la energía se pierde dentro de la fuente. Una pila de 9 V real no resistiría este régimen mucho tiempo.</li>
+<li>Con \(R_L\) muy grande la tensión en terminales tiende a \(V_{OC}\) y la corriente a cero: la fuente «no trabaja».</li>
+<li>Ponga \(R_L=0.1\ \Omega\): la corriente es de 5 A, la resistencia interna disipa 42.5 W y, tras unos segundos, la batería se sobrecalienta y el simulador la da por dañada. Ese es el origen de los incendios por cortocircuito en baterías.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Leyes de Kirchhoff y asociaciones de resistores</h2>
+<p>Las dos leyes de Kirchhoff son consecuencia de la conservación de la carga y de la energía en un circuito de parámetros concentrados:</p>
+<div class="eq key" data-name="Leyes de Kirchhoff">\[\textbf{KCL (nodos):}\ \ \sum_k i_k=0\ \text{(corrientes que entran a un nodo)}\qquad \textbf{KVL (lazos):}\ \ \sum_k v_k=0\ \text{(subidas y caídas a lo largo de un lazo)}\]</div>
+<p>Combinadas con la <b>ley de Ohm</b> \(v=R\,i\) del resistor lineal, producen las reglas habituales: resistores en <b>serie</b> comparten corriente y suman tensiones (\(R_{eq}=\sum R_k\)); en <b>paralelo</b> comparten tensión y suman corrientes (\(1/R_{eq}=\sum 1/R_k\), o conductancias \(G=1/R\) en siemens). Dos resistores forman los <b>divisores</b> más usados:</p>
+<div class="eq" data-name="Divisores de tensión y de corriente">\[V_{out}=V_{in}\frac{R_2}{R_1+R_2}\qquad I_1=I\,\frac{R_2}{R_1+R_2}\ \ (\text{R}_1\text{ y R}_2\text{ en paralelo})\]</div>
+<p>El divisor tiene una trampa que se explica mejor midiendo: la fórmula supone que no se extrae corriente de \(V_{out}\). Con \(R_1=4.7\) kΩ, \(R_2=10\) kΩ y \(V_{in}=10\) V la salida «sin carga» es 6.80 V; si se conecta una carga de 10 kΩ, \(R_2\) pasa a valer \(10\parallel10=5\) kΩ y la salida cae a 5.15 V. El propio voltímetro es una carga: uno de 10 MΩ casi no perturba, pero uno de 100 kΩ sí. Es el primer ejemplo del <b>efecto de carga</b>, que reaparecerá en cada etapa de cada capítulo.</p>
+<div class="sim" data-sim="c1-divisor" data-title="Divisor de tensión y efecto de carga del instrumento"></div>
+<div class="sim-guide"><ul>
+<li>Deje el voltímetro en 10 MΩ: la lectura coincide con la fórmula (6.80 V) con error menor que 0.05 %.</li>
+<li>Baje la resistencia de entrada del voltímetro a 10 kΩ: la lectura cae a 5.15 V (error −24 %). El instrumento «apaga» parte del circuito.</li>
+<li>Cambie \(R_2\) a 1 kΩ y observe cómo el color de los cables (potencial) cambia: el cable de salida pasa de verde intenso a verde tenue.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Análisis nodal</h2>
+<p>La técnica general para resolver un circuito con muchos nodos es el <b>análisis nodal</b>. Se elige un nodo de referencia y, para cada uno de los \(n\) nodos restantes, se escribe KCL con las corrientes expresadas por la ley de Ohm: \(i=G\,(v_a-v_b)\). El resultado es un sistema lineal \(\mathbf{G}\,\mathbf{v}=\mathbf{i}_S\), donde \(\mathbf{G}\) es la <b>matriz de conductancias</b> (simétrica si solo hay resistores): su elemento diagonal \(G_{kk}\) es la suma de las conductancias conectadas al nodo \(k\) y los elementos fuera de la diagonal son \(-G_{kj}\), la conductancia que une \(k\) con \(j\).</p>
+<div class="box ex" data-label="Ejemplo resuelto"><p>Circuito de la figura: una fuente de 10 V con \(R_1=1\) kΩ alimenta el nodo A; \(R_2=2\) kΩ une A con tierra; \(R_3=3\) kΩ une A con B; \(R_4=4\) kΩ une B con tierra y una fuente de corriente de 2 mA inyecta corriente en B. Las ecuaciones nodales son
+\[\begin{pmatrix}\tfrac1{1\text{k}}+\tfrac1{2\text{k}}+\tfrac1{3\text{k}}&-\tfrac1{3\text{k}}\\-\tfrac1{3\text{k}}&\tfrac1{3\text{k}}+\tfrac1{4\text{k}}\end{pmatrix}\begin{pmatrix}V_A\\V_B\end{pmatrix}=\begin{pmatrix}10/1\text{k}\\2\ \text{mA}\end{pmatrix}\]
+cuya solución es \(V_A=6.783\) V y \(V_B=7.304\) V. Las corrientes son \(I_1=3.217\) mA, \(I_2=3.391\) mA, \(I_4=1.826\) mA y, por \(R_3\), \(I_{A\to B}=-0.174\) mA: va de B hacia A, porque B está a mayor tensión que A. La suma de corrientes en A, \(3.217-3.391+0.174=0\), cumple KCL.</p></div>
+<div class="sim" data-sim="c1-nodal" data-title="Análisis nodal: el simulador resuelve la misma matriz"></div>
+<div class="sim-guide"><ul>
+<li>Las lecturas de los nodos A y B coinciden con la solución del sistema \(\mathbf{G}\mathbf{v}=\mathbf{i}\) que aparece a la derecha, calculada aparte con eliminación gaussiana.</li>
+<li>Cambie \(R_3\) a 100 kΩ: A y B casi se desacoplan, \(V_A\) se acerca a 6.67 V (el divisor de 1 k y 2 k) y \(V_B\) a \(2\ \text{mA}\times4\ \text{k}=8\) V.</li>
+<li>Ponga la fuente de corriente en cero: B queda determinado por A mediante \(R_3\) y \(R_4\), un divisor «de segunda etapa».</li>
+</ul></div>
+<p>El <b>análisis de mallas</b> es el dual: se escribe KVL en cada lazo independiente con corrientes de malla. Suele ser más corto cuando hay pocas mallas y fuentes de tensión; el nodal es preferible con fuentes de corriente y es el que usan los simuladores, porque se programa con facilidad: cada elemento «estampa» sus conductancias en la matriz.</p>
+</section>
+
+<section>
+<h2>Superposición, Thévenin y Norton</h2>
+<p>Un circuito <b>lineal</b> (resistores, fuentes independientes y fuentes dependientes lineales) cumple el principio de <b>superposición</b>: la respuesta total es la suma de las respuestas a cada fuente por separado, con las demás «apagadas» (fuentes de tensión sustituidas por cortocircuitos y de corriente por circuitos abiertos). La superposición no es válida para la <i>potencia</i> (es cuadrática) ni para circuitos con dispositivos no lineales, como los diodos y los transistores; pero se aplica a su <b>modelo de pequeña señal</b>, que es la base del análisis de amplificadores (capítulo 18).</p>
+<div class="eq key" data-name="Teorema de Thévenin">\[\text{Cualquier red lineal vista desde dos terminales}\equiv V_{th}\ \text{en serie con}\ R_{th}\qquad V_{th}=V_{OC}\qquad R_{th}=\frac{V_{OC}}{I_{SC}}\]</div>
+<p>\(R_{th}\) también se obtiene como la resistencia vista desde los terminales con las fuentes independientes apagadas. Por ejemplo, una fuente de 12 V seguida de \(R_1=6\) kΩ en serie y \(R_2=3\) kΩ en paralelo equivale, para cualquier carga, a \(V_{th}=12\cdot3/9=4\) V con \(R_{th}=6\parallel3=2\) kΩ. Todo divisor es una fuente de Thévenin: por eso su salida «se hunde» cuando se le conecta una carga comparable a \(R_{th}\).</p>
+<div class="eq key" data-name="Máxima transferencia de potencia">\[P_L=\frac{V_{th}^2R_L}{(R_{th}+R_L)^2}\qquad P_{L,\max}=\frac{V_{th}^2}{4R_{th}}\ \ \text{cuando}\ \ R_L=R_{th}\qquad \eta=\frac{R_L}{R_{th}+R_L}\]</div>
+<p>Derivando \(P_L\) respecto de \(R_L\) se obtiene la condición \(R_L=R_{th}\), con un rendimiento de solo 50 %. En electrónica de potencia no interesa la máxima potencia sino el máximo rendimiento (\(R_L\gg R_{th}\)); en radiofrecuencia y en el diseño de sensores sí se adapta la impedancia de carga (\(R_L=R_{th}\)) para sacar el máximo de señal. En el ejemplo anterior, la carga óptima es 2 kΩ y recibe \(4^2/(4\cdot2000)=2\) mW.</p>
+<div class="sim" data-sim="c1-maxpot" data-title="Potencia en la carga frente a su resistencia"></div>
+<div class="sim-guide"><ul>
+<li>Con \(V_{th}=4\) V y \(R_{th}=2\) kΩ el máximo (2.00 mW) ocurre en \(R_L=2\) kΩ y la curva es muy plana: entre 1 k y 4 k la potencia varía menos de 12 %.</li>
+<li>La curva de rendimiento crece monótonamente: adaptar la carga cuesta la mitad de la energía.</li>
+<li>Con \(R_L=R_{th}/10\) la carga recibe solo el 33 % de la potencia máxima, y con \(R_L=10R_{th}\) el 33 % también: la curva es simétrica en escala logarítmica.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Dispositivos no lineales y la recta de carga</h2>
+<p>Un resistor cumple la ley de Ohm: su característica \(i(v)\) es una recta por el origen. Los dispositivos activos y muchos pasivos <b>no son lineales</b>: la corriente no es proporcional a la tensión. Una lámpara incandescente aumenta su resistencia al calentarse (el tungsteno a 2800 K tiene una resistividad unas 12 veces mayor que a 300 K); un diodo no conduce hasta superar cerca de 0.6 V y después lo hace de manera exponencial. Como la superposición y las reglas de serie/paralelo ya no valen, hay que recurrir a otro método: la <b>solución gráfica</b> o la numérica.</p>
+<p>Cuando un dispositivo no lineal se alimenta mediante una fuente \(V_S\) y una resistencia \(R_S\), la KVL da una relación lineal entre su tensión y su corriente, la <b>recta de carga</b> \(i=(V_S-v)/R_S\). El circuito funciona <b>en el único punto donde la recta corta la característica del dispositivo</b>: el punto de operación (o punto Q, de «quiescent»). Este procedimiento se usa para el diodo (capítulo 13) y para el transistor (capítulos 16 y 17).</p>
+<div class="sim" data-sim="c1-iv" data-title="Características i(v) de tres dispositivos y recta de carga"></div>
+<div class="sim-guide"><ul>
+<li>El <b>resistor</b> (100 Ω) corta a la recta en un único punto, calculable con un divisor: con 5 V y 100 Ω de resistencia en serie, \(v=2.5\) V e \(i=25\) mA.</li>
+<li>La <b>lámpara</b> de 12 V · 5 W tiene una característica curvada: a 12 V pasa 0.417 A (28.8 Ω), pero a 1.2 V circulan 0.121 A, es decir, 9.95 Ω; su resistencia en caliente es casi tres veces la que muestra a baja tensión.</li>
+<li>El <b>diodo</b> 1N4007 con 5 V y 330 Ω opera en 13.0 mA y 0.70 V: la tensión casi no cambia aunque \(V_S\) cambie, la propiedad que se explotará en las fuentes de referencia.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Cómo calcula el simulador del curso</h2>
+<p>Todas las simulaciones del curso se resuelven con un motor propio escrito para este material, basado en el <b>análisis nodal modificado</b> (MNA) que usan SPICE y sus descendientes. El procedimiento es el del apartado anterior, ampliado para que quepan todos los elementos:</p>
+<ol>
+<li><b>Estampado.</b> Cada elemento aporta términos a la matriz \(\mathbf{A}\) y al vector \(\mathbf{b}\) de un sistema \(\mathbf{A}\mathbf{x}=\mathbf{b}\), cuyas incógnitas son las tensiones de los nodos y las corrientes de las fuentes de tensión ideales. Un resistor aporta \(\pm1/R\) en las posiciones de sus dos nodos; una fuente de corriente, un término del vector \(\mathbf{b}\).</li>
+<li><b>Elementos no lineales.</b> Para un diodo, \(i=I_S(e^{v/nV_T}-1)\): se <i>linealiza</i> alrededor de la estimación actual (conductancia \(g_d=\mathrm{d}i/\mathrm{d}v\) y fuente de corriente equivalente) y se resuelve; con la nueva tensión se repite hasta que dos soluciones consecutivas coinciden: es el <b>método de Newton–Raphson</b>. Se limita el tamaño de los pasos en las uniones para evitar desbordamientos exponenciales.</li>
+<li><b>Condensadores e inductores en el tiempo.</b> En cada paso \(\Delta t\) un condensador se sustituye por una conductancia \(2C/\Delta t\) en paralelo con una fuente que recuerda el estado anterior (regla trapezoidal): es un modelo «compañero» resistivo, de modo que el circuito dinámico se reduce, paso a paso, a uno resistivo.</li>
+<li><b>Pequeña señal.</b> Para el análisis en frecuencia (diagramas de Bode) el circuito se linealiza en su punto de operación y se resuelve con números complejos, con \(C\to j\omega C\) y \(L\to j\omega L\).</li>
+</ol>
+<p>El apéndice de validación recoge las comprobaciones del motor frente a soluciones analíticas y a bibliotecas numéricas independientes. Los modelos de dispositivos reales (diodos, transistores, amplificadores operacionales, reguladores) usan parámetros ajustados a las hojas de datos típicas y se describen en cada capítulo.</p>
+<div class="box warn"><p>Un simulador es una herramienta, no un oráculo. Un resultado correcto con un modelo inadecuado sigue siendo un resultado inútil: una simulación con un condensador ideal no mostrará la resonancia propia del condensador real, y una con un transistor sin capacitancias no predecirá su ancho de banda. Aprender a elegir el modelo es parte de lo que se aprende en este curso, y el Taller incluye interruptores para activar los efectos parásitos.</p></div>
+</section>
+
+<section>
+<h2>Problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un resistor de 220 Ω, otro de 330 Ω y otro de 470 Ω se asocian (a) en serie y (b) en paralelo. Calcule la resistencia equivalente de cada asociación.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>(a)</b> \(R=220+330+470=1020\ \Omega\).</li>
+<li><b>(b)</b> \(1/R=1/220+1/330+1/470=0.004545+0.003030+0.002128=0.009703\) S, luego \(R=103.1\ \Omega\) (menor que el menor, 220 Ω).</li>
+<li><b>Resultado.</b> <span class="ans">1020 Ω en serie y 103.1 Ω en paralelo.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Un divisor con \(R_1=4.7\) kΩ y \(R_2=10\) kΩ se alimenta con 10 V. ¿Cuánto vale la salida sin carga y con una carga de 10 kΩ?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Sin carga.</b> \(V_{out}=10\cdot10/14.7=6.803\) V.</li>
+<li><b>Con carga.</b> \(R_2\parallel R_L=10\parallel10=5\) kΩ y \(V_{out}=10\cdot5/(4.7+5)=5.155\) V.</li>
+<li><b>Resultado.</b> <span class="ans">6.80 V sin carga y 5.15 V con la carga: cae un 24 %.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Una batería de 9 V con resistencia interna de 1.7 Ω alimenta una carga de 10 Ω. Calcule la corriente, la tensión en terminales, la potencia en la carga y el rendimiento. ¿Qué potencia máxima podría transferir a una carga adaptada?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Corriente.</b> \(I=9/(1.7+10)=0.769\) A.</li>
+<li><b>Tensión.</b> \(V_T=I\,R_L=7.69\) V.</li>
+<li><b>Potencia.</b> \(P_L=I^2R_L=5.92\) W; rendimiento \(\eta=10/11.7=85.5\ \%\).</li>
+<li><b>Máxima potencia.</b> \(R_L=R_S=1.7\ \Omega\): \(P_{\max}=9^2/(4\cdot1.7)=11.9\) W (con rendimiento 50 %).</li>
+<li><b>Resultado.</b> <span class="ans">0.769 A, 7.69 V, 5.92 W, 85.5 %; máximo teórico 11.9 W.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Resuelva el circuito del ejemplo nodal pero con la fuente de corriente de 2 mA invertida (extrae corriente de B).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Sistema.</b> Solo cambia el signo del segundo término del vector: \(\mathbf{i}=(10/1\text{k},\,-2\ \text{mA})\).</li>
+<li><b>Resolución por superposición.</b> La fuente de 10 V sola (fuente de corriente abierta) da \(V_A'=6.087\) V y \(V_B'=3.478\) V. La de 2 mA sola, con signo invertido, da \(V_A''=-0.696\) V y \(V_B''=-3.826\) V (el negativo de lo que daría con signo normal: +0.696 y +3.826).</li>
+<li><b>Suma.</b> \(V_A=6.087-0.696=5.391\) V y \(V_B=3.478-3.826=-0.348\) V; comprobación nodal con el vector \((10\ 	ext{mA},-2\ 	ext{mA})\) da lo mismo.</li>
+<li><b>Resultado.</b> <span class="ans">\(V_A=5.391\) V y \(V_B=-0.348\) V: B queda ligeramente por debajo de tierra.</span></li>
+</ol></details></li>
+<li><span class="lvl">Avanzado</span>Un sensor se comporta como una fuente de Thévenin de 4 V con \(R_{th}=2\) kΩ. (a) ¿Qué carga extrae la máxima potencia y cuánto vale? (b) Un amplificador de entrada de 200 kΩ, ¿qué fracción de la tensión del sensor recibe?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>(a)</b> \(R_L=R_{th}=2\) kΩ; \(P_{\max}=4^2/(4\cdot2000)=2\) mW.</li>
+<li><b>(b)</b> Divisor: \(200/(200+2)=0.990\), es decir, 99.0 % de la tensión: casi toda.</li>
+<li><b>Comentario.</b> Para <i>medir una tensión</i> conviene \(R_L\gg R_{th}\) (alta impedancia de entrada); para <i>transferir potencia</i> conviene \(R_L=R_{th}\).</li>
+<li><b>Resultado.</b> <span class="ans">2 kΩ con 2 mW; el amplificador de 200 kΩ recibe el 99.0 %.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

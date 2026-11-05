@@ -1,0 +1,161 @@
+<template class="chapter-src" data-id="fallas" data-num="28" data-title="Cortocircuitos, fallas y protección" data-part="Parte VI · Laboratorio" data-short="Corriente de cortocircuito y resistencia de la fuente, fusibles (I²t, rápidos y retardados), protección contra polaridad invertida, corriente de arranque y termistores NTC, sobretensiones (Zener, TVS, varistor, crowbar con SCR) y método sistemático de diagnóstico de fallas en un amplificador">
+<p class="lead">Un circuito electrónico sobrevive no porque nada falle, sino porque está <b>diseñado para fallar sin daño</b>: un cortocircuito, una polaridad invertida, un arranque brusco, una sobretensión o la avería de un componente son sucesos esperables durante su vida. Este capítulo estudia las causas, los efectos y las protecciones más usadas, y propone un método para encontrar una falla midiendo. En el Taller, donde los componentes «se dañan» de verdad (ruptura térmica, esfuerzo eléctrico, fusión de un fusible), se pueden provocar todas estas situaciones sin riesgo.</p>
+
+<section>
+<h2>Cortocircuitos: la corriente la fija la fuente</h2>
+<p>Un cortocircuito es un camino de resistencia casi nula entre dos puntos de potencial distinto. La corriente que circula la limita sólo la <b>resistencia interna de la fuente</b> y la de los cables y contactos:</p>
+<div class="eq key" data-name="Corriente de cortocircuito y potencia disipada">\[I_{cc}=\frac{V_s}{R_s+R_{cable}+R_{falla}}\qquad P_{cable}=I_{cc}^2R_{cable}\qquad E=I_{cc}^2R\,t\ \ (\text{energía en }t)\]</div>
+<p>Una batería de automóvil (12.6 V, 5 mΩ) en cortocircuito franco entrega más de 100 A y 1 kW en milisegundos; una pila alcalina AA (1.5 V, 0.15 Ω), 10 A; una fuente de laboratorio con limitación de corriente, sólo lo programado. El calor es proporcional al cuadrado de la corriente: un cable de 1 mm² (17 mΩ/m) con 30 A disipa 15 W por metro y arde. El cortocircuito «franco» es el extremo; lo más frecuente son los <b>cortocircuitos parciales</b> (humedad, residuos conductores, componentes con fuga) con corrientes pequeñas que sobrecalientan lentamente. Las protecciones se dimensionan para el peor caso que la fuente puede entregar (<b>capacidad de ruptura</b> del fusible).</p>
+</section>
+
+<section>
+<h2>Fusibles y protección por sobrecorriente</h2>
+<p>El fusible es el elemento de protección más simple: un hilo calibrado que se funde por efecto Joule cuando la corriente supera su valor nominal durante suficiente tiempo. Se caracteriza por la <b>corriente nominal</b> \(I_n\), la <b>energía de fusión</b> \(I^2t\) (A²s) que determina cuánto tarda y la tensión y capacidad de ruptura máximas. El tiempo de fusión disminuye bruscamente con la sobrecorriente: es una curva «tiempo–corriente» inversa.</p>
+<div class="tablewrap"><table class="tbl"><tr><th>Tipo</th><th>Característica</th><th>Uso</th></tr>
+<tr><td><b>Rápido (F, <i>fast-acting</i>)</b></td><td>se funde en pocos ms con 10 \(I_n\); no tolera picos de arranque</td><td>Protección de semiconductores y circuitos electrónicos sensibles</td></tr>
+<tr><td><b>Retardado (T, <i>time-lag</i>)</b></td><td>tolera un breve exceso (arranque de motores, condensadores, transformadores) y se funde con una sobrecarga sostenida</td><td>Primario de transformadores, fuentes de alimentación, motores</td></tr>
+<tr><td><b>Autorrestablecible (PTC)</b></td><td>polímero que aumenta su resistencia por calor y limita la corriente; se recupera al enfriarse</td><td>USB, baterías, interfaces</td></tr>
+<tr><td><b>Interruptor magnetotérmico</b></td><td>bimetal (térmico, sobrecarga) y electroimán (magnético, cortocircuito)</td><td>Instalaciones eléctricas</td></tr></table></div>
+<p>Criterios de selección: (1) la <b>corriente nominal</b> debe ser mayor que la máxima en funcionamiento normal (una regla habitual: \(I_n\ge I_{nom}/0.75\), el fusible trabaja con ≤ 75 % de su valor) y menor que lo que soporta el cable y el componente más débil; (2) la <b>tensión nominal</b> ≥ la del circuito; (3) la <b>capacidad de ruptura</b> ≥ la corriente de cortocircuito prevista, para no producir arco; (4) el tipo (rápido o retardado) según las corrientes de arranque. El fusible protege al <b>cable y al circuito</b> contra el incendio; no protege a un semiconductor que se destruye en menos tiempo que el fusible (ahí se usan fusibles ultrarrápidos).</p>
+<div class="sim" data-sim="c28-fusible" data-title="Fusible: tiempo de fusión con sobrecarga y con cortocircuito; rápido y retardado"></div>
+<div class="sim-guide"><ul>
+<li>Batería de 12.6 V (5 mΩ) con un fusible rápido de 1 A y una carga de 24 Ω (0.52 A): el fusible está sano; el panel indica 0.52× la corriente nominal y el calentamiento acumulado se queda en cero.</li>
+<li>Baje la carga a 10 Ω (1.26 A, 1.26× la nominal): el hilo se calienta y se funde en ≈ 0.9 s de simulación. Con 6 Ω (2×), 0.21 s; con 2.4 Ω (5×), 0.1 s. La fusión es mucho más rápida cuanto mayor es el exceso de corriente. (El simulador comprime el tiempo térmico 10 veces respecto de la realidad.)</li>
+<li>Cambie a «Retardado»: con 2× tarda 0.64 s (3 veces más que el rápido); con 5× o más se funde casi igual de rápido (0.11 s): el retardado tolera un exceso breve de corriente pero no un cortocircuito.</li>
+<li>Con el «Cortocircuito franco» (87 A teóricos) el fusible se funde en el primer instante en ambos tipos y la tensión en la carga cae a cero. Use «Reparar» para sustituir el fusible.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Polaridad invertida</h2>
+<p>Conectar una fuente al revés es una de las averías más frecuentes (pilas mal puestas, conectores, baterías de automóvil). Los componentes polarizados —condensadores electrolíticos y de tántalo, diodos, circuitos integrados con diodos de protección— se dañan con tensión inversa mayor que 1 V (un electrolítico gasifica; un integrado se sobrecalienta). Cuatro soluciones, de más simple a más eficiente:</p>
+<ul>
+<li><b>Conector con polarización mecánica</b> (llave): evita el error físicamente. Es la mejor, y siempre se debe preferir.</li>
+<li><b>Diodo en serie</b>: bloquea la tensión inversa; el precio es la caída directa (0.7 V, 0.3–0.45 V con Schottky) y su disipación \(P=V_FI\).</li>
+<li><b>Diodo en paralelo con fusible</b>: el diodo cortocircuita la fuente invertida y el fusible se funde, sin pérdidas en funcionamiento normal pero con sustitución del fusible.</li>
+<li><b>MOSFET de canal P en serie</b> («diodo ideal»): el transistor conduce en polaridad correcta con un \(R_{DS(on)}\) de pocos mΩ y bloquea en la inversa; la caída es \(I\,R_{DS(on)}\) y la pérdida casi nula.</li>
+</ul>
+<div class="sim" data-sim="c28-polaridad" data-title="Protección contra polaridad invertida: sin protección, diodo, fusible+diodo y MOSFET P"></div>
+<div class="sim-guide"><ul>
+<li><b>Sin protección</b> y polaridad correcta: 12.0 V en la carga y 1.44 W. Invierta la fuente: el condensador electrolítico recibe −12 V y el panel lo marca «dañado por tensión inversa»; la carga recibe 0 V.</li>
+<li><b>Diodo Schottky en serie</b>: con polaridad correcta, la carga recibe 11.6 V (pérdida de 0.35 V, 3 % de la tensión: ≈ 41 mW) y con la fuente invertida el condensador queda sano y la carga casi sin tensión (0.6 V por la fuga inversa del modelo).</li>
+<li><b>Fusible + diodo en paralelo</b>: en funcionamiento normal pierde sólo 26 mV; con la fuente invertida el diodo la cortocircuita y el fusible se funde (la fuente y el cableado se salvan), pero en el simulador el condensador también resulta dañado: soporta una tensión inversa breve hasta que se abre el fusible.</li>
+<li><b>MOSFET P</b>: pérdida de sólo 11.6 mV con polaridad correcta, y con la fuente invertida el transistor se bloquea: la carga recibe 0.19 V y todo queda sano. Es la mejor solución cuando la corriente es grande y la tensión pequeña, a costa de más componentes.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Corriente de arranque (<i>inrush</i>) y termistores NTC</h2>
+<p>Un condensador descargado se comporta, en el instante de conectar la fuente, como un cortocircuito: la corriente de pico está limitada sólo por la resistencia en serie (cables, ESR, resistencia interna de la fuente), y puede ser cientos de veces la nominal. Esa corriente funde fusibles, hace saltar los magnetotérmicos, suelda los contactos de interruptores y relés, y sobreesfuerza los diodos del rectificador. La energía que se disipa en la resistencia en serie durante la carga es \(\tfrac12CV^2\) independientemente de \(R\) (la mitad de la energía suministrada). La solución más sencilla es un <b>termistor NTC</b> (coeficiente de temperatura negativo) en serie: frío, tiene una resistencia alta (5–50 Ω) que limita el arranque; al conducir se calienta y su resistencia baja a décimas de ohmio, lo que reduce la pérdida en régimen permanente. Alternativas: resistencias de precarga con relé (<i>soft-start</i>), circuitos de arranque suave con MOSFET y fuentes con limitación de corriente.</p>
+<div class="sim" data-sim="c28-inrush" data-title="Corriente de arranque de un condensador de filtro: sin limitador, con NTC frío y con NTC caliente"></div>
+<div class="sim-guide"><ul>
+<li>Condensador de 2200 µF a 17 V (energía de 0.32 J) y sin limitador: la única resistencia es la de los cables y el interruptor (≈ 0.12 Ω): el pico de corriente es de ≈ 110 A (teórico, 140 A). El condensador se carga en menos de un milisegundo y la corriente es de 1.7 A en régimen (los 10 Ω de carga).</li>
+<li>Con el <b>NTC de 10 Ω en frío</b> el pico baja a 1.7 A (17 V/10.1 Ω): la carga del condensador ocupa 100 ms, con una constante de tiempo de 22 ms (la tensión del condensador sube suavemente).</li>
+<li>Con el <b>NTC caliente</b> (110 °C, 1.07 Ω) el pico es de 13.9 A: por eso un NTC no protege si se vuelve a conectar «en caliente» antes de enfriarse (tras unos minutos sin tensión). Es una limitación conocida del método.</li>
+<li>La energía \(\tfrac12CV^2=0.32\) J se disipa en la resistencia de carga independientemente de su valor; lo que cambia con la resistencia es la <b>potencia de pico</b> (\(I^2R\)): 1.5 kW sin limitador (en los cables) frente a 28 W con el NTC frío.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Sobretensiones y protección: Zener, TVS, varistor y «crowbar»</h2>
+<p>Una sobretensión (un transitorio de la red, una descarga inductiva, una avería del regulador que deja pasar la tensión de entrada) destruye semiconductores en microsegundos. Las defensas actúan sobre la tensión:</p>
+<ul>
+<li><b>Diodo Zener</b> en paralelo: recorta a \(V_Z\) pero tiene potencia limitada (≈ 0.5–5 W).</li>
+<li><b>Diodo TVS</b> (<i>transient voltage suppressor</i>): un Zener de avalancha diseñado para absorber picos de cientos de vatios a kilovatios con respuesta de picosegundos (P6KE, SMBJ).</li>
+<li><b>Varistor (MOV)</b>: un resistor cuya resistencia cae con la tensión; protege las entradas de red de sobretensiones y de rayos, con energía de cientos de julios, pero se degrada con cada transitorio.</li>
+<li><b>Crowbar</b> (barra de cortocircuito): cuando la tensión supera el umbral, un <b>SCR</b> cortocircuita el carril y su corriente funde un fusible, desconectando la fuente permanentemente. Es una protección drástica para cargas muy valiosas (microprocesadores, lógica de 5 V): sacrifica un fusible (y requiere intervención) en vez de dejar pasar la sobretensión.</li>
+</ul>
+<div class="sim" data-sim="c28-crowbar" data-title="Crowbar: un SCR dispara por sobretensión, cortocircuita el carril y funde el fusible"></div>
+<div class="sim-guide"><ul>
+<li>Con la fuente en 5 V la carga recibe 4.8 V (la caída es la de la resistencia de la fuente de 2 Ω y 50 Ω de carga): todo normal y el SCR está bloqueado.</li>
+<li>Suba la tensión a 7.2 V: la carga recibe 6.9 V; con 7.6 V, 7.3 V: el Zener de 6.2 V y las caídas de la puerta aún no dejan pasar la corriente de disparo (5 mA). Con <b>8.5 V</b> la corriente de puerta supera \(I_{GT}\), el SCR se dispara, pone el carril en cortocircuito (corriente = 8.5 V/2.1 Ω ≈ 4 A) y <b>el fusible de 1 A se funde</b>: la carga queda a 0 V, sin sufrir la sobretensión. Umbral aproximado: \(V_Z+0.7+I_{GT}R_g+0.7\approx8\) V.</li>
+<li>Pase a «Sin crowbar» y suba la fuente a 12 y 15 V: la carga recibe 11.5 y 14.4 V (¡más del doble de la nominal!) y nada se interrumpe: la protección es la diferencia entre una avería de un componente y la de toda la tarjeta.</li>
+<li>El tiempo de respuesta es de microsegundos: el SCR conduce antes de que el fusible reaccione, de modo que la sobretensión sólo dura lo que tarda en dispararse. El umbral se fija con el Zener (con la tolerancia de este, ±5 %).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Diagnóstico: cómo encontrar una falla</h2>
+<p>Un circuito que «no funciona» se diagnostica con un método, no a ciegas:</p>
+<ol>
+<li><b>Mire y huela</b> (con el circuito apagado): componentes quemados, marcas de calor, soldaduras frías, cables sueltos, polaridades de condensadores y diodos.</li>
+<li><b>Mida las tensiones de alimentación</b> en los pines de los circuitos integrados y en los puntos de continua: el 90 % de las averías se detecta así.</li>
+<li><b>Compare con lo esperado</b>: calcule las tensiones y corrientes de reposo (capítulo 17) y compare con la medición. Una discrepancia localiza la zona defectuosa.</li>
+<li><b>Divida el circuito por la mitad</b> (búsqueda binaria): compruebe la señal en el centro de la cadena; si es buena, la falla está después; si no, antes.</li>
+<li><b>Aísle y sustituya</b> con cuidado; cambie un solo elemento a la vez y vuelva a medir; deje constancia de lo medido.</li>
+</ol>
+<p>Cada falla de un componente deja una «huella» característica en las tensiones. La tabla recoge los resultados del amplificador de emisor común del capítulo 18 (\(V_{CC}=12\) V, \(R_1=33\) kΩ, \(R_2=10\) kΩ, \(R_C=3.3\) kΩ, \(R_E=1\) kΩ, 2N3904) con cada falla simulada (ganancia sana: 185):</p>
+<div class="tablewrap"><table class="tbl"><tr><th>Falla</th><th>\(V_B\)</th><th>\(V_C\)</th><th>\(V_E\)</th><th>Ganancia</th><th>Síntoma y causa</th></tr>
+<tr><td><b>Sin falla</b></td><td>2.75 V</td><td>5.19 V</td><td>2.07 V</td><td>185</td><td>—</td></tr>
+<tr><td>\(R_1\) abierta</td><td>0 V</td><td>12.0 V</td><td>0 V</td><td>0</td><td>sin polarización: transistor en corte, colector a \(V_{CC}\)</td></tr>
+<tr><td>\(R_2\) abierta</td><td>3.68 V</td><td>3.01 V</td><td>2.97 V</td><td>2.0</td><td>demasiada corriente de base: saturación (\(V_{CE}\approx0\))</td></tr>
+<tr><td>\(R_E\) abierta</td><td>2.79 V</td><td>12.0 V</td><td>2.28 V</td><td>0.2</td><td>sin corriente de emisor: corte, colector a \(V_{CC}\)</td></tr>
+<tr><td>\(R_C\) abierta</td><td>0.92 V</td><td>0.25 V</td><td>0.24 V</td><td>0</td><td>sin camino de colector: \(V_C\) casi 0 V</td></tr>
+<tr><td>\(C_E\) abierto</td><td>2.75 V</td><td>5.20 V</td><td>2.07 V</td><td>2.4</td><td>polarización correcta, pero sin ganancia (realimentación de \(R_E\))</td></tr>
+<tr><td>\(C_E\) en cortocircuito</td><td>0.71 V</td><td>0.04 V</td><td>0 V</td><td>2.4</td><td>\(R_E\) puesta a masa: más corriente: saturación</td></tr>
+<tr><td>\(C_{in}\) o \(C_{out}\) abierto</td><td>2.75 V</td><td>5.19 V</td><td>2.07 V</td><td>0</td><td>polarización normal, pero la señal no pasa</td></tr>
+<tr><td>Transistor C–E en corto</td><td>2.79 V</td><td>2.79 V</td><td>2.79 V</td><td>0</td><td>los tres terminales a la misma tensión</td></tr>
+<tr><td>Transistor abierto</td><td>2.79 V</td><td>12.0 V</td><td>0 V</td><td>0</td><td>colector a \(V_{CC}\), emisor a 0 V</td></tr></table></div>
+<p>Observe que las fallas de condensadores <b>no cambian la polarización</b> (sólo se ven con señal): hay que medir en alterna. Las de resistores y del transistor sí desplazan las tensiones de continua. Un transistor con \(V_{CE}\) casi 0 con \(V_B\) = 0.7 V indica saturación; con \(V_C=V_{CC}\) indica corte.</p>
+<div class="sim" data-sim="c28-diagnostico" data-title="Taller de diagnóstico: elija una falla y encuéntrela midiendo"></div>
+<div class="sim-guide"><ul>
+<li>Pruebe «Sin falla»: \(V_B=2.75\) V, \(V_C=5.2\) V, \(V_E=2.1\) V y ganancia ≈ 183: el estado de referencia.</li>
+<li>Elija una falla (sin mirarla en la tabla anterior), mida con las puntas del multímetro (modo edición, puntos del circuito) y con el osciloscopio, y trate de identificarla antes de comprobar con la tabla. Compare la huella de «\(R_2\) abierta» (saturación) con la de «\(R_E\) abierta» (corte).</li>
+<li>Con «\(C_E\) abierto» la polarización es perfecta y la única señal de falla es la ganancia: 2.4 en vez de 183. Cámbiela por «\(C_{out}\) abierto»: la salida es nula aunque las tensiones sean normales.</li>
+<li>Abra el osciloscopio en la entrada y la salida y siga la señal («<i>signal tracing</i>») de etapa a etapa: la desaparición de la señal localiza la falla.</li>
+</ul></div>
+<div class="box warn"><p><b>Seguridad en el laboratorio.</b> Los cortocircuitos reales de baterías o de fuentes de potencia pueden fundir cables, producir arcos y proyectar metal fundido; los electrolíticos con tensión inversa pueden estallar; las alimentaciones de red pueden causar descargas mortales. Trabaje siempre con las fuentes con limitación de corriente al mínimo útil, con fusibles y con el circuito desconectado cuando haga cambios. Las simulaciones de este capítulo sirven para entender qué pasa, no para intentarlo con componentes reales de potencia.</p></div>
+</section>
+
+<section>
+<h2>Medidas de laboratorio</h2>
+<ul>
+<li><b>Fusible.</b> Con una fuente de 12 V con limitación de corriente a 3 A, un fusible de 1 A, una resistencia de potencia y un reóstato, aumente la corriente y anote el tiempo hasta la fusión para 1.5×, 2× y 3× (rápido y retardado): trace la curva tiempo–corriente.</li>
+<li><b>Protección de polaridad.</b> Con una fuente variable de baja tensión (5 V) y una carga con LED (nunca con electrolíticos grandes ni con integrados valiosos), compare la caída del diodo en serie y la de un MOSFET P.</li>
+<li><b>Inrush.</b> Mida con una resistencia de 0.1 Ω y el osciloscopio el pico de corriente de carga de un condensador de 1000 µF con y sin un resistor de 10 Ω en serie.</li>
+<li><b>Diagnóstico.</b> El profesor introduce una falla en un amplificador de emisor común (retirando o sustituyendo un componente): mida y encuentre la falla en menos de 10 minutos, anotando cada medición.</li>
+</ul>
+</section>
+
+<section>
+<h2>Problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Una batería de plomo-ácido de 12.6 V con resistencia interna de 20 mΩ alimenta un circuito con cables de 30 mΩ. Halle la corriente de cortocircuito franco y la potencia disipada en los cables.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(I_{cc}=12.6/(0.02+0.03)=252\) A.</li>
+<li>\(P_{cable}=252^2\cdot0.03=1905\) W.</li>
+<li>Potencia en la batería: \(252^2\cdot0.02=1270\) W.</li>
+<li><b>Resultado.</b> <span class="ans">252 A y 1.9 kW en los cables: un fusible de decenas de amperios con capacidad de ruptura de miles de amperios.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Un circuito consume 3 A de forma continua desde 12 V. ¿Qué fusible elegiría (valores normalizados: 1, 2, 3.15, 4, 5, 6.3, 8, 10 A)?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>Con la regla del 75 %: \(I_n\ge3/0.75=4\) A.</li>
+<li>Valor normalizado: 4 A (justo) o 5 A.</li>
+<li>Con un arranque con corriente de pico: retardado.</li>
+<li><b>Resultado.</b> <span class="ans">4 o 5 A; tensión nominal ≥ 32 V; retardado si hay arranque de motor o condensadores, rápido si protege semiconductores.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un condensador de 4700 µF se carga desde un rectificador de pico 170 V con un NTC de 5 Ω en frío (más 0.3 Ω de cableado). Calcule la corriente de pico, la energía almacenada y la tensión en el NTC al principio.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(I_{pk}=170/(5+0.3)=32.1\) A.</li>
+<li>\(E=\tfrac12CV^2=0.5\cdot4.7\cdot10^{-3}\cdot170^2=67.9\) J (la mitad, 34 J, se disipa en la resistencia).</li>
+<li>Tensión en el NTC al principio: \(32.1\cdot5=160\) V.</li>
+<li><b>Resultado.</b> <span class="ans">32 A de pico (frente a 566 A con sólo 0.3 Ω); 68 J almacenados; el NTC absorbe 34 J: debe soportar esa energía.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Se protege un carril de 5 V con un crowbar con Zener de 6.2 V, resistor de puerta de 100 Ω y SCR con \(I_{GT}=5\) mA y \(V_{GT}=0.8\) V. ¿A qué tensión de carril dispara? ¿Es adecuada para un microprocesador de 5 V con máximo absoluto de 7 V?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(V_{disp}=V_Z+I_{GT}R_g+V_{GT}=6.2+0.5+0.8=7.5\) V.</li>
+<li>Es mayor que 7 V: el microprocesador puede dañarse antes de que dispare.</li>
+<li>Con un Zener de 5.1 V: 6.4 V: dentro de los límites, pero con tolerancia del Zener (±5 %) y la tensión de operación máxima (5.25 V) deja poco margen.</li>
+<li><b>Resultado.</b> <span class="ans">7.5 V: no protege del máximo de 7 V; hay que usar un Zener de ≈ 5.6 V (disparo de ≈ 6.9 V a 7 V) o de otro tipo (un TVS de 6.4 V).</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>En el amplificador de emisor común se miden \(V_B=0\), \(V_C=12\) V y \(V_E=0\). ¿Qué falla indican estos valores? Proponga la siguiente medición.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(V_B=0\) significa que no hay polarización de base: la rama \(R_1\) está abierta (o \(R_2\) en cortocircuito).</li>
+<li>El transistor en corte: \(I_C=0\Rightarrow V_C=V_{CC}\), \(V_E=0\).</li>
+<li>Siguiente medición: la tensión en el extremo superior de \(R_1\) (debe ser 12 V) y la resistencia de \(R_1\) y \(R_2\) con el circuito apagado.</li>
+<li><b>Resultado.</b> <span class="ans">\(R_1\) abierta (o \(R_2\) en corto); la medición de \(R_1\) con óhmetro lo confirma.</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>Compare la protección de polaridad con un diodo Schottky (0.45 V) y con un MOSFET P (\(R_{DS(on)}=0.1\) Ω) para una carga de 2 A a 5 V: pérdidas, tensión en la carga y rendimiento.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>Diodo: \(P=0.45\cdot2=0.9\) W; \(V_{carga}=4.55\) V; \(\eta=4.55/5=91\) %.</li>
+<li>MOSFET: caída \(0.1\cdot2=0.2\) V; \(P=I^2R=0.4\) W; \(V_{carga}=4.8\) V; \(\eta=96\) %.</li>
+<li>Con un MOSFET de 20 mΩ: 0.04 V y 0.08 W (99 %).</li>
+<li><b>Resultado.</b> <span class="ans">0.9 W y 91 % con el diodo; 0.4 W y 96 % con el MOSFET (0.08 W con uno de 20 mΩ). La ventaja crece con la corriente.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

@@ -1,0 +1,131 @@
+<template class="chapter-src" data-id="jfet" data-num="20" data-title="El transistor de efecto de campo de unión (JFET)" data-part="Parte IV · Transistores" data-short="Estructura y estrangulamiento del canal, parámetros I_DSS y V_P, ecuación de Shockley, curvas, autopolarización y recta de polarización, dispersión de parámetros, amplificador de fuente común, resistencia controlada por tensión, fuente de corriente y aplicaciones de bajo ruido y alta impedancia">
+<p class="lead">El <b>JFET</b> (<i>junction field-effect transistor</i>) es el primer transistor de efecto de campo que se fabricó con éxito (Shockley, 1952; los primeros dispositivos comerciales, en los años sesenta). Como el MOSFET, se controla con una tensión en la puerta y no toma corriente de control en reposo; a diferencia de él, la puerta no está aislada por un óxido sino separada del canal por una <b>unión pn polarizada en inversa</b>, y el canal está ya formado con \(V_{GS}=0\): el transistor conduce y hay que <b>cerrarlo</b> con una tensión inversa. Su resistencia de entrada (10⁹–10¹² Ω), su bajo ruido y su comportamiento como resistor controlado lo mantienen en etapas de entrada de instrumentos, micrófonos de condensador, sensores de alta impedancia, conmutadores analógicos y amplificadores operacionales de precisión.</p>
+
+<section>
+<h2>Estructura y principio de funcionamiento</h2>
+<p>Un JFET de canal n es una barra de silicio tipo n entre dos contactos, la <b>fuente</b> y el <b>drenador</b>, con dos regiones p⁺ difundidas a los lados que se unen eléctricamente y forman la <b>puerta</b>. Entre la puerta y el canal hay uniones pn. Con \(V_{GS}=0\) y una tensión \(V_{DS}\) pequeña, el canal tiene su máxima sección y se comporta como un resistor de valor \(R_{DS0}\). Al aplicar una tensión negativa a la puerta respecto de la fuente, las uniones pn se polarizan en inversa y sus <b>regiones de deplexión</b> (sin portadores) invaden el canal, estrechándolo: aumenta su resistencia. Con una tensión suficientemente negativa, \(V_{GS}=-V_P\) (<b>tensión de estrangulamiento</b>, <i>pinch-off</i>, también llamada \(V_{GS(off)}\)), las dos regiones se tocan y el canal desaparece: \(I_D\approx0\).</p>
+<p>Cuando además aumenta \(V_{DS}\), la tensión en el canal crece hacia el drenador y la zona de deplexión se estrecha más allá, cerca del drenador (la unión está más polarizada en inversa). El canal se estrangula en ese extremo cuando \(V_{DS}=V_{GS}+V_P\) y a partir de ahí, como en el MOSFET, la corriente <b>se satura</b>: deja de depender de \(V_{DS}\). La puerta tiene una corriente inversa de fuga pequeñísima (picoamperios a nanoamperios: \(I_{GSS}\)), que crece con la temperatura (se duplica cada 10 K); pero si \(V_{GS}\) supera +0.5 V la unión se polariza en directa y la puerta conduce como un diodo: <b>hay que evitarlo</b>.</p>
+<p>Los parámetros que dan los fabricantes son \(I_{DSS}\) (la corriente de drenador con \(V_{GS}=0\), en saturación) y \(V_P\) (o \(V_{GS(off)}\), negativa en canal n). Son parámetros <b>muy dispersos</b>: para el 2N5457, \(I_{DSS}=1\)–5 mA y \(V_{GS(off)}=-0.5\) a −6 V entre ejemplares del mismo lote. Esa dispersión condiciona todo el diseño del circuito de polarización.</p>
+<div class="eq key" data-name="Ecuación de Shockley del JFET (saturación) y parámetros">\[I_D=I_{DSS}\left(1-\frac{V_{GS}}{V_P}\right)^2\ \ (V_{GS}\ge-|V_P|)\qquad g_m=\frac{2I_{DSS}}{|V_P|}\left(1-\frac{V_{GS}}{V_P}\right)=g_{m0}\sqrt{\frac{I_D}{I_{DSS}}}\qquad k=\frac{2I_{DSS}}{V_P^2}\]</div>
+<p>Es la misma ley cuadrática del MOSFET con \(V_{th}=-|V_P|\) y \(k=2I_{DSS}/V_P^2\); por eso el simulador usa el mismo modelo, más los dos diodos de unión de la puerta. En la región <b>óhmica</b> (\(V_{DS}\ll V_{GS}+V_P\)) el canal es un resistor controlado por \(V_{GS}\):</p>
+<div class="eq key" data-name="Resistencia drenador–fuente en la región óhmica">\[R_{DS}\approx\frac{1}{k\,(V_{GS}+V_P)}=\frac{R_{DS0}}{1-V_{GS}/V_P}\qquad R_{DS0}=\frac{V_P}{2I_{DSS}}\]</div>
+<p>Con el 2N5457 del modelo (\(I_{DSS}=5\) mA, \(V_P=2.5\) V, \(k=1.6\) mA/V²): \(g_{m0}=2\cdot5\text{ mA}/2.5\text{ V}=4\) mS y \(R_{DS0}=250\) Ω. Con \(V_{GS}=-1\) V: \(I_D=5\text{ mA}\cdot(1-0.4)^2=1.8\) mA (1.94 mA con \(\lambda=0.01\) y \(V_{DS}=8\) V), \(g_m=4\cdot0.6=2.4\) mS y la saturación comienza en \(V_{DS}=V_{GS}+V_P=1.5\) V.</p>
+<div class="sim" data-sim="c20-curvas" data-title="Curvas de salida del JFET: óhmica, saturación y corte"></div>
+<div class="sim-guide"><ul>
+<li>En «Curvas» están las curvas para \(V_{GS}=0,-0.5,-1,-1.5,-2\) V. La de \(V_{GS}=0\) satura en \(I_{DSS}=5\) mA con el codo en \(V_{DS}=2.5\) V; cada curva siguiente es más baja y su codo se acerca al origen (\(V_{DS}=V_{GS}+V_P\)).</li>
+<li>La separación entre curvas disminuye hacia el corte: \(I_D\) vale 5, 3.2, 1.8, 0.8 y 0.2 mA: la característica de transferencia es una parábola.</li>
+<li>Con el control, ponga \(V_{GS}=-2.5\) V: el panel indica «corte». Con \(V_{GS}>0\) la <b>corriente de puerta</b> deja de ser despreciable (la unión se polariza en directa): pase de −1 V (femtoamperios en el modelo ideal) a 0.4 V (≈ 50 nA) y a 0.6 V (≈ 0.1 mA).</li>
+<li>Pruebe el J201 (\(I_{DSS}=1\) mA, \(V_P=0.8\) V) y el BF245A (4 mA, 2 V): los tres siguen la misma ecuación con otros parámetros.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Polarización: dispersión de parámetros y autopolarización</h2>
+<p>La polarización fija con una tensión de puerta \(V_{GG}\) es poco recomendable: como \(I_{DSS}\) y \(V_P\) varían, la misma \(V_{GS}\) da corrientes muy distintas. Con \(V_{GG}=-1.2\) V, un ejemplar «mínimo» (\(I_{DSS}=1.5\) mA, \(V_P=1.5\) V) pasa 0.06 mA, uno «nominal» (3 mA, 2.5 V) 0.81 mA y uno «máximo» (5 mA, 4 V) 2.45 mA: <b>un factor 41</b>. La solución es la misma que en el BJT: realimentación negativa de corriente con una resistencia en la fuente. Es la <b>autopolarización</b>: la puerta se conecta a tierra a través de una resistencia grande \(R_G\) (1 MΩ; no pasa corriente, luego \(V_G=0\)) y la caída \(I_DR_S\) en la fuente hace que \(V_{GS}=-I_DR_S\). Si \(I_D\) tiende a subir, \(V_{GS}\) se hace más negativa y la frena.</p>
+<div class="eq key" data-name="Autopolarización del JFET">\[V_{GS}=-I_DR_S\qquad I_D=I_{DSS}\left(1-\frac{I_DR_S}{|V_P|}\right)^2\;\Rightarrow\;I_D=\frac{(2I_{DSS}a+1)-\sqrt{4I_{DSS}a+1}}{2I_{DSS}a^2}\quad a=\frac{R_S}{|V_P|}\]</div>
+<p>Gráficamente, el punto de operación es la <b>intersección de la curva de transferencia con la recta de polarización</b> \(I_D=-V_{GS}/R_S\) (que pasa por el origen con pendiente \(-1/R_S\)). Con \(R_S=800\) Ω los tres ejemplares anteriores dan 0.65, 1.17 y 1.91 mA: el cociente baja de 41 a <b>2.96</b>. Una resistencia mayor lo reduce algo más (2.83 con 3 kΩ), pero siempre a costa de más caída en \(R_S\) y menos excursión.</p>
+<div class="sim" data-sim="c20-polar" data-title="Polarización de un JFET: dispersión de parámetros, tensión fija frente a autopolarización"></div>
+<div class="sim-guide"><ul>
+<li>Con «Autopolarización» y \(R_S=800\) Ω la recta discontinua corta las tres curvas en puntos cercanos entre sí: 0.65, 1.17 y 1.91 mA, cociente 2.96. El ejemplar de más corriente se autolimita porque \(V_{GS}\) se hace más negativa (−1.5 V frente a −0.5 V).</li>
+<li>Pase a «Tensión fija» con \(V_{GG}=-1.2\) V: los puntos quedan sobre la vertical y el cociente salta a 41 (0.06 a 2.45 mA). Un circuito diseñado así funcionaría sólo con el ejemplar que se usó para dimensionarlo.</li>
+<li>Pruebe \(R_S=400\) Ω (cociente 3.05) y \(R_S=3\) kΩ (2.83). La pendiente de la recta fija la corriente de reposo; para un \(I_D\) determinado se elige \(R_S\approx|V_{GS}|/I_D\).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Amplificador con JFET</h2>
+<p>Las configuraciones son las del MOSFET: <b>fuente común</b> (ganancia de tensión, inversión de fase), <b>drenador común o seguidor de fuente</b> (ganancia &lt; 1, resistencia de salida \(1/g_m\)) y puerta común. La resistencia de entrada es \(R_G\) (1 MΩ en el montaje; más con una resistencia «<i>bootstrap</i>») y el límite real lo da la corriente de fuga de la puerta. Para la ganancia valen las mismas fórmulas, con \(g_m\) calculada en el punto de operación:</p>
+<div class="eq key" data-name="Fuente común con JFET autopolarizado">\[A_v=-g_m\,(R_D\parallel R_L)\ \ (\text{con }C_S)\qquad A_v\approx-\frac{R_D\parallel R_L}{1/g_m+R_S}\ \ (\text{sin }C_S)\qquad R_{in}=R_G\qquad R_{out}\approx R_D\]</div>
+<p>En el montaje de la simulación (\(V_{DD}=15\) V, \(R_D=4.7\) kΩ, \(R_S=470\) Ω, \(R_L=10\) kΩ, \(R_G=1\) MΩ, 2N5457) el punto de reposo es \(I_D=2.03\) mA, \(V_{GS}=-0.94\) V y \(g_m=1.6\text{ mS/V}\cdot(2.5-0.94)\text{ V}=2.5\) mS. La ganancia con \(C_S\) es \(-2.5\text{ mS}\cdot3.2\text{ k}\Omega=-8\) (medida: −7.8) y sin él \(-8/(1+2.5\text{ mS}\cdot470)=-3.6\). Como el JFET es de poca \(g_m\), la ganancia es modesta, pero la resistencia de entrada es mil veces la de un BJT: la fuente no se carga.</p>
+<div class="sim" data-sim="c20-amp" data-title="Amplificador de fuente común con JFET autopolarizado"></div>
+<div class="sim-guide"><ul>
+<li>La salida está en oposición de fase con ganancia 7.8 (17.9 dB). El panel indica \(I_D=2.03\) mA, \(V_{GS}=-0.94\) V y \(g_m=2.5\) mS: el JFET se ha autopolarizado.</li>
+<li>Quite \(C_S\): la ganancia cae a 3.6 (11.2 dB) con una forma de onda más limpia: de nuevo realimentación negativa a cambio de ganancia.</li>
+<li>Cambie el transistor al J201 (\(I_{DSS}=1\) mA): el mismo circuito se polariza con \(I_D=0.54\) mA, \(V_{GS}=-0.24\) V y la ganancia baja a 6.2. Con el BF245A: 1.64 mA y ganancia 8.1. A pesar de que \(I_{DSS}\) varía de 1 a 5 mA, la ganancia sólo cambia entre 6 y 8.</li>
+<li>Suba la amplitud de entrada: con 0.5 V de pico la salida ya es asimétrica (+3.4 V y −3.1 V) y con 1 V se recorta (+5.4 V y −3.8 V) porque el JFET llega al corte y a la zona de puerta directa. El rango lineal es de decenas de milivoltios a centenares de milivoltios (en el BJT con \(C_E\), 5 mV).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El JFET como resistencia controlada por tensión</h2>
+<p>En la región óhmica, con \(V_{DS}\) pequeño, el JFET es un resistor simétrico (conduce igual en ambos sentidos) cuyo valor lo fija la tensión de la puerta, de \(R_{DS0}\) (250 Ω) a infinito al llegar a \(V_P\). Con un resistor fijo \(R_1\) forma un <b>divisor controlado por tensión</b>: \(v_{sal}/v_{ent}=R_{DS}/(R_1+R_{DS})\). Es la base de los atenuadores electrónicos, del <b>control automático de ganancia</b> (se rectifica la salida y se lleva la tensión a la puerta), de los limitadores y de la estabilización de la amplitud en osciladores de puente de Wien. Con \(R_1=10\) kΩ y 2N5457:</p>
+<div class="tablewrap"><table class="tbl"><tr><th>\(V_{GS}\) (V)</th><th>\(R_{DS}\)</th><th>\(v_{sal}/v_{ent}\)</th><th>Atenuación</th></tr>
+<tr><td>0</td><td>250 Ω</td><td>0.0244</td><td>−32.3 dB</td></tr>
+<tr><td>−1.0</td><td>417 Ω</td><td>0.040</td><td>−27.9 dB</td></tr>
+<tr><td>−1.5</td><td>625 Ω</td><td>0.059</td><td>−24.6 dB</td></tr>
+<tr><td>−2.0</td><td>1.25 kΩ</td><td>0.111</td><td>−19.1 dB</td></tr>
+<tr><td>−2.4</td><td>6.25 kΩ</td><td>0.385</td><td>−8.3 dB</td></tr>
+<tr><td>−2.5</td><td>∞</td><td>1</td><td>0 dB (corte)</td></tr></table></div>
+<p>La linealidad del resistor sólo se mantiene si la señal en el drenador es mucho menor que \(V_{GS}+V_P\): con \(V_{ov}\) pequeño, un \(V_{DS}\) comparable lleva al transistor a saturación en los picos. Se mejora añadiendo a la puerta la mitad de la tensión del drenador, \(v_{GD}/2+v_{GS}/2\) (red de dos resistores iguales), que linealiza la característica.</p>
+<div class="sim" data-sim="c20-vcr" data-title="JFET como resistencia controlada: atenuador gobernado por V_GS"></div>
+<div class="sim-guide"><ul>
+<li>Con \(V_{GS}=-1.5\) V: \(R_{DS}=625\) Ω y la atenuación es 0.059 (−24.6 dB): 50 mV de pico a la entrada dan 3 mV a la salida. Compare el valor medido con el teórico que da el panel.</li>
+<li>Mueva \(V_{GS}\) hacia −2.5 V: \(R_{DS}\) crece sin límite y la atenuación disminuye hasta 0 dB. Con \(V_{GS}=-2.4\) V: \(R_{DS}=6.25\) kΩ, atenuación −8.3 dB.</li>
+<li>Con \(V_{GS}=-2.2\) V (\(V_{ov}=0.3\) V) aumente la amplitud de entrada: con 0.2 V de pico los semiciclos de salida ya difieren 10 % (+36 mV, −33 mV) y con 0.5 V el 28 % (+100 mV, −78 mV): la resistencia deja de ser lineal.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Otras aplicaciones y comparación con el MOSFET y el BJT</h2>
+<ul>
+<li><b>Fuente de corriente de dos terminales.</b> Un JFET con la puerta unida a la fuente (\(V_{GS}=0\)) es una fuente de corriente \(I_{DSS}\) para \(V_{DS}>V_P\): son los <i>diodos limitadores de corriente</i> (1N5283…). Con \(R_S\) conectada entre fuente y puerta, la corriente baja a \(I_D\) fijada por \(R_S\) (autopolarización).</li>
+<li><b>Interruptor analógico.</b> Con \(V_{GS}=0\) conduce con \(R_{DS0}\) (decenas de Ω) y con \(V_{GS}<-V_P\) queda abierto. Al ser simétrico se usa para conmutar señales (muestreo y retención, multiplexores). El MOSFET lo ha desplazado en circuitos integrados, pero en el rango de audio el JFET sigue usándose por su bajo ruido.</li>
+<li><b>Amplificador de entrada de bajo ruido.</b> La densidad de ruido de tensión de un JFET es de 1–5 nV/√Hz y la de corriente de fentoamperios por raíz de hertz: es la mejor opción para fuentes de impedancia alta (micrófonos de condensador, fotodiodos, electrómetros). Los operacionales «JFET input» (TL071, OPA134) los usan en la entrada.</li>
+<li><b>Seguidor de fuente.</b> Con \(R_{in}\) de GΩ y \(R_{out}=1/g_m\) (decenas a cientos de Ω) es el amplificador de entrada de osciloscopios y sondas activas.</li>
+</ul>
+<div class="tablewrap"><table class="tbl"><tr><th>Propiedad</th><th>BJT</th><th>JFET</th><th>MOSFET</th></tr>
+<tr><td>Resistencia de entrada</td><td>kΩ</td><td>10⁹–10¹² Ω (unión inversa)</td><td>10¹²–10¹⁵ Ω (óxido)</td></tr>
+<tr><td>Estado con control nulo</td><td>apagado</td><td><b>encendido</b> (\(I_{DSS}\))</td><td>apagado (enriquecimiento)</td></tr>
+<tr><td>Polaridad de control</td><td>\(V_{BE}>0\)</td><td>\(V_{GS}\le0\) (canal n)</td><td>\(V_{GS}>V_{th}\) (NMOS)</td></tr>
+<tr><td>\(g_m\) a \(I_D=2\) mA</td><td>77 mS</td><td>2–5 mS</td><td>16 mS (con \(V_{ov}=0.25\) V)</td></tr>
+<tr><td>Ruido</td><td>medio</td><td><b>muy bajo</b></td><td>mayor a baja frecuencia (1/f)</td></tr>
+<tr><td>Fragilidad</td><td>robusto</td><td>robusto</td><td>sensible a ESD</td></tr>
+<tr><td>Dispersión de parámetros</td><td>β: 2:1</td><td>\(I_{DSS}\) 5:1, \(V_P\) 10:1</td><td>\(V_{th}\) ±1 V</td></tr></table></div>
+</section>
+
+<section>
+<h2>Medidas de laboratorio</h2>
+<ul>
+<li><b>\(I_{DSS}\) y \(V_P\).</b> Con la puerta unida a la fuente y 10 V en \(V_{DS}\) (resistor de 100 Ω para medir la corriente) se mide \(I_{DSS}\). Para \(V_P\) se aplica una tensión negativa a la puerta (pila con potenciómetro) hasta que la corriente baja a ≈ 1 % de \(I_{DSS}\); o se grafica \(\sqrt{I_D}\) frente a \(V_{GS}\) y se extrapola a cero. Mida tres ejemplares del mismo tipo (2N5457 o BF245A): verá la dispersión.</li>
+<li><b>Autopolarización.</b> Monte el amplificador (\(R_D=4.7\) kΩ, \(R_S=470\) Ω, \(R_G=1\) MΩ, 15 V) con tres ejemplares: compare \(I_D\) (a través de \(V_{RD}/R_D\)) y la ganancia. Es un ejemplo de por qué la polarización se diseña para el peor caso.</li>
+<li><b>Resistencia controlada.</b> Forme el divisor de la simulación con \(R_1=10\) kΩ y mida la atenuación de una señal de 50 mV a 1 kHz para varios \(V_{GS}\) entre 0 y \(-V_P\); compare con la tabla.</li>
+<li><b>Resistencia de entrada.</b> Con \(R_G=1\) MΩ la entrada es \(R_G\) (el osciloscopio de 1 MΩ ya la carga): use una sonda ×10 o un seguidor para mediciones.</li>
+</ul>
+</section>
+
+<section>
+<h2>Problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un JFET tiene \(I_{DSS}=8\) mA y \(V_P=-4\) V. Calcule \(I_D\) y \(g_m\) para \(V_{GS}=-1\) V y \(g_{m0}\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(g_{m0}=2I_{DSS}/|V_P|=16\text{ mA}/4\text{ V}=4\) mS.</li>
+<li>\(I_D=8\text{ mA}\,(1-1/4)^2=8\cdot0.5625=4.5\) mA.</li>
+<li>\(g_m=g_{m0}(1-1/4)=3\) mS.</li>
+<li><b>Resultado.</b> <span class="ans">\(I_D=4.5\) mA, \(g_m=3\) mS y \(g_{m0}=4\) mS.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Para el mismo JFET, ¿qué \(V_{GS}\) da \(I_D=2\) mA? ¿Qué \(R_S\) autopolariza en ese punto?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(\sqrt{I_D/I_{DSS}}=\sqrt{0.25}=0.5=1-V_{GS}/V_P\Rightarrow V_{GS}=0.5V_P=-2\) V.</li>
+<li>\(R_S=|V_{GS}|/I_D=2\text{ V}/2\text{ mA}=1\) kΩ.</li>
+<li><b>Resultado.</b> <span class="ans">\(V_{GS}=-2\) V y \(R_S=1\) kΩ.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un JFET con \(I_{DSS}=5\) mA y \(V_P=-2.5\) V se autopolariza con \(R_S=470\) Ω. Halle \(I_D\) y \(V_{GS}\) resolviendo la ecuación cuadrática.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(a=R_S/|V_P|=470/2.5=188\) (en Ω/V); \(I_{DSS}a=5\text{ mA}\cdot188=0.94\).</li>
+<li>\(I_D=\dfrac{(2\cdot0.94+1)-\sqrt{4\cdot0.94+1}}{2\cdot0.005\cdot188^2}=\dfrac{2.88-2.18}{353.4}=1.98\) mA.</li>
+<li>\(V_{GS}=-I_DR_S=-0.93\) V; comprobación: \(5(1-0.93/2.5)^2=5\cdot0.395=1.97\) mA ✓.</li>
+<li><b>Resultado.</b> <span class="ans">\(I_D=1.98\) mA y \(V_{GS}=-0.93\) V (el simulador mide 2.03 mA y −0.94 V; la diferencia es \(\lambda\)).</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Con los datos del problema 3, \(V_{DD}=15\) V, \(R_D=4.7\) kΩ y \(R_L=10\) kΩ, calcule la ganancia con y sin \(C_S\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(g_m=g_{m0}(1-V_{GS}/V_P)=4\text{ mS}\cdot(1-0.93/2.5)=2.5\) mS.</li>
+<li>\(R_D\parallel R_L=3.2\) kΩ; con \(C_S\): \(A_v=-2.5\text{ mS}\cdot3.2\text{ k}=-8.0\).</li>
+<li>Sin \(C_S\): \(A_v=-3.2\text{ k}/(400+470)=-3.7\).</li>
+<li><b>Resultado.</b> <span class="ans">−8 con \(C_S\) y −3.7 sin él.</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>Un atenuador JFET con \(R_1=10\) kΩ debe cubrir de −6 dB a −26 dB con un JFET de \(I_{DSS}=5\) mA, \(V_P=-2.5\) V. Halle las tensiones de puerta extremas.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>−6 dB: razón 0.501 = \(R_{DS}/(R_1+R_{DS})\Rightarrow R_{DS}=0.501\cdot10\text{ k}/(1-0.501)=10.0\) kΩ.</li>
+<li>−26 dB: razón 0.0501 ⇒ \(R_{DS}=0.0501\cdot10\text{ k}/0.9499=527\) Ω.</li>
+<li>De \(R_{DS}=R_{DS0}/(1-V_{GS}/V_P)\) se despeja \(V_{GS}=V_P\,(1-R_{DS0}/R_{DS})=-2.5\,(1-250/R_{DS})\) (con \(R_{DS0}=250\) Ω).</li>
+<li>Para 527 Ω: \(V_{GS}=-2.5\cdot(1-0.474)=-1.31\) V; para 10 kΩ: \(V_{GS}=-2.5\cdot(1-0.025)=-2.44\) V.</li>
+<li><b>Resultado.</b> <span class="ans">\(V_{GS}\) entre −1.31 V (−26 dB) y −2.44 V (−6 dB).</span></li></ol></details></li>
+</ol>
+</section>
+</template>

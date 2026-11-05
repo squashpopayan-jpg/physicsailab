@@ -1,0 +1,124 @@
+<template class="chapter-src" data-id="tiristores" data-num="26" data-title="Tiristores, triac, diac y optoacopladores" data-part="Parte V · Circuitos analógicos y control" data-short="Estructura pnpn y modelo de dos transistores del SCR, disparo, enclavamiento y conmutación, control de fase de media onda, triac y diac en reguladores de luz, redes de protección (snubber), optoacopladores, relación de transferencia CTR y aislamiento galvánico">
+<p class="lead">Los <b>tiristores</b> son interruptores de potencia de estado sólido que, una vez disparados con un pulso muy pequeño, <b>permanecen conduciendo</b> hasta que la corriente cae por debajo de un valor mínimo: se enclavan. Son los dispositivos que controlan la potencia de la red alterna —reguladores de luz, controles de velocidad de herramientas, hornos, locomotoras, líneas de transmisión en corriente continua de alta tensión— porque manejan cientos de amperios y miles de voltios con una excitación de milivatios. Este capítulo estudia el rectificador controlado de silicio (SCR), el triac y el diac, el control de fase y, para cerrar con el aislamiento entre un circuito de control y uno de potencia, los optoacopladores.</p>
+
+<section>
+<h2>El rectificador controlado de silicio (SCR)</h2>
+<p>El SCR (<i>silicon controlled rectifier</i>) es un dispositivo de cuatro capas pnpn con tres terminales: <b>ánodo</b> (A), <b>cátodo</b> (K) y <b>puerta</b> (G). Se puede ver como dos transistores acoplados: un pnp (\(Q_1\)) y un npn (\(Q_2\)) con el colector de uno unido a la base del otro. Una corriente de puerta \(I_G\) es la corriente de base de \(Q_2\); su corriente de colector alimenta la base de \(Q_1\), cuyo colector devuelve corriente a la base de \(Q_2\): una <b>realimentación positiva regenerativa</b>. Si la suma de las ganancias en base común supera la unidad, \(\alpha_1+\alpha_2\ge1\), el proceso se autoalimenta y ambos transistores se saturan: el SCR conduce con una caída de ≈ 1 V y sin necesidad de corriente de puerta.</p>
+<ul>
+<li><b>Bloqueo directo</b>: con \(V_{AK}>0\) y sin puerta, el SCR bloquea hasta la tensión de ruptura directa \(V_{BO}\) (cientos de voltios). Si se supera, se dispara por avalancha (no se debe).</li>
+<li><b>Disparo</b>: un pulso de corriente de puerta \(I_G>I_{GT}\) (de 0.2 mA en los de puerta sensible a 50 mA en los de potencia) durante unos microsegundos, con \(V_{AK}>0\), lo enciende. El pulso puede ser muy breve y de poca energía.</li>
+<li><b>Enclavamiento (<i>latching</i>)</b>: tras el disparo, si la corriente de ánodo supera la <b>corriente de enclavamiento</b> \(I_L\) (algo mayor que \(I_H\)) mientras dura el pulso de puerta, el SCR sigue conduciendo aunque se quite la puerta.</li>
+<li><b>Conducción</b>: caída directa de 0.9–1.5 V a corriente nominal. Se mantiene mientras \(I_A>I_H\) (corriente de mantenimiento, 5–50 mA).</li>
+<li><b>Bloqueo (conmutación)</b>: la puerta pierde el control; sólo se apaga reduciendo la corriente de ánodo por debajo de \(I_H\) (interrumpiendo el circuito, o invirtiendo la tensión) y esperando el tiempo de recuperación \(t_q\) (decenas de µs). En corriente alterna ocurre solo en cada paso por cero (<i>conmutación natural</i>); en continua se necesita un circuito de apagado (condensador, interruptor en paralelo).</li>
+<li><b>Límites</b>: \(dv/dt\) (una subida muy rápida de la tensión ánodo–cátodo dispara el SCR por la corriente capacitiva de las uniones: se limita con un <i>snubber</i> RC en paralelo) y \(di/dt\) (si la corriente sube demasiado rápido, se concentra en una zona de la pastilla y la destruye).</li>
+</ul>
+<div class="sim" data-sim="c26-scr" data-title="SCR en corriente continua: disparo con la puerta, enclavamiento y bloqueo"></div>
+<div class="sim-guide"><ul>
+<li>Con la puerta sin corriente y la alimentación de 12 V conectada, el SCR está <b>bloqueado</b>: la corriente en la carga es de picoamperios y \(V_{AK}=12\) V.</li>
+<li>Pulse «Aplicar 5 V a la puerta» (13 mA con 330 Ω): el SCR se dispara, la carga recibe 11.9 V (corriente 0.46 A, la caída del SCR es 0.88 V) y el estado es «conduce».</li>
+<li><b>Quite la corriente de puerta</b>: el SCR <b>sigue conduciendo</b>: se ha enclavado. La puerta sólo sirve para disparar; no puede apagarlo.</li>
+<li>Pulse «Interrumpida» (abre la alimentación): la corriente cae a cero, por debajo de \(I_H=20\) mA, y el SCR se bloquea. Aunque se restablezca la alimentación, queda apagado hasta un nuevo pulso de puerta.</li>
+<li>Suba la resistencia de carga a 2 kΩ (6 mA, menos que \(I_H\)): el pulso de puerta enciende el SCR sólo mientras dura y se apaga al quitarlo (la corriente de ánodo no basta para mantenerlo). Un SCR con una carga demasiado pequeña no se enclava.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Control de fase con SCR</h2>
+<p>En corriente alterna, un SCR conduce desde el instante del disparo hasta el final del semiciclo positivo (donde la corriente se anula y se bloquea). Retrasar el disparo un <b>ángulo de disparo</b> \(\alpha\) (0° a 180°) permite regular la parte del semiciclo en que la carga recibe energía: es el <b>control de fase</b>. Para una carga resistiva y un SCR (media onda), la tensión media y la eficaz en la carga son:</p>
+<div class="eq key" data-name="Control de fase de media onda con SCR">\[\bar V=\frac{V_{pk}}{2\pi}\,(1+\cos\alpha)\qquad V_{rms}=\frac{V_{pk}}{2}\sqrt{1-\frac{\alpha}{\pi}+\frac{\sin2\alpha}{2\pi}}\qquad P=\frac{V_{rms}^2}{R}\]</div>
+<p>Con \(\alpha=0\) se tiene la media onda completa (\(\bar V=V_{pk}/\pi\), \(V_{rms}=V_{pk}/2\)); con \(\alpha=180°\), cero. El circuito más simple de disparo es una red RC: el condensador se carga a través de una resistencia variable \(R_v\) desde la tensión de red; cuando su tensión llega al umbral (aquí un Zener de 6.2 V más la unión de puerta), una corriente pasa a la puerta y dispara el SCR. Una resistencia grande retrasa el instante en que se alcanza el umbral. Un diodo en antiparalelo con el condensador evita su carga negativa en el semiciclo siguiente.</p>
+<div class="sim" data-sim="c26-fase" data-title="Control de fase de media onda con SCR: ángulo de disparo y potencia en la carga"></div>
+<div class="sim-guide"><ul>
+<li>Con una red de 34 V de pico (24 V eficaces) y una carga de 20 Ω, el osciloscopio muestra la red (amarillo), la tensión en la carga (azul) y la tensión del condensador (naranja). La carga sólo recibe energía en el semiciclo positivo y <b>después</b> de cierto retardo respecto del cruce por cero.</li>
+<li>Con \(R_v=1\) kΩ el disparo es casi inmediato (\(\alpha\approx33°\)); la tensión eficaz en la carga es 16.0 V (máximo teórico, \(V_{pk}/2=17\) V). Con 30 kΩ, \(\alpha\approx56°\) y 15.1 V; con 100 kΩ, \(\alpha\approx95°\) y 11.1 V: la potencia baja de 12.7 W a 6.1 W. Con \(R_v=200\) kΩ la corriente en la red ya no alcanza el umbral de disparo y el SCR no conduce nunca: control interrumpido.</li>
+<li>El panel calcula \(\alpha\) a partir del valor medio medido, \(\cos\alpha=2\pi\bar V/V_{pk}-1\), y compara la potencia con la de plena conducción de media onda (\(V_{pk}^2/4R\)).</li>
+<li>El control de media onda sólo puede regular entre 50 % y 0 % de la potencia de plena onda: no usa el semiciclo negativo. Para la onda completa hace falta un triac o dos SCR en antiparalelo.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Triac y diac: regulación de onda completa</h2>
+<p>El <b>triac</b> equivale a dos SCR en antiparalelo con una puerta común: conduce en ambos sentidos y puede dispararse con una corriente de puerta positiva o negativa en cualquiera de las dos polaridades de la tensión entre MT2 y MT1. Hay cuatro cuadrantes de disparo (I+, I−, III+, III−): en los dos de polaridad coincidente (I+ y III−) la sensibilidad es máxima, y en los demás menor. Permite controlar la potencia de una carga de alterna en <b>onda completa</b> con un solo dispositivo:</p>
+<div class="eq key" data-name="Control de fase de onda completa con triac">\[V_{rms}=\frac{V_{pk}}{\sqrt2}\sqrt{\frac{1}{\pi}\left(\pi-\alpha+\frac{\sin2\alpha}{2}\right)}\qquad P=\frac{V_{rms}^2}{R}\]</div>
+<p>El <b>diac</b> es un dispositivo bidireccional sin puerta que permanece bloqueado hasta que la tensión entre sus terminales supera \(V_{BO}\approx\pm32\) V y entonces conmuta a baja impedancia, entregando un pulso brusco de corriente al soltar la energía del condensador. Se usa como elemento de disparo del triac: el pulso es nítido y reproducible, lo que da un disparo estable y simétrico. El circuito típico de un <b>regulador de luz</b> (<i>dimmer</i>) es una red RC con potenciómetro, un diac y un triac en serie con la lámpara. Se completa con un filtro LC (reactor de choque) contra la radiointerferencia que genera el flanco brusco de la corriente, y con un <i>snubber</i> RC (≈ 100 Ω + 100 nF) en paralelo con el triac para cargas inductivas, que impide que la tensión suba demasiado rápido al apagarse (\(dv/dt\) conmutado).</p>
+<div class="sim" data-sim="c26-triac" data-title="Regulador de luz (dimmer): triac y diac, ángulo de disparo y potencia en la lámpara"></div>
+<div class="sim-guide"><ul>
+<li>Lámpara de 100 W (144 Ω a 120 V eficaces; 170 V de pico a 60 Hz). Con \(R_v=5\) kΩ el diac dispara casi enseguida: 118 V eficaces (97 W). Con 20 kΩ, 115.7 V (93 W, \(\alpha\approx41°\)); con 40 kΩ, 111 V (86 W, \(\alpha\approx53°\)); con 100 kΩ, 91.7 V (58 W, \(\alpha\approx82°\)).</li>
+<li>Con 200 kΩ la lámpara recibe sólo 29 V (5.8 W): el triac se dispara muy tarde, hacia 142°, y la lámpara apenas luce. Con 500 kΩ el condensador no llega a 32 V: <b>no hay disparo</b> y la lámpara se apaga. La relación entre la posición del potenciómetro y la potencia es muy alineal (por eso los reguladores usan potenciómetros logarítmicos).</li>
+<li>Observe la tensión del condensador (naranja): sube con la red hasta llegar a 32 V, valor al que el diac conduce y descarga bruscamente el condensador sobre la puerta, y en ese mismo instante la tensión de la lámpara salta de cero a la tensión de red, simétricamente en ambos semiciclos.</li>
+<li>Cambie \(C\) a 220 nF: el mismo \(R_v\) da un retraso mayor y la lámpara baja de brillo. El producto \(R_vC\) fija el ángulo.</li>
+</ul></div>
+<div class="box warn"><p><b>Peligro de red.</b> Un circuito con triac conectado a la red eléctrica tiene todo el montaje a la tensión de línea (120 o 230 V): no lo toque y no lo monte sin transformador de aislamiento. Las simulaciones de este capítulo ayudan a entender el funcionamiento; las prácticas de laboratorio con red se hacen sólo con un transformador de aislamiento y las precauciones del profesor.</p></div>
+</section>
+
+<section>
+<h2>Otros dispositivos de la familia</h2>
+<ul>
+<li><b>GTO (<i>gate turn-off thyristor</i>)</b>: un tiristor que se puede <b>apagar</b> con una corriente de puerta negativa grande (¼ de la corriente de ánodo); se usa en tracción ferroviaria y variadores de alta potencia, hoy sustituido por el IGBT.</li>
+<li><b>SCS, PUT y UJT</b>: tiristores de baja potencia con puertas de ánodo; el UJT/PUT se usa como oscilador de relajación para generar pulsos de disparo de SCR.</li>
+<li><b>IGBT</b> (<i>insulated gate bipolar transistor</i>): combina la puerta aislada de un MOSFET con la baja caída de saturación de un bipolar; domina la conmutación de media y alta potencia (inversores, variadores, vehículos eléctricos).</li>
+<li><b>MOV y diodos TVS</b>: protectores contra sobretensiones de la red que acompañan siempre a los circuitos de tiristor.</li>
+</ul>
+</section>
+
+<section>
+<h2>Optoacopladores</h2>
+<p>Un <b>optoacoplador</b> (optoaislador) une un LED infrarrojo y un fotodetector (fototransistor, fototiristor, fototriac o circuito lógico) en el mismo encapsulado, separados por un material transparente aislante. La señal pasa <b>por la luz</b>: no hay conexión eléctrica entre entrada y salida, de modo que los dos circuitos están aislados galvánicamente (de 2.5 a 7.5 kV de tensión de aislamiento) y pueden tener masas distintas. Se usan para proteger microcontroladores de cargas de red o de motores, eliminar bucles de masa, transmitir señales entre circuitos a potenciales muy distintos (sensor de corriente en el lado de alta tensión) y activar triacs sin conexión eléctrica (MOC3021: optotriac).</p>
+<p>El parámetro característico es la <b>relación de transferencia de corriente</b> (CTR): \(\mathrm{CTR}=I_C/I_F\), de 20 % a 600 % (4N25: 20–50 %; 4N35: 100 %; los de alta CTR, 300 %) según el tipo; depende de \(I_F\), de la temperatura y disminuye con el uso (envejecimiento del LED, ≈ 10–30 % a 10 años). La velocidad del fototransistor es modesta (tiempos de subida de 3–20 µs, hasta 100 kHz); para más velocidad se emplea un fotodiodo con amplificador integrado (6N137: 10 Mbit/s).</p>
+<div class="eq key" data-name="Diseño de la entrada y de la salida de un optoacoplador">\[R_{in}=\frac{V_{in}-V_F}{I_F}\quad(V_F\approx1.2\text{ V})\qquad I_C=\mathrm{CTR}\cdot I_F\qquad\text{saturación: }\ \mathrm{CTR}\cdot I_F\ge\frac{V_{CC}-V_{CE,sat}}{R_p}\ \cdot\ \text{margen}\ (\ge2)\]</div>
+<p>Para usarlo como interruptor se debe llevar el fototransistor a saturación con margen, contando con el envejecimiento y la dispersión (se usa la CTR mínima de la hoja de datos, no la típica). Con 5 V y \(I_F=11.4\) mA (\(R_{in}=330\) Ω), un CTR de 50 % da 5.7 mA; con una carga de \(R_p=1\) kΩ (5 mA) apenas satura (\(V_{CE}\approx0.3\) V).</p>
+<div class="sim" data-sim="c26-opto" data-title="Optoacoplador con fototransistor: CTR, saturación y velocidad"></div>
+<div class="sim-guide"><ul>
+<li>Con \(R_{in}=330\) Ω y una señal de 5 V, \(I_F=11.4\) mA; con CTR = 0.5 la corriente de colector deseada es 5.7 mA frente a los 5 mA que permite \(R_p=1\) kΩ: la salida baja a 0.31 V (saturación con poco margen). La salida está <b>invertida</b> respecto de la entrada (activa baja).</li>
+<li>Suba el CTR a 1: la salida baja a 0.084 V (saturación mejor). Con CTR = 0.1 la corriente de colector sólo es de 1.1 mA y la salida alcanza apenas 4.0 V: el fototransistor <b>no satura</b> (zona activa) y no sirve como interruptor.</li>
+<li>Suba \(R_{in}\) a 3.3 kΩ (\(I_F=1.1\) mA, \(I_C=0.57\) mA con CTR 0.5): la salida baja sólo a 4.5 V. Con \(R_p=10\) kΩ (0.5 mA) vuelve a saturar (15 mV). La saturación depende de la relación entre lo que da el fototransistor y lo que pide la resistencia de colector.</li>
+<li>La salida comparte los 5 V de \(V_{CC}\) en el simulador, pero en un circuito real las dos tierras serían distintas: ahí está el aislamiento.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Medidas de laboratorio</h2>
+<ul>
+<li><b>SCR en continua.</b> Con un SCR (2N5064 o BT169, puerta sensible), una fuente de 12 V, una lámpara de 12 V/5 W y un pulsador a la puerta con 330 Ω: mida la corriente de puerta de disparo, compruebe el enclavamiento y mida la corriente de mantenimiento reduciendo la corriente con un reóstato.</li>
+<li><b>Control de fase de media onda.</b> Con un transformador de 24 V de aislamiento y el circuito RC con Zener de la simulación, observe en el osciloscopio la tensión en la carga para varias posiciones del potenciómetro y mida el ángulo de disparo. <b>Sólo con transformador de aislamiento.</b></li>
+<li><b>Triac y diac.</b> Con el mismo transformador de 24 V (y el diac con \(V_{BO}\) de 32 V reemplazado por una combinación de dos Zener de 12 V, o bajando la tensión) compruebe el funcionamiento simétrico; con red, sólo con transformador de aislamiento 1:1 y bajo la supervisión del profesor.</li>
+<li><b>Optoacoplador.</b> Monte el circuito de la simulación con un 4N25 y mida la corriente del LED, la corriente de colector y la tensión de salida; calcule el CTR \(I_C/I_F\) para varios \(I_F\) (1, 5, 10 y 20 mA) y trace la curva: el CTR no es constante.</li>
+</ul>
+</section>
+
+<section>
+<h2>Problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un SCR controla una carga de 20 Ω desde una red de 120 V eficaces (media onda) con un ángulo de disparo de 90°. Calcule la tensión media y la eficaz en la carga y la potencia.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(V_{pk}=120\sqrt2=169.7\) V; \(\alpha=90°\Rightarrow\cos\alpha=0\).</li>
+<li>\(\bar V=V_{pk}/(2\pi)=27.0\) V.</li>
+<li>\(V_{rms}=\dfrac{V_{pk}}{2}\sqrt{1-\dfrac12+0}=84.85\cdot0.707=60.0\) V.</li>
+<li>\(P=60^2/20=180\) W.</li>
+<li><b>Resultado.</b> <span class="ans">27 V medios, 60 V eficaces y 180 W (la mitad de la potencia de media onda completa, 360 W).</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>¿A qué ángulo hay que disparar un triac (onda completa) para que una lámpara de 144 Ω/100 W a 120 V eficaces reciba 50 W?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(P/P_{max}=0.5\Rightarrow\dfrac{1}{\pi}\left(\pi-\alpha+\dfrac{\sin2\alpha}{2}\right)=0.5\).</li>
+<li>Por simetría, \(\alpha=90°\) (\(\pi-\pi/2+0=\pi/2\); dividido por \(\pi\): 0.5).</li>
+<li><b>Resultado.</b> <span class="ans">90° (la lámpara recibe 50 W; la tensión eficaz es 84.9 V).</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>El circuito de disparo del triac tiene un condensador de 100 nF y un diac de \(V_{BO}=32\) V. Con una red de 170 V de pico a 60 Hz, ¿puede dispararse con \(R_v=500\) kΩ? Calcule la tensión de pico del condensador (circuito RC sin diac).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(\omega=2\pi60=377\) rad/s; \(X_C=1/(\omega C)=26.5\) kΩ.</li>
+<li>\(|Z|=\sqrt{R^2+X_C^2}=500.7\) kΩ.</li>
+<li>\(V_{C,pk}=170\cdot26.5/500.7=9.0\) V.</li>
+<li><b>Resultado.</b> <span class="ans">9 V de pico &lt; 32 V: el diac no se dispara (la lámpara se apaga). La simulación lo confirma con 500 kΩ.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un optoacoplador con CTR mínimo de 50 % maneja una carga de colector de 3.3 kΩ a 5 V. Diseñe \(R_{in}\) para una excitación de 5 V con margen de saturación 2 (\(V_F=1.2\) V; \(V_{CE,sat}=0.3\) V).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(I_{C,sat}=(5-0.3)/3.3\text{ k}=1.42\) mA.</li>
+<li>Con margen 2: \(\mathrm{CTR}\cdot I_F\ge2.85\) mA ⇒ \(I_F\ge5.7\) mA.</li>
+<li>\(R_{in}=(5-1.2)/5.7\text{ mA}=667\) Ω → 620 Ω (\(I_F=6.1\) mA).</li>
+<li><b>Resultado.</b> <span class="ans">\(R_{in}\approx620\) Ω (la hoja de datos limita \(I_F\) a 60 mA: sobra).</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>Un SCR con \(I_H=20\) mA debe mantenerse conduciendo con una carga alimentada desde 12 V. ¿Cuál es la resistencia de carga máxima para que se enclave? ¿Y qué pasa si la carga es una lámpara fría?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>Corriente en el SCR: \(I=(12-0.9)/R\ge I_H=20\) mA ⇒ \(R\le555\) Ω.</li>
+<li>Una lámpara incandescente fría tiene una resistencia 10–15 veces menor que en caliente, de modo que la corriente de arranque es grande: el SCR se enclava sin problema; con la lámpara caliente, la corriente es menor, pero superior a \(I_H\) si la lámpara es de potencia suficiente (12 V/5 W: 0.42 A).</li>
+<li>Con cargas pequeñas (un relé de 12 V/400 Ω = 30 mA) hay poca holgura; con LED (10 mA) <b>no se enclava</b>: hay que añadir un resistor de «carga ficticia» en paralelo.</li>
+<li><b>Resultado.</b> <span class="ans">\(R_{max}\approx555\) Ω; para corrientes menores se añade un resistor en paralelo que garantice los 20 mA.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

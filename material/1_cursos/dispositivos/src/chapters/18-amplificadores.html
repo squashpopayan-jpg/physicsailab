@@ -1,0 +1,176 @@
+<template class="chapter-src" data-id="amplificadores" data-num="18" data-title="Amplificadores con transistores bipolares" data-part="Parte IV · Transistores" data-short="Modelo de pequeña señal (g_m, r_π, r_o), emisor común con y sin desacoplo, seguidor de emisor, base común, impedancias de entrada y salida, frecuencias de corte inferior y superior, efecto Miller, distorsión armónica, realimentación de emisor y par diferencial con razón de rechazo en modo común">
+<p class="lead">Amplificar es tomar una señal débil y entregar una copia fiel con más amplitud (o más corriente) a costa de la energía de la fuente de alimentación. El BJT polarizado en su zona activa (capítulo 17) es el bloque básico: la señal se <b>superpone</b> al punto de operación y, si es lo bastante pequeña, el transistor responde de forma <b>lineal</b>. Este capítulo presenta el modelo de pequeña señal, analiza las tres configuraciones fundamentales (emisor común, colector común y base común), estudia su <b>ancho de banda</b> y su <b>distorsión</b>, y termina con el amplificador diferencial, la célula de entrada de casi todos los amplificadores operacionales.</p>
+
+<section>
+<h2>Análisis en continua y en alterna: pequeña señal</h2>
+<p>Un amplificador tiene dos tipos de magnitudes: las <b>continuas</b> (polarización, que fija el punto Q) y las <b>variables</b> (señal). Como el circuito es no lineal, no se puede aplicar superposición en general, pero sí <b>linealizando alrededor de Q</b>: si la señal es mucho menor que \(V_T=25.9\) mV en la unión base–emisor, la exponencial de Ebers–Moll se aproxima por su tangente:</p>
+<div class="eq key" data-name="Modelo de pequeña señal del BJT (híbrido-π)">\[i_c=g_m\,v_{be}\qquad g_m=\frac{I_C}{V_T}\qquad r_\pi=\frac{v_{be}}{i_b}=\frac{\beta}{g_m}\qquad r_o=\frac{V_A+V_{CE}}{I_C}\qquad r_e=\frac{v_{be}}{i_e}\approx\frac{V_T}{I_C}\]</div>
+<p>El BJT queda sustituido, para la señal, por una resistencia \(r_\pi\) entre base y emisor y una fuente de corriente \(g_mv_{be}\) en paralelo con \(r_o\) entre colector y emisor. Con \(I_C=2.06\) mA y un 2N3904: \(g_m=79.7\) mS, \(r_\pi=416/0.0797=5.2\) kΩ, \(r_e=12.5\) Ω y \(r_o=(74+3)/2.06\text{ mA}=37\) kΩ.</p>
+<p>El procedimiento de análisis es siempre: (1) resolver el circuito en <b>continua</b> con los condensadores abiertos para hallar \(I_C\) (y así \(g_m\), \(r_\pi\)); (2) pasar a <b>alterna</b> poniendo en cortocircuito las fuentes de continua (\(V_{CC}\) es un punto de señal nula, es decir, tierra) y los condensadores de acoplo y desacoplo; (3) sustituir el transistor por su modelo y calcular tres números que caracterizan a cualquier amplificador:</p>
+<ul>
+<li><b>Ganancia de tensión</b> \(A_v=v_{sal}/v_{ent}\) (con signo; en dB, \(20\log|A_v|\)).</li>
+<li><b>Resistencia de entrada</b> \(R_{in}\): la carga que el amplificador representa para la fuente. Si es pequeña, la fuente se «hunde» (divisor con \(R_s\)): \(A_{vs}=A_v\,R_{in}/(R_{in}+R_s)\).</li>
+<li><b>Resistencia de salida</b> \(R_{out}\): la resistencia de Thévenin vista desde la carga. Si es grande, la carga hunde la salida: \(v_L=A_{v0}\,R_L/(R_L+R_{out})\).</li>
+</ul>
+<p>Los <b>condensadores de acoplo</b> (\(C_{in}\), \(C_{out}\)) dejan pasar la señal y bloquean la continua, de modo que la polarización no depende de la fuente ni de la carga; el <b>condensador de desacoplo</b> \(C_E\) pone \(R_E\) en cortocircuito para la señal sin alterar la polarización. Su valor se elige para que su reactancia sea mucho menor que la resistencia que puentea a la frecuencia más baja de interés (ver «Respuesta en frecuencia»).</p>
+</section>
+
+<section>
+<h2>Emisor común</h2>
+<p>La entrada se aplica a la base, la salida se toma del colector y el emisor es el terminal común (a tierra para la señal, mediante \(C_E\)). Es la configuración de más ganancia y la más usada. Con \(C_E\) puenteando a \(R_E\):</p>
+<div class="eq key" data-name="Emisor común con R_E desacoplada">\[A_v=-g_m\,(R_C\parallel R_L\parallel r_o)\qquad R_{in}=R_B\parallel r_\pi\qquad R_{out}\approx R_C\parallel r_o\qquad R_B=R_1\parallel R_2\]</div>
+<p>El signo negativo indica <b>inversión de fase</b> (180°): cuando sube \(v_{be}\), sube \(i_c\), la caída en \(R_C\) aumenta y baja \(v_{CE}\). Sin \(C_E\), \(R_E\) queda en serie con el emisor y aparece <b>realimentación negativa de corriente</b>:</p>
+<div class="eq key" data-name="Emisor común con R_E sin desacoplar (degeneración)">\[A_v=\frac{-\beta\,(R_C\parallel R_L)}{r_\pi+(\beta+1)R_E}\approx-\frac{R_C\parallel R_L}{r_e+R_E}\qquad R_{in,base}=r_\pi+(\beta+1)R_E\]</div>
+<p>La ganancia pasa a depender casi sólo de cocientes de resistencias, no del transistor (\(g_m\), β): se gana <b>estabilidad, linealidad y resistencia de entrada</b> a cambio de ganancia. Es el compromiso central del diseño analógico.</p>
+<div class="box ex" data-label="Ejemplo resuelto"><p>El circuito de la simulación 18.1: \(V_{CC}=12\) V, \(R_1=33\) kΩ, \(R_2=10\) kΩ, \(R_C=3.3\) kΩ, \(R_E=1\) kΩ, \(R_L=10\) kΩ, 2N3904, \(R_s=50\) Ω. De la polarización: \(I_C=2.06\) mA, \(g_m=79.7\) mS, \(r_\pi=5.2\) kΩ. <b>Con \(C_E\):</b> \(R_C\parallel R_L=2.48\) kΩ, \(A_v=-0.0797\cdot2480=-198\); si se incluye \(r_o=37\) kΩ, \(R_C\parallel R_L\parallel r_o=2.33\) kΩ y \(A_v=-185\). \(R_B=7.67\) kΩ, \(R_{in}=7.67\text{ k}\parallel5.2\text{ k}=3.1\) kΩ y con la fuente (\(R_s=50\) Ω) \(A_{vs}=-185\cdot3.1/(3.1+0.05)=-182\) (medido en el simulador: −183). <b>Sin \(C_E\):</b> \(A_v=-416\cdot2480/(5200+417\cdot1000)=-2.44\) y \(R_{in,base}=5.2\text{ k}+417\text{ k}=422\) kΩ, de modo que \(R_{in}=7.67\text{ k}\parallel422\text{ k}\approx7.5\) kΩ (casi sólo el divisor). La ganancia baja 80 veces (38 dB) y \(R_{in}\) sube 2.4 veces.</p></div>
+<div class="sim" data-sim="c18-ce" data-title="Amplificador en emisor común: ganancia, fase y efecto de C_E y de R_L"></div>
+<div class="sim-guide"><ul>
+<li>Con \(C_E\) el osciloscopio muestra la salida en <b>oposición de fase</b> y 183 veces mayor: 5 mV de pico a la entrada son ≈ 0.9 V de pico a la salida. El panel indica la ganancia medida y la teórica (≈ 184).</li>
+<li>Pulse «Sin C_E»: la ganancia cae a ≈ 2.4 (teoría: 2.44) y la salida deja de depender del transistor. Vuelva a ponerlo y suba la amplitud: con 20 mV de pico la ganancia ya se comprime (158) y la onda se deforma: el transistor sale de la zona lineal.</li>
+<li>Baje \(R_L\) a 500 Ω: la ganancia cae a ≈ 34 porque \(R_C\parallel R_L\) pasa de 2.5 kΩ a 0.43 kΩ; con \(R_L\) grande se acerca al límite \(-g_mR_C=-263\).</li>
+<li>En la pestaña «Bode» pulse «Calcular»: la ganancia en banda es 45.3 dB (183 veces) y cae 3 dB en 127 Hz por el efecto de \(C_E\) (ver más abajo).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Colector común (seguidor de emisor)</h2>
+<p>La entrada va a la base, la salida se toma del <b>emisor</b> y el colector se conecta a \(V_{CC}\) (tierra para la señal). El emisor «sigue» a la base: \(v_e\approx v_b-0.65\) V. La realimentación es total (toda la tensión de salida se resta de la de entrada), así que la ganancia es casi 1 pero la resistencia de entrada es muy alta y la de salida muy baja: es un <b>adaptador de impedancias</b> (<i>buffer</i>).</p>
+<div class="eq key" data-name="Colector común">\[A_v=\frac{(\beta+1)R'_E}{r_\pi+(\beta+1)R'_E}\lesssim1\qquad R'_E=R_E\parallel R_L\qquad R_{in,base}=r_\pi+(\beta+1)R'_E\qquad R_{out}=R_E\parallel\frac{r_\pi+R'_s}{\beta+1}\]</div>
+<p>donde \(R'_s=R_s\parallel R_1\parallel R_2\) es la resistencia que ve la base hacia la fuente. En el montaje (\(R_E=R_L=1\) kΩ): \(R'_E=500\) Ω, \(A_v=417\cdot500/(5200+208500)=0.976\) (medido 0.976), \(R_{in,base}=214\) kΩ y \(R_{in}=7.67\text{ k}\parallel214\text{ k}=7.4\) kΩ: el divisor de polarización, no el transistor, limita la resistencia de entrada (se resuelve con <i>bootstrapping</i> o con un divisor de mayor valor y \(\beta\) alto). La salida: \(R_{out}=1\text{ k}\parallel(5200+50)/417=12.4\) Ω: la «resistencia de emisor reflejada» \(r_e+R'_s/\beta\) hace que la salida se parezca a una fuente de tensión casi ideal.</p>
+<div class="sim" data-sim="c18-cc" data-title="Seguidor de emisor: ganancia unidad, alta R_in y baja R_out"></div>
+<div class="sim-guide"><ul>
+<li>La salida es una copia en fase de la entrada con ganancia 0.976, desplazada en continua (el emisor está a ≈ 2 V; el condensador \(C_{out}\) bloquea esa continua).</li>
+<li>Ponga la amplitud en 0.05 V y baje \(R_L\) hasta 50 Ω: la ganancia sólo cae a 0.76 (teoría 0.79), mientras que un emisor común con la misma carga perdería casi toda la ganancia. Con una entrada de 0.5 V y \(R_L=50\) Ω la ganancia medida se desploma a 0.37: la corriente de carga (10 mA) supera la de reposo (2 mA) y el transistor corta en el semiciclo negativo. <b>El seguidor sólo entrega a la carga hasta la corriente de reposo \(I_E\):</b> es la limitación clásica de la clase A.</li>
+<li>Suba \(R_s\) a 10 kΩ: la ganancia total cae a 0.4 (−7.6 dB) porque \(R_{in}=7.4\) kΩ forma un divisor con \(R_s\): la alta resistencia de entrada del seguidor está limitada por su red de polarización.</li>
+<li>En «Bode», elija «Impedancia vista en el nodo» con salida «out»: obtiene la resistencia de salida (\(R_{out}\) en paralelo con \(R_L\)) en función de la frecuencia.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Base común y cascode</h2>
+<p>En la configuración de <b>base común</b> la señal entra por el emisor y sale por el colector; la base está a tierra para la señal (con un condensador). Sus características son opuestas a las del seguidor: \(A_v=+g_m(R_C\parallel R_L)\) (en fase, ganancia como el emisor común), \(R_{in}=r_e\approx V_T/I_E\) (25 Ω a 1 mA: muy baja), \(R_{out}\approx R_C\) y ganancia de corriente \(\alpha\approx1\). Su virtud es el <b>ancho de banda</b>: no tiene efecto Miller porque la entrada (emisor) y la salida (colector) están aisladas por la base puesta a tierra. Se emplea en amplificadores de radiofrecuencia y como segundo piso del <b>cascode</b>: un emisor común que ve como carga la baja resistencia \(r_e\) del base común, con lo que su ganancia es ≈ −1 y desaparece el efecto Miller; la ganancia total es la del emisor común, el ancho de banda el del base común.</p>
+<div class="tablewrap"><table class="tbl"><tr><th>Configuración</th><th>\(A_v\)</th><th>\(R_{in}\)</th><th>\(R_{out}\)</th><th>Fase</th><th>Aplicación</th></tr>
+<tr><td><b>Emisor común</b></td><td>\(-g_mR'_C\) (alta)</td><td>media: \(r_\pi\parallel R_B\)</td><td>media: \(R_C\)</td><td>180°</td><td>Ganancia de tensión</td></tr>
+<tr><td><b>Colector común</b></td><td>≈ 1</td><td>alta: \(\beta R'_E\)</td><td>baja: \(r_e+R'_s/\beta\)</td><td>0°</td><td>Adaptación de impedancias, etapa de potencia</td></tr>
+<tr><td><b>Base común</b></td><td>\(+g_mR'_C\) (alta)</td><td>muy baja: \(r_e\)</td><td>media-alta: \(R_C\)</td><td>0°</td><td>Alta frecuencia, cascode, entrada de baja impedancia</td></tr></table></div>
+</section>
+
+<section>
+<h2>Respuesta en frecuencia: frecuencias de corte y efecto Miller</h2>
+<p>La ganancia de un amplificador real sólo es constante en una <b>banda media</b>; a baja frecuencia la limitan los condensadores de acoplo y desacoplo, a alta frecuencia las capacitancias del transistor. Se define el ancho de banda entre las frecuencias a las que la ganancia cae 3 dB (a \(1/\sqrt2\)) respecto a la de banda media.</p>
+<h3>Frecuencia de corte inferior</h3>
+<p>Cada condensador externo forma con la resistencia que ve entre sus terminales un filtro pasaaltos (capítulo 9) de frecuencia \(f=1/(2\pi RC)\):</p>
+<div class="eq key" data-name="Polos de baja frecuencia (método de las constantes de tiempo en cortocircuito)">\[f_{in}=\frac{1}{2\pi\,(R_s+R_{in})\,C_{in}}\quad f_{out}=\frac{1}{2\pi\,(R_C+R_L)\,C_{out}}\quad f_{E}=\frac{1}{2\pi\,C_E\,\left[R_E\parallel\left(r_e+\dfrac{R'_s}{\beta+1}\right)\right]}\qquad f_L\approx f_{in}+f_{out}+f_E\]</div>
+<p>En el montaje: \(f_{in}=1/(2\pi\cdot3.15\text{ k}\cdot10\ \mu\text{F})=5.1\) Hz y \(f_{out}=1/(2\pi\cdot13.3\text{ k}\cdot10\ \mu\text{F})=1.2\) Hz, pero \(f_E=1/(2\pi\cdot100\ \mu\text{F}\cdot12.4\ \Omega)=128\) Hz: el condensador de emisor domina porque «ve» una resistencia muy pequeña (\(\approx r_e\)). Por eso su valor debe ser mucho mayor (100 µF o más). La suma da \(f_L\approx134\) Hz; la simulación (análisis AC exacto) da 127 Hz. Con \(C_E=10\ \mu\)F la frecuencia de corte sube a 1.2 kHz.</p>
+<h3>Frecuencia de corte superior: el efecto Miller</h3>
+<p>El transistor tiene capacitancias entre sus terminales: \(C_{be}\) (la de la unión base–emisor, difusión y deplexión) y \(C_{bc}\) (deplexión de la unión base–colector, unos pocos picofaradios). \(C_{bc}\) une la <b>entrada</b> (base) con la <b>salida</b> (colector), que se mueve en oposición con ganancia \(A_v\): el condensador ve entre sus terminales una tensión \((1-A_v)\) veces mayor, así que carga la entrada como si fuera \((1-A_v)C_{bc}\) (<b>efecto Miller</b>):</p>
+<div class="eq key" data-name="Efecto Miller y frecuencia de corte superior">\[C_{in}=C_{be}+C_{bc}\,(1+g_mR'_L)\qquad f_H\approx\frac{1}{2\pi\,R_{eq}\,C_{in}}\qquad R_{eq}=R_s\parallel R_B\parallel r_\pi\]</div>
+<p>Con 2N3904 (\(C_{be}=8\) pF, \(C_{bc}=3.5\) pF en el modelo) y \(g_mR'_L=198\): \(C_{in}=8+3.5\cdot199=704\) pF. Con \(R_s=50\) Ω, \(R_{eq}=49\) Ω y \(f_H\approx4.6\) MHz (el análisis AC da 3.75 MHz; la aproximación de polo dominante supera ligeramente el valor real porque ignora el polo de salida). Con \(R_s=10\) kΩ, \(R_{eq}=2.5\) kΩ y \(f_H\approx90\) kHz (sim: 100 kHz): <b>la resistencia de la fuente determina el ancho de banda</b>. Una ganancia grande tiene un precio en ancho de banda: su producto es casi constante.</p>
+<div class="sim" data-sim="c18-bw" data-title="Ancho de banda del emisor común con capacitancias parásitas: efecto Miller"></div>
+<div class="sim-guide"><ul>
+<li>El Bode (ya calculado, de 100 Hz a 1 GHz) tiene un plató de 45.3 dB y cae 3 dB en 123 Hz y 3.7 MHz. A la derecha la pendiente es de −20 dB/década: un solo polo domina.</li>
+<li>Suba \(R_s\) a 1 kΩ, 10 kΩ y 100 kΩ: la ganancia en banda baja (141, 45 y 5.7 veces) y la frecuencia de corte superior baja de 3.75 MHz a 0.31 MHz, 0.10 MHz y 0.08 MHz. Aquí el producto ganancia×ancho de banda no se conserva (690, 44 y 4.5 MHz con \(R_s\) = 50 Ω, 1 kΩ y 10 kΩ): \(R_s\) forma parte a la vez del divisor de entrada y del polo, y baja ambos.</li>
+<li>Reduzca \(R_C\) a 1 kΩ: la ganancia baja a 70 (36.9 dB) y el ancho de banda sube a 9.4 MHz: menos ganancia de Miller, menos capacitancia de entrada (\(R'_L=0.91\) kΩ, \(C_{in}=8+3.5\cdot(1+79.7\text{ mS}\cdot0.91\text{ k})\approx265\) pF). Cambie al BC547 (\(C_{bc}=4.5\) pF): \(C_{in}\) crece y el ancho de banda baja.</li>
+<li>Compare las capacitancias de Miller con los valores del panel: para estos amplificadores sólo un 1 % de la capacitancia de entrada es \(C_{be}\) y el 99 % es \(C_{bc}\) multiplicada por la ganancia.</li>
+</ul></div>
+<p>Dos remedios habituales para ampliar el ancho de banda son el <b>cascode</b> (descrito arriba, elimina la multiplicación de \(C_{bc}\)) y la <b>realimentación de emisor</b> (reducir \(A_v\) divide \(C_{in}\)). Ambos cuestan ganancia o complejidad. En general: <b>ganancia × ancho de banda ≈ constante</b> (producto ganancia–ancho de banda), el mismo compromiso que se verá en el amplificador operacional.</p>
+</section>
+
+<section>
+<h2>Distorsión, linealidad y realimentación de emisor</h2>
+<p>La característica \(I_C(V_{BE})\) es exponencial, no lineal. Para una señal \(v_{be}=V\sin\omega t\) la corriente de colector contiene armónicos; para amplitudes pequeñas, el segundo armónico domina y su amplitud relativa es:</p>
+<div class="eq key" data-name="Distorsión del BJT sin realimentación">\[\mathrm{THD}\approx\frac{V_{be}}{4\,V_T}\qquad\left(V_{be}\ll V_T\right)\]</div>
+<p>Cada milivoltio de amplitud en la unión da un 1 % de distorsión: para menos de un 1 % se necesita \(V_{be}<4\) mV. Un amplificador de emisor común con \(C_E\) (ganancia 183) con 5 mV de entrada ya produce una salida de ≈ 0.9 V y un THD del 4 %; con una amplitud de salida mayor, además, se recorta contra \(V_{CC}\) o contra \(V_{CE,sat}\). La solución es la <b>realimentación negativa</b>: sin \(C_E\), una fracción de la salida se resta de la entrada en \(R_E\), de modo que la tensión en la unión (que es lo que genera la distorsión) es sólo una fracción \(1/(1+g_mR_E)\) de la tensión de entrada, y la distorsión disminuye en la misma proporción (aquí \(1+g_mR_E=81\)) a costa de reducir la ganancia en el mismo factor. Es el primer ejemplo del principio general: <b>la realimentación intercambia ganancia por linealidad, ancho de banda, estabilidad e impedancias</b>.</p>
+<div class="tablewrap"><table class="tbl"><tr><th>Configuración</th><th>Amplitud de entrada (pico)</th><th>Salida (pico a pico)</th><th>Ganancia</th><th>THD (armónicos 2–9)</th></tr>
+<tr><td>Con \(C_E\)</td><td>2 mV</td><td>0.73 V</td><td>184</td><td>1.6 %</td></tr>
+<tr><td>Con \(C_E\)</td><td>5 mV</td><td>1.8 V</td><td>184</td><td>4.1 %</td></tr>
+<tr><td>Con \(C_E\)</td><td>10 mV</td><td>3.6 V</td><td>182</td><td>8.1 %</td></tr>
+<tr><td>Con \(C_E\)</td><td>20 mV</td><td>6.0 V</td><td>158 (compresión)</td><td>12.4 %</td></tr>
+<tr><td>Sin \(C_E\)</td><td>50 mV</td><td>0.24 V</td><td>2.45</td><td>0.04 %</td></tr>
+<tr><td>Sin \(C_E\)</td><td>500 mV</td><td>2.4 V</td><td>2.44</td><td>0.07 %</td></tr></table></div>
+<p>La estimación \(V_{be}/4V_T\) concuerda: con \(V_{be}=2\) mV da 1.9 % (simulación 1.6 %), con 5 mV da 4.8 % (4.1 %), con 10 mV da 9.7 % (8.1 %).</p>
+<div class="sim" data-sim="c18-dist" data-title="Distorsión armónica: efecto de la amplitud y de la realimentación de emisor"></div>
+<div class="sim-guide"><ul>
+<li>Con \(C_E\) y 10 mV de entrada: la onda de salida es visiblemente asimétrica (los picos positivos y negativos difieren ≈ 15 %) y el THD es 8 %. Pase el osciloscopio al modo «Espectro»: además de la fundamental (1 kHz) aparecen los armónicos de 2 kHz y 3 kHz.</li>
+<li>Quite \(C_E\) y suba la entrada hasta 0.5 V: la salida es una senoide limpia (THD &lt; 0.1 %) con una ganancia de sólo 2.44. Se han cambiado ganancia por linealidad.</li>
+<li>Cuanto mayor es la amplitud, mayor es la distorsión con \(C_E\); el panel «Asimetría» indica cuánto difieren los semiciclos y el de la ganancia medida que se aleja de 183 (compresión).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Amplificador diferencial</h2>
+<p>El <b>par diferencial</b> son dos transistores iguales con los emisores unidos y alimentados por una corriente común \(I_T\) (resistencia o fuente de corriente, «cola»). Amplifica la <b>diferencia</b> entre las dos entradas, \(v_d=v_1-v_2\), y rechaza lo que tienen en <b>común</b>, \(v_c=(v_1+v_2)/2\): ruido, interferencia, deriva de temperatura. Es la entrada de todo amplificador operacional, de los comparadores y de la lógica ECL.</p>
+<p>Funcionamiento: la suma de las dos corrientes de emisor es \(I_T\). Si \(v_1=v_2\), cada transistor lleva \(I_T/2\). Si \(v_1\) sube respecto de \(v_2\), \(Q_1\) conduce más y \(Q_2\) menos, con \(\Delta I_{C1}=-\Delta I_{C2}=g_m v_d/2\) (para \(v_d\ll V_T\)): las salidas se mueven en oposición.</p>
+<div class="eq key" data-name="Par diferencial con resistor de cola">\[A_d=\frac{v_{o1}-v_{o2}}{v_d}=g_mR_C\qquad A_{d,se}=\frac{v_{o1}}{v_d}=\frac{g_mR_C}{2}\qquad A_{cm}=\frac{v_{o1}}{v_c}\approx-\frac{R_C}{2R_T}\qquad \mathrm{CMRR}=\frac{A_{d,se}}{|A_{cm}|}=g_mR_T\]</div>
+<p>La <b>razón de rechazo en modo común</b> (CMRR) mide cuántas veces se amplifica más la diferencia que lo común; se da en dB: \(20\log_{10}\mathrm{CMRR}\). Con \(R_T\) finita es \(g_mR_T=I_T R_T/(2V_T)\approx(V_{EE}-0.65)/(2V_T)=103\) (40 dB) <b>independientemente del valor de \(R_T\)</b>: al aumentarla baja la corriente de cola en la misma proporción. Para CMRR de 80–120 dB se sustituye \(R_T\) por una <b>fuente de corriente</b> (espejo de corriente) que ofrece mucha resistencia en pequeña señal con la corriente deseada y poca caída de continua: \(\mathrm{CMRR}=g_m\,r_{o,fuente}\).</p>
+<div class="sim" data-sim="c18-diff" data-title="Par diferencial: ganancia diferencial, ganancia de modo común y CMRR"></div>
+<div class="sim-guide"><ul>
+<li>Con entrada diferencial (Q₂ a tierra) las dos salidas (\(o_1\) y \(o_2\)) se mueven en oposición de fase con 1.9 V pico a pico cada una para 40 mV pico a pico de entrada (ganancia 48 a cada salida); la salida diferencial (verde) es 95.6 veces la entrada (teoría \(g_mR_C=103\), algo menos por la resistencia de base de 100 Ω y el efecto Early).</li>
+<li>Pulse «Modo común»: la misma señal en ambas bases mueve las dos salidas en fase con ganancia 0.50 (teoría \(R_C/2R_T=0.50\)), y la salida diferencial desaparece (aquí exactamente 0 porque los transistores del modelo son idénticos; con desapareamientos reales siempre queda un residuo). El CMRR a una salida es 48/0.5 ≈ 96 (39.6 dB).</li>
+<li>Suba \(R_T\) a 47 kΩ: la corriente cae diez veces (57 µA), la ganancia diferencial cae a 10 (\(g_m\) menor) y la de modo común también (0.05): el CMRR no cambia. Es la razón por la que se usan fuentes de corriente en lugar de resistores.</li>
+<li>La amplitud de entrada del par es lineal sólo hasta \(\approx\pm V_T\): con 0.2 V de amplitud las salidas se recortan (cada transistor se corta o se satura alternadamente).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Etapas en cascada y consideraciones de diseño</h2>
+<p>Un solo transistor rara vez basta. Al conectar etapas, la entrada de la segunda actúa como <b>carga</b> de la primera: \(A_{v,tot}=A_{v1}\cdot\dfrac{R_{in2}}{R_{in2}+R_{out1}}\cdot A_{v2}\). Con acoplo por condensador, cada etapa suma polos de baja frecuencia y la banda se estrecha; con <b>acoplo directo</b> (sin condensadores) se llega hasta continua pero la polarización de las etapas queda interconectada y se propagan las derivas (en los amplificadores operacionales se resuelve con el par diferencial y el espejo de corriente). Ejemplos de combinaciones típicas: <b>emisor común + seguidor de emisor</b> (ganancia alta y salida de baja impedancia), <b>Darlington</b> (dos seguidores: \(\beta_1\beta_2\) y \(R_{in}\) enorme) y <b>cascode</b> (alto ancho de banda). Las reglas prácticas para amplificadores de señal son:</p>
+<ul>
+<li>Corriente de reposo \(I_C\) entre 0.5 y 5 mA: \(g_m\) suficiente y ruido bajo.</li>
+<li>\(V_E\approx1\)–2 V, \(V_{CE}\ge V_{CC}/3\) y \(V_{RC}\approx V_{CC}/3\) para dejar excursión simétrica.</li>
+<li>Elegir los condensadores para que \(f_L\) quede por debajo de la frecuencia mínima, con \(C_E\) el más grande y el más caro.</li>
+<li>Mirar siempre \(R_{in}\) y \(R_{out}\): una gran ganancia en vacío no sirve si la fuente es de alta impedancia o la carga de baja.</li>
+</ul>
+</section>
+
+<section>
+<h2>Medidas de laboratorio</h2>
+<ul>
+<li><b>Punto de operación y ganancia.</b> Monte el emisor común (2N3904 o BC547). Compruebe con el multímetro \(V_B\approx2.8\) V, \(V_E\approx2.1\) V y \(V_C\approx5\)–5.5 V. Aplique 10 mVpp a 1 kHz con un divisor atenuador 1:10 desde un generador de 100 mVpp y mida la ganancia con el osciloscopio (salida entre 1 y 2 Vpp).</li>
+<li><b>Efecto del desacoplo.</b> Quite \(C_E\) y observe cómo la ganancia baja a ≈ 2.4; mida \(f_L\) sustituyendo \(C_E\) por 10 µF y comprobando que sube a ≈ 1.2 kHz.</li>
+<li><b>Resistencia de entrada.</b> Inserte un resistor de 3.3 kΩ en serie con la entrada: la ganancia baja a la mitad si \(R_{in}\approx3.3\) kΩ (método de la media tensión). La resistencia de salida se mide igual con una carga variable que baje la salida a la mitad.</li>
+<li><b>Ancho de banda.</b> Barrido de 10 Hz a 1 MHz con la señal de entrada de amplitud constante: anote la frecuencia donde la salida cae a 0.707 y compare con 127 Hz y la frecuencia superior (dependerá de la capacitancia de las sondas y los cables: 20–100 pF extra).</li>
+<li><b>Distorsión.</b> Aumente la entrada hasta que la salida se asimetrice y compare con los valores de la tabla (la simulación usa un 2N3904 ideal).</li>
+</ul>
+</section>
+
+<section>
+<h2>Problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un BJT con β = 200 opera con \(I_C=1\) mA. Calcule \(g_m\), \(r_\pi\) y \(r_e\) (\(V_T=25.9\) mV).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(g_m=I_C/V_T=1\text{ mA}/25.9\text{ mV}=38.6\) mS.</li>
+<li>\(r_\pi=\beta/g_m=200/0.0386=5.18\) kΩ.</li>
+<li>\(r_e=V_T/I_E=25.9\text{ mV}/1.005\text{ mA}=25.8\) Ω (≈ \(1/g_m\)).</li>
+<li><b>Resultado.</b> <span class="ans">38.6 mS, 5.18 kΩ y 25.8 Ω.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Un emisor común con \(I_C=1\) mA, \(R_C=4.7\) kΩ y \(R_L=\infty\) tiene \(C_E\) de desacoplo. ¿Cuál es su ganancia en dB? ¿Y si se carga con \(R_L=4.7\) kΩ? (ignore \(r_o\)).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(A_v=-g_mR_C=-0.0386\cdot4700=-181\); en dB: \(20\log181=45.2\) dB.</li>
+<li>Con carga: \(R'_C=4.7\text{ k}\parallel4.7\text{ k}=2.35\) kΩ; \(A_v=-0.0386\cdot2350=-90.7\) (39.2 dB).</li>
+<li><b>Resultado.</b> <span class="ans">−181 (45.2 dB) sin carga y −91 (39.2 dB) con \(R_L=R_C\): la carga adaptada cuesta 6 dB.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Con los datos del emisor común de la simulación, calcule la ganancia total cuando se conecta una fuente de \(R_s=5\) kΩ (con \(C_E\)). \(R_{in}=3.1\) kΩ, \(A_v=-198\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>Divisor de entrada: \(R_{in}/(R_{in}+R_s)=3.1/(3.1+5)=0.383\).</li>
+<li>\(A_{vs}=-198\cdot0.383=-75.8\) (37.6 dB).</li>
+<li><b>Resultado.</b> <span class="ans">−76: la baja \(R_{in}\) pierde 8.3 dB. Una etapa seguidora de entrada (alta \(R_{in}\)) lo evitaría.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Para el seguidor de emisor con \(R_E=1\) kΩ, \(I_C=2\) mA, β = 400 y una fuente de \(R_s=10\) kΩ (con divisor de 7.67 kΩ): (a) \(R_{out}\); (b) tensión sobre una carga de 100 Ω si la fuente da 1 V sin carga.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>(a) \(r_\pi=\beta V_T/I_C=400\cdot25.9/2=5.18\) kΩ; \(R'_s=10\text{ k}\parallel7.67\text{ k}=4.34\) kΩ; \(R_{out}=1\text{ k}\parallel(5.18+4.34)\text{ k}/401=1\text{ k}\parallel23.7\ \Omega=23.2\) Ω.</li>
+<li>(b) Ganancia sin carga ≈ 0.97 × divisor. Con \(R_L=100\) Ω: \(v_L=v_o\,R_L/(R_L+R_{out})=100/123.2=0.81\) de la tensión en vacío.</li>
+<li><b>Resultado.</b> <span class="ans">\(R_{out}=23.2\) Ω; la carga de 100 Ω recibe el 81 % de la tensión de vacío (el 19 % se pierde en \(R_{out}\)).</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Estime la frecuencia de corte superior de un emisor común con \(g_m=80\) mS, \(R'_L=2.5\) kΩ, \(C_{be}=10\) pF, \(C_{bc}=3\) pF, \(R_{eq}=1\) kΩ.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(g_mR'_L=0.08\cdot2500=200\).</li>
+<li>\(C_{in}=10\text{ pF}+3\text{ pF}\cdot201=613\) pF (casi todo es Miller).</li>
+<li>\(f_H=1/(2\pi\cdot1\text{ k}\Omega\cdot613\text{ pF})=260\) kHz.</li>
+<li><b>Resultado.</b> <span class="ans">\(C_{in}=613\) pF y \(f_H\approx260\) kHz. Con un cascode (ganancia de la primera etapa ≈ −1) \(C_{in}\approx16\) pF y \(f_H\) subiría a ≈ 10 MHz.</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>Un par diferencial con \(V_{EE}=-12\) V, \(R_T=11.3\) kΩ y \(R_C=10\) kΩ. Calcule (a) \(I_C\) de cada transistor; (b) \(A_d\) diferencial; (c) \(A_{cm}\) a una salida; (d) el CMRR en dB.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>(a) \(I_T=(12-0.65)/11.3\text{ k}=1\) mA; \(I_C=0.5\) mA cada uno.</li>
+<li>(b) \(g_m=0.5\text{ mA}/25.9\text{ mV}=19.3\) mS; \(A_d=g_mR_C=193\).</li>
+<li>(c) \(A_{cm}=-R_C/(2R_T)=-10/22.6=-0.44\).</li>
+<li>(d) \(A_{d,se}=96.5\); CMRR = \(96.5/0.44=218\ (=g_mR_T)\); \(20\log218=46.8\) dB.</li>
+<li><b>Resultado.</b> <span class="ans">0.5 mA; 193; −0.44; 46.8 dB. Con una fuente de corriente de \(r_o=1\) MΩ: CMRR = \(19.3\text{ mS}\cdot1\text{ M}\Omega=19300\) = 86 dB.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

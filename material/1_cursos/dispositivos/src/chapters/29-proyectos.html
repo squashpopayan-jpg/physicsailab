@@ -1,0 +1,173 @@
+<template class="chapter-src" data-id="proyectos" data-num="29" data-title="Proyectos de laboratorio" data-part="Parte VI · Laboratorio" data-short="Diez proyectos para armar y medir con componentes reales: excitador de LED con transistor, fuente regulable con LM317, amplificador de emisor común, preamplificador con filtro activo, intermitente con 555, termómetro con NTC, interruptor crepuscular, regulador PWM, amplificador de audio clase AB y fuente de corriente; con lista de materiales, procedimiento, resultados esperados y rúbrica">
+<p class="lead">Un circuito se entiende de verdad cuando se ha <b>diseñado, armado, medido y comparado con la teoría</b>. Este capítulo propone diez proyectos de laboratorio, ordenados de menor a mayor dificultad, que ponen en práctica los capítulos anteriores. Cada uno incluye el objetivo, los cálculos de diseño, la lista de materiales con valores comerciales, el procedimiento, los <b>resultados esperados</b> (que se pueden comprobar primero en el Taller del curso) y los criterios de evaluación. Todos funcionan con baja tensión (≤ 15 V) y fuentes con limitación de corriente: <b>ninguno se conecta a la red</b>.</p>
+
+<section>
+<h2>Cómo trabajar los proyectos</h2>
+<ol>
+<li><b>Calcule</b> primero, a mano, los componentes y los valores esperados (corriente, tensiones, ganancia, frecuencia).</li>
+<li><b>Simule</b> el circuito en el Taller (modo «Editar circuito»; los capítulos indicados contienen el circuito de referencia) y compare con sus cálculos.</li>
+<li><b>Arme</b> en protoboard (verifique polaridades de condensadores, diodos y circuitos integrados antes de energizar; alimente con la fuente limitada a 100 mA durante la puesta a punto).</li>
+<li><b>Mida</b> con multímetro y osciloscopio (sonda compensada, capítulo 27) y anote cada valor con su incertidumbre.</li>
+<li><b>Compare</b> teoría, simulación y medida en una tabla; explique las diferencias (tolerancias, β real, efectos de carga, ruido).</li>
+<li><b>Entregue</b> un informe con el esquema, los cálculos, la tabla de materiales, las mediciones y las conclusiones.</li>
+</ol>
+<div class="tablewrap"><table class="tbl"><tr><th>Criterio de evaluación (común)</th><th>Peso</th><th>Qué se valora</th></tr>
+<tr><td>Diseño y cálculos</td><td>25 %</td><td>Ecuaciones correctas, componentes comerciales (series E12/E24), potencias y corrientes verificadas</td></tr>
+<tr><td>Simulación previa</td><td>10 %</td><td>Circuito simulado en el Taller, con los valores esperados anotados</td></tr>
+<tr><td>Montaje</td><td>20 %</td><td>Orden, polaridades, funcionamiento a la primera o diagnóstico sistemático (capítulo 28)</td></tr>
+<tr><td>Mediciones</td><td>25 %</td><td>Tabla con valores medidos, incertidumbre y método</td></tr>
+<tr><td>Análisis</td><td>15 %</td><td>Comparación teoría–simulación–medida y discusión de las diferencias</td></tr>
+<tr><td>Informe</td><td>5 %</td><td>Claridad, esquema, lista de materiales y conclusiones</td></tr></table></div>
+</section>
+
+<section>
+<h2>Proyecto 1 · Excitador de LED con transistor</h2>
+<div class="tablewrap"><table class="tbl">
+<tr><th>Capítulos</th><td>16, 17 (el BJT como interruptor)</td></tr>
+<tr><th>Objetivo</th><td>Encender un LED rojo con 10 mA desde una salida lógica de 3.3 V que sólo puede entregar 1 mA, usando un 2N3904 o BC547 saturado.</td></tr>
+<tr><th>Diseño</th><td>\(R_C=(5-2-0.1)/10\text{ mA}=290\ \Omega\to330\ \Omega\) (\(I_C\approx8.8\) mA). Con β forzada = 10: \(I_B=0.88\) mA, \(R_B=(3.3-0.75)/0.88\text{ mA}=2.9\text{ k}\Omega\to2.7\) kΩ. Resistor de 47 kΩ de base a masa (para mantener apagado).</td></tr>
+<tr><th>Materiales</th><td>Transistor NPN 2N3904 o BC547; LED rojo; resistores de 330 Ω, 2.7 kΩ y 47 kΩ; fuentes de 5 V y de 3.3 V (o generador de 0–3.3 V a 1 Hz).</td></tr>
+<tr><th>Procedimiento</th><td>Arme el circuito. Mida \(V_{BE}\), \(V_{CE}\), \(I_C\) con la entrada alta y baja. Cambie \(R_B\) a 100 kΩ y observe cómo el transistor sale de saturación (\(V_{CE}\) sube).</td></tr>
+<tr><th>Esperado</th><td>Entrada alta: \(V_{BE}\approx0.72\) V, \(V_{CE}\approx0.1\)–0.2 V, \(I_C\approx8.8\) mA, β forzada ≈ 9. Entrada baja: LED apagado, \(V_{CE}=5\) V. Con 100 kΩ: \(I_B=25\ \mu\)A y \(I_C\approx\beta I_B=7\) mA con \(V_{CE}\)≈ 0.8 V (activa).</td></tr>
+<tr><th>Para el informe</th><td>Tabla de \(I_B\), \(I_C\), \(V_{CE}\) y la β forzada para tres valores de \(R_B\); potencia disipada por el transistor.</td></tr>
+</table></div>
+</section>
+
+<section>
+<h2>Proyecto 2 · Fuente regulable de 1.25 a 12 V (LM317)</h2>
+<div class="tablewrap"><table class="tbl">
+<tr><th>Capítulos</th><td>14, 25 (rectificación y reguladores)</td></tr>
+<tr><th>Objetivo</th><td>Construir una fuente lineal ajustable de 1.25–12 V y 0.5 A a partir de un transformador de 12 V y comprobar la regulación, el rizado y el calentamiento.</td></tr>
+<tr><th>Diseño</th><td>Puente (1N4007 ×4 o puente de 1 A), condensador de 2200 µF/25 V, LM317 con \(R_1=240\ \Omega\) y \(R_2\) potenciómetro de 2.2 kΩ: \(V_o=1.25(1+R_2/R_1)\) de 1.25 a 12.7 V. Fusible de 1 A (retardado) en el primario del transformador, diodo 1N4007 de protección y condensadores de 0.1 µF. Disipador para \(P_d=(V_{in}-V_o)I_o\le6\) W.</td></tr>
+<tr><th>Materiales</th><td>Transformador de 12 V/1 A (aislado), puente rectificador, 2200 µF/25 V, 10 µF, LM317 (TO-220), 240 Ω, potenciómetro de 2.2 kΩ, 2 diodos 1N4007, fusible de 1 A y portafusible, disipador, resistor de carga de 10 Ω/10 W, interruptor.</td></tr>
+<tr><th>Procedimiento</th><td>Con el potenciómetro en el mínimo, mida \(V_o\), la tensión después del filtro y el rizado (osciloscopio en CA). Cargue con 10 Ω y mida regulación de línea y de carga y la temperatura del regulador (con la mano <b>no</b>, use un termómetro).</td></tr>
+<tr><th>Esperado</th><td>\(V_{rect}\approx14\) V (media), rizado de 1–2 V pico a pico con 0.5 A (ver simulación 25.4), \(V_o\) de 1.25 a ≈ 12 V (\(V_{in}-V_o\ge2.5\) V), rizado de salida de pocos mV, calentamiento: con \(V_o=5\) V y 0.5 A, \(P_d=4.5\) W: disipador de ≤ 15 K/W.</td></tr>
+<tr><th>Para el informe</th><td>Curva \(V_o(R_2)\); regulación de carga \(\Delta V_o/\Delta I_o\); rizado antes y después; dimensionamiento térmico del disipador.</td></tr>
+</table></div>
+</section>
+
+<section>
+<h2>Proyecto 3 · Amplificador de emisor común</h2>
+<div class="tablewrap"><table class="tbl">
+<tr><th>Capítulos</th><td>17, 18 (polarización y amplificación)</td></tr>
+<tr><th>Objetivo</th><td>Diseñar, armar y caracterizar un amplificador de emisor común con \(I_C=2\) mA, medir ganancia, resistencia de entrada y respuesta en frecuencia, y ver el efecto de \(C_E\).</td></tr>
+<tr><th>Diseño</th><td>\(V_{CC}=12\) V, \(R_1=33\) kΩ, \(R_2=10\) kΩ, \(R_C=3.3\) kΩ, \(R_E=1\) kΩ, \(C_{in}=C_{out}=10\ \mu\)F, \(C_E=100\ \mu\)F, \(R_L=10\) kΩ, 2N3904. Cálculo: \(V_B\approx2.8\) V, \(V_E\approx2.1\) V, \(I_C\approx2.06\) mA, \(g_m=79.7\) mS, \(A_v=-183\) con \(C_E\) y −2.4 sin él.</td></tr>
+<tr><th>Materiales</th><td>2N3904 o BC547; resistores 33 k, 10 k, 3.3 k, 1 k, 10 k; condensadores 10 µF, 10 µF, 100 µF (electrolíticos de 25 V); generador de funciones; osciloscopio.</td></tr>
+<tr><th>Procedimiento</th><td>(1) Mida \(V_B\), \(V_E\), \(V_C\) sin señal. (2) Aplique 10 mV pp a 1 kHz (con un atenuador 1:10) y mida la ganancia. (3) Quite \(C_E\). (4) Barra de 10 Hz a 1 MHz y localice las frecuencias de −3 dB.</td></tr>
+<tr><th>Esperado</th><td>\(V_B=2.75\) V, \(V_C=5.2\) V, \(V_E=2.07\) V (±10 % por \(\beta\) y tolerancias); ganancia 150–190 (con β real distinta); sin \(C_E\), ≈ 2.4; \(f_L\approx127\) Hz; \(f_H\) limitada por la sonda y el cable (≈ 1 MHz o menos).</td></tr>
+<tr><th>Para el informe</th><td>Tabla de polarización (cálculo, Taller, medida), ganancia con y sin \(C_E\), Bode medido y comparado con la teoría de \(f_L\) y \(f_H\).</td></tr>
+</table></div>
+</section>
+
+<section>
+<h2>Proyecto 4 · Preamplificador con filtro activo</h2>
+<div class="tablewrap"><table class="tbl">
+<tr><th>Capítulos</th><td>22, 23 (A.O. y filtros activos)</td></tr>
+<tr><th>Objetivo</th><td>Amplificar una señal de micrófono (10 mV) con un no inversor de ganancia 11 y filtrarla con un pasabajos Sallen–Key Butterworth de 2.º orden con \(f_0=1\) kHz.</td></tr>
+<tr><th>Diseño</th><td>Etapa 1: \(R_g=1\) kΩ, \(R_f=10\) kΩ (\(A_v=11\), ancho de banda con TL081 = 270 kHz). Etapa 2: \(R=10\) kΩ, \(C=16\) nF (\(f_0=995\) Hz), \(K=1.586\): \(R_a=10\) kΩ, \(R_b=5.6\) kΩ + 330 Ω.</td></tr>
+<tr><th>Materiales</th><td>TL081 o LM358 (con alimentación simétrica ±9 V; con LM358 de alimentación única, polarización a \(V_{CC}/2\)); resistores de película metálica del 1 %; condensadores de película de 16 nF (o 15 nF + 1 nF); condensadores de 100 nF de desacoplo.</td></tr>
+<tr><th>Procedimiento</th><td>Mida la ganancia de la etapa 1 a 1 kHz; trace el Bode de la etapa 2 punto a punto de 100 Hz a 20 kHz; mida el −3 dB y la pendiente por encima de 2 kHz.</td></tr>
+<tr><th>Esperado</th><td>Ganancia 11 (20.8 dB); filtro con −3 dB en 0.95–1.05 kHz y −40 dB/década (a 10 kHz ≈ −40 dB); factor Q = 0.707. La tolerancia de los componentes desvía \(f_0\) hasta ±5 % (capítulo 27).</td></tr>
+<tr><th>Para el informe</th><td>Bode medido frente al teórico (gráfico superpuesto); histograma o análisis de tolerancias; discusión del efecto de GBW finito.</td></tr>
+</table></div>
+</section>
+
+<section>
+<h2>Proyecto 5 · Intermitente y sirena con el 555</h2>
+<div class="tablewrap"><table class="tbl">
+<tr><th>Capítulos</th><td>24 (osciladores)</td></tr>
+<tr><th>Objetivo</th><td>Construir un 555 astable que haga parpadear un LED a ≈ 1 Hz y, cambiando \(C\) y \(R\), produzca un tono audible en un altavoz.</td></tr>
+<tr><th>Diseño</th><td>LED: \(R_1=1\) kΩ, \(R_2=68\) kΩ, \(C=10\ \mu\)F: \(f=1.44/((1+136)\text{ k}\cdot10\ \mu\text{F})=1.05\) Hz, \(D=50.4\) %. Tono: \(R_1=1\) kΩ, \(R_2=10\) kΩ, \(C=100\) nF: \(f=687\) Hz (altavoz de 8 Ω en serie con 100 µF y 47 Ω).</td></tr>
+<tr><th>Materiales</th><td>NE555 (o TLC555); LED y resistor de 470 Ω; resistores 1 k, 10 k, 68 k; condensadores de 10 µF, 100 nF, 10 nF (patilla CTRL); altavoz de 8 Ω; pila de 9 V.</td></tr>
+<tr><th>Procedimiento</th><td>Mida con el osciloscopio \(t_H\), \(t_L\) y la forma del condensador; compare con \(0.693(R_1+R_2)C\) y \(0.693R_2C\). Añada un diodo en paralelo con \(R_2\) para acercar \(D\) a 50 %.</td></tr>
+<tr><th>Esperado</th><td>Condensador oscila entre \(\tfrac13\) y \(\tfrac23V_{CC}\); frecuencia a ±10 % del cálculo (tolerancia de \(C\) del 10–20 % en electrolíticos); en el tono, 650–720 Hz.</td></tr>
+</table></div>
+</section>
+
+<section>
+<h2>Proyecto 6 · Termómetro electrónico con NTC</h2>
+<div class="tablewrap"><table class="tbl">
+<tr><th>Capítulos</th><td>10 (sensores), 22 (A.O.)</td></tr>
+<tr><th>Objetivo</th><td>Medir temperatura con un termistor NTC de 10 kΩ (B = 3950 K), linealizar la lectura con la ecuación de Steinhart y aislar el divisor de la entrada del instrumento con un seguidor.</td></tr>
+<tr><th>Diseño</th><td>Divisor: NTC arriba y 10 kΩ abajo con 5 V: \(V=5\cdot10/(10+R_{NTC})\), con \(R_{NTC}=10\text{ k}\Omega\,e^{B(1/T-1/298.15)}\). Seguidor con TL081 y carga de 10 kΩ. Para el cálculo inverso: \(T=1/[1/298.15+\ln(R/R_{25})/B]\).</td></tr>
+<tr><th>Materiales</th><td>NTC de 10 kΩ, resistor de 10 kΩ de precisión (1 % o mejor), TL081, fuente de 5 V (y ±12 V si se desea más rango), termómetro de referencia, vaso de agua caliente.</td></tr>
+<tr><th>Procedimiento</th><td>Mida \(V\) para 0, 25, 50, 75 y 100 °C (hielo, ambiente, agua caliente con el termómetro de referencia). Estime \(T\) con Steinhart y compare con la referencia. Calcule la sensibilidad.</td></tr>
+<tr><th>Esperado</th><td>Valores del simulador (tabla): 1.146 V a 0 °C, 2.500 V a 25 °C, 3.680 V a 50 °C, 4.351 V a 75 °C, 4.674 V a 100 °C: la sensibilidad es 56 mV/°C a 25 °C y desciende a 18.5 mV/°C a 75 °C y 8.6 mV/°C a 100 °C (curva no lineal).</td></tr>
+</table></div>
+<div class="sim" data-sim="c29-termometro" data-title="Proyecto 6: termómetro con NTC, divisor y seguidor; lectura de temperatura con Steinhart"></div>
+<div class="sim-guide"><ul>
+<li>Con la temperatura en 25 °C, el NTC vale 10 kΩ, el divisor da 2.500 V y la temperatura estimada coincide con 25 °C. Mueva el control: a 0 °C la tensión baja a 1.146 V (\(R_{NTC}=33.6\) kΩ) y a 100 °C sube a 4.674 V (\(R_{NTC}=0.70\) kΩ).</li>
+<li>El panel «Sensibilidad» muestra que la respuesta no es lineal: 55.6 mV/°C a 25 °C, pero sólo 8.6 mV/°C a 100 °C. En un termómetro real se corrige por software con la ecuación de Steinhart o una tabla.</li>
+<li>En la pestaña «Curvas» barra el sensor (elija una fuente que controle la temperatura) para ver la curva \(V(T)\): una S suave.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Proyecto 7 · Interruptor crepuscular</h2>
+<div class="tablewrap"><table class="tbl">
+<tr><th>Capítulos</th><td>10 (LDR), 24 (comparador con histéresis)</td></tr>
+<tr><th>Objetivo</th><td>Encender una luz cuando oscurece, con histéresis para evitar el parpadeo en el umbral.</td></tr>
+<tr><th>Diseño</th><td>LDR (20 kΩ a 10 lx, γ = 0.7) en divisor con 10 kΩ; referencia de 2.5 V (divisor 10 k/10 k); LM393 con pull-up de 4.7 kΩ y realimentación positiva de 220 kΩ del colector a la entrada \(+\); LED con 330 Ω (activo cuando la salida baja). Umbral aproximado: a ≈ 12–20 lx.</td></tr>
+<tr><th>Materiales</th><td>LDR (GL5528 o similar), LM393 (o LM358 como comparador), resistores 10 k (×3), 4.7 k, 220 k, 330 Ω, LED, fuente de 5 V, linterna.</td></tr>
+<tr><th>Procedimiento</th><td>Cubra y descubra el LDR; mida \(V_s\) y la tensión del colector. Determine las dos iluminaciones de conmutación (subida y bajada). Cambie el resistor de histéresis.</td></tr>
+<tr><th>Esperado</th><td>Con 1–10 lx (oscuro) \(V_s=0.5\)–1.6 V y el LED está encendido (salida 0.5 V); con 30 lx o más \(V_s\ge2.6\) V y se apaga (salida 4.95 V). La histéresis es ≈ 0.13 V en \(V_s\): ≈ 25 % de variación de iluminación.</td></tr>
+</table></div>
+<div class="sim" data-sim="c29-crepuscular" data-title="Proyecto 7: LDR, comparador con histéresis y LED nocturno"></div>
+<div class="sim-guide"><ul>
+<li>Con 100 lx (día) la tensión del sensor es 3.59 V (por encima de la referencia de 2.5 V): la salida está alta (4.97 V) y el LED apagado. Baje la iluminación: con 30 lx (\(V_s=2.64\) V) sigue apagado; con 10 lx (1.64 V) la salida baja a 0.51 V y el LED se enciende.</li>
+<li>El LDR varía de 20 kΩ a 10 lx a 100 kΩ en la oscuridad: la caída de iluminación de 100 lx a 1 lx cambia \(V_s\) de 3.6 V a 0.47 V, un rango muy amplio que se comprime con el comparador a dos estados.</li>
+<li>La histéresis del comparador (R_h = 220 kΩ) evita que el LED parpadee cuando la luz está cerca del umbral (nubes, faros). Pruebe con luz del umbral subiendo y bajando poco a poco.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Proyecto 8 · Regulador de potencia PWM con 555 y MOSFET</h2>
+<div class="tablewrap"><table class="tbl">
+<tr><th>Capítulos</th><td>19, 21, 24 (MOSFET, conmutación, 555)</td></tr>
+<tr><th>Objetivo</th><td>Variar el brillo de una lámpara (o la velocidad de un motor) de 12 V con un ciclo de trabajo ajustable de 5 % a 95 %, sin disipar potencia en el elemento de control.</td></tr>
+<tr><th>Diseño</th><td>555 astable con \(R_1=1\) kΩ, potenciómetro de 100 kΩ (\(R_A\) y \(R_B\)), dos diodos 1N4148 y \(C=10\) nF: frecuencia ≈ 1.3 kHz casi constante y \(D=(R_1+R_A)/(R_1+R_A+R_B)\). Salida al puerta de un IRLZ44N (nivel lógico) con 100 Ω; carga de 24 Ω/6 W a 12 V; diodo de rueda libre si es un motor.</td></tr>
+<tr><th>Materiales</th><td>NE555, 2 × 1N4148, potenciómetro de 100 kΩ, 1 kΩ, 10 nF, 10 nF (CTRL), 100 Ω, MOSFET IRLZ44N (o IRF540N con alimentación de 12 V), carga (lámpara de 12 V/5 W o motor pequeño con 1N4007), fuente de 12 V/1 A.</td></tr>
+<tr><th>Procedimiento</th><td>Observe la salida del 555 y el drenador con el osciloscopio; mida \(D\) y la frecuencia para 10 %, 50 % y 90 %. Mida la tensión media en la carga y la temperatura del MOSFET (no debe calentarse).</td></tr>
+<tr><th>Esperado</th><td>Simulación (tabla): \(D\) = 11.7, 27.7, 49.4, 74.2 y 90.5 % para el potenciómetro al 10, 25, 50, 75 y 90 %; tensión media en la carga: 1.3, 3.2, 5.9, 8.9 y 10.8 V. El MOSFET disipa menos de 0.1 W: es un interruptor.</td></tr>
+</table></div>
+<div class="sim" data-sim="c29-pwm555" data-title="Proyecto 8: modulador PWM con 555, diodos y MOSFET de nivel lógico"></div>
+<div class="sim-guide"><ul>
+<li>Con el potenciómetro al 50 % la salida del 555 (amarillo) tiene ciclo de trabajo del 50 % y 1.28 kHz, y la lámpara recibe 5.6 V medios (la mitad de la tensión) y 2.8 W (la mitad de 6 W: \(P\propto D\), no \(D^2\), porque la tensión es de conmutación, no continua).</li>
+<li>Mueva el control al 10 %: \(D\) baja al 12 % y la tensión media a 1.3 V; al 90 %, 90 % y 10.8 V. La frecuencia casi no cambia gracias a los dos diodos (el tiempo de carga y el de descarga se reparten el mismo potenciómetro).</li>
+<li>La salida del 555 llega a 10.3 V (12 V menos 1.7 V): suficiente para el IRLZ44N (nivel lógico, \(V_{GS}\) de 10 V satura con \(R_{DS}\approx9\) mΩ).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Proyecto 9 · Amplificador de audio de 1 W en clase AB</h2>
+<div class="tablewrap"><table class="tbl">
+<tr><th>Capítulos</th><td>18, 21, 22 (etapa de salida, calor, A.O.)</td></tr>
+<tr><th>Objetivo</th><td>Construir una etapa de salida complementaria con TIP31C/TIP32C (±9 V) para un altavoz de 8 Ω, excitada por un A.O. con realimentación, y medir distorsión, potencia y rendimiento.</td></tr>
+<tr><th>Diseño</th><td>Pre-etapa: TL081 no inversor de ganancia 5; etapa de salida: par complementario con dos diodos 1N4148 (clase AB), resistores de emisor de 2.2 Ω/1 W, \(R_b=1\) kΩ a cada fuente (≥ corriente de base de pico), \(I_Q=20\)–40 mA; el A.O. cierra el lazo con la salida del par (reduce la distorsión).</td></tr>
+<tr><th>Materiales</th><td>TL081, TIP31C, TIP32C, 2 × 1N4148, 2 × 2.2 Ω/1 W, 2 × 1 kΩ, altavoz de 8 Ω, fuente simétrica de ±9 V/1 A (o dos de 9 V), disipadores pequeños; generador de funciones, osciloscopio.</td></tr>
+<tr><th>Procedimiento</th><td>Sin señal, mida \(I_Q\) en un emisor (caída en 2.2 Ω); con 1 kHz, 0.2 V → 4 V pico compare la forma de onda con y sin los diodos (clase B) para ver la distorsión de cruce; calcule \(P_o\) y \(\eta\).</td></tr>
+<tr><th>Esperado</th><td>Del simulador (capítulo 21): corriente de reposo ≈ 36 mA, THD 0.05 % con 0.5 V y 1.7 % con 4 V en AB; en clase B (sin diodos) la salida con 0.5 V de entrada es 3.6 mV (distorsión de cruce, THD > 100 %). Rendimiento con señal máxima: ≈ 50–60 %.</td></tr>
+</table></div>
+</section>
+
+<section>
+<h2>Proyecto 10 · Fuente de corriente constante y cargador (LM317)</h2>
+<div class="tablewrap"><table class="tbl">
+<tr><th>Capítulos</th><td>25 (reguladores), 15 (LED)</td></tr>
+<tr><th>Objetivo</th><td>Hacer circular una corriente constante (20 mA para LED, 100 mA para cargar una pila NiMH) con un LM317 y un resistor, independiente de la tensión de la carga.</td></tr>
+<tr><th>Diseño</th><td>Con el resistor \(R\) entre OUT y ADJ, la corriente de carga es \(I=1.25/R\) (más \(I_{ADJ}\approx50\ \mu\)A): \(R=62\ \Omega\) → 20 mA; \(R=12\ \Omega\) → 104 mA (potencia en \(R\): \(1.25\cdot0.104=0.13\) W). La entrada debe superar la tensión de la carga en 3 V (caída del LM317).</td></tr>
+<tr><th>Materiales</th><td>LM317, resistor de 62 Ω y de 12 Ω (1/4 W), cadena de 3 LED rojos, o 2 pilas AA NiMH, fuente de 9–12 V, multímetro.</td></tr>
+<tr><th>Procedimiento</th><td>Mida la corriente por la carga para tensiones de carga de 0 a 7 V (varíe el número de LED o una resistencia): la corriente debe ser constante. Anote la tensión de entrada mínima.</td></tr>
+<tr><th>Esperado</th><td>Corriente de 20 mA ±5 % con cargas de 0 a 6 V; con \(V_{in}=9\) V, la regulación se pierde cuando la tensión de la carga pasa de \(V_{in}-3\) V. El LM317 disipa \(P_d=(V_{in}-V_{carga}-1.25)I\), pocos cientos de mW.</td></tr>
+</table></div>
+</section>
+
+<section>
+<h2>Entrega y seguridad</h2>
+<ul>
+<li>Compruebe cada circuito con la fuente <b>limitada en corriente</b> y los condensadores electrolíticos con la polaridad correcta; no supere los valores máximos de los componentes (capítulos 21 y 28).</li>
+<li>Los proyectos con transformador usan transformadores de aislamiento y fusible en el primario, cableado por personal autorizado; los estudiantes trabajan sólo en baja tensión.</li>
+<li>El informe incluye siempre: esquema, cálculos, tabla de materiales con referencias, tabla de mediciones con unidades e incertidumbres, comparación con la simulación y conclusiones.</li>
+</ul>
+</section>
+</template>

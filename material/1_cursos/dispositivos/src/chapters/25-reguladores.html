@@ -1,0 +1,141 @@
+<template class="chapter-src" data-id="reguladores" data-num="25" data-title="Reguladores de tensión y fuentes de alimentación" data-part="Parte V · Circuitos analógicos y control" data-short="Regulación de línea y de carga, regulador serie con realimentación, referencia de banda prohibida, reguladores de tres terminales 78xx, caída de tensión (dropout) y reguladores LDO, LM317 ajustable, disipación y protección térmica, fuente completa con transformador, rectificador, filtro y regulador, y comparación con los conmutados">
+<p class="lead">Todo circuito electrónico exige una tensión de alimentación <b>constante</b>, pero la fuente de la que se dispone no lo es: la red eléctrica varía ±10 %, la rectificación deja un rizado, la tensión de una batería cae al descargarse y la carga pide corriente variable. Un <b>regulador</b> toma una tensión mal definida y entrega a la carga una tensión fija y limpia. Este capítulo estudia los reguladores lineales (el elemento de paso conduce corriente continua y disipa la diferencia de tensión como calor), desde el Zener hasta el regulador integrado de tres terminales y el LDO, y cierra con la fuente de alimentación completa: transformador, puente, filtro y regulador.</p>
+
+<section>
+<h2>Parámetros de un regulador</h2>
+<ul>
+<li><b>Regulación de línea</b>: la variación de la salida al variar la entrada, \(\Delta V_o/\Delta V_{in}\) (mV/V, o en %): unos pocos milivoltios para variaciones de varios voltios en la entrada de un 7805.</li>
+<li><b>Regulación de carga</b>: la variación de la salida al variar la corriente, \(\Delta V_o/\Delta I_o\) (resistencia de salida, 10–100 mΩ): con 0.05 Ω, un cambio de 1 A baja la salida 50 mV.</li>
+<li><b>Rechazo de rizado (PSRR o <i>ripple rejection</i>)</b>: la atenuación del rizado de entrada en la salida, en dB (60–80 dB a 100–120 Hz en un 7805).</li>
+<li><b>Caída de tensión (<i>dropout</i>)</b>: la diferencia mínima \(V_{in}-V_o\) para que el regulador mantenga la regulación: 2 V en un 78xx y de 0.1 a 1.2 V en un LDO.</li>
+<li><b>Corriente de reposo \(I_Q\)</b>: la corriente que consume el propio regulador (5 mA en un 7805; microamperios en reguladores para baterías).</li>
+<li><b>Coeficiente de temperatura</b>, <b>ruido</b> (µV rms), <b>limitación de corriente</b> y <b>protección térmica</b>.</li>
+</ul>
+</section>
+
+<section>
+<h2>Principio del regulador serie</h2>
+<p>Un regulador sencillo es un Zener con una resistencia en serie (<b>regulador paralelo o <i>shunt</i></b>): la corriente de la carga se resta de la del Zener y la tensión se mantiene mientras éste conduzca (capítulo 15). Es simple pero malgasta potencia y no puede entregar mucha corriente. La solución es el <b>regulador serie</b>: un transistor de paso en serie con la carga cuya conducción se controla para mantener la salida constante.</p>
+<p>El diagrama de bloques de un regulador lineal integrado tiene tres partes: (1) una <b>referencia de tensión</b> de banda prohibida (<i>bandgap</i>), que suma una tensión proporcional a la temperatura (\(V_T\ln N\), con coeficiente positivo) a un \(V_{BE}\) (de coeficiente negativo −2 mV/K) para obtener unos \(1.25\) V casi independientes de la temperatura; (2) un <b>amplificador de error</b> que compara la fracción de la salida (de un divisor resistivo) con la referencia; (3) el <b>transistor de paso</b> (un Darlington npn en los 78xx, un transistor pnp o un PMOS en los LDO), que el amplificador excita para corregir el error. Es una realimentación negativa de lazo cerrado, con ganancia de lazo \(A\beta\):</p>
+<div class="eq key" data-name="Salida del regulador serie y regulación">\[V_o=V_{ref}\left(1+\frac{R_a}{R_b}\right)\qquad R_{out}=\frac{r_{o}}{1+A\beta}\approx\text{decenas de m}\Omega\qquad\text{PSRR}\approx20\log(1+A\beta)\]</div>
+<p>La corriente de entrada es la de salida más \(I_Q\): \(I_{in}=I_o+I_Q\). La tensión de entrada puede variar libremente dentro de los límites (de \(V_o+V_{dropout}\) a 35 V en un 7805) y la salida permanece prácticamente constante. La potencia disipada por el regulador es lo que no llega a la carga:</p>
+<div class="eq key" data-name="Potencia disipada en un regulador lineal">\[P_d=(V_{in}-V_o)\,I_o+V_{in}\,I_Q\qquad\eta=\frac{V_o\,I_o}{V_{in}\,(I_o+I_Q)}\approx\frac{V_o}{V_{in}}\]</div>
+<p>El rendimiento es, como máximo, \(V_o/V_{in}\): con 12 V de entrada y 5 V de salida, 42 %; el 58 % restante se disipa como calor (7 W con 1 A). Por eso se reduce al mínimo la caída \(V_{in}-V_o\).</p>
+</section>
+
+<section>
+<h2>Reguladores de tres terminales (78xx) y caída de tensión</h2>
+<p>La serie 78xx (entrada, salida y común) incluye las tensiones de 5, 6, 8, 9, 12, 15, 18 y 24 V con corrientes de hasta 1–1.5 A; la 79xx, las negativas; y las 78Lxx (100 mA) para corrientes pequeñas. Reglas de uso: (1) un condensador de ≥ 0.33 µF en la entrada si el regulador está lejos del filtro (evita la oscilación) y de ≥ 0.1 µF en la salida (mejora la respuesta a transitorios); (2) un diodo (1N4001) de salida a entrada protege contra cortocircuitos de la entrada con carga capacitiva grande; (3) se debe respetar la <b>caída mínima</b> de 2 V, incluso en los valles del rizado.</p>
+<p>Los reguladores de <b>baja caída (LDO, <i>low dropout</i>)</b> usan un transistor de paso pnp (caída 0.5 V) o, mejor, un PMOS (caída de 50–300 mV, proporcional a \(R_{DS(on)}\cdot I\)), de modo que regulan hasta que la entrada baja a poco más que la salida: imprescindibles en equipos con batería (de 4.2 V a 3.3 V). El precio es una mayor sensibilidad a la estabilidad (requieren un condensador de salida con ESR en un margen) y, en los pnp, una corriente de reposo mayor cuando están en caída.</p>
+<div class="sim" data-sim="c25-dropout" data-title="Característica de entrada de un regulador: caída de tensión (dropout)"></div>
+<div class="sim-guide"><ul>
+<li>El barrido de \(V_{in}\) de 0 a 20 V con el 7805 muestra tres tramos: de 0 a 2 V la salida es nula (el regulador no arranca); de 2 a 7 V la salida sigue a la entrada con una diferencia de 2 V (\(V_o=V_{in}-2\)): el regulador está en la <b>caída</b> y no regula; por encima de 7 V la salida se fija en 5.0 V (4.99 V con 9 V de entrada) y no cambia aunque la entrada llegue a 20 V.</li>
+<li>Cambie al <b>AMS1117-3.3</b> (LDO): la salida se fija en 3.3 V a partir de unos 4.5 V de entrada (caída de 1.1 V; con 4.3 V da 3.16 V y con 4.5 V, 3.26 V). Con el 7812 hacen falta unos 14 V.</li>
+<li>Baje \(R_L\) a 10 Ω (500 mA con 5 V): la meseta se mantiene en 5 V; con 2 Ω la carga pediría 2.5 A y el regulador llega a su <b>límite de corriente</b> (1.5 A): la salida baja a 3.0 V (1.5 V con 1 Ω) y el panel indica «limitado por corriente».</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Disipación y protección térmica</h2>
+<p>En un regulador lineal toda la potencia \(P_d\) se convierte en calor en la unión, de modo que se aplica la cadena de resistencias térmicas del capítulo 21: \(T_j=T_a+P_d(R_{\theta JC}+R_{\theta CS}+R_{\theta SA})\). El 7805 en TO-220 tiene \(R_{\theta JA}=65\) K/W sin disipador y \(R_{\theta JC}=5\) K/W. Con 12 V de entrada y 0.5 A de carga se disipan \((12-5)\cdot0.5=3.5\) W: sin disipador la unión llegaría a \(25+3.5\cdot65=252\) °C. Los reguladores integrados incluyen <b>protección térmica</b> (apagado al llegar a ≈ 150 °C, reconexión al enfriarse unos grados), <b>limitación de corriente</b> y <b>protección del área de operación segura</b> (la corriente máxima se reduce cuando \(V_{in}-V_o\) es grande, para no exceder la potencia).</p>
+<div class="sim" data-sim="c25-lineal" data-title="Regulador 7805: potencia disipada, temperatura y protección térmica"></div>
+<div class="sim-guide"><ul>
+<li>Con 12 V a la entrada y una carga de 10 Ω (0.5 A): \(P_d=3.49\) W y rendimiento 41 %. <b>Sin disipador</b> la unión sube por encima de 250 °C y salta la protección térmica: la salida se apaga, el regulador se enfría, vuelve a conducir… y oscila (el simulador lo muestra «protección térmica activada»). Con el disipador mediano (8 K/W, \(R_{\theta JA}=13\) K/W) la temperatura se estabiliza en 71 °C.</li>
+<li>Baje la carga a 5 Ω (1 A): \(P_d=6.98\) W; con disipador de 8 K/W, \(T_j=116\) °C (regula); sin él, ≈ 480 °C teóricos y protección térmica.</li>
+<li>Suba la entrada a 24 V con 10 Ω y el disipador de 8 K/W: \(P_d=9.5\) W, rendimiento 21 % y \(T_j=150\) °C: al límite de la protección. Un transformador con una tensión secundaria sobredimensionada dispara el calor.</li>
+<li>Cambie al <b>AMS1117-3.3</b> con 12 V y 10 Ω (0.33 A): 2.9 W en un encapsulado SOT-223 de ≈ 50 K/W: protección térmica. Con 5 V a la entrada la disipación baja a 0.57 W (rendimiento 65 %) y la temperatura a 55 °C: un LDO sólo conviene con una diferencia de entrada–salida pequeña.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El regulador ajustable LM317</h2>
+<p>El LM317 (Bob Pease/National, 1976) mantiene <b>1.25 V</b> exactos entre su salida y su terminal de ajuste (ADJ). Si se conecta una resistencia \(R_1\) entre OUT y ADJ, circula por ella una corriente constante \(1.25/R_1\); esa corriente atraviesa también \(R_2\) (entre ADJ y tierra), a la que se suma la pequeña corriente del terminal ADJ (≈ 50 µA):</p>
+<div class="eq key" data-name="LM317">\[V_o=1.25\left(1+\frac{R_2}{R_1}\right)+I_{ADJ}\,R_2\qquad R_1=240\ \Omega\ (\text{corriente mínima de carga de }5\text{ mA})\]</div>
+<p>Con \(R_1=240\) Ω: \(R_2=0\) da 1.25 V; \(R_2=240\) Ω, 2.5 V; 720 Ω, 5.0 V; 1.68 kΩ, 10.0 V; 2.16 kΩ, 12.5 V. Necesita una carga mínima de ≈ 3–10 mA que mantenga la regulación (por eso \(R_1\) pequeña) y una caída de ≈ 2.5 V. Como fuente de corriente: con una resistencia \(R\) entre OUT y ADJ y la carga en ADJ, \(I=1.25/R\) (para LED o carga de baterías).</p>
+<div class="sim" data-sim="c25-317" data-title="LM317: ajuste de la tensión de salida con R₁ y R₂"></div>
+<div class="sim-guide"><ul>
+<li>Con \(R_1=240\) Ω y \(R_2=720\) Ω la salida es 5.03 V (teórica 5.00 V + 36 mV por \(I_{ADJ}R_2\)): el panel da la corriente en \(R_1\), 5.2 mA, constante.</li>
+<li>Mueva \(R_2\): la salida varía casi linealmente con \(R_2\) (una pendiente de 5.2 mV/Ω). Con \(R_2=0\) la salida es de 1.25 V: el mínimo del LM317.</li>
+<li>Baje \(V_{in}\) por debajo de \(V_o+2.5\) V: el regulador deja de regular (caída mínima). La salida baja con la entrada.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Fuente de alimentación completa</h2>
+<p>Una fuente de alimentación lineal clásica enlaza las etapas de los capítulos anteriores: <b>transformador</b> (reduce la tensión de red y la aísla), <b>puente rectificador</b> (capítulo 14), <b>condensador de filtro</b> (reduce el rizado a una tensión casi continua con ondas dientes de sierra) y <b>regulador</b>. El diseño parte de la salida deseada y del peor caso de la entrada:</p>
+<ol>
+<li><b>Tensión del secundario.</b> El valle del rizado debe superar \(V_o+V_{dropout}\) con la tensión de red más baja (−10 %). Para un 7805: \(V_{min}\ge7+\) margen. Con \(V_{rms}=12\) V (\(V_{pk}=17\) V): \(V_{pk}-2V_D=15.6\) V (puente con dos diodos conduciendo), menos el 10 % de la red → 14 V, menos el rizado.</li>
+<li><b>Condensador.</b> El rizado de pico a pico, en rectificación de onda completa a la frecuencia \(f\) de red, es como máximo:</li>
+</ol>
+<div class="eq key" data-name="Rizado del condensador de filtro (onda completa)">\[\Delta V_{pp}\le\frac{I_{o}}{2\,f\,C}\qquad C\ge\frac{I_o}{2\,f\,\Delta V_{pp}}\qquad V_{min}=V_{pk}-2V_D-\Delta V_{pp}\ge V_o+V_{dropout}\]</div>
+<p>(es una cota superior: el condensador sólo se descarga durante parte del semiperíodo). Con 0.5 A, 60 Hz y 2200 µF: \(\Delta V\le1.9\) V. La corriente en los diodos y en el transformador no es continua sino un impulso en cada pico de la tensión, de valor \(I_{pico}\approx5\)–10 veces \(I_o\), con lo que el transformador, el puente y el fusible deben dimensionarse para el valor eficaz, 1.5–2 veces \(I_o\). <b>Tercero: regulador y disipador.</b> Calcular \(P_d=(V_{in,max}-V_o)I_o\) con la tensión media máxima (red +10 %) y dimensionar el disipador como en el capítulo 21.</p>
+<div class="sim" data-sim="c25-fuente" data-title="Fuente lineal completa: transformador, puente, filtro y regulador 7805"></div>
+<div class="sim-guide"><ul>
+<li>Con secundario de 17 V pico, 2200 µF y 10 Ω (0.5 A): después del filtro la tensión media es 13.5 V, con 1.36 V de rizado (diente de sierra de 120 Hz): mínimo de 12.8 V, 5.8 V por encima de los 7 V que necesita el regulador. A la salida: 4.97 V con un rizado de sólo 185 µV: el regulador atenúa el rizado en 77 dB.</li>
+<li>Baje \(C\) a 470 µF: el rizado crece a 5.8 V y el mínimo a 9.1 V (todavía por encima de 7 V): la salida sigue limpia (2 mV de rizado). Con 220 µF el rizado es de 9.8 V y el mínimo cae a 5.1 V, <b>por debajo de la caída mínima</b>: el regulador pierde la regulación en cada valle y la salida muestra un rizado de 1.9 V (hasta 3.1 V).</li>
+<li>Baje la tensión del secundario a 11 V pico: el mínimo es de 7.04 V, en el límite; la salida pierde 50 mV en cada valle (rizado de 52 mV): el efecto del margen insuficiente.</li>
+<li>Con una carga de 5 Ω (1 A) el rizado del filtro sube a 2.45 V y la media baja a 12.4 V: más corriente, más rizado y más calor en el regulador (sin disipador no sirve).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Reguladores lineales frente a conmutados</h2>
+<div class="tablewrap"><table class="tbl"><tr><th>Propiedad</th><th>Lineal (78xx, LDO)</th><th>Conmutado (buck, boost)</th></tr>
+<tr><td>Rendimiento</td><td>\(V_o/V_{in}\) (30–70 %)</td><td>80–95 %</td></tr>
+<tr><td>Calor</td><td>alto: \(P_d=(V_{in}-V_o)I_o\)</td><td>bajo</td></tr>
+<tr><td>Funciones</td><td>sólo reducir</td><td>reducir, elevar, invertir</td></tr>
+<tr><td>Ruido y rizado</td><td>muy bajo (µV); sin EMI</td><td>mayor (mV) a la frecuencia de conmutación; EMI</td></tr>
+<tr><td>Complejidad y tamaño</td><td>mínimo (3 componentes)</td><td>bobina, diodo, condensadores</td></tr>
+<tr><td>Respuesta a transitorios</td><td>muy rápida</td><td>más lenta</td></tr>
+<tr><td>Costo</td><td>muy bajo</td><td>medio</td></tr>
+<tr><td>Uso típico</td><td>Sensores, audio, referencia, etapas de bajo ruido y \(V_{in}-V_o\) pequeña</td><td>Alta corriente, baterías, diferencias grandes de tensión</td></tr></table></div>
+<p>La práctica habitual: un regulador conmutado reduce eficientemente la tensión hasta un valor próximo a la salida y un LDO final la limpia de rizado y ruido, con una pérdida pequeña (por ejemplo, de 12 V a 5.3 V con un buck y de 5.3 V a 5 V con un LDO). En el diseño de fuentes con muchas tensiones (digitales, analógicas, referencia) se emplean los dos tipos.</p>
+</section>
+
+<section>
+<h2>Medidas de laboratorio</h2>
+<ul>
+<li><b>Dropout.</b> Con una fuente variable en la entrada de un 7805 y una carga de 50 Ω, suba la entrada desde 0 y mida la salida: la salida sigue a la entrada menos ≈ 2 V hasta que se fija en 5 V. Mida el voltaje de entrada en el que la salida cae 100 mV.</li>
+<li><b>Regulación de línea y de carga.</b> Varíe la entrada de 8 a 20 V: la salida varía unos mV. Varíe la carga de 100 mA a 1 A (con un reóstato de potencia): la salida baja decenas de mV.</li>
+<li><b>Rizado.</b> Con una fuente completa (transformador de 12 V, puente, 1000–2200 µF y 7805), mida el rizado antes y después del regulador con el osciloscopio acoplado en CA: debe haber cientos de mV antes y microvoltios o pocos mV después.</li>
+<li><b>Temperatura.</b> Con 1 A de carga y sin disipador, <b>no toque</b> el regulador: mida la temperatura con un termómetro de infrarrojos y verá cómo la protección térmica lo apaga a ≈ 150 °C.</li>
+<li><b>LM317.</b> Con \(R_1=240\) Ω y un potenciómetro de 5 kΩ como \(R_2\) mida la salida frente a la resistencia y compare con \(1.25(1+R_2/R_1)\).</li>
+</ul>
+</section>
+
+<section>
+<h2>Problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un 7812 recibe 18 V y entrega 0.3 A. Calcule la potencia que disipa (con \(I_Q=5.5\) mA) y su rendimiento.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(P_d=(18-12)\cdot0.3+18\cdot0.0055=1.8+0.1=1.9\) W.</li>
+<li>\(P_o=12\cdot0.3=3.6\) W; \(P_{in}=18\cdot0.3055=5.5\) W.</li>
+<li>\(\eta=3.6/5.5=65.5\) %.</li>
+<li><b>Resultado.</b> <span class="ans">1.9 W y 65 % (con 1.9 W y \(R_{\theta JA}=65\) K/W subiría 124 K: usar disipador).</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Con un LM317 y \(R_1=240\) Ω se quieren 9 V. Halle \(R_2\) (desprecie \(I_{ADJ}\)).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(V_o=1.25(1+R_2/R_1)\Rightarrow1+R_2/R_1=9/1.25=7.2\).</li>
+<li>\(R_2=6.2\cdot240=1488\) Ω → 1.5 kΩ (E24).</li>
+<li>Con 1.5 kΩ: \(V_o=1.25\cdot(1+6.25)=9.06\) V (más \(50\ \mu\text{A}\cdot1.5\text{ k}=75\) mV).</li>
+<li><b>Resultado.</b> <span class="ans">\(R_2\approx1.5\) kΩ (9.1 V).</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Diseñe el filtro de una fuente de 7805 que entrega 0.8 A con un secundario de 9 V eficaces y 60 Hz: halle la tensión de pico después del puente, el rizado máximo permitido y \(C\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(V_{pk}=9\sqrt2=12.7\) V; con el puente (2 diodos de 0.8 V) \(V_{max}=11.1\) V; con la red a −10 %: \(12.7\cdot0.9-1.6=9.9\) V.</li>
+<li>El valle debe ser ≥ 7 V (+ margen 0.5 V): \(\Delta V_{pp}\le9.9-7.5=2.4\) V.</li>
+<li>\(C\ge I_o/(2f\Delta V)=0.8/(120\cdot2.4)=2780\ \mu\)F → 3300 µF.</li>
+<li><b>Resultado.</b> <span class="ans">\(V_{max}=11.1\) V; \(\Delta V\le2.4\) V; \(C=3300\ \mu\)F (con la red al mínimo el margen es justo: un secundario de 12 V eficaces daría más holgura).</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un 7805 alimenta 0.6 A desde una fuente de 14 V. Calcule \(P_d\), la temperatura de la unión sin disipador (\(T_a=25\) °C) y el disipador necesario para \(T_j\le110\) °C (con \(R_{\theta JC}=5\) K/W y mica de 0.8 K/W).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(P_d=(14-5)\cdot0.6+14\cdot0.005=5.4+0.07=5.5\) W.</li>
+<li>Sin disipador: \(T_j=25+5.5\cdot65=382\) °C: protección térmica.</li>
+<li>\(R_{\theta JA}\le(110-25)/5.5=15.5\) K/W ⇒ \(R_{\theta SA}\le15.5-5-0.8=9.7\) K/W.</li>
+<li><b>Resultado.</b> <span class="ans">5.5 W; 382 °C sin disipador; disipador de ≤ 9.7 K/W (por ejemplo, 8 K/W). Alternativa: un buck de 14 V a 5.3 V y un LDO, o bajar la tensión de entrada.</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>Un regulador LDO de 3.3 V con caída de 0.3 V alimenta 150 mA desde una batería de iones de litio que baja de 4.2 V a 3.0 V. ¿Hasta qué tensión regula? ¿Cuál es el rendimiento al inicio y la potencia disipada?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>Regula mientras \(V_{in}\ge3.3+0.3=3.6\) V: hasta 3.6 V de la batería (por debajo, la salida sigue a la entrada menos 0.3 V).</li>
+<li>Con 4.2 V: \(P_d=(4.2-3.3)\cdot0.15=0.135\) W; \(\eta=3.3/4.2=78.6\) %.</li>
+<li>Con 3.6 V: \(P_d=45\) mW; \(\eta=91.7\) %.</li>
+<li><b>Resultado.</b> <span class="ans">Regula de 4.2 V a 3.6 V; rendimiento de 79 % a 92 % y 135 mW a 45 mW. Un regulador 7805/AMS1117 (caída 1.1 V) dejaría de regular a 4.4 V: el LDO aprovecha mucho más la batería.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

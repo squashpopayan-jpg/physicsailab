@@ -1,0 +1,131 @@
+<template class="chapter-src" data-id="resistores" data-num="4" data-title="Resistores" data-part="Parte II · Dispositivos pasivos" data-short="Resistividad y resistencia, coeficiente de temperatura, tipos constructivos, series normalizadas y código de colores, potencia y calentamiento, tolerancia, ruido térmico de Johnson, comportamiento real en alta frecuencia y aplicaciones">
+<p class="lead">El resistor es el componente más abundante y el más malentendido: parece trivial («\(V=IR\)») y sin embargo cada una de sus características —tolerancia, deriva con la temperatura, potencia máxima, ruido, inductancia de los terminales— decide si un circuito de precisión funciona o no. Este capítulo parte de la física de la conducción en un material, describe cómo se fabrican y se especifican los resistores y termina en el comportamiento real que hay que tener presente cuando se trabaja a frecuencias altas.</p>
+
+<section>
+<h2>De la resistividad a la resistencia</h2>
+<p>En un conductor óhmico, un campo eléctrico \(E\) produce una densidad de corriente \(J=\sigma E\), donde la <b>conductividad</b> \(\sigma=1/\rho\) depende del material. En el modelo de Drude, \(\sigma=n\,q\,\mu\): el número de portadores por unidad de volumen \(n\), su carga \(q\) y su <b>movilidad</b> \(\mu\) (velocidad de arrastre por unidad de campo). Un cable de longitud \(L\) y sección \(A\) tiene, integrando, la resistencia</p>
+<div class="eq key" data-name="Resistencia de un conductor homogéneo">\[R=\rho\,\frac{L}{A}\qquad R(T)=R_0\left[1+\alpha\,(T-T_0)\right]\qquad \text{TC}=\alpha\times10^6\ \text{ppm/K}\]</div>
+<p>La resistividad del cobre es \(1.68\times10^{-8}\ \Omega\text{m}\), la del aluminio \(2.65\times10^{-8}\), la de la aleación níquel-cromo de los hornos \(1.1\times10^{-6}\) y la del carbono unas \(3.5\times10^{-5}\). Cien metros de alambre de cobre de 0.5 mm de diámetro tienen \(R=1.68\times10^{-8}\cdot100/1.96\times10^{-7}=8.56\ \Omega\): un cable no es un conductor perfecto, y conviene recordarlo cuando por él circulan amperios (a 5 A, esos 100 m disipan 214 W). En los metales la resistencia <b>aumenta</b> con la temperatura (\(\alpha_{Cu}=0.0039\ \text{K}^{-1}\)): a 75 °C, la misma bobina vale 10.4 Ω. Así se miden temperaturas con un hilo de platino (Pt100: 100 Ω a 0 °C, \(\alpha=0.00385\)). En el carbono y en los semiconductores el coeficiente puede ser negativo.</p>
+</section>
+
+<section>
+<h2>Tipos de resistores y cómo se especifican</h2>
+<div class="tablewrap"><table class="tbl"><tr><th>Tipo</th><th>Construcción</th><th>Tolerancia</th><th>TC (ppm/K)</th><th>Características y usos</th></tr>
+<tr><td><b>Película de carbono</b></td><td>Capa de carbono sobre cerámica, ranurada en espiral</td><td>5 %</td><td>−200…−1000</td><td>El más barato; ruido medio; uso general</td></tr>
+<tr><td><b>Película metálica</b></td><td>Capa de NiCr sobre cerámica</td><td>0.1–1 %</td><td>±15–100</td><td>Estable y de poco ruido: instrumentación, divisores</td></tr>
+<tr><td><b>Óxido metálico</b></td><td>SnO₂ grueso</td><td>2–5 %</td><td>±200–300</td><td>Soporta sobrecargas y pulsos; 1 a 5 W</td></tr>
+<tr><td><b>Bobinado</b></td><td>Hilo resistivo sobre núcleo cerámico</td><td>1–5 %</td><td>±20–100</td><td>Potencia (hasta cientos de W); inductivo, no sirve en RF</td></tr>
+<tr><td><b>SMD de película gruesa</b></td><td>Pasta sobre alúmina, tamaños 0402…2512</td><td>1–5 %</td><td>±100–200</td><td>Placas modernas; 0603 = 1/10 W</td></tr>
+<tr><td><b>Resistor shunt</b></td><td>Metal (manganina) de baja R, con 4 terminales</td><td>0.5–1 %</td><td>±20–50</td><td>Medir corrientes: 1 mΩ–100 mΩ</td></tr>
+<tr><td><b>Potenciómetro / trimmer</b></td><td>Pista de carbón o cermet con cursor móvil</td><td>10–20 %</td><td>±200–500</td><td>Ajustes y controles; curva lineal («B») o logarítmica («A», audio)</td></tr></table></div>
+<p>La <b>tolerancia</b> es el máximo desvío del valor real respecto del nominal a 25 °C. La <b>deriva térmica</b> (TC) añade un cambio con la temperatura: un resistor de carbono de 1 kΩ con 500 ppm/K cambia 30 Ω (3 %) si se calienta 60 K, lo que de por sí agota su tolerancia de 5 %. También se especifican la <b>potencia nominal</b> (a 70 °C), la <b>tensión máxima de trabajo</b> (350 V en 1/4 W axial), el ruido y la estabilidad a largo plazo.</p>
+</section>
+
+<section>
+<h2>Series de valores normalizados y código de colores</h2>
+<p>Los fabricantes no hacen todos los valores: producen valores de una <b>serie geométrica</b> (norma IEC 60063) con tantos pasos por década como indica su número: \(R_k=10^{k/N}\) redondeado a dos cifras. La serie <b>E12</b> (12 valores por década, ±10 %) es 1.0, 1.2, 1.5, 1.8, 2.2, 2.7, 3.3, 3.9, 4.7, 5.6, 6.8, 8.2; la <b>E24</b> (±5 %) añade los valores intermedios 1.1, 1.3, 1.6, 2.0, 2.4, 3.0, 3.6, 4.3, 5.1, 6.2, 7.5, 9.1; la <b>E96</b> (±1 %) tiene 96 valores. El paso entre valores contiguos corresponde a la tolerancia (en E12, 10^{1/12} = +21 %, y con ±10 % los rangos casi se tocan). Así, cualquier valor teórico se puede aproximar con un error de menos de la mitad del paso: 3.05 kΩ se reemplaza por 3.0 kΩ de la serie E24 (error −1.6 %).</p>
+<p>Los resistores de agujero pasante llevan <b>bandas de colores</b> (IEC 60062): las primeras bandas dan los dígitos significativos, la siguiente el multiplicador de potencias de diez y la última la tolerancia. Los códigos de 4 bandas usan 2 dígitos; los de 5, 3. Los SMD llevan números: «103» = 10 × 10³ = 10 kΩ, «4R7» = 4.7 Ω, «01C» (E96) = 1.00 kΩ.</p>
+<div class="tablewrap"><table class="tbl"><tr><th>Color</th><th>Negro</th><th>Marrón</th><th>Rojo</th><th>Naranja</th><th>Amarillo</th><th>Verde</th><th>Azul</th><th>Violeta</th><th>Gris</th><th>Blanco</th><th>Dorado</th><th>Plata</th></tr>
+<tr><td>Dígito</td><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td><td>9</td><td>—</td><td>—</td></tr>
+<tr><td>Multiplicador</td><td>×1</td><td>×10</td><td>×100</td><td>×1 k</td><td>×10 k</td><td>×100 k</td><td>×1 M</td><td>×10 M</td><td>×100 M</td><td>×1 G</td><td>×0.1</td><td>×0.01</td></tr>
+<tr><td>Tolerancia</td><td>—</td><td>±1 %</td><td>±2 %</td><td>—</td><td>—</td><td>±0.5 %</td><td>±0.25 %</td><td>±0.1 %</td><td>±0.05 %</td><td>—</td><td>±5 %</td><td>±10 %</td></tr></table></div>
+<p>Ejemplo: amarillo–violeta–rojo–dorado = 4, 7, ×100, ±5 % = 4.7 kΩ. En la simulación se eligen los colores de cada banda y se obtiene el valor, el valor más próximo de las series E12 y E24 y el intervalo de tolerancia.</p>
+<div class="sim" data-sim="c4-colores" data-title="Código de colores de los resistores"></div>
+<div class="sim-guide"><ul>
+<li>Amarillo, violeta, rojo y dorado leen 4.7 kΩ ±5 %: el valor real está entre 4465 Ω y 4935 Ω, y pertenece a las series E12 y E24.</li>
+<li>Con cinco bandas (marrón, negro, negro, rojo, marrón) se lee 100 × 100 = 10.0 kΩ ±1 %: serie E96, película metálica.</li>
+<li>Si lee una combinación no normalizada (por ejemplo 4.6 kΩ) la simulación muestra el valor más próximo de cada serie: es el que realmente compraría.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Potencia, calentamiento y límites de uso</h2>
+<p>Un resistor convierte en calor toda la energía eléctrica que absorbe: \(P=V^2/R=I^2R\). Ese calor eleva su temperatura hasta que se equilibra con el que cede al ambiente por conducción, convección y radiación: \(T=T_a+P\,R_{\theta}\), donde \(R_\theta\) es la resistencia térmica (K/W). Para un resistor de 1/4 W, el cuerpo alcanza unos 125 °C por encima del ambiente a su potencia nominal, y por eso el fabricante da un <b>diagrama de derrateo</b>: la potencia máxima admisible es la nominal hasta 70 °C y decrece linealmente hasta 0 a 155 °C. A 100 °C ambiente, un 1/4 W solo puede disipar \(0.25\cdot(155-100)/(155-70)=0.16\) W. Se recomienda trabajar con la mitad de la potencia nominal para que dure.</p>
+<p>La temperatura no cambia de golpe: el calor tiene una inercia (capacidad térmica) y el resistor se acerca a su equilibrio con una constante de tiempo de unos segundos. El Taller modela esa dinámica: un 1/4 W de 100 Ω conectado a 10 V disipa 1 W (4 veces lo permitido) y, tras unos segundos de brillo naranja creciente, se abre y deja el circuito sin corriente.</p>
+<div class="sim" data-sim="c4-potencia" data-title="Potencia y calentamiento: ¿cuánto aguanta un resistor?"></div>
+<div class="sim-guide"><ul>
+<li>Con 5 V sobre 100 Ω circulan 50 mA y se disipan 250 mW: justo la potencia nominal de un 1/4 W. El cuerpo llega a unos 150 °C; es el límite superior recomendado.</li>
+<li>A 10 V la potencia es 1 W (4×). El resistor se pone naranja y se quema en pocos segundos. Cambie a 2 W: ahora disipa la mitad de su potencia nominal y se mantiene a ~85 °C. <b>La solución es una potencia nominal mayor, no una tensión menor.</b></li>
+<li>Con la potencia de 1/8 W y 5 V se supera con creces el límite (2×): se quema.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Tolerancia y errores de los circuitos con resistores</h2>
+<p>Cuando un circuito emplea varios resistores, sus tolerancias se componen. En un divisor de tensión con \(R_1\) y \(R_2\) de ±1 %, la salida \(V_{out}=V_{in}R_2/(R_1+R_2)\) puede desviarse en el peor caso (\(R_2\) alta y \(R_1\) baja) \(10.1/(10.1+9.9)=0.505\) en lugar de 0.5: un error de +1 %, igual a la tolerancia (no el doble, porque los dos errores se compensan parcialmente en la razón). Con resistores del 5 % el peor caso es ±5 %. Estadísticamente, si las desviaciones son independientes y pequeñas, el error típico es menor que el peor caso: unas \(\sqrt2\) veces menor que la suma lineal en una razón, y sigue una distribución aproximadamente gaussiana. La simulación muestra el resultado de miles de divisores construidos con resistores aleatorios.</p>
+<div class="sim" data-sim="c4-tolerancia" data-title="Dispersión de un divisor 1:1 con resistores reales (Monte Carlo)"></div>
+<div class="sim-guide"><ul>
+<li>Con ±1 % la salida de un divisor ideal del 50 % cae entre 49.5 % y 50.5 %, con desviación típica de 0.2 %.</li>
+<li>Con ±5 %, el intervalo es de 47.5 % a 52.5 %, con \(\sigma\approx1.0\ \%\): si necesita una referencia precisa, use película metálica de 1 % (o menos) o resistencias «apareadas» de una misma red, cuyos valores derivan juntos.</li>
+<li>La <i>razón</i> de dos resistores de la misma red integrada (matched) mantiene el error por debajo de 0.05 % aunque el valor absoluto varíe ±20 %.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Ruido térmico de Johnson–Nyquist</h2>
+<p>Los portadores de carga de un resistor agitados por la temperatura producen una tensión aleatoria entre sus terminales, aunque no circule corriente. Su valor eficaz en un ancho de banda \(\Delta f\) es</p>
+<div class="eq key" data-name="Ruido térmico">\[v_n=\sqrt{4k_BT\,R\,\Delta f}\qquad \frac{v_n}{\sqrt{\Delta f}}=\sqrt{4k_BTR}\approx0.128\sqrt{R/\text{k}\Omega}\ \ \text{nV}/\sqrt{\text{Hz}}\ \text{a 300 K}\]</div>
+<p>Un resistor de 10 kΩ medido con un ancho de banda de 20 kHz (un amplificador de audio) produce 1.82 µV rms; uno de 1 MΩ en 1 MHz, 129 µV rms; uno de 1 kΩ en 10 kHz, 0.41 µV. Este ruido es blanco (igual para todas las frecuencias), no depende del material y solo disminuye enfriando o reduciendo \(R\) o el ancho de banda. En un circuito de bajo nivel (un preamplificador de micrófono, un sensor) conviene elegir resistores pequeños: el ruido se reduce con \(\sqrt R\). Los resistores de carbono y de película gruesa añaden un ruido «en exceso» que crece al disminuir la frecuencia (1/f) cuando circula corriente continua; los de película metálica y bobinados casi no lo tienen.</p>
+<div class="sim" data-sim="c4-ruido" data-title="Ruido térmico de un resistor"></div>
+<div class="sim-guide"><ul>
+<li>Con 10 kΩ, 20 kHz y 300 K: \(v_n=1.82\ \mu\)V rms. Duplique la resistencia y el ruido sube \(\sqrt2\) (2.57 µV).</li>
+<li>El valor «pico a pico» observado en un osciloscopio es unas 6 veces el valor eficaz (en un ruido gaussiano, el 99.7 % de las muestras cae en ±3σ).</li>
+<li>Con una señal de 100 µV y ruido de 1.8 µV, la relación señal/ruido es 35 dB.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El resistor real a alta frecuencia</h2>
+<p>Un resistor de verdad tiene una <b>inductancia serie</b> \(L\) (el cuerpo y los terminales; unos 10 nH en un axial, 2 µH en un bobinado) y una <b>capacitancia parásita en paralelo</b> \(C\) (entre terminales y entre espiras; 0.2–0.5 pF). Su impedancia es</p>
+<div class="eq">\[Z(j\omega)=\frac{R+j\omega L}{1+j\omega C\,(R+j\omega L)}\]</div>
+<p>Para \(R\) pequeña domina la inductancia (la impedancia sube a partir de \(f=R/2\pi L\)); para \(R\) grande domina la capacitancia (la impedancia baja a partir de \(f=1/2\pi RC\)). Un resistor de 100 kΩ con 0.3 pF tiene una frecuencia de corte de 5.3 MHz; a 1 MHz su impedancia ya es 98.3 kΩ ∠−10.7°. Un resistor bobinado de 10 Ω con 2 µH tiene un comportamiento inductivo desde 0.8 MHz. Por eso en radiofrecuencia y en circuitos rápidos se usan resistores SMD de película, con menos de 1 nH. El interruptor «Efectos parásitos» del Taller añade estas capacitancias a la simulación.</p>
+<div class="sim" data-sim="c4-parasitos" data-title="Impedancia de un resistor real en función de la frecuencia"></div>
+<div class="sim-guide"><ul>
+<li>Con un resistor de película de 1 kΩ (L = 10 nH, C = 0.3 pF) la impedancia es plana hasta decenas de MHz: la inductancia y la capacitancia parásitas casi se cancelan en una banda ancha.</li>
+<li>Con 100 kΩ se ve la caída capacitiva a partir de 5.3 MHz. Con 10 Ω bobinado (L = 2 µH) sube a partir de 0.8 MHz.</li>
+<li>El resistor SMD (L = 0.5 nH, C = 0.05 pF) mantiene su valor hasta cientos de MHz en el rango de 50 Ω–1 kΩ.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Aplicaciones típicas</h2>
+<ul>
+<li><b>Limitar corriente</b> en un LED: \(R=(V_S-V_F)/I_F\) (capítulo 15).</li>
+<li><b>Dividir tensión</b> y adaptar niveles: pasar 5 V a 3.3 V con 4.7 kΩ y 9.1 kΩ de la serie E24 da 3.297 V (error −0.1 %). Cuidado con la carga (capítulo 1).</li>
+<li><b>Pull-up y pull-down</b>: fijan el nivel de una entrada lógica cuando nada la maneja; su valor (4.7–47 kΩ) compromete consumo y velocidad.</li>
+<li><b>Medir corriente</b> con un <i>shunt</i>: \(V=IR_{sh}\). Con 0.1 Ω y 2 A caen 0.2 V y se disipan 0.4 W. Se conecta con cuatro terminales (Kelvin) para que la resistencia de los cables no falsee la medida.</li>
+<li><b>Terminar líneas</b> de transmisión (50 Ω, 75 Ω), <b>atenuar</b> (redes en π y en T, capítulo 9) y <b>polarizar</b> dispositivos activos (capítulos 16–20).</li>
+</ul>
+</section>
+
+<section>
+<h2>Problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un resistor de bandas naranja, naranja, rojo, plata, ¿qué valor y tolerancia tiene? ¿Entre qué valores está el real?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>Naranja = 3, naranja = 3, rojo = ×100: \(33\times100=3300\ \Omega\). Plata: ±10 %.</li>
+<li>Intervalo: \(3300\pm330\), es decir, de 2970 a 3630 Ω.</li>
+<li><b>Resultado.</b> <span class="ans">3.3 kΩ ±10 % (serie E12); real entre 2.97 y 3.63 kΩ.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>¿Qué resistencia tienen 100 m de alambre de cobre de 0.5 mm de diámetro? ¿Cuánto vale si la temperatura sube de 20 °C a 75 °C?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(A=\pi(0.25\times10^{-3})^2=1.963\times10^{-7}\ \text{m}^2\). \(R=1.68\times10^{-8}\times100/1.963\times10^{-7}=8.56\ \Omega\).</li>
+<li>\(R(75)=8.56[1+0.0039\times55]=10.40\ \Omega\).</li>
+<li><b>Resultado.</b> <span class="ans">8.56 Ω a 20 °C y 10.4 Ω a 75 °C (+21.5 %).</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Se necesita un divisor de 5 V a 3.3 V con resistores de la serie E24. Encuentre un par razonable y calcule el error. ¿Qué corriente consume?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>Se busca \(R_2/(R_1+R_2)=0.66\). Con \(R_1=4.7\) kΩ y \(R_2=9.1\) kΩ: \(V=5\times9.1/13.8=3.297\) V (error −0.09 %).</li>
+<li>Corriente: \(I=5/13.8\ \text{k}\Omega=0.362\) mA; potencia total 1.8 mW.</li>
+<li><b>Resultado.</b> <span class="ans">4.7 kΩ y 9.1 kΩ dan 3.297 V; consumen 0.36 mA. Con ±5 % de tolerancia, la salida varía ±5 %: 3.13 a 3.46 V.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un resistor de 100 Ω y 1/4 W se conecta a una fuente de 12 V. ¿Qué potencia disipa? ¿Qué potencia nominal mínima, con un factor de seguridad de 2, requiere?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(P=V^2/R=144/100=1.44\) W (5.8 veces la nominal).</li>
+<li>Con factor de seguridad 2: \(2\times1.44=2.88\) W; el valor comercial inmediato es 5 W.</li>
+<li><b>Resultado.</b> <span class="ans">1.44 W; usar un resistor de 5 W.</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>Calcule el ruido térmico de un resistor de 100 kΩ a 300 K en un ancho de banda de 20 kHz. ¿Qué amplitud de señal se necesita para una relación señal/ruido de 40 dB?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(v_n=\sqrt{4\cdot1.38\times10^{-23}\cdot300\cdot10^5\cdot2\times10^4}=\sqrt{3.31\times10^{-11}}=5.76\ \mu\)V.</li>
+<li>Para 40 dB (razón de tensión 100): \(V_s=100\times5.76\ \mu\text{V}=576\ \mu\)V.</li>
+<li><b>Resultado.</b> <span class="ans">5.76 µV rms de ruido; hace falta una señal eficaz de 576 µV.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

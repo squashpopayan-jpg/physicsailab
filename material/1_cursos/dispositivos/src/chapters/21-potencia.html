@@ -1,0 +1,136 @@
+<template class="chapter-src" data-id="potencia" data-num="21" data-title="Potencia, disipación y conmutación" data-part="Parte IV · Transistores" data-short="Clases de amplificación A, B, AB y D, etapa de salida complementaria y distorsión de cruce, resistencia térmica y disipadores, área de operación segura, convertidores conmutados reductor y elevador (CCM y DCM, rizado, rendimiento) y puente H para motores">
+<p class="lead">En los capítulos anteriores los transistores manejaban señales de milivatios. Cuando la carga es un altavoz, un motor, una lámpara o la entrada de una fuente de alimentación, hay que manejar <b>vatios</b>, y aparecen tres problemas nuevos: cómo entregar potencia con buen <b>rendimiento</b> (la energía que no llega a la carga se convierte en calor dentro del transistor), cómo <b>evacuar ese calor</b> sin destruirlo, y cómo reducir las pérdidas operando el transistor como interruptor en lugar de como resistor variable. Este capítulo recorre esas tres ideas: las clases de amplificación de potencia, la gestión térmica y los convertidores conmutados.</p>
+
+<section>
+<h2>Potencia, rendimiento y clases de operación</h2>
+<p>Un transistor que sirve de amplificador lineal tiene siempre una tensión \(V_{CE}\) y una corriente \(I_C\) simultáneas, y la potencia \(P=V_{CE}I_C\) se disipa en su unión. El <b>rendimiento</b> de una etapa de potencia es la fracción de la potencia tomada de la fuente que llega a la carga, \(\eta=P_o/P_s\); el resto es calor \(P_d=P_s-P_o\). Las <b>clases</b> de amplificador se distinguen por el ángulo de conducción del transistor, es decir, por la fracción de cada ciclo de la señal durante la cual conduce:</p>
+<div class="tablewrap"><table class="tbl"><tr><th>Clase</th><th>Ángulo de conducción</th><th>Punto de reposo</th><th>Rendimiento máximo</th><th>Distorsión</th><th>Uso</th></tr>
+<tr><td><b>A</b></td><td>360°</td><td>centro de la recta de carga; \(I_Q\) alta</td><td>25 % (carga resistiva); 50 % (con inductor o transformador)</td><td>mínima</td><td>Preamplificadores, audio de alta fidelidad de baja potencia</td></tr>
+<tr><td><b>B</b></td><td>180° por transistor (push–pull)</td><td>corte: \(I_Q=0\)</td><td>\(\pi/4=78.5\) %</td><td>alta (cruce por cero)</td><td>Rara vez sola</td></tr>
+<tr><td><b>AB</b></td><td>180°–360°</td><td>corte «suave»: \(I_Q\) pequeña (decenas de mA)</td><td>50–70 %</td><td>baja</td><td>Audio de potencia, salida de amplificadores operacionales</td></tr>
+<tr><td><b>C</b></td><td>&lt; 180°</td><td>por debajo del corte</td><td>hasta 90 %</td><td>muy alta (requiere circuito sintonizado)</td><td>Transmisores de radiofrecuencia</td></tr>
+<tr><td><b>D</b></td><td>conmutación (PWM)</td><td>interruptor encendido/apagado</td><td>&gt; 90 %</td><td>depende del filtro de salida</td><td>Audio de potencia portátil, amplificadores de automóvil</td></tr></table></div>
+<p>En clase A el transistor conduce todo el ciclo con una corriente de reposo \(I_Q\) alta, y esa corriente circula aunque no haya señal: la fuente entrega una potencia constante \(P_s=V_{CC}I_Q\), que sin señal se disipa íntegra en el transistor. Con carga resistiva y la excursión máxima, la potencia en la carga es como mucho la cuarta parte de la que toma la fuente (η ≤ 25 %; 50 % si la carga se acopla con transformador o inductor). Como el calor máximo se produce cuando <b>no hay señal</b>, la clase A obliga a disipadores grandes aun en silencio. La clase B reduce el consumo en reposo a cero, a costa de emplear dos transistores que se reparten los semiciclos.</p>
+</section>
+
+<section>
+<h2>Etapa de salida complementaria (push–pull) en clase B y AB</h2>
+<p>Un transistor npn y uno pnp, conectados como <b>seguidores de emisor</b> (colector común), con las bases unidas y los emisores unidos a la carga, forman el <b>par complementario</b>. Con alimentación simétrica \(\pm V_{CC}\), el npn conduce los semiciclos positivos y el pnp los negativos; cada uno actúa como seguidor, con ganancia cercana a 1, resistencia de entrada alta y de salida baja (capítulo 18). En <b>clase B</b> las bases se conectan directamente a la señal: mientras \(|v_{in}|<V_{BE}\approx0.65\) V ninguno de los dos conduce y la salida es cero: es la <b>distorsión de cruce</b> (<i>crossover</i>), una «zona muerta» de unos ±0.65 V, especialmente molesta a bajo nivel, donde la distorsión relativa es mayor.</p>
+<p>La solución es la clase AB: polarizar las dos bases con una diferencia de tensión \(2V_{BE}\) mediante <b>dos diodos</b> (o un multiplicador de \(V_{BE}\)) de modo que los dos transistores conduzcan una pequeña corriente de reposo \(I_Q\) y se solapen en el cruce por cero. Tres detalles de diseño importan: (1) los diodos, montados en el mismo disipador que los transistores, <b>siguen la temperatura</b> de la unión y estabilizan \(I_Q\); (2) los resistores de emisor \(R_E\) (0.1–2 Ω) aportan realimentación negativa que evita la fuga térmica; (3) la corriente por los diodos debe ser <b>mayor que la corriente de base máxima</b> (\(I_{C,pico}/\beta\)); si no, los diodos se cortan en los picos y la polarización colapsa.</p>
+<div class="eq key" data-name="Potencia y rendimiento de la etapa push–pull con alimentación simétrica">\[P_o=\frac{V_{pk}^2}{2R_L}\qquad P_s=\frac{2\,V_{CC}\,V_{pk}}{\pi\,R_L}\qquad\eta=\frac{P_o}{P_s}=\frac{\pi}{4}\frac{V_{pk}}{V_{CC}}\qquad P_{d,total}=P_s-P_o\]</div>
+<p>El rendimiento máximo (\(V_{pk}=V_{CC}\), \(\pi/4=78.5\) %) no se alcanza en la práctica por las caídas \(V_{CE,sat}\) y \(I R_E\). La disipación de los transistores <b>no es máxima a plena señal</b>, sino a \(V_{pk}=2V_{CC}/\pi=0.64\,V_{CC}\), donde vale \(P_{d,max}=2V_{CC}^2/(\pi^2R_L)\) (la mitad en cada transistor). Esto es importante en el diseño del disipador: se dimensiona para ese punto, no para la señal máxima. Con \(V_{CC}=12\) V y \(R_L=8\) Ω: \(P_{d,max}=3.65\) W, es decir, 1.8 W en cada TIP31C/TIP32C.</p>
+<div class="sim" data-sim="c21-clase" data-title="Etapa de salida complementaria: clase B (distorsión de cruce) frente a clase AB"></div>
+<div class="sim-guide"><ul>
+<li>Con «Clase AB» (dos diodos 1N4148, \(R_b=1\) kΩ, \(R_E=2.2\) Ω) los transistores llevan una corriente de reposo de 36 mA y la señal pasa sin zona muerta. Con una entrada de 0.5 V de pico la salida tiene 0.36 V (la ganancia 0.73 es la del divisor \(R_L/(R_L+R_E+r_e)\)) y un THD de 0.05 %; con 4 V de pico, 2.75 V y 1.7 %.</li>
+<li>Pase a «Clase B»: la corriente de reposo cae a casi cero (picoamperios) y aparece la zona muerta. Con 0.5 V de entrada, <b>la salida es de 3.6 mV</b> (THD 146 %, la señal casi desaparece); con 1 V, 0.22 V (48 %); con 4 V, 2.25 V (8.9 %); con 8 V, 5.0 V (3.9 %). La distorsión relativa decrece al crecer la señal, pero a bajo nivel es inaceptable. En el osciloscopio se ve la «meseta» de la salida en torno a cero.</li>
+<li>Con el AB y entradas superiores a ≈ 6 V la distorsión vuelve a subir (13.7 % con 8 V): <b>la corriente de polarización de 10.8 mA no basta</b> para suministrar la corriente de base que exigen los picos (0.5 A/β ≈ 7–10 mA con β ≈ 50–70): el diodo se corta y el transistor se queda sin excitación. Baje \(R_L\) o suba la amplitud y compruébelo; la solución es una etapa excitadora (Darlington) o más corriente en los diodos.</li>
+<li>Los paneles dan la potencia en la carga, la de la fuente y el rendimiento teórico de la clase B \(\pi V_{pk}/(4V_{CC})\): con \(V_{pk}=2.75\) V es sólo 18 %: a bajo nivel el rendimiento es pequeño, pero la potencia disipada por la etapa es también pequeña.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resistencia térmica, disipadores y área de operación segura</h2>
+<p>La potencia disipada \(P\) eleva la temperatura de la unión \(T_j\) por encima de la ambiente \(T_a\). En régimen estacionario el flujo de calor, como una corriente eléctrica, atraviesa una cadena de <b>resistencias térmicas</b> (K/W) en serie: de la unión a la cápsula (\(R_{\theta JC}\)), de la cápsula al disipador a través de la grasa, mica o almohadilla aislante (\(R_{\theta CS}\)) y del disipador al aire (\(R_{\theta SA}\)). Es una ley de Ohm térmica: la «tensión» es la diferencia de temperatura y la «corriente» la potencia.</p>
+<div class="eq key" data-name="Cadena de resistencias térmicas">\[T_j=T_a+P\,(R_{\theta JC}+R_{\theta CS}+R_{\theta SA})\qquad P_{max}=\frac{T_{j,max}-T_a}{R_{\theta JA}}\qquad R_{\theta SA,max}=\frac{T_j-T_a}{P}-R_{\theta JC}-R_{\theta CS}\]</div>
+<p>Valores típicos: TO-220, \(R_{\theta JC}=1\)–3 K/W, \(R_{\theta JA}=62\) K/W sin disipador (se puede disipar unos 2 W); TO-3 (2N3055), \(R_{\theta JC}=1.5\) K/W; TO-92, \(R_{\theta JA}=200\) K/W (0.5 W). Los disipadores de aluminio van de 50 K/W (clip pequeño) a 0.5 K/W (con ventilador). El aislante cuesta 0.5–1.5 K/W: la grasa térmica sola es mejor (0.1 K/W) pero exige aislar el disipador eléctricamente. La temperatura máxima de unión del silicio es 150–175 °C (200 °C en cápsulas metálicas); por seguridad se diseña con \(T_j\le110\)–125 °C: la fiabilidad se reduce a la mitad cada 10 °C.</p>
+<div class="box ex" data-label="Ejemplo resuelto"><p>Un TIP31C disipa \(P=6\) W con \(T_a=40\) °C, aislante de mica con grasa (0.8 K/W) y \(R_{\theta JC}=3.1\) K/W. ¿Qué disipador se necesita para \(T_j\le110\) °C? \(R_{\theta JA}\le(110-40)/6=11.7\) K/W ⇒ \(R_{\theta SA}\le11.7-3.1-0.8=7.8\) K/W. Un disipador de 7 K/W cumple. Sin disipador la unión alcanzaría \(40+6\cdot62.5=415\) °C: el transistor se destruye.</p></div>
+<p>El calor no se acumula ni se evacúa instantáneamente: el conjunto tiene <b>capacidad térmica</b> \(C_\theta\) y responde con una constante de tiempo \(\tau=R_\theta C_\theta\) (segundos en la unión; minutos en el disipador). Un pulso breve de potencia calienta sólo la unión, y la impedancia térmica transitoria \(Z_{\theta}(t)\) (menor que \(R_\theta\)) es la que permite potencias de pico grandes con duración corta: es la base de los diagramas de <b>área de operación segura</b> (SOA) con curvas por duración de pulso. Además de la potencia, el SOA fija una corriente máxima, una tensión máxima \(V_{CEO}\) y, en los bipolares, la región de <b>segunda ruptura</b> (formación de puntos calientes que destruyen el transistor aun con potencia total menor que \(P_{max}\); los MOSFET en saturación y con corrientes bajas también pueden sufrirla).</p>
+<div class="sim" data-sim="c21-calor" data-title="Temperatura de la unión: disipador, aislante y potencia"></div>
+<div class="sim-guide"><ul>
+<li>Con TIP31C, disipador de 8 K/W, mica (0.8 K/W) y 6 W, \(R_{\theta JA}=3.1+0.8+8=11.9\) K/W y \(T_j=96\) °C. La recta azul es \(T_j(P)\); corta la línea roja de \(T_{j,max}\) en 10.5 W (potencia máxima admisible).</li>
+<li>Con «Sin disipador» la pendiente es 62.5 K/W: con 6 W la unión sale de la escala (400 °C); sólo se pueden disipar 2 W.</li>
+<li>El panel «R_θSA máxima para la T_j objetivo» es la fórmula del ejemplo: con 110 °C, 6 W y mica, 10.3 K/W (con \(T_a=25\) °C). Suba \(T_a\) a 50 °C: baja a 6.1 K/W.</li>
+<li>Cambie al 7805 (125 °C máx., \(R_{\theta JC}=5\) K/W): un regulador de 12 V a 5 V con 1 A disipa 7 W y, con mica, necesita un disipador de ≈ 6 K/W para \(T_j=110\) °C.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Conmutación: convertidores CC–CC</h2>
+<p>La forma de evitar el calor es no disipar: un transistor <b>conmutado</b> está o bien cortado (corriente nula) o bien saturado (tensión casi nula), y en ambos casos su potencia \(V\cdot I\) es casi cero. El rendimiento de un regulador lineal que baja de \(V_{in}\) a \(V_o\) es \(\eta=V_o/V_{in}\) (con 12 V a 5 V, 42 %, y toda la diferencia en calor: 14 W a 2 A). Un <b>convertidor conmutado</b> usa el transistor como interruptor con ciclo de trabajo \(D=t_{on}/T\) a una frecuencia de cientos de kHz y un filtro LC que extrae el valor medio: rendimiento del 85–95 %, con un disipador pequeño o ninguno.</p>
+<h3>Reductor (buck)</h3>
+<p>El interruptor conecta durante \(t_{on}=DT\) la entrada a un nodo \(V_{sw}\); durante el resto el diodo de rueda libre mantiene la corriente del inductor. La tensión media en \(V_{sw}\) es \(DV_{in}\), y como el valor medio de la tensión en un inductor en régimen estacionario es cero, \(V_o=DV_{in}\). El inductor suaviza la corriente (triangular de pico a pico \(\Delta I_L\)) y el condensador el rizado de tensión.</p>
+<div class="eq key" data-name="Convertidor reductor en modo de conducción continua (CCM)">\[V_o=D\,V_{in}\qquad\Delta I_L=\frac{(V_{in}-V_o)\,D}{L\,f}\qquad \Delta V_o\approx\frac{\Delta I_L}{8fC}+\Delta I_L\,\mathrm{ESR}\qquad I_{L}=I_o\]</div>
+<h3>Elevador (boost)</h3>
+<p>El inductor se carga a través del interruptor a tierra durante \(DT\) y, al abrirse, su corriente fluye por el diodo hacia la salida, sumándose a la entrada. El balance de voltios–segundos del inductor da la ganancia mayor que 1:</p>
+<div class="eq key" data-name="Convertidor elevador en CCM">\[V_o=\frac{V_{in}}{1-D}\qquad I_L=\frac{I_o}{1-D}\qquad \Delta I_L=\frac{V_{in}\,D}{L\,f}\]</div>
+<p>La corriente del inductor, para la misma salida, es mayor en el elevador: con \(D=0.7\) la corriente de inductor es 3.3 veces la de carga. Cuando la corriente media del inductor es menor que \(\Delta I_L/2\), la corriente se anula en parte del ciclo: <b>modo discontinuo (DCM)</b>; las fórmulas anteriores dejan de valer y la salida sube por encima de \(DV_{in}\) (para el reductor: \(V_o/V_{in}=2/[1+\sqrt{1+4K/D^2}]\) con \(K=2L/(R_LT)\)). El diseño usual toma \(\Delta I_L\approx0.2\)–0.4 \(I_o\) y exige el CCM a la carga mínima.</p>
+<div class="sim" data-sim="c21-conv" data-title="Convertidores buck y boost: ciclo de trabajo, rizado, modo continuo y discontinuo"></div>
+<div class="sim-guide"><ul>
+<li><b>Reductor</b> (12 V, 47 µH, 22 µF, 5 Ω, 100 kHz): con \(D=0.25\), 0.5 y 0.75 la salida es 2.81, 5.73 y 8.66 V (teórica 3, 6 y 9 V: la diferencia es la caída de 0.5 V del diodo Schottky durante \((1-D)T\) y las pérdidas en el MOSFET). El nodo \(V_{sw}\) (amarillo) oscila entre 12 V y −0.5 V.</li>
+<li>El rizado de corriente en la bobina con \(D=0.5\) es \(\Delta I_L=(12-6)\cdot0.5/(47\ \mu\text{H}\cdot100\text{ kHz})=0.64\) A (el panel lo indica); el de tensión, de 56 mV, es mayor que \(\Delta I/(8fC)=36\) mV: la diferencia (≈ 20 mV) es la caída \(\Delta I_L\cdot\mathrm{ESR}\) del condensador electrolítico (ESR ≈ 30 mΩ en el modelo). A frecuencias de conmutación altas la ESR domina el rizado: de ahí los condensadores cerámicos o de polímero.</li>
+<li>Baje \(L\) a 10 µH y suba \(R_L\) a 40 Ω: el panel indica <b>modo discontinuo</b> y la salida sube a 10.2 V (con la fórmula de DCM: 10.25 V) aunque \(D=0.5\). En DCM el convertidor deja de ser un simple divisor por \(D\).</li>
+<li><b>Elevador</b> (12 V, \(R_L=50\) Ω; el selector ajusta la carga): con \(D=0.3\), 0.5, 0.6 y 0.7 la salida es 16.7, 23.4, 29.2 y 38.5 V (ideal 17.1, 24, 30, 40 V); la diferencia crece con \(D\), por las pérdidas resistivas. El rendimiento estimado considera sólo el MOSFET y el diodo; el real, con las pérdidas del inductor y de conmutación, es 5–10 puntos menor. Pruebe con \(R_L=5\) Ω: el elevador entrega 115 W y el inductor se sobrecalienta: lo que se diseña con el peor caso de corriente.</li>
+</ul></div>
+<h3>Pérdidas y elección de componentes</h3>
+<ul>
+<li><b>Conducción</b>: \(I_{rms}^2R_{DS(on)}\) en el MOSFET; \(V_FI_D\) en el diodo (un Schottky cae 0.3–0.5 V; con salida de 3.3 V y 2 A, el diodo pierde un 15 %). El <b>rectificador síncrono</b> sustituye el diodo por un segundo MOSFET conducido en oposición y reduce esa pérdida a \(I^2R_{DS(on)}\).</li>
+<li><b>Conmutación</b>: \(\tfrac12V_{in}I\,(t_r+t_f)f\) y la energía de \(C_{oss}\), que crece con \(f\). Frecuencias altas permiten bobinas y condensadores pequeños pero más pérdidas y más EMI: un compromiso típico es 100 kHz–2 MHz.</li>
+<li><b>Inductor</b>: se elige para que la corriente de saturación supere el pico \(I_L+\Delta I_L/2\) (si satura, la inductancia cae y la corriente se dispara) y por su resistencia en serie.</li>
+<li><b>Condensador de salida</b>: capacidad para el rizado \(\Delta I_L/(8fC)\) y ESR baja; el de entrada soporta la corriente pulsante.</li>
+<li><b>Control</b>: realimentación de la tensión de salida a un modulador PWM (control en modo tensión o corriente) que ajusta \(D\) para mantener \(V_o\) ante cambios de carga y entrada; se estudia en el capítulo 25.</li>
+</ul>
+</section>
+
+<section>
+<h2>Puente H y control de motores</h2>
+<p>Para hacer girar un motor de CC en ambos sentidos se necesita invertir la polaridad en sus terminales: el <b>puente H</b> son cuatro interruptores en forma de H con el motor en el travesaño. Con \(Q_1\) (superior izquierdo) y \(Q_4\) (inferior derecho) cerrados, la corriente va de izquierda a derecha; con \(Q_2\) y \(Q_3\), al revés; con los dos inferiores (\(Q_3,Q_4\)) cerrados se pone el motor en cortocircuito (frenado dinámico); con todos abiertos gira libremente (rueda libre).</p>
+<div class="tablewrap"><table class="tbl"><tr><th>\(Q_1\) (sup. izq.)</th><th>\(Q_2\) (sup. der.)</th><th>\(Q_3\) (inf. izq.)</th><th>\(Q_4\) (inf. der.)</th><th>Efecto sobre el motor</th></tr>
+<tr><td>on</td><td>off</td><td>off</td><td>on</td><td>giro en un sentido (+\(V_{bus}\))</td></tr>
+<tr><td>off</td><td>on</td><td>on</td><td>off</td><td>giro en sentido contrario (−\(V_{bus}\))</td></tr>
+<tr><td>off</td><td>off</td><td>on</td><td>on</td><td>frenado (terminales en cortocircuito)</td></tr>
+<tr><td>off</td><td>off</td><td>off</td><td>off</td><td>rueda libre (corriente por los diodos)</td></tr>
+<tr><td><b>on</b></td><td>—</td><td><b>on</b></td><td>—</td><td><b>PROHIBIDO</b>: cortocircuito de la alimentación</td></tr></table></div>
+<p>El peligro del puente es la <b>conducción cruzada</b> (<i>shoot-through</i>): si los dos transistores de una misma rama conducen a la vez, la alimentación queda en cortocircuito a través de las dos \(R_{DS(on)}\): con 24 V y \(R_{DS(on)}=20\) mΩ cada uno, la corriente es \(24/0.04=600\) A (limitada por el cableado y la fuente: el transistor se destruye en microsegundos). Como los transistores no apagan tan rápido como encienden (\(t_{off}>t_{on}\)), se inserta un <b>tiempo muerto</b> (50–500 ns) en el que los dos están cortados. Los diodos del cuerpo de los MOSFET (o externos) conducen la corriente del motor durante ese intervalo: son los diodos de rueda libre. La regulación de velocidad se hace con PWM: los transistores superiores en el sentido adelante se conmutan con un ciclo de trabajo \(D\) y los inferiores quedan cerrados (o en recirculación). Se emplean excitadores de puerta integrados (IR2104, L6234) con <i>bootstrap</i> para elevar la puerta de los MOSFET superiores por encima de \(V_{bus}\) y con tiempo muerto programable. Todas las ideas del capítulo se aplican: dimensionar \(R_{DS(on)}\) y disipadores, diodos de rueda libre, condensadores de desacoplo de la alimentación y la <b>corriente de arranque</b> del motor (7–10 veces la nominal) y de bloqueo del rotor.</p>
+<div class="box warn"><p><b>Un motor no es una resistencia.</b> Un motor bloqueado absorbe \(V/R_a\): para 12 V y \(R_a=2\) Ω, 6 A; al arrancar a plena tensión la corriente es igual. Dimensione los transistores y el fusible para esa corriente, o limite la corriente de arranque con PWM suave.</p></div>
+</section>
+
+<section>
+<h2>Medidas de laboratorio</h2>
+<ul>
+<li><b>Distorsión de cruce.</b> Monte el par complementario con BC337/BC327 o TIP31/TIP32 con ±12 V y un altavoz de 8 Ω (o resistor de 8 Ω/5 W). Primero sin diodos (clase B): observe en el osciloscopio la meseta en el cruce por cero con una señal de 1 V. Añada dos diodos 1N4148 y mida la corriente de reposo en un emisor (con un resistor de 1 Ω): ajuste hasta 20–30 mA.</li>
+<li><b>Resistencia térmica.</b> Alimente un TIP31C con corriente constante para disipar 2 W; mida la temperatura de la cápsula con un termopar o un termómetro de infrarrojos: \(R_{\theta CA}=(T_c-T_a)/P\). Con y sin disipador, y con el aislante de mica.</li>
+<li><b>Convertidor reductor.</b> Con un módulo de lazo abierto (IRF540N o equivalente de nivel lógico y una salida PWM de un microcontrolador a 50–100 kHz) mida \(V_o\) para varios ciclos de trabajo; observe con el osciloscopio el nodo de conmutación y el rizado en la salida con la sonda en modo de «resorte de masa» (cable de tierra corto) para no medir picos de ruido.</li>
+<li><b>Seguridad.</b> Los disipadores y los transistores de potencia se calientan mucho más de lo que se aprecia a simple vista: no los toque durante las pruebas; use una resistencia de limitación o una fuente con límite de corriente durante la puesta a punto.</li>
+</ul>
+</section>
+
+<section>
+<h2>Problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Una etapa push–pull clase B con \(\pm12\) V y \(R_L=8\) Ω entrega \(V_{pk}=10\) V. Calcule \(P_o\), \(P_s\), el rendimiento y la potencia disipada por cada transistor.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(P_o=V_{pk}^2/(2R_L)=100/16=6.25\) W.</li>
+<li>\(P_s=2V_{CC}V_{pk}/(\pi R_L)=2\cdot12\cdot10/(\pi\cdot8)=9.55\) W.</li>
+<li>\(\eta=6.25/9.55=65.4\) %; \(P_d=3.3\) W, es decir, 1.65 W por transistor.</li>
+<li><b>Resultado.</b> <span class="ans">6.25 W, 9.55 W, 65 % y 1.65 W por transistor.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Halle la potencia disipada máxima de la etapa del problema anterior y la amplitud de señal a la que ocurre.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(V_{pk}=2V_{CC}/\pi=7.64\) V.</li>
+<li>\(P_{d,max}=2V_{CC}^2/(\pi^2R_L)=2\cdot144/(9.87\cdot8)=3.65\) W en total.</li>
+<li><b>Resultado.</b> <span class="ans">3.65 W (1.8 W por transistor) con 7.64 V de pico: es el valor para dimensionar el disipador, no el de plena señal.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Con \(T_a=40\) °C, \(T_{j,max}=125\) °C de diseño, \(R_{\theta JC}=3.1\) K/W y mica de 0.8 K/W: ¿qué \(R_{\theta SA}\) necesita cada transistor del problema 2?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(P=1.82\) W; \(R_{\theta JA}\le(125-40)/1.82=46.7\) K/W.</li>
+<li>\(R_{\theta SA}\le46.7-3.1-0.8=42.8\) K/W.</li>
+<li><b>Resultado.</b> <span class="ans">\(R_{\theta SA}\le42.8\) K/W: un disipador pequeño de clip basta (sin disipador, 62.5 K/W, no cumple).</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Diseñe un reductor de 12 V a 5 V, 2 A, 100 kHz, con \(\Delta I_L=30\) % de \(I_o\) y rizado de salida de 50 mV (ESR despreciable). Halle \(D\), \(L\) y \(C\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(D=V_o/V_{in}=5/12=0.417\); \(\Delta I_L=0.6\) A.</li>
+<li>\(L=(V_{in}-V_o)D/(f\Delta I_L)=7\cdot0.417/(10^5\cdot0.6)=48.6\ \mu\)H → 47 µH.</li>
+<li>\(C\ge\Delta I_L/(8f\Delta V)=0.6/(8\cdot10^5\cdot0.05)=15\ \mu\)F (con ESR de 20 mΩ, otros 12 mV).</li>
+<li><b>Resultado.</b> <span class="ans">\(D=0.417\), \(L\approx47\ \mu\)H y \(C\ge15\ \mu\)F (en la práctica 22–47 µF cerámico). Corriente de pico de la bobina: \(2+0.3=2.3\) A.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un regulador lineal baja de 12 V a 5 V con 2 A y un reductor del mismo servicio tiene rendimiento del 90 %. Compare las pérdidas.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>Lineal: \(P_{loss}=(12-5)\cdot2=14\) W; \(\eta=5/12=41.7\) %.</li>
+<li>Conmutado: \(P_o=10\) W; \(P_{in}=10/0.9=11.1\) W; pérdidas 1.1 W.</li>
+<li><b>Resultado.</b> <span class="ans">14 W frente a 1.1 W: el lineal necesita un disipador de ≈ 5 K/W; el conmutado, ninguno.</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>Un elevador de 5 V a 12 V entrega 1 A con rendimiento del 90 %. Calcule \(D\), la corriente de entrada y la corriente media del inductor (comente la corriente de pico con \(\Delta I_L=0.4I_L\)).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(D=1-V_{in}/V_o=1-5/12=0.583\).</li>
+<li>\(P_o=12\) W; \(P_{in}=12/0.9=13.3\) W; \(I_{in}=13.3/5=2.67\) A: es la corriente media del inductor.</li>
+<li>Comprobación: \(I_o/(1-D)=1/0.417=2.4\) A (sin pérdidas); con las pérdidas, 2.67 A.</li>
+<li>Pico: \(I_L(1+0.2)=3.2\) A: el inductor debe saturar por encima de 3.2 A.</li>
+<li><b>Resultado.</b> <span class="ans">\(D=0.58\); \(I_{in}=I_L=2.67\) A (2.7 veces la corriente de carga); pico de 3.2 A.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

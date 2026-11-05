@@ -1,0 +1,88 @@
+<template class="chapter-src" data-id="diodos" data-num="13" data-title="El diodo: modelos y análisis de circuitos" data-part="Parte III · Semiconductores y diodos" data-short="Del modelo exponencial a los modelos simplificados (ideal, caída constante, lineal por tramos), análisis de circuitos con diodos por suposición, recta de carga, resistencia dinámica y señal pequeña, tipos de diodos y lectura de una hoja de datos">
+<p class="lead">La ecuación del diodo es exponencial, y resolver circuitos con ecuaciones exponenciales es incómodo: exige iterar o apoyarse en un simulador. Por eso el diseñador usa un <b>modelo simplificado</b> —un reemplazo del diodo por elementos lineales que sea «suficientemente bueno» en la región de trabajo— y reserva el modelo exacto para el simulador. Este capítulo presenta esa jerarquía de modelos, enseña a analizar circuitos con diodos sin equivocarse (el método de suposición) y a leer las características que importan en la hoja de datos de un diodo real.</p>
+
+<section>
+<h2>Una jerarquía de modelos</h2>
+<p>Con una fuente \(V_S\) y una resistencia \(R\) en serie con el diodo, la ecuación del circuito es \(V_S=RI+V_D\), con \(I=I_S(e^{V_D/nV_T}-1)\). Según la precisión que se necesite:</p>
+<div class="tablewrap"><table class="tbl"><tr><th>Modelo</th><th>Descripción</th><th>Cuándo se usa</th></tr>
+<tr><td><b>Ideal</b></td><td>Cortocircuito si conduce (\(V_D=0\)), circuito abierto si no</td><td>Aproximación de primer orden cuando \(V_S\gg0.7\) V; lógica de diodos</td></tr>
+<tr><td><b>Caída constante</b></td><td>Fuente de \(V_{D0}\approx0.7\) V (silicio), 0.3 V (Schottky) o 0.2 V (germanio) en serie con el ideal</td><td>Casi todos los cálculos a mano</td></tr>
+<tr><td><b>Lineal por tramos</b></td><td>\(V_{D0}\) en serie con una resistencia \(r_D\): \(V_D=V_{D0}+r_DI\), una recta que sigue la curva en la zona de trabajo</td><td>Cuando la corriente es grande y se quiere calcular la disipación</td></tr>
+<tr><td><b>Exponencial (Shockley)</b></td><td>\(I=I_S(e^{V/nV_T}-1)\) con \(R_S\)</td><td>Simulación; polarización de transistores a partir de \(V_{BE}\)</td></tr>
+<tr><td><b>Pequeña señal</b></td><td>Resistencia \(r_d=nV_T/I_D\) en el punto de operación</td><td>Señales alternas pequeñas sobre una polarización fija</td></tr></table></div>
+<p>Con 5 V y 1 kΩ y un 1N4148, el modelo exacto da \(I=4.35\) mA y \(V_D=0.653\) V (una caída algo menor que el 0.7 típico, porque la corriente es pequeña); el ideal da 5.00 mA (error +15 %) y el de caída constante 4.30 mA (−1 %). Con 1 V y 1 kΩ la diferencia es enorme: el modelo exacto da 0.45 mA, el ideal 1 mA (+121 %) y el de 0.7 V da 0.30 mA (−34 %): cuando \(V_S\) es comparable con la caída del diodo, hay que usar un modelo mejor. Con 12 V el de caída constante es excelente (11.3 mA frente a 11.30 mA).</p>
+<div class="sim" data-sim="c13-modelos" data-title="Corriente del circuito diodo + resistor con distintos modelos"></div>
+<div class="sim-guide"><ul>
+<li>Con \(R=1\) kΩ y \(V_S=5\) V: la corriente real (4.35 mA) queda entre la del modelo ideal (5 mA) y la de caída constante (4.3 mA): este último es el mejor y es el que se debe usar a mano.</li>
+<li>Reduzca \(V_S\) a 1 V: los modelos simples fallan; la corriente real cae a 0.45 mA, porque el diodo apenas conduce. La caída de 0.7 V sobreestima la caída del diodo a corrientes pequeñas.</li>
+<li>Aumente la corriente (\(R=100\ \Omega\), 5 V): la caída real sube a 0.78 V (el modelo de 0.7 V pierde exactitud) y el modelo lineal por tramos se ajusta mejor.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Método de suposición para analizar circuitos</h2>
+<p>Con varios diodos, el circuito es no lineal y puede tener varios estados. El método más seguro es: <b>(1)</b> suponga un estado (cada diodo en conducción o en corte); <b>(2)</b> sustituya cada diodo por su modelo (fuente de 0.7 V si conduce, circuito abierto si no); <b>(3)</b> resuelva el circuito lineal resultante; <b>(4)</b> compruebe que la suposición es coherente: un diodo supuesto «conduciendo» debe tener \(I>0\) y uno supuesto «en corte», \(V_D<0.7\) V. Si no, cambie la suposición. Un truco útil: un diodo con tensión directa positiva conduce; si el ánodo está al menos 0.7 V por encima del cátodo, conduce.</p>
+<div class="box ex" data-label="Ejemplo resuelto"><p>Dos diodos en una compuerta OR con entradas \(V_1=5\) V y \(V_2=3\) V y una resistencia a tierra de 1 kΩ. Se supone que \(D_1\) conduce: \(V_{out}=5-0.7=4.3\) V; entonces \(D_2\) tiene ánodo en 3 V y cátodo en 4.3 V: tensión inversa de 1.3 V: está en corte, coherente. La salida sigue a la mayor de las dos entradas con 0.7 V de caída. Corriente: \(4.3\ \text{mA}\).</p></div>
+</section>
+
+<section>
+<h2>Resistencia dinámica y señal pequeña</h2>
+<p>Si el diodo está polarizado con una corriente continua \(I_D\) y se le superpone una pequeña señal alterna, esa señal ve al diodo como una <b>resistencia dinámica</b> (pendiente de la curva en ese punto):</p>
+<div class="eq key" data-name="Resistencia dinámica del diodo">\[r_d=\frac{\mathrm{d}V}{\mathrm{d}I}=\frac{nV_T}{I_D}\ \ (+R_S)\qquad r_d\approx\frac{26\ \text{mV}}{I_D(\text{mA})}\ \Omega\ \ (n=1)\]</div>
+<p>A 1 mA, \(r_d=26\ \Omega\) (con \(n=1\)); con \(n=1.75\) como el 1N4148 del simulador, 45 Ω; a 10 mA, 4.5 Ω. Esta resistencia, controlada por corriente, sirve para hacer <b>atenuadores variables</b> (control automático de ganancia, CAG) y <b>conmutadores</b> de señal de radiofrecuencia con diodos PIN. La condición de pequeña señal es que la amplitud sea pequeña frente a \(nV_T\) (unos 45 mV pico para \(n=1.75\)); con señales mayores la forma se distorsiona y aparecen armónicos.</p>
+<div class="sim" data-sim="c13-dinamica" data-title="El diodo como resistencia controlada por corriente (atenuador de señal pequeña)"></div>
+<div class="sim-guide"><ul>
+<li>Con 5 V de polarización y 4.3 kΩ (corriente de unos 1 mA), \(r_d=45\ \Omega\): una señal de 10 mV de pico en una fuente con 1 kΩ en serie aparece en el diodo con una atenuación de 0.043 (−27 dB).</li>
+<li>Aumente la polarización a 9 V (≈ 2 mA): \(r_d\) baja a 22 Ω y la señal en el diodo disminuye más. Con corriente casi nula, \(r_d\) es enorme y la señal pasa casi íntegra: el diodo se comporta como un divisor controlado por la corriente continua.</li>
+<li>Aumente la amplitud de la señal a 200 mV: la forma en el diodo ya está distorsionada (más ancha en un semiciclo): es la no linealidad exponencial.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Tipos de diodos y hoja de datos</h2>
+<p>Los diodos se diseñan para cada tarea cambiando el dopado, el área y el material:</p>
+<div class="tablewrap"><table class="tbl"><tr><th>Diodo</th><th>\(V_F\) (1 mA / 1 A)</th><th>\(V_{RRM}\)</th><th>\(I_F\)</th><th>\(t_{rr}\)</th><th>Uso</th></tr>
+<tr><td>1N4148 (señal)</td><td>0.59 V / —</td><td>100 V</td><td>200 mA</td><td>4 ns</td><td>Lógica, detección, protección de señal</td></tr>
+<tr><td>1N4007 (rectificador)</td><td>0.59 V / 0.93 V</td><td>1000 V</td><td>1 A</td><td>~ 3 µs</td><td>Rectificación de red</td></tr>
+<tr><td>1N5408 (rectificador de 3 A)</td><td>— / 0.9 V</td><td>1000 V</td><td>3 A</td><td>~ 3 µs</td><td>Fuentes de más potencia</td></tr>
+<tr><td>1N5819 (Schottky)</td><td>0.23 V / 0.45 V</td><td>40 V</td><td>1 A</td><td>— (sin carga almacenada)</td><td>Fuentes conmutadas, baja caída, protección contra inversión de polaridad</td></tr>
+<tr><td>Germanio (OA91)</td><td>0.25 V</td><td>90 V</td><td>50 mA</td><td>—</td><td>Detectores de radio de baja señal</td></tr></table></div>
+<p>Una hoja de datos da, entre otros: <b>\(V_F\)</b> a una corriente directa dada (y su dependencia de la temperatura); <b>\(I_F\)</b> (corriente media máxima) e <b>\(I_{FSM}\)</b> (pico de un solo ciclo: 30 A para un 1N4007: el pico de carga de un condensador); <b>\(V_{RRM}\)</b> (tensión inversa repetitiva máxima: la tensión de pico en la red de 120 V es 170 V, hay que dejar margen); <b>\(I_R\)</b> (corriente inversa, de nA a µA, creciente con la temperatura); <b>\(C_j\)</b> y <b>\(t_{rr}\)</b>; y los límites térmicos (\(P_D\), \(T_{j,\max}=150\)–175 °C, \(R_{\theta JA}\)). Un 1N4007 con 1 A cae 0.93 V y disipa 0.93 W; con \(R_{\theta JA}\approx100\) K/W la unión alcanza 119 °C a 25 °C ambiente: cerca del límite. Para asociar diodos en <b>paralelo</b> (más corriente) hay que equilibrarlos con resistencias en serie (un diodo con \(V_F\) 50 mV menor lleva 3 veces más corriente, la corriente crece 10 veces por cada 60 mV); en <b>serie</b> (más tensión inversa) hacen falta resistencias en paralelo con cada uno para igualar las fugas.</p>
+<div class="sim" data-sim="c13-curvas" data-title="Comparación de diodos reales: V_F a la misma corriente"></div>
+<div class="sim-guide"><ul>
+<li>A 1 mA, el 1N4148 cae 0.59 V, el 1N5819 Schottky 0.23 V, el germanio 0.25 V y un LED rojo 1.8 V: los materiales y las geometrías desplazan la curva sin cambiar su forma exponencial.</li>
+<li>Con la escala logarítmica las curvas son casi paralelas, con una pendiente de unos 60 mV·\(n\) por década.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un diodo de silicio (0.7 V) en serie con 1 kΩ y 5 V. Calcule la corriente y la potencia en el diodo y en el resistor.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(I=(5-0.7)/1000=4.3\) mA.</li>
+<li>\(P_D=0.7\times4.3\ \text{mA}=3.0\) mW; \(P_R=I^2R=18.5\) mW.</li>
+<li><b>Resultado.</b> <span class="ans">4.3 mA; 3.0 mW en el diodo; 18.5 mW en el resistor.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Dos diodos de silicio en serie con 1 kΩ y 5 V (ambos conduciendo). Calcule la corriente.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>Caída total: \(2\times0.7=1.4\) V.</li>
+<li>\(I=(5-1.4)/1000=3.6\) mA.</li>
+<li><b>Resultado.</b> <span class="ans">3.6 mA.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Calcule la resistencia dinámica de un diodo con \(n=1\) a 1 mA, 5 mA y 20 mA (300 K). ¿Qué atenuación produce un diodo a 1 mA en un divisor con 1 kΩ en serie?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(r_d=nV_T/I\): 25.85 Ω (1 mA), 5.17 Ω (5 mA), 1.29 Ω (20 mA).</li>
+<li>Atenuación del divisor con 1 kΩ: \(r_d/(R+r_d)=25.85/1025.85=0.0252\) (−32 dB).</li>
+<li><b>Resultado.</b> <span class="ans">25.9 Ω, 5.2 Ω y 1.3 Ω; −32 dB a 1 mA.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Con la caída de 0.7 V para ambos diodos de silicio, en un circuito con \(V_1=12\) V a través de \(D_1\) y 3 V a través de \(D_2\) a una carga común de 1 kΩ (compuerta OR), ¿cuánto vale la salida y qué corriente toma cada fuente?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(D_1\) conduce: \(V_{out}=12-0.7=11.3\) V; \(I=11.3\) mA.</li>
+<li>\(D_2\): ánodo en 3 V, cátodo en 11.3 V: inversa de 8.3 V: en corte; no toma corriente.</li>
+<li><b>Resultado.</b> <span class="ans">11.3 V; toda la corriente (11.3 mA) viene de la fuente de 12 V.</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>Un 1N4007 con 1 A disipa \(V_FI=0.93\) W. Si \(R_{\theta JA}=100\) K/W y el ambiente es de 50 °C, ¿qué temperatura de unión se obtiene? ¿Qué potencia máxima con \(T_{j,\max}=150\ ^\circ\)C?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(T_j=T_a+P R_{\theta JA}=50+0.93\cdot100=143\ ^\circ\)C.</li>
+<li>\(P_{\max}=(150-50)/100=1.0\) W.</li>
+<li><b>Resultado.</b> <span class="ans">143 °C: casi en el límite; hay que usar un diodo de 3 A o un disipador si el ambiente es caluroso.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

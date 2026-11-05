@@ -1,0 +1,102 @@
+<template class="chapter-src" data-id="senales" data-num="3" data-title="Señales, fasores y respuesta en frecuencia" data-part="Parte I · Fundamentos" data-short="Señales periódicas y su valor eficaz, series de Fourier y espectro, fasores e impedancia compleja, potencia activa, reactiva y aparente, decibelios, función de transferencia y diagramas de Bode de primer orden">
+<p class="lead">Un circuito electrónico no maneja números sino <b>señales</b>: tensiones y corrientes que varían con el tiempo. Hay que describirlas con pocos parámetros (amplitud, frecuencia, valor eficaz), entender de qué «ingredientes» están hechas (el espectro de Fourier) y saber predecir cómo las modifica un circuito. La herramienta central es el análisis de régimen senoidal permanente con <b>fasores</b>, que convierte ecuaciones diferenciales en álgebra con números complejos y conduce a la idea más útil de toda la electrónica analógica: la <b>respuesta en frecuencia</b> y su representación en un diagrama de Bode.</p>
+
+<section>
+<h2>Parámetros de una señal periódica</h2>
+<p>Una señal es <b>periódica</b> si \(v(t+T)=v(t)\) para todo \(t\); \(T\) es el periodo (s) y \(f=1/T\) la frecuencia (Hz), \(\omega=2\pi f\) la frecuencia angular (rad/s). La senoide se escribe \(v(t)=V_p\sin(\omega t+\varphi)+V_{DC}\), con amplitud (pico) \(V_p\), tensión pico a pico \(V_{pp}=2V_p\), fase \(\varphi\) y componente continua \(V_{DC}\) o <i>offset</i>. La red eléctrica de 120 V · 60 Hz es una senoide de 170 V de pico (340 V pico a pico) y periodo 16.7 ms.</p>
+<p>Para comparar señales de forma distinta se usan promedios. Los dos más importantes son:</p>
+<div class="eq key" data-name="Valor medio y valor eficaz (RMS)">\[V_{med}=\frac1T\int_0^T v(t)\,\mathrm{d}t\qquad V_{rms}=\sqrt{\frac1T\int_0^T v^2(t)\,\mathrm{d}t}\]</div>
+<p>El <b>valor eficaz</b> (en inglés <i>root mean square</i>) es la tensión continua que disiparía la misma potencia en un resistor: \(P=V_{rms}^2/R\). Para una senoide pura \(V_{rms}=V_p/\sqrt2=0.707V_p\); para una onda triangular o de diente de sierra \(V_p/\sqrt3\); para una cuadrada simétrica \(V_p\). Una cuadrada de 0 a 5 V con ciclo de trabajo del 25 % tiene valor medio 1.25 V y valor eficaz \(5\sqrt{0.25}=2.5\) V. El <b>factor de cresta</b> \(V_p/V_{rms}\) (1.41 para la senoide) importa al dimensionar amplificadores y fuentes. Un multímetro barato mide el valor medio de la señal rectificada y lo multiplica por 1.11 para mostrarlo como si fuera senoidal: con otra forma de onda se equivoca; los de «verdadero valor eficaz» (<i>true RMS</i>) calculan la integral. El multímetro del Taller lo calcula así.</p>
+<div class="sim" data-sim="c3-senal" data-title="Forma de onda, valor medio y valor eficaz"></div>
+<div class="sim-guide"><ul>
+<li>Con la senoide de 5 V de pico: \(V_{rms}=3.54\) V, \(V_{pp}=10\) V, factor de cresta 1.414.</li>
+<li>Cambie a <b>triangular</b> con la misma amplitud: el valor eficaz baja a 2.89 V (\(5/\sqrt3\)). La misma amplitud de pico transporta menos potencia.</li>
+<li>Con la <b>cuadrada</b> y ciclo de trabajo 25 % y 5 V entre 0 y 5 V se obtiene \(V_{med}=1.25\) V y \(V_{rms}=2.5\) V: el valor medio y el eficaz son muy distintos, y también lo es la potencia entregada a una resistencia.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Serie de Fourier y espectro</h2>
+<p>Toda señal periódica razonable es una suma de senoides de frecuencias múltiplos de la fundamental \(f_0\): es la <b>serie de Fourier</b>. El conjunto de amplitudes de cada componente forma el <b>espectro</b>. Para una onda cuadrada simétrica de amplitud \(A\) con simetría impar, solo aparecen los armónicos impares:</p>
+<div class="eq key" data-name="Serie de Fourier de la onda cuadrada">\[v(t)=\frac{4A}{\pi}\left[\sin\omega_0t+\frac13\sin3\omega_0t+\frac15\sin5\omega_0t+\cdots\right]\qquad b_n=\frac{4A}{n\pi}\ \ (n\ \text{impar})\]</div>
+<p>Con \(A=1\) V, los primeros armónicos valen 1.273, 0.424, 0.255 y 0.182 V. La <b>distorsión armónica total</b> (THD) mide cuánto se aparta una señal de la senoide pura: \(\text{THD}=\sqrt{\sum_{n\ge2}V_n^2}/V_1\). La cuadrada ideal tiene \(\sqrt{\pi^2/8-1}=48.3\ \%\); sumando solo hasta el noveno armónico se llega a 42.9 %. El hecho central para la electrónica es que <b>un circuito lineal modifica cada componente por separado</b>: un filtro pasabajos que no deja pasar los armónicos altos redondea los flancos de una cuadrada, y un amplificador con ancho de banda insuficiente la convierte en una señal «lenta».</p>
+<div class="sim" data-sim="c3-fourier" data-title="Sintetizar ondas sumando armónicos"></div>
+<div class="sim-guide"><ul>
+<li>Con 1 armónico se ve una senoide; con 3, una forma escalonada; con 15, una cuadrada casi perfecta, salvo un sobreimpulso del 9 % cerca de cada flanco: es el <b>fenómeno de Gibbs</b>, que no desaparece al añadir más armónicos (solo se vuelve más estrecho).</li>
+<li>La <b>triangular</b> converge muy rápido (sus armónicos decaen como \(1/n^2\)): con tres armónicos casi no se distingue de la ideal. Los flancos bruscos exigen ancho de banda; las formas suaves no.</li>
+<li>El espectro de la cuadrada decae a −20 dB por década (\(1/n\)): un amplificador que solo llega a 10 veces la fundamental pierde la nitidez de los flancos.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Régimen senoidal permanente: fasores e impedancia</h2>
+<p>Si un circuito lineal se excita con una senoide, todas sus tensiones y corrientes (una vez extinguido el transitorio) son senoides de la <i>misma</i> frecuencia: cambian solo amplitud y fase. Eso permite representar cada magnitud por un número complejo, el <b>fasor</b> \(\tilde V=V_p\,e^{j\varphi}\), con la convención \(v(t)=\mathrm{Re}\{\tilde V\,e^{j\omega t}\}\). Derivar en el tiempo equivale a multiplicar por \(j\omega\); integrar, a dividir por \(j\omega\). La ley de Ohm generalizada define la <b>impedancia</b> \(Z=\tilde V/\tilde I\) (ohmios) y su inversa, la admitancia \(Y\):</p>
+<div class="eq key" data-name="Impedancia de los elementos pasivos">\[Z_R=R\qquad Z_L=j\omega L\qquad Z_C=\frac1{j\omega C}=-\frac{j}{\omega C}\]</div>
+<p>La parte real de \(Z\) es la <b>resistencia</b> y la imaginaria la <b>reactancia</b> \(X\) (\(X_L=\omega L\), \(X_C=-1/\omega C\)). Las reglas de serie, paralelo y divisor del capítulo 1 se aplican sin cambios con impedancias: \(Z_{serie}=\sum Z_k\), \(1/Z_{par}=\sum1/Z_k\), \(\tilde V_{out}=\tilde V_{in}\,Z_2/(Z_1+Z_2)\). Así se analiza cualquier circuito con R, L y C como si fuera resistivo, con aritmética compleja. El condensador es un «circuito abierto» en continua (\(Z\to\infty\)) y un «cortocircuito» a muy alta frecuencia; el inductor al revés.</p>
+<div class="box ex" data-label="Ejemplo resuelto"><p>Una fuente de 10 V eficaces alimenta \(R=1\ \text{k}\Omega\) en serie con \(C=1\ \mu\text{F}\) a \(f=159.15\) Hz (\(\omega=1000\) rad/s). Entonces \(X_C=-1/(\omega C)=-1000\ \Omega\) y \(Z=1000-j1000=1414\angle-45^\circ\ \Omega\). La corriente es \(I=10/1414=7.07\) mA y adelanta 45° a la tensión (en un circuito capacitivo la corriente va por delante). Las tensiones eficaces son \(V_R=7.07\) V (en fase con la corriente) y \(V_C=7.07\) V (retrasada 90°); como están en cuadratura, \(\sqrt{7.07^2+7.07^2}=10\) V: <b>los fasores se suman, los módulos no</b>.</p></div>
+<div class="sim" data-sim="c3-fasor" data-title="Diagrama fasorial de un circuito RC o RL en serie"></div>
+<div class="sim-guide"><ul>
+<li>Con \(R=1\) kΩ, \(C=1\) µF y \(f=159\) Hz: \(|Z|=1.414\) kΩ y \(\varphi=-45^\circ\); \(V_R\) y \(V_C\) son iguales y forman un ángulo recto: el triángulo de tensiones es isósceles.</li>
+<li>Suba la frecuencia: \(X_C\) disminuye, la corriente aumenta y el circuito se vuelve resistivo (\(\varphi\to0\)). Baje la frecuencia: domina el condensador y \(\varphi\to-90^\circ\).</li>
+<li>Cambie a una bobina (RL): la corriente <i>se retrasa</i> respecto de la tensión (\(\varphi>0\)).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Potencia activa, reactiva y aparente</h2>
+<p>Con tensión \(v=V\sqrt2\sin\omega t\) y corriente \(i=I\sqrt2\sin(\omega t-\varphi)\) (valores eficaces \(V\), \(I\) y desfase \(\varphi\)), la potencia instantánea \(p=vi\) oscila al doble de la frecuencia con un valor medio \(P=VI\cos\varphi\). Se definen tres potencias:</p>
+<div class="eq key" data-name="Triángulo de potencias">\[P=VI\cos\varphi\ \ [\mathrm{W}]\qquad Q=VI\sin\varphi\ \ [\mathrm{var}]\qquad S=VI=\sqrt{P^2+Q^2}\ \ [\mathrm{VA}]\qquad \text{fp}=\cos\varphi=P/S\]</div>
+<p>La <b>potencia activa</b> \(P\) se convierte en calor o trabajo; la <b>reactiva</b> \(Q\) va y viene entre la fuente y los elementos reactivos sin consumirse, pero circula corriente por los cables y ocasiona pérdidas \(I^2R\) en ellos; la <b>aparente</b> \(S\) determina el dimensionamiento de cables y transformadores. Un condensador o una bobina ideales tienen \(P=0\). En el ejemplo anterior: \(P=I^2R=50\) mW, \(Q=-50\) mvar (capacitiva), \(S=70.7\) mVA y \(\text{fp}=0.707\) adelantado. Una carga de 120 V que toma 2 A con un desfase de 60° en retardo (un motor) tiene \(S=240\) VA, \(P=120\) W, \(Q=208\) var y \(\text{fp}=0.5\); para corregir el factor de potencia a 0.95 se pone un condensador que aporte \(Q_C=120(\tan60^\circ-\tan18.2^\circ)=168\) var, es decir, \(C=Q_C/(\omega V^2)=31\ \mu\)F.</p>
+</section>
+
+<section>
+<h2>Decibelios y función de transferencia</h2>
+<p>Los factores de amplificación abarcan muchos órdenes de magnitud, de modo que se expresan en escala logarítmica: el <b>decibelio</b> es 10 veces el logaritmo decimal de una razón de potencias, o 20 veces el de una razón de tensiones (o corrientes) con la misma impedancia.</p>
+<div class="eq key" data-name="Decibelios">\[G_{dB}=10\log_{10}\frac{P_2}{P_1}=20\log_{10}\frac{V_2}{V_1}\qquad \times2\to6.02\ \text{dB}\qquad \times10\to20\ \text{dB}\qquad \tfrac1{\sqrt2}\to-3.01\ \text{dB}\]</div>
+<p>La <b>función de transferencia</b> \(H(j\omega)=\tilde V_{out}/\tilde V_{in}\) es un número complejo que depende de la frecuencia: su módulo dice cuánto se amplifica o atenúa cada frecuencia y su argumento, cuánto se retrasa. El <b>diagrama de Bode</b> traza \(20\log|H|\) y \(\arg H\) frente a \(f\) en escala logarítmica. Para el filtro RC pasabajos (divisor con \(R\) en serie y \(C\) a tierra):</p>
+<div class="eq key" data-name="Filtro RC pasabajos">\[H(j\omega)=\frac{1}{1+j\omega RC}=\frac1{1+jf/f_c}\qquad f_c=\frac1{2\pi RC}\qquad |H|=\frac1{\sqrt{1+(f/f_c)^2}}\qquad \varphi=-\arctan\frac f{f_c}\]</div>
+<p>Para \(f\ll f_c\) la ganancia es 0 dB y la fase 0°; en \(f=f_c\), \(-3.01\) dB y \(-45^\circ\); para \(f\gg f_c\) la ganancia cae <b>20 dB por década</b> (o 6 dB por octava) con fase cercana a \(-90^\circ\). Las <b>asíntotas</b> de Bode son dos rectas (0 dB y la pendiente −20 dB/dec) que se cortan en \(f_c\): trazarlas a mano es la manera de diseñar y entender un filtro antes de simular. Con \(R=10\) kΩ y \(C=10\) nF, \(f_c=1592\) Hz; a 5 kHz la ganancia es 0.303 (−10.4 dB) y el desfase −72.3°. A \(10f_c\) hay −20.04 dB y −84.3°; a \(100f_c\), −40.0 dB.</p>
+<div class="sim" data-sim="c3-bode" data-title="Diagrama de Bode del filtro RC (simulado frente a la teoría)"></div>
+<div class="sim-guide"><ul>
+<li>El Bode que calcula el Taller (línea azul) coincide con la fórmula \(1/\sqrt{1+(f/f_c)^2}\) (línea discontinua). Cambie \(R\) o \(C\): la rodilla se desplaza como \(1/RC\).</li>
+<li>La frecuencia de −3 dB que informa el analizador es \(f_c\): con 10 kΩ y 10 nF, 1.59 kHz; con 1 kΩ y 100 nF, 1.59 kHz (el producto \(RC\) es el mismo).</li>
+<li>Mire la fase: pasa de 0° a −90° con −45° exactamente en \(f_c\); la transición ocupa dos décadas centradas en ella.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>La tensión de la red es 170 V de pico. Calcule el valor pico a pico, el eficaz y la potencia disipada en una estufa de 24 Ω.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(V_{pp}=2\times170=340\) V.</li>
+<li>\(V_{rms}=170/\sqrt2=120.2\) V.</li>
+<li>\(P=V_{rms}^2/R=120.2^2/24=602\) W.</li>
+<li><b>Resultado.</b> <span class="ans">340 V pico a pico, 120.2 V eficaces y 602 W.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Una señal cuadrada de 0 a 5 V tiene ciclo de trabajo del 25 %. ¿Cuánto valen su valor medio y su valor eficaz?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(V_{med}=5\times0.25=1.25\) V.</li>
+<li>\(V_{rms}^2=\frac1T\int v^2=0.25\times25=6.25\), luego \(V_{rms}=2.5\) V.</li>
+<li><b>Resultado.</b> <span class="ans">1.25 V de valor medio y 2.5 V eficaces.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un filtro RC con \(R=10\) kΩ y \(C=10\) nF recibe una senoide de 2 V de pico a 5 kHz. Calcule la frecuencia de corte, la ganancia, la fase y la amplitud de salida.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(f_c=1/(2\pi\cdot10^4\cdot10^{-8})=1591.5\) Hz.</li>
+<li>\(f/f_c=5000/1591.5=3.142\); \(|H|=1/\sqrt{1+3.142^2}=0.303\) (−10.4 dB).</li>
+<li>\(\varphi=-\arctan3.142=-72.3^\circ\).</li>
+<li>Amplitud de salida: \(2\times0.303=0.607\) V.</li>
+<li><b>Resultado.</b> <span class="ans">\(f_c=1.59\) kHz; ganancia 0.303 (−10.4 dB); fase −72.3°; salida de 0.607 V de pico.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Una carga alimentada a 120 V eficaces y 60 Hz absorbe 2 A con un factor de potencia de 0.5 en retardo. Calcule \(S\), \(P\), \(Q\) y la capacidad necesaria para llevar el factor de potencia a 0.95.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(S=120\times2=240\) VA; \(P=240\times0.5=120\) W; \(Q=240\sin60^\circ=207.8\) var.</li>
+<li>Para \(\text{fp}=0.95\): \(\varphi_2=\arccos0.95=18.19^\circ\); \(Q_C=P(\tan60^\circ-\tan18.19^\circ)=120(1.732-0.329)=168.4\) var.</li>
+<li>\(C=Q_C/(\omega V^2)=168.4/(377\times14400)=31.0\ \mu\)F.</li>
+<li><b>Resultado.</b> <span class="ans">240 VA, 120 W, 208 var; un condensador de unos 31 µF (corriente de línea: de 2 A a 1.05 A).</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>Una onda cuadrada simétrica de ±1 V y 1 kHz pasa por un filtro RC con \(f_c=2\) kHz. ¿Qué amplitud tiene el primer armónico a la salida y qué fase? ¿Se conserva la forma?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>El primer armónico de la entrada vale \(4/\pi=1.273\) V a 1 kHz.</li>
+<li>Con \(f/f_c=0.5\): \(|H|=1/\sqrt{1.25}=0.894\) y \(\varphi=-26.6^\circ\); la amplitud es \(1.273\times0.894=1.138\) V.</li>
+<li>El tercer armónico (3 kHz, \(f/f_c=1.5\)) pasa con \(|H|=0.555\): de 0.424 V a 0.235 V. Los armónicos altos se atenúan más que el fundamental: los flancos se suavizan y la forma <i>no</i> se conserva (se parece más a una exponencial redondeada).</li>
+<li><b>Resultado.</b> <span class="ans">1.14 V a −26.6° para el fundamental; la forma cambia porque cada armónico se atenúa y desfasa de manera diferente.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

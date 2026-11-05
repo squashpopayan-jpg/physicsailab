@@ -1,0 +1,92 @@
+<template class="chapter-src" data-id="sensores" data-num="10" data-title="Sensores resistivos, protecciones y electromecánicos" data-part="Parte II · Dispositivos pasivos" data-short="Termistores NTC y PTC, fotorresistencias, varistores contra sobretensiones, fusibles y su curva tiempo–corriente, interruptores y relés con histéresis de actuación">
+<p class="lead">No todos los dispositivos pasivos son resistores o condensadores «puros». Hay resistores cuyo valor lo fija la temperatura (termistores) o la luz (LDR), resistores que cambian bruscamente con la tensión (varistores), conductores diseñados para abrirse a propósito (fusibles) y contactos mecánicos que se cierran con una bobina (relés). Todos se modelan con las herramientas que ya se tienen —un resistor cuyo valor depende de una variable externa— y todos aparecen en cualquier equipo real como sensores o como protección. Aquí se estudian su modelo, su uso típico y sus límites.</p>
+
+<section>
+<h2>Termistores: NTC, PTC y sensores de platino</h2>
+<p>Un <b>termistor NTC</b> (coeficiente negativo de temperatura) es un semiconductor cerámico (óxidos de Mn, Ni, Co) cuya resistencia disminuye al calentarse: más portadores, más conducción. Se modela con la ecuación de Steinhart simplificada (parámetro \(\beta\)):</p>
+<div class="eq key" data-name="Termistor NTC (modelo β)">\[R(T)=R_{25}\exp\!\left[\beta\left(\frac1T-\frac1{298.15}\right)\right]\qquad \alpha=\frac1R\frac{\mathrm{d}R}{\mathrm{d}T}=-\frac{\beta}{T^2}\approx-4.4\ \%/\text{K a }25^\circ\text{C}\]</div>
+<p>Un NTC de 10 kΩ con \(\beta=3950\) K vale 33.6 kΩ a 0 °C, 10.0 kΩ a 25 °C, 3.59 kΩ a 50 °C y 698 Ω a 100 °C: varía <i>48 veces</i> en 100 K, mucho más que cualquier otro sensor, pero de forma muy no lineal. Para convertirla en tensión se coloca en un <b>divisor</b> con un resistor fijo \(R_f=R_{25}\) alimentado con \(V_{CC}\): \(V_{out}=V_{CC}R_{NTC}/(R_{NTC}+R_f)\): 3.85 V a 0 °C, 2.50 V a 25 °C, 1.32 V a 50 °C y 0.33 V a 100 °C con 5 V. La sensibilidad en el punto medio es \(V_{CC}\beta/(4T^2)=55.5\) mV/K, y el divisor linealiza en gran medida la curva en torno a esa zona. Una limitación es el <b>autocalentamiento</b>: la corriente que se hace pasar calienta el sensor (con un coeficiente de disipación de 1.5 mW/K, 5 mW de potencia producen un error de 3.3 K), así que se limita la corriente de medida.</p>
+<p>Los <b>termistores PTC</b> de cerámica de titanato de bario tienen un aumento brusco de resistencia por encima de una temperatura de conmutación (60–140 °C); se usan como <i>fusibles reponibles</i> («polyfuses»), calefactores autorregulados y protección de motores. Los <b>detectores de temperatura de resistencia</b> (RTD) de platino (Pt100, Pt1000) son lineales y estables (\(\alpha=0.385\ \%/\text{K}\)) y se usan en medidas de precisión, aunque menos sensibles.</p>
+<div class="sim" data-sim="c10-ntc" data-title="Termistor NTC en un divisor: tensión de salida frente a la temperatura"></div>
+<div class="sim-guide"><ul>
+<li>Con \(\beta=3950\) y \(R_f=10\) kΩ (\(V_{CC}=5\) V): a 25 °C el divisor da 2.50 V y la pendiente es de unos −55 mV/K; a 100 °C da 0.33 V (pendiente mucho menor: el sensor «se satura»).</li>
+<li>Cambie \(R_f\) a 3.6 kΩ (el valor del NTC a 50 °C): el punto de máxima sensibilidad se desplaza a 50 °C. El valor óptimo de \(R_f\) se elige igual a la resistencia del sensor en el centro de la zona de interés.</li>
+<li>Aumente \(\beta\): el sensor es más sensible pero menos lineal.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Fotorresistencias (LDR)</h2>
+<p>Una <b>LDR</b> (<i>light dependent resistor</i>) es una película de sulfuro de cadmio cuya resistencia disminuye al iluminarse: los fotones generan portadores. Se describe aproximadamente con una ley de potencia, \(R=R_{10}\,(10/E)^{\gamma}\), donde \(E\) es la iluminancia (lux), \(R_{10}\) la resistencia a 10 lx y \(\gamma\approx0.7\). Una LDR típica de 20 kΩ a 10 lx vale 100 kΩ a 1 lx (luz de vela), 3.99 kΩ a 100 lx (habitación) y 796 Ω a 1000 lx (sombra exterior). Es muy lenta (decenas de ms) y no sirve para señales rápidas, pero sí para el control de alumbrado, detectores de día/noche y juguetes. Para señales rápidas se usan fotodiodos y fototransistores (capítulos 15 y 26).</p>
+<div class="sim" data-sim="c10-ldr" data-title="LDR en un divisor: sensor de luz"></div>
+<div class="sim-guide"><ul>
+<li>Con 100 lx la LDR vale 3.99 kΩ y la salida es 1.43 V (con 10 kΩ y 5 V).</li>
+<li>A 1 lx vale 100 kΩ y la salida sube a 4.55 V; con 1000 lx baja a 0.37 V. Una década de iluminancia modifica la resistencia unas 5 veces (\(10^{0.7}\)).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Varistores: proteger contra picos de tensión</h2>
+<p>Un <b>varistor</b> (MOV, <i>metal oxide varistor</i>) es un resistor cuya corriente crece casi con una potencia elevada de la tensión, \(I\propto V^{\alpha}\) con \(\alpha=25\)–\(40\): por debajo de su <b>tensión de varistor</b> \(V_n\) (la que produce 1 mA) conduce casi nada, y por encima conduce corrientes enormes que casi no hacen subir la tensión. Se conecta en paralelo con la entrada de un equipo (a la red, tras el fusible): si llega un pico (un rayo lejano, la conmutación de un motor) lo absorbe y lo recorta. En el simulador el varistor se modela con la curva \(I=I_0\sinh(V/V_s)\), con \(V_s=V_n/\alpha\). Con \(V_n=18\) V y \(\alpha=25\), a 12 V conduce 0.24 µA (nada); con 2 A, la tensión solo sube a 23.5 V, y con 20 A a 25.1 V. Su <b>límite</b> es la energía que pueden absorber (julios) y el número de picos: cada evento degrada el material y, tras muchos, queda en cortocircuito (por eso va tras un fusible).</p>
+<div class="sim" data-sim="c10-mov" data-title="Pulsos de 2 A en una línea de 12 V, con y sin varistor"></div>
+<div class="sim-guide"><ul>
+<li>Con el varistor, la línea sube de 12 V a unos 24 V durante el pulso y el equipo (120 Ω) sobrevive. Sin él, los pulsos llevan la línea a más de 200 V (226 V en la simulación) y el equipo se destruye en pocos segundos.</li>
+<li>El varistor disipa una potencia media de unos 4 W: es la energía de los pulsos repetidos. Un varistor de potencia mayor (mayor diámetro) aguantaría más pulsos.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Fusibles: protección que se sacrifica</h2>
+<p>Un <b>fusible</b> es un conductor delgado calibrado para fundirse cuando el calor que produce la corriente (\(I^2R\)) supera lo que puede ceder. Lo que importa es la <b>energía \(I^2t\)</b> necesaria para fundirlo: a corriente doble, el calor crece cuatro veces y el tiempo se reduce a la cuarta parte. Por eso se especifican con una <b>curva tiempo–corriente</b>: un fusible «rápido» (F) se funde en milisegundos con 10 veces su corriente nominal; uno «retardado» (T, <i>time-lag</i>) tolera las corrientes de arranque de motores y fuentes (varias veces la nominal durante decenas de ms). Su corriente nominal nunca se aprovecha por completo: el fusible debe dimensionarse para que <b>proteja el cable o el componente más débil</b>, no para que el circuito funcione. Además de la corriente, tienen una <b>tensión máxima</b> y una <b>capacidad de ruptura</b> (la corriente máxima de cortocircuito que pueden interrumpir sin arco).</p>
+<p>El modelo del Taller integra el calor con \(\mathrm{d}h/\mathrm{d}t\propto I^2/I_r^2-1\) y funde el fusible cuando \(h\ge1\): con 1.5 veces la corriente nominal (fusible rápido) tarda unos 0.4 s; con 2 veces, 0.15 s; con 10 veces, unos 5 ms; el retardado tarda cuatro veces más. Las curvas reales (IEC 60127) varían según el fabricante.</p>
+<div class="sim" data-sim="c10-fusible" data-title="Fusible de 1 A: cuánto tarda en fundirse según la corriente"></div>
+<div class="sim-guide"><ul>
+<li>Con una carga de 120 Ω la corriente es de 0.1 A (10 % de la nominal): el fusible es transparente. Con 12 Ω pasa 1 A, el valor nominal: no se funde, pero se calienta.</li>
+<li>Con 6 Ω la corriente es 2 A (2×): el fusible rápido se funde en una fracción de segundo; cambie a retardado y tarda unas cuatro veces más.</li>
+<li>Con 0.5 Ω circulan casi 20 A: se funde de inmediato.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Interruptores y relés</h2>
+<p>Un <b>interruptor</b> mecánico no se cierra limpiamente: los contactos <b>rebotan</b> durante 1–10 ms, produciendo decenas de transiciones que un circuito digital contaría como pulsaciones múltiples (se resuelve con un filtro RC y un disparador Schmitt, o por programa). Los contactos se caracterizan por la corriente y la tensión máximas: al abrir una carga inductiva se forma un arco que los erosiona (de ahí el diodo de rueda libre del capítulo 6).</p>
+<p>Un <b>relé</b> es un interruptor accionado por una bobina. Sus parámetros son la tensión nominal de la bobina (12 V), su resistencia (400 Ω: 30 mA, 360 mW), la <b>tensión de atracción</b> (aprox. 70–75 % de la nominal: 8.4 V) y la <b>tensión de suelta</b> (≈ 10–20 %: 2.4 V). La diferencia entre ambas es una <b>histéresis</b> de actuación: una vez atraído, el relé se mantiene con menos tensión que la necesaria para atraerlo, y esto evita vibraciones en el umbral. Se usa para manejar cargas de potencia con una señal pequeña y para aislar galvánicamente circuitos.</p>
+<div class="sim" data-sim="c10-rele" data-title="Relé de 12 V: tensión de atracción y de suelta"></div>
+<div class="sim-guide"><ul>
+<li>Suba la tensión desde 0: el relé permanece en reposo hasta unos 8.4 V (70 % de 12 V), cuando el contacto cierra y el LED se enciende. Baje después la tensión: el contacto sigue cerrado hasta unos 2.4 V.</li>
+<li>Entre 2.4 V y 8.4 V el estado depende de la historia: es la histéresis. La corriente de la bobina a 12 V es de 30 mA.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un NTC de 10 kΩ (\(\beta=3950\) K) está a 50 °C. ¿Cuánto vale su resistencia? ¿Y la salida de un divisor con 10 kΩ y 5 V?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(R=10^4\exp[3950(1/323.15-1/298.15)]=3588\ \Omega\).</li>
+<li>\(V_{out}=5\cdot3588/(3588+10000)=1.32\) V.</li>
+<li><b>Resultado.</b> <span class="ans">3.59 kΩ y 1.32 V.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Una LDR tiene 20 kΩ a 10 lx y \(\gamma=0.7\). ¿Qué resistencia tiene a 100 lx?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(R=20\ \text{k}\Omega\cdot(10/100)^{0.7}=20\cdot0.1995=3.99\) kΩ.</li>
+<li><b>Resultado.</b> <span class="ans">3.99 kΩ.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un NTC de 10 kΩ/\(\beta=3950\) K alimentado a través de 10 kΩ y 5 V se autocalienta con 5 mW y el coeficiente de disipación es 1.5 mW/K. ¿Qué error de temperatura introduce y cuánto debería reducirse la corriente para no superar 0.1 K?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>Error \(\Delta T=P/\delta=5/1.5=3.3\) K.</li>
+<li>Para 0.1 K: \(P\le0.15\) mW; como \(P=I^2R\), \(I\) debe reducirse en \(\sqrt{5/0.15}=5.8\) veces.</li>
+<li>Con 10 kΩ en el sensor, \(I=\sqrt{0.15\ \text{mW}/10\ \text{k}\Omega}=122\ \mu\)A, es decir, una tensión de alimentación de ≈ 2.4 V con \(R_f=10\) kΩ.</li>
+<li><b>Resultado.</b> <span class="ans">3.3 K de error; hay que reducir la corriente 5.8 veces (≈ 122 µA a 25 °C).</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un varistor de \(V_n=18\) V y \(\alpha=25\) protege una línea de 12 V. ¿Qué tensión alcanza con un pulso de 2 A? ¿Y cuál sería la sobretensión sin varistor si la carga es de 120 Ω?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(I=1\ \text{mA}\,(V/V_n)^{\alpha}\Rightarrow V=18\,(2000)^{1/25}=18\cdot1.356=24.4\) V (con la curva sinh: 23.5 V).</li>
+<li>Sin varistor: \(V=2\ \text{A}\times120\ \Omega=240\) V (más la tensión de línea).</li>
+<li><b>Resultado.</b> <span class="ans">Unos 24 V con varistor; más de 200 V sin él (en una línea con inductancia, ≈ 226 V en la simulación; el máximo teórico es 240 V).</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>Un fusible rápido de 1 A se alimenta de 12 V con una carga de 6 Ω. Estime el tiempo de fusión con el modelo \(t=1/[2.2(r-1)]\), \(r=(I/I_r)^2\). ¿Y con uno retardado (×4)? ¿Qué pasaría si el fusible fuera de 5 A?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(I=12/6.12=1.96\) A: \(r=3.84\); \(t=1/(2.2\cdot2.84)=0.16\) s.</li>
+<li>Retardado: \(t=0.64\) s.</li>
+<li>Con 5 A: \(r=0.154<1.3\): no se funde nunca; el cableado conectado a 2 A de falla estaría desprotegido si fuese más fino que el capaz de 5 A.</li>
+<li><b>Resultado.</b> <span class="ans">0.16 s (rápido), 0.64 s (retardado); un fusible de 5 A no protege: elíjase según el componente que se protege.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

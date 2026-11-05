@@ -1,0 +1,100 @@
+<template class="chapter-src" data-id="transformadores" data-num="7" data-title="Transformadores" data-part="Parte II · Dispositivos pasivos" data-short="Transformador ideal y relaciones de tensión, corriente e impedancia, flujo del núcleo y saturación, circuito equivalente real, regulación y rendimiento, toma central, aislamiento galvánico y seguridad">
+<p class="lead">Dos bobinas acopladas por el mismo flujo forman un <b>transformador</b>: cambia el nivel de una tensión alterna, aísla eléctricamente un circuito de otro y adapta impedancias. Es la razón por la que la energía eléctrica se transporta a miles de voltios y llega a casa a 120 V, y la primera pieza de casi toda fuente de alimentación. Este capítulo parte del modelo ideal, explica de dónde salen sus límites (flujo, saturación, pérdidas) y muestra cómo se mide y se simula el transformador real.</p>
+
+<section>
+<h2>El transformador ideal</h2>
+<p>Un transformador ideal tiene acoplamiento perfecto (\(k=1\)), inductancias infinitas y no tiene pérdidas. Con \(N_p\) vueltas en el primario y \(N_s\) en el secundario, el mismo flujo atraviesa ambos devanados, de modo que la tensión por vuelta es igual, y por conservación de la potencia (\(v_pi_p=v_si_s\)) las corrientes se reparten al revés:</p>
+<div class="eq key" data-name="Relaciones del transformador ideal">\[\frac{v_s}{v_p}=\frac{N_s}{N_p}=\frac1n\qquad \frac{i_s}{i_p}=n\qquad Z_{p}=n^2Z_L\qquad n=\frac{N_p}{N_s}\]</div>
+<p>Con \(n=10\), 120 V en el primario producen 12 V en el secundario; una carga de 8 Ω toma 1.5 A del secundario y solo 0.15 A de la red, y la fuente «ve» una carga de \(n^2R_L=800\ \Omega\) (<i>reflexión de impedancia</i>). Esta última propiedad es lo que permite adaptar un altavoz de 8 Ω a un amplificador que quiere cargas de kΩ. Los puntos que se dibujan junto a los devanados indican los terminales de igual polaridad instantánea: una corriente que entra por el punto del primario sale por el punto del secundario. Si se invierte una conexión, la tensión de salida cambia de signo.</p>
+<div class="sim" data-sim="c7-ideal" data-title="Transformador reductor alimentado por la red (120 V · 60 Hz)"></div>
+<div class="sim-guide"><ul>
+<li>Con \(n=10\) y una carga de 12 Ω: la tensión del secundario es 12 V (valor eficaz) y por ella circula 1 A; el primario toma unos 0.1 A. La potencia de salida (12 W) es casi igual a la de entrada.</li>
+<li>Cambie la relación a \(n=2\): el secundario da 60 V y la misma carga toma 5 A, 25 veces más potencia: no se obtiene «de balde» una tensión mayor; hay que pagarla con corriente en el primario.</li>
+<li>Las dos trazas están en fase: el transformador no desfasa (con los puntos como en la figura). Con la escala vertical automática parecen del mismo tamaño: mire las escalas (50 V/div y 5 V/div) y la tabla de mediciones, que muestra la relación 10 : 1.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Flujo en el núcleo y saturación</h2>
+<p>La ley de Faraday aplicada al primario (\(v_p=N_p\,\mathrm{d}\Phi/\mathrm{d}t\)) con una tensión senoidal fija el flujo máximo del núcleo, independientemente de la carga:</p>
+<div class="eq key" data-name="Ecuación fundamental del transformador">\[V_{rms}=4.44\,f\,N\,\Phi_m=4.44\,f\,N\,B_mA\qquad B_m=\frac{V_{rms}}{4.44\,f\,N\,A}\]</div>
+<p>Con 120 V, 60 Hz, \(N_p=600\) vueltas y un núcleo de 6 cm², \(B_m=1.25\) T: ya cerca de la saturación del acero al silicio (1.5–1.8 T). Si el mismo transformador se alimentara con 50 Hz, \(B_m=1.50\) T: la saturación llegaría antes y la corriente magnetizante crecería con fuertes picos. De ahí que un transformador diseñado para 60 Hz no deba conectarse a 50 Hz sin reducir la tensión (relación \(V/f\) constante), mientras que uno diseñado para 50 Hz funciona sin problema a 60 Hz. Cuando el núcleo se satura, la corriente de vacío se deforma (picos agudos de armónicos impares) y puede hacer saltar las protecciones; por eso un transformador toroidal grande produce una gran corriente transitoria de arranque (<i>inrush</i>) si se conecta justo en el cruce por cero de la tensión.</p>
+<div class="sim" data-sim="c7-flujo" data-title="Flujo del núcleo y corriente magnetizante frente a la saturación"></div>
+<div class="sim-guide"><ul>
+<li>Con 120 V, 60 Hz, 600 vueltas y 6 cm²: \(B_m=1.25\) T con un núcleo de \(B_{sat}=1.6\) T: la corriente magnetizante es casi senoidal.</li>
+<li>Baje la frecuencia a 50 Hz: \(B_m\) sube a 1.5 T y ya se aprecian picos en la corriente. A 40 Hz, \(B_m=1.9\) T supera la saturación y la corriente se vuelve una sucesión de pulsos agudos de decenas de veces su valor normal.</li>
+<li>Aumente el número de vueltas o el área del núcleo para alejarse de la saturación: es la razón por la que los transformadores de baja frecuencia son pesados.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El transformador real</h2>
+<p>El modelo realista añade a la relación ideal cuatro elementos: la <b>resistencia de cada devanado</b> (\(R_p\), \(R_s\): pérdidas en el cobre, proporcionales a \(I^2\)), la <b>inductancia de dispersión</b> (el flujo que no enlaza a ambos devanados, \(L_{lk}\approx(1-k)L\)), la <b>inductancia de magnetización</b> \(L_m\) en paralelo con el primario (la corriente que se necesita solo para crear el flujo) y una <b>resistencia de pérdidas del núcleo</b> \(R_c\) (histéresis y corrientes de Foucault, proporcionales a \(V^2\)). Referido al secundario, un transformador de 12 V / 1 A típico se resume en una resistencia \(R_{eq}\approx1\ \Omega\) y una reactancia de dispersión \(X_{eq}\approx0.5\ \Omega\) en serie con el secundario ideal.</p>
+<div class="eq key" data-name="Regulación y rendimiento">\[\text{regulación}=\frac{V_{20}-V_{2,pc}}{V_{2,pc}}\qquad \eta=\frac{P_{sal}}{P_{sal}+P_{Fe}+P_{Cu}}\qquad P_{Fe}\propto V^2\ \ (\text{constante})\quad P_{Cu}\propto I^2\]</div>
+<p>La <b>regulación</b> mide cuánto cae la tensión del secundario entre el vacío y la plena carga. Con \(R_{eq}=1\ \Omega\) y \(X_{eq}=0.5\ \Omega\) y una carga de 12 V/1 A: en vacío el secundario da 13.01 V (carga resistiva): regulación del 8.4 %; con carga inductiva (fp 0.8 en retardo) 9.2 %; con carga capacitiva (fp 0.8 adelantado) 4.5 %. Un transformador de pequeña potencia tiene regulaciones de 10–20 %, uno de distribución del 1–3 %. El <b>rendimiento</b> es máximo cuando las pérdidas variables igualan las constantes (\(P_{Cu}=P_{Fe}\)): un transformador de 100 VA con 2 W de hierro y 3 W de cobre a plena carga tiene \(\eta=100/105=95.2\ \%\). Las pérdidas se miden con dos ensayos: en <b>vacío</b> (tensión nominal, secundario abierto; la potencia es la del núcleo) y en <b>cortocircuito</b> (tensión reducida hasta que circule la corriente nominal; la potencia es la del cobre).</p>
+<div class="sim" data-sim="c7-regulacion" data-title="Regulación: tensión del secundario frente a la corriente de carga"></div>
+<div class="sim-guide"><ul>
+<li>Con \(V_{20}=13\) V, \(R_{eq}=1\ \Omega\) y \(X_{eq}=0.5\ \Omega\) la tensión a 1 A de carga resistiva baja a unos 12 V; con carga inductiva baja un poco más y con capacitiva menos (la corriente adelantada compensa la caída de la reactancia).</li>
+<li>Duplique \(R_{eq}\): la regulación empeora casi el doble. Un transformador de peor calidad o con cables largos.</li>
+<li>La resistencia del devanado es la razón de que un adaptador barato de «12 V» entregue 17 V sin carga: está dimensionado para caer hasta 12 V a plena corriente.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Toma central, múltiples secundarios y seguridad</h2>
+<p>Un secundario con <b>toma central</b> (CT) ofrece dos tensiones iguales respecto de ese punto y en oposición de fase (180°). Se usa para fuentes simétricas (+V, 0, −V) y para el rectificador de onda completa con dos diodos (capítulo 14). La toma central puede ser el cero de la fuente. En la simulación, las dos mitades del secundario muestran dos senoides en oposición.</p>
+<div class="sim" data-sim="c7-toma" data-title="Transformador con toma central: dos tensiones en oposición de fase"></div>
+<div class="sim-guide"><ul>
+<li>Con \(n=5\) y 120 V, cada mitad del secundario entrega 12 V eficaces con respecto a la toma central, y entre los extremos 24 V.</li>
+<li>El canal 1 y el canal 2 están en oposición de fase exacta: cuando uno sube, el otro baja.</li>
+</ul></div>
+<div class="box safe"><p><b>Aislamiento galvánico.</b> El transformador separa eléctricamente el primario del secundario: no hay camino conductor entre la red y el circuito de baja tensión, de modo que un contacto con el secundario no cierra circuito con la tierra. Sin embargo, la protección depende del aislamiento (especificado en kV) y de que no haya fallas. Nunca se toca un transformador de red alimentado, nunca se mide con la tierra del osciloscopio conectada al primario sin un transformador de aislamiento, y los experimentos con 120 V deben hacerse con supervisión.</p></div>
+</section>
+
+<section>
+<h2>Tipos y aplicaciones</h2>
+<ul>
+<li><b>De potencia (50/60 Hz)</b>: núcleo de acero laminado (EI o toroidal); la carcasa pesada es la razón de su volumen: el flujo \(\Phi=V/(4.44fN)\) no se puede reducir.</li>
+<li><b>De alta frecuencia</b> (fuentes conmutadas, 20–500 kHz): núcleo de ferrita; a 100 kHz el mismo flujo se logra con 1/1000 de las vueltas o del área: un cargador de 5 W cabe en el bolsillo.</li>
+<li><b>De audio y de pulsos</b>: adaptan impedancias y aíslan señales; su ancho de banda lo limitan \(L_m\) (graves) y \(L_{lk}\) y \(C\) (agudos).</li>
+<li><b>Autotransformador</b>: un solo devanado con derivación; más pequeño y eficiente, pero sin aislamiento (el «variac»).</li>
+<li><b>De corriente y de tensión de medida</b>: reducen magnitudes grandes a valores medibles.</li>
+</ul>
+</section>
+
+<section>
+<h2>Problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un transformador reductor de 120 V a 12 V alimenta una carga de 8 Ω. Calcule la corriente del secundario, la del primario y la resistencia que ve la fuente.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>Relación \(n=120/12=10\).</li>
+<li>\(I_s=12/8=1.5\) A; \(I_p=I_s/n=0.15\) A.</li>
+<li>\(Z_p=n^2R_L=100\cdot8=800\ \Omega\) (comprobación: \(120/0.15=800\ \Omega\)).</li>
+<li><b>Resultado.</b> <span class="ans">1.5 A en el secundario, 0.15 A en el primario y 800 Ω vistos por la red.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Un transformador de 120 V/24 V entrega 2 A. Calcule la potencia aparente y, con un rendimiento del 90 %, la corriente que toma de la red.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(S_2=24\times2=48\) VA.</li>
+<li>Potencia de entrada \(P_1=48/0.9=53.3\) W.</li>
+<li>\(I_1=P_1/V_1=53.3/120=0.444\) A.</li>
+<li><b>Resultado.</b> <span class="ans">48 VA; 0.444 A (frente a 0.4 A del caso ideal).</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Calcule la inducción máxima de un núcleo de 6 cm² con 600 vueltas a 120 V en 60 Hz y en 50 Hz. ¿Cuál es el riesgo?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(B_m=V/(4.44fNA)\). A 60 Hz: \(120/(4.44\cdot60\cdot600\cdot6\times10^{-4})=1.25\) T.</li>
+<li>A 50 Hz: \(B_m=1.50\) T.</li>
+<li>El acero al silicio satura a 1.5–1.8 T: a 50 Hz queda sin margen y la corriente de vacío se dispara.</li>
+<li><b>Resultado.</b> <span class="ans">1.25 T y 1.50 T: el diseño para 60 Hz queda al límite si se alimenta con 50 Hz.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Con \(R_{eq}=1\ \Omega\), \(X_{eq}=0.5\ \Omega\) (referidos al secundario) y una carga de 12 V/1 A resistiva, calcule la tensión en vacío y la regulación.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(\tilde V_{20}=\tilde V_2+\tilde I(R_{eq}+jX_{eq})=12+1(1+j0.5)=13+j0.5\) V.</li>
+<li>\(|V_{20}|=\sqrt{169+0.25}=13.01\) V.</li>
+<li>Regulación \(=(13.01-12)/12=8.4\ \%\).</li>
+<li><b>Resultado.</b> <span class="ans">13.01 V en vacío; regulación del 8.4 %.</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>Un transformador de 100 VA tiene \(P_{Fe}=2\) W y \(P_{Cu}=3\) W a plena carga. Calcule el rendimiento a plena carga y a media carga (fp = 1). ¿A qué carga es máximo?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>Plena carga: \(\eta=100/(100+2+3)=95.2\ \%\).</li>
+<li>Media carga: \(P_{Cu}=3/4=0.75\) W; \(\eta=50/(50+2+0.75)=94.8\ \%\).</li>
+<li>Máximo cuando \(P_{Cu}=P_{Fe}\): \((x)^2\cdot3=2\Rightarrow x=0.816\) (81.6 % de la carga), con \(\eta_{max}=81.6/(81.6+4)=95.3\ \%\).</li>
+<li><b>Resultado.</b> <span class="ans">95.2 % a plena carga, 94.8 % a media carga; máximo (95.3 %) al 82 % de la carga.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

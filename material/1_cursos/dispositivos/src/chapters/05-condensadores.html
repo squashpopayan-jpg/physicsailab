@@ -1,0 +1,126 @@
+<template class="chapter-src" data-id="condensadores" data-num="5" data-title="Condensadores" data-part="Parte II · Dispositivos pasivos" data-short="Capacidad y energía almacenada, dieléctricos, relación corriente–tensión, carga y descarga, asociaciones, tipos (cerámico, película, electrolítico, tántalo, supercondensador), modelo real con ESR y ESL, resonancia propia, desacople y modos de falla">
+<p class="lead">Un condensador almacena energía en un campo eléctrico. Se comporta como un circuito abierto para la corriente continua y como un cortocircuito para las señales rápidas, y esa dependencia de la frecuencia es la base de los filtros, los temporizadores, el acoplamiento de etapas, el desacople de alimentaciones y las fuentes de energía de pulso. Pero el condensador real no es la pieza ideal del libro: tiene resistencia serie, inductancia, fugas, tolerancias enormes y, en el caso de los electrolíticos, polaridad y vida limitada. Este capítulo recorre ambas caras.</p>
+
+<section>
+<h2>Capacidad, energía y dieléctrico</h2>
+<p>Dos placas conductoras de área \(A\), separadas una distancia \(d\) por un dieléctrico de permitividad relativa \(\varepsilon_r\), almacenan una carga \(Q\) proporcional a la tensión aplicada: \(Q=CV\). Para placas paralelas, y despreciando los efectos de borde:</p>
+<div class="eq key" data-name="Condensador de placas paralelas">\[C=\varepsilon_0\varepsilon_r\frac{A}{d}\qquad E=\frac Vd\qquad W=\tfrac12CV^2=\tfrac12QV=\frac{Q^2}{2C}\qquad \varepsilon_0=8.854\ \text{pF/m}\]</div>
+<p>Con placas de 100 cm² separadas 1 mm en el aire se obtienen \(C=88.5\) pF; si el espacio se llena con un dieléctrico de \(\varepsilon_r=4.7\), 416 pF. Para aumentar la capacidad se juntan las placas, se agrandan o se usa un dieléctrico de alta permitividad. Todo dieléctrico tiene una <b>rigidez</b> (campo máximo antes de la ruptura): 3 MV/m en el aire, 20–60 MV/m en los polímeros y entre 500 y 900 MV/m en la alúmina anódica de un electrolítico, que es tan delgada (decenas de nm) que permite capacidades de miles de microfaradios en un volumen pequeño. La energía almacenada, \(\tfrac12CV^2\), es modesta: 100 µF a 12 V guardan 7.2 mJ; en un flash fotográfico, 100 µF a 330 V guardan 5.4 J, que se descargan en un milisegundo.</p>
+<div class="tablewrap"><table class="tbl"><tr><th>Dieléctrico</th><th>\(\varepsilon_r\)</th><th>Rigidez (MV/m)</th><th>Se usa en</th></tr>
+<tr><td>Aire / vacío</td><td>1.0006</td><td>3</td><td>Variables de sintonía</td></tr>
+<tr><td>Poliéster (PET), polipropileno (PP)</td><td>3.3 / 2.2</td><td>~ 400 (película fina)</td><td>Condensadores de película</td></tr>
+<tr><td>Mica</td><td>6–8</td><td>100</td><td>RF de precisión</td></tr>
+<tr><td>Óxido de aluminio \(\mathrm{Al_2O_3}\)</td><td>8–10</td><td>~ 700</td><td>Electrolíticos de aluminio</td></tr>
+<tr><td>Pentóxido de tántalo \(\mathrm{Ta_2O_5}\)</td><td>~ 27</td><td>~ 500</td><td>Tántalo</td></tr>
+<tr><td>Titanato de bario (X7R, Y5V)</td><td>2000–18000</td><td>~ 10</td><td>Cerámicos multicapa</td></tr></table></div>
+<div class="sim" data-sim="c5-placas" data-title="Condensador de placas paralelas: capacidad, carga, campo y energía"></div>
+<div class="sim-guide"><ul>
+<li>Con 100 cm², 1 mm, \(\varepsilon_r=1\) y 12 V: \(C=88.5\) pF, \(Q=1.06\) nC, \(E=12\) kV/m y \(W=6.4\) nJ.</li>
+<li>Reduzca la separación a 10 µm: la capacidad sube 100 veces (8.85 nF), pero el campo (1.2 MV/m para 12 V) se acerca a los 3 MV/m de ruptura del aire.</li>
+<li>Con \(\varepsilon_r=4.7\) la capacidad aumenta en la misma proporción y la energía almacenada también; a tensión constante, la carga crece con \(C\).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Corriente, carga y descarga</h2>
+<p>La corriente en un condensador es proporcional a la <i>velocidad de cambio</i> de su tensión; si la tensión es constante, la corriente es cero:</p>
+<div class="eq key" data-name="Relación corriente–tensión del condensador">\[i=C\frac{\mathrm{d}v}{\mathrm{d}t}\qquad v(t)=v(0)+\frac1C\int_0^ti\,\mathrm{d}t\qquad Z_C=\frac{1}{j\omega C}\]</div>
+<p>Una consecuencia importante es que <b>la tensión de un condensador no puede cambiar de golpe</b> (haría falta una corriente infinita): es continua en el tiempo, igual que la corriente de un inductor. Por eso un condensador descargado se comporta, un instante después de conectarlo, como un cortocircuito. Un condensador de 10 µF cuya tensión crece 5 V/ms conduce 50 mA. A través de una resistencia \(R\), la carga a una fuente \(V_0\) sigue \(v_C(t)=V_0(1-e^{-t/RC})\) y la descarga \(v_C(t)=V_0e^{-t/RC}\), con constante de tiempo \(\tau=RC\): a \(\tau\) se alcanza el 63.2 %, a \(2.3\tau\) el 90 %, a \(3\tau\) el 95 % y a \(4.6\tau\) el 99 %. Por la resistencia se disipa durante la carga una energía \(\tfrac12CV_0^2\), la <i>misma</i> que queda almacenada en el condensador, sin importar el valor de \(R\): la mitad de la energía de la fuente se pierde en el calor.</p>
+<div class="sim" data-sim="c5-carga" data-title="Carga y descarga de un condensador a través de un resistor"></div>
+<div class="sim-guide"><ul>
+<li>Con 1 kΩ (950 Ω + 50 Ω del generador) y 1 µF: \(\tau=1\) ms. La tensión del condensador llega al 63 % en 1 ms; la escala de tiempo de la simulación es de 1 ms/div para ver 5 \(\tau\) en medio periodo.</li>
+<li>Multiplique \(C\) por 10: todo el proceso se alarga 10 veces (\(\tau=10\) ms). Con ello la señal de entrada ya no logra cargar el condensador y la salida se reduce a una ondulación.</li>
+<li>La corriente (\(i=C\,\mathrm{d}v/\mathrm{d}t\)) es máxima en el flanco y decae exponencialmente: el condensador «se ve» como un cortocircuito al inicio y como un circuito abierto al final.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Asociaciones</h2>
+<p>En <b>paralelo</b> las capacidades se suman (\(C_{eq}=\sum C_k\)): 10 µF más 22 µF dan 32 µF. En <b>serie</b> se suman sus inversas (\(1/C_{eq}=\sum1/C_k\)) y comparten la misma carga: 10 µF y 22 µF en serie dan 6.88 µF, y la tensión se reparte <i>inversamente</i> a la capacidad: con 12 V, el de 10 µF queda a \(12\cdot22/32=8.25\) V y el de 22 µF a 3.75 V. Es el principio del <b>divisor capacitivo</b>, que se usa en las sondas de osciloscopio compensadas. Ponerlos en serie para soportar mayor tensión exige una resistencia de igualación en paralelo con cada uno, porque las fugas desiguales hacen que la tensión se reparta mal.</p>
+</section>
+
+<section>
+<h2>Tipos de condensadores</h2>
+<div class="tablewrap"><table class="tbl"><tr><th>Tipo</th><th>Rango típico</th><th>Características</th><th>Defectos</th><th>Usos</th></tr>
+<tr><td><b>Cerámico C0G (NP0)</b></td><td>1 pF – 100 nF</td><td>Estable, ±30 ppm/K, sin efecto piezoeléctrico, ESR baja</td><td>Capacidad pequeña</td><td>Filtros precisos, osciladores, RF</td></tr>
+<tr><td><b>Cerámico X7R</b></td><td>100 pF – 22 µF</td><td>±15 % de −55 a 125 °C, ESR baja, SMD</td><td>La capacidad cae hasta 50–70 % bajo la tensión nominal (efecto de polarización DC); microfonía</td><td>Desacople, filtrado general</td></tr>
+<tr><td><b>Cerámico Y5V/Z5U</b></td><td>100 nF – 100 µF</td><td>Barato, gran capacidad</td><td>+22/−82 % con la temperatura, mala estabilidad</td><td>Solo desacople no crítico</td></tr>
+<tr><td><b>Película (PET, PP)</b></td><td>1 nF – 10 µF (hasta 100s de µF en potencia)</td><td>Muy estable, bajas pérdidas, autorreparable, tensiones hasta kV</td><td>Voluminoso</td><td>Audio, filtros de red, potencia, motores</td></tr>
+<tr><td><b>Electrolítico de aluminio</b></td><td>0.47 µF – 100 mF</td><td>Capacidad grande por volumen, barato, hasta 500 V</td><td><b>Polarizado</b>; ESR y ESL altas; ±20 %; se seca (vida de 2000–10000 h a 105 °C)</td><td>Filtrado de fuentes, acoplamiento de audio, almacenamiento</td></tr>
+<tr><td><b>Tántalo</b></td><td>0.1 µF – 1 mF</td><td>Estable, ESR más baja que el electrolítico, pequeño</td><td>Polarizado; puede incendiarse en cortocircuito y con picos de tensión</td><td>Desacople de baja tensión, circuitos portátiles</td></tr>
+<tr><td><b>Supercondensador</b></td><td>0.1 F – 3000 F</td><td>Doble capa eléctrica; energía enorme para su tamaño</td><td>≤ 2.7 V por celda; ESR relativamente alta; fugas</td><td>Respaldo de memoria, arranque, recuperación de energía</td></tr></table></div>
+<p>El efecto de polarización de los cerámicos X7R es una de las sorpresas más frecuentes de los diseños: un condensador de 10 µF/6.3 V alimentado con 5 V puede tener solo 3 µF efectivos. Al diseñar con ellos conviene sobredimensionar la tensión nominal al doble de la de trabajo y leer la curva de la hoja de datos.</p>
+</section>
+
+<section>
+<h2>El condensador real: ESR, ESL y fuga</h2>
+<p>El modelo de primer orden de un condensador real añade tres elementos parásitos: una <b>resistencia serie equivalente</b> (ESR), una <b>inductancia serie equivalente</b> (ESL: terminales y arrollamiento) y una <b>resistencia de fuga</b> en paralelo. Su impedancia es</p>
+<div class="eq key" data-name="Impedancia del condensador real">\[Z(f)=\mathrm{ESR}+j2\pi f\,\mathrm{ESL}+\frac{1}{j2\pi fC}\qquad f_0=\frac{1}{2\pi\sqrt{\mathrm{ESL}\cdot C}}\ \ \text{(resonancia propia)}\]</div>
+<p>Por debajo de la <b>frecuencia de resonancia propia</b> \(f_0\) el condensador se comporta como tal (capacitivo, \(|Z|=1/\omega C\)); en \(f_0\) la impedancia es solo la ESR; por encima se comporta como un <i>inductor</i> y deja de filtrar. Un cerámico de 100 nF con ESL = 1.5 nH resuena a 13 MHz; un electrolítico de 1000 µF con ESL = 12 nH, a 46 kHz, y por encima de esa frecuencia ya no sirve para filtrar. De ahí la costumbre de poner en paralelo un electrolítico (para las frecuencias bajas) y un cerámico de 100 nF (para las altas). En la ESR se disipa el calor del <b>rizado</b>: un electrolítico por el que circulen 1 A de rizado con ESR de 0.1 Ω disipa 0.1 W, y esa temperatura acorta su vida a la mitad por cada 10 °C. Valores típicos: \(\mathrm{ESR}\approx0.35/\sqrt{C[\mu\text{F}]}\) Ω para un electrolítico de aluminio (1000 µF: 11 mΩ; 100 µF: 35 mΩ).</p>
+<div class="sim" data-sim="c5-impedancia" data-title="Impedancia de condensadores reales: ESR, ESL y resonancia propia"></div>
+<div class="sim-guide"><ul>
+<li>El cerámico de 100 nF tiene el mínimo de impedancia (30 mΩ, igual a la ESR) hacia 13 MHz; a 100 kHz su reactancia es de 16 Ω (capacitivo).</li>
+<li>El electrolítico de 100 µF a 100 kHz muestra 36 mΩ, casi todo ESR; pero a 10 MHz su impedancia es la de una bobina de 12 nH (0.75 Ω): ya no filtra.</li>
+<li>La línea discontinua es el condensador ideal (\(1/\omega C\)): coincide con el real solo a baja frecuencia. A partir de la resonancia, el condensador real parece una bobina.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Aplicaciones y modos de falla</h2>
+<ul>
+<li><b>Filtrado de fuentes</b>: un electrolítico de \(C\) en la salida de un rectificador de onda completa a \(f_r=120\) Hz alimentando \(I\) tiene un rizado \(\Delta V\approx I/(f_rC)\): con 2 A y 4700 µF son 3.5 V... \(1/(120\cdot4700\ \mu\text{F})=1.77\) V por amperio (capítulo 14).</li>
+<li><b>Desacople</b>: cada circuito integrado digital consume corriente en pulsos de nanosegundos; la inductancia de los conductores de alimentación no deja que la fuente los suministre. Un cerámico de 100 nF pegado al integrado aporta esa corriente localmente. La inductancia del lazo manda: un cable largo anula el efecto del condensador.</li>
+<li><b>Acoplamiento de CA</b> (bloqueo de continua): deja pasar la señal y bloquea el nivel de reposo entre etapas. Junto con la resistencia de entrada forma un filtro pasaaltos con \(f_c=1/(2\pi RC)\).</li>
+<li><b>Temporización</b>: la carga hasta un umbral fija un retardo \(t=RC\ln(\ldots)\) (555, osciladores de relajación).</li>
+</ul>
+<div class="sim" data-sim="c5-desacople" data-title="Desacople: una carga pulsante conectada con un cable de 1 µH"></div>
+<div class="sim-guide"><ul>
+<li>Sin condensador, la corriente alterna de 100 mA de pico a 2 MHz atraviesa la inductancia del cable (\(\omega L=12.6\ \Omega\)): la tensión de alimentación oscila unos 3.5 V pico a pico; un circuito digital se desvanecería.</li>
+<li>Con 100 nF cerca de la carga, el condensador entrega la parte alterna de la corriente (a 2 MHz su impedancia es de 0.8 Ω) y el rizado baja a unos 0.3 V pico a pico. Con 10 µF cae a menos de 10 mV.</li>
+<li>En un montaje real el límite lo pone la ESL del condensador y, sobre todo, la inductancia del lazo que forma con la carga: lo que más ayuda es acortar cables y pistas, no solo aumentar \(C\). Active «Efectos parásitos» para incluir la ESL del cerámico (1.5 nH).</li>
+</ul></div>
+<p>Los condensadores fallan de maneras características. Un <b>sobrevoltaje</b> perfora el dieléctrico: el cerámico se pone en cortocircuito (y a veces se incendia), el electrolítico se calienta por la corriente de fuga y <b>revienta</b> (la válvula de seguridad expulsa electrolito y vapor). Una <b>polaridad inversa</b> destruye la capa de óxido del electrolítico y el tántalo, y provoca el mismo efecto. Un <b>rizado excesivo</b> lo recalienta. Con el tiempo, el electrolítico pierde líquido: su ESR aumenta y su capacidad cae (se «seca»), causa de muchas fuentes averiadas.</p>
+<div class="sim" data-sim="c5-polarizada" data-title="Qué le pasa a un electrolítico con sobretensión o polaridad inversa"></div>
+<div class="sim-guide"><ul>
+<li>Con 12 V y un electrolítico de 100 µF/25 V todo está bien: el condensador se carga a 12 V a través de 100 Ω en unos 50 ms y la corriente cae a (casi) cero, salvo la fuga de unos 120 µA.</li>
+<li>Suba la tensión a 40 V: pasa de la tensión nominal y, tras un instante, el condensador revienta (se abre) y el circuito deja de conducir.</li>
+<li>Ponga −10 V (polaridad inversa): la corriente se mantiene alta durante un tiempo y el condensador se daña. Es el error de montaje más frecuente de los principiantes.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Calcule la capacidad de un condensador de placas paralelas de 10 cm × 10 cm separadas 0.1 mm con aire. ¿Y con poliéster (\(\varepsilon_r=3.3\))? ¿Qué carga almacena con 12 V en el segundo caso?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(A=0.01\ \text{m}^2\); en el aire \(C=8.854\times10^{-12}\cdot0.01/10^{-4}=885\) pF.</li>
+<li>Con poliéster \(C=3.3\times885=2.92\) nF.</li>
+<li>\(Q=CV=2.92\ \text{nF}\times12=35.1\) nC.</li>
+<li><b>Resultado.</b> <span class="ans">885 pF en el aire, 2.92 nF con poliéster, 35 nC a 12 V.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Un condensador de 100 µF se carga a 12 V a través de 10 kΩ. Calcule la constante de tiempo, la energía almacenada y el tiempo para llegar a 9 V.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(\tau=RC=10^4\times10^{-4}=1\) s.</li>
+<li>\(W=\tfrac12CV^2=\tfrac12\cdot10^{-4}\cdot144=7.2\) mJ.</li>
+<li>\(9=12(1-e^{-t/\tau})\Rightarrow e^{-t/\tau}=0.25\Rightarrow t=\tau\ln4=1.386\) s.</li>
+<li><b>Resultado.</b> <span class="ans">1 s; 7.2 mJ; 1.39 s.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Dos condensadores de 10 µF y 22 µF se conectan en serie a 12 V. ¿Cuánto vale el equivalente y cómo se reparte la tensión? Si ambos son de 10 V máximos, ¿es seguro?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(C_{eq}=10\cdot22/32=6.875\ \mu\)F.</li>
+<li>Misma carga: \(V_1=12\cdot22/32=8.25\) V y \(V_2=12\cdot10/32=3.75\) V.</li>
+<li>Ambos tienen menos de 10 V; es seguro (con margen de 21 % en el de 10 µF).</li>
+<li><b>Resultado.</b> <span class="ans">6.875 µF; 8.25 V y 3.75 V; sí es seguro, aunque el margen es pequeño.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un electrolítico de 1000 µF tiene \(\mathrm{ESR}=11\ \text{m}\Omega\) y \(\mathrm{ESL}=12\) nH. Calcule su resonancia propia y su impedancia a 1 kHz y a 1 MHz.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(f_0=1/(2\pi\sqrt{12\times10^{-9}\cdot10^{-3}})=45.9\) kHz.</li>
+<li>A 1 kHz: \(1/\omega C=0.159\ \Omega\) y \(\omega L=0.075\) mΩ, luego \(|Z|\approx\sqrt{0.011^2+0.159^2}=0.159\ \Omega\) (capacitivo).</li>
+<li>A 1 MHz: \(\omega L=2\pi\cdot10^6\cdot12\ \text{nH}=75.4\) mΩ; \(1/\omega C=0.159\) mΩ; \(|Z|\approx\sqrt{0.011^2+0.0754^2}=76\ \text{m}\Omega\) (inductivo).</li>
+<li><b>Resultado.</b> <span class="ans">\(f_0=45.9\) kHz; 0.159 Ω a 1 kHz (condensador) y 76 mΩ a 1 MHz (comportamiento de bobina).</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>Una fuente rectificada de onda completa a 60 Hz (120 Hz de rizado) alimenta 2 A con un condensador de 4700 µF. Estime el rizado y la corriente eficaz que circula por el condensador (aproximadamente \(I_{C,rms}\approx1.5\,I\)). Si ESR = 20 mΩ, ¿cuánta potencia disipa el condensador?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>Rizado \(\Delta V=I/(f_rC)=2/(120\cdot4700\times10^{-6})=3.55\) V pico a pico.</li>
+<li>\(I_{C,rms}\approx1.5\times2=3\) A.</li>
+<li>\(P=I_{C,rms}^2\mathrm{ESR}=9\times0.02=0.18\) W.</li>
+<li><b>Resultado.</b> <span class="ans">3.5 V de rizado; unos 3 A eficaces y 0.18 W en la ESR: la temperatura interna sube unos grados y acorta la vida.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

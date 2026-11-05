@@ -1,0 +1,139 @@
+<template class="chapter-src" data-id="operacional" data-num="22" data-title="El amplificador operacional" data-part="Parte V · Circuitos analógicos y control" data-short="Amplificador diferencial de ganancia enorme, A.O. ideal y real, realimentación negativa y cortocircuito virtual, configuraciones inversora, no inversora y seguidora, producto ganancia–ancho de banda, tensión de desplazamiento y corrientes de polarización, velocidad de respuesta y ancho de banda de plena potencia">
+<p class="lead">El <b>amplificador operacional</b> (A.O., <i>op-amp</i>) es un amplificador diferencial de continua con una ganancia de tensión altísima (100 dB o más), resistencia de entrada enorme y de salida baja, que se usa casi siempre <b>con realimentación negativa</b>. Con la realimentación, sus características dejan de depender del propio A.O. y pasan a depender sólo de unos pocos resistores externos: es el bloque universal de la electrónica analógica. Su nombre viene de los computadores analógicos de los años cuarenta, en los que servía para realizar «operaciones» (suma, integración); el primer circuito integrado comercial fue el μA709 (1965) y el μA741 (1968) se convirtió en la referencia durante décadas. Este capítulo presenta sus propiedades ideales y reales, las tres configuraciones básicas y los límites de continua, de frecuencia y de velocidad que hay que conocer para usarlo bien.</p>
+
+<section>
+<h2>El amplificador operacional: terminales y modelo ideal</h2>
+<p>El A.O. tiene dos <b>entradas</b>: la <b>inversora</b> (−) y la <b>no inversora</b> (+); una <b>salida</b>; y los terminales de alimentación \(V_+\) y \(V_-\) (que casi siempre se omiten en los esquemas). Su salida es, en pequeña señal, proporcional a la <b>diferencia</b> de tensión entre las entradas:</p>
+<div class="eq key" data-name="Modelo del A.O. en lazo abierto">\[v_o=A_0\,(v_+-v_-)\qquad -V_{sat,-}\le v_o\le V_{sat,+}\qquad V_{sat}\approx V_{cc}-1\text{ a }2\ \text{V}\]</div>
+<p>Con \(A_0\) del orden de \(10^5\) (LM741) a \(10^8\) (OP07), la salida sólo es lineal para una diferencia de entrada de unos microvoltios; para diferencias mayores, el A.O. <b>se satura</b> contra los rieles de alimentación. El <b>A.O. ideal</b> se define por cuatro propiedades: ganancia infinita, resistencia de entrada infinita (no entra corriente en las entradas), resistencia de salida nula y ancho de banda infinito (sin retardo). Los modelos reales se aproximan según el caso:</p>
+<div class="tablewrap"><table class="tbl"><tr><th>Parámetro</th><th>Ideal</th><th>LM741</th><th>TL081 (JFET)</th><th>LM358</th><th>OP07 (precisión)</th></tr>
+<tr><td>Ganancia en lazo abierto \(A_0\)</td><td>∞</td><td>2·10⁵ (106 dB)</td><td>2·10⁵</td><td>10⁵ (100 dB)</td><td>4·10⁸ (172 dB)</td></tr>
+<tr><td>Producto ganancia–ancho de banda</td><td>∞</td><td>1 MHz</td><td>3 MHz</td><td>1 MHz</td><td>0.6 MHz</td></tr>
+<tr><td>Velocidad de respuesta (SR)</td><td>∞</td><td>0.5 V/µs</td><td>13 V/µs</td><td>0.3 V/µs</td><td>0.17 V/µs</td></tr>
+<tr><td>Resistencia de entrada</td><td>∞</td><td>2 MΩ</td><td>10¹² Ω</td><td>1 MΩ</td><td>33 MΩ</td></tr>
+<tr><td>Resistencia de salida</td><td>0</td><td>75 Ω</td><td>100 Ω</td><td>100 Ω</td><td>60 Ω</td></tr>
+<tr><td>Tensión de desplazamiento \(V_{os}\)</td><td>0</td><td>1 mV</td><td>3 mV</td><td>2 mV</td><td>30 µV</td></tr>
+<tr><td>Excursión de salida</td><td>±\(V_{cc}\)</td><td>±13 V (con ±15 V)</td><td>±13.5 V</td><td>0 a 3.5 V (con 5 V)</td><td>±13 V</td></tr></table></div>
+<div class="sim" data-sim="c22-lazo" data-title="El A.O. en lazo abierto: ganancia enorme, saturación y tensión de desplazamiento"></div>
+<div class="sim-guide"><ul>
+<li>El barrido de la entrada diferencial de −300 µV a +300 µV con un LM741 muestra una curva en forma de «S»: un tramo lineal de pendiente \(A_0=2\cdot10^5\) y dos mesetas en ±13 V. La zona lineal tiene un ancho de sólo \(\pm13\text{ V}/2\cdot10^5=\pm65\ \mu\)V: con 50 µV la salida es 9.98 V; con 100 µV, 12.97 V (ya casi saturada).</li>
+<li>Marque «Incluir la tensión de desplazamiento»: la curva se desplaza 1 mV hacia la izquierda; con la entrada a 0 V <b>la salida está saturada a +13 V</b>. Para llevar la salida a 0 V hay que aplicar −1 mV: es la definición de \(V_{os}\) (tensión de entrada que anula la salida).</li>
+<li>Cambie al OP07: \(A_0=4\cdot10^8\), zona lineal de ±33 nV, y \(V_{os}\) de sólo 30 µV: con una entrada de 20 nV, 8 V a la salida.</li>
+<li>Conclusión: <b>en lazo abierto un A.O. es un comparador</b> (compara \(v_+\) con \(v_-\) y satura); sólo con realimentación se comporta como amplificador lineal.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Realimentación negativa y las dos reglas de oro</h2>
+<p>Si una fracción \(\beta\) de la salida se resta de la entrada (realimentación negativa), el A.O. ajusta su salida hasta que la diferencia \(v_+-v_-\) se anula casi por completo. Para un amplificador de ganancia directa \(A\) y red de realimentación \(\beta\):</p>
+<div class="eq key" data-name="Ganancia con realimentación negativa">\[A_f=\frac{A}{1+A\beta}=\frac{1}{\beta}\cdot\frac{1}{1+\dfrac{1}{A\beta}}\;\xrightarrow{\;A\beta\gg1\;}\;\frac{1}{\beta}\qquad v_+-v_-=\frac{v_o}{A}\approx0\]</div>
+<p>La ganancia final es \(1/\beta\), determinada sólo por la red externa y casi independiente de \(A\) (que puede variar un factor 5 entre unidades sin que cambie el circuito). Con \(A=2\cdot10^5\) y ganancia deseada 100 el error por ganancia finita es de \(1/(A\beta)=0.05\) %. De aquí salen las dos <b>reglas de oro</b> para analizar cualquier circuito con A.O. realimentado negativamente:</p>
+<ol>
+<li><b>Cortocircuito virtual:</b> la diferencia \(v_+-v_-\) es prácticamente cero: las dos entradas están a la misma tensión.</li>
+<li><b>Corriente de entrada nula:</b> no entra corriente por las entradas (resistencia de entrada infinita).</li>
+</ol>
+<p>Con estas dos reglas y la ley de Kirchhoff se analiza cualquier circuito sin resolver el A.O. por dentro. La realimentación negativa tiene además un precio y varios beneficios: reduce la ganancia (de \(A\) a \(1/\beta\)), pero <b>aumenta el ancho de banda</b> en la misma proporción, <b>reduce la distorsión</b> y el ruido de la etapa, y modifica las impedancias de entrada y salida (en el inversor la entrada se comporta como un nodo de baja impedancia; en el no inversor, la resistencia de entrada se multiplica por \(1+A\beta\)). La realimentación positiva (a la entrada \(+\)) se usa en comparadores con histéresis y en osciladores (capítulo 24).</p>
+</section>
+
+<section>
+<h2>Configuraciones básicas</h2>
+<h3>Amplificador inversor</h3>
+<p>La señal entra a través de \(R_1\) a la entrada inversora, la entrada no inversora está a tierra y \(R_f\) cierra el lazo desde la salida. Como \(v_+=0\), \(v_-\approx0\): es la <b>tierra virtual</b>. La corriente en \(R_1\) es \(v_i/R_1\); no entra en el A.O.; toda va por \(R_f\):</p>
+<div class="eq key" data-name="Amplificador inversor">\[A_v=-\frac{R_f}{R_1}\qquad R_{in}=R_1\qquad R_{out}\approx0\qquad f_{-3\text{dB}}\approx\frac{\text{GBW}}{1+R_f/R_1}\]</div>
+<h3>Amplificador no inversor</h3>
+<p>La señal entra directamente a la entrada \(+\); el divisor \(R_f,R_g\) de la salida retroalimenta a la entrada inversora, que se iguala a \(v_i\):</p>
+<div class="eq key" data-name="Amplificador no inversor y seguidor">\[A_v=1+\frac{R_f}{R_g}\qquad R_{in}\approx\infty\ (A\beta\,r_{id})\qquad f_{-3\text{dB}}\approx\frac{\text{GBW}}{A_v}\qquad\text{Seguidor: }R_f=0,\ R_g=\infty\Rightarrow A_v=1\]</div>
+<p>El <b>seguidor</b> (<i>buffer</i>) no amplifica, pero copia la tensión con entrada de impedancia muy alta y salida de impedancia muy baja: aísla una fuente débil de una carga exigente; es el equivalente a escala de A.O. del seguidor de emisor.</p>
+<div class="sim" data-sim="c22-amp" data-title="Amplificadores con A.O.: inversor, no inversor y seguidor, ganancia y ancho de banda"></div>
+<div class="sim-guide"><ul>
+<li><b>Inversor</b> con \(R_1=10\) kΩ y \(R_f=100\) kΩ: la salida está en oposición de fase y es 10.00 veces mayor (100 mV de pico a la entrada dan 1 V). La entrada inversora (curva naranja, escala de 100 µV/div) muestra una tensión de sólo 667 µV pico a pico, mientras que la salida mueve 2 V: es la <b>tierra virtual</b>; esos 0.33 mV de pico son \(v_o/A(f)=1\text{ V}/3000\): a 1 kHz la ganancia de lazo abierto del TL081 es \(\text{GBW}/f=3\text{ MHz}/1\text{ kHz}=3000\), no \(2\cdot10^5\).</li>
+<li><b>No inversor</b>: la misma red da \(1+100/10=11\), sin inversión; la tensión en la entrada inversora sigue a la de entrada (curvas naranja y amarilla casi iguales: el cortocircuito virtual).</li>
+<li><b>Seguidor</b>: ganancia 1. En «Bode» se aprecia que su ancho de banda es todo el GBW (3.0 MHz con TL081): sin pérdida de ganancia no se pierde ancho de banda.</li>
+<li>En «Bode» (de 10 Hz a 10 MHz) con \(R_f=100\) kΩ y \(R_1=10\) kΩ: ganancia 20 dB y frecuencia de corte superior 276 kHz con el TL081 (\(\text{GBW}/11\)), 91.5 kHz con el LM741 y 54.9 kHz con el OP07. Con \(R_f=1\) MΩ (ganancia 100, 40 dB) el TL081 baja a 30.4 kHz; con \(R_f=10\) kΩ (ganancia 1), sube a 1.5 MHz. <b>La ganancia por el ancho de banda es constante.</b></li>
+<li>Cambie a LM358: este A.O. de alimentación única (5 V y 0 V en el modelo) no puede dar tensiones negativas: la salida se recorta en el semiciclo negativo. Para señales de CA alrededor de cero se necesita alimentación simétrica o un nivel de continua (polarización a \(V_{cc}/2\)).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Respuesta en frecuencia: producto ganancia–ancho de banda</h2>
+<p>La ganancia de lazo abierto de un A.O. compensado internamente decae con la frecuencia como un <b>sistema de primer orden</b>, con un polo muy bajo (decenas de hertzios) y pendiente de −20 dB/década hasta cortar la ganancia unidad en la <b>frecuencia de transición</b> \(f_T\) (GBW):</p>
+<div class="eq key" data-name="Ganancia de lazo abierto y ancho de banda con realimentación">\[A(s)=\frac{A_0}{1+s/\omega_p}\qquad \text{GBW}=A_0\,f_p\qquad f_{-3\text{dB}}=\frac{\text{GBW}}{1/\beta}=\text{GBW}\cdot\beta\]</div>
+<p>En lazo cerrado, el ancho de banda es GBW dividido por la <b>ganancia de ruido</b> \(1/\beta=1+R_f/R_1\) (que es la del no inversor, y por tanto también la del inversor: el inversor de ganancia \(-10\) tiene \(1/\beta=11\)). El estudio de la estabilidad (margen de fase) muestra que un A.O. compensado es estable con ganancias de lazo cerrado ≥ 1; los A.O. de menor compensación (rápidos) exigen ganancias mínimas. El efecto de una carga capacitiva en la salida añade un polo y puede provocar oscilación: se amortigua con una resistencia de 10–100 Ω en serie con la salida.</p>
+</section>
+
+<section>
+<h2>Límites en continua: desplazamiento y corrientes de polarización</h2>
+<p>Un A.O. real no es perfectamente simétrico: aun con las entradas a la misma tensión, la salida no es 0. Se modela con una fuente \(V_{os}\) en serie con una entrada y con corrientes de polarización \(I_B\) que entran (BJT) o salen (PNP) por las entradas, y una diferencia \(I_{os}=I_{B+}-I_{B-}\):</p>
+<div class="eq key" data-name="Error en la salida por V_os e I_B (no inversor o inversor, ganancia de ruido 1+R_f/R_1)">\[V_{o,err}=\left(1+\frac{R_f}{R_1}\right)V_{os}+I_{B-}R_f-I_{B+}R_3\left(1+\frac{R_f}{R_1}\right)\qquad R_3=R_1\parallel R_f\ \Rightarrow\ V_{o,err}\approx\left(1+\frac{R_f}{R_1}\right)V_{os}+I_{os}R_f\]</div>
+<p>La \(V_{os}\) se amplifica por la ganancia de ruido: con ganancia 1000 y \(V_{os}=1\) mV (LM741) el error es 1 V; con el OP07 (\(V_{os}=30\ \mu\)V) 30 mV (y menos con el ajuste externo). Las corrientes de polarización (80 nA típicas en el 741) producen una caída \(I_BR_f\): con \(R_f=100\) kΩ, 8 mV. Se cancelan casi por completo con una resistencia \(R_3=R_1\parallel R_f\) en serie con la entrada \(+\) (compensación): queda el efecto de \(I_{os}\) (20 nA en el 741). Los A.O. con entrada JFET o CMOS tienen corrientes de polarización de picoamperios pero, a cambio, mayor \(V_{os}\). Un condensador en serie con \(R_1\) pasa a ganancia unidad en continua y elimina el efecto de la \(V_{os}\) en amplificadores de CA. Otros parámetros relacionados son el <b>CMRR</b> (razón de rechazo de modo común, 90–100 dB), el <b>PSRR</b> (de la alimentación), la deriva con la temperatura (µV/°C) y el ruido (nV/√Hz).</p>
+</section>
+
+<section>
+<h2>Límites de velocidad: slew rate y ancho de banda de plena potencia</h2>
+<p>La etapa interna del A.O. puede entregar una corriente limitada para cargar el condensador de compensación (≈ 30 pF), con lo que la <b>velocidad de variación</b> de la salida tiene un máximo, la <b>velocidad de respuesta</b> (<i>slew rate</i>, SR, V/µs). Si la señal exige una pendiente mayor, la salida deja de seguir a la entrada (una senoide se vuelve triangular) y aparece distorsión aunque el A.O. tenga ancho de banda suficiente en pequeña señal. La pendiente máxima de una senoide \(V_{pk}\sin2\pi ft\) es \(2\pi fV_{pk}\); igualándola al SR se obtiene el <b>ancho de banda de plena potencia</b>:</p>
+<div class="eq key" data-name="Slew rate y ancho de banda de plena potencia">\[\left|\frac{dv_o}{dt}\right|_{max}=2\pi f\,V_{pk}\le\text{SR}\;\Rightarrow\;f_{max}=\frac{\text{SR}}{2\pi V_{pk}}\]</div>
+<p>Con \(V_{pk}=10\) V: LM741 (0.5 V/µs): \(f_{max}=7.96\) kHz; TL081 (13 V/µs): 207 kHz. Con 5 V: 15.9 kHz y 414 kHz. El ancho de banda de pequeña señal (GBW) y el de plena potencia (SR) son límites distintos: el segundo es el que manda con señales grandes.</p>
+<div class="sim" data-sim="c22-sr" data-title="Velocidad de respuesta (slew rate): del seno al triángulo"></div>
+<div class="sim-guide"><ul>
+<li>El LM741 como seguidor con una senoide de 5 V de pico a 50 kHz: la pendiente exigida es \(2\pi\cdot5\cdot10^4\cdot5=1.57\) V/µs, tres veces el SR (0.5 V/µs): la salida es un triángulo de ≈ 2.5 V de pico (pendiente 0.5 V/µs durante un cuarto de período de 5 µs). Con 100 kHz sólo llega a 1.24 V de pico (el panel indica «limitado por SR»).</li>
+<li>Con 1 kHz, 5 V el mismo A.O. no tiene problema (pendiente 0.03 V/µs); suba la frecuencia hasta pasar de 16 kHz (\(f_{max}\) de 5 V): la salida empieza a deformarse.</li>
+<li>Cambie al TL081 (SR = 13 V/µs): a 100 kHz la salida sigue limpia (pendiente 3.1 V/µs) y sólo a 500 kHz (15.7 V/µs) se aprecia un leve recorte (pico a pico de 9.78 V). Su ancho de banda de plena potencia con 5 V es 414 kHz.</li>
+<li>Reduzca la amplitud: a menor \(V_{pk}\), mayor \(f_{max}\) (con 0.5 V el LM741 llega a 159 kHz).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Salida, alimentación y elección del A.O.</h2>
+<p>La salida de un A.O. puede entregar una corriente limitada (10–25 mA en los de propósito general, con protección contra cortocircuito) y una excursión que no llega a los rieles (1–2 V menos en los clásicos; menos de 50 mV en los <i>rail-to-rail</i>). La <b>alimentación única</b> (5 V, 3.3 V) exige polarizar las señales alrededor de \(V_{cc}/2\) con un divisor y acoplar con condensadores, o elegir un A.O. cuyas entradas aceptan hasta el riel negativo (LM358, TLV). Un buen criterio de elección: (1) <b>ancho de banda</b>: GBW ≥ ganancia × frecuencia máxima × 10; (2) <b>velocidad de respuesta</b> para amplitudes grandes; (3) <b>precisión en continua</b> (\(V_{os}\), \(I_B\)) para sensores de baja tensión; (4) <b>ruido</b> en preamplificadores; (5) alimentación y consumo en sistemas portátiles; y (6) carga y estabilidad (unidad de ganancia, carga capacitiva). Es habitual alimentar el A.O. con un condensador cerámico de 100 nF cerca de los terminales de alimentación para desacoplar la fuente.</p>
+</section>
+
+<section>
+<h2>Medidas de laboratorio</h2>
+<ul>
+<li><b>Ganancia y fase.</b> Monte el inversor de 10 (\(R_1=10\) kΩ, \(R_f=100\) kΩ) con un TL081 o LM741 alimentado con ±12 V y aplique 100 mV a 1 kHz: mida la ganancia y el desfase (180°) con el osciloscopio. Verifique la tierra virtual midiendo la tensión en la entrada inversora (con muy poca tensión).</li>
+<li><b>Ancho de banda.</b> Barra la frecuencia hasta que la salida caiga a 0.707 y compare con GBW/ganancia (por ejemplo, LM741 con ganancia 10: ≈ 90 kHz). Repita con ganancia 100 y compruebe que baja a ≈ 10 kHz.</li>
+<li><b>Slew rate.</b> Con el seguidor y una señal cuadrada de 0 a 5 V de 20 kHz, mida la pendiente del flanco de subida: ΔV/Δt (≈ 0.5 V/µs para el 741, 13 V/µs para el TL081). Compare con la hoja de datos.</li>
+<li><b>Desplazamiento.</b> Con ganancia 1000 y la entrada a tierra mida la tensión de salida: \(V_{os}\times1000\). Pruebe varias unidades del mismo tipo: la dispersión es grande.</li>
+</ul>
+</section>
+
+<section>
+<h2>Problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un inversor tiene \(R_1=2.2\) kΩ y \(R_f=47\) kΩ. Calcule la ganancia, la salida para \(v_i=0.2\) V y la resistencia de entrada.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(A_v=-R_f/R_1=-47/2.2=-21.4\).</li>
+<li>\(v_o=-21.4\cdot0.2=-4.27\) V.</li>
+<li>\(R_{in}=R_1=2.2\) kΩ (tierra virtual en la otra punta).</li>
+<li><b>Resultado.</b> <span class="ans">−21.4; −4.27 V; 2.2 kΩ.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Diseñe un no inversor de ganancia 11 con \(R_g=1\) kΩ. Halle \(R_f\) y el ancho de banda con un A.O. de GBW = 1 MHz.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(A_v=1+R_f/R_g=11\Rightarrow R_f=10\) kΩ.</li>
+<li>\(f_{-3\text{dB}}=\text{GBW}/A_v=1\text{ MHz}/11=90.9\) kHz.</li>
+<li><b>Resultado.</b> <span class="ans">\(R_f=10\) kΩ; 90.9 kHz.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Con \(A_0=10^5\), calcule la ganancia real de un no inversor de ganancia ideal 100 y de otro de ganancia 1000. ¿Qué error porcentual tienen?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(A_f=\dfrac{G}{1+G/A_0}\) con \(G=1/\beta\).</li>
+<li>\(G=100\): \(A_f=100/(1+0.001)=99.90\) (error 0.1 %).</li>
+<li>\(G=1000\): \(A_f=1000/1.01=990.1\) (error 0.99 %).</li>
+<li><b>Resultado.</b> <span class="ans">99.90 (−0.1 %) y 990.1 (−1 %). El error vale \(G/A_0\): crece con la ganancia.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un no inversor de ganancia 1000 (\(R_f=999\) kΩ, \(R_g=1\) kΩ) usa un LM741 (\(V_{os}=1\) mV) o un OP07 (\(V_{os}=30\ \mu\)V). Halle el error de continua en la salida de cada uno.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>LM741: \(1000\cdot1\text{ mV}=1\) V.</li>
+<li>OP07: \(1000\cdot30\ \mu\text{V}=30\) mV.</li>
+<li><b>Resultado.</b> <span class="ans">1 V y 30 mV (a los que se suma el efecto de \(I_B\)): con ganancias elevadas en continua se necesitan A.O. de precisión o un condensador que anule la ganancia en continua.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Se quiere amplificar una senoide de 10 V de pico a 20 kHz con ganancia 1. ¿Sirve el LM741? ¿Y el TL081? Calcule la frecuencia máxima de cada uno.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>Pendiente máxima: \(2\pi\cdot2\cdot10^4\cdot10=1.26\) V/µs.</li>
+<li>LM741: SR = 0.5 V/µs &lt; 1.26: no sirve (\(f_{max}=0.5\cdot10^6/(2\pi\cdot10)=7.96\) kHz).</li>
+<li>TL081: SR = 13 V/µs &gt; 1.26: sirve (\(f_{max}=207\) kHz).</li>
+<li><b>Resultado.</b> <span class="ans">LM741: no (7.96 kHz máx.); TL081: sí (207 kHz).</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>Un inversor con \(R_1=10\) kΩ, \(R_f=100\) kΩ y un A.O. con \(I_{B-}=I_{B+}=80\) nA y \(V_{os}=1\) mV. Calcule el error de salida sin y con la resistencia de compensación \(R_3\) en la entrada \(+\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>Ganancia de ruido \(1+R_f/R_1=11\); error por \(V_{os}\): 11 mV.</li>
+<li>Sin \(R_3\): \(I_{B-}\) circula por \(R_f\): \(80\text{ nA}\cdot100\text{ k}=8\) mV; error total ≈ 19 mV.</li>
+<li>Con \(R_3=R_1\parallel R_f=9.09\) kΩ en la entrada +: \(I_{B+}R_3\cdot11=80\text{ nA}\cdot9.09\text{ k}\cdot11=8\) mV, que cancela el término de \(I_{B-}\) (residuo: \(I_{os}R_f\), unos mV).</li>
+<li><b>Resultado.</b> <span class="ans">hasta ≈ 19 mV sin compensar y ≈ 11 mV con \(R_3\) (queda la \(V_{os}\)).</span></li></ol></details></li>
+</ol>
+</section>
+</template>

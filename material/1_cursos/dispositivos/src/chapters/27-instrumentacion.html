@@ -1,0 +1,119 @@
+<template class="chapter-src" data-id="instrumentacion" data-num="27" data-title="Instrumentación y medición" data-part="Parte VI · Laboratorio" data-short="Efecto de carga de voltímetros y amperímetros, especificaciones del multímetro, ancho de banda y tiempo de subida del osciloscopio, compensación de la sonda ×10, ruido térmico, tierras e interferencias, incertidumbre de medida y propagación de tolerancias (peor caso y Monte Carlo)">
+<p class="lead">Medir un circuito es <b>perturbarlo</b>: el instrumento tiene una resistencia, una capacitancia y un ancho de banda finitos que se suman al circuito, y su respuesta incluye tolerancias, resolución, ruido e interferencias. Un número en la pantalla no es «la verdad» sino una estimación con una incertidumbre. Este capítulo enseña a identificar los errores principales de la medida con multímetro y osciloscopio (el <b>efecto de carga</b>, el ancho de banda, la sonda), a propagar las tolerancias de los componentes (en el peor caso y estadísticamente) y a dar un resultado con su incertidumbre.</p>
+
+<section>
+<h2>El efecto de carga</h2>
+<p>Cualquier voltímetro tiene una <b>resistencia de entrada</b> \(R_V\) que se conecta en paralelo con el elemento que se mide: toma corriente y modifica el circuito. Con el equivalente de Thévenin del circuito visto desde los puntos de medida (\(V_{th}\), \(R_{th}\)):</p>
+<div class="eq key" data-name="Error por carga del voltímetro y del amperímetro">\[V_m=V_{th}\,\frac{R_V}{R_{th}+R_V}\qquad\varepsilon_V=\frac{V_m-V_{th}}{V_{th}}=-\frac{R_{th}}{R_{th}+R_V}\qquad I_m=\frac{V_{th}}{R_{th}+R_A}\qquad\varepsilon_I=-\frac{R_A}{R_{th}+R_A}\]</div>
+<p>Un multímetro digital tiene \(R_V=10\) MΩ en casi todas las escalas de tensión continua (y de 1 a 10 GΩ en la de 200 mV); un osciloscopio, 1 MΩ; un voltímetro analógico clásico, 20 kΩ/V (20 kΩ en la escala de 1 V). Un <b>amperímetro</b> se coloca en serie con la carga y añade su resistencia interna \(R_A\) (la <b>tensión de carga</b> o <i>burden</i> \(V_B=R_AI\) cae del circuito: 0.1–1 Ω en escalas de miliamperios; 1–2 V en algunas escalas de amperios). La regla es: <b>un voltímetro debe tener una resistencia mucho mayor que la del circuito y un amperímetro una resistencia mucho menor</b>.</p>
+<div class="sim" data-sim="c27-carga" data-title="Efecto de carga del voltímetro y del amperímetro sobre un divisor y una carga"></div>
+<div class="sim-guide"><ul>
+<li>Divisor de 10 V con \(R_1=R_2=100\) kΩ (\(R_{th}=50\) kΩ) y multímetro de 10 MΩ: el voltímetro indica 4.975 V en lugar de 5 V: error −0.50 %. Con 1 MΩ en el divisor (\(R_{th}=500\) kΩ) indica 4.762 V (−4.8 %); con 10 MΩ (\(R_{th}=5\) MΩ) indica 3.333 V: ¡un error del 33 %! La carga crece al subir la resistencia del circuito.</li>
+<li>Cambie el voltímetro a «Osciloscopio: 1 MΩ»: con un divisor de 1 MΩ da 3.33 V (−33 %) y con el analógico de 20 kΩ y un divisor de 100 kΩ, 1.43 V (−71 %). El electrómetro de 10 GΩ apenas altera cualquiera de ellos.</li>
+<li><b>Amperímetro</b> en la rama de 100 Ω: con \(R_A=1\) Ω la corriente medida es 99.0 mA (verdadera, 100 mA; −1 %). Con \(R_A=10\) Ω, 90.9 mA (−9 %); con 50 Ω, 66.7 mA (−33 %): el amperímetro es una resistencia más del circuito.</li>
+<li>Consecuencia práctica: para medir tensiones en nodos de alta impedancia (la entrada de un A.O., un divisor de megaohmios, un sensor) se usan escalas de 10 GΩ o un seguidor de entrada; para medir corrientes pequeñas, una resistencia de muestra (<i>shunt</i>) y una medida de tensión.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El multímetro: resolución, exactitud y seguridad</h2>
+<p>Un multímetro digital se especifica por su número de «dígitos» (<b>resolución</b>) y su <b>exactitud</b>. Un instrumento de «3½ dígitos» tiene una pantalla de 1999 cuentas (\(\pm1999\)): en la escala de 20 V resuelve 10 mV. La exactitud se expresa como \(\pm(a\ \%\text{ de la lectura}+b\text{ dígitos})\): un multímetro de \(\pm(0.5\ \%+2\text{ d})\) que lee 5.00 V en la escala de 20 V (resolución de 10 mV) tiene una incertidumbre de \(\pm(0.025+0.02)=\pm0.045\) V: la lectura verdadera está entre 4.955 y 5.045 V. Hay que elegir la escala más baja que no se desborde (para aprovechar los dígitos). Otras cuestiones: la medida de CA puede ser de «valor medio calibrado en eficaz» (válida sólo para senoides) o de <b>verdadero valor eficaz (<i>True RMS</i>)</b> (válida para cualquier forma de onda dentro del factor de cresta y del ancho de banda del instrumento: 1 kHz o 100 kHz); el ancho de banda de CA de un multímetro es de decenas de kHz, y la resistencia se mide con el circuito <b>sin alimentar</b> y aislado de otras ramas en paralelo.</p>
+<div class="box warn"><p><b>Seguridad.</b> Las clases de sobretensión (CAT II, III, IV) indican en qué parte de la instalación se puede usar el instrumento (CAT III 600 V: cuadros de distribución). Mida corriente con los cables en las tomas adecuadas (10 A o mA): conectar el multímetro en escala de corriente en paralelo con una fuente es un cortocircuito que funde el fusible del instrumento (en el Taller, el modelo del multímetro lo simula: «se superó el fusible»). Mida tensiones altas con una mano y no toque las puntas de prueba.</p></div>
+</section>
+
+<section>
+<h2>El osciloscopio: ancho de banda, tiempo de subida y sonda</h2>
+<p>El <b>ancho de banda</b> de un osciloscopio es la frecuencia a la que una senoide se visualiza 3 dB atenuada (70.7 % de su amplitud real). El ancho de banda determina la <b>velocidad de subida</b> que puede mostrar: para un sistema de primer orden:</p>
+<div class="eq key" data-name="Tiempo de subida y ancho de banda; combinación de tiempos de subida">\[t_r=\frac{0.35}{BW}\qquad t_{r,obs}=\sqrt{t_{r,señal}^2+t_{r,osc}^2+t_{r,sonda}^2}\qquad BW_{osc}\ge5\,f_{máx}\ \ \text{(error}<2\%)\]</div>
+<p>Un osciloscopio de 100 MHz tiene un tiempo de subida propio de 3.5 ns: un pulso con 5 ns de subida real se verá con \(\sqrt{5^2+3.5^2}=6.1\) ns. Para medir una señal con un error del 2 % de amplitud hace falta un ancho de banda de 5 veces la frecuencia de la señal. Además hay que cuidar la <b>frecuencia de muestreo</b> (≥ 5 veces el ancho de banda para ver la forma de onda, no solo para cumplir Nyquist), el <b>acoplamiento</b> (CC/CA), el <b>disparo</b> (nivel y flanco) y el <b>cable de tierra</b> de la sonda, cuya inductancia (≈ 10 cm: 100 nH) forma con la capacitancia de la sonda un circuito resonante que causa oscilaciones superpuestas en los flancos rápidos.</p>
+<h3>La sonda ×10 y su compensación</h3>
+<p>La sonda pasiva ×10 coloca \(R_p=9\) MΩ en serie con la entrada de 1 MΩ del osciloscopio: atenúa 10 veces y presenta al circuito 10 MΩ en vez de 1 MΩ (y una capacitancia de unos 10–15 pF en vez de 100 pF del cable): perturba menos. Pero el divisor resistivo, por sí solo, tiene un ancho de banda muy bajo (el cable y la entrada tienen capacitancia \(C_i\approx120\) pF, y el polo es \(1/[2\pi(R_p\parallel R_i)(C_c+C_i)]\approx1.3\) kHz). Para corregirlo se pone un condensador \(C_c\) en paralelo con \(R_p\) que forma un <b>divisor capacitivo</b> con la misma razón que el resistivo; la condición de <b>compensación</b> es:</p>
+<div class="eq key" data-name="Compensación de la sonda ×10">\[R_pC_c=R_iC_i\quad\Longleftrightarrow\quad C_c=\frac{C_i}{9}\qquad\text{(razón capacitiva }\frac{C_c}{C_c+C_i}=\frac{R_i}{R_p+R_i}=0.1\text{)}\]</div>
+<p>Con \(C_i=120\) pF, \(C_c=13.3\) pF. Una sonda real tiene un condensador ajustable (trimmer) que se regula con el «cable de calibración» del osciloscopio, una onda cuadrada de 1 kHz: la sonda está bien compensada cuando la cuadrada se ve plana.</p>
+<div class="sim" data-sim="c27-sonda" data-title="Sonda ×10: subcompensada, compensada y sobrecompensada"></div>
+<div class="sim-guide"><ul>
+<li>Con \(C_c=13.3\) pF (compensada) la onda en el osciloscopio es una cuadrada de 0.5 V —una décima de los 5 V de la señal— con flancos limpios: el panel indica «compensada» y la atenuación en continua es 0.1000.</li>
+<li><b>Subcompensada</b> (\(C_c=5\) pF): en el flanco la razón capacitiva es \(5/125=0.04\), de modo que la señal salta sólo a 0.2 V y luego sube exponencialmente con una constante de tiempo de 112 µs hasta 0.5 V: las esquinas se ven <b>redondeadas</b> y el nivel alto no se alcanza del todo en medio período (0.5 ms).</li>
+<li><b>Sobrecompensada</b> (\(C_c=30\) pF): el flanco salta a \(30/150=0.2\), es decir, 1.0 V (el doble de lo correcto), y decae a 0.5 V con la misma constante: aparece un <b>pico</b> en cada esquina. Con 20 pF el salto es de 0.71 V.</li>
+<li>Cambie \(C_i\) (otro cable u osciloscopio): la compensación ideal cambia a \(C_i/9\): por eso la sonda se ajusta para cada canal. Abra «Bode»: la respuesta es plana (−20 dB) sólo con la compensación correcta; mal compensada, sube o baja con la frecuencia.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Ruido, interferencias y conexiones a tierra</h2>
+<ul>
+<li><b>Ruido térmico (Johnson)</b>: cualquier resistor produce una tensión de ruido aleatoria \(v_n=\sqrt{4kTR\,\Delta f}\) (\(k=1.38\cdot10^{-23}\) J/K): 1 MΩ, 10 kHz, 300 K: 12.9 µV eficaces (\(\approx\)80 µV pico a pico). Limita la resolución de las medidas con fuentes de alta impedancia; se reduce bajando la resistencia, el ancho de banda o la temperatura.</li>
+<li><b>Ruido de disparo (<i>shot noise</i>)</b> de las uniones: \(i_n=\sqrt{2qI\Delta f}\); y el ruido «1/f» de baja frecuencia (en MOSFET y JFET).</li>
+<li><b>Interferencia de la red</b>: campos eléctricos y magnéticos de 50/60 Hz acoplados a los cables (como una antena) que aparecen como zumbido: se combate con cables trenzados y blindados, mediciones diferenciales y conexión de tierra de un solo punto.</li>
+<li><b>Bucles de masa</b>: dos conexiones de tierra a puntos con potenciales ligeramente distintos hacen circular corriente por el blindaje y añaden un error de milivoltios. Se evitan con una tierra común (estrella) o con aislamiento (optoacopladores, transformadores).</li>
+<li><b>Medida de resistencias pequeñas</b>: con las puntas se mide la resistencia de los cables (hasta 0.5 Ω); se usa la medida a cuatro hilos (Kelvin).</li>
+<li><b>Termopares y efectos termoeléctricos</b>: cualquier unión de metales distintos genera microvoltios por kelvin (soldadura de cobre–estaño 3 µV/K): importante al medir señales de microvoltios.</li>
+</ul>
+</section>
+
+<section>
+<h2>Incertidumbre y propagación de tolerancias</h2>
+<p>Los componentes reales no tienen su valor nominal: un resistor del 5 % puede estar entre 0.95 y 1.05 veces su valor nominal. Si una magnitud \(y\) depende de varias variables \(x_i\) con incertidumbres \(u_i\), hay dos formas de combinarlas: el <b>peor caso</b> (todas las tolerancias en contra) y la <b>propagación estadística</b> (si los errores son independientes y aleatorios):</p>
+<div class="eq key" data-name="Propagación de incertidumbres">\[\Delta y_{peor}=\sum_i\left|\frac{\partial y}{\partial x_i}\right|\Delta x_i\qquad u_y=\sqrt{\sum_i\left(\frac{\partial y}{\partial x_i}\right)^2u_i^2}\qquad\text{para }y=\prod x_i^{n_i}:\ \ \frac{u_y}{y}=\sqrt{\sum_i n_i^2\left(\frac{u_i}{x_i}\right)^2}\]</div>
+<p>El peor caso es seguro pero pesimista; la suma cuadrática es más realista pero sólo describe la mayoría de los casos (el 68 % para \(\pm1u\), el 95 % para \(\pm2u\)). Un resistor de tolerancia \(t\) se modela con \(\sigma=t/2\) (el 95 % de la producción dentro de la banda); con unidades de varios componentes, se obtiene la distribución de la salida y su dispersión. Es lo que hace el análisis de <b>Monte Carlo</b>: simular muchos circuitos con valores elegidos al azar y observar el histograma de la salida.</p>
+<div class="sim" data-sim="c27-montecarlo" data-title="Monte Carlo: distribución de la salida de un circuito con componentes reales"></div>
+<div class="sim-guide"><ul>
+<li>Divisor 10 kΩ/10 kΩ con resistores de 5 % (4000 circuitos): la media es 0.500 y la desviación típica 0.0088 (1.76 %). Rango de ±2σ: 0.482 a 0.517; el peor caso (líneas rojas), 0.475 a 0.525. La suma cuadrática da una dispersión \(0.354\,t\) (1.77 %), menor que la del peor caso (5 %).</li>
+<li><b>Amplificador inversor</b> de ganancia 10: σ = 3.5 % (\(\sqrt2\,t/2\)); el peor caso, ±10 % (9.05 a 11.05). <b>Filtro RC</b>: la frecuencia de corte tiene σ = 3.5 % con R y C del 5 %. <b>Resistencias en serie</b> (1 k + 2.2 k + 4.7 k): σ = 1.7 %: los errores se compensan parcialmente.</li>
+<li>Cambie la tolerancia a 1 %: las dispersiones bajan cinco veces (0.35 %, 0.71 %, 0.71 %, 0.33 %); con 0.1 %, otras diez veces. Conclusión de diseño: <b>la precisión de un circuito la dan las razones de resistores bien apareados, no los valores absolutos</b>; para exactitudes mejores que 1 % se usan resistores del 0.1 % o redes de película delgada integradas.</li>
+<li>Las colas del histograma superan las líneas de peor caso: con \(\sigma=t/2\), el 4.6 % de los componentes están fuera de su banda de tolerancia. En producción se clasifican (se «seleccionan») o se ajustan los circuitos (potenciómetros de ajuste, calibración).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Medidas de laboratorio</h2>
+<ul>
+<li><b>Efecto de carga.</b> Monte el divisor de 1 MΩ/1 MΩ con 10 V y mida la tensión con un multímetro digital (10 MΩ), con el osciloscopio (1 MΩ) y con la sonda ×10 (10 MΩ): compare con 5 V y con el cálculo del efecto de carga.</li>
+<li><b>Compensación de la sonda.</b> Con el conector de calibración del osciloscopio (1 kHz, 0.5 V), ajuste el trimmer de la sonda con un destornillador aislante hasta ver una cuadrada plana; desajústelo a ambos lados y dibuje las formas.</li>
+<li><b>Tiempo de subida.</b> Mida el tiempo de subida del generador de pulsos con el osciloscopio de laboratorio y compare con la fórmula \(t_{r,obs}\).</li>
+<li><b>Ruido.</b> Mida con el osciloscopio de alta sensibilidad (CA, 2 mV/div) el ruido de una resistencia de 1 MΩ conectada a la entrada de un amplificador: estime la tensión eficaz y compare con \(\sqrt{4kTR\Delta f}\).</li>
+<li><b>Incertidumbre.</b> Mida diez resistores de 1 kΩ del 5 % con el multímetro y calcule la media y la desviación típica: ¿cabe en \(\sigma=t/2=2.5\) %?</li>
+</ul>
+</section>
+
+<section>
+<h2>Problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Se mide con un voltímetro de 10 MΩ la tensión en el punto medio de un divisor de 470 kΩ/470 kΩ alimentado con 12 V. ¿Qué indica y cuál es el error?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>Thévenin: \(V_{th}=6\) V; \(R_{th}=470\parallel470=235\) kΩ.</li>
+<li>\(V_m=6\cdot10/(10+0.235)=5.862\) V.</li>
+<li>\(\varepsilon=-0.235/10.235=-2.30\) %.</li>
+<li><b>Resultado.</b> <span class="ans">5.86 V (error −2.3 %).</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Un circuito de 5 V con una carga de 47 Ω se mide con un amperímetro de resistencia interna 2 Ω. ¿Qué corriente indica y qué error comete?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>Corriente verdadera: \(5/47=106.4\) mA.</li>
+<li>Con el amperímetro: \(5/(47+2)=102.0\) mA.</li>
+<li>Error: \(-2/49=-4.1\) %.</li>
+<li><b>Resultado.</b> <span class="ans">102 mA (−4.1 %); la tensión de carga del amperímetro es \(2\cdot0.102=0.2\) V.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un osciloscopio de 100 MHz con sonda de 100 MHz mide un pulso de 5 ns de subida. ¿Qué subida se ve? ¿Qué ancho de banda se necesitaría para un error de amplitud < 2 %?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(t_{r,osc}=0.35/100\text{ MHz}=3.5\) ns; sonda igual: 3.5 ns.</li>
+<li>\(t_{r,obs}=\sqrt{5^2+3.5^2+3.5^2}=7.0\) ns.</li>
+<li>La señal equivale a \(BW=0.35/5\text{ ns}=70\) MHz; con la regla de 5 veces: 350 MHz.</li>
+<li><b>Resultado.</b> <span class="ans">7.0 ns (40 % más que el real); se necesitaría ≈ 350 MHz.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Calcule el condensador de compensación de una sonda ×10 con 9 MΩ si la entrada del osciloscopio es de 1 MΩ y 100 pF más 20 pF del cable. ¿Y la razón de atenuación en alta frecuencia?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(C_i=120\) pF.</li>
+<li>\(C_c=C_i/9=13.3\) pF.</li>
+<li>Razón capacitiva: \(13.3/(13.3+120)=0.100\).</li>
+<li><b>Resultado.</b> <span class="ans">\(C_c=13.3\) pF; atenuación 1/10 en todas las frecuencias (el mismo valor que en continua).</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Calcule la tensión de ruido térmico en 100 kΩ en un ancho de banda de 100 kHz a 300 K. ¿Cuántas veces mayor es en 10 MΩ con el mismo ancho de banda?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(v_n=\sqrt{4\cdot1.38\cdot10^{-23}\cdot300\cdot10^5\cdot10^5}=\sqrt{1.66\cdot10^{-10}}=12.9\ \mu\)V.</li>
+<li>Con 10 MΩ: \(R\) ×100 ⇒ \(v_n\) ×10: 129 µV.</li>
+<li><b>Resultado.</b> <span class="ans">12.9 µV (y 129 µV con 10 MΩ: el ruido crece con la raíz de la resistencia).</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>La potencia en una carga se calcula como \(P=I^2R\) con \(I=2.000\) A (±0.5 %) y \(R=10.0\) Ω (±0.5 %). Halle \(P\) y su incertidumbre por suma cuadrática y por peor caso.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(P=4.000\cdot10.0=40.0\) W.</li>
+<li>Cuadrática: \(u_P/P=\sqrt{(2\cdot0.5)^2+0.5^2}=1.118\) % ⇒ ±0.45 W.</li>
+<li>Peor caso: \(2\cdot0.5+0.5=1.5\) % ⇒ ±0.60 W.</li>
+<li><b>Resultado.</b> <span class="ans">\(P=40.0\pm0.45\) W (estadística) o \(\pm0.60\) W (peor caso). La corriente, por estar al cuadrado, pesa el doble.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

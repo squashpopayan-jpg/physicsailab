@@ -1,0 +1,170 @@
+<template class="chapter-src" data-id="polarizacion" data-num="17" data-title="Polarización y conmutación con BJT" data-part="Parte IV · Transistores" data-short="Punto de operación y recta de carga, polarización fija y por divisor con R_E, sensibilidad a β y a la temperatura, el BJT como interruptor (saturación forzada), cargas inductivas con diodo de rueda libre, Darlington y PWM, fuga térmica, disipadores y área de operación segura">
+<p class="lead">Un transistor no sirve de nada hasta que se le fija un <b>punto de operación</b>: unas corrientes y tensiones continuas alrededor de las cuales trabajará la señal o a partir de las cuales conmutará. Elegirlo es un problema de diseño, y el enemigo es la <b>incertidumbre</b>: la ganancia β de dos transistores «iguales» puede diferir en 2 a 1, y la tensión \(V_{BE}\) deriva con la temperatura 2 mV por kelvin. Este capítulo muestra cómo se polariza un BJT para que su corriente sea previsible, cómo se usa como interruptor (saturado o cortado, sin zona intermedia) y cómo puede destruirse a sí mismo por calentamiento si se diseña mal.</p>
+
+<section>
+<h2>Punto de operación y recta de carga</h2>
+<p>Un amplificador de emisor común tiene una resistencia \(R_C\) entre la alimentación y el colector y, a veces, una \(R_E\) entre el emisor y tierra. La malla de salida impone una relación lineal entre la corriente de colector y la tensión colector–emisor:</p>
+<div class="eq key" data-name="Recta de carga en continua">\[V_{CC}=I_C R_C+V_{CE}+I_E R_E\;\;\Rightarrow\;\; V_{CE}=V_{CC}-I_C\,(R_C+R_E)\quad(I_E\approx I_C)\]</div>
+<p>Sobre las curvas de salida del capítulo 16 esta es una <b>recta</b> que corta el eje \(V_{CE}\) en \(V_{CC}\) (transistor en corte) y el eje \(I_C\) en \(V_{CC}/(R_C+R_E)\) (transistor en cortocircuito, saturación límite). El <b>punto de operación Q</b> es el cruce de esa recta con la curva correspondiente a la corriente de base que fija el circuito de polarización. Si Q queda cerca del corte o de la saturación, la señal se recorta; para amplificar sin distorsión se busca el centro del tramo activo, es decir \(V_{CE}\approx V_{CC}/2\) o, si hay \(R_E\), \(V_{RC}\approx V_{CC}/3\), \(V_{CE}\approx V_{CC}/3\) y \(V_E\approx V_{CC}/3\) como regla de reparto.</p>
+<p>El circuito de polarización sólo puede controlar una cosa: la corriente de base (o la tensión de base). Como \(I_C=\beta I_B\) depende de β, que el fabricante garantiza apenas como un intervalo (110–800 en un BC547), un buen circuito de polarización es el que consigue que \(I_C\) <b>no dependa de β</b>. Esa es la idea de los dos esquemas siguientes.</p>
+</section>
+
+<section>
+<h2>Polarización fija</h2>
+<p>La más simple: un único resistor \(R_B\) entre \(V_{CC}\) y la base. La corriente de base es \(I_B=(V_{CC}-V_{BE})/R_B\), casi independiente del transistor porque \(V_{CC}\gg V_{BE}\); entonces:</p>
+<div class="eq key" data-name="Polarización fija">\[I_B=\frac{V_{CC}-V_{BE}}{R_B}\qquad I_C=\beta I_B=\beta\,\frac{V_{CC}-V_{BE}}{R_B}\qquad V_{CE}=V_{CC}-I_CR_C\]</div>
+<p>El defecto es evidente: \(I_C\) es <b>proporcional a β</b>. Con \(V_{CC}=12\) V, \(R_B=2.2\) MΩ y \(R_C=3.3\) kΩ, la corriente de base es 5.1 µA y la de colector sale de 1.1 mA a 2.3 mA según el transistor: un 2N2222A (β ≈ 200) queda a \(V_{CE}=8.3\) V, un BC547 (β ≈ 300) a 6.5 V y un 2N3904 (β ≈ 416) a 4.6 V. Con un β 50 % mayor el punto Q se mueve hasta cerca de saturación. Por eso la polarización fija sólo se usa en interruptores (donde se fuerza la saturación, ver más abajo) o en circuitos desechables, nunca en amplificadores que deban ser reproducibles.</p>
+<p>Un caso que parece distinto pero es el mismo: alimentar la base <b>directamente con una tensión fija</b> (una fuente de 0.65 V, un diodo, un divisor sin \(R_E\)). Como la corriente de colector depende exponencialmente de \(V_{BE}\) (capítulo 16), unas décimas de voltio de error multiplican la corriente por 10 o por 100. Es el origen de la fuga térmica de la última sección.</p>
+</section>
+
+<section>
+<h2>Polarización por divisor de tensión con R<sub>E</sub></h2>
+<p>La solución estándar combina dos ideas: (1) fijar la tensión de base con un <b>divisor</b> \(R_1,R_2\) lo bastante «rígido» para que no le afecte la corriente de base; (2) poner una resistencia \(R_E\) en el emisor, que convierte esa tensión en una corriente \(I_E\approx(V_B-V_{BE})/R_E\) casi independiente del transistor. Es <b>realimentación negativa</b> en continua: si \(I_C\) sube, \(V_E=I_ER_E\) sube, \(V_{BE}\) baja y la corriente vuelve a bajar. Con el equivalente de Thévenin del divisor, \(V_{th}=V_{CC}R_2/(R_1+R_2)\) y \(R_{th}=R_1\parallel R_2\):</p>
+<div class="eq key" data-name="Polarización por divisor con R_E">\[I_B=\frac{V_{th}-V_{BE}}{R_{th}+(\beta+1)R_E}\qquad I_C=\frac{\beta\,(V_{th}-V_{BE})}{R_{th}+(\beta+1)R_E}\;\xrightarrow{\;(\beta+1)R_E\gg R_{th}\;}\;\frac{V_{th}-V_{BE}}{R_E}\]</div>
+<p>La segunda forma, el límite ideal, no contiene β: la corriente la fijan sólo \(V_{th}\), \(V_{BE}\) y \(R_E\). Se logra si \((\beta+1)R_E\gg R_{th}\), lo que en la práctica se traduce en la <b>regla del divisor rígido</b>: la corriente por \(R_2\) debe ser al menos diez veces la corriente de base (\(I_2\ge10\,I_B\)), es decir \(R_{th}\le\beta R_E/10\).</p>
+<div class="box ex" data-label="Ejemplo resuelto"><p>Con \(V_{CC}=12\) V, \(R_1=33\) kΩ, \(R_2=10\) kΩ, \(R_E=1\) kΩ y \(R_C=3.3\) kΩ (el circuito de la simulación 17.1). Thévenin: \(V_{th}=12\cdot10/43=2.79\) V y \(R_{th}=33\parallel10=7.67\) kΩ. Con el 2N3904 (β ≈ 416, \(V_{BE}\approx0.69\) V): \(I_C=416\,(2.79-0.69)/(7.67\text{ k}+417\text{ k})=2.06\) mA, \(V_E=2.06\) V, \(V_C=12-3.3\text{ k}\cdot2.06\text{ mA}=5.2\) V y \(V_{CE}=3.1\) V. Con el 2N2222A (β ≈ 200) sale \(I_C=2.04\) mA: un cambio de β del 108 % mueve la corriente menos del 2 %.</p></div>
+<p>La <b>sensibilidad</b> a β se mide con el cociente entre el cambio relativo de \(I_C\) y el de β:</p>
+<div class="eq" data-name="Sensibilidad de I_C a β">\[\frac{\Delta I_C/I_C}{\Delta\beta/\beta}\approx\frac{R_{th}+R_E}{R_{th}+(\beta+1)R_E}\]</div>
+<p>Vale 1 en la polarización fija (la corriente sigue a β punto por punto) y 0.02 en este divisor: es cincuenta veces más estable. La contrapartida es que en el emisor se «gasta» una tensión \(V_E\) (1–2 V, un 10–20 % de \(V_{CC}\)) y que, para señales, \(R_E\) reduce la ganancia a menos que se la puentee con un condensador (capítulo 18).</p>
+<div class="sim" data-sim="c17-polar" data-title="Polarización fija frente a divisor con R_E: efecto del transistor y de la temperatura"></div>
+<div class="sim-guide"><ul>
+<li>Con la polarización <b>fija</b>, cambie el transistor entre 2N2222A, BC547 y 2N3904: \(I_C\) vale 1.11, 1.66 y 2.25 mA y \(V_{CE}\) pasa de 8.3 a 4.6 V. Con el <b>divisor</b> las tres corrientes están entre 2.04 y 2.06 mA.</li>
+<li>Suba la temperatura ambiente de 25 a 75 °C. En el divisor \(I_C\) crece de 2.06 a 2.14 mA (+4 %): \(V_{BE}\) cae unos 100 mV y esa diferencia, dividida entre \(R_E\), se suma a la corriente. En la polarización fija el efecto es menor (+0.8 %), porque \(V_{CC}\gg V_{BE}\) y sólo cambia β.</li>
+<li>Es la lección del diseño: el divisor elimina la dependencia de β y deja la de \(V_{BE}\); si se quiere reducirla, se aumenta \(R_E\) (más \(V_E\)) para que 100 mV de deriva sean una fracción pequeña de \(V_E\).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Procedimiento de diseño y estabilidad térmica</h2>
+<p>El procedimiento para un amplificador de pequeña señal con divisor es siempre el mismo:</p>
+<ol>
+<li>Fijar la corriente de reposo \(I_C\) (0.5–5 mA en señal; determina \(g_m=I_C/V_T\), la ganancia y el ruido) y \(V_{CC}\).</li>
+<li>Repartir las caídas: \(V_E\approx1\)–2 V (suficiente para dominar la deriva de \(V_{BE}\)), \(V_{CE}\) suficiente para la excursión de la señal y el resto en \(R_C\).</li>
+<li>Calcular \(R_E=V_E/I_E\), \(R_C=(V_{CC}-V_E-V_{CE})/I_C\).</li>
+<li>Tomar \(V_B=V_E+V_{BE}\) y la corriente del divisor \(I_2\approx10\,I_B\) (con β <i>mínimo</i> del fabricante): \(R_2=V_B/I_2\), \(R_1=(V_{CC}-V_B)/(I_2+I_B)\). Redondear a la serie E24 o E96 y recalcular con la fórmula completa.</li>
+</ol>
+<p>Para analizar la deriva con la temperatura se usa el <b>factor de estabilidad</b> \(S_I=\partial I_C/\partial I_{CBO}\), que mide cuánto crece \(I_C\) cuando la corriente de fuga \(I_{CBO}\) (que se duplica cada 10 K) aumenta. En un circuito con \(R_E\): \(S_I=(1+\beta)(1+R_{th}/R_E)/(1+\beta+R_{th}/R_E)\), que vale \(\beta+1\) (≈ 400 en el caso fija) y tiende a 1 cuando \(R_{th}/R_E\) es pequeño. El análisis moderno, con \(V_{BE}\) y β, da el mismo mensaje: un divisor con \(R_{th}\ll\beta R_E\) y \(V_E\) de uno o dos voltios es estable.</p>
+<div class="box note"><p><b>Con silicio, el problema es V<sub>BE</sub>, no I<sub>CBO</sub>.</b> A 25 °C la corriente de fuga de un transistor de silicio es del orden de nanoamperios y casi nunca importa; lo que de verdad se mueve con la temperatura son \(V_{BE}\) (−2 mV/K) y β (+0.5 %/K). Con germanio (en desuso) la corriente de fuga era microamperios a 25 °C y dominaba el análisis clásico de estabilidad.</p></div>
+</section>
+
+<section>
+<h2>El BJT como interruptor</h2>
+<p>En conmutación el transistor sólo ocupa dos estados: <b>corte</b> (\(I_B=0\), \(I_C\approx0\), \(V_{CE}=V_{CC}\); interruptor abierto) y <b>saturación</b> (\(V_{CE}\) = 0.05–0.3 V; interruptor casi cerrado). La zona activa se atraviesa lo más rápido posible porque es donde se disipa potencia. La carga \(R_C\) fija la corriente de saturación y la base debe recibir <b>más</b> corriente de la que la ganancia exigiría:</p>
+<div class="eq key" data-name="Saturación forzada">\[I_{C,sat}=\frac{V_{CC}-V_{CE,sat}}{R_C}\qquad I_B\ge\frac{I_{C,sat}}{\beta_{for}}\qquad R_B=\frac{V_{in}-V_{BE(sat)}}{I_B}\qquad \beta_{for}=\frac{I_C}{I_B}\ll\beta\]</div>
+<p>La <b>β forzada</b> es el cociente real \(I_C/I_B\) en saturación; se elige 10 (regla de oro) o menos, porque β depende del transistor, de la corriente y de la temperatura, y porque saturar más profundamente garantiza \(V_{CE,sat}\) pequeño. Con \(V_{CC}=V_{in}=5\) V, \(R_C=1\) kΩ y un 2N3904: \(I_{C,sat}\approx4.9\) mA; con β forzada 10 hace falta \(I_B=0.49\) mA y \(R_B=(5-0.75)/0.49\text{ mA}=8.7\) kΩ → 8.2 kΩ.</p>
+<p>La simulación excita la base con una onda cuadrada de 0–5 V a través de \(R_B\) y muestra la tensión del colector. El resultado depende de \(R_B\):</p>
+<div class="tablewrap"><table class="tbl"><tr><th>\(R_B\)</th><th>\(I_B\) (base en alto)</th><th>\(V_{CE}\) mínimo</th><th>\(I_C\)</th><th>\(\beta_{for}\)</th><th>Estado</th></tr>
+<tr><td>470 Ω</td><td>9.0 mA</td><td>8 mV</td><td>5.0 mA</td><td>0.55</td><td>sobresaturado (exceso de carga en la base)</td></tr>
+<tr><td>4.7 kΩ</td><td>0.91 mA</td><td>25 mV</td><td>5.0 mA</td><td>5.5</td><td>saturación fuerte</td></tr>
+<tr><td>100 kΩ</td><td>43 µA</td><td>96 mV</td><td>4.9 mA</td><td>114</td><td>saturado, con poco margen</td></tr>
+<tr><td>330 kΩ</td><td>13 µA</td><td>176 mV</td><td>4.8 mA</td><td>370</td><td>en el límite de saturación</td></tr>
+<tr><td>1 MΩ</td><td>4.3 µA</td><td>3.1 V</td><td>1.9 mA</td><td>≈ 430 (=β)</td><td><b>no satura</b>: zona activa</td></tr></table></div>
+<p>Dos ideas importantes. Primero, con \(R_B=1\) MΩ el transistor no llega a saturación: \(I_C=\beta I_B\) y la salida queda en 3.1 V, ni alta ni baja: un «interruptor» que falla. Segundo, entre 4.7 kΩ y 100 kΩ el circuito funciona, pero cuanto más profundamente se satura menos \(V_{CE}\) y más carga almacenada en la base, lo que alarga el tiempo de apagado (ver abajo).</p>
+<div class="sim" data-sim="c17-switch" data-title="El BJT como interruptor: efecto de R_B, de la carga y de la frecuencia"></div>
+<div class="sim-guide"><ul>
+<li>Con \(R_B=4.7\) kΩ el osciloscopio muestra el colector oscilando entre 5 V (corte) y 25 mV (saturación); la β forzada es 5.5, muy por debajo de la β del 2N3904.</li>
+<li>Suba \(R_B\) a 330 kΩ: \(V_{CE}\) sube a 0.18 V (saturación marginal); con 1 MΩ el transistor deja de saturar y el colector sólo baja a 3.1 V. Compruebe que la β forzada que indica el panel se acerca entonces a β.</li>
+<li>Aumente \(R_C\) a 10 kΩ (0.5 mA de carga): \(V_{CE}\) baja a 9 mV, la saturación es más fácil. Disminúyala a 50 Ω (≈ 98 mA): el simulador sigue saturando (94 mV) porque su modelo mantiene β constante, pero un 2N3904 real tiene a 100 mA una β de sólo 30–100 (hoja de datos) y \(V_{CE,sat}\) de hasta 0.3 V: <b>compruebe siempre β a la corriente de trabajo</b>.</li>
+</ul></div>
+<h3>Tiempos de conmutación</h3>
+<p>Un transistor real no conmuta instantáneamente. Al aplicar el escalón en la base transcurre un <b>retardo</b> \(t_d\) (carga de las capacidades de unión hasta que \(V_{BE}\) llega a 0.6 V) y un <b>tiempo de subida</b> \(t_r\); al quitarlo, un <b>tiempo de almacenamiento</b> \(t_s\) (hay que evacuar la carga extra de la base en saturación) y un <b>tiempo de caída</b> \(t_f\). El tiempo de almacenamiento crece con la profundidad de saturación: es el principal enemigo de la velocidad. Para un 2N3904 la hoja de datos da \(t_d=35\) ns, \(t_r=35\) ns, \(t_s=200\) ns y \(t_f=50\) ns (\(I_C=10\) mA, \(I_B=1\) mA): apagar tarda unas cuatro veces más que encender. Tres remedios clásicos: (1) <b>condensador de aceleración</b> en paralelo con \(R_B\) (unos 100 pF–1 nF), que inyecta un pulso de corriente al encender y extrae carga al apagar; (2) <b>abrazadera Baker</b> (diodo Schottky de la base al colector) que evita la saturación profunda; (3) <b>resistor de apagado</b> base–emisor (10–100 kΩ) que descarga la base y mantiene el transistor cortado frente a ruidos y fugas.</p>
+</section>
+
+<section>
+<h2>Cargas inductivas, diodo de rueda libre, Darlington y PWM</h2>
+<p>Cuando la carga es un relé, un solenoide o un <b>motor</b>, la corriente en su bobina no puede interrumpirse bruscamente: al abrir el transistor la bobina impone \(v=L\,\mathrm{d}i/\mathrm{d}t\) con signo contrario al de antes, y el colector sube hasta que algo conduzca o algo se rompa. Con \(L=1\) mH y una corriente de 0.5 A que se corta en 100 ns, la tensión inducida sería \(L\,\Delta i/\Delta t=5\) kV. La solución es un <b>diodo de rueda libre</b> (<i>flyback</i>) en antiparalelo con la carga: ánodo hacia el colector, cátodo hacia \(V_{CC}\). En operación normal está bloqueado; al abrir el transistor ofrece a la corriente de la bobina un camino que la deja decaer, limitando la tensión del colector a \(V_{CC}+0.7\) V.</p>
+<p>La segunda pieza es el <b>transistor Darlington</b>: dos transistores en cascada con los colectores unidos, de modo que \(\beta_{total}\approx\beta_1\beta_2\) (miles). El TIP120 conmuta hasta 5 A desde unos pocos miliamperios de base y puede excitarse directamente con una salida lógica de 5 V a través de 1 kΩ. Se pagan dos cosas: \(V_{BE}\) se duplica (≈ 1.3 V) y \(V_{CE,sat}\) no baja de ≈ 0.9–1 V (por lo que a 5 A disipa 5 W, el doble que un transistor sencillo), y es más lento.</p>
+<p>Para regular la velocidad del motor no se baja la tensión (el transistor disiparía la diferencia) sino que se enciende y apaga a una frecuencia fija con un ciclo de trabajo \(D\) ajustable: <b>modulación por ancho de pulso</b> (PWM). El motor, con su inductancia e inercia mecánica, responde al valor medio: \(\bar V=D\,V_{CC}\). La simulación aplica un PWM de 50 Hz a un motor de CC de 6 V a través de un TIP120.</p>
+<div class="sim" data-sim="c17-motor" data-title="Motor de CC con TIP120, PWM y diodo de rueda libre: velocidad y sobretensión"></div>
+<div class="sim-guide"><ul>
+<li>Con \(D=50\) % el motor gira a unos 1 950 rpm. Mientras el transistor está cerrado, el colector está a ≈ 0.5–0.9 V (\(V_{CE,sat}\) del Darlington más el rizo de corriente); al abrirse, el colector sube a 7 V (\(V_{CC}+0.7\) V): ahí conduce el diodo de rueda libre. Entre pulsos, la tensión del colector refleja además la fuerza contraelectromotriz del motor, que sigue girando por inercia (actúa como generador).</li>
+<li>Pulse «Sin diodo»: la corriente del motor ya no tiene dónde ir y el pico del colector llega a unos 88 V, por encima de los 60 V de \(V_{CEO}\) del TIP120. En un circuito real eso significa avalancha, segunda ruptura y la destrucción del transistor en pocos ciclos; en el simulador se acumula como «esfuerzo eléctrico excesivo».</li>
+<li>Varíe el ciclo de trabajo: la velocidad media sigue a la tensión media \(\bar V=D\,V_{CC}\) (menos las pérdidas en el Darlington y en \(R_a\)); observe también cómo cambia la forma de la corriente de rizado.</li>
+</ul></div>
+<div class="box warn"><p><b>Regla práctica.</b> Toda bobina conmutada por un semiconductor lleva su diodo (o un amortiguador RC, un varistor o un TVS) <b>encima de la bobina</b>, con cables cortos. El diodo debe soportar la corriente de carga y tensión inversa mayor que \(V_{CC}\): un 1N4007 sirve para relés y motores pequeños. Para conmutar más rápido que el diodo permite, se añade un Zener en serie con él (la corriente decae más rápido a costa de un pico de \(V_Z\)).</p></div>
+</section>
+
+<section>
+<h2>Fuga térmica, disipadores y área de operación segura</h2>
+<p>El transistor disipa \(P=V_{CE}I_C+V_{BE}I_B\approx V_{CE}I_C\), y el calor eleva la temperatura de la unión por encima de la ambiente según la <b>resistencia térmica</b> entre la unión y el aire:</p>
+<div class="eq key" data-name="Temperatura de la unión y disipador">\[T_j=T_a+P\,R_{\theta ja}\qquad R_{\theta ja}=R_{\theta jc}+R_{\theta cs}+R_{\theta sa}\qquad P_{max}(T_a)=\frac{T_{j,max}-T_a}{R_{\theta ja}}\]</div>
+<p>Un TIP31C en TO-220 tiene \(R_{\theta ja}=62\) K/W sin disipador: con 2 W su unión alcanza 150 °C. Un disipador pequeño (20 K/W) lo baja a 22 K/W en total (\(R_{\theta jc}\) = 1.5 K/W más el disipador); uno grande (3 K/W), a unos 4.5 K/W. El calor tarda segundos o minutos en acumularse (constante de tiempo térmica = \(R_\theta C_\theta\)).</p>
+<p>La <b>fuga térmica</b> (<i>thermal runaway</i>) ocurre cuando el calor <i>aumenta</i> la corriente, ésta aumenta el calor, y así sucesivamente: es realimentación positiva térmica. Con \(V_{BE}\) fijo, \(I_C\) crece ≈ 8 % por kelvin, así que \(P=V_{CE}I_C\) también (si \(V_{CE}\) no cae). La condición de inestabilidad es que la ganancia del lazo supere 1:</p>
+<div class="eq key" data-name="Condición de fuga térmica">\[\frac{\partial P}{\partial T_j}\,R_{\theta ja}>1\;\;\Rightarrow\;\; 0.08\,P\,R_{\theta ja}>1\quad(\text{con }V_{BE}\text{ fija})\]</div>
+<p>En el montaje de la simulación (TIP31C, \(V_{CC}=12\) V, \(R_C=4\) Ω, base alimentada con \(V_B=0.62\) V a través de 10 Ω, <b>sin</b> \(R_E\) significativa) el punto inicial es 22 mA y 25 °C: la unión se calienta, la corriente sube, y en unos segundos pasa de 59 mA a 185 mA y a más de 900 mA; la temperatura se dispara y el transistor se destruye (y queda en cortocircuito colector–emisor). Tres cosas lo evitan:</p>
+<ul>
+<li><b>Resistor de emisor.</b> Con \(R_E=1\) Ω la corriente sube sólo de 22 a 35 mA y se estabiliza en 51 °C: cualquier aumento de \(I_C\) eleva \(V_E\) y reduce \(V_{BE}\) (realimentación negativa que compensa los 2 mV/K).</li>
+<li><b>Disipador.</b> Con 20 K/W la ganancia del lazo baja de 1.3 a 0.45 y el circuito queda estable (36 °C, 45 mA); con 3 K/W apenas se calienta.</li>
+<li><b>Polarización por corriente (divisor rígido) o espejo de corriente</b>, y en etapas de potencia, <b>diodos de compensación térmica</b> pegados al transistor.</li>
+</ul>
+<div class="sim" data-sim="c17-fuga" data-title="Fuga térmica de un TIP31C: efecto de R_E, del disipador y de la polarización"></div>
+<div class="sim-guide"><ul>
+<li>Con «Sin R_E» y sin disipador, observe cómo la corriente y la temperatura aumentan juntas hasta que aparece «destruido por fuga térmica». Use «Reparar» y repita.</li>
+<li>Seleccione \(R_E=1\) Ω: la corriente se estabiliza en ≈ 35 mA y 51 °C. El punto de operación es menos sensible a la temperatura porque \(V_E=I_ER_E\) realimenta.</li>
+<li>Con \(R_E\) = 1 mΩ, ponga un disipador pequeño (20 K/W): la temperatura se estabiliza (36 °C, 45 mA). Suba \(V_B\) a 0.66 V: el aumento de potencia inicial vuelve a hacerlo inestable. La estabilidad depende del punto de operación, no sólo del circuito.</li>
+</ul></div>
+<h3>Área de operación segura</h3>
+<p>Además de \(P_{max}\), un transistor de potencia tiene cuatro límites que se dibujan en el plano \(I_C\)–\(V_{CE}\) como <b>área de operación segura (SOA)</b>: corriente máxima \(I_{C,max}\), potencia máxima (hipérbola \(V_{CE}I_C=P_{max}\), que se reduce con la temperatura), <b>segunda ruptura</b> (una zona entre la hipérbola y la tensión máxima donde la corriente se concentra en puntos calientes de la unión y el dispositivo falla bruscamente aunque no supere \(P_{max}\)) y tensión máxima \(V_{CEO}\). Los interruptores sólo atraviesan la zona activa rápidamente, pero las etapas lineales de potencia y las cargas con corrientes de arranque (lámparas, motores) deben comprobarse contra la SOA con el pulso de menor duración que se pueda aplicar.</p>
+</section>
+
+<section>
+<h2>Medidas de laboratorio</h2>
+<ul>
+<li><b>Punto de operación.</b> Mida con el multímetro \(V_B\), \(V_E\), \(V_C\) y calcule \(I_C=V_{RC}/R_C\) y \(V_{BE}=V_B-V_E\) (deben estar entre 0.6 y 0.75 V; si no, el transistor está en corte o saturado). No intercale el amperímetro en la base: la corriente de base es de microamperios y se calcula a partir de \(R_{th}\).</li>
+<li><b>Dispersión de β.</b> Pruebe tres unidades del mismo tipo (o dos modelos) en polarización fija y por divisor; anote \(I_C\) para comparar con la simulación 17.1.</li>
+<li><b>Conmutación.</b> Con el generador de funciones y el osciloscopio, mida \(t_r\), \(t_f\) y compruebe que con \(R_B\) grande el transistor no satura (\(V_{CE}\) sin llegar a 0.2 V).</li>
+<li><b>Temperatura.</b> Caliente el transistor con un dedo o con un secador a 40–50 °C y observe la deriva de \(I_C\) en el circuito fijo frente al divisor. Nunca ensaye la fuga térmica con corrientes altas sin disipador y fusible: el TIP31C real se calienta en segundos.</li>
+</ul>
+</section>
+
+<section>
+<h2>Problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un circuito con polarización fija tiene \(V_{CC}=9\) V, \(R_B=470\) kΩ, \(R_C=2.2\) kΩ y β = 150 (\(V_{BE}=0.7\) V). Halle \(I_B\), \(I_C\) y \(V_{CE}\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(I_B=(9-0.7)/470\ \text{k}\Omega=17.7\ \mu\)A.</li>
+<li>\(I_C=\beta I_B=150\cdot17.7\ \mu\text{A}=2.65\) mA.</li>
+<li>\(V_{CE}=9-2.65\text{ mA}\cdot2.2\text{ k}\Omega=3.17\) V.</li>
+<li><b>Resultado.</b> <span class="ans">17.7 µA, 2.65 mA y 3.17 V (región activa).</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Con el mismo circuito, ¿cuánto vale \(V_{CE}\) si se cambia el transistor por otro de β = 300?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(I_C=300\cdot17.7\ \mu\text{A}=5.3\) mA.</li>
+<li>\(V_{CE}=9-5.3\text{ mA}\cdot2.2\text{ k}\Omega=-2.7\) V: imposible; el transistor está <b>saturado</b>.</li>
+<li>En saturación \(I_C\approx(9-0.2)/2.2\text{ k}\Omega=4.0\) mA y \(V_{CE}\approx0.2\) V.</li>
+<li><b>Resultado.</b> <span class="ans">Saturado, con \(V_{CE}\approx0.2\) V. Duplicar β estropea el punto Q: la polarización fija no es reproducible.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Analice el divisor de la simulación (\(R_1=33\) kΩ, \(R_2=10\) kΩ, \(R_E=1\) kΩ, \(R_C=3.3\) kΩ, \(V_{CC}=12\) V) para β = 100 y β = 400 (\(V_{BE}=0.7\) V) y compare con el caso fijo del problema 1 (cambio de β de 150 a 300).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(V_{th}=2.79\) V, \(R_{th}=7.67\) kΩ.</li>
+<li>β = 100: \(I_C=100\cdot2.09/(7.67\text{ k}+101\text{ k})=1.92\) mA.</li>
+<li>β = 400: \(I_C=400\cdot2.09/(7.67\text{ k}+401\text{ k})=2.05\) mA.</li>
+<li>Cambio: \((2.05-1.92)/1.92=6.8\) % con β ×4, frente al ×2 (+100 %) de la polarización fija.</li>
+<li><b>Resultado.</b> <span class="ans">1.92 mA y 2.05 mA: el divisor tolera β ×4 con +7 % de corriente.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Diseñe un divisor para \(V_{CC}=12\) V, \(I_C=2\) mA, \(V_E=2\) V, \(V_{CE}=4\) V, β mínimo = 100 y \(V_{BE}=0.7\) V.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(R_E=V_E/I_E\approx2\text{ V}/2\text{ mA}=1\) kΩ.</li>
+<li>\(R_C=(12-2-4)/2\text{ mA}=3\) kΩ → 3 kΩ (serie E24).</li>
+<li>\(V_B=2+0.7=2.7\) V; \(I_B=2\text{ mA}/100=20\ \mu\)A; \(I_2=10I_B=200\ \mu\)A.</li>
+<li>\(R_2=2.7/200\ \mu\text{A}=13.5\) kΩ → 13 kΩ; \(R_1=(12-2.7)/(200+20)\ \mu\text{A}=42.3\) kΩ → 43 kΩ.</li>
+<li><b>Resultado.</b> <span class="ans">\(R_E=1\) kΩ, \(R_C=3\) kΩ, \(R_1=43\) kΩ, \(R_2=13\) kΩ (comprobar con la fórmula completa: \(I_C\approx1.9\)–2 mA).</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un 2N3904 debe conmutar un LED con 15 mA desde 5 V (caída del LED 2 V, resistor en serie con el colector) mediante una salida lógica de 3.3 V. Calcule la resistencia de colector y \(R_B\) con β forzada 10.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(R_C=(5-2-0.1)/15\text{ mA}=193\) Ω → 180 Ω (≈ 16 mA).</li>
+<li>\(I_B=15\text{ mA}/10=1.5\) mA.</li>
+<li>\(R_B=(3.3-0.75)/1.5\text{ mA}=1.7\) kΩ → 1.5 kΩ (\(I_B=1.7\) mA).</li>
+<li><b>Resultado.</b> <span class="ans">\(R_C\approx180\) Ω y \(R_B\approx1.5\) kΩ.</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>Un relé de 12 V con bobina de 400 Ω se conmuta con un 2N2222A. (a) Corriente de la bobina. (b) \(R_B\) para β forzada 10 desde 5 V. (c) Pico de tensión en el colector si no hay diodo y la corriente se corta en 1 µs con \(L=1\) H. (d) Con el 1N4007, ¿a qué tensión queda el colector?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>(a) \(I=12/400=30\) mA.</li>
+<li>(b) \(I_B=3\) mA; \(R_B=(5-0.75)/3\text{ mA}=1.4\) kΩ → 1.3 kΩ.</li>
+<li>(c) \(V=L\,\Delta i/\Delta t=1\cdot0.03/10^{-6}=30\) kV (en la práctica el transistor entra en avalancha mucho antes y se destruye).</li>
+<li>(d) El diodo sujeta el colector a \(12+0.7\approx12.7\) V.</li>
+<li><b>Resultado.</b> <span class="ans">30 mA; \(R_B\approx1.3\) kΩ; el pico sin diodo es de varios kV (teórico); con el diodo, 12.7 V.</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>Un transistor de potencia con \(T_{j,max}=150\) °C y \(R_{\theta ja}=62.5\) K/W trabaja con \(V_{CE}=12\) V e \(I_C=0.3\) A a \(T_a=40\) °C. (a) ¿Qué temperatura alcanza? (b) ¿Qué disipador (\(R_{\theta sa}\), con \(R_{\theta jc}=1.5\) y \(R_{\theta cs}=0.5\) K/W) mantiene \(T_j\le110\) °C? (c) ¿Hay riesgo de fuga térmica con \(V_{BE}\) fijo?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>(a) \(P=12\cdot0.3=3.6\) W; \(T_j=40+3.6\cdot62.5=265\) °C &gt; 150 °C: ¡se destruye!</li>
+<li>(b) \(R_{\theta ja}\le(110-40)/3.6=19.4\) K/W → \(R_{\theta sa}\le19.4-1.5-0.5=17.4\) K/W.</li>
+<li>(c) \(0.08\cdot P\cdot R_{\theta ja}=0.08\cdot3.6\cdot19.4=5.6\gg1\): con \(V_{BE}\) fija habría fuga térmica incluso con disipador; hay que polarizar con \(R_E\) o corriente constante.</li>
+<li><b>Resultado.</b> <span class="ans">265 °C (inaceptable); disipador de ≤ 17 K/W; y polarización estabilizada con \(R_E\).</span></li></ol></details></li>
+</ol>
+</section>
+</template>

@@ -1,0 +1,100 @@
+<template class="chapter-src" data-id="semiconductores" data-num="11" data-title="Física de los semiconductores" data-part="Parte III · Semiconductores y diodos" data-short="Bandas de energía, silicio y su red cristalina, portadores intrínsecos y su dependencia con la temperatura, dopado tipo n y p, ley de acción de masas y nivel de Fermi, deriva, movilidad, conductividad, difusión y relación de Einstein">
+<p class="lead">Todos los dispositivos activos del curso —diodos, transistores, circuitos integrados— están hechos del mismo material: un cristal casi perfecto de silicio al que se le añaden, en cantidades de una parte por millón o menos, átomos de otros elementos. Para entender por qué un diodo conduce en un sentido y no en el otro, o por qué la tensión de un transistor cambia 2 mV por cada grado, hay que mirar dentro del cristal. Este capítulo reúne los conceptos mínimos de la física del estado sólido que se necesitan para ello: bandas de energía, portadores, dopado, conducción y difusión.</p>
+
+<section>
+<h2>De los átomos al cristal: bandas de energía</h2>
+<p>Un átomo aislado tiene niveles de energía discretos. Cuando \(N\) átomos forman un cristal, los niveles de cada tipo se desdoblan en \(N\) niveles muy próximos, que forman <b>bandas</b> casi continuas separadas por intervalos prohibidos. A la temperatura del cero absoluto, las bandas inferiores están llenas de electrones y las superiores vacías. La última banda llena es la <b>banda de valencia</b> (energía \(E_v\)) y la primera vacía, la <b>banda de conducción</b> (\(E_c\)); la distancia entre ellas es la <b>banda prohibida</b> \(E_g=E_c-E_v\).</p>
+<div class="tablewrap"><table class="tbl"><tr><th>Material</th><th>\(E_g\) (eV, 300 K)</th><th>\(n_i\) (cm⁻³)</th><th>Resistividad intrínseca (Ω·cm)</th><th>Comentario</th></tr>
+<tr><td>Cobre (conductor)</td><td>— (bandas solapadas)</td><td>8.5×10²²</td><td>1.7×10⁻⁶</td><td>Siempre hay electrones libres</td></tr>
+<tr><td>Germanio</td><td>0.66</td><td>2.4×10¹³</td><td>47</td><td>Primeros transistores; mucha fuga térmica</td></tr>
+<tr><td>Silicio</td><td>1.12</td><td>1.0×10¹⁰</td><td>3.3×10⁵</td><td>El semiconductor dominante (óxido nativo SiO₂)</td></tr>
+<tr><td>Arseniuro de galio</td><td>1.42</td><td>2.1×10⁶</td><td>~10⁸</td><td>Banda directa: LED, láser, RF</td></tr>
+<tr><td>Carburo de silicio (4H)</td><td>3.26</td><td>10⁻⁸</td><td>—</td><td>Potencia de alta tensión y temperatura</td></tr>
+<tr><td>Diamante / SiO₂ (aislante)</td><td>5.5 / 9</td><td>—</td><td>&gt;10¹⁴</td><td>Sin portadores a 300 K</td></tr></table></div>
+<p>El tipo de material depende de \(E_g\): en un metal las bandas se solapan y hay siempre electrones libres; en un aislante \(E_g\) es tan grande que ningún electrón la salva a temperatura ambiente; en un <b>semiconductor</b> \(E_g\) es del orden de 1 eV, y la agitación térmica (\(kT=25.85\) meV a 300 K) promueve algunos electrones a la banda de conducción. Cada electrón promovido deja en la banda de valencia un <b>hueco</b>: un lugar vacío que se comporta como una carga positiva móvil. El silicio cristaliza en la red del diamante: cada átomo comparte sus cuatro electrones de valencia con cuatro vecinos mediante enlaces covalentes. Un enlace roto libera un electrón y crea un hueco.</p>
+<div class="sim" data-sim="c11-bandas" data-title="Diagrama de bandas, nivel de Fermi y concentraciones de portadores"></div>
+<div class="sim-guide"><ul>
+<li>Silicio intrínseco (sin dopar): el nivel de Fermi está en el centro de la banda prohibida y \(n=p=n_i=10^{10}\) cm⁻³.</li>
+<li>Dopado tipo n con \(N_D=10^{16}\) cm⁻³: \(n=10^{16}\) cm⁻³ y \(p=n_i^2/n=10^{4}\) cm⁻³: seis órdenes de magnitud menos. El nivel de Fermi sube 0.357 eV sobre el centro (\(kT\ln(n/n_i)\)) y queda cerca de la banda de conducción.</li>
+<li>Con tipo p ocurre lo contrario: el nivel de Fermi baja y los huecos son mayoritarios. Suba la temperatura a 600 K con \(N=10^{14}\) cm⁻³: \(n_i\) supera a \(N\) y el semiconductor vuelve a ser prácticamente intrínseco.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Portadores intrínsecos y temperatura</h2>
+<p>En un semiconductor puro (intrínseco) hay tantos electrones como huecos, \(n=p=n_i\). La concentración intrínseca depende exponencialmente de la temperatura:</p>
+<div class="eq key" data-name="Concentración intrínseca">\[n_i^2=N_cN_v\,e^{-E_g/kT}\propto T^3\,e^{-E_g/kT}\qquad n_i(T)\approx n_i(300)\left(\frac{T}{300}\right)^{3/2}\exp\!\left[\frac{E_g}{2k}\left(\frac1{300}-\frac1T\right)\right]\]</div>
+<p>Con \(E_g=1.12\) eV, \(n_i\) pasa de \(10^{10}\) cm⁻³ a 300 K a \(2.8\times10^{11}\) a 350 K (28 veces más con solo 50 K de aumento) y \(1.25\times10^{14}\) a 500 K. En el germanio (\(E_g=0.66\) eV) la dependencia es menos fuerte pero la \(n_i\) absoluta es 2400 veces mayor: por eso los transistores de germanio son tan sensibles a la temperatura. Con \(E_g\) alto, el SiC funciona a 400 °C. La dependencia exponencial de \(n_i\) explica casi todos los efectos de temperatura de los dispositivos (la corriente de saturación del diodo crece \(\sim\!\)14 % por grado, y la tensión directa baja unos 2 mV/K).</p>
+</section>
+
+<section>
+<h2>Dopado: semiconductores extrínsecos</h2>
+<p>La <b>conductividad</b> de un semiconductor se controla <i>dopándolo</i>. Si se sustituye un átomo de silicio (4 electrones de valencia) por uno de fósforo, arsénico o antimonio (5 electrones, <b>donor</b>), el electrón sobrante apenas está ligado (energía de ionización ~45 meV) y a temperatura ambiente está libre: el cristal es de <b>tipo n</b>, con \(n\approx N_D\). Con boro, aluminio o galio (3 electrones, <b>aceptor</b>) falta un electrón en un enlace, que atrapa uno de la banda de valencia dejando un hueco: <b>tipo p</b>, con \(p\approx N_A\). Los átomos de impureza ionizados son cargas fijas en la red; los portadores móviles son los electrones o los huecos. La <b>ley de acción de masas</b> relaciona ambos portadores en equilibrio térmico:</p>
+<div class="eq key" data-name="Ley de acción de masas y nivel de Fermi">\[n\,p=n_i^2\qquad n\approx N_D,\ p=\frac{n_i^2}{N_D}\ \ (\text{tipo n})\qquad E_F-E_i=kT\ln\frac n{n_i}=-kT\ln\frac p{n_i}\]</div>
+<p>Así, con \(N_D=10^{16}\) cm⁻³ en el silicio, \(n=10^{16}\) y \(p=10^4\) cm⁻³: los portadores <b>mayoritarios</b> (electrones) superan 10<sup>12</sup> veces a los <b>minoritarios</b> (huecos), y el nivel de Fermi está 0.357 eV sobre el centro de la banda. Los minoritarios son pocos pero decisivos: la corriente inversa de un diodo es de minoritarios. El número total de portadores en un semiconductor extrínseco es estable mientras \(n_i\ll N\); pero si la temperatura aumenta lo suficiente (unos 710 K en el silicio con \(N_D=10^{16}\) cm⁻³), \(n_i\) iguala al dopado y el material pierde su comportamiento: es el límite de temperatura de los dispositivos de silicio. A bajas temperaturas ocurre lo contrario: los donores no se ionizan (<i>freeze-out</i>).</p>
+<div class="sim" data-sim="c11-ni" data-title="Concentración de electrones frente a la temperatura"></div>
+<div class="sim-guide"><ul>
+<li>Con \(N_D=10^{16}\) cm⁻³ se distinguen tres zonas: a temperatura ambiente, \(n=N_D\) (zona <i>extrínseca</i>, constante); por encima de unos 700 K sube con \(n_i\) (zona <i>intrínseca</i>).</li>
+<li>El germanio entra en la zona intrínseca mucho antes (por encima de unos 335 K, es decir, 62 °C, con \(10^{14}\) cm⁻³): por eso los dispositivos de Ge tienen límite de unos 75 °C.</li>
+<li>La línea de \(n_i\) del GaAs, mucho menor, permite dispositivos a más temperatura.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Deriva, movilidad y conductividad</h2>
+<p>Los portadores se mueven constantemente con velocidades térmicas (\(\sim10^5\) m/s) en todas las direcciones, chocando con las vibraciones de la red y las impurezas cada \(\sim\)0.1 ps; como el movimiento es aleatorio, la velocidad media es nula. Al aplicar un campo eléctrico \(E\) aparece una pequeña velocidad media, la <b>velocidad de deriva</b> \(v_d=\mu E\), con la <b>movilidad</b> \(\mu\) (cm²/V·s). La corriente es la suma de las contribuciones de electrones y huecos, y la <b>conductividad</b>:</p>
+<div class="eq key" data-name="Corriente de deriva y conductividad">\[J=q\,(n\,\mu_n+p\,\mu_p)\,E=\sigma E\qquad \rho=\frac1\sigma\qquad \mu_n(\text{Si})\approx1350,\ \mu_p\approx480\ \text{cm}^2/\text{V·s}\]</div>
+<p>Con \(\mu_n=1350\) cm²/V·s y \(E=100\) V/cm los electrones derivan a 1.35 km/s. La movilidad disminuye con el dopado (más impurezas ionizadas que dispersan los portadores) y con la temperatura (vibraciones de la red). El silicio tipo n de \(10^{16}\) cm⁻³ tiene \(\mu_n\approx1180\) cm²/V·s y \(\rho=0.53\ \Omega\)·cm; con \(10^{18}\) cm⁻³, \(\mu_n\approx260\) y \(\rho=0.024\ \Omega\)·cm. Para campos altos (≳ 10 kV/cm) la velocidad se <b>satura</b> en unos \(10^7\) cm/s: los portadores pierden energía en cada choque, un efecto que limita la velocidad de los transistores. La conductividad depende de la temperatura de dos formas contrarias: la movilidad baja (resistividad de los metales sube con \(T\)), pero en un semiconductor intrínseco \(n_i\) crece exponencialmente (la resistividad baja), de ahí el coeficiente negativo de los termistores.</p>
+<div class="sim" data-sim="c11-resistividad" data-title="Resistividad del silicio frente al dopado"></div>
+<div class="sim-guide"><ul>
+<li>Con \(10^{15}\) cm⁻³ (tipo n) \(\rho=4.6\ \Omega\)·cm; con \(10^{17}\), 0.089; con \(10^{19}\), 5.8 mΩ·cm. La resistividad del silicio abarca más de nueve órdenes de magnitud según el dopado.</li>
+<li>El tipo p tiene una resistividad ~2.5–3 veces mayor que el n con el mismo dopado, porque la movilidad de los huecos es menor.</li>
+<li>La curva se aplana a baja concentración porque se llega al límite intrínseco (\(3.3\times10^5\ \Omega\)·cm).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Difusión y relación de Einstein</h2>
+<p>Los portadores no solo se mueven por el campo: si su concentración varía en el espacio, el movimiento térmico aleatorio los lleva en promedio de la zona de mayor concentración a la de menor, una corriente de <b>difusión</b> proporcional al gradiente:</p>
+<div class="eq key" data-name="Corriente de difusión y relación de Einstein">\[J_n=qD_n\frac{\mathrm{d}n}{\mathrm{d}x}\qquad J_p=-qD_p\frac{\mathrm{d}p}{\mathrm{d}x}\qquad \frac{D}{\mu}=\frac{kT}{q}=V_T=25.85\ \text{mV}\ \text{(a 300 K)}\]</div>
+<p>Con \(\mu_n=1350\) cm²/V·s, \(D_n=34.9\) cm²/s. La corriente total es la suma de deriva y difusión; en equilibrio térmico se anulan mutuamente en cada punto, lo que origina la relación de Einstein y el <b>potencial térmico</b> \(V_T=kT/q\), que aparecerá en cada ecuación de un diodo o de un transistor. Mientras difunden, los portadores minoritarios se recombinan: su concentración decae exponencialmente con una <b>longitud de difusión</b> \(L=\sqrt{D\tau}\), donde \(\tau\) es el tiempo de vida (1 µs en el silicio de buena calidad: \(L=59\ \mu\)m). Esa longitud decide el tamaño de las regiones de un transistor bipolar.</p>
+<div class="sim" data-sim="c11-transporte" data-title="Deriva y difusión de portadores"></div>
+<div class="sim-guide"><ul>
+<li>En la parte superior, los electrones se mueven aleatoriamente; al aplicar un campo aparece un arrastre neto muy lento frente a la velocidad térmica: son \(\sim\)1 km/s de deriva contra \(\sim\)100 km/s de agitación.</li>
+<li>En la parte inferior, un grupo de partículas concentradas a la izquierda se esparce con el tiempo: la anchura de la distribución crece como \(\sqrt{2Dt}\) y el perfil medido sigue una gaussiana.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Silicio tipo n con \(N_D=10^{16}\) cm⁻³ a 300 K. Calcule \(p\), y la posición del nivel de Fermi respecto del nivel intrínseco.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(n\approx N_D=10^{16}\) cm⁻³; \(p=n_i^2/n=10^{20}/10^{16}=10^4\) cm⁻³.</li>
+<li>\(E_F-E_i=kT\ln(n/n_i)=0.02585\ln(10^6)=0.357\) eV (por encima del centro).</li>
+<li><b>Resultado.</b> <span class="ans">\(p=10^4\) cm⁻³; \(E_F\) está 0.357 eV sobre \(E_i\).</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Calcule la velocidad de deriva de los electrones en silicio con \(E=100\) V/cm y \(\mu_n=1350\) cm²/V·s, y el coeficiente de difusión.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(v_d=\mu E=1350\times100=1.35\times10^5\) cm/s \(=1.35\) km/s.</li>
+<li>\(D_n=\mu V_T=1350\times0.02585=34.9\) cm²/s.</li>
+<li><b>Resultado.</b> <span class="ans">1.35 km/s y 34.9 cm²/s.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>¿Cuánto vale \(n_i\) del silicio a 350 K si es \(10^{10}\) cm⁻³ a 300 K? ¿Y la razón?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(n_i(350)=10^{10}(350/300)^{1.5}\exp[(1.12/(2\cdot8.617\times10^{-5}))(1/300-1/350)]\).</li>
+<li>\((1.1667)^{1.5}=1.260\); exponente \(=6499\cdot4.762\times10^{-4}=3.095\); \(e^{3.095}=22.1\).</li>
+<li>\(n_i(350)=10^{10}\times1.26\times22.1=2.78\times10^{11}\) cm⁻³ (27.8 veces).</li>
+<li><b>Resultado.</b> <span class="ans">\(2.8\times10^{11}\) cm⁻³: 28 veces mayor con solo +50 K.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Calcule la resistividad del silicio tipo n de \(10^{16}\) cm⁻³ (\(\mu_n=1180\) cm²/V·s) y la resistencia de una barra de 1 mm × 1 mm de sección y 1 cm de longitud.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(\rho=1/(q\,n\,\mu_n)=1/(1.6\times10^{-19}\cdot10^{16}\cdot1180)=0.53\ \Omega\)·cm.</li>
+<li>\(A=0.1\ \text{cm}\times0.1\ \text{cm}=0.01\ \text{cm}^2\); \(R=\rho L/A=0.53\cdot1/0.01=53\ \Omega\).</li>
+<li><b>Resultado.</b> <span class="ans">0.53 Ω·cm y 53 Ω.</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>¿A qué temperatura se vuelve intrínseco el silicio tipo n de \(N_D=10^{16}\) cm⁻³ (cuando \(n_i=N_D\))? ¿Por qué importa?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>Se resuelve \(n_i(T)=10^{16}\) con la expresión de \(n_i(T)\): \(T\approx711\) K (438 °C).</li>
+<li>Por encima de esa temperatura el número de portadores ya no lo fija el dopado sino la generación térmica y las uniones pierden su comportamiento (corrientes de fuga enormes).</li>
+<li>En la práctica el silicio se limita a 150–200 °C de unión; para más, se usa SiC o GaN.</li>
+<li><b>Resultado.</b> <span class="ans">≈ 711 K (438 °C); límite fundamental del silicio.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

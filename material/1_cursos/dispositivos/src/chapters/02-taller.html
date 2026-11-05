@@ -1,0 +1,147 @@
+<template class="chapter-src" data-id="taller" data-num="2" data-title="El Taller: construir, medir y romper" data-part="Parte I · Fundamentos" data-short="Manual del taller de circuitos virtual: cómo armar circuitos, el multímetro, el osciloscopio, el generador de funciones, la fuente de laboratorio, el analizador de Bode, las curvas por barrido y cómo se simulan los cortocircuitos y los daños">
+<p class="lead">En un laboratorio real se aprende de tres maneras: armando circuitos, midiéndolos y, a veces, quemando algo. El <b>Taller</b> reproduce las tres cosas. Está incorporado en todos los capítulos: cada circuito que verá a lo largo del curso es editable (se cambian valores, se ponen fallas, se agregan piezas) y se puede medir con instrumentos virtuales que se comportan como los reales, incluidos sus defectos: el multímetro carga el circuito, la punta del osciloscopio tiene capacitancia, los fusibles se funden y las resistencias de 1/4 W se queman si se les pide medio vatio. Este capítulo es el manual de uso; hojéelo ahora y vuelva a él cuando lo necesite.</p>
+
+<section>
+<h2>Armar un circuito</h2>
+<p>Pulse <b>«Editar circuito»</b> para entrar al modo de edición. La paleta, ordenada por categorías, muestra cada pieza por su nombre; elija una y haga clic en el lienzo para colocarla (las piezas se ajustan a la cuadrícula). Siga haciendo clic para colocar más copias; <kbd>Esc</kbd> termina. El resto de operaciones son:</p>
+<div class="tablewrap"><table class="tbl"><tr><th>Acción</th><th>Cómo se hace</th></tr>
+<tr><td>Tender un cable</td><td>Arrastre desde un terminal (el punto azul) hasta otro terminal o hasta un cable existente. Los cables se unen donde terminan o donde un extremo cae sobre otro cable (aparece un punto de unión). Dos cables que se cruzan <b>sin</b> punto <b>no</b> se conectan.</td></tr>
+<tr><td>Seleccionar y mover</td><td>Clic sobre la pieza; arrástrela. Los cables conectados la siguen. <kbd>Mayús</kbd> + arrastre dibuja un rectángulo para elegir varias.</td></tr>
+<tr><td>Girar, voltear, borrar</td><td><kbd>R</kbd>, <kbd>F</kbd> y <kbd>Supr</kbd>, o los botones de la barra. <kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Ctrl</kbd>+<kbd>Y</kbd> deshacen y rehacen. <kbd>Ctrl</kbd>+<kbd>C</kbd> / <kbd>Ctrl</kbd>+<kbd>V</kbd> copian piezas.</td></tr>
+<tr><td>Cambiar valores</td><td>Al seleccionar una pieza aparecen sus <b>propiedades</b> a la derecha: valor, modelo (por ejemplo, 2N3904 o BC547), tolerancia, potencia… Los números aceptan prefijos: <code class="k">4.7k</code>, <code class="k">100n</code>, <code class="k">2u2</code> no (use <code class="k">2.2u</code>).</td></tr>
+<tr><td>Interruptores y potenciómetros</td><td>Clic sobre un interruptor lo abre o cierra; los pulsadores solo conducen mientras se mantiene el botón. La rueda del ratón sobre un potenciómetro mueve el cursor.</td></tr>
+<tr><td>Desplazar y acercar</td><td>Arrastre el fondo para mover la vista; <kbd>Ctrl</kbd> + rueda (o los dos dedos en una pantalla táctil) para acercar. El botón de «ajustar» encuadra todo el circuito.</td></tr>
+<tr><td>Guardar y abrir</td><td>Los botones de disquete y carpeta guardan el circuito como archivo JSON y lo vuelven a cargar. El Taller libre (capítulo 30) recuerda su último circuito en el navegador.</td></tr></table></div>
+<div class="box note"><p><b>Todo circuito necesita tierra.</b> El símbolo de tierra (⏚) define los 0 V de referencia. Sin él, el Taller avisa y los instrumentos no tienen contra qué medir. Una etiqueta de nodo llamada <i>gnd</i> equivale a una tierra. Las <b>etiquetas de nodo</b> (banderas con un nombre) conectan entre sí todos los puntos que tengan el mismo nombre sin tender el cable: así se mantienen legibles los esquemas grandes, y los analizadores las usan para elegir qué nodo mirar.</p></div>
+<p>Practique con la primera simulación. Tiene una fuente de 9 V y un LED sueltos. Para conseguir los objetivos de la lista hace falta añadir un resistor, conectarlo y elegirle un valor razonable: ¿por qué un LED conectado directamente a 9 V se quema? (La respuesta está en el capítulo 15; aquí basta con probarlo y verlo.)</p>
+<div class="sim" data-sim="c2-libre" data-title="Primera práctica: encender un LED sin quemarlo"></div>
+<div class="sim-guide"><ul>
+<li>Conecte la fuente directamente al LED (sin resistor): la corriente supera 1 A (solo la resistencia interna del LED, unos 6 Ω, la limita), el LED se calienta, se pone naranja en la pantalla y «se quema»: aparece humo y el componente queda marcado con una cruz. El botón <b>Reparar</b> lo devuelve al estado nuevo.</li>
+<li>Agregue un resistor de 330 Ω: la corriente baja a 21 mA, justo en el límite de un LED de 5 mm. Con 1 kΩ circula 7 mA, lo suficiente para verlo encendido sin forzarlo.</li>
+<li>El LED es <b>polarizado</b>: si lo invierte (tecla <kbd>F</kbd>) no conduce. Pruebe y compruebe que la corriente cae a cero (no se daña: tolera 5 V inversos, pero no 9).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Interpretar la imagen: colores y flechas</h2>
+<p>El Taller muestra lo que un voltímetro y un amperímetro mostrarían en <i>todos</i> los puntos a la vez:</p>
+<ul>
+<li>El <b>color de cada cable</b> indica su tensión respecto de tierra: gris para 0 V, verde para tensiones positivas y rojo para negativas; la intensidad del color es proporcional a la tensión. Una escala en la esquina da la correspondencia. Si un cable queda gris cuando no lo espera, no le llega tensión.</li>
+<li>Los <b>puntos amarillos en movimiento</b> son la corriente convencional: se mueven en el sentido de la corriente y se vuelven más intensos cuando esta crece. Sirven para ver de un vistazo por dónde circula y por dónde no.</li>
+<li>Los componentes se <b>calientan</b>: cuando un resistor, un diodo o un transistor disipa más calor del que puede evacuar, se tiñe de naranja; si sobrepasa su temperatura crítica, se destruye. Pase el cursor sobre cualquier terminal o cable para ver su tensión, y sobre un componente para ver su corriente.</li>
+</ul>
+</section>
+
+<section>
+<h2>El multímetro digital</h2>
+<p>El instrumento más usado del laboratorio tiene tres funciones fundamentales (voltímetro, amperímetro, óhmetro) y otras dos de comodidad (prueba de diodo y continuidad). Cada una cambia lo que el instrumento <b>le hace al circuito</b>:</p>
+<ul>
+<li><b>Voltímetro</b> (V=, V~): se conecta <i>en paralelo</i> con el elemento. Su resistencia de entrada es de 10 MΩ en un multímetro típico: muy alta, pero no infinita (recuerde el divisor del capítulo 1). La función <b>V~</b> mide el valor eficaz (RMS) de la parte alterna; la <b>V=</b> mide el promedio.</li>
+<li><b>Amperímetro</b> (A=, A~): se conecta <i>en serie</i>, es decir, hay que <i>abrir</i> el circuito e intercalarlo. Su resistencia es muy baja (unos 0.05 Ω más el fusible) para no perturbar. ¡Si se conecta en paralelo con una fuente, es un cortocircuito! El multímetro virtual tiene un fusible de 10 A que se quema, como el real.</li>
+<li><b>Óhmetro</b> (Ω): inyecta una corriente de prueba muy pequeña y mide la tensión resultante. Solo mide bien un componente <b>sin alimentación</b> y desconectado del resto del circuito (otras ramas en paralelo falsean la lectura). El multímetro virtual apaga todas las fuentes para la medida, pero advierte si el circuito estaba energizado.</li>
+<li><b>Prueba de diodo</b> (→|): inyecta 1 mA y muestra la tensión directa: ~0.6 V para un diodo de silicio, ~0.25 V para uno de germanio o Schottky, ~1.8–3 V para un LED, «OL» (fuera de rango) en inverso.</li>
+</ul>
+<div class="sim" data-sim="c2-dmm" data-title="El multímetro: tensión, corriente y los errores clásicos"></div>
+<div class="sim-guide"><ul>
+<li>En <b>V=</b> (conectado en paralelo con R₂) la lectura debe ser 6.80 V. Seleccione el multímetro (clic) y cambie su función con el selector de la derecha.</li>
+<li>En <b>A=</b>, el mismo cableado pone al amperímetro en paralelo con R₂: lo cortocircuita (0.05 Ω) y lee 2.1 mA, la corriente que circularía por R₁ solo; la tensión de R₂ casi desaparece y el circuito queda perturbado. Se debe cortar un cable e intercalar el instrumento en serie.</li>
+<li>Con la fuente en 100 V y R₁ reducido a 5 Ω, por el amperímetro pasarían casi 20 A: el fusible de 10 A del multímetro se funde y el instrumento queda sin medir corriente (de nuevo «Reparar»).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El osciloscopio y el generador de funciones</h2>
+<p>El voltímetro entrega un número; el <b>osciloscopio</b> entrega la historia: la tensión en función del tiempo. Es el instrumento imprescindible en cuanto algo cambia. Tiene dos canales (CH1 y CH2), cada uno con una punta y una pinza de referencia (GND) que se conecta al punto de 0 V del circuito. Los controles importantes son:</p>
+<ul>
+<li><b>Base de tiempo</b> (s/div): cuánto tiempo representa cada una de las 10 divisiones horizontales. Para una señal de 1 kHz (periodo 1 ms), 0.2 ms/div muestra 5 divisiones por ciclo.</li>
+<li><b>Escala vertical</b> (V/div): se puede fijar o dejar en «auto». Con <b>acoplamiento CA</b> el instrumento resta la componente continua: sirve para ver el rizado de 50 mV sobre una alimentación de 12 V.</li>
+<li><b>Disparo</b> (trigger): el osciloscopio elige como inicio de cada barrido el instante en que la señal cruza un nivel con pendiente ascendente; así una señal periódica «se queda quieta» en la pantalla. Sin disparo, la imagen se desliza.</li>
+<li><b>Modos</b>: Y–T (normal), <b>X–Y</b> (un canal en cada eje: dibuja curvas de Lissajous o la característica de un dispositivo) y <b>espectro</b> (transformada rápida de Fourier de CH1: muestra las componentes de frecuencia y la distorsión armónica total, THD).</li>
+<li><b>Mediciones automáticas</b>: tensión pico a pico, máxima, mínima, media, eficaz, frecuencia, periodo, ciclo de trabajo y desfase entre canales.</li>
+</ul>
+<p>El <b>generador de funciones</b> produce la señal de prueba: senoidal, cuadrada, triangular, diente de sierra o pulsos, con amplitud, frecuencia y nivel de continua ajustables. Tiene una <b>impedancia de salida de 50 Ω</b>, como el real: cuando alimenta una carga pequeña la tensión cae, otra vez el divisor.</p>
+<div class="sim" data-sim="c2-scope" data-title="Generador, filtro RC y osciloscopio de dos canales"></div>
+<div class="sim-guide"><ul>
+<li>Con onda cuadrada de 100 Hz, el canal 2 (salida del filtro) redondea los flancos: es la carga y descarga de un condensador de 1 µF a través de 1 kΩ (\(\tau=1\) ms).</li>
+<li>Suba la frecuencia a 5 kHz: la salida se vuelve casi triangular y su amplitud cae. A 100 kHz es una pequeña ondulación alrededor de 0.</li>
+<li>Cambie a <b>senoidal</b>: la salida es otra senoide de menor amplitud y desfasada. El resistor de 950 Ω más los 50 Ω de salida del generador suman 1 kΩ, y la frecuencia de corte es \(f_c=1/(2\pi RC)=159\) Hz: a esa frecuencia la amplitud cae a 0.707 y el retraso es de 45°; mire la fila de desfase en la tabla de mediciones.</li>
+<li>Seleccione el modo <b>X–Y</b> con la señal senoidal: aparece una elipse. Su forma depende del desfase entre CH1 y CH2: una recta indicaría 0° o 180°, un círculo 90°.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>La fuente de laboratorio y el límite de corriente</h2>
+<p>Una fuente de laboratorio es una fuente de tensión ajustable con <b>limitación de corriente</b>. Trabaja en dos modos: <b>tensión constante</b> (CV) mientras la carga pida menos corriente que el límite, y <b>corriente constante</b> (CC) cuando la carga pretenda más: entonces la fuente baja su tensión para que la corriente no pase del límite. Ese es el mejor instrumento de seguridad del banco: ajustando el límite en 50 mA, un error de cableado no quema nada. En el cortocircuito, la fuente entrega exactamente el límite.</p>
+<div class="sim" data-sim="c2-psu" data-title="Fuente de laboratorio: del modo CV al modo CC"></div>
+<div class="sim-guide"><ul>
+<li>Con 5 V, límite de 100 mA y una carga de 100 Ω: la corriente sería 50 mA (modo CV, indicador verde): la fuente mantiene 5 V.</li>
+<li>Baje la carga a 20 Ω: la corriente pediría 250 mA, pero la fuente la limita a 100 mA y la tensión baja a 2.0 V (modo CC, indicador rojo).</li>
+<li>Ponga 0.1 Ω (casi un cortocircuito): la tensión cae a 10 mV y la corriente sigue en 100 mA: la potencia en la carga es de solo 1 mW. Con el límite en 5 A y la misma carga ya serían 2.5 W.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Analizadores: Bode, curvas por barrido y tabla de operación</h2>
+<p>Además de los instrumentos «de banco», el Taller incluye tres analizadores que en el laboratorio real exigirían equipos caros:</p>
+<ul>
+<li>El <b>analizador de Bode</b> calcula la respuesta en frecuencia del circuito (ganancia en decibelios y fase) entre la fuente de CA y el nodo que se elija, linealizando el circuito alrededor de su punto de operación. También calcula la <b>impedancia vista desde un nodo</b>.</li>
+<li>Las <b>curvas por barrido</b> trazan cualquier tensión o corriente del circuito mientras se varía una fuente; con una segunda fuente se dibuja una <b>familia de curvas</b>: es el trazador de curvas con el que se obtienen las características de salida de un transistor (corriente de colector frente a tensión colector-emisor para varias corrientes de base).</li>
+<li>La <b>tabla de operación</b> lista la tensión en cada nodo y la tensión, corriente, potencia y temperatura de cada componente.</li>
+</ul>
+</section>
+
+<section>
+<h2>Fallas, cortocircuitos y daños</h2>
+<p>Un circuito se rompe de formas muy concretas, y reconocerlas es una destreza de laboratorio. El Taller simula tres tipos de eventos:</p>
+<ol>
+<li><b>Fallas inyectadas.</b> Al seleccionar un componente, los botones <i>Abierto</i>, <i>Cortocircuito</i>, <i>Fuga</i> y <i>Deriva</i> reproducen los modos de fallo típicos de cada tipo de pieza (un condensador seco que pierde capacidad, un resistor que se abre, un transistor con colector y emisor en corto…). Son ideales para practicar la <b>depuración</b>: se provoca la falla, se mide y se deduce cuál es.</li>
+<li><b>Cortocircuito entre dos puntos.</b> El botón rojo <i>«Cortocircuito»</i> une dos terminales cualesquiera con un cable de resistencia casi nula. Con una fuente ideal de resistencia interna pequeña, la corriente se vuelve enorme; en la realidad esto ocurre con un cable suelto o una soldadura puenteada.</li>
+<li><b>Daños por sobrecarga.</b> Cada componente tiene límites de potencia, corriente y tensión y un <b>modelo térmico</b>: su temperatura sube con la potencia disipada y se acerca a un valor de equilibrio con una constante de tiempo de segundos; si supera el límite (230 °C en un resistor, 175 °C en la unión de un semiconductor, 125 °C en un electrolítico), el componente se daña de la manera típica: el resistor se abre, el diodo y el transistor quedan en corto, el LED se quema, el condensador revienta, el fusible se funde, la red entra en disyuntor. El proceso lleva tiempo: un resistor de 1/4 W con 0.5 W se calienta (naranja) y falla en unos segundos; con 5 W, inmediatamente.</li>
+</ol>
+<div class="sim" data-sim="c2-falla" data-title="Cortocircuito, fusible y daños en cascada"></div>
+<div class="sim-guide"><ul>
+<li>Pulse el botón <b>Cortocircuito</b>, haga clic en el terminal superior de R₁ y luego en el inferior: se tiende un cable rojo discontinuo que puentea la carga. La batería de plomo, de 0.02 Ω, intentaría entregar casi 90 A; el fusible de 1 A se funde en una fracción de segundo y la corriente se corta: es lo que se espera de él.</li>
+<li>Repita después de sustituir el fusible por un cable (selecciónelo y pulse «Cortocircuito» en la lista de fallas): ahora nada protege la batería, que disipa en su resistencia interna cientos de vatios, se sobrecalienta y se destruye.</li>
+<li>Con «Reparar» todo vuelve al estado inicial: en el laboratorio real esto cuesta dinero y tiempo.</li>
+</ul></div>
+<div class="box safe"><p>Todo lo que aquí se rompe sin consecuencias es real en el laboratorio: una batería de plomo en cortocircuito puede soldar un destornillador y causar quemaduras; un condensador electrolítico conectado al revés puede reventar y salpicar electrolito; un cableado de red sin protección puede causar un incendio o una descarga. Las prácticas con la red eléctrica (120 V) <b>no se realizan sin supervisión y sin aislamiento galvánico</b>. Los proyectos del capítulo 29 usan baja tensión por esta razón.</p></div>
+</section>
+
+<section>
+<h2>Opciones de simulación</h2>
+<ul>
+<li><b>Velocidad</b>: cada vez que el simulador resuelve un paso representa una fracción de la ventana de tiempo del osciloscopio; «Velocidad» acelera o frena la animación. «Avanzar…» salta en el tiempo sin dibujar: útil para llegar al régimen permanente de un circuito con una constante de tiempo de segundos.</li>
+<li><b>Efectos parásitos</b>: añade las resistencias y capacitancias que los componentes reales tienen y los ideales no (resistencia serie y autoinducción de los condensadores, capacitancias de unión de los diodos y transistores). Con ellos activados se ven los límites de frecuencia de verdad, a costa de cálculos más lentos.</li>
+<li><b>Tolerancias reales</b>: cada resistor toma un valor aleatorio (pero repetible) dentro de su tolerancia: un divisor de dos resistores de 5 % puede dar salidas ±5 % distintas del valor teórico.</li>
+<li><b>Los componentes se dañan</b>: desactívelo si prefiere experimentar sin consecuencias.</li>
+</ul>
+</section>
+
+<section>
+<h2>Problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un osciloscopio muestra una señal senoidal que ocupa 4 divisiones de pico a pico en la escala de 0.5 V/div, con un periodo de 5 divisiones en la escala de 0.2 ms/div. Calcule la amplitud, la tensión eficaz y la frecuencia.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Pico a pico.</b> \(4\times0.5=2.0\) V; amplitud (pico) \(=1.0\) V.</li>
+<li><b>Eficaz.</b> \(V_{rms}=V_p/\sqrt2=0.707\) V.</li>
+<li><b>Frecuencia.</b> Periodo \(T=5\times0.2\ \text{ms}=1\) ms; \(f=1/T=1\) kHz.</li>
+<li><b>Resultado.</b> <span class="ans">1 V de pico, 0.707 V eficaces y 1 kHz.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Un voltímetro de 10 MΩ mide la salida de un divisor de 1 MΩ y 1 MΩ alimentado con 10 V. ¿Qué lee y qué error comete?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Valor ideal.</b> 5.000 V.</li>
+<li><b>Con el instrumento.</b> \(1\parallel10=0.909\) MΩ, luego \(V=10\times0.909/(1+0.909)=4.762\) V.</li>
+<li><b>Error.</b> \((4.762-5)/5=-4.8\ \%\).</li>
+<li><b>Resultado.</b> <span class="ans">4.76 V: el instrumento introduce un error del −4.8 %; con resistores de 1 MΩ un multímetro de 10 MΩ ya es inadecuado.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Una fuente de laboratorio ajustada a 12 V con límite de 0.5 A alimenta un resistor de 10 Ω. ¿En qué modo trabaja y cuánta potencia entrega? ¿Y con 30 Ω?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>10 Ω.</b> La corriente \(12/10=1.2\) A superaría el límite: modo CC, \(I=0.5\) A, \(V=5\) V, \(P=2.5\) W.</li>
+<li><b>30 Ω.</b> \(I=12/30=0.4\) A < 0.5 A: modo CV, \(V=12\) V, \(P=4.8\) W.</li>
+<li><b>Resultado.</b> <span class="ans">En 10 Ω: CC, 0.5 A, 5 V y 2.5 W. En 30 Ω: CV, 0.4 A, 12 V y 4.8 W.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un resistor de 1/4 W (250 mW) de 100 Ω se conecta a 10 V. ¿Qué potencia disipa y por qué se daña?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Potencia.</b> \(P=V^2/R=100/100=1\) W, cuatro veces la nominal.</li>
+<li><b>Temperatura.</b> Un resistor de 1/4 W sube unos 125 °C a su potencia nominal; a 4× se alcanzaría casi 525 °C de equilibrio, muy por encima de los 230 °C que el simulador toma como límite.</li>
+<li><b>Resultado.</b> <span class="ans">1 W (4× la nominal): se sobrecalienta y se abre en pocos segundos; hay que usar uno de 2 W como mínimo.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

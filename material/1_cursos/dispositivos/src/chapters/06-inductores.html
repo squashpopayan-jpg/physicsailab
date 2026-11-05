@@ -1,0 +1,121 @@
+<template class="chapter-src" data-id="inductores" data-num="6" data-title="Inductores y bobinas" data-part="Parte II · Dispositivos pasivos" data-short="Flujo, ley de Faraday e inductancia, energía magnética, el solenoide y los núcleos magnéticos, saturación, modelo real con resistencia y capacitancia, inductancia mutua, respuesta RL, la sobretensión de desconexión y el diodo de rueda libre">
+<p class="lead">El inductor es el dual del condensador: almacena energía en un campo <i>magnético</i> y se opone a los cambios bruscos de <i>corriente</i>. Es la pieza que hace posibles las fuentes conmutadas, los filtros de potencia, los relés, los transformadores y la sintonía de radio. También es la causa de las chispas al abrir un interruptor, de la destrucción de un transistor que maneja un motor y de buena parte del ruido electromagnético de los circuitos rápidos. Entender su comportamiento transitorio y sus límites (saturación, pérdidas) es indispensable para trabajar con electrónica de potencia.</p>
+
+<section>
+<h2>Flujo, inducción y energía</h2>
+<p>Una corriente \(i\) en una espira produce un campo magnético; el <b>flujo</b> total \(\Lambda=N\Phi\) que atraviesa las \(N\) vueltas de una bobina es proporcional a \(i\): \(\Lambda=L\,i\). La constante es la <b>inductancia</b> \(L\) (henrios, H). Por la ley de Faraday, una variación del flujo induce una tensión que se opone a ella (ley de Lenz):</p>
+<div class="eq key" data-name="Inductor">\[v=\frac{\mathrm{d}\Lambda}{\mathrm{d}t}=L\frac{\mathrm{d}i}{\mathrm{d}t}\qquad i(t)=i(0)+\frac1L\int_0^tv\,\mathrm{d}t\qquad W=\tfrac12Li^2\qquad Z_L=j\omega L\]</div>
+<p>De aquí se sigue que <b>la corriente de un inductor no puede cambiar de golpe</b> (haría falta una tensión infinita): es continua en el tiempo, igual que la tensión de un condensador. En régimen continuo (\(\mathrm{d}i/\mathrm{d}t=0\)) el inductor ideal es un cortocircuito; un instante después de conectarlo a una fuente con la corriente nula se comporta como un circuito abierto. Un inductor de 10 mH atravesado por 2 A almacena \(\tfrac12(0.01)(4)=20\) mJ; con una variación de 100 mA en 1 ms aparece en él una tensión de 1 V.</p>
+</section>
+
+<section>
+<h2>Cómo se construye una inductancia: el solenoide y el núcleo</h2>
+<p>Para una bobina larga de \(N\) vueltas, sección \(A\) y longitud \(\ell\), con un núcleo de permeabilidad relativa \(\mu_r\):</p>
+<div class="eq key" data-name="Inductancia del solenoide">\[L=\mu_0\mu_r\frac{N^2A}{\ell}\qquad B=\mu_0\mu_r\frac{N\,i}{\ell}\qquad \mu_0=4\pi\times10^{-7}\ \text{H/m}\]</div>
+<p>La inductancia crece con el <i>cuadrado</i> del número de vueltas. Con 100 vueltas, 5 cm de longitud y 1 cm de diámetro sin núcleo se obtienen 19.7 µH; con un núcleo de ferrita de \(\mu_r=1000\) (si todo el flujo pasara por él) llegaría a 19.7 mH. El núcleo concentra y multiplica el flujo, pero introduce límites: los materiales magnéticos <b>se saturan</b> —por encima de una inducción \(B_{sat}\) (0.3–0.5 T en ferritas, 1.5–2 T en acero al silicio) la permeabilidad cae y la inductancia con ella—, tienen <b>pérdidas</b> por histéresis y por corrientes de Foucault, y su permeabilidad cambia con la temperatura.</p>
+<div class="tablewrap"><table class="tbl"><tr><th>Material del núcleo</th><th>\(\mu_r\)</th><th>\(B_{sat}\) (T)</th><th>Frecuencia útil</th><th>Usos</th></tr>
+<tr><td>Aire / plástico</td><td>1</td><td>—</td><td>hasta GHz</td><td>RF, sintonía; sin saturación ni pérdidas de núcleo</td></tr>
+<tr><td>Ferrita (MnZn)</td><td>1000–10000</td><td>0.3–0.5</td><td>kHz – 1 MHz</td><td>Fuentes conmutadas, chokes, transformadores</td></tr>
+<tr><td>Ferrita (NiZn)</td><td>10–1500</td><td>0.25–0.35</td><td>hasta 100s de MHz</td><td>Supresión de EMI, RF</td></tr>
+<tr><td>Polvo de hierro / sendust</td><td>10–150</td><td>1–1.5</td><td>hasta MHz</td><td>Inductores de potencia con entrehierro distribuido</td></tr>
+<tr><td>Acero al silicio laminado</td><td>2000–10000</td><td>1.5–2</td><td>50–400 Hz</td><td>Transformadores de red, chokes de baja frecuencia</td></tr>
+<tr><td>Cintas amorfas / nanocristalinas</td><td>20000–100000</td><td>0.6–1.2</td><td>kHz–100s kHz</td><td>Transformadores de alta eficiencia</td></tr></table></div>
+<div class="sim" data-sim="c6-solenoide" data-title="Solenoide: inductancia, campo y energía"></div>
+<div class="sim-guide"><ul>
+<li>Con \(N=100\), 5 cm, 1 cm de diámetro y aire: \(L=19.7\ \mu\)H y \(B=2.5\) mT por amperio. Duplique las vueltas: \(L\) se cuadruplica (79 µH), pero \(B\) solo se duplica.</li>
+<li>Con \(\mu_r=1000\) la inductancia salta a 19.7 mH, pero a 1 A el campo sería de 2.5 T: muy por encima de la saturación de una ferrita (0.4 T). El núcleo real se saturaría a unos 160 mA.</li>
+<li>El indicador de saturación muestra la corriente a la que el campo alcanzaría 0.4 T: es el valor máximo útil del inductor.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El inductor real</h2>
+<p>El inductor real añade al modelo ideal una <b>resistencia serie</b> \(R_{dc}\) (el alambre: mΩ a decenas de Ω), una <b>capacitancia parásita en paralelo</b> \(C_p\) (entre espiras: pF) y, en el núcleo, pérdidas. La <b>frecuencia de resonancia propia</b> \(f_0=1/(2\pi\sqrt{LC_p})\) marca el límite: por encima el dispositivo se comporta como un condensador. El <b>factor de calidad</b> \(Q=\omega L/R\) mide cuán «bueno» es: 10 a 100 en los de RF. A frecuencias altas el efecto pelicular concentra la corriente cerca de la superficie del alambre (profundidad \(\delta=66/\sqrt{f}\) mm con \(f\) en Hz: 8.5 mm a 60 Hz y 0.066 mm a 1 MHz), de modo que la resistencia efectiva sube; por eso se usa hilo de Litz (muchos hilos finos aislados) a decenas de kHz.</p>
+<p>Un inductor de potencia se especifica con dos corrientes: la <b>corriente de saturación</b> \(I_{sat}\) (la inductancia cae un 20–30 %) y la <b>corriente eficaz</b> o de calentamiento \(I_{rms}\) (por las pérdidas \(I^2R_{dc}\)). La inductancia efectiva disminuye al saturarse: el modelo del Taller usa \(L(i)=L_0/[1+(i/I_{sat})^2]\).</p>
+</section>
+
+<section>
+<h2>Asociaciones e inductancia mutua</h2>
+<p>En <b>serie</b> sin acoplamiento, \(L_{eq}=\sum L_k\); en <b>paralelo</b>, \(1/L_{eq}=\sum1/L_k\). Si el flujo de una bobina atraviesa a otra aparece una <b>inductancia mutua</b> \(M=k\sqrt{L_1L_2}\) (\(0\le k\le1\) es el coeficiente de acoplamiento). Con dos bobinas de 10 mH y 40 mH y \(k=0.9\), \(M=18\) mH; en serie, si sus campos se suman (<i>serie aditiva</i>), \(L=L_1+L_2+2M=86\) mH; si se restan, \(L=L_1+L_2-2M=14\) mH. Esto es la base del transformador (capítulo 7) y de la medición de polaridad con el punto de los terminales.</p>
+</section>
+
+<section>
+<h2>Respuesta de un circuito RL</h2>
+<p>Un inductor \(L\) en serie con una resistencia \(R\) alimentados por una tensión continua \(V\) obtiene su corriente de la ecuación \(L\,\mathrm{d}i/\mathrm{d}t+Ri=V\), con solución</p>
+<div class="eq key" data-name="Carga y descarga de un inductor">\[i(t)=\frac VR\left(1-e^{-t/\tau}\right)\qquad v_L(t)=V\,e^{-t/\tau}\qquad \tau=\frac LR\qquad W_{final}=\tfrac12L\left(\frac VR\right)^2\]</div>
+<p>La corriente crece con constante de tiempo \(\tau=L/R\): con \(L=100\) mH y \(R=100\ \Omega\), \(\tau=1\) ms y la corriente final (con 10 V) es 100 mA; la tensión del inductor empieza en el valor de la fuente y decae a cero. Es el dual del circuito RC: allí la tensión del condensador es la variable continua; aquí es la corriente del inductor.</p>
+<div class="sim" data-sim="c6-rl" data-title="Respuesta de un circuito RL a un escalón"></div>
+<div class="sim-guide"><ul>
+<li>Con \(L=100\) mH y \(R_{total}=100\ \Omega\): \(\tau=1\) ms. El canal «corriente» (tensión en el resistor de 50 Ω, proporcional a \(i\)) sube con esa constante, y la tensión del inductor cae exponencialmente.</li>
+<li>Aumente \(R\): \(\tau\) disminuye y la corriente final \(V/R\) también. Aumente \(L\): \(\tau\) crece pero la corriente final no cambia.</li>
+<li>La energía almacenada al final es \(\tfrac12Li^2\); no depende de cuánto se tarde.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>La sobretensión de desconexión y el diodo de rueda libre</h2>
+<p>Como la corriente de un inductor no puede cambiar de golpe, si se abre un interruptor en serie con una bobina que lleva corriente \(I_0\), la bobina «se niega» y genera la tensión que haga falta para mantener esa corriente: \(v=L\,\mathrm{d}i/\mathrm{d}t\). Con \(L=100\) mH, \(I_0=120\) mA y una interrupción en 1 µs la tensión inducida sería de <b>12 kV</b>. En la práctica la sobretensión se limita por un arco entre los contactos de un interruptor, o por la avalancha de la unión de un transistor, que normalmente se destruye. La energía \(\tfrac12LI_0^2=0.72\) mJ se disipa donde se pueda.</p>
+<p>La solución es dar a la corriente un camino alternativo: un <b>diodo de rueda libre</b> (<i>flyback</i>) en antiparalelo con la bobina, polarizado inversamente en operación normal. Al abrir el interruptor, la tensión de la bobina se invierte y el diodo conduce, manteniendo la corriente circulante que decae con \(\tau=L/(R_{bobina}+R_d)\) mientras la tensión en el transistor se limita a \(V_{CC}+0.7\) V. Se coloca siempre en bobinas de relés, motores, solenoides y válvulas. Si se necesita que la corriente decaiga más rápido se añade un Zener en serie con el diodo (a costa de una tensión mayor en el transistor).</p>
+<div class="sim" data-sim="c6-flyback" data-title="Una bobina de 100 mH conmutada por un MOSFET, con y sin diodo de rueda libre"></div>
+<div class="sim-guide"><ul>
+<li>Con el diodo, la tensión del drenador salta de 0 V a unos 12.7 V cuando el MOSFET se apaga (12 V de la alimentación más 0.7 V del diodo) y la corriente de la bobina decae por el diodo.</li>
+<li>Quite el diodo (botón «sin diodo»): la tensión del drenador sube hasta la tensión de ruptura de avalancha del MOSFET (≈ 60 V en el IRLZ44N de 55 V): el transistor «se salva» solo porque disipa la energía de la bobina durante unos cientos de microsegundos, pero repetido miles de veces se destruye.</li>
+<li>Con un relé en lugar de un motor, la misma lógica: en la hoja de datos de cualquier controlador de relés (ULN2003) el diodo ya viene integrado.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Saturación del núcleo</h2>
+<p>Cuando la corriente supera \(I_{sat}\) la inductancia cae y la corriente ya no se limita por el inductor: crece mucho más rápido, limitada solo por la resistencia. En una fuente conmutada esto significa picos de corriente que destruyen el transistor; por eso se dimensiona el inductor para \(I_{sat}\) mayor que el pico de corriente con margen del 20–30 %.</p>
+<div class="sim" data-sim="c6-saturacion" data-title="Saturación del núcleo: la rampa de corriente se «quiebra»"></div>
+<div class="sim-guide"><ul>
+<li>Con \(I_{sat}=0.3\) A y una corriente final de 0.5 A, la rampa de corriente (tensión en el resistor de 10 Ω) empieza lenta (\(L=1\) mH) y, al acercarse a 0.3 A, se acelera: la inductancia disminuye y la pendiente aumenta.</li>
+<li>Con \(I_{sat}=2\) A el inductor no se satura: la rampa sigue siendo la exponencial de siempre.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Aplicaciones</h2>
+<ul>
+<li><b>Filtros LC</b> de alimentación y de audio (capítulo 9), con frecuencia de corte \(f=1/(2\pi\sqrt{LC})\): 10 mH y 100 nF resuenan a 5.03 kHz.</li>
+<li><b>Convertidores conmutados</b>: el inductor almacena energía durante una parte del ciclo y la entrega a la carga durante la otra (capítulo 21).</li>
+<li><b>Chokes de modo común y ferritas</b> contra la interferencia electromagnética (EMI): a altas frecuencias son resistencias.</li>
+<li><b>Relés, solenoides, motores, altavoces</b>: son inductancias de la perspectiva eléctrica, con su diodo de protección.</li>
+<li><b>Circuitos resonantes</b> de sintonía (radio, filtros) y antenas.</li>
+</ul>
+</section>
+
+<section>
+<h2>Problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un inductor de 10 mH conduce 2 A. ¿Qué energía almacena? ¿Qué tensión aparece en él si la corriente cambia 100 mA en 1 ms?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(W=\tfrac12LI^2=\tfrac12(0.01)(4)=20\) mJ.</li>
+<li>\(v=L\,\Delta i/\Delta t=0.01\cdot0.1/0.001=1\) V.</li>
+<li><b>Resultado.</b> <span class="ans">20 mJ y 1 V.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Un solenoide de 100 vueltas, 5 cm de longitud y 1 cm de diámetro tiene núcleo de aire. Calcule la inductancia y la inducción que produce con 1 A.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(A=\pi(0.005)^2=7.85\times10^{-5}\ \text{m}^2\).</li>
+<li>\(L=\mu_0N^2A/\ell=4\pi\times10^{-7}\cdot10^4\cdot7.85\times10^{-5}/0.05=19.7\ \mu\)H.</li>
+<li>\(B=\mu_0NI/\ell=4\pi\times10^{-7}\cdot100/0.05=2.51\) mT.</li>
+<li><b>Resultado.</b> <span class="ans">19.7 µH y 2.5 mT por amperio.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un inductor de 100 mH en serie con 100 Ω se conecta a 10 V. Calcule la constante de tiempo, la corriente final y el tiempo para llegar al 90 %.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(\tau=L/R=0.1/100=1\) ms; \(I_\infty=10/100=0.1\) A.</li>
+<li>El 90 % se alcanza en \(t=\tau\ln10=2.30\) ms.</li>
+<li><b>Resultado.</b> <span class="ans">1 ms, 100 mA y 2.3 ms.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Una bobina de 100 mH y 100 Ω (12 V → 120 mA) se corta con un MOSFET sin diodo de protección. ¿Qué energía deberá absorber el transistor y qué tensión tendría si la corriente se anulara en 1 µs? ¿Qué tensión máxima habrá con un diodo?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>Energía: \(\tfrac12(0.1)(0.12)^2=0.72\) mJ.</li>
+<li>Tensión ideal: \(L\Delta i/\Delta t=0.1\cdot0.12/10^{-6}=12\) kV (en realidad se limita por la avalancha del transistor).</li>
+<li>Con diodo: \(V_{CC}+V_D=12.7\) V; la corriente decae con \(\tau=L/(R+R_D)\approx1\) ms.</li>
+<li><b>Resultado.</b> <span class="ans">0.72 mJ; 12 kV teóricos (sin protección el transistor muere); 12.7 V con diodo.</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>Dos bobinas de 10 mH y 40 mH con \(k=0.9\) se conectan en serie. Calcule la inductancia en ambas polaridades y dibuje cómo se mediría \(M\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(M=0.9\sqrt{0.01\cdot0.04}=18\) mH.</li>
+<li>Aditiva: \(L=10+40+36=86\) mH. Sustractiva: \(L=10+40-36=14\) mH.</li>
+<li>Medición: se mide \(L_{ad}\) y \(L_{sus}\); \(M=(L_{ad}-L_{sus})/4=(86-14)/4=18\) mH.</li>
+<li><b>Resultado.</b> <span class="ans">86 mH y 14 mH; \(M=18\) mH.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

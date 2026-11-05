@@ -1,0 +1,89 @@
+<template class="chapter-src" data-id="filtros" data-num="9" data-title="Filtros pasivos y adaptación" data-part="Parte II · Dispositivos pasivos" data-short="Filtros RC y RL de primer orden, filtro LC de segundo orden y su factor de calidad, efecto de carga en cascada, filtro de muesca, atenuadores en T y en π y adaptación de impedancias con redes L">
+<p class="lead">Un filtro deja pasar unas frecuencias y rechaza otras. Con resistores, condensadores e inductores se construyen los <b>filtros pasivos</b>: separan la señal útil del ruido, reparten el espectro entre el altavoz de graves y el de agudos, eliminan el zumbido de red y seleccionan una emisora. Todo lo que se necesita ya se ha visto: la impedancia compleja del capítulo 3 y la resonancia del capítulo 8. Este capítulo reúne las estructuras fundamentales, sus fórmulas de diseño y los errores más comunes (ignorar la carga y asociar etapas sin aislarlas).</p>
+
+<section>
+<h2>Filtros de primer orden</h2>
+<p>El divisor RC del capítulo 3 es un <b>pasabajos</b>: deja pasar las frecuencias por debajo de \(f_c=1/(2\pi RC)\) y atenúa a razón de 20 dB por década por encima. Intercambiando las posiciones de \(R\) y \(C\) se obtiene el <b>pasaaltos</b>, que bloquea la continua y deja pasar lo rápido; con inductores, es al revés (pasabajos con la bobina en serie y pasaaltos con la bobina a tierra, \(f_c=R/2\pi L\)).</p>
+<div class="eq key" data-name="Filtros RC de primer orden">\[H_{LP}=\frac1{1+j\,f/f_c}\qquad H_{HP}=\frac{j\,f/f_c}{1+j\,f/f_c}\qquad f_c=\frac1{2\pi RC}\qquad \text{pendiente: }\pm20\ \text{dB/década}\]</div>
+<p>Con \(R=10\) kΩ y \(C=100\) nF el pasaaltos tiene \(f_c=159\) Hz: se usa para el acoplamiento entre etapas de audio (deja pasar la voz y bloquea la continua). Con \(R=1\) kΩ y \(C=7.96\) nF, \(f_c=20\) kHz: un filtro antialias para audio. Un <b>filtro de primer orden</b> es poco selectivo: para atenuar 40 dB a una frecuencia 10 veces mayor que la deseada hacen falta varios polos.</p>
+<div class="sim" data-sim="c9-pasaaltos" data-title="Filtros RC: pasabajos y pasaaltos"></div>
+<div class="sim-guide"><ul>
+<li>Con \(R=10\) kΩ y \(C=100\) nF, \(f_c=159\) Hz. El pasabajos (rodilla hacia abajo) y el pasaaltos (rodilla hacia arriba) comparten la misma frecuencia de −3 dB; la fase del pasabajos va de 0° a −90°, la del pasaaltos de +90° a 0°.</li>
+<li>El analizador y la curva teórica coinciden. Aumente \(C\) diez veces: \(f_c\) baja diez veces.</li>
+<li>A una década de \(f_c\) el pasabajos atenúa 20 dB; a dos décadas, 40 dB.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Filtro LC de segundo orden</h2>
+<p>Con un inductor en serie y un condensador a tierra se consigue un pasabajos de <b>segundo orden</b>: la atenuación crece como 40 dB por década por encima de \(f_0=1/(2\pi\sqrt{LC})\). A diferencia del RC, el LC casi no disipa energía y es el filtro habitual de las fuentes conmutadas y de los altavoces. Pero tiene una complicación: su respuesta cerca de \(f_0\) depende de la resistencia de carga \(R_L\) (y de la de la fuente), con un factor de calidad \(Q=R_L\sqrt{C/L}\). Un \(Q\) elevado produce un <i>pico de resonancia</i> en la respuesta (y un rebote en el escalón); el \(Q=0.707\) da la respuesta más plana posible (<b>Butterworth</b>), sin pico. Para \(L=10\) mH y \(C=100\) nF, \(f_0=5.03\) kHz: con \(R_L=224\ \Omega\) (Butterworth) la banda pasante es plana; con 1 kΩ (\(Q=3.2\)) aparece un pico de +10 dB; con 100 Ω (\(Q=0.32\)) la respuesta cae antes de \(f_0\).</p>
+<div class="sim" data-sim="c9-lc" data-title="Filtro LC de segundo orden con carga"></div>
+<div class="sim-guide"><ul>
+<li>Con \(R_L=224\ \Omega\) el pico desaparece y la respuesta es la de Butterworth: −3 dB exactamente en \(f_0\) y pendiente final de −40 dB/década.</li>
+<li>Con \(R_L=1\) kΩ el pico llega a +10 dB (\(Q=3.2\)) en la resonancia: una carga ligera hace que el filtro «suene».</li>
+<li>Con carga infinita (10 kΩ) el pico es tan alto como \(Q=31\) (+30 dB); en una fuente real el hierro y la ESR del condensador lo amortiguan.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Efecto de carga al conectar etapas en cascada</h2>
+<p>Una tentación frecuente es obtener un filtro más selectivo poniendo dos RC en cascada: se pensaría que la respuesta es el producto de las dos. Pero la segunda etapa <b>carga</b> a la primera (la toma como una resistencia en paralelo con su condensador), y el resultado es otra función de transferencia: para dos etapas iguales, \(H=1/(1+3s\tau+s^2\tau^2)\), con una frecuencia de −3 dB en \(0.374/(2\pi\tau)\) y no en \(0.644/(2\pi\tau)\) como se obtendría con etapas aisladas. Con \(R=1\) kΩ y \(C=100\) nF, \(f_c=1.59\) kHz y la cascada acoplada tiene \(f_{-3dB}=596\) Hz (aislada, 1.02 kHz). Para aislar etapas se intercala un <b>seguidor</b> de tensión (amplificador operacional con realimentación unitaria), o se hace cada resistencia 10 veces mayor que la anterior y cada condensador 10 veces menor.</p>
+<div class="sim" data-sim="c9-cascada" data-title="Dos etapas RC en cascada: acopladas o aisladas con un seguidor"></div>
+<div class="sim-guide"><ul>
+<li>Acopladas directamente, la frecuencia de −3 dB baja a 596 Hz (37 % de la de una etapa) y la rodilla es más redondeada.</li>
+<li>Con el seguidor de A.O. entre las etapas, el filtro se comporta como el producto de dos RC: −3 dB en 1.02 kHz y pendiente de −40 dB/década.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Filtro de muesca (notch) y pasabanda</h2>
+<p>El <b>filtro de muesca</b> elimina una sola frecuencia (el zumbido de 60 Hz de la red, una interferencia). El más sencillo con elementos pasivos es el <b>doble T</b>: dos redes en T, una con dos resistores y un condensador a tierra de doble valor, otra con dos condensadores y un resistor a tierra de mitad de valor, con \(f_0=1/(2\pi RC)\). Con \(R=10\) kΩ y \(C=10\) nF, \(f_0=1.59\) kHz; la profundidad de la muesca depende de la igualdad de los componentes: con valores exactos es teóricamente infinita (más de 60 dB en la simulación); con un desajuste de 5 % en un componente, de unos 44 dB, y con 20 %, de unos 32 dB. Su \(Q\) es de solo 0.25; para un notch más estrecho se añade realimentación con un amplificador (capítulo 23). El <b>pasabanda</b> RLC del capítulo 8 selecciona una banda alrededor de \(f_0\) con ancho \(B=f_0/Q\).</p>
+<div class="sim" data-sim="c9-notch" data-title="Filtro doble T: eliminar una sola frecuencia"></div>
+<div class="sim-guide"><ul>
+<li>Con \(R=10\) kΩ, \(C=10\) nF y los componentes perfectamente igualados, la ganancia cae a un valor casi nulo en 1.59 kHz (más de 60 dB de profundidad).</li>
+<li>Con el desajuste de R₃ en 1.05 (+5 %) la muesca baja solo a −44 dB, y con 1.2 (+20 %), a −32 dB. La calidad del filtro depende de la precisión de los componentes (resistores de 1 % y condensadores de película).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Atenuadores y adaptación de impedancias</h2>
+<p>Un <b>atenuador</b> resistivo reduce una señal en un factor \(k\) sin modificar la impedancia \(Z_0\) que ven la fuente y la carga, de manera que no introduce reflexiones en una línea. En la configuración <b>T</b> (dos resistores serie \(R_1\) y uno a tierra \(R_2\)):</p>
+<div class="eq key" data-name="Atenuador en T de impedancia Z₀">\[k=10^{A_{dB}/20}\qquad R_1=Z_0\frac{k-1}{k+1}\qquad R_2=\frac{2Z_0\,k}{k^2-1}\qquad \text{(en }\pi:\ R_3=Z_0\tfrac{k+1}{k-1},\ R_4=Z_0\tfrac{k^2-1}{2k}\text{)}\]</div>
+<p>Para 6 dB en 50 Ω: \(k=2\), \(R_1=16.6\ \Omega\), \(R_2=66.9\ \Omega\); para 10 dB: \(R_1=26.0\ \Omega\), \(R_2=35.1\ \Omega\); para 20 dB: \(R_1=40.9\ \Omega\), \(R_2=10.1\ \Omega\). Se usan para ajustar niveles de señal y como «aislador» que mejora el adaptado de una carga mala.</p>
+<p>Para <b>adaptar</b> una fuente de resistencia \(R_s\) a una carga \(R_L>R_s\) a una frecuencia dada se usa la <b>red L</b> con un inductor en serie y un condensador en paralelo con la carga: \(Q=\sqrt{R_L/R_s-1}\), \(X_L=Q\,R_s\), \(X_C=R_L/Q\). Para adaptar 50 Ω a 200 Ω a 10 MHz: \(Q=1.73\), \(X_L=86.6\ \Omega\) (\(L=1.38\ \mu\)H) y \(X_C=115.5\ \Omega\) (\(C=138\) pF). La red L solo adapta en una banda estrecha (\(B\approx f/Q\)), es en sí misma un filtro pasabajos y es la base de todo transmisor de radio.</p>
+</section>
+
+<section>
+<h2>Problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Diseñe un pasaaltos RC con \(f_c=159\) Hz usando \(C=100\) nF. ¿Qué \(R\) se necesita y cuánto atenúa a 16 Hz?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(R=1/(2\pi f_cC)=1/(2\pi\cdot159\cdot10^{-7})=10.0\) kΩ.</li>
+<li>A 16 Hz (\(f/f_c=0.1\)): \(|H|=0.1/\sqrt{1.01}=0.0995\), es decir, −20.0 dB.</li>
+<li><b>Resultado.</b> <span class="ans">10 kΩ; atenúa 20 dB una década por debajo de \(f_c\).</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Un filtro LC pasabajos usa \(L=10\) mH y \(C=100\) nF. Calcule \(f_0\) y el \(R_L\) para el comportamiento Butterworth (\(Q=0.707\)).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(f_0=1/(2\pi\sqrt{10^{-2}\cdot10^{-7}})=5.03\) kHz.</li>
+<li>\(Q=R_L\sqrt{C/L}=R_L\cdot0.00316\Rightarrow R_L=0.707/0.00316=224\ \Omega\).</li>
+<li><b>Resultado.</b> <span class="ans">5.03 kHz y 224 Ω.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Dos etapas RC iguales (1 kΩ, 100 nF) se conectan en cascada sin aislar. Calcule la frecuencia de −3 dB de cada etapa por separado y del conjunto.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>Una etapa: \(f_c=1/(2\pi\cdot10^3\cdot10^{-7})=1.59\) kHz.</li>
+<li>Cascada acoplada: \(H=1/(1+3s\tau+s^2\tau^2)\); \(|H|=0.707\) cuando \(\omega\tau=0.374\), luego \(f=0.374\cdot1.59\ \text{kHz}/1=596\) Hz.</li>
+<li>Si estuvieran aisladas: \(f=1.59\sqrt{\sqrt2-1}=1.02\) kHz.</li>
+<li><b>Resultado.</b> <span class="ans">1.59 kHz por etapa; 596 Hz acopladas (1.02 kHz aisladas con un seguidor).</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Diseñe un atenuador en T de 10 dB para 50 Ω y compruebe la impedancia que ve la fuente con la salida cargada con 50 Ω.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(k=10^{10/20}=3.162\); \(R_1=50\cdot2.162/4.162=25.97\ \Omega\); \(R_2=2\cdot50\cdot3.162/(10-1)=35.14\ \Omega\).</li>
+<li>Impedancia de entrada: \(R_1+R_2\parallel(R_1+50)=25.97+35.14\parallel75.97=25.97+24.03=50.0\ \Omega\).</li>
+<li>Atenuación de tensión: \(k=3.162\) (10 dB) por construcción.</li>
+<li><b>Resultado.</b> <span class="ans">\(R_1=26.0\ \Omega\), \(R_2=35.1\ \Omega\); la fuente ve 50.0 Ω.</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>Adapte una fuente de 50 Ω a una carga de 200 Ω a 10 MHz con una red L. Calcule \(L\), \(C\), \(Q\) y el ancho de banda aproximado.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(Q=\sqrt{200/50-1}=1.732\).</li>
+<li>\(X_L=QR_s=86.6\ \Omega\Rightarrow L=86.6/(2\pi\cdot10^7)=1.38\ \mu\)H; \(X_C=R_L/Q=115.5\ \Omega\Rightarrow C=1/(2\pi\cdot10^7\cdot115.5)=138\) pF.</li>
+<li>\(B\approx f/Q=10/1.73=5.8\) MHz (la adaptación es de banda ancha porque \(Q\) es bajo).</li>
+<li><b>Resultado.</b> <span class="ans">\(Q=1.73\); \(L=1.38\ \mu\)H; \(C=138\) pF; ancho de banda de unos 5.8 MHz.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

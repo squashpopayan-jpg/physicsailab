@@ -1,0 +1,151 @@
+<template class="chapter-src" data-id="osciladores" data-num="24" data-title="Comparadores, histéresis y osciladores" data-part="Parte V · Circuitos analógicos y control" data-short="Comparador y su ruido, disparador de Schmitt con histéresis, oscilador de relajación, criterio de Barkhausen, osciladores senoidales de puente de Wien, desfasador y LC, temporizador 555 astable y monoestable, y modulación por ancho de pulso">
+<p class="lead">Un oscilador es un circuito que, sin señal de entrada, produce una señal periódica: la base de los relojes digitales, de la modulación, de los generadores de funciones y de las fuentes conmutadas. Se construye con una <b>realimentación positiva</b> que, a diferencia de la negativa, refuerza la señal. Hay dos grandes familias: los osciladores de <b>relajación</b>, que conmutan entre dos estados (ondas cuadradas y triangulares) y los <b>senoidales</b>, que mantienen una oscilación casi lineal. Este capítulo parte del comparador —el elemento de decisión— y de su versión con histéresis, el disparador de Schmitt, y avanza hacia los osciladores clásicos con A.O. y con el circuito integrado más vendido de la historia, el 555.</p>
+
+<section>
+<h2>El comparador</h2>
+<p>Un A.O. sin realimentación (o con realimentación positiva) funciona como <b>comparador</b>: su salida es alta si \(v_+>v_-\) y baja si \(v_+<v_-\), con una transición muy rápida en el entorno de \(v_+=v_-\). Es el elemento básico de todo convertidor analógico–digital, de los detectores de nivel (termostatos, alarmas, cruce por cero) y de los reguladores conmutados. Los circuitos integrados diseñados como comparadores (LM393, LM339) no llevan compensación en frecuencia (son mucho más rápidos que un A.O.: 300 ns frente a decenas de µs de recuperación de saturación) y suelen tener la salida en <b>colector abierto</b>: el transistor de salida sólo conduce hacia tierra, y hay que poner una resistencia de «<i>pull-up</i>» a la tensión lógica deseada (3.3 V, 5 V o 12 V), lo que permite adaptar niveles.</p>
+<p>Un comparador simple tiene un defecto grave con señales lentas o ruidosas: cuando la entrada pasa lentamente por el umbral, el ruido superpuesto hace que \(v_+-v_-\) cruce el cero muchas veces y la salida <b>«rebota»</b> (oscila) en lugar de dar una única transición limpia. Es el problema de los detectores de nivel con sensores lentos (temperatura, luz) y de la eliminación de rebotes de pulsadores. La solución es la <b>histéresis</b>: usar dos umbrales distintos para el paso de bajo a alto y de alto a bajo.</p>
+</section>
+
+<section>
+<h2>Disparador de Schmitt</h2>
+<p>El <b>disparador de Schmitt</b> es un comparador con realimentación positiva a través de un divisor resistivo: el umbral de conmutación depende del estado actual de la salida. Con la entrada en la rama no inversora (\(R_1\) en serie con la fuente, \(R_2\) de la salida a la entrada \(+\), entrada \(-\) a tierra), la salida conmuta cuando \(v_+=0\), es decir:</p>
+<div class="eq key" data-name="Disparador de Schmitt no inversor">\[V_{TH}=+\frac{R_1}{R_2}V_{sat}\ (\text{sube a }+V_{sat})\qquad V_{TL}=-\frac{R_1}{R_2}V_{sat}\ (\text{baja a }-V_{sat})\qquad V_H=V_{TH}-V_{TL}=\frac{2R_1}{R_2}V_{sat}\]</div>
+<p>Con \(R_1=10\) kΩ, \(R_2=100\) kΩ y \(V_{sat}=13.4\) V (TL081 con ±15 V), los umbrales son \(\pm1.34\) V y la <b>histéresis</b> es de 2.68 V. Si se quiere una banda de histéresis pequeña con niveles de salida menores se usa una realimentación con un diodo Zener doble en la salida o un comparador con tensión de referencia desplazada. En la versión inversora (señal a la entrada \(-\), \(R_1\) a masa y \(R_2\) realimentación a \(+\)), los umbrales son \(\pm V_{sat}R_1/(R_1+R_2)\) y la salida está invertida.</p>
+<p>Como la salida no vuelve a conmutar hasta que la señal supera el umbral contrario, cualquier ruido de amplitud menor que la mitad de la banda es ignorado: la histéresis da <b>inmunidad al ruido</b>. Los inversores y puertas CMOS con entrada Schmitt (74HC14, CD40106) hacen lo mismo con umbrales de ≈ 0.3 y 0.7 \(V_{DD}\) y son los preferidos para acondicionar entradas lentas y señales de pulsadores.</p>
+<div class="sim" data-sim="c24-schmitt" data-title="Disparador de Schmitt: umbrales, histéresis e inmunidad al ruido"></div>
+<div class="sim-guide"><ul>
+<li>Con una triangular de ±3 V y \(R_2=100\) kΩ, la salida es una cuadrada de ±13.4 V de 1 kHz que cambia de estado cuando la entrada cruza ±1.34 V (fíjese en que la transición ocurre <b>después</b> de pasar por cero, con desfase en el semiciclo). El panel indica los umbrales y el ancho de la histéresis.</li>
+<li>Añada «ruido» de 37 kHz con 0.5 V de pico: la salida sigue siendo una cuadrada limpia de 1 kHz (4 ciclos en 4 ms): el ruido (±0.5 V) es menor que el umbral (±1.34 V).</li>
+<li>Suba \(R_2\) a 1 MΩ: los umbrales bajan a ±0.134 V y la histéresis a 0.27 V. Con el mismo ruido de 0.5 V la salida <b>conmuta varias veces</b> en cada transición lenta (12 flancos ascendentes en 4 ms frente a 4): sin histéresis suficiente, el comparador «rebota». Sin ruido, vuelve a ser limpia.</li>
+<li>Baje \(R_2\) a 30 kΩ: umbrales de ±4.5 V, mayores que los 3 V de la señal: <b>la salida no conmuta nunca</b>. La histéresis debe ser menor que la señal útil y mayor que el ruido.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Oscilador de relajación (multivibrador astable)</h2>
+<p>Si en un disparador de Schmitt inversor se conecta además la entrada \(-\) a la salida a través de una resistencia \(R\) y se pone un condensador \(C\) de ese nudo a tierra, se obtiene un oscilador sin ninguna señal externa. Cuando la salida está en \(+V_{sat}\), el condensador se carga hacia \(+V_{sat}\) a través de \(R\); el umbral positivo es \(+\beta V_{sat}\) (\(\beta=R_1/(R_1+R_2)\)). Al cruzarlo, la salida cambia a \(-V_{sat}\), el umbral pasa a \(-\beta V_{sat}\) y el condensador se descarga y carga hacia \(-V_{sat}\) hasta el nuevo umbral. La tensión en el condensador oscila entre \(\pm\beta V_{sat}\) y el período resulta:</p>
+<div class="eq key" data-name="Oscilador de relajación con A.O.">\[T=2RC\,\ln\frac{1+\beta}{1-\beta}\qquad f=\frac{1}{2RC\ln\dfrac{1+\beta}{1-\beta}}\qquad\beta=\frac{R_1}{R_1+R_2}\qquad(\beta=0.5\Rightarrow f=\frac{0.455}{RC})\]</div>
+<p>La salida es una <b>onda cuadrada</b> simétrica de amplitud \(\pm V_{sat}\) y la tensión del condensador una exponencial truncada (casi un triángulo cuando \(\beta\) es pequeño). La frecuencia depende sólo de \(R\), \(C\) y la razón \(\beta\), y es independiente de \(V_{sat}\). Es la base de los generadores de onda cuadrada de baja frecuencia (relojes, controladores de LED intermitentes) y, con integrador, de los generadores de triángulo.</p>
+<div class="sim" data-sim="c24-relax" data-title="Oscilador de relajación con A.O.: onda cuadrada y exponencial del condensador"></div>
+<div class="sim-guide"><ul>
+<li>Con \(R=10\) kΩ, \(C=10\) nF y \(R_1=R_2=10\) kΩ (\(\beta=0.5\)): frecuencia teórica 4.55 kHz. El simulador da un período de 230 µs (4.35 kHz): un 4 % menos por el tiempo de conmutación del A.O. (velocidad de respuesta) que se suma a cada semiperíodo.</li>
+<li>La salida (amarillo) es una cuadrada de ±13.3 V; la tensión del condensador (azul, entrada \(-\)) oscila entre ±6.7 V (\(=\pm\beta V_{sat}\)) con trozos exponenciales; la naranja (entrada \(+\)) es el umbral, que cambia de signo con la salida.</li>
+<li>Suba \(R\) a 100 kΩ: la frecuencia baja a una décima (455 Hz). Cambie \(R_2\): con \(R_2=100\) kΩ (\(\beta=0.09\)) la frecuencia teórica sube a 27 kHz y el condensador describe casi un triángulo de ±1.2 V (en el simulador, la velocidad de respuesta del A.O. recorta algo las frecuencias más altas).</li>
+<li>Las ventanas del osciloscopio cambian de escala solas al mover R, C o β para mostrar unos cuatro períodos.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Osciladores senoidales: criterio de Barkhausen</h2>
+<p>Un oscilador senoidal es un amplificador con una red de realimentación que devuelve a la entrada una señal en fase y de la misma amplitud que la de salida. Para que una oscilación se sostenga, el lazo debe cumplir el <b>criterio de Barkhausen</b>:</p>
+<div class="eq key" data-name="Criterio de Barkhausen (oscilación sostenida)">\[|A\beta|=1\qquad \angle A\beta=0°\ (\text{o }360°)\quad\text{a una sola frecuencia }f_0\]</div>
+<p>Si \(|A\beta|<1\) la oscilación se extingue; si \(>1\) crece hasta que una no linealidad (saturación del A.O., diodos, una lámpara) reduce la ganancia efectiva a 1. Un buen oscilador tiene una ganancia ligeramente mayor que 1 a pequeña señal para garantizar el arranque, y un mecanismo <b>suave</b> de estabilización de la amplitud que evite el recorte (distorsión). Las tres redes selectivas más usadas determinan la frecuencia:</p>
+<div class="tablewrap"><table class="tbl"><tr><th>Oscilador</th><th>Red de realimentación</th><th>Frecuencia</th><th>Condición de arranque</th><th>Uso típico</th></tr>
+<tr><td><b>Puente de Wien</b></td><td>RC serie–paralelo</td><td>\(f_0=1/(2\pi RC)\)</td><td>\(K>3\)</td><td>Audio (10 Hz–1 MHz), generadores senoidales</td></tr>
+<tr><td><b>Desfasador RC</b></td><td>tres etapas RC (3 × 60°)</td><td>\(f_0=1/(2\pi\sqrt6\,RC)\)</td><td>\(K>29\)</td><td>Audio de bajo costo</td></tr>
+<tr><td><b>Colpitts / Hartley</b></td><td>circuito resonante LC</td><td>\(f_0=1/(2\pi\sqrt{LC})\)</td><td>\(g_mR>\) razón de condensadores</td><td>Radiofrecuencia (MHz–GHz)</td></tr>
+<tr><td><b>Cristal de cuarzo</b></td><td>resonador piezoeléctrico</td><td>fija, \(Q\) 10⁴–10⁶, estabilidad 10 ppm</td><td>\(K>1\) con el cristal en serie o paralelo</td><td>Relojes digitales, microcontroladores, comunicaciones</td></tr></table></div>
+<h3>Oscilador de puente de Wien</h3>
+<p>La red RC serie–paralelo (\(R\) y \(C\) en serie en la rama de salida; \(R\) y \(C\) en paralelo a tierra) tiene una transferencia \(\beta(j\omega)=\dfrac{1}{3+j(\omega RC-1/\omega RC)}\): a \(f_0=1/(2\pi RC)\) vale exactamente \(1/3\) con fase cero. Como se conecta a la entrada no inversora de un amplificador no inversor de ganancia \(K=1+R_f/R_g\), la oscilación empieza cuando \(K>3\). La estabilización de amplitud se logra con un elemento cuya resistencia aumenta con la señal (una lámpara de filamento pequeña, como en el oscilador original de Hewlett, 1939) o, como aquí, con dos <b>diodos antiparalelo</b> en paralelo con parte de \(R_f\): a pequeña señal los diodos no conducen y \(K=3.06>3\); al crecer la amplitud empiezan a conducir, \(R_f\) efectiva disminuye y \(K\) baja hacia 3, estabilizando la amplitud en torno a 1 V de pico.</p>
+<div class="sim" data-sim="c24-wien" data-title="Oscilador de puente de Wien con estabilización por diodos"></div>
+<div class="sim-guide"><ul>
+<li>Con \(R=16\) kΩ y \(C=10\) nF: \(f_0=995\) Hz (medida 993 Hz). La salida (amarillo) tiene 1.01 V de pico y la entrada \(+\) (azul), 0.34 V: exactamente un tercio, como exige la red de realimentación (\(\beta=1/3\)); las dos están en fase.</li>
+<li>Pulse «Sin diodos (satura)»: la ganancia queda siempre en \(K=3.06>3\) y la amplitud crece hasta que el A.O. satura: la salida se recorta a 13.4 V de pico (distorsión grande). Vuelva a «Con diodos»: la amplitud se estabiliza otra vez en ≈ 1 V.</li>
+<li>Cambie \(R\): \(f_0\) varía con \(1/R\) (por ejemplo, 8 kΩ → 1.99 kHz). Cambie \(R_{f2}\) para variar \(K\): con \(K\) menor que 3 la oscilación no arranca; con \(K\) mayor, la amplitud limitada por los diodos es mayor y la distorsión aumenta.</li>
+<li>El A.O. que arranca la oscilación se alimenta de su tensión de desplazamiento (3 mV con el TL081), que se amplifica exponencialmente hasta alcanzar la amplitud de equilibrio en unas decenas de períodos. En un circuito real el arranque lo da el ruido térmico.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El temporizador 555</h2>
+<p>El 555 (Hans Camenzind, Signetics, 1971) es un circuito integrado de 8 patillas que combina dos comparadores, una báscula SR, un divisor de tres resistencias de 5 kΩ (de ahí su nombre) y un transistor de descarga. El divisor fija dos umbrales: \(\tfrac13V_{CC}\) (comparador de disparo, patilla TRIG) y \(\tfrac23V_{CC}\) (comparador de umbral, THR). Si TRIG baja de \(\tfrac13V_{CC}\), la báscula se pone a 1 y la salida se hace alta (con el transistor de descarga abierto); si THR sube de \(\tfrac23V_{CC}\), la báscula se pone a 0 y la salida baja (con el transistor de descarga cerrado, que descarga el condensador externo). Funciona de 4.5 a 16 V (versiones CMOS de 1.5 V) y la salida entrega hasta 200 mA (en el modelo bipolar, con una caída de ≈ 1.7 V respecto de \(V_{CC}\)).</p>
+<h3>Modo astable</h3>
+<p>Con \(R_1\) entre \(V_{CC}\) y la patilla de descarga, \(R_2\) entre ésta y el condensador (unida a TRIG y THR), el condensador se carga por \(R_1+R_2\) de \(\tfrac13\) a \(\tfrac23V_{CC}\) y se descarga por \(R_2\) en sentido inverso:</p>
+<div class="eq key" data-name="555 astable">\[t_H=0.693\,(R_1+R_2)\,C\qquad t_L=0.693\,R_2\,C\qquad f=\frac{1.44}{(R_1+2R_2)\,C}\qquad D=\frac{R_1+R_2}{R_1+2R_2}>50\,\%\]</div>
+<p>El ciclo de trabajo siempre supera el 50 % (porque la carga recorre también \(R_1\)); si se quiere 50 % o menos se coloca un diodo en paralelo con \(R_2\) (para la carga) o se usa \(R_1\ll R_2\). Con \(R_1=1\) kΩ, \(R_2=10\) kΩ y \(C=100\) nF: \(f=687\) Hz y \(D=52.4\) %.</p>
+<div class="sim" data-sim="c24-555a" data-title="555 en modo astable: frecuencia y ciclo de trabajo"></div>
+<div class="sim-guide"><ul>
+<li>La salida es una cuadrada de 1.5 ms de período; el condensador (azul) es una exponencial de carga y descarga que oscila entre \(\tfrac13\) y \(\tfrac23\) de 5 V, es decir, entre 1.67 V y 3.33 V.</li>
+<li>El panel da \(f=687\) Hz teórica y 678 Hz medida (la pequeña diferencia es la resistencia del transistor de descarga, 8 Ω en el modelo, y la salida de ≈ 3.3 V en lugar de 5 V). Ciclo de trabajo: 52.4 % teórico y 52 % medido.</li>
+<li>Suba \(R_1\) a 10 kΩ: la frecuencia teórica baja a 480 Hz y el ciclo de trabajo sube a 66.7 %. Con \(R_1\ll R_2\) el ciclo se acerca a 50 %; con \(R_1=100\) kΩ y \(R_2=1\) kΩ llega a 99 % (141 Hz): pulsos de nivel alto muy largos con un breve nivel bajo.</li>
+<li>Cambie \(C\) a 1 µF: 68.7 Hz, se puede ver el parpadeo del LED conectado a la salida (resistor de 470 Ω).</li>
+</ul></div>
+<h3>Modo monoestable</h3>
+<p>Con \(R\) entre \(V_{CC}\) y el condensador (patillas DIS y THR unidas) y la entrada TRIG normalmente alta, un pulso breve a nivel bajo en TRIG pone la salida a 1 durante un tiempo fijo: el condensador se carga por \(R\) hasta \(\tfrac23V_{CC}\) y la báscula se reinicia:</p>
+<div class="eq key" data-name="555 monoestable">\[T=R\,C\,\ln3=1.1\,R\,C\]</div>
+<p>El pulso debe ser más corto que \(T\) (si el disparo sigue bajo cuando termina el pulso, la salida permanece alta). Aplicaciones: temporizadores (luz de escalera), retardos, supresión de rebotes, generación de pulsos de anchura fija, «alargador» de pulsos, detector de pulso faltante.</p>
+<div class="sim" data-sim="c24-555m" data-title="555 en modo monoestable: pulso de duración 1.1·R·C"></div>
+<div class="sim-guide"><ul>
+<li>Con \(R=100\) kΩ y \(C=1\ \mu\)F el pulso de salida dura 110 ms (teórica y medida: 110 ms). El generador baja a 0 V durante 12.5 ms cada 250 ms (4 Hz): se ven dos pulsos de salida en cada pantalla.</li>
+<li>El condensador (azul) se carga exponencialmente hasta 3.33 V (\(\tfrac23\) de 5 V), y en ese instante la salida cae y el condensador se descarga de golpe por el transistor interno.</li>
+<li>Suba la frecuencia de disparo a 10 Hz: el período de disparo (100 ms) es menor que \(T=110\) ms y el panel lo avisa. Como el 555 <b>no es redisparable</b> (ignora los disparos mientras está temporizando), el segundo disparo cae dentro del pulso y se pierde: la salida da pulsos de 110 ms con un hueco hasta el siguiente disparo válido.</li>
+<li>Cambie \(R\) y \(C\): \(T\) es proporcional al producto; con 10 kΩ y 1 µF, 11 ms.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Modulación por ancho de pulso (PWM)</h2>
+<p>Si se compara una señal de referencia continua con una <b>onda triangular</b> (o de diente de sierra) de frecuencia mucho más alta, la salida del comparador es un tren de pulsos cuyo <b>ciclo de trabajo</b> es proporcional a la tensión de referencia. Un filtro pasabajos RC (o el propio motor, con su inductancia) extrae el valor medio:</p>
+<div class="eq key" data-name="Modulación por ancho de pulso con triangular de 0 a V_pk">\[D=1-\frac{V_{ref}}{V_{pk}}\qquad \bar v_o=D\,V_H+(1-D)\,V_L\qquad f_{PWM}=f_{triangular}\]</div>
+<p>Con una triangular de 0 a 10 V y \(V_{ref}=5\) V, \(D=50\) % y la salida media (±13.4 V) es 0 V; con \(V_{ref}=2.5\) V, \(D=75\) % y +6.7 V de media. Es la base del <b>control de velocidad de motores</b>, de la regulación de brillo de LED, de los amplificadores de clase D y de las fuentes conmutadas (capítulo 21), en los que el PWM se genera con un circuito integrado (TL494, UC3842, SG3525) o con el temporizador de un microcontrolador. La frecuencia debe ser mucho mayor que el ancho de banda de la señal que se quiere reproducir (≥ 10 veces el límite superior), sin llegar a frecuencias que provoquen pérdidas de conmutación excesivas.</p>
+<div class="sim" data-sim="c24-pwm" data-title="Modulador PWM con comparador y onda triangular"></div>
+<div class="sim-guide"><ul>
+<li>Con \(V_{ref}=5\) V (verde) la triangular (amarilla) está por encima en la mitad del período: ciclo de trabajo de 50.1 % (teórico 50 %). La salida del comparador (azul, ±13.4 V) es una cuadrada simétrica; la media filtrada (naranja) tiende a 0 V.</li>
+<li>Baje \(V_{ref}\) a 2.5 V: la salida pasa a ser alta el 75 % del tiempo (ciclo medido ≈ 75 %), y la media tiende a +6.7 V; con 7.5 V, 25 % y −6.7 V. La relación entre referencia y ciclo de trabajo es lineal.</li>
+<li>El tiempo de establecimiento de la media depende de la constante RC del filtro (10 ms). Con una frecuencia de PWM mayor el rizado de la salida filtrada disminuye.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Medidas de laboratorio</h2>
+<ul>
+<li><b>Schmitt.</b> Monte el disparador con un A.O. y \(R_1/R_2=1/10\); con un generador de triangular de 3 V trace en modo X–Y del osciloscopio la entrada frente a la salida: verá el <b>ciclo de histéresis</b> (un lazo rectangular) con ancho igual a la histéresis calculada.</li>
+<li><b>Oscilador de relajación.</b> Con \(R=10\) kΩ y \(C=10\) nF mida la frecuencia (≈ 4.4 kHz) y la amplitud del triángulo (±6.7 V) y compare con la fórmula; cambie el valor de \(\beta\) y compruebe \(f(\beta)\).</li>
+<li><b>Wien.</b> Con el oscilador de la simulación mida la frecuencia con el osciloscopio y la distorsión con el modo espectro de la FFT: sin diodos, aparecen armónicos impares muy visibles; con diodos, la distorsión es baja. Pruebe una lámpara pequeña de 6 V/50 mA como estabilizador y compare.</li>
+<li><b>555.</b> Monte el astable con \(R_1=1\) kΩ, \(R_2=10\) kΩ, \(C=100\) nF y un LED con resistencia: mida la frecuencia y el ciclo de trabajo; añada un diodo en paralelo con \(R_2\) para obtener ≈ 50 %. Monte el monoestable y mida la duración del pulso frente a \(1.1RC\) (las tolerancias del condensador y del resistor hacen que difiera un 10 %).</li>
+<li><b>PWM.</b> Compare con un LM393 (con resistencia de pull-up de 4.7 kΩ a 5 V) una triangular de 0–5 V de 1 kHz con un potenciómetro de referencia y observe el ciclo de trabajo.</li>
+</ul>
+</section>
+
+<section>
+<h2>Problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un Schmitt no inversor con \(R_1=4.7\) kΩ, \(R_2=47\) kΩ y salida de ±12 V. Calcule los umbrales y la histéresis.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(R_1/R_2=0.1\).</li>
+<li>\(V_{TH}=+0.1\cdot12=+1.2\) V y \(V_{TL}=-1.2\) V.</li>
+<li>\(V_H=2.4\) V.</li>
+<li><b>Resultado.</b> <span class="ans">Umbrales de ±1.2 V; histéresis de 2.4 V.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Calcule la frecuencia de un oscilador de relajación con A.O. con \(R=10\) kΩ, \(C=10\) nF y \(R_1=R_2\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(\beta=0.5\Rightarrow\ln\dfrac{1.5}{0.5}=\ln3=1.0986\).</li>
+<li>\(T=2RC\ln3=2\cdot10^{-4}\cdot1.0986=220\ \mu\)s.</li>
+<li>\(f=4.55\) kHz.</li>
+<li><b>Resultado.</b> <span class="ans">4.55 kHz.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Diseñe un oscilador de puente de Wien para \(f_0=5\) kHz con \(C=3.3\) nF. Halle \(R\) y la relación \(R_f/R_g\) mínima para arrancar.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(R=1/(2\pi f_0C)=1/(2\pi\cdot5000\cdot3.3\cdot10^{-9})=9.65\) kΩ → 9.1 kΩ + 560 Ω, o 10 kΩ (\(f_0=4.82\) kHz).</li>
+<li>\(K=1+R_f/R_g>3\Rightarrow R_f/R_g>2\).</li>
+<li>Elegir \(R_g=10\) kΩ y \(R_f=20.5\) kΩ: \(K=3.05\).</li>
+<li><b>Resultado.</b> <span class="ans">\(R\approx9.65\) kΩ (10 kΩ en la práctica, \(f_0=4.8\) kHz) y \(R_f/R_g>2\) (por ejemplo 2.05).</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>555 astable con \(R_1=4.7\) kΩ, \(R_2=47\) kΩ y \(C=10\) nF. Halle \(t_H\), \(t_L\), \(f\) y \(D\).
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(t_H=0.693(4.7+47)\text{ k}\cdot10\text{ nF}=0.693\cdot51.7\text{ k}\cdot10^{-8}=358\ \mu\)s.</li>
+<li>\(t_L=0.693\cdot47\text{ k}\cdot10^{-8}=326\ \mu\)s.</li>
+<li>\(T=684\ \mu\)s → \(f=1.46\) kHz; \(D=358/684=52.3\) %.</li>
+<li><b>Resultado.</b> <span class="ans">358 µs, 326 µs, 1.46 kHz y 52.3 %.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Se desea un monoestable de 2 s con un 555 y \(C=10\ \mu\)F. Calcule \(R\) y diga cuánto debe durar como máximo el pulso de disparo.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(R=T/(1.1C)=2/(1.1\cdot10^{-5})=182\) kΩ → 180 kΩ (\(T=1.98\) s).</li>
+<li>El pulso de disparo debe ser menor que \(T\): por ejemplo, de menos de 1 s (en la práctica se acopla con un condensador de 10 nF y un resistor para generar un impulso breve).</li>
+<li><b>Resultado.</b> <span class="ans">\(R=180\) kΩ y disparo breve (&lt; 2 s, idealmente unos ms).</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>Un PWM compara una triangular de 0 a 8 V con una referencia de 3 V; la salida del comparador alterna entre 0 y 5 V. Calcule \(D\), el valor medio y el rizado si se filtra con \(R=10\) kΩ y \(C=1\ \mu\)F a \(f=2\) kHz.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(D=1-3/8=0.625\).</li>
+<li>Valor medio: \(0.625\cdot5=3.125\) V.</li>
+<li>Filtro RC de corte \(f_c=1/(2\pi RC)=15.9\) Hz, atenúa 2 kHz en \(2000/15.9=126\) veces (42 dB): el primer armónico tiene \(2\cdot5\sin(\pi D)/\pi=2.94\) V de pico y sale con \(2.94/126=23\) mV de pico: unos 47 mV de rizado pico a pico.</li>
+<li><b>Resultado.</b> <span class="ans">\(D=62.5\) %; media 3.125 V; rizado de unos 47 mV pico a pico.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

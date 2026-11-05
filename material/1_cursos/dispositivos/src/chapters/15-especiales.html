@@ -1,0 +1,102 @@
+<template class="chapter-src" data-id="especiales" data-num="15" data-title="Zener, LED, fotodiodo y celda solar" data-part="Parte III · Semiconductores y diodos" data-short="Regulador con diodo Zener y su diseño, LED y cálculo del resistor limitador, fotodiodo en modos fotovoltaico y fotoconductivo, celda y panel solar con curva I–V y punto de máxima potencia">
+<p class="lead">La unión PN de un diodo tiene tres capacidades más allá de rectificar: <b>mantener una tensión</b> cuando trabaja en ruptura (Zener), <b>emitir luz</b> cuando la corriente recombina electrones y huecos (LED) y <b>convertir la luz en electricidad</b> cuando fotones generan pares electrón–hueco (fotodiodo y celda solar). Cada una explota el mismo hecho físico visto en el capítulo 12 desde una cara distinta: la ruptura inversa, la recombinación de portadores inyectados y la generación óptica de portadores. Este capítulo reúne los tres dispositivos con sus circuitos de uso típicos.</p>
+
+<section>
+<h2>El diodo Zener como referencia y regulador</h2>
+<p>Un diodo diseñado para trabajar en ruptura inversa mantiene casi constante la tensión \(V_Z\) entre sus terminales aunque la corriente varíe en un amplio margen (de ~1 mA hasta \(P_{max}/V_Z\)). Su curva en ruptura es casi vertical, con una <b>resistencia dinámica</b> \(r_z\) pequeña (10–50 Ω): \(\Delta V_Z=r_z\,\Delta I_Z\). El circuito de uso más simple es el <b>regulador paralelo</b>: un resistor en serie \(R_S\) y el Zener en derivación con la carga. La corriente por \(R_S\) es \(I_S=(V_{in}-V_Z)/R_S=I_Z+I_L\); la carga \(I_L=V_Z/R_L\) se compensa con \(I_Z\), de manera que la salida casi no cambia mientras \(I_Z\) quede entre su mínimo (\(I_{Z,min}\approx\) 1–5 mA, el «codo» de la curva) y su máximo (\(P_{max}/V_Z\)).</p>
+<div class="eq key" data-name="Diseño del regulador Zener">\[R_S=\frac{V_{in,min}-V_Z}{I_{Z,min}+I_{L,max}}\qquad I_{Z,max}=\frac{V_{in,max}-V_Z}{R_S}-I_{L,min}\le\frac{P_Z}{V_Z}\qquad \Delta V_{out}\approx\frac{r_z}{R_S+r_z}\,\Delta V_{in}\]</div>
+<div class="box ex" data-label="Ejemplo resuelto"><p>Fuente de 12 V, Zener de 5.1 V y carga de 1 kΩ (5.1 mA). Con \(I_{Z,min}=5\) mA: \(R_S=(12-5.1)/(5+5.1)\ \text{mA}=683\ \Omega\to680\ \Omega\) (serie E12). La simulación da \(V_{out}=5.103\) V con \(I_Z=5.04\) mA. Si la entrada varía ±1 V, la salida varía de 5.078 V a 5.122 V (±22 mV: regulación de línea de 22 mV/V). Si la carga se desconecta, \(I_Z\) sube a 10 mA y la salida a 5.156 V; la potencia en el Zener es solo 52 mW. Si la carga baja a 500 Ω (10 mA), \(I_Z\) cae a 0.5 mA, el Zener sale del codo y la salida baja a 4.93 V: ya no regula.</p></div>
+<p>El regulador Zener es sencillo pero poco eficiente (disipa en \(R_S\) y en el Zener toda la energía que la carga no usa) y tiene una regulación modesta: sirve para <b>referencias</b> y cargas pequeñas. Los Zener de ~5.6 V tienen coeficiente de temperatura casi nulo (combinación de efecto túnel y avalancha, capítulo 12); los de baja tensión tienen coeficiente negativo y los de alta, positivo.</p>
+<div class="sim" data-sim="c15-zener" data-title="Regulador Zener: la salida frente a la entrada y a la carga"></div>
+<div class="sim-guide"><ul>
+<li>Con 12 V de entrada y 1 kΩ la salida es 5.10 V. La pestaña «Curvas» traza \(V_{out}\) frente a \(V_{in}\): hasta unos 8 V la salida es la del divisor \(R_S\)–\(R_L\) (\(V_{in}\cdot1000/1680\)); por encima se aplana en torno a 5.1 V: la meseta del Zener, con una ligera pendiente por \(r_z\).</li>
+<li>Baje la carga a 500 Ω: la salida cae por debajo de los 5 V (el Zener se quedó sin corriente). Con la carga abierta (100 kΩ), \(I_Z\) sube a 10 mA y \(V_{out}\) a 5.16 V (efecto de \(r_z\)).</li>
+<li>Con una entrada de solo 6 V el Zener no llega a su ruptura y la salida es la del divisor \(R_S\)–\(R_L\), 3.6 V: es lo que ocurre cuando la fuente se descarga.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El LED</h2>
+<p>En un diodo emisor de luz (LED) la unión está hecha de un semiconductor de <b>banda directa</b> (GaAs, GaP, GaN y sus aleaciones). Cuando está polarizado en directa, los electrones inyectados en el lado p (y los huecos en el n) se recombinan emitiendo un fotón de energía \(h\nu\approx E_g\), o sea, de longitud de onda \(\lambda=1.24/E_g\) (µm, \(E_g\) en eV). Por eso el color lo fija el material y la tensión directa es \(V_F\approx E_g/q+0.1\)–0.5 V: infrarrojo (GaAs, 940 nm, 1.3 V), rojo (AlGaAs/GaAsP, 630 nm, 1.9 V), verde (565 nm, 2.1 V), azul y blanco (InGaN, 465 nm, 3.0–3.1 V). La luz es proporcional a la corriente (no a la tensión). Un LED no se conecta nunca directo a una fuente: la tensión de 1.9 V a 2 V con la corriente creciendo con la exponencial lo destruiría; hay que <b>limitar la corriente</b> con un resistor en serie:</p>
+<div class="eq key" data-name="Resistor limitador de un LED">\[R=\frac{V_S-V_F}{I_F}\qquad P_R=(V_S-V_F)I_F\qquad \text{con }N\text{ LED en serie: }R=\frac{V_S-N\,V_F}{I_F}\]</div>
+<p>Con 5 V, un LED rojo (\(V_F=1.95\) V) y \(I_F=15\) mA: \(R=203\ \Omega\to220\ \Omega\) (valor normalizado), que da 13.6 mA. Un LED azul con el mismo resistor tiene solo 9.0 mA (su \(V_F\) es mayor) y un blanco 8.6 mA. Tres LED rojos en serie con 12 V y 15 mA: \(R=(12-5.85)/0.015=410\ \Omega\to390\ \Omega\). Los LED de 5 mm admiten 20–30 mA continuos; los de potencia, amperios, con disipador. Para regular el brillo se usa <b>modulación por ancho de pulso</b> (PWM): conmutando a más de 100 Hz la corriente media determina el brillo percibido sin cambiar el color. Un LED conectado al revés soporta como máximo ~5 V inversos (aprox.).</p>
+<div class="sim" data-sim="c15-led" data-title="LED con resistor limitador: color, corriente y quemadura"></div>
+<div class="sim-guide"><ul>
+<li>Rojo con 5 V y 220 Ω: 13.6 mA (el LED brilla bien), \(V_F\approx1.97\) V. Cambie a azul: 9.0 mA y \(V_F\approx3\) V; a blanco, 8.6 mA.</li>
+<li>Baje el resistor a 22 Ω con el LED rojo: la corriente sube a unos 106 mA, más de tres veces el máximo del LED, y tras unos segundos se quema («reparar» lo devuelve).</li>
+<li>Con una alimentación de 2 V el LED rojo apenas luce: \(V_S\) apenas supera \(V_F\) y la corriente es de menos de 1 mA (0.88 mA). El resistor calculado para 15 mA depende de \(V_S-V_F\): cuando es pequeña, la corriente es muy sensible a la tolerancia de \(V_F\).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Fotodiodo: modos fotovoltaico y fotoconductivo</h2>
+<p>Un fotón con energía mayor que \(E_g\) que llega a la región de vaciamiento (o a una distancia de difusión) genera un par electrón–hueco; el campo de la unión los separa y aparece una <b>fotocorriente</b> \(I_{ph}=S\,P_{opt}\) (la <i>responsividad</i> \(S\) es de ~0.55 A/W en el silicio a 900 nm), proporcional a la potencia óptica. La característica del fotodiodo es la del diodo desplazada hacia abajo por \(I_{ph}\): \(I=I_S(e^{V/nV_T}-1)-I_{ph}\). Así hay dos formas de usarlo:</p>
+<ul>
+<li><b>Modo fotoconductivo</b> (polarización inversa, \(V<0\)): la corriente es \(I\approx-I_{ph}\), <i>lineal</i> con la luz en 6 décadas, con respuesta rápida (la capacitancia de unión baja con la inversa). Es el modo de los receptores de fibra óptica y mandos a distancia. Un resistor de carga da \(V=I_{ph}R\) (o un amplificador de transimpedancia, capítulo 23). Con 1000 lx (≈ 75 µA en el modelo) y 10 kΩ, 0.75 V.</li>
+<li><b>Modo fotovoltaico</b> (sin polarización): la tensión de circuito abierto crece logarítmicamente con la luz (\(V_{oc}=nV_T\ln(I_{ph}/I_S)\)); es el principio de la celda solar. Menor ruido (sin corriente de oscuridad) pero lento y poco lineal.</li>
+</ul>
+<div class="sim" data-sim="c15-fotodiodo" data-title="Fotodiodo en modo fotoconductivo con carga resistiva"></div>
+<div class="sim-guide"><ul>
+<li>Con 1000 lx, el fotodiodo (BPW34, 75 µA) con 10 kΩ y 5 V de polarización inversa: la caída en el resistor es 0.75 V y el fotodiodo queda con 4.25 V inversos.</li>
+<li>La fotocorriente es proporcional a la iluminancia: duplique los lux y se duplica la corriente (linealidad del modo fotoconductivo).</li>
+<li>Con 20 000 lx y 100 kΩ el producto \(I_{ph}R\) intentaría pasar de 5 V: el fotodiodo se satura (deja de estar en inversa) y la respuesta deja de ser lineal.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>La celda solar</h2>
+<p>La celda solar es un fotodiodo de gran área trabajando en el cuarto cuadrante de la curva: genera potencia. Su modelo equivalente es una fuente de corriente \(I_{ph}\) (proporcional a la irradiancia) en paralelo con un diodo, una resistencia en derivación \(R_{sh}\) y una resistencia en serie \(R_s\). Una celda de silicio entrega unos 0.5–0.6 V y unos 35 mA/cm²; los paneles asocian celdas <b>en serie</b> para subir la tensión (12 celdas, 6–7 V) y <b>en paralelo</b> para subir la corriente. Sus parámetros son la tensión de circuito abierto \(V_{oc}\), la corriente de cortocircuito \(I_{sc}\), el <b>punto de máxima potencia</b> (MPP, \(V_{mp}\), \(I_{mp}\)) y el <b>factor de llenado</b> \(FF=V_{mp}I_{mp}/(V_{oc}I_{sc})\) (0.7–0.85). \(I_{sc}\) es proporcional a la irradiancia; \(V_{oc}\) sube solo logarítmicamente; y \(V_{oc}\) disminuye con la temperatura (−2 mV/K por celda).</p>
+<p>El panel simulado (6 V nominales, 0.2 A a 1000 W/m²) tiene \(V_{oc}=7.7\) V, \(I_{sc}=0.2\) A y su MPP está en 6.43 V y 0.179 A (1.15 W; \(FF=0.75\)). Con 500 W/m² la potencia máxima baja a 0.52 W y con 200 W/m², a 0.17 W. La potencia que entrega depende de la carga: con 36 Ω (≈ \(V_{mp}/I_{mp}\)) extrae el máximo (1.15 W); con 10 Ω solo 0.39 W (opera en la zona de corriente constante) y con 100 Ω, 0.55 W (zona de tensión constante). Por eso los cargadores solares usan un <b>seguidor del punto de máxima potencia</b> (MPPT): un convertidor conmutado que ajusta continuamente la carga que ve el panel.</p>
+<div class="sim" data-sim="c15-solar" data-title="Panel solar: curvas I–V y P–V, carga y punto de máxima potencia"></div>
+<div class="sim-guide"><ul>
+<li>A 1000 W/m²: \(V_{oc}=7.71\) V, \(I_{sc}=0.200\) A, MPP = 6.43 V · 0.179 A = 1.15 W, \(FF=0.75\). El punto naranja es el MPP; el punto rojo, el de la carga.</li>
+<li>Con una carga de 36 Ω el punto de trabajo coincide con el MPP. Con 10 Ω se mueve a la izquierda (1.97 V, 0.39 W); con 100 Ω, a la derecha (7.44 V, 0.55 W).</li>
+<li>Reduzca la irradiancia a 200 W/m²: \(I_{sc}\) baja cinco veces pero \(V_{oc}\) solo de 7.7 a 7.1 V, y el MPP se desplaza a la izquierda.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Otros diodos especiales</h2>
+<ul>
+<li><b>Varicap</b>: unión polarizada en inversa como condensador controlado por tensión (capítulo 12): sintonía de radios y osciladores controlados por tensión.</li>
+<li><b>TVS</b> (supresor de transitorios): un Zener de gran área que absorbe picos de cientos de vatios (hasta kW) durante microsegundos; protege puertos USB, líneas de datos y alimentaciones. Unidireccional o bidireccional.</li>
+<li><b>Schottky</b>: unión metal–semiconductor: menor caída (0.2–0.4 V), conmutación rápida y mayor corriente inversa: fuentes conmutadas y protección contra inversión de polaridad.</li>
+<li><b>Diodo PIN</b>: región intrínseca ancha entre las zonas p y n; en RF se comporta como una resistencia controlada por corriente: conmutadores y atenuadores.</li>
+<li><b>Diodo láser</b>: un LED con cavidad resonante y emisión estimulada: luz coherente con umbral de corriente (punteros láser, fibra óptica, lectores de discos).</li>
+<li><b>Diodo túnel</b> (Esaki): resistencia negativa en una zona de la curva por efecto túnel; osciladores de microondas.</li>
+</ul>
+</section>
+
+<section>
+<h2>Problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Diseñe el resistor limitador de un LED verde (\(V_F=2.1\) V) alimentado con 9 V y 15 mA. ¿Qué potencia disipa?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(R=(9-2.1)/0.015=460\ \Omega\to470\ \Omega\) (E12).</li>
+<li>Corriente real: \((9-2.1)/470=14.7\) mA.</li>
+<li>\(P_R=(9-2.1)\cdot0.0147=0.101\) W: un resistor de 1/4 W trabaja al 40 %.</li>
+<li><b>Resultado.</b> <span class="ans">470 Ω (14.7 mA); 0.10 W.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Un LED azul (\(V_F=3.0\) V) y otro rojo (1.95 V) se conectan en serie con 12 V y 15 mA. Calcule el resistor.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(R=(12-3.0-1.95)/0.015=470\ \Omega\).</li>
+<li><b>Resultado.</b> <span class="ans">470 Ω (7.05 V / 15 mA).</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Se quiere una fuente de 5.1 V con un Zener y una carga de 0 a 10 mA desde 9–14 V. Calcule \(R_S\) con \(I_{Z,min}=5\) mA y verifique la potencia máxima del Zener.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(R_S=(V_{in,min}-V_Z)/(I_{Z,min}+I_{L,max})=(9-5.1)/(15\ \text{mA})=260\ \Omega\to270\ \Omega\).</li>
+<li>Corriente máxima en el Zener (entrada 14 V, carga abierta): \((14-5.1)/270=33\) mA.</li>
+<li>\(P_Z=5.1\cdot0.033=0.168\) W: sirve un Zener de 0.5 W.</li>
+<li><b>Resultado.</b> <span class="ans">\(R_S=270\ \Omega\); \(P_Z=0.17\) W en el peor caso.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un fotodiodo con 0.55 A/W recibe 50 µW. Calcule la fotocorriente y la tensión sobre una resistencia de carga de 100 kΩ.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(I_{ph}=0.55\cdot50\times10^{-6}=27.5\ \mu\)A.</li>
+<li>\(V=I_{ph}R=27.5\ \mu\text{A}\times100\ \text{k}\Omega=2.75\) V.</li>
+<li><b>Resultado.</b> <span class="ans">27.5 µA y 2.75 V.</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>Un panel tiene \(V_{mp}=17.6\) V e \(I_{mp}=5.7\) A a 1000 W/m². ¿Qué resistencia de carga extrae el máximo? Si la irradiancia es de 500 W/m² (\(I_{mp}\) se reduce a la mitad y \(V_{mp}\) baja un 4 %), ¿cuál es la nueva carga óptima?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(R_{opt}=V_{mp}/I_{mp}=17.6/5.7=3.09\ \Omega\); \(P_{max}=100.3\) W.</li>
+<li>A 500 W/m²: \(V_{mp}\approx16.9\) V, \(I_{mp}=2.85\) A: \(R_{opt}=5.9\ \Omega\) (casi el doble).</li>
+<li>La carga óptima cambia con la irradiancia: de ahí el MPPT.</li>
+<li><b>Resultado.</b> <span class="ans">3.09 Ω (100 W) y 5.9 Ω (48 W) respectivamente.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

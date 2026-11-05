@@ -1,0 +1,108 @@
+<template class="chapter-src" data-id="rectificacion" data-num="14" data-title="Rectificación, filtrado y circuitos con diodos" data-part="Parte III · Semiconductores y diodos" data-short="Rectificadores de media onda, de onda completa y en puente; filtro con condensador, rizado y picos de corriente; diseño de una fuente; recortadores, sujetadores, multiplicadores de tensión y detector de envolvente">
+<p class="lead">La red eléctrica entrega corriente alterna; casi toda la electrónica necesita continua. La <b>rectificación</b> es la primera etapa de cualquier fuente de alimentación y la aplicación más antigua del diodo. Pero un rectificador solo «corta» la onda: para que la salida sea útil hace falta un condensador que la alise, y ese condensador cambia por completo el funcionamiento de los diodos, que dejan de conducir de forma continua y pasan a hacerlo en pulsos breves de gran corriente. Aquí se analizan los tres rectificadores básicos, el efecto del filtro y su diseño, y otras aplicaciones del mismo principio: recortar, sujetar, multiplicar la tensión y detectar la envolvente de una señal de radio.</p>
+
+<section>
+<h2>Rectificador de media onda</h2>
+<p>Un diodo en serie con la carga conduce solo cuando la entrada supera su caída (0.7 V): la salida es la parte positiva de la onda, con pico \(V_p-V_D\). Sin filtro, el valor medio de la salida es \(V_{dc}=(V_p-V_D)/\pi\) y el valor eficaz \((V_p-V_D)/2\). Con 12 V de pico: \(V_{dc}=3.6\) V; la relación entre la parte alterna y la continua (<b>factor de rizado</b>) es de 121 %: la señal está lejos de ser continua. El diodo debe soportar una tensión inversa máxima (<b>PIV</b>) de \(V_p\) cuando la salida se carga con un condensador a \(V_p\), la entrada sube a \(-V_p\) y la tensión inversa llega a \(2V_p\).</p>
+<p>Con un <b>condensador de filtro</b> la historia cambia: el condensador se carga hasta el pico mientras el diodo conduce y se descarga lentamente a través de la carga cuando el diodo se corta. La salida es una «sierra» con rizado pico a pico:</p>
+<div class="eq key" data-name="Rizado con filtro capacitivo">\[\Delta V_{pp}\approx\frac{I_{L}}{f_r\,C}\qquad f_r=f\ (\text{media onda}),\ 2f\ (\text{onda completa})\qquad r=\frac{\Delta V_{pp}}{2\sqrt3\,V_{dc}}\ \ (\text{rizado triangular})\]</div>
+<p>La media de la tensión de salida baja ligeramente del pico: \(V_{dc}\approx V_{pico}-\Delta V_{pp}/2\). En la simulación, con 12 V de pico, un 1N4007, 1000 µF y 100 Ω, la salida vale 10.3 V de media con un rizado de 1.54 V pico a pico (la fórmula da 1.72 V, algo mayor porque la descarga no dura el periodo completo). Los diodos conducen solo unos 2–3 ms por periodo, y la corriente en ese instante es enorme: 1.66 A de pico frente a una corriente media de 0.10 A, ¡16 veces más! Por eso un rectificador con filtro debe diseñarse para \(I_{FSM}\) e \(I_{pico}\), no para la corriente media, y por eso los transformadores se calientan y la corriente de arranque (el condensador descargado se comporta como un cortocircuito) es muy superior a la nominal.</p>
+<div class="sim" data-sim="c14-media" data-title="Rectificador de media onda con condensador de filtro"></div>
+<div class="sim-guide"><ul>
+<li>Con 1000 µF y 100 Ω: media 10.3 V, rizado 1.54 V pico a pico y corriente de pico del diodo de 1.7 A. Observe la «sierra» de la salida: sube casi vertical y baja con pendiente \(I/C\).</li>
+<li>Reduzca el condensador a 100 µF: el rizado se multiplica por 5 (unos 8 V pico a pico) y la media cae a 6.8 V. Con 10 000 µF el rizado baja a ~0.2 V, pero la corriente de pico crece: el diodo conduce un tiempo aún menor.</li>
+<li>Con una carga de 1 kΩ en lugar de 100 Ω la corriente baja diez veces, y con ella el rizado y la corriente de pico.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Rectificadores de onda completa: toma central y puente</h2>
+<p>Para aprovechar los dos semiciclos hay dos soluciones. El rectificador de <b>toma central</b> usa un transformador con secundario con derivación central y dos diodos, cada uno conduciendo en un semiciclo (cada diodo ve una tensión inversa de \(2V_p\)). El <b>puente de Graetz</b> usa cuatro diodos y un transformador simple: en cada semiciclo conduce un par distinto, y siempre hay dos diodos en serie con la carga, es decir, dos caídas (1.4 V). La frecuencia del rizado es \(2f\) (120 Hz), de modo que, con el mismo condensador, el rizado se reduce a la mitad. Sin filtro: \(V_{dc}=2(V_p-V_D)/\pi=0.637(V_p-V_D)\) y \(V_{rms}=(V_p-V_D)/\sqrt2\); el factor de rizado es de 48 %. Con 12 V de pico, el puente da \(V_{dc}=6.75\) V sin filtro.</p>
+<div class="tablewrap"><table class="tbl"><tr><th></th><th>Media onda</th><th>Toma central</th><th>Puente</th></tr>
+<tr><td>Diodos</td><td>1</td><td>2</td><td>4</td></tr>
+<tr><td>Caída en conducción</td><td>1 \(V_D\)</td><td>1 \(V_D\)</td><td>2 \(V_D\)</td></tr>
+<tr><td>\(V_{dc}\) sin filtro</td><td>\(V_p/\pi\)</td><td>\(2V_p/\pi\)</td><td>\(2V_p/\pi\)</td></tr>
+<tr><td>Frecuencia del rizado</td><td>\(f\)</td><td>\(2f\)</td><td>\(2f\)</td></tr>
+<tr><td>PIV por diodo</td><td>\(V_p\) (\(2V_p\) con filtro)</td><td>\(2V_p\)</td><td>\(V_p\)</td></tr>
+<tr><td>Factor de rizado sin filtro</td><td>121 %</td><td>48 %</td><td>48 %</td></tr>
+<tr><td>Utilización del transformador</td><td>0.29</td><td>0.69</td><td>0.81</td></tr></table></div>
+<div class="sim" data-sim="c14-puente" data-title="Puente rectificador con filtro"></div>
+<div class="sim-guide"><ul>
+<li>Con la misma carga y el mismo condensador, la salida es de 9.9 V de media y 0.67 V pico a pico de rizado: la mitad que en el de media onda (la fórmula \(I/(2fC)\) da 0.83 V). La frecuencia del rizado es de 120 Hz.</li>
+<li>La corriente de pico en cada diodo del puente (0.9 A) es la mitad que en el de media onda, aunque conducen dos a la vez.</li>
+<li>La entrada se mide de forma diferencial entre los dos terminales de la fuente: la senoide de 12 V de pico. La salida nunca baja del nivel de 9.6 V.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Diseño de una fuente rectificada y filtrada</h2>
+<div class="box ex" data-label="Ejemplo de diseño"><p>Se necesita una salida de 12 V con una corriente de 1 A y no más de 1 V de rizado pico a pico, con rectificador de puente y red de 60 Hz. (1) <b>Condensador</b>: \(C=I/(2f\,\Delta V)=1/(120\cdot1)=8333\ \mu\)F: se elige 10 000 µF, con tensión nominal de 25 V. (2) <b>Tensión de pico del secundario</b>: con salida media de 12 V y 1 V de rizado, el pico de la salida es 12.5 V y el secundario debe dar \(12.5+2\cdot0.7=13.9\) V de pico; con ±10 % de variación de la red, \(13.9/0.9=15.4\) V de pico (10.9 V eficaces): sirve un transformador de 12 V eficaces (17 V de pico). (3) <b>Diodos</b>: corriente de pico del orden de 5–10 veces la media: puente de 3 A (1N5408 o rectificador integrado de 4 A) con \(V_{RRM}\ge50\) V. (4) <b>Transformador</b>: potencia \(S\approx(1.5\text{–}2)\,V_{dc}I\) debido a la forma de la corriente: ≥ 24 VA. (5) <b>Fusible</b> en el primario (retardado, por el arranque).</p></div>
+</section>
+
+<section>
+<h2>Recortadores y sujetadores</h2>
+<p>Un diodo en derivación limita el nivel de una señal. En el <b>recortador</b> (<i>clipper</i>), un diodo conectado de la salida a tierra conduce cuando la señal supera su caída y mantiene la salida en \(\approx0.7\) V; con dos diodos antiparalelos se recortan ambos picos (\(\pm0.6\)–\(0.7\) V); con una batería en serie con el diodo se recorta a otro nivel. Con una señal de 5 V de pico, un resistor de 1 kΩ y dos 1N4148 antiparalelos la salida queda en ±0.66 V. Se usa para proteger entradas de amplificadores y de microcontroladores. Un diodo no puede proteger de corrientes grandes: el resistor en serie debe limitarla.</p>
+<div class="sim" data-sim="c14-recortador" data-title="Recortadores con diodos"></div>
+<div class="sim-guide"><ul>
+<li>Con dos diodos antiparalelos y 5 V de pico, la salida queda en ±0.66 V. Con un diodo solo se recorta el semiciclo positivo y el negativo pasa íntegro (hasta −5 V).</li>
+<li>Con 0.2 V de amplitud no hay recorte: los diodos no conducen y la señal pasa intacta.</li>
+</ul></div>
+<p>El <b>sujetador</b> (<i>clamp</i> o restaurador de continua) desplaza una señal verticalmente para que su pico o su valle esté en un nivel fijo. Un condensador en serie transmite la señal y un diodo a tierra conduce en el pico negativo: el condensador se carga a casi el valor de ese pico y suma su tensión a la señal. Una cuadrada de ±2.5 V pasa a oscilar entre −0.45 V y 4.8 V (desplazada hacia arriba). Se usa en circuitos de video (fijar el nivel de negro) y en el acoplamiento de pulsos.</p>
+<div class="sim" data-sim="c14-sujetador" data-title="Sujetador de nivel (restaurador de continua)"></div>
+<div class="sim-guide"><ul>
+<li>Con una cuadrada de ±2.5 V el mínimo de la salida se mantiene en unos −0.45 V; la señal completa sube 2.5 V. Espere unos 50–100 ms a que el condensador alcance su nivel.</li>
+<li>Con 5 V de amplitud la salida sube a un máximo de unos 9.5 V: la señal conserva su amplitud pico a pico (10 V) pero con otro nivel de referencia.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Multiplicador de tensión y detector de envolvente</h2>
+<p>Los diodos y los condensadores pueden multiplicar una tensión alterna sin transformador. El <b>doblador de Greinacher</b> (o de Villard): el primer condensador y el diodo en derivación forman un sujetador que lleva la señal a oscilar entre \(-0.7\) V y \(2V_p-0.7\) V; el segundo diodo y condensador rectifican esa señal y entregan \(V_{out}\approx2(V_p-V_D)\) sin carga: con 10 V de pico, 18.7 V. Cascadas de varias etapas (multiplicador de Cockcroft–Walton) alcanzan decenas de kV en televisores y en los tubos de rayos X; la tensión cae con la carga y es de baja corriente. En la simulación, con 10 V de pico y una carga de 10 kΩ, la salida es de 18.2 V con 0.28 V de rizado, y el nodo intermedio oscila entre −0.8 V y 19 V.</p>
+<div class="sim" data-sim="c14-doblador" data-title="Doblador de tensión de Greinacher"></div>
+<div class="sim-guide"><ul>
+<li>Con carga ligera la salida tiende a \(2(V_p-V_D)=18.7\) V; con 10 kΩ es 18.2 V (caída por carga y rizado).</li>
+<li>Baje la carga a 1 kΩ: la corriente es de 18 mA, el rizado sube y la salida baja a unos 15 V: un doblador no es una fuente de potencia.</li>
+</ul></div>
+<p>Un solo diodo con un condensador y una resistencia en paralelo forma un <b>detector de envolvente</b>: es el demodulador de las radios AM. La portadora de alta frecuencia modulada en amplitud con una señal de audio pasa por el diodo (que deja pasar los semiciclos positivos) y el filtro RC, con una constante de tiempo \(RC\) mucho mayor que el periodo de la portadora y mucho menor que el de la señal moduladora, sigue la envolvente: \(1/f_c\ll RC\ll1/f_m\). Un diodo Schottky o de germanio permite detectar señales débiles (menor umbral). Con una portadora de 50 kHz y 2 V de amplitud modulada al 60 % con 1 kHz, y \(RC=100\ \mu\)s, la salida detectada oscila entre 0.5 V y 3.0 V.</p>
+<div class="sim" data-sim="c14-detector" data-title="Detector de envolvente: demodulación de una señal AM"></div>
+<div class="sim-guide"><ul>
+<li>Con \(C=10\) nF (\(RC=100\ \mu\)s) la salida sigue la envolvente de 1 kHz y el rizado de portadora es pequeño.</li>
+<li>Con \(C=1\) nF la constante de tiempo es demasiado corta: queda el rizado de la portadora de 50 kHz. Con \(C=1\ \mu\)F es demasiado larga: la salida no puede seguir los valles de la envolvente (recorte diagonal).</li>
+<li>Con índice de modulación 1 los valles llegan a cero y la distorsión por detección aumenta.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un rectificador de media onda con diodo de 0.7 V recibe una senoide de 12 V de pico y alimenta 100 Ω sin filtro. Calcule \(V_{dc}\), \(V_{rms}\) en la salida y la potencia de la carga.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>Pico de salida: \(12-0.7=11.3\) V.</li>
+<li>\(V_{dc}=11.3/\pi=3.60\) V; \(V_{rms}=11.3/2=5.65\) V.</li>
+<li>\(P=V_{rms}^2/R=31.9/100=0.319\) W.</li>
+<li><b>Resultado.</b> <span class="ans">3.60 V de media, 5.65 V eficaces, 0.32 W.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Un puente con diodos de 0.7 V y 12 V de pico alimenta una carga con un condensador de 1000 µF y 100 Ω a 60 Hz. Estime el rizado y la tensión media de salida.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>Pico de salida: \(12-2\cdot0.7=10.6\) V; \(I\approx10.3/100=0.10\) A.</li>
+<li>Rizado: \(\Delta V=I/(2fC)=0.103/(120\cdot10^{-3})=0.86\) V.</li>
+<li>Media: \(10.6-0.43=10.2\) V (la simulación da 9.9 V por la caída real de los diodos con 1 A de pico).</li>
+<li><b>Resultado.</b> <span class="ans">Rizado ≈ 0.86 V pico a pico; media ≈ 10.2 V.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Diseñe el filtro de una fuente de puente a 60 Hz que entregue 5 V con 500 mA con un rizado máximo de 0.5 V pico a pico. Calcule \(C\) y la tensión de pico mínima del secundario si cada diodo cae 0.7 V y el regulador posterior necesita 2 V de margen.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(C=I/(2f\,\Delta V)=0.5/(120\cdot0.5)=8333\ \mu\)F → 10 000 µF.</li>
+<li>La tensión mínima de entrada al regulador es \(5+2=7\) V; la media será \(7+\Delta V/2=7.25\) V; el pico del secundario \(V_p=7.5+1.4=8.9\) V (sin contar la red ±10 %).</li>
+<li><b>Resultado.</b> <span class="ans">10 000 µF y un secundario de al menos 9 V de pico (≈ 6.3 V eficaces; en la práctica un transformador de 9 a 12 V eficaces).</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un doblador de Greinacher recibe 10 V de pico con diodos de 0.65 V. Calcule la salida sin carga y la tensión inversa máxima en cada diodo.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(V_{out}=2(V_p-V_D)=2(10-0.65)=18.7\) V.</li>
+<li>Cada diodo soporta una tensión inversa de hasta \(2V_p=20\) V.</li>
+<li><b>Resultado.</b> <span class="ans">18.7 V; PIV = 20 V (usar diodos de al menos 30–50 V).</span></li></ol></details></li>
+<li><span class="lvl">Avanzado</span>Para un detector de envolvente con portadora de 455 kHz y modulación de hasta 5 kHz, elija el valor del condensador si \(R=10\) kΩ. ¿Entre qué valores debe estar \(RC\)?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li>\(1/f_c=2.2\ \mu\)s y \(1/f_m=200\ \mu\)s.</li>
+<li>Regla geométrica: \(RC\approx\sqrt{2.2\cdot200}\ \mu\text{s}=21\ \mu\)s.</li>
+<li>\(C=21\ \mu\text{s}/10\ \text{k}\Omega=2.1\) nF → 2.2 nF (valor normalizado).</li>
+<li><b>Resultado.</b> <span class="ans">\(RC\) entre 2.2 µs y 200 µs (mejor ≈ 20 µs): \(C\approx2.2\) nF con 10 kΩ.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

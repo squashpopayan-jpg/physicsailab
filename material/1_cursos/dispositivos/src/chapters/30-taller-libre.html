@@ -1,0 +1,81 @@
+<template class="chapter-src" data-id="taller-libre" data-num="30" data-title="Taller libre y retos" data-part="Parte VI · Laboratorio" data-short="Un lienzo en blanco con todas las piezas e instrumentos del curso para diseñar, simular, medir y romper circuitos propios, cuatro retos de diseño con verificación automática (excitador de LED, regulador de 9 V, amplificador de ganancia 10 y filtro pasabajos de 1 kHz) y un banco de ideas de proyectos">
+<p class="lead">Después de recorrer los treinta capítulos del curso queda lo más importante: <b>diseñar por cuenta propia</b>. Este capítulo ofrece dos cosas. Un <b>Taller libre</b>, con el lienzo vacío y todas las piezas, los instrumentos y las herramientas de falla del curso; y cuatro <b>retos de diseño</b> en los que usted fija los valores y el Taller comprueba, midiendo realmente el circuito, si se cumplen los objetivos. No hay una única respuesta correcta: cualquier circuito que cumpla las especificaciones es válido.</p>
+
+<section>
+<h2>El Taller libre</h2>
+<p>El Taller libre arranca con una fuente de 9 V. Elija «Editar circuito» y construya lo que quiera. Todo lo aprendido está disponible: la paleta de piezas (resistores, condensadores, inductores, transformadores, diodos, transistores BJT, MOSFET y JFET, amplificadores operacionales, reguladores, 555, tiristores, optoacopladores, sensores), los instrumentos (multímetro, osciloscopio con modo X–Y y espectro, generador de funciones, fuente de laboratorio, amperímetros y voltímetros de punta), los análisis (respuesta en frecuencia, barridos de continua con familias de curvas, tabla de operación) y las herramientas de falla (cortocircuito, componentes abiertos, fugas y derivas). El circuito se guarda automáticamente en el navegador, y puede exportarlo a un archivo.</p>
+<div class="sim" data-sim="c30-libre" data-title="Taller libre: lienzo en blanco con todas las piezas y los instrumentos del curso"></div>
+<div class="sim-guide"><ul>
+<li>Pulse «Editar circuito», elija una pieza en la paleta y coloque la pieza en el lienzo (<kbd>R</kbd> la gira, <kbd>F</kbd> la voltea); tienda cables arrastrando desde un terminal. Los atajos y los modos están en el capítulo 2.</li>
+<li>Añada un generador de funciones y un osciloscopio y use los paneles «Osciloscopio» y «Bode» del pie. En «Barrido» obtiene curvas de transferencia y familias de curvas de un transistor; en «Operación», una tabla con las tensiones y corrientes de cada nodo y componente.</li>
+<li>Pruebe a <b>romper</b> sus circuitos con la herramienta «Cortocircuito»: ¿qué componente falla primero? ¿qué protección salva el resto?</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Reto 1 · Excitador de LED con transistor</h2>
+<p><b>Enunciado.</b> Una salida lógica de 3.3 V (\(V_{IN}\)) puede entregar como máximo 1 mA. Con el transistor 2N3904 y los resistores que añada, encienda el LED rojo con una corriente de 8 a 15 mA desde la fuente de 5 V, con el transistor saturado y una corriente de base menor de 2 mA.</p>
+<div class="sim" data-sim="c30-reto1" data-title="Reto 1: encender un LED desde una salida lógica de 3.3 V con un transistor"></div>
+<div class="sim-guide"><ul>
+<li>Los objetivos aparecen en la lista y se marcan en verde cuando se cumplen (se evalúan con las corrientes y tensiones reales del circuito).</li>
+<li>Pista: el LED va en serie con el colector, con un resistor limitador; la base recibe \(V_{IN}\) a través de otro resistor. Repase el capítulo 17.</li>
+</ul></div>
+<details class="sol"><summary>Una solución de referencia</summary>
+<p>Con \(R_C=330\ \Omega\) (de la fuente de 5 V al LED y luego al colector) y \(R_B=2.7\) kΩ (de \(V_{IN}\) a la base), el emisor a tierra: \(I_C\approx(5-2-0.1)/330=8.8\) mA, \(I_B=(3.3-0.75)/2.7\text{ k}=0.94\) mA, β forzada ≈ 9.4 y \(V_{CE}\approx0.1\)–0.2 V. Se cumplen los cuatro objetivos. Con \(R_B=100\) kΩ, el transistor no satura (zona activa, \(V_{CE}\) grande): el LED luce menos.</p></details>
+</section>
+
+<section>
+<h2>Reto 2 · Fuente de 9 V con LM317</h2>
+<p><b>Enunciado.</b> Con el regulador LM317 y dos resistores, fije en la carga de 100 Ω una tensión de 9 V (entre 8.7 y 9.3 V) desde la fuente de 15 V, con una corriente por el resistor \(R_1\) de al menos 5 mA y menos de 1 W disipados por el regulador.</p>
+<div class="sim" data-sim="c30-reto2" data-title="Reto 2: regulador ajustable de 9 V con LM317"></div>
+<div class="sim-guide"><ul>
+<li>Recuerde \(V_o=1.25(1+R_2/R_1)+I_{ADJ}R_2\) y que \(R_1\) va entre OUT y ADJ y \(R_2\) entre ADJ y tierra (capítulo 25).</li>
+<li>Elija \(R_1\) de 120 a 240 Ω para tener los 5 mA (\(1.25/R_1\ge5\) mA ⇒ \(R_1\le250\ \Omega\)) y calcule \(R_2\) para 9 V.</li>
+</ul></div>
+<details class="sol"><summary>Una solución de referencia</summary>
+<p>\(R_1=240\ \Omega\) (5.2 mA), \(R_2=1.5\) kΩ (de la serie E24): \(V_o=1.25(1+1500/240)+50\ \mu\text{A}\cdot1500=9.06+0.08=9.1\) V; \(I_L=91\) mA; \(P_d=(15-9.1)\cdot0.091=0.54\) W (sin disipador la unión sube a 25 + 0.54·65 = 60 °C). Las cuatro condiciones se cumplen.</p></details>
+</section>
+
+<section>
+<h2>Reto 3 · Amplificador de ganancia 10</h2>
+<p><b>Enunciado.</b> Con el amplificador operacional TL081 y los resistores que añada, construya un amplificador de ganancia de tensión de 10 (±5 %) a 1 kHz, con ancho de banda de al menos 30 kHz y resistencia de entrada mayor que 5 kΩ, que alimente la carga de 10 kΩ.</p>
+<div class="sim" data-sim="c30-reto3" data-title="Reto 3: amplificador con A.O. de ganancia 10, ancho de banda de 30 kHz y alta resistencia de entrada"></div>
+<div class="sim-guide"><ul>
+<li>La condición de resistencia de entrada alta excluye al inversor con \(R_1<5\) kΩ; el no inversor la cumple siempre. Repase el capítulo 22.</li>
+<li>El ancho de banda del TL081 (GBW = 3 MHz) es suficiente para esta ganancia: 3 MHz/10 = 300 kHz. Con una ganancia de 100 sería 30 kHz, justo.</li>
+</ul></div>
+<details class="sol"><summary>Una solución de referencia</summary>
+<p>Amplificador no inversor: la señal a la entrada \(+\); \(R_g=1\) kΩ de la entrada \(-\) a tierra y \(R_f=9\) kΩ de la salida a la entrada \(-\): \(A_v=1+9/1=10\), \(R_{in}\approx\infty\), ancho de banda ≈ 300 kHz. Alternativa inversora: \(R_1=10\) kΩ y \(R_f=100\) kΩ (ganancia −10, \(R_{in}=10\) kΩ: cumple, con un signo menos).</p></details>
+</section>
+
+<section>
+<h2>Reto 4 · Filtro pasabajos de 1 kHz</h2>
+<p><b>Enunciado.</b> Con un resistor y un condensador (y, si quiere, un A.O.), diseñe un filtro pasabajos de primer orden con frecuencia de corte de 1 kHz: la ganancia a 1 kHz debe estar entre −4 y −2 dB, la de continua mayor que −0.5 dB y la de 10 kHz menor que −17 dB, con una carga de 100 kΩ.</p>
+<div class="sim" data-sim="c30-reto4" data-title="Reto 4: filtro RC pasabajos de 1 kHz con carga de 100 kΩ"></div>
+<div class="sim-guide"><ul>
+<li>\(f_c=1/(2\pi RC)\): para \(C=100\) nF, \(R=1.59\) kΩ. La carga de 100 kΩ en paralelo con \(C\) casi no cambia la respuesta (error de ≈ 1.6 %).</li>
+<li>Abra el panel «Bode» y compare su curva con los criterios: −3 dB a 1 kHz y −20 dB/década por encima de la frecuencia de corte.</li>
+<li>Un pasabajos de segundo orden (Sallen–Key, capítulo 23) bajaría a −40 dB en 10 kHz: comprobará la pendiente.</li>
+</ul></div>
+<details class="sol"><summary>Una solución de referencia</summary>
+<p>\(R=1.6\) kΩ en serie y \(C=100\) nF a tierra a la salida: \(f_c=995\) Hz. A 1 kHz: −3.0 dB; a 10 Hz: −0.0 dB; a 10 kHz: \(-20\log\sqrt{1+(10)^2}=-20\) dB. Los cuatro objetivos se cumplen. Con \(R=15.9\) kΩ y \(C=10\) nF, la carga de 100 kΩ ya modifica la respuesta (\(f_c\) real 1.16 kHz): un seguidor con A.O. lo evitaría.</p></details>
+</section>
+
+<section>
+<h2>Banco de ideas para proyectos libres</h2>
+<ul>
+<li><b>Instrumentos</b>: generador de funciones (triángulo + Schmitt + integrador), voltímetro de LED (comparadores en escalera), medidor de capacidad con 555, probador de transistores y diodos.</li>
+<li><b>Audio</b>: preamplificador con control de tono (filtros activos), ecualizador de tres bandas, mezclador con sumador, amplificador clase D con PWM.</li>
+<li><b>Potencia</b>: fuente conmutada reductora (buck) con realimentación, cargador de baterías con limitación de corriente, controlador de motor con puente H, dimmer con triac (en simulación).</li>
+<li><b>Sensores</b>: termómetro, higrómetro, medidor de luz, detector de proximidad con LED infrarrojo y fototransistor.</li>
+<li><b>Protección</b>: fuente con crowbar y fusible, protección contra polaridad invertida y sobretensión de entrada, arranque suave.</li>
+<li><b>Lógica y temporización</b>: biestable con compuertas CMOS, contador de décadas con 555, retardo de encendido ajustable.</li>
+</ul>
+<p>Para cada idea: calcule, simule, <b>rompa</b> (qué pasa si falla cada componente), arme (si tiene los materiales) y compare. Hágalo en este orden: la simulación bien usada ahorra componentes quemados y, sobre todo, enseña qué mirar.</p>
+</section>
+
+<section>
+<h2>Para seguir aprendiendo</h2>
+<p>Este curso es un recorrido de los dispositivos y sus aplicaciones básicas. Los siguientes pasos naturales son: <b>electrónica analógica avanzada</b> (realimentación, estabilidad y compensación, ruido, diseño de amplificadores de potencia y de RF), <b>electrónica de potencia</b> (convertidores conmutados con control, inversores, variadores), <b>microelectrónica</b> (diseño de circuitos integrados CMOS, bandgap, ADC y DAC), <b>sistemas embebidos</b> (microcontroladores, sensores, comunicaciones) y <b>compatibilidad electromagnética y seguridad</b>. La bibliografía del apéndice C recoge los libros y las hojas de datos para continuar. Lo más valioso que usted se lleva no es una fórmula sino un hábito: <b>calcular, simular, medir y comparar</b>, y desconfiar de un circuito hasta que lo ha roto.</p>
+</section>
+</template>

@@ -2575,6 +2575,15 @@ window.renderEnrolledCourses = renderEnrolledCourses;
         'pendulo': ['gravedad', 'g local', 'periodo', 'longitud', 'oscilacion', 'armonico', 'amplitud'],
         'gravedad': ['pendulo', 'caida libre', 'g local', 'newton', 'relatividad', 'moderna'],
         'arduino': ['circuitos', 'esp32', 'electronica', 'protoboard', 'sensores', 'leds', 'pwm', 'resistencias', 'hardware', 'spice', 'maker'],
+        'dispositivos': ['activos', 'pasivos', 'resistores', 'condensadores', 'inductores', 'transformadores', 'diodos', 'bjt', 'mosfet', 'jfet', 'operacional', 'spice', 'taller de circuitos', 'fallas', 'cortocircuito', 'electronica'],
+        'pasivos': ['dispositivos', 'resistores', 'condensadores', 'inductores', 'filtros', 'transformadores'],
+        'activos': ['dispositivos', 'diodos', 'bjt', 'mosfet', 'jfet', 'transistores', 'operacional', 'amplificador', '555', 'tiristores'],
+        'transistor': ['bjt', 'mosfet', 'jfet', 'transistores', 'polarizacion', 'amplificadores', 'dispositivos', 'activos'],
+        'transistores': ['bjt', 'mosfet', 'jfet', 'transistor', 'polarizacion', 'amplificadores', 'dispositivos', 'activos'],
+        'diodo': ['diodos', 'zener', 'led', 'rectificacion', 'union pn', 'shockley', 'dispositivos'],
+        'diodos': ['diodo', 'zener', 'led', 'rectificacion', 'union pn', 'shockley', 'dispositivos'],
+        'operacional': ['opamp', 'amplificador operacional', '741', 'sallen-key', 'comparador', '555', 'filtros activos', 'dispositivos'],
+        'cortocircuito': ['fallas', 'sobrecorriente', 'dispositivos', 'taller', 'crowbar', 'proteccion'],
         'esp32': ['arduino', 'circuitos', 'electronica', 'protoboard', 'sensores', 'hardware', 'iot'],
         'circuito': ['arduino', 'esp32', 'electronica', 'transformadores', 'protoboard', 'ohm', 'kirchhoff', 'resistencia', 'voltaje', 'corriente', 'spice'],
         'circuitos': ['arduino', 'esp32', 'electronica', 'transformadores', 'protoboard', 'ohm', 'kirchhoff', 'resistencia', 'voltaje', 'corriente', 'spice'],
@@ -8788,7 +8797,7 @@ window.renderEnrolledCourses = renderEnrolledCourses;
     // ==========================================================================
     const PAGE_CATALOG = [
         { id: 'inicio', title: 'Portal de Bienvenida', short: 'Inicio', icon: '🏠', order: 1 },
-        { id: 'cursos', title: 'Cursos & Laboratorios (33)', short: 'Cursos & Labs', icon: '🚀', order: 2 },
+        { id: 'cursos', title: 'Cursos & Laboratorios (34)', short: 'Cursos & Labs', icon: '🚀', order: 2 },
         { id: 'tienda', title: 'Tienda Oficial & Cupones', short: 'Tienda & Cupones', icon: '🎟️', order: 3 },
         { id: 'quizzes', title: 'Evaluaciones & Quizzes con PIN', short: 'Quizzes PIN', icon: '📝', order: 4 },
         { id: 'trivia', title: 'Gran Trivia de Física (1.000 preg.)', short: 'Trivia Física', icon: '🎯', order: 5 },
@@ -9326,7 +9335,7 @@ window.renderEnrolledCourses = renderEnrolledCourses;
         const tokens = qClean.split(' ').filter(Boolean);
         const results = [];
 
-        // 1. Cursos y Laboratorios Oficiales (Catálogo de 33 materias)
+        // 1. Cursos y Laboratorios Oficiales (Catálogo de 34 materias)
         const pData = (typeof data !== 'undefined' && data) ? data : (window.PLATFORM_DATA || {});
         const courses = (pData && pData.cursos) ? pData.cursos : [];
         courses.forEach(c => {
