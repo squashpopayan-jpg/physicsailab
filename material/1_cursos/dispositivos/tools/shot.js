@@ -63,7 +63,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
         const art = document.getElementById('cap-' + cid);
         if (!art) return { missing: true };
         const simErr = Array.from(art.querySelectorAll('.sim-error')).map((e) => e.closest('.sim').dataset.sim + ': ' + e.textContent);
-        const red = art.querySelectorAll('g[data-mml-node="mtext"][fill="red"], mjx-merror').length;
+        const red = art.querySelectorAll('g[data-mml-node="mtext"][fill="red"], mjx-merror, [data-mml-node="merror"], [data-mjx-error]').length;
         const redTxt = Array.from(art.querySelectorAll('g[data-mml-node="mtext"][fill="red"], mjx-merror')).map((e) => { const c = e.closest('mjx-container'); return ((c && (c.getAttribute('aria-label') || (c.querySelector('mjx-assistive-mml') || {}).textContent)) || e.textContent || '').slice(0, 90) + ' << ' + (e.textContent || '').slice(0, 40); }).join(' ; ');
         const emptyCanvas = Array.from(art.querySelectorAll('.sim canvas')).filter((c) => c.width === 0 || c.height === 0).length;
         const sims = art.querySelectorAll('.sim[data-sim]').length;

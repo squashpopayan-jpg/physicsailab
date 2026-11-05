@@ -1254,6 +1254,7 @@ pre.code { font-family: var(--font-mono); font-size: 13px; line-height: 1.5; bac
 .tl-main { touch-action: none; }
 .tl-banner { position: absolute; left: 10px; top: 10px; right: 10px; z-index: 3; pointer-events: none; font: 600 13px var(--font-ui); color: var(--warn-ink); background: color-mix(in srgb, var(--warn-bg) 92%, transparent); border: 1px solid var(--warn-ink); border-radius: 8px; padding: 6px 10px; box-shadow: var(--shadow); }
 .tl-banner > div + div { margin-top: 3px; }
+.tl-toolhint { position: absolute; left: 10px; right: 10px; bottom: 10px; z-index: 3; pointer-events: none; font: 500 12px/1.35 var(--font-ui); color: var(--ink); background: color-mix(in srgb, var(--surface) 94%, transparent); border: 1px solid var(--c2); border-left-width: 4px; border-radius: 8px; padding: 5px 10px; box-shadow: var(--shadow); }
 .tl-tip { position: absolute; z-index: 3; pointer-events: none; font: 500 12px var(--font-ui); color: var(--ink); background: var(--surface); border: 1px solid var(--rule-strong); border-radius: 6px; padding: 3px 7px; box-shadow: var(--shadow); white-space: nowrap; }
 .tl-panels { border-top: 1px solid var(--rule); background: var(--surface); }
 .tl-panel { padding: 0 0 6px; }
@@ -1380,7 +1381,7 @@ pre.code { font-family: var(--font-mono); font-size: 13px; line-height: 1.5; bac
 <li>la <b>tensión</b> \(v\) (voltios, V) entre dos terminales: energía por unidad de carga, \(v=\mathrm{d}w/\mathrm{d}q\);</li>
 <li>la <b>corriente</b> \(i\) (amperios, A) que entra por un terminal: carga por unidad de tiempo, \(i=\mathrm{d}q/\mathrm{d}t\).</li>
 </ul>
-<div class="box def"><p><b>Convenio de signos pasivo.</b> Para un elemento de dos terminales se define la corriente \(i\) como positiva cuando entra por el terminal de mayor tensión (+) y sale por el otro. Con este convenio, la <b>potencia absorbida</b> es \(p=v\,i\). Si \(p>0\) el elemento <i>recibe</i> energía (un resistor, un condensador que se carga); si \(p<0\) la <i>entrega</i> (una batería que alimenta, un condensador que se descarga).</p></div>
+<div class="box def"><p><b>Convenio de signos pasivo.</b> Para un elemento de dos terminales se define la corriente \(i\) como positiva cuando entra por el terminal de mayor tensión (+) y sale por el otro. Con este convenio, la <b>potencia absorbida</b> es \(p=v\,i\). Si \(p>0\) el elemento <i>recibe</i> energía (un resistor, un condensador que se carga); si \(p&lt;0\) la <i>entrega</i> (una batería que alimenta, un condensador que se descarga).</p></div>
 <div class="eq key" data-name="Potencia y energía">\[p(t)=v(t)\,i(t)\qquad w(t_1,t_2)=\int_{t_1}^{t_2}p(t)\,\mathrm{d}t\qquad [\mathrm{W}]=[\mathrm{V}][\mathrm{A}]=[\mathrm{J/s}]\]</div>
 <p>La conservación de la energía exige que, en todo circuito, <b>la suma de las potencias absorbidas sea cero</b> en cada instante (teorema de Tellegen). El simulador lo verifica: en el panel «Operación» puede sumar la potencia de todos los componentes, y las fuentes aparecerán con signo negativo. Esta regla sirve para detectar errores de cálculo.</p>
 <div class="box note"><p>Por <b>tierra</b> o referencia se entiende el nodo al que se asigna 0 V. No es necesariamente la Tierra física: es solo el punto desde el que se miden las demás tensiones. En el Taller, un circuito sin símbolo de tierra no tiene referencia y el simulador lo avisa.</p></div>
@@ -1605,7 +1606,7 @@ cuya solución es \(V_A=6.783\) V y \(V_B=7.304\) V. Las corrientes son \(I_1=3.
 <p>Un circuito se rompe de formas muy concretas, y reconocerlas es una destreza de laboratorio. El Taller simula tres tipos de eventos:</p>
 <ol>
 <li><b>Fallas inyectadas.</b> Al seleccionar un componente, los botones <i>Abierto</i>, <i>Cortocircuito</i>, <i>Fuga</i> y <i>Deriva</i> reproducen los modos de fallo típicos de cada tipo de pieza (un condensador seco que pierde capacidad, un resistor que se abre, un transistor con colector y emisor en corto…). Son ideales para practicar la <b>depuración</b>: se provoca la falla, se mide y se deduce cuál es.</li>
-<li><b>Cortocircuito entre dos puntos.</b> El botón rojo <i>«Cortocircuito»</i> une dos terminales cualesquiera con un cable de resistencia casi nula. Con una fuente ideal de resistencia interna pequeña, la corriente se vuelve enorme; en la realidad esto ocurre con un cable suelto o una soldadura puenteada.</li>
+<li><b>Cortocircuito entre dos puntos.</b> El botón rojo <i>«Cortocircuito»</i> no cambia nada por sí solo: activa una herramienta de <b>dos clics</b>. Pulse el botón (los terminales se marcan con puntos rojos y aparece una instrucción sobre el esquema), haga clic en un terminal y luego en otro: ambos quedan unidos por un cable discontinuo de resistencia casi nula, como si un alambre hubiera tocado por accidente dos puntos del circuito. <i>Esc</i> cancela y <i>«Reparar»</i> quita el cable y los daños. Con una fuente ideal de resistencia interna pequeña, la corriente se vuelve enorme; en la realidad esto ocurre con un cable suelto o una soldadura puenteada.</li>
 <li><b>Daños por sobrecarga.</b> Cada componente tiene límites de potencia, corriente y tensión y un <b>modelo térmico</b>: su temperatura sube con la potencia disipada y se acerca a un valor de equilibrio con una constante de tiempo de segundos; si supera el límite (230 °C en un resistor, 175 °C en la unión de un semiconductor, 125 °C en un electrolítico), el componente se daña de la manera típica: el resistor se abre, el diodo y el transistor quedan en corto, el LED se quema, el condensador revienta, el fusible se funde, la red entra en disyuntor. El proceso lleva tiempo: un resistor de 1/4 W con 0.5 W se calienta (naranja) y falla en unos segundos; con 5 W, inmediatamente.</li>
 </ol>
 <div class="sim" data-sim="c2-falla" data-title="Cortocircuito, fusible y daños en cascada"></div>
@@ -2276,7 +2277,7 @@ cuya solución es \(V_A=6.783\) V y \(V_B=7.304\) V. Las corrientes son \(I_1=3.
 <h2>Circuito RLC serie: el oscilador amortiguado</h2>
 <p>Con una resistencia, un inductor y un condensador en serie alimentados por un escalón \(V\), la tensión del condensador cumple \(LC\,\ddot v_C+RC\,\dot v_C+v_C=V\), una ecuación de segundo orden. Se caracteriza por dos parámetros:</p>
 <div class="eq key" data-name="Segundo orden: frecuencia natural y amortiguamiento">\[\omega_0=\frac1{\sqrt{LC}}\qquad \zeta=\frac R2\sqrt{\frac CL}=\frac1{2Q}\qquad R_{crit}=2\sqrt{L/C}\]</div>
-<p>Según el valor de \(\zeta\), la respuesta es distinta: <b>sobreamortiguada</b> (\(\zeta>1\)): dos exponenciales sin oscilar, lenta; <b>críticamente amortiguada</b> (\(\zeta=1\)): la más rápida sin sobreimpulso; <b>subamortiguada</b> (\(\zeta<1\)): oscila a la frecuencia \(\omega_d=\omega_0\sqrt{1-\zeta^2}\) con una envolvente decreciente \(e^{-\zeta\omega_0t}\) y un <b>sobreimpulso</b> máximo de \(\exp\!\big(-\pi\zeta/\sqrt{1-\zeta^2}\big)\). Con \(L=10\) mH y \(C=1\) µF, \(f_0=1591.5\) Hz y \(R_{crit}=200\ \Omega\); con \(R=100\ \Omega\), \(\zeta=0.5\) (sobreimpulso 16.3 %, \(f_d=1378\) Hz); con \(R=20\ \Omega\), \(\zeta=0.1\) (sobreimpulso 72.9 %, oscila durante varias decenas de ciclos); con \(R=1\) kΩ, \(\zeta=5\) (lento, sin oscilación). Este es exactamente el «rebote» (<i>ringing</i>) que se ve en el flanco de una señal digital rápida en una pista con la inductancia del cable y la capacitancia de la entrada.</p>
+<p>Según el valor de \(\zeta\), la respuesta es distinta: <b>sobreamortiguada</b> (\(\zeta>1\)): dos exponenciales sin oscilar, lenta; <b>críticamente amortiguada</b> (\(\zeta=1\)): la más rápida sin sobreimpulso; <b>subamortiguada</b> (\(\zeta&lt;1\)): oscila a la frecuencia \(\omega_d=\omega_0\sqrt{1-\zeta^2}\) con una envolvente decreciente \(e^{-\zeta\omega_0t}\) y un <b>sobreimpulso</b> máximo de \(\exp\!\big(-\pi\zeta/\sqrt{1-\zeta^2}\big)\). Con \(L=10\) mH y \(C=1\) µF, \(f_0=1591.5\) Hz y \(R_{crit}=200\ \Omega\); con \(R=100\ \Omega\), \(\zeta=0.5\) (sobreimpulso 16.3 %, \(f_d=1378\) Hz); con \(R=20\ \Omega\), \(\zeta=0.1\) (sobreimpulso 72.9 %, oscila durante varias decenas de ciclos); con \(R=1\) kΩ, \(\zeta=5\) (lento, sin oscilación). Este es exactamente el «rebote» (<i>ringing</i>) que se ve en el flanco de una señal digital rápida en una pista con la inductancia del cable y la capacitancia de la entrada.</p>
 <div class="sim" data-sim="c8-rlc" data-title="Respuesta de un circuito RLC serie a un escalón"></div>
 <div class="sim-guide"><ul>
 <li>Con \(R=100\ \Omega\), \(L=10\) mH y \(C=1\) µF: \(\zeta=0.5\). La tensión del condensador rebasa en un 16 % el valor final (2 V → 2.33 V) y se asienta en menos de 1 ms.</li>
@@ -2513,7 +2514,7 @@ cuya solución es \(V_A=6.783\) V y \(V_B=7.304\) V. Las corrientes son \(I_1=3.
 <details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
 <li>\(I=12/6.12=1.96\) A: \(r=3.84\); \(t=1/(2.2\cdot2.84)=0.16\) s.</li>
 <li>Retardado: \(t=0.64\) s.</li>
-<li>Con 5 A: \(r=0.154<1.3\): no se funde nunca; el cableado conectado a 2 A de falla estaría desprotegido si fuese más fino que el capaz de 5 A.</li>
+<li>Con 5 A: \(r=0.154&lt;1.3\): no se funde nunca; el cableado conectado a 2 A de falla estaría desprotegido si fuese más fino que el capaz de 5 A.</li>
 <li><b>Resultado.</b> <span class="ans">0.16 s (rápido), 0.64 s (retardado); un fusible de 5 A no protege: elíjase según el componente que se protege.</span></li></ol></details></li>
 </ol>
 </section>
@@ -2640,7 +2641,7 @@ cuya solución es \(V_A=6.783\) V y \(V_B=7.304\) V. Las corrientes son \(I_1=3.
 
 <section>
 <h2>Polarización y la ecuación del diodo</h2>
-<p>Con una tensión <b>inversa</b> (\(V<0\), positivo en el lado n) la barrera crece, la región se ensancha, y solo pueden cruzar los portadores minoritarios que llegan a los bordes y son barridos por el campo: una pequeña corriente inversa (la <i>corriente de saturación</i> \(I_S\)). Con una tensión <b>directa</b> (\(V>0\)) la barrera baja y los portadores mayoritarios se inyectan al otro lado en una cantidad que crece <i>exponencialmente</i> con \(V\) (la distribución de Boltzmann): los electrones inyectados en el p y los huecos en el n son minoritarios que difunden y se recombinan. Resolviendo la ecuación de difusión en las regiones neutras se obtiene la <b>ecuación del diodo de Shockley</b>:</p>
+<p>Con una tensión <b>inversa</b> (\(V&lt;0\), positivo en el lado n) la barrera crece, la región se ensancha, y solo pueden cruzar los portadores minoritarios que llegan a los bordes y son barridos por el campo: una pequeña corriente inversa (la <i>corriente de saturación</i> \(I_S\)). Con una tensión <b>directa</b> (\(V>0\)) la barrera baja y los portadores mayoritarios se inyectan al otro lado en una cantidad que crece <i>exponencialmente</i> con \(V\) (la distribución de Boltzmann): los electrones inyectados en el p y los huecos en el n son minoritarios que difunden y se recombinan. Resolviendo la ecuación de difusión en las regiones neutras se obtiene la <b>ecuación del diodo de Shockley</b>:</p>
 <div class="eq key" data-name="Ecuación del diodo ideal">\[I=I_S\left(e^{V/nV_T}-1\right)\qquad I_S=q\,A\,n_i^2\left(\frac{D_p}{L_pN_D}+\frac{D_n}{L_nN_A}\right)\qquad V_T=\frac{kT}{q}\]</div>
 <p>\(n\) es el <b>factor de idealidad</b> (1 para difusión pura, hasta 2 con recombinación en la región de carga espacial). Para el diodo de silicio simétrico anterior con \(A=10^{-4}\) cm² y tiempos de vida de 1 µs: \(I_S=1.4\) fA (\(1.4\times10^{-15}\) A). Con ello, 0.5 V dan 0.36 µA, 0.6 V dan 17 µA y 0.7 V dan 0.82 mA: por cada 60 mV (\(V_T\ln10=59.5\) mV) la corriente se multiplica por 10. Este es el origen de la «tensión de 0.6–0.7 V» de un diodo de silicio: no es un umbral físico sino el punto donde, con las corrientes habituales (0.1–10 mA), la exponencial alcanza ese valor. En inversa, \(I\to-I_S\) casi constante; en la práctica la fuga real, dominada por generación en la región de carga espacial, es mayor y crece con la tensión. Los diodos de germanio (\(I_S\) mil millones de veces mayor) conducen con 0.2–0.3 V; los de carburo de silicio y los LED azules (\(E_g\) grande) con 2–3 V. En general \(V_F\approx E_g/q-\)(0.4 a 0.5 V).</p>
 <div class="sim" data-sim="c12-iv" data-title="Característica I–V de un diodo en escala lineal y logarítmica"></div>
@@ -2656,8 +2657,8 @@ cuya solución es \(V_A=6.783\) V y \(V_B=7.304\) V. Las corrientes son \(I_1=3.
 <p>\(I_S\) depende de \(n_i^2\), y por tanto de \(T^3e^{-E_g/kT}\): crece alrededor de un <b>15 % por kelvin</b> (se duplica cada 5 K). Pero \(V_T\) también crece con \(T\). A corriente fija, la tensión directa disminuye aproximadamente \(\mathrm{d}V_F/\mathrm{d}T\approx(V_F-V_{g0})/T\), con \(V_{g0}\approx1.2\) V: para \(V_F=0.65\) V, unos <b>−1.8 mV/K</b> (se suele redondear a −2 mV/K). Esto permite usar un diodo como termómetro (con una corriente constante, 1 mV de cambio = 0.5 K) pero también implica que un diodo o un transistor que se calienta conduce más y por tanto se calienta más: es el principio de la <b>fuga térmica</b> (capítulo 17).</p>
 <div class="sim" data-sim="c12-temperatura" data-title="Un diodo como termómetro: V_D con corriente constante"></div>
 <div class="sim-guide"><ul>
-<li>Con 1 mA y un 1N4148 (modelo del simulador): a 25 °C, \(V_Dpprox0.59\) V; a 125 °C, \(V_Dpprox0.38\) V. La pendiente es de unos −2.0 mV/K, de acuerdo con la teoría.</li>
-<li>Con una corriente menor (10 µA) la tensión es menor (0.38 V a 25 °C) y la pendiente es mayor en valor absoluto (≈ −2.6 mV/K), porque \(V_F-V_{g0}\) es más negativa.</li>
+<li>Con 1 mA y un 1N4148 (modelo del simulador): a 25 °C, \(V_D\approx0.59\) V; a 125 °C, \(V_D\approx0.38\) V. La pendiente es de unos −2.0 mV/K, de acuerdo con la teoría.</li>
+<li>Con una corriente menor (10 µA) la tensión es menor (0.38 V a 25 °C) y la pendiente es mayor en valor absoluto (≈ −2.7 mV/K), porque \(V_F-V_{g0}\) es más negativa.</li>
 </ul></div>
 </section>
 
@@ -2744,7 +2745,7 @@ cuya solución es \(V_A=6.783\) V y \(V_B=7.304\) V. Las corrientes son \(I_1=3.
 
 <section>
 <h2>Método de suposición para analizar circuitos</h2>
-<p>Con varios diodos, el circuito es no lineal y puede tener varios estados. El método más seguro es: <b>(1)</b> suponga un estado (cada diodo en conducción o en corte); <b>(2)</b> sustituya cada diodo por su modelo (fuente de 0.7 V si conduce, circuito abierto si no); <b>(3)</b> resuelva el circuito lineal resultante; <b>(4)</b> compruebe que la suposición es coherente: un diodo supuesto «conduciendo» debe tener \(I>0\) y uno supuesto «en corte», \(V_D<0.7\) V. Si no, cambie la suposición. Un truco útil: un diodo con tensión directa positiva conduce; si el ánodo está al menos 0.7 V por encima del cátodo, conduce.</p>
+<p>Con varios diodos, el circuito es no lineal y puede tener varios estados. El método más seguro es: <b>(1)</b> suponga un estado (cada diodo en conducción o en corte); <b>(2)</b> sustituya cada diodo por su modelo (fuente de 0.7 V si conduce, circuito abierto si no); <b>(3)</b> resuelva el circuito lineal resultante; <b>(4)</b> compruebe que la suposición es coherente: un diodo supuesto «conduciendo» debe tener \(I>0\) y uno supuesto «en corte», \(V_D&lt;0.7\) V. Si no, cambie la suposición. Un truco útil: un diodo con tensión directa positiva conduce; si el ánodo está al menos 0.7 V por encima del cátodo, conduce.</p>
 <div class="box ex" data-label="Ejemplo resuelto"><p>Dos diodos en una compuerta OR con entradas \(V_1=5\) V y \(V_2=3\) V y una resistencia a tierra de 1 kΩ. Se supone que \(D_1\) conduce: \(V_{out}=5-0.7=4.3\) V; entonces \(D_2\) tiene ánodo en 3 V y cátodo en 4.3 V: tensión inversa de 1.3 V: está en corte, coherente. La salida sigue a la mayor de las dos entradas con 0.7 V de caída. Corriente: \(4.3\ \text{mA}\).</p></div>
 </section>
 
@@ -2955,7 +2956,7 @@ cuya solución es \(V_A=6.783\) V y \(V_B=7.304\) V. Las corrientes son \(I_1=3.
 <h2>Fotodiodo: modos fotovoltaico y fotoconductivo</h2>
 <p>Un fotón con energía mayor que \(E_g\) que llega a la región de vaciamiento (o a una distancia de difusión) genera un par electrón–hueco; el campo de la unión los separa y aparece una <b>fotocorriente</b> \(I_{ph}=S\,P_{opt}\) (la <i>responsividad</i> \(S\) es de ~0.55 A/W en el silicio a 900 nm), proporcional a la potencia óptica. La característica del fotodiodo es la del diodo desplazada hacia abajo por \(I_{ph}\): \(I=I_S(e^{V/nV_T}-1)-I_{ph}\). Así hay dos formas de usarlo:</p>
 <ul>
-<li><b>Modo fotoconductivo</b> (polarización inversa, \(V<0\)): la corriente es \(I\approx-I_{ph}\), <i>lineal</i> con la luz en 6 décadas, con respuesta rápida (la capacitancia de unión baja con la inversa). Es el modo de los receptores de fibra óptica y mandos a distancia. Un resistor de carga da \(V=I_{ph}R\) (o un amplificador de transimpedancia, capítulo 23). Con 1000 lx (≈ 75 µA en el modelo) y 10 kΩ, 0.75 V.</li>
+<li><b>Modo fotoconductivo</b> (polarización inversa, \(V&lt;0\)): la corriente es \(I\approx-I_{ph}\), <i>lineal</i> con la luz en 6 décadas, con respuesta rápida (la capacitancia de unión baja con la inversa). Es el modo de los receptores de fibra óptica y mandos a distancia. Un resistor de carga da \(V=I_{ph}R\) (o un amplificador de transimpedancia, capítulo 23). Con 1000 lx (≈ 75 µA en el modelo) y 10 kΩ, 0.75 V.</li>
 <li><b>Modo fotovoltaico</b> (sin polarización): la tensión de circuito abierto crece logarítmicamente con la luz (\(V_{oc}=nV_T\ln(I_{ph}/I_S)\)); es el principio de la celda solar. Menor ruido (sin corriente de oscuridad) pero lento y poco lineal.</li>
 </ul>
 <div class="sim" data-sim="c15-fotodiodo" data-title="Fotodiodo en modo fotoconductivo con carga resistiva"></div>
@@ -3052,7 +3053,7 @@ cuya solución es \(V_A=6.783\) V y \(V_B=7.304\) V. Las corrientes son \(I_1=3.
 <div class="tablewrap"><table class="tbl"><tr><th>Región</th><th>Unión BE</th><th>Unión BC</th><th>Comportamiento (npn)</th><th>Uso</th></tr>
 <tr><td><b>Corte</b></td><td>inversa o &lt; 0.5 V</td><td>inversa</td><td>\(I_C\approx0\); interruptor abierto</td><td>Conmutación: «apagado»</td></tr>
 <tr><td><b>Activa directa</b></td><td>directa (≈ 0.65 V)</td><td>inversa</td><td>\(I_C=\beta I_B\): fuente de corriente controlada</td><td>Amplificación</td></tr>
-<tr><td><b>Saturación</b></td><td>directa</td><td>directa</td><td>\(V_{CE}\approx0.1\)–0.3 V; \(I_C<\beta I_B\) (β forzada menor)</td><td>Conmutación: «encendido»</td></tr>
+<tr><td><b>Saturación</b></td><td>directa</td><td>directa</td><td>\(V_{CE}\approx0.1\)–0.3 V; \(I_C&lt;\beta I_B\) (β forzada menor)</td><td>Conmutación: «encendido»</td></tr>
 <tr><td><b>Activa inversa</b></td><td>inversa</td><td>directa</td><td>β muy baja; no se usa</td><td>Lógica TTL</td></tr></table></div>
 <p>En la simulación de abajo, un 2N3904 con \(R_C=1\) kΩ, \(V_{CC}=12\) V y una fuente de base \(V_B\) a través de 10 kΩ: con \(V_B=0.3\) V el transistor está en <b>corte</b> (\(V_{CE}=12\) V); con 0.6 V empieza a conducir (\(I_C=0.07\) mA); con 0.7 V ya está en <b>activa</b> (\(I_B=2.75\ \mu\)A, \(I_C=1.30\) mA, \(V_{CE}=10.7\) V); con 1 V está en el límite (\(I_B=27\ \mu\)A, \(V_{CE}=0.80\) V) y con 2 V o más en <b>saturación</b> (\(I_B=127\ \mu\)A, \(V_{CE}=0.09\) V, \(I_C=11.9\) mA, \(\beta_{forzada}=94\)): ya no sirve aumentar la corriente de base porque la corriente de colector la limita el circuito externo, \((V_{CC}-V_{CE,sat})/R_C\).</p>
 <div class="sim" data-sim="c16-modos" data-title="Recorrido por las regiones de funcionamiento de un BJT"></div>
@@ -3375,7 +3376,7 @@ cuya solución es \(V_A=6.783\) V y \(V_B=7.304\) V. Las corrientes son \(I_1=3.
 <h2>Distorsión, linealidad y realimentación de emisor</h2>
 <p>La característica \(I_C(V_{BE})\) es exponencial, no lineal. Para una señal \(v_{be}=V\sin\omega t\) la corriente de colector contiene armónicos; para amplitudes pequeñas, el segundo armónico domina y su amplitud relativa es:</p>
 <div class="eq key" data-name="Distorsión del BJT sin realimentación">\[\mathrm{THD}\approx\frac{V_{be}}{4\,V_T}\qquad\left(V_{be}\ll V_T\right)\]</div>
-<p>Cada milivoltio de amplitud en la unión da un 1 % de distorsión: para menos de un 1 % se necesita \(V_{be}<4\) mV. Un amplificador de emisor común con \(C_E\) (ganancia 183) con 5 mV de entrada ya produce una salida de ≈ 0.9 V y un THD del 4 %; con una amplitud de salida mayor, además, se recorta contra \(V_{CC}\) o contra \(V_{CE,sat}\). La solución es la <b>realimentación negativa</b>: sin \(C_E\), una fracción de la salida se resta de la entrada en \(R_E\), de modo que la tensión en la unión (que es lo que genera la distorsión) es sólo una fracción \(1/(1+g_mR_E)\) de la tensión de entrada, y la distorsión disminuye en la misma proporción (aquí \(1+g_mR_E=81\)) a costa de reducir la ganancia en el mismo factor. Es el primer ejemplo del principio general: <b>la realimentación intercambia ganancia por linealidad, ancho de banda, estabilidad e impedancias</b>.</p>
+<p>Cada milivoltio de amplitud en la unión da un 1 % de distorsión: para menos de un 1 % se necesita \(V_{be}&lt;4\) mV. Un amplificador de emisor común con \(C_E\) (ganancia 183) con 5 mV de entrada ya produce una salida de ≈ 0.9 V y un THD del 4 %; con una amplitud de salida mayor, además, se recorta contra \(V_{CC}\) o contra \(V_{CE,sat}\). La solución es la <b>realimentación negativa</b>: sin \(C_E\), una fracción de la salida se resta de la entrada en \(R_E\), de modo que la tensión en la unión (que es lo que genera la distorsión) es sólo una fracción \(1/(1+g_mR_E)\) de la tensión de entrada, y la distorsión disminuye en la misma proporción (aquí \(1+g_mR_E=81\)) a costa de reducir la ganancia en el mismo factor. Es el primer ejemplo del principio general: <b>la realimentación intercambia ganancia por linealidad, ancho de banda, estabilidad e impedancias</b>.</p>
 <div class="tablewrap"><table class="tbl"><tr><th>Configuración</th><th>Amplitud de entrada (pico)</th><th>Salida (pico a pico)</th><th>Ganancia</th><th>THD (armónicos 2–9)</th></tr>
 <tr><td>Con \(C_E\)</td><td>2 mV</td><td>0.73 V</td><td>184</td><td>1.6 %</td></tr>
 <tr><td>Con \(C_E\)</td><td>5 mV</td><td>1.8 V</td><td>184</td><td>4.1 %</td></tr>
@@ -3479,7 +3480,7 @@ cuya solución es \(V_A=6.783\) V y \(V_B=7.304\) V. Las corrientes son \(I_1=3.
 <p>Un MOSFET de <b>enriquecimiento de canal n</b> (NMOS) se construye sobre un sustrato de silicio tipo p, con dos regiones n⁺ muy dopadas (fuente y drenador) separadas por una región de longitud \(L\) y ancho \(W\) sobre la cual hay una capa de dióxido de silicio de espesor \(t_{ox}\) y encima un electrodo conductor, la puerta (antes de aluminio, hoy silicio policristalino o metal). La estructura puerta–óxido–sustrato es un <b>condensador</b> de capacitancia por unidad de área \(C_{ox}=\varepsilon_{ox}/t_{ox}\) (con \(t_{ox}=2\) nm, \(C_{ox}\approx17\) mF/m²).</p>
 <p>Con \(V_{GS}=0\) entre fuente y drenador hay dos uniones pn en oposición: no circula corriente (<b>corte</b>). Al aplicar una tensión positiva a la puerta, el campo repele los huecos de la superficie del sustrato (región de deplexión) y, cuando \(V_{GS}\) supera la <b>tensión umbral</b> \(V_{th}\), atrae electrones minoritarios que forman una capa de <b>inversión</b> (el canal n) que conecta fuente y drenador. Cuanto mayor es \(V_{GS}-V_{th}\) (la <b>sobretensión</b> \(V_{ov}\)), más electrones hay en el canal y menor es su resistencia. La tensión umbral depende del dopado del sustrato, del espesor del óxido y de las cargas atrapadas:</p>
 <div class="eq key" data-name="Tensión umbral del MOSFET">\[V_{th}=V_{FB}+2\phi_F+\frac{\sqrt{2\,q\,\varepsilon_{Si}N_A\,(2\phi_F)}}{C_{ox}}\qquad \phi_F=V_T\ln\frac{N_A}{n_i}\]</div>
-<p>Con \(N_A=10^{17}\) cm⁻³ el potencial de Fermi es \(\phi_F=0.41\) V (a 300 K), y \(V_{th}\) típicos son 0.3–1 V en circuitos integrados modernos y 2–4 V en transistores discretos de potencia. El umbral aumenta con la tensión entre fuente y sustrato (<b>efecto de cuerpo</b>) y <b>disminuye con la temperatura</b> unos 2 mV/K, igual que \(V_{BE}\) en un BJT. Un MOSFET de <b>agotamiento</b> tiene el canal ya formado con \(V_{GS}=0\) (\(V_{th}<0\)) y se apaga con una tensión negativa; el JFET del capítulo siguiente se comporta de esa manera. El <b>PMOS</b> es el complementario: sustrato n, canal p, conduce con \(V_{GS}\) negativo (\(V_{GS}<-|V_{th}|\)) y todas las polaridades se invierten.</p>
+<p>Con \(N_A=10^{17}\) cm⁻³ el potencial de Fermi es \(\phi_F=0.41\) V (a 300 K), y \(V_{th}\) típicos son 0.3–1 V en circuitos integrados modernos y 2–4 V en transistores discretos de potencia. El umbral aumenta con la tensión entre fuente y sustrato (<b>efecto de cuerpo</b>) y <b>disminuye con la temperatura</b> unos 2 mV/K, igual que \(V_{BE}\) en un BJT. Un MOSFET de <b>agotamiento</b> tiene el canal ya formado con \(V_{GS}=0\) (\(V_{th}&lt;0\)) y se apaga con una tensión negativa; el JFET del capítulo siguiente se comporta de esa manera. El <b>PMOS</b> es el complementario: sustrato n, canal p, conduce con \(V_{GS}\) negativo (\(V_{GS}&lt;-|V_{th}|\)) y todas las polaridades se invierten.</p>
 <div class="box note"><p><b>La puerta es un condensador.</b> En continua no entra corriente, pero para cambiar \(V_{GS}\) hay que cargar \(C_{GS}\) y \(C_{GD}\): en conmutación rápida la excitación de la puerta consume corrientes de picos de amperios. Además el óxido se perfora con tensiones de 20 V (menos en circuitos integrados): una descarga electrostática basta para destruirlo; por eso los MOSFET se manipulan con pulsera antiestática y llevan diodos de protección.</p></div>
 </section>
 
@@ -3487,11 +3488,11 @@ cuya solución es \(V_A=6.783\) V y \(V_B=7.304\) V. Las corrientes son \(I_1=3.
 <h2>Regiones de funcionamiento y ecuaciones</h2>
 <p>Con la fuente a tierra, la corriente de drenador depende de dos tensiones: \(V_{GS}\) (cuánto canal hay) y \(V_{DS}\) (cuánta tensión empuja los electrones por él). Hay tres regiones:</p>
 <ul>
-<li><b>Corte</b>: \(V_{GS}<V_{th}\). No hay canal: \(I_D\approx0\).</li>
-<li><b>Triodo (óhmica o lineal)</b>: \(V_{GS}>V_{th}\) y \(V_{DS}<V_{ov}\). El canal llega hasta el drenador; el transistor se comporta como un <b>resistor controlado por tensión</b>.</li>
+<li><b>Corte</b>: \(V_{GS}&lt;V_{th}\). No hay canal: \(I_D\approx0\).</li>
+<li><b>Triodo (óhmica o lineal)</b>: \(V_{GS}>V_{th}\) y \(V_{DS}&lt;V_{ov}\). El canal llega hasta el drenador; el transistor se comporta como un <b>resistor controlado por tensión</b>.</li>
 <li><b>Saturación</b>: \(V_{DS}\ge V_{ov}\). La tensión en el extremo del drenador ya no alcanza para mantener la inversión (estrangulamiento del canal, <i>pinch-off</i>) y la corriente deja de depender de \(V_{DS}\): el transistor es una <b>fuente de corriente controlada por \(V_{GS}\)</b>.</li>
 </ul>
-<div class="eq key" data-name="Ecuaciones de la corriente de drenador (modelo de ley cuadrática)">\[I_D=\begin{cases}0 & V_{GS}\le V_{th}\\ k\left(V_{ov}V_{DS}-\dfrac{V_{DS}^2}{2}\right)(1+\lambda V_{DS}) & V_{DS}<V_{ov}\ \text{(triodo)}\\ \dfrac{k}{2}\,V_{ov}^2\,(1+\lambda V_{DS}) & V_{DS}\ge V_{ov}\ \text{(saturación)}\end{cases}\qquad k=\mu_nC_{ox}\frac{W}{L},\quad V_{ov}=V_{GS}-V_{th}\]</div>
+<div class="eq key" data-name="Ecuaciones de la corriente de drenador (modelo de ley cuadrática)">\[I_D=\begin{cases}0 & V_{GS}\le V_{th}\\ k\left(V_{ov}V_{DS}-\dfrac{V_{DS}^2}{2}\right)(1+\lambda V_{DS}) & V_{DS}&lt;V_{ov}\ \text{(triodo)}\\ \dfrac{k}{2}\,V_{ov}^2\,(1+\lambda V_{DS}) & V_{DS}\ge V_{ov}\ \text{(saturación)}\end{cases}\qquad k=\mu_nC_{ox}\frac{W}{L},\quad V_{ov}=V_{GS}-V_{th}\]</div>
 <p>El parámetro de transconductancia \(k\) (A/V²) depende de la tecnología (\(\mu_nC_{ox}\)) y de la geometría (\(W/L\)): el diseñador de circuitos integrados lo elige dibujando transistores más anchos. El factor \((1+\lambda V_{DS})\) incluye la <b>modulación de la longitud del canal</b> (el punto de estrangulamiento se acerca a la fuente al subir \(V_{DS}\)): equivale al efecto Early del BJT con \(V_A=1/\lambda\). Con \(\lambda=0.02\) V⁻¹ (\(V_A=50\) V) la corriente sube un 10 % entre 0 y 5 V de \(V_{DS}\).</p>
 <div class="eq key" data-name="Parámetros de pequeña señal del MOSFET">\[g_m=\frac{\partial I_D}{\partial V_{GS}}=k\,V_{ov}=\sqrt{2kI_D}=\frac{2I_D}{V_{ov}}\qquad r_o=\frac{1}{\lambda I_D}\qquad R_{DS(on)}=\frac{1}{k\,V_{ov}}\ \ (V_{DS}\ll V_{ov})\]</div>
 <p>Con el 2N7000 (\(k=0.07\) A/V², \(V_{th}=2.1\) V, \(\lambda=0.02\) V⁻¹) a \(V_{GS}=3.5\) V (\(V_{ov}=1.4\) V): saturación para \(V_{DS}\ge1.4\) V con \(I_D=\frac{0.07}{2}\cdot1.4^2\cdot(1+0.02\cdot5)=75.5\) mA a \(V_{DS}=5\) V, \(g_m=0.07\cdot1.4=98\) mS y, para \(V_{DS}\) pequeño, \(R_{DS(on)}=1/(0.07\cdot1.4)=10.2\) Ω.</p>
@@ -3535,7 +3536,7 @@ cuya solución es \(V_A=6.783\) V y \(V_B=7.304\) V. Las corrientes son \(I_1=3.
 <div class="sim-guide"><ul>
 <li>El barrido muestra la VTC de un inversor simétrico (\(k_p=k_n\), \(V_{th}=1.5\) V, \(V_{DD}=5\) V): \(V_M=2.5\) V, con un cambio abrupto de 4 V a 1 V en una banda de unos 40 mV alrededor de \(V_M\).</li>
 <li>Cambie la relación \(k_p/k_n\) a 4: el umbral se desplaza a 2.84 V (teoría: 2.83 V); con 0.25 baja a 2.17 V (teoría 2.17 V). Esa es la forma de ajustar los niveles.</li>
-<li>El pico de corriente de cortocircuito (los dos transistores conducen a la vez al cruzar el umbral) es de ½·k·(V_M−V_th)² = 1.0 mA con \(V_{DD}=5\) V y 22.7 mA con 12 V (crece con \(V_{DD}\)²). Con \(V_{DD}=3.3\) V el pico cae a 0.02 mA, porque \(V_{DD}\) apenas supera \(2V_{th}=3\) V: <b>con \(V_{DD}<V_{thn}+|V_{thp}|\) no hay corriente de cortocircuito</b>.</li>
+<li>El pico de corriente de cortocircuito (los dos transistores conducen a la vez al cruzar el umbral) es de ½·k·(V_M−V_th)² = 1.0 mA con \(V_{DD}=5\) V y 22.7 mA con 12 V (crece con \(V_{DD}\)²). Con \(V_{DD}=3.3\) V el pico cae a 0.02 mA, porque \(V_{DD}\) apenas supera \(2V_{th}=3\) V: <b>con \(V_{DD}&lt;V_{thn}+|V_{thp}|\) no hay corriente de cortocircuito</b>.</li>
 <li>En el osciloscopio, con una onda cuadrada de 100 kHz, la salida carga y descarga la capacitancia \(C_L\) con la corriente de saturación de cada transistor (12 mA); sube \(C_L\) y verá cómo aumenta el tiempo de conmutación.</li>
 </ul></div>
 <h3>Potencia y retardo</h3>
@@ -3564,7 +3565,7 @@ cuya solución es \(V_A=6.783\) V y \(V_B=7.304\) V. Las corrientes son \(I_1=3.
 <h2>Amplificador de fuente común y seguidor de fuente</h2>
 <p>Las configuraciones son las del BJT con los nombres cambiados: <b>fuente común</b> (equivalente al emisor común), <b>drenador común o seguidor de fuente</b> (colector común) y <b>puerta común</b> (base común). Con polarización por divisor de tensión \(R_1,R_2\) y resistencia de fuente \(R_S\) desacoplada con \(C_S\), la resistencia de entrada es \(R_{in}=R_1\parallel R_2\) (cientos de kΩ o MΩ, porque la puerta no consume):</p>
 <div class="eq key" data-name="Fuente común">\[A_v=-g_m\,(R_D\parallel R_L\parallel r_o)\qquad R_{in}=R_1\parallel R_2\qquad R_{out}\approx R_D\parallel r_o\qquad A_v\approx-\frac{R_D\parallel R_L}{1/g_m+R_S}\ \ (\text{sin }C_S)\]</div>
-<div class="eq" data-name="Seguidor de fuente">\[A_v=\frac{g_mR'_S}{1+g_mR'_S}<1\qquad R'_S=R_S\parallel R_L\qquad R_{out}\approx\frac{1}{g_m}\parallel R_S\]</div>
+<div class="eq" data-name="Seguidor de fuente">\[A_v=\frac{g_mR'_S}{1+g_mR'_S}&lt;1\qquad R'_S=R_S\parallel R_L\qquad R_{out}\approx\frac{1}{g_m}\parallel R_S\]</div>
 <p>En el montaje de la simulación (2N7000, \(V_{CC}=12\) V, \(R_1=680\) kΩ, \(R_2=390\) kΩ, \(R_D=3.3\) kΩ, \(R_S=1\) kΩ): el divisor da \(V_G=4.37\) V, el transistor lleva \(I_D=1.94\) mA con \(V_{GS}=2.33\) V (\(V_{ov}=0.23\) V) y \(g_m=0.07\cdot0.23=15.9\) mS. La ganancia es \(-15.9\text{ mS}\cdot(3.3\text{ k}\parallel10\text{ k})=-39.5\); el simulador mide −38.5 (el efecto de \(r_o\)). Compárese con el emisor común de ejemplo con la misma \(I_C\approx2\) mA, que daba −198: el BJT tiene 5 veces más \(g_m\) y por eso 5 veces más ganancia. A cambio, \(R_{in}=248\) kΩ frente a 3.1 kΩ.</p>
 <div class="sim" data-sim="c19-cs" data-title="Amplificador de fuente común: ganancia, resistencia de entrada y respuesta en frecuencia"></div>
 <div class="sim-guide"><ul>
@@ -3699,7 +3700,7 @@ cuya solución es \(V_A=6.783\) V y \(V_B=7.304\) V. Las corrientes son \(I_1=3.
 <h2>Otras aplicaciones y comparación con el MOSFET y el BJT</h2>
 <ul>
 <li><b>Fuente de corriente de dos terminales.</b> Un JFET con la puerta unida a la fuente (\(V_{GS}=0\)) es una fuente de corriente \(I_{DSS}\) para \(V_{DS}>V_P\): son los <i>diodos limitadores de corriente</i> (1N5283…). Con \(R_S\) conectada entre fuente y puerta, la corriente baja a \(I_D\) fijada por \(R_S\) (autopolarización).</li>
-<li><b>Interruptor analógico.</b> Con \(V_{GS}=0\) conduce con \(R_{DS0}\) (decenas de Ω) y con \(V_{GS}<-V_P\) queda abierto. Al ser simétrico se usa para conmutar señales (muestreo y retención, multiplexores). El MOSFET lo ha desplazado en circuitos integrados, pero en el rango de audio el JFET sigue usándose por su bajo ruido.</li>
+<li><b>Interruptor analógico.</b> Con \(V_{GS}=0\) conduce con \(R_{DS0}\) (decenas de Ω) y con \(V_{GS}&lt;-V_P\) queda abierto. Al ser simétrico se usa para conmutar señales (muestreo y retención, multiplexores). El MOSFET lo ha desplazado en circuitos integrados, pero en el rango de audio el JFET sigue usándose por su bajo ruido.</li>
 <li><b>Amplificador de entrada de bajo ruido.</b> La densidad de ruido de tensión de un JFET es de 1–5 nV/√Hz y la de corriente de fentoamperios por raíz de hertz: es la mejor opción para fuentes de impedancia alta (micrófonos de condensador, fotodiodos, electrómetros). Los operacionales «JFET input» (TL071, OPA134) los usan en la entrada.</li>
 <li><b>Seguidor de fuente.</b> Con \(R_{in}\) de GΩ y \(R_{out}=1/g_m\) (decenas a cientos de Ω) es el amplificador de entrada de osciloscopios y sondas activas.</li>
 </ul>
@@ -3778,7 +3779,7 @@ cuya solución es \(V_A=6.783\) V y \(V_B=7.304\) V. Las corrientes son \(I_1=3.
 
 <section>
 <h2>Etapa de salida complementaria (push–pull) en clase B y AB</h2>
-<p>Un transistor npn y uno pnp, conectados como <b>seguidores de emisor</b> (colector común), con las bases unidas y los emisores unidos a la carga, forman el <b>par complementario</b>. Con alimentación simétrica \(\pm V_{CC}\), el npn conduce los semiciclos positivos y el pnp los negativos; cada uno actúa como seguidor, con ganancia cercana a 1, resistencia de entrada alta y de salida baja (capítulo 18). En <b>clase B</b> las bases se conectan directamente a la señal: mientras \(|v_{in}|<V_{BE}\approx0.65\) V ninguno de los dos conduce y la salida es cero: es la <b>distorsión de cruce</b> (<i>crossover</i>), una «zona muerta» de unos ±0.65 V, especialmente molesta a bajo nivel, donde la distorsión relativa es mayor.</p>
+<p>Un transistor npn y uno pnp, conectados como <b>seguidores de emisor</b> (colector común), con las bases unidas y los emisores unidos a la carga, forman el <b>par complementario</b>. Con alimentación simétrica \(\pm V_{CC}\), el npn conduce los semiciclos positivos y el pnp los negativos; cada uno actúa como seguidor, con ganancia cercana a 1, resistencia de entrada alta y de salida baja (capítulo 18). En <b>clase B</b> las bases se conectan directamente a la señal: mientras \(|v_{in}|&lt;V_{BE}\approx0.65\) V ninguno de los dos conduce y la salida es cero: es la <b>distorsión de cruce</b> (<i>crossover</i>), una «zona muerta» de unos ±0.65 V, especialmente molesta a bajo nivel, donde la distorsión relativa es mayor.</p>
 <p>La solución es la clase AB: polarizar las dos bases con una diferencia de tensión \(2V_{BE}\) mediante <b>dos diodos</b> (o un multiplicador de \(V_{BE}\)) de modo que los dos transistores conduzcan una pequeña corriente de reposo \(I_Q\) y se solapen en el cruce por cero. Tres detalles de diseño importan: (1) los diodos, montados en el mismo disipador que los transistores, <b>siguen la temperatura</b> de la unión y estabilizan \(I_Q\); (2) los resistores de emisor \(R_E\) (0.1–2 Ω) aportan realimentación negativa que evita la fuga térmica; (3) la corriente por los diodos debe ser <b>mayor que la corriente de base máxima</b> (\(I_{C,pico}/\beta\)); si no, los diodos se cortan en los picos y la polarización colapsa.</p>
 <div class="eq key" data-name="Potencia y rendimiento de la etapa push–pull con alimentación simétrica">\[P_o=\frac{V_{pk}^2}{2R_L}\qquad P_s=\frac{2\,V_{CC}\,V_{pk}}{\pi\,R_L}\qquad\eta=\frac{P_o}{P_s}=\frac{\pi}{4}\frac{V_{pk}}{V_{CC}}\qquad P_{d,total}=P_s-P_o\]</div>
 <p>El rendimiento máximo (\(V_{pk}=V_{CC}\), \(\pi/4=78.5\) %) no se alcanza en la práctica por las caídas \(V_{CE,sat}\) y \(I R_E\). La disipación de los transistores <b>no es máxima a plena señal</b>, sino a \(V_{pk}=2V_{CC}/\pi=0.64\,V_{CC}\), donde vale \(P_{d,max}=2V_{CC}^2/(\pi^2R_L)\) (la mitad en cada transistor). Esto es importante en el diseño del disipador: se dimensiona para ese punto, no para la señal máxima. Con \(V_{CC}=12\) V y \(R_L=8\) Ω: \(P_{d,max}=3.65\) W, es decir, 1.8 W en cada TIP31C/TIP32C.</p>
@@ -4091,7 +4092,7 @@ cuya solución es \(V_A=6.783\) V y \(V_B=7.304\) V. Las corrientes son \(I_1=3.
 <p>Los filtros pasivos RC (capítulo 9) tienen una pendiente de sólo −20 dB/década por etapa, se cargan unos a otros y no pueden tener ganancia. Los <b>filtros activos</b> incorporan un A.O. que aísla las etapas, aporta ganancia y permite realizar polos complejos (respuesta con pendiente −40 dB/década o más) <b>sin inductores</b>, que son voluminosos e imprecisos. La función de transferencia de una etapa de segundo orden queda determinada por dos números:</p>
 <div class="eq key" data-name="Filtro de segundo orden (pasabajos y pasaaltos)">\[H_{LP}(s)=\frac{K\,\omega_0^2}{s^2+\dfrac{\omega_0}{Q}s+\omega_0^2}\qquad H_{HP}(s)=\frac{K\,s^2}{s^2+\dfrac{\omega_0}{Q}s+\omega_0^2}\qquad|H(j\omega_0)|_{LP}=K\,Q\]</div>
 <p>La frecuencia característica \(f_0\) es donde cambia el comportamiento; el <b>factor de calidad \(Q\)</b> controla la forma de la respuesta cerca de \(f_0\) (un máximo si \(Q>0.707\)). La topología más popular con un solo A.O. es la de <b>Sallen–Key</b> (1955): dos resistores en serie en la rama de entrada, un condensador a masa y otro realimentado desde la salida. Con \(R_1=R_2=R\), \(C_1=C_2=C\) y el A.O. como amplificador no inversor de ganancia \(K=1+R_b/R_a\):</p>
-<div class="eq key" data-name="Sallen–Key de componentes iguales">\[f_0=\frac{1}{2\pi RC}\qquad Q=\frac{1}{3-K}\qquad K=1+\frac{R_b}{R_a}<3\]</div>
+<div class="eq key" data-name="Sallen–Key de componentes iguales">\[f_0=\frac{1}{2\pi RC}\qquad Q=\frac{1}{3-K}\qquad K=1+\frac{R_b}{R_a}&lt;3\]</div>
 <p>(\(K=3\) daría \(Q=\infty\): oscilador.) La ganancia \(K\) fija \(Q\): con \(K=1\) (seguidor) \(Q=0.5\), respuesta sobreamortiguada con corte a 0.64 \(f_0\); con \(K=1.586\), \(Q=0.707\): <b>Butterworth</b>, la respuesta más plana en la banda de paso, con corte exactamente en \(f_0\); con \(K=2.5\), \(Q=2\) y un máximo de \(KQ=5\) (14 dB) en \(f_0\). El tipo de aproximación se escoge por el equilibrio entre selectividad, planicidad y respuesta transitoria:</p>
 <div class="tablewrap"><table class="tbl"><tr><th>Aproximación</th><th>\(Q\) (2.º orden)</th><th>Característica</th><th>Sobreimpulso al escalón</th></tr>
 <tr><td><b>Bessel</b></td><td>0.577</td><td>fase lineal, retardo de grupo plano</td><td>≈ 0 %</td></tr>
@@ -4111,7 +4112,7 @@ cuya solución es \(V_A=6.783\) V y \(V_B=7.304\) V. Las corrientes son \(I_1=3.
 
 <section>
 <h2>Rectificador de precisión</h2>
-<p>Un diodo de silicio no conduce hasta \(\approx0.6\) V, de modo que un rectificador de media onda ordinario pierde las señales de pequeña amplitud y las deforma. Si se coloca el diodo <b>dentro del lazo de realimentación</b> de un A.O. (<b>superdiodo</b>), el A.O. «hace el trabajo» de compensar la caída: cuando \(v_i>0\) la salida del A.O. sube hasta \(v_i+0.65\) V y el diodo conduce, con \(v_o=v_i\); cuando \(v_i<0\) el A.O. se satura en negativo, el diodo se bloquea y \(v_o=0\). La caída efectiva queda dividida por la ganancia de lazo abierto: de 0.65 V a \(0.65/A_0\) (unos microvoltios).</p>
+<p>Un diodo de silicio no conduce hasta \(\approx0.6\) V, de modo que un rectificador de media onda ordinario pierde las señales de pequeña amplitud y las deforma. Si se coloca el diodo <b>dentro del lazo de realimentación</b> de un A.O. (<b>superdiodo</b>), el A.O. «hace el trabajo» de compensar la caída: cuando \(v_i>0\) la salida del A.O. sube hasta \(v_i+0.65\) V y el diodo conduce, con \(v_o=v_i\); cuando \(v_i&lt;0\) el A.O. se satura en negativo, el diodo se bloquea y \(v_o=0\). La caída efectiva queda dividida por la ganancia de lazo abierto: de 0.65 V a \(0.65/A_0\) (unos microvoltios).</p>
 <div class="sim" data-sim="c23-rect" data-title="Rectificador de media onda de precisión (superdiodo) frente a un diodo solo"></div>
 <div class="sim-guide"><ul>
 <li>Con el <b>superdiodo</b> y una senoidal de 0.3 V de pico, la salida alcanza 0.300 V de pico (pérdida de 5.5 µV) y es una media onda perfecta. Con «Diodo solo», los mismos 0.3 V producen sólo 12.5 mV de pico (no llega a conducir bien); con 1 V de pico, 0.54 V (pérdida de 0.46 V).</li>
@@ -4188,7 +4189,7 @@ cuya solución es \(V_A=6.783\) V y \(V_B=7.304\) V. Las corrientes son \(I_1=3.
 
 <section>
 <h2>El comparador</h2>
-<p>Un A.O. sin realimentación (o con realimentación positiva) funciona como <b>comparador</b>: su salida es alta si \(v_+>v_-\) y baja si \(v_+<v_-\), con una transición muy rápida en el entorno de \(v_+=v_-\). Es el elemento básico de todo convertidor analógico–digital, de los detectores de nivel (termostatos, alarmas, cruce por cero) y de los reguladores conmutados. Los circuitos integrados diseñados como comparadores (LM393, LM339) no llevan compensación en frecuencia (son mucho más rápidos que un A.O.: 300 ns frente a decenas de µs de recuperación de saturación) y suelen tener la salida en <b>colector abierto</b>: el transistor de salida sólo conduce hacia tierra, y hay que poner una resistencia de «<i>pull-up</i>» a la tensión lógica deseada (3.3 V, 5 V o 12 V), lo que permite adaptar niveles.</p>
+<p>Un A.O. sin realimentación (o con realimentación positiva) funciona como <b>comparador</b>: su salida es alta si \(v_+>v_-\) y baja si \(v_+&lt;v_-\), con una transición muy rápida en el entorno de \(v_+=v_-\). Es el elemento básico de todo convertidor analógico–digital, de los detectores de nivel (termostatos, alarmas, cruce por cero) y de los reguladores conmutados. Los circuitos integrados diseñados como comparadores (LM393, LM339) no llevan compensación en frecuencia (son mucho más rápidos que un A.O.: 300 ns frente a decenas de µs de recuperación de saturación) y suelen tener la salida en <b>colector abierto</b>: el transistor de salida sólo conduce hacia tierra, y hay que poner una resistencia de «<i>pull-up</i>» a la tensión lógica deseada (3.3 V, 5 V o 12 V), lo que permite adaptar niveles.</p>
 <p>Un comparador simple tiene un defecto grave con señales lentas o ruidosas: cuando la entrada pasa lentamente por el umbral, el ruido superpuesto hace que \(v_+-v_-\) cruce el cero muchas veces y la salida <b>«rebota»</b> (oscila) en lugar de dar una única transición limpia. Es el problema de los detectores de nivel con sensores lentos (temperatura, luz) y de la eliminación de rebotes de pulsadores. La solución es la <b>histéresis</b>: usar dos umbrales distintos para el paso de bajo a alto y de alto a bajo.</p>
 </section>
 
@@ -4225,7 +4226,7 @@ cuya solución es \(V_A=6.783\) V y \(V_B=7.304\) V. Las corrientes son \(I_1=3.
 <h2>Osciladores senoidales: criterio de Barkhausen</h2>
 <p>Un oscilador senoidal es un amplificador con una red de realimentación que devuelve a la entrada una señal en fase y de la misma amplitud que la de salida. Para que una oscilación se sostenga, el lazo debe cumplir el <b>criterio de Barkhausen</b>:</p>
 <div class="eq key" data-name="Criterio de Barkhausen (oscilación sostenida)">\[|A\beta|=1\qquad \angle A\beta=0°\ (\text{o }360°)\quad\text{a una sola frecuencia }f_0\]</div>
-<p>Si \(|A\beta|<1\) la oscilación se extingue; si \(>1\) crece hasta que una no linealidad (saturación del A.O., diodos, una lámpara) reduce la ganancia efectiva a 1. Un buen oscilador tiene una ganancia ligeramente mayor que 1 a pequeña señal para garantizar el arranque, y un mecanismo <b>suave</b> de estabilización de la amplitud que evite el recorte (distorsión). Las tres redes selectivas más usadas determinan la frecuencia:</p>
+<p>Si \(|A\beta|&lt;1\) la oscilación se extingue; si \(>1\) crece hasta que una no linealidad (saturación del A.O., diodos, una lámpara) reduce la ganancia efectiva a 1. Un buen oscilador tiene una ganancia ligeramente mayor que 1 a pequeña señal para garantizar el arranque, y un mecanismo <b>suave</b> de estabilización de la amplitud que evite el recorte (distorsión). Las tres redes selectivas más usadas determinan la frecuencia:</p>
 <div class="tablewrap"><table class="tbl"><tr><th>Oscilador</th><th>Red de realimentación</th><th>Frecuencia</th><th>Condición de arranque</th><th>Uso típico</th></tr>
 <tr><td><b>Puente de Wien</b></td><td>RC serie–paralelo</td><td>\(f_0=1/(2\pi RC)\)</td><td>\(K>3\)</td><td>Audio (10 Hz–1 MHz), generadores senoidales</td></tr>
 <tr><td><b>Desfasador RC</b></td><td>tres etapas RC (3 × 60°)</td><td>\(f_0=1/(2\pi\sqrt6\,RC)\)</td><td>\(K>29\)</td><td>Audio de bajo costo</td></tr>
@@ -4631,7 +4632,7 @@ cuya solución es \(V_A=6.783\) V y \(V_B=7.304\) V. Las corrientes son \(I_1=3.
 <section>
 <h2>El osciloscopio: ancho de banda, tiempo de subida y sonda</h2>
 <p>El <b>ancho de banda</b> de un osciloscopio es la frecuencia a la que una senoide se visualiza 3 dB atenuada (70.7 % de su amplitud real). El ancho de banda determina la <b>velocidad de subida</b> que puede mostrar: para un sistema de primer orden:</p>
-<div class="eq key" data-name="Tiempo de subida y ancho de banda; combinación de tiempos de subida">\[t_r=\frac{0.35}{BW}\qquad t_{r,obs}=\sqrt{t_{r,señal}^2+t_{r,osc}^2+t_{r,sonda}^2}\qquad BW_{osc}\ge5\,f_{máx}\ \ \text{(error}<2\%)\]</div>
+<div class="eq key" data-name="Tiempo de subida y ancho de banda; combinación de tiempos de subida">\[t_r=\frac{0.35}{BW}\qquad t_{r,obs}=\sqrt{t_{r,señal}^2+t_{r,osc}^2+t_{r,sonda}^2}\qquad BW_{osc}\ge5\,f_{máx}\ \ \text{(error}&lt;2\%)\]</div>
 <p>Un osciloscopio de 100 MHz tiene un tiempo de subida propio de 3.5 ns: un pulso con 5 ns de subida real se verá con \(\sqrt{5^2+3.5^2}=6.1\) ns. Para medir una señal con un error del 2 % de amplitud hace falta un ancho de banda de 5 veces la frecuencia de la señal. Además hay que cuidar la <b>frecuencia de muestreo</b> (≥ 5 veces el ancho de banda para ver la forma de onda, no solo para cumplir Nyquist), el <b>acoplamiento</b> (CC/CA), el <b>disparo</b> (nivel y flanco) y el <b>cable de tierra</b> de la sonda, cuya inductancia (≈ 10 cm: 100 nH) forma con la capacitancia de la sonda un circuito resonante que causa oscilaciones superpuestas en los flancos rápidos.</p>
 <h3>La sonda ×10 y su compensación</h3>
 <p>La sonda pasiva ×10 coloca \(R_p=9\) MΩ en serie con la entrada de 1 MΩ del osciloscopio: atenúa 10 veces y presenta al circuito 10 MΩ en vez de 1 MΩ (y una capacitancia de unos 10–15 pF en vez de 100 pF del cable): perturba menos. Pero el divisor resistivo, por sí solo, tiene un ancho de banda muy bajo (el cable y la entrada tienen capacitancia \(C_i\approx120\) pF, y el polo es \(1/[2\pi(R_p\parallel R_i)(C_c+C_i)]\approx1.3\) kHz). Para corregirlo se pone un condensador \(C_c\) en paralelo con \(R_p\) que forma un <b>divisor capacitivo</b> con la misma razón que el resistivo; la condición de <b>compensación</b> es:</p>
@@ -5107,7 +5108,7 @@ cuya solución es \(V_A=6.783\) V y \(V_B=7.304\) V. Las corrientes son \(I_1=3.
 <p><b>Enunciado.</b> Con el amplificador operacional TL081 y los resistores que añada, construya un amplificador de ganancia de tensión de 10 (±5 %) a 1 kHz, con ancho de banda de al menos 30 kHz y resistencia de entrada mayor que 5 kΩ, que alimente la carga de 10 kΩ.</p>
 <div class="sim" data-sim="c30-reto3" data-title="Reto 3: amplificador con A.O. de ganancia 10, ancho de banda de 30 kHz y alta resistencia de entrada"></div>
 <div class="sim-guide"><ul>
-<li>La condición de resistencia de entrada alta excluye al inversor con \(R_1<5\) kΩ; el no inversor la cumple siempre. Repase el capítulo 22.</li>
+<li>La condición de resistencia de entrada alta excluye al inversor con \(R_1&lt;5\) kΩ; el no inversor la cumple siempre. Repase el capítulo 22.</li>
 <li>El ancho de banda del TL081 (GBW = 3 MHz) es suficiente para esta ganancia: 3 MHz/10 = 300 kHz. Con una ganancia de 100 sería 30 kHz, justo.</li>
 </ul></div>
 <details class="sol"><summary>Una solución de referencia</summary>
@@ -10118,6 +10119,8 @@ window.MathJax = {
       cv.tabIndex = 0; cv.style.touchAction = 'none'; cv.style.outline = 'none';
       this.banner = el('div', 'tl-banner'); this.banner.hidden = true;
       this.cv.wrap.append(this.banner);
+      this.toolHint = el('div', 'tl-toolhint'); this.toolHint.hidden = true;
+      this.cv.wrap.append(this.toolHint);
       this.hintEl = c.hint ? sim.hint(c.hint, this.cv) : null;
       this.tipEl = el('div', 'tl-tip'); this.tipEl.hidden = true; this.cv.wrap.append(this.tipEl);
       this.cv.onResize = () => { if (!this._fitted) { this.fitView(); } };
@@ -10170,7 +10173,7 @@ window.MathJax = {
       this.mkBtn(ICO.fit, '', 'Ajustar la vista al circuito', () => this.fitView(), { parent: g3 });
       if (this.cfg.edit !== 'none') {
         const gf = el('div', 'tl-grp'); this.bar.append(gf);
-        this.btn.short = this.mkBtn(ICO.bolt, 'Cortocircuito', 'Unir dos terminales con un cable (falla): clic en un terminal y luego en otro', () => this.setTool(this.tool === 'short' ? 'select' : 'short'), { parent: gf, cls: this.tool === 'short' ? 'on warn' : 'warn' });
+        this.btn.short = this.mkBtn(ICO.bolt, 'Cortocircuito', 'Simular una falla: une dos terminales con un cable sin resistencia. Pulse aquí, haga clic en un terminal y luego en otro. «Reparar» lo quita.', () => this.setTool(this.tool === 'short' ? 'select' : 'short'), { parent: gf, cls: this.tool === 'short' ? 'on warn' : 'warn' });
         this.mkBtn(ICO.fix, 'Reparar', 'Reparar todos los componentes dañados y quitar fallas', () => { this.pushHist(); this.net.repairAll(); this.net.doc.wires = this.net.doc.wires.filter((w) => !w.fault); this.net.invalidate(); this.alerts = []; this.fx = []; this.updateBanner(); }, { parent: gf });
         const gs = el('div', 'tl-grp'); this.bar.append(gs);
         this.mkBtn(ICO.save, '', 'Guardar el circuito en un archivo', () => this.saveFile(), { parent: gs });
@@ -10279,7 +10282,18 @@ window.MathJax = {
       if (this.btn) { for (const k of ['sel', 'wire']) if (this.btn[k]) this.btn[k].classList.toggle('on', (k === 'sel' && t === 'select') || (k === 'wire' && t === 'wire')); if (this.btn.short) this.btn.short.classList.toggle('on', t === 'short'); }
       if (this._palShow) this._palShow();
       this.cv.el.style.cursor = t === 'select' ? '' : 'crosshair';
+      this.updateToolHint();
       this.redraw();
+    }
+    /* Instrucción en pantalla mientras la herramienta de cortocircuito está activa */
+    updateToolHint() {
+      const h = this.toolHint; if (!h) return;
+      if (this.tool === 'short') {
+        h.hidden = false;
+        h.innerHTML = this.shortFrom
+          ? `<b>⚡ Paso 2/2:</b> elegido <b>${this.shortFrom.P.id}</b> (pin ${this.shortFrom.i + 1}). Clic en <b>otro terminal</b> para unirlos con un cable sin resistencia.`
+          : `<b>⚡ Falla de cortocircuito · paso 1/2:</b> clic en un <b>terminal</b> (punto rojo) y luego en otro; se unen con un cable sin resistencia. «Reparar» lo quita.`;
+      } else h.hidden = true;
     }
     redraw() { this.sim.redraw(); }
     /* Avanza T segundos simulados con un paso grande (sin muestrear) y conserva el último tramo en los osciloscopios */
@@ -10506,14 +10520,15 @@ window.MathJax = {
       if (this.tool === 'short') {
         const pin = this.pinAt(wx, wy, 0.7);
         if (pin) {
-          if (!this.shortFrom) this.shortFrom = pin;
+          if (!this.shortFrom) { this.shortFrom = pin; this.updateToolHint(); this.redraw(); }
+          else if (pin.P === this.shortFrom.P && pin.i === this.shortFrom.i) { this.shortFrom = null; this.updateToolHint(); this.redraw(); }
           else {
             this.pushHist();
             const a = [this.shortFrom.x, this.shortFrom.y], b = [pin.x, pin.y];
             this.addWire(this.route(a, b, a[1] !== b[1] && Math.abs(a[0] - b[0]) < 3), true);
             this.shortFrom = null; this.setTool('select'); this.autosave();
           }
-        } else this.shortFrom = null;
+        } else { this.shortFrom = null; this.updateToolHint(); this.redraw(); }
         return;
       }
       if (this.tool === 'wire' && full) {
@@ -11011,6 +11026,11 @@ window.MathJax = {
         c.strokeStyle = EM.col('--accent'); c.lineWidth = lw * 1.3; c.setLineDash([0.4, 0.3]);
         const r = this.route(this.wiring.a, this.wiring.b, this.wiring.v);
         c.beginPath(); r.forEach((q, i) => (i ? c.lineTo(q[0], q[1]) : c.moveTo(q[0], q[1]))); c.stroke(); c.setLineDash([]);
+      }
+      if (this.tool === 'short') { /* marca todos los terminales disponibles */
+        c.save(); c.fillStyle = EM.col('--c2'); c.globalAlpha = 0.5;
+        for (const P of this.net.doc.parts) { const cc = CAT[P.t]; if (!cc) continue; for (let i = 0; i < cc.pins.length; i++) { const q = PT.pinPos(P, i); c.beginPath(); c.arc(q[0], q[1], 0.28, 0, Math.PI * 2); c.fill(); } }
+        c.restore();
       }
       if (this.tool === 'short' && this.shortFrom) { c.strokeStyle = EM.col('--c2'); c.lineWidth = lw * 1.4; c.beginPath(); c.arc(this.shortFrom.x, this.shortFrom.y, 0.5, 0, Math.PI * 2); c.stroke(); }
       /* fantasma al colocar */

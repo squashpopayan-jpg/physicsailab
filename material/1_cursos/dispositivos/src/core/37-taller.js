@@ -78,6 +78,8 @@
       cv.tabIndex = 0; cv.style.touchAction = 'none'; cv.style.outline = 'none';
       this.banner = el('div', 'tl-banner'); this.banner.hidden = true;
       this.cv.wrap.append(this.banner);
+      this.toolHint = el('div', 'tl-toolhint'); this.toolHint.hidden = true;
+      this.cv.wrap.append(this.toolHint);
       this.hintEl = c.hint ? sim.hint(c.hint, this.cv) : null;
       this.tipEl = el('div', 'tl-tip'); this.tipEl.hidden = true; this.cv.wrap.append(this.tipEl);
       this.cv.onResize = () => { if (!this._fitted) { this.fitView(); } };
@@ -130,7 +132,7 @@
       this.mkBtn(ICO.fit, '', 'Ajustar la vista al circuito', () => this.fitView(), { parent: g3 });
       if (this.cfg.edit !== 'none') {
         const gf = el('div', 'tl-grp'); this.bar.append(gf);
-        this.btn.short = this.mkBtn(ICO.bolt, 'Cortocircuito', 'Unir dos terminales con un cable (falla): clic en un terminal y luego en otro', () => this.setTool(this.tool === 'short' ? 'select' : 'short'), { parent: gf, cls: this.tool === 'short' ? 'on warn' : 'warn' });
+        this.btn.short = this.mkBtn(ICO.bolt, 'Cortocircuito', 'Simular una falla: une dos terminales con un cable sin resistencia. Pulse aquí, haga clic en un terminal y luego en otro. «Reparar» lo quita.', () => this.setTool(this.tool === 'short' ? 'select' : 'short'), { parent: gf, cls: this.tool === 'short' ? 'on warn' : 'warn' });
         this.mkBtn(ICO.fix, 'Reparar', 'Reparar todos los componentes dañados y quitar fallas', () => { this.pushHist(); this.net.repairAll(); this.net.doc.wires = this.net.doc.wires.filter((w) => !w.fault); this.net.invalidate(); this.alerts = []; this.fx = []; this.updateBanner(); }, { parent: gf });
         const gs = el('div', 'tl-grp'); this.bar.append(gs);
         this.mkBtn(ICO.save, '', 'Guardar el circuito en un archivo', () => this.saveFile(), { parent: gs });
@@ -239,7 +241,18 @@
       if (this.btn) { for (const k of ['sel', 'wire']) if (this.btn[k]) this.btn[k].classList.toggle('on', (k === 'sel' && t === 'select') || (k === 'wire' && t === 'wire')); if (this.btn.short) this.btn.short.classList.toggle('on', t === 'short'); }
       if (this._palShow) this._palShow();
       this.cv.el.style.cursor = t === 'select' ? '' : 'crosshair';
+      this.updateToolHint();
       this.redraw();
+    }
+    /* Instrucción en pantalla mientras la herramienta de cortocircuito está activa */
+    updateToolHint() {
+      const h = this.toolHint; if (!h) return;
+      if (this.tool === 'short') {
+        h.hidden = false;
+        h.innerHTML = this.shortFrom
+          ? `<b>⚡ Paso 2/2:</b> elegido <b>${this.shortFrom.P.id}</b> (pin ${this.shortFrom.i + 1}). Clic en <b>otro terminal</b> para unirlos con un cable sin resistencia.`
+          : `<b>⚡ Falla de cortocircuito · paso 1/2:</b> clic en un <b>terminal</b> (punto rojo) y luego en otro; se unen con un cable sin resistencia. «Reparar» lo quita.`;
+      } else h.hidden = true;
     }
     redraw() { this.sim.redraw(); }
     /* Avanza T segundos simulados con un paso grande (sin muestrear) y conserva el último tramo en los osciloscopios */
@@ -466,14 +479,15 @@
       if (this.tool === 'short') {
         const pin = this.pinAt(wx, wy, 0.7);
         if (pin) {
-          if (!this.shortFrom) this.shortFrom = pin;
+          if (!this.shortFrom) { this.shortFrom = pin; this.updateToolHint(); this.redraw(); }
+          else if (pin.P === this.shortFrom.P && pin.i === this.shortFrom.i) { this.shortFrom = null; this.updateToolHint(); this.redraw(); }
           else {
             this.pushHist();
             const a = [this.shortFrom.x, this.shortFrom.y], b = [pin.x, pin.y];
             this.addWire(this.route(a, b, a[1] !== b[1] && Math.abs(a[0] - b[0]) < 3), true);
             this.shortFrom = null; this.setTool('select'); this.autosave();
           }
-        } else this.shortFrom = null;
+        } else { this.shortFrom = null; this.updateToolHint(); this.redraw(); }
         return;
       }
       if (this.tool === 'wire' && full) {
@@ -971,6 +985,11 @@
         c.strokeStyle = EM.col('--accent'); c.lineWidth = lw * 1.3; c.setLineDash([0.4, 0.3]);
         const r = this.route(this.wiring.a, this.wiring.b, this.wiring.v);
         c.beginPath(); r.forEach((q, i) => (i ? c.lineTo(q[0], q[1]) : c.moveTo(q[0], q[1]))); c.stroke(); c.setLineDash([]);
+      }
+      if (this.tool === 'short') { /* marca todos los terminales disponibles */
+        c.save(); c.fillStyle = EM.col('--c2'); c.globalAlpha = 0.5;
+        for (const P of this.net.doc.parts) { const cc = CAT[P.t]; if (!cc) continue; for (let i = 0; i < cc.pins.length; i++) { const q = PT.pinPos(P, i); c.beginPath(); c.arc(q[0], q[1], 0.28, 0, Math.PI * 2); c.fill(); } }
+        c.restore();
       }
       if (this.tool === 'short' && this.shortFrom) { c.strokeStyle = EM.col('--c2'); c.lineWidth = lw * 1.4; c.beginPath(); c.arc(this.shortFrom.x, this.shortFrom.y, 0.5, 0, Math.PI * 2); c.stroke(); }
       /* fantasma al colocar */
