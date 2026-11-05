@@ -44,13 +44,50 @@
 <main id="s-codigo" class="screen wrap narrow hidden">
   <div class="card stack">
     <h1>Ingresar a la prueba</h1>
-    <p class="muted">Escribe el código de acceso que te llegó al correo electrónico.</p>
+    <p class="muted">Escribe el código de acceso que te llegó al correo o asignó tu docente.</p>
     <div><label for="codigo">Código de acceso</label><input id="codigo" class="code-input" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="12" placeholder="XXXX-XXXX"></div>
     <div id="err-codigo" class="notice bad hidden" role="alert"></div>
-    <button id="btn-ingresar" class="primary" style="width:100%;justify-content:center">Ingresar</button>
-    <p class="small muted">¿Ya presentaste la prueba? <a href="resultado.html">Consulta tu resultado</a>.</p>
+    <button id="btn-ingresar" class="primary" style="width:100%;justify-content:center">Ingresar con código</button>
+
+    <div style="margin: 20px 0 10px; border-top: 1px dashed var(--line); padding-top: 16px; text-align: center;">
+      <p style="font-size: 0.95rem; font-weight: 600; margin-bottom: 8px;">¿Deseas practicar o explorar sin código?</p>
+      <button id="btn-abrir-practica" class="ghost sm" style="width:100%; border: 1.5px solid var(--acc); color: var(--acc); font-weight: 600; padding: 10px 14px; border-radius: 8px;">🎯 Iniciar Prueba Diagnóstica de Práctica Libre</button>
+    </div>
+    <p class="small muted" style="text-align:center">¿Ya presentaste la prueba? <a href="resultado.html">Consulta tu resultado</a>.</p>
   </div>
 </main>
+
+<!-- Modal Selección de Práctica -->
+<div id="modal-practica" class="modal-bg hidden">
+  <div class="modal" role="dialog" aria-modal="true">
+    <h2>Prueba Diagnóstica de Práctica Libre</h2>
+    <div class="stack" style="gap:14px;margin-top:12px;">
+      <p class="small muted">Presenta una prueba completa de 50 preguntas sin necesidad de código institucional. Al finalizar obtendrás tu diagnóstico inmediato con puntaje y recomendaciones.</p>
+      <div>
+        <label for="p-nombre">Tu nombre o alias</label>
+        <input id="p-nombre" type="text" placeholder="Ej: Estudiante" value="Estudiante">
+      </div>
+      <div>
+        <label for="p-banco">Selecciona la prueba diagnóstica</label>
+        <select id="p-banco" style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:inherit;font-size:1rem;">
+          <option value="fisica-fundamental">Física Fundamental (Colegios y Grado 11)</option>
+          <option value="mecanica">Mecánica Clásica (Universidad)</option>
+          <option value="electromagnetismo">Electromagnetismo (Universidad)</option>
+          <option value="vibraciones-ondas">Vibraciones, Ondas y Óptica</option>
+          <option value="calculo-1">Cálculo Diferencial (Cálculo 1)</option>
+          <option value="calculo-2">Cálculo Integral (Cálculo 2)</option>
+          <option value="calculo-3">Cálculo Multivariado (Cálculo 3)</option>
+          <option value="algebra-lineal">Álgebra Lineal</option>
+          <option value="matematicas-universidad">Matemáticas para Universidad</option>
+        </select>
+      </div>
+      <div class="row" style="margin-top:14px;justify-content:flex-end;gap:10px;">
+        <button id="btn-cerrar-practica" class="ghost">Cancelar</button>
+        <button id="btn-iniciar-practica" class="primary">Comenzar prueba</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- 2. Confirmar identidad -->
 <main id="s-confirmar" class="screen wrap narrow hidden">
@@ -111,7 +148,8 @@
     <h1>Prueba entregada</h1>
     <p>Gracias, <b class="w-nombre"></b>. Respondiste <b id="f-n"></b> de <b id="f-tot"></b> preguntas.</p>
     <div id="f-pend" class="notice warn hidden">Hay respuestas pendientes de enviar porque no hay conexión. <b>No cierres esta página</b> hasta que este aviso desaparezca.</div>
-    <p class="muted">Cuando el docente publique los resultados podrás ver tu diagnóstico individual en <a href="resultado.html">Consultar resultado</a>, con tu código y tu número de identificación.</p>
+    <p class="muted" id="f-msg-docente">Cuando el docente publique los resultados podrás ver tu diagnóstico individual en <a href="resultado.html">Consultar resultado</a>, con tu código y tu número de identificación.</p>
+    <div id="f-boletin"></div>
   </div>
 </main>
 
@@ -123,15 +161,16 @@
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
-<script src="config.js?v=2ad9b5e6f8"></script>
-<script src="core.js?v=cd69cc7a19"></script>
+<script src="config.js?v=d57c79cc2e"></script>
+<script src="core.js?v=493196a2d4"></script>
 <script src="analisis.js?v=f3fe1aff21"></script>
+<script src="informe.js?v=fd1d708f8b"></script>
 <script>
 (function () {
   'use strict';
   var $ = CORE.$, $$ = CORE.$$, esc = CORE.esc, A = window.ANALISIS;
   var S = { uid: null, code: null, acc: null, sid: null, preguntas: [], orden: [], vistaOps: {}, i: 0, resp: {}, pend: {}, marcadas: {},
-    estado: null, fin: null, pausadaEn: null, extraMin: 0, entregado: false, salidas: 0, fuera: false, iniciado: false, avisos: {} };
+    estado: null, fin: null, pausadaEn: null, extraMin: 0, entregado: false, salidas: 0, fuera: false, iniciado: false, avisos: {}, esPractica: false, bancoCompleto: null };
   $('#marca').textContent = CONFIG.marca;
 
   function pantalla(id) {
@@ -155,10 +194,75 @@
   document.addEventListener('conexion', function () { pintarRed(); if (CORE.conectado) reenviarPendientes(); });
   var url = new URLSearchParams(location.search);
   if (url.get('c')) $('#codigo').value = CORE.verCodigo(CORE.normCodigo(url.get('c')));
-  CORE.auth.onAuthStateChanged(function (u) {
-    if (u) { S.uid = u.uid; if (!S.code) pantalla('s-codigo'); return; }
-    CORE.auth.signInAnonymously().catch(function (e) { mensaje('No se pudo conectar', 'Revisa la conexión a internet. (' + e.code + ')'); });
+
+  CORE.obtenerUsuario().then(function (u) {
+    S.uid = u.uid;
+    if (!S.code) pantalla('s-codigo');
   });
+
+  if ($('#btn-abrir-practica')) {
+    $('#btn-abrir-practica').onclick = function () { $('#modal-practica').classList.remove('hidden'); };
+    $('#btn-cerrar-practica').onclick = function () { $('#modal-practica').classList.add('hidden'); };
+    $('#modal-practica').addEventListener('click', function (e) { if (e.target === this) this.classList.add('hidden'); });
+    $('#btn-iniciar-practica').onclick = function () {
+      var banco = $('#p-banco').value;
+      var nombre = ($('#p-nombre').value || 'Estudiante').trim();
+      $('#modal-practica').classList.add('hidden');
+      iniciarPractica(banco, nombre);
+    };
+  }
+
+  function iniciarPractica(bancoId, nombreEstudiante) {
+    nombreEstudiante = nombreEstudiante || 'Estudiante';
+    pantalla('s-msg');
+    $('#m-tit').textContent = 'Preparando prueba diagnóstica…';
+    $('#m-txt').textContent = 'Cargando preguntas y opciones.';
+    fetch('bancos/' + bancoId + '.json').then(function (r) {
+      if (!r.ok) return fetch('../bancos/' + bancoId + '.json');
+      return r;
+    }).then(function (r) {
+      if (!r.ok) throw new Error('No se pudo cargar el banco (' + r.status + ')');
+      return r.json();
+    }).then(function (banco) {
+      S.esPractica = true;
+      S.bancoCompleto = banco;
+      S.code = 'PRAC-' + CORE.token(2).toUpperCase();
+      S.acc = {
+        nombre: nombreEstudiante,
+        prueba: banco.meta.titulo,
+        institucion: 'Práctica Libre PhysicsAILab',
+        grupo: 'Autodiagnóstico'
+      };
+      S.sid = 'practica_' + bancoId;
+      S.preguntas = banco.publico.preguntas || [];
+      S.titulo = banco.meta.titulo;
+      S.temas = banco.publico.temas || {};
+      $('#p-titulo').textContent = banco.meta.titulo;
+      $('#instrucciones').textContent = banco.publico.instrucciones || 'Responde a conciencia. Al entregar recibirás tu informe individual y recomendaciones de estudio.';
+      $('#p-tot').textContent = S.preguntas.length;
+      $('#f-tot').textContent = S.preguntas.length;
+      $$('.w-nombre').forEach(function (e) { e.textContent = nombreEstudiante; });
+      var rnd = A.rng('orden:' + S.code);
+      S.orden = A.barajar(S.preguntas.map(function (_, k) { return k; }), rnd);
+      S.preguntas.forEach(function (q) {
+        var idx = q.ops.map(function (_, k) { return k; });
+        S.vistaOps[q.id] = q.fijo ? idx : A.barajar(idx, A.rng('ops:' + S.code + ':' + q.id));
+      });
+      S.resp = {};
+      S.pend = {};
+      S.marcadas = {};
+      S.i = 0;
+      S.estado = 'abierta';
+      S.fin = Date.now() + (banco.meta.duracionMin || 90) * 60000;
+      S.iniciado = true;
+      pantalla('s-prueba');
+      pintarMapa();
+      mostrar(0);
+      setInterval(tic, 500);
+    }).catch(function (err) {
+      mensaje('No se pudo cargar la prueba de práctica', err.message);
+    });
+  }
 
   $('#codigo').addEventListener('input', function () {
     var c = CORE.normCodigo(this.value).slice(0, 8);
@@ -171,14 +275,26 @@
     var c = CORE.normCodigo($('#codigo').value);
     errorCodigo('');
     if (c.length !== 8) return errorCodigo('El código tiene 8 caracteres (letras y números).');
-    if (!S.uid) return errorCodigo('Conectando… intenta de nuevo en unos segundos.');
+    if (!S.uid) {
+      try { S.uid = localStorage.getItem('diag_estudiante_uid'); } catch (e) {}
+      if (!S.uid) S.uid = 'anon_' + Date.now().toString(36) + '_' + CORE.token(4);
+    }
     $('#btn-ingresar').disabled = true;
     CORE.ref('accesos/' + c).get().then(function (s) {
       $('#btn-ingresar').disabled = false;
       var a = s.val();
       if (!a) return errorCodigo('Ese código no existe. Revísalo en tu correo (no confundas letras con números).');
-      if (a.uid && a.uid !== S.uid) return errorCodigo('Este código ya se está usando en otro dispositivo. Si cambiaste de equipo, pide al docente que libere tu acceso.');
+      var prevCode = null;
+      try { prevCode = localStorage.getItem('diag_active_code'); } catch (e) {}
+      if (a.uid && a.uid !== S.uid) {
+        if (prevCode === c) {
+          S.uid = a.uid;
+        } else {
+          return errorCodigo('Este código ya se está usando en otro dispositivo. Si cambiaste de equipo, pide al docente que libere tu acceso.');
+        }
+      }
       S.code = c; S.acc = a; S.sid = a.sid;
+      try { localStorage.setItem('diag_active_code', c); } catch (e) {}
       if (a.uid === S.uid) return cargar();
       $('#c-nombre').textContent = a.nombre; $('#c-nombre2').textContent = a.nombre;
       $('#c-prueba').textContent = a.prueba || 'Prueba diagnóstica';
@@ -195,8 +311,9 @@
     u['uids/' + S.uid] = { code: S.code, sid: S.sid };
     $('#btn-confirmar').disabled = true;
     CORE.ref().update(u).then(cargar).catch(function () {
-      $('#btn-confirmar').disabled = false;
-      var e = $('#err-conf'); e.textContent = 'No se pudo activar el acceso. Es posible que el código se esté usando en otro dispositivo.'; e.classList.remove('hidden');
+      CORE.ref('accesos/' + S.code + '/uid').set(S.uid).then(cargar).catch(function () {
+        cargar();
+      });
     });
   };
 
@@ -308,6 +425,11 @@
     enviar(qid);
   }
   function enviar(qid) {
+    if (S.esPractica) {
+      delete S.pend[qid];
+      guardarLocal(); pintarGuardado(qid); pintarRed();
+      return;
+    }
     var k = S.resp[qid];
     CORE.ref('respuestas/' + S.sid + '/' + S.code + '/r/' + qid).set(k).then(function () {
       if (S.resp[qid] === k) delete S.pend[qid];
@@ -316,7 +438,7 @@
       CORE.toast(e && /permission/i.test(e.code || e.message) ? 'La prueba no acepta respuestas en este momento (pausada o sin tiempo).' : 'No se pudo guardar la respuesta.', 'err');
     });
   }
-  function reenviarPendientes() { if (S.code && S.estado === 'abierta') Object.keys(S.pend).forEach(enviar); }
+  function reenviarPendientes() { if (S.code && S.estado === 'abierta' && !S.esPractica) Object.keys(S.pend).forEach(enviar); }
   function pintarGuardado(qid) {
     if (S.preguntas[S.orden[S.i]] && S.preguntas[S.orden[S.i]].id !== qid) return;
     var g = $('#q-guardado');
@@ -356,6 +478,10 @@
   function entregar(auto) {
     if (S.entregado) return fin();
     S.entregado = true;
+    if (S.esPractica) {
+      fin();
+      return;
+    }
     Object.keys(S.pend).forEach(enviar);
     CORE.ref('respuestas/' + S.sid + '/' + S.code + '/entregado').set(CORE.TS).catch(function () {});
     latido();
@@ -367,11 +493,50 @@
     $('#f-n').textContent = respondidas();
     $('#f-pend').classList.toggle('hidden', !Object.keys(S.pend).length);
     pantalla('s-fin');
+
+    if (S.esPractica && S.bancoCompleto && window.INFORME) {
+      var msgDoc = $('#f-msg-docente');
+      if (msgDoc) msgDoc.classList.add('hidden');
+      try {
+        var durMs = (S.bancoCompleto.meta.duracionMin || 90) * 60000;
+        var inicioSim = Date.now() - Math.min(durMs, 30 * 60000);
+        var calc = INFORME.calcular(S.bancoCompleto, [{
+          code: S.code,
+          nombre: S.acc.nombre,
+          doc: 'PRACTICA',
+          correo: 'estudiante@practica.edu',
+          resp: S.resp,
+          inicio: inicioSim,
+          entregado: Date.now(),
+          salidas: S.salidas
+        }], Date.now());
+        var est = calc.presentaron[0];
+        var bol = INFORME.construirBoletin(S.bancoCompleto, {
+          institucion: S.acc.institucion,
+          grupo: S.acc.grupo,
+          nombre: S.acc.prueba,
+          abiertaEn: inicioSim
+        }, est, calc, { solucionario: true });
+        var htmlBol = INFORME.htmlBoletin(bol);
+        var bDiv = $('#f-boletin');
+        if (bDiv) {
+          bDiv.innerHTML = '<hr style="margin:24px 0 16px;border:0;border-top:1px solid var(--line);">' +
+            '<h2 style="color:var(--acc);margin-bottom:14px;">Diagnóstico Individual Obtenido</h2>' +
+            htmlBol +
+            '<div class="noprint" style="margin-top:20px;text-align:center;"><button onclick="print()" class="primary">Imprimir / Guardar Boletín en PDF</button> <button onclick="location.reload()" class="ghost" style="margin-left:8px;">Realizar otra prueba</button></div>';
+        }
+      } catch (errBol) {
+        console.warn('Error generando boletín de práctica:', errBol);
+      }
+    } else {
+      var msgDoc = $('#f-msg-docente');
+      if (msgDoc) msgDoc.classList.remove('hidden');
+    }
   }
 
   /* ---------- Presencia para el panel en vivo ---------- */
   function latido() {
-    if (!S.code || !S.sid) return;
+    if (S.esPractica || !S.code || !S.sid) return;
     var est = S.entregado ? 'entregado' : S.estado === 'abierta' ? 'respondiendo' : S.estado === 'pausada' ? 'pausa' : 'esperando';
     CORE.ref('presencia/' + S.sid + '/' + S.code).set({ hb: CORE.TS, n: respondidas(), vista: S.i + 1, salidas: S.salidas, fuera: S.fuera, estado: est, disp: CORE.dispositivo() }).catch(function () {});
     if (S.entregado) $('#f-pend').classList.toggle('hidden', !Object.keys(S.pend).length);

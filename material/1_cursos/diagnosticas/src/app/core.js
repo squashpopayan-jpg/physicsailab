@@ -33,6 +33,68 @@
     C.db.ref('.info/connected').on('value', function (s) { C.conectado = !!s.val(); document.dispatchEvent(new CustomEvent('conexion', { detail: C.conectado })); });
     return C;
   };
+
+  /* Obtiene o genera una sesión de usuario segura y resiliente.
+     Si Firebase Auth anónimo está habilitado y funciona, lo utiliza.
+     Si Firebase Auth falla (por ejemplo con auth/configuration-not-found o sin conexión),
+     retorna de inmediato un usuario anónimo local persistente sin bloquear al estudiante. */
+  C.obtenerUsuario = function () {
+    return new Promise(function (res) {
+      if (C.auth && C.auth.currentUser) return res(C.auth.currentUser);
+
+      var localUid = null;
+      try { localUid = localStorage.getItem('diag_estudiante_uid'); } catch (e) {}
+      if (!localUid) {
+        localUid = 'anon_' + Date.now().toString(36) + '_' + C.token(6);
+        try { localStorage.setItem('diag_estudiante_uid', localUid); } catch (e) {}
+      }
+
+      var dummyUser = { uid: localUid, isAnonymous: true, isLocalFallback: true };
+      var terminado = false;
+
+      function responder(u) {
+        if (terminado) return;
+        terminado = true;
+        res(u || dummyUser);
+      }
+
+      var timeout = setTimeout(function () {
+        responder(dummyUser);
+      }, 1200);
+
+      try {
+        if (!C.auth) {
+          clearTimeout(timeout);
+          return responder(dummyUser);
+        }
+        var unhook = C.auth.onAuthStateChanged(function (u) {
+          if (u) {
+            clearTimeout(timeout);
+            if (unhook) unhook();
+            try { localStorage.setItem('diag_estudiante_uid', u.uid); } catch (e) {}
+            responder(u);
+          } else {
+            C.auth.signInAnonymously().then(function (cred) {
+              clearTimeout(timeout);
+              if (cred && cred.user) {
+                try { localStorage.setItem('diag_estudiante_uid', cred.user.uid); } catch (e) {}
+                responder(cred.user);
+              } else {
+                responder(dummyUser);
+              }
+            }).catch(function (err) {
+              console.warn('Firebase Auth anónimo no disponible (' + (err.code || err.message) + '), usando sesión autónoma resiliente.');
+              clearTimeout(timeout);
+              responder(dummyUser);
+            });
+          }
+        });
+      } catch (ex) {
+        clearTimeout(timeout);
+        responder(dummyUser);
+      }
+    });
+  };
   C.ahora = function () { return Date.now() + C.offset; };
   C.ref = function (p) { return C.db.ref(p); };
 

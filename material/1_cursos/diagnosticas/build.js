@@ -68,16 +68,19 @@ function main() {
   copiarDir(path.join(SRC, 'app'), path.join(OUT, 'public'));
   versionar(path.join(OUT, 'public'));
   fs.mkdirSync(path.join(OUT, 'bancos'), { recursive: true });
+  fs.mkdirSync(path.join(OUT, 'public', 'bancos'), { recursive: true });
   var catalogo = [];
   fs.readdirSync(path.join(SRC, 'bancos')).filter(function (f) { return /\.js$/.test(f); }).forEach(function (f) {
     var mod = path.join(SRC, 'bancos', f);
     delete require.cache[require.resolve(mod)];
     var c = compilarBanco(require(mod));
     fs.writeFileSync(path.join(OUT, 'bancos', c.meta.id + '.json'), JSON.stringify(c));
+    fs.writeFileSync(path.join(OUT, 'public', 'bancos', c.meta.id + '.json'), JSON.stringify(c));
     catalogo.push(c.meta);
     if (c.meta.id === 'fisica-fundamental') ejemplos(c);
     console.log('banco', c.meta.id, c.meta.n, 'preguntas');
   });
+  fs.writeFileSync(path.join(OUT, 'public', 'catalogo.json'), JSON.stringify(catalogo));
   console.log('sitio en', path.join(OUT, 'public'));
 }
 if (require.main === module) main();
