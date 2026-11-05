@@ -277,7 +277,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Botón Volver Arriba
     const backToTopBtn = document.getElementById('back-to-top-btn');
     window.scrollToTop = function() {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        if (window.innerWidth <= 768) {
+            window.scrollTo(0, 0);
+        } else {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
     };
 
     const observedSections = ['inicio', 'curiosidades', 'cursos', 'comics', 'podcasts', 'articulos', 'profesor', 'comentarios'];
@@ -294,6 +298,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentSectionId = sId;
             }
         }
+
+        document.querySelectorAll('.drawer-links li a').forEach(a => {
+            const href = a.getAttribute('href') || '';
+            if (href === '#' + sectionId || (sectionId === 'inicio' && href === '#inicio')) {
+                a.classList.add('active');
+            } else {
+                a.classList.remove('active');
+            }
+        });
 
         document.querySelectorAll('.bottom-nav-item').forEach(item => {
             if (item.dataset.section === currentSectionId) {
@@ -8981,7 +8994,11 @@ window.renderEnrolledCourses = renderEnrolledCourses;
             }
         });
 
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        if (window.innerWidth <= 768) {
+            window.scrollTo(0, 0);
+        } else {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
 
         if (sectionId === 'tienda') {
             setTimeout(() => {
@@ -9594,6 +9611,19 @@ window.renderEnrolledCourses = renderEnrolledCourses;
                 const yOffset = -100;
                 const y = dest.getBoundingClientRect().top + window.pageYOffset + yOffset;
                 window.scrollTo({ top: y, behavior: 'smooth' });
+            }
+        }, 120);
+    };
+
+    window.focusMobileSearch = function() {
+        if (typeof window.navigateToSection === 'function') {
+            window.navigateToSection('inicio');
+        }
+        setTimeout(() => {
+            const input = document.getElementById('global-content-search');
+            if (input) {
+                input.focus();
+                input.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         }, 120);
     };
