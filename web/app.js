@@ -1003,7 +1003,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ========================================================
     // ZONA PRIORITARIA DE CURSOS INSCRITOS (ESTUDIANTE)
     // ========================================================
-    window.renderEnrolledCourses = function() {
+    function renderEnrolledCourses() {
         const section = document.getElementById('mis-cursos');
         const container = document.getElementById('my-enrolled-courses-container');
         const quickChip = document.getElementById('quick-chip-my-courses');
@@ -1119,6 +1119,8 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // ========================================================
+window.renderEnrolledCourses = renderEnrolledCourses;
+
     // MODAL DE PERFIL DEL ESTUDIANTE Y GUARDADOS
     // ========================================================
     let currentProfileTab = 'courses';
@@ -2536,6 +2538,142 @@ document.addEventListener('DOMContentLoaded', () => {
         renderCourses(currentCourseFilter);
     };
 
+
+    // ==========================================================================
+    // DICCIONARIO DE SINÓNIMOS CIENTÍFICOS Y MOTOR DE BÚSQUEDA INTELIGENTE
+    // ==========================================================================
+    const SCIENTIFIC_THESAURUS = {
+        'mecanica': ['newton', 'cinematica', 'dinamica', 'proyectil', 'vectores', 'caida libre', 'choque', 'colision', 'segunda ley', 'plano inclinado', 'riel', 'fuerza', 'aceleracion', 'velocidad', 'momento', 'energia'],
+        'newton': ['mecanica', 'segunda ley', 'riel', 'fuerza', 'inercia', 'accion reaccion', 'gravedad'],
+        'riel': ['riel de aire', 'fotocompuertas', 'colisiones', 'segunda ley', 'newton', 'oscilador', 'polea', 'mecanica', 'carrito', 'plano inclinado'],
+        'colision': ['riel', 'choque', 'momento lineal', 'conservacion', 'mecanica'],
+        'choque': ['riel', 'colision', 'momento', 'energia', 'mecanica'],
+        'venturi': ['bernoulli', 'fluidos', 'tubo de venturi', 'presion', 'caudal', 'manometro', 'rotametro', 'continuidad', 'hidrodinamica'],
+        'bernoulli': ['venturi', 'fluidos', 'presion', 'caudal', 'tubo de venturi', 'hidrodinamica'],
+        'fluido': ['venturi', 'bernoulli', 'presion', 'caudal', 'viscosidad', 'mecanica de fluidos'],
+        'fluidos': ['venturi', 'bernoulli', 'presion', 'caudal', 'viscosidad', 'mecanica de fluidos'],
+        'pendulo': ['gravedad', 'g local', 'periodo', 'longitud', 'oscilacion', 'armonico', 'amplitud'],
+        'gravedad': ['pendulo', 'caida libre', 'g local', 'newton', 'relatividad', 'moderna'],
+        'arduino': ['circuitos', 'esp32', 'electronica', 'protoboard', 'sensores', 'leds', 'pwm', 'resistencias', 'hardware', 'spice', 'maker'],
+        'esp32': ['arduino', 'circuitos', 'electronica', 'protoboard', 'sensores', 'hardware', 'iot'],
+        'circuito': ['arduino', 'esp32', 'electronica', 'transformadores', 'protoboard', 'ohm', 'kirchhoff', 'resistencia', 'voltaje', 'corriente', 'spice'],
+        'circuitos': ['arduino', 'esp32', 'electronica', 'transformadores', 'protoboard', 'ohm', 'kirchhoff', 'resistencia', 'voltaje', 'corriente', 'spice'],
+        'electronica': ['arduino', 'esp32', 'circuitos', 'protoboard', 'sensores', 'hardware'],
+        'transformador': ['transformadores', 'electromagnetismo', 'induccion', 'faraday', 'bobina', 'voltaje', 'corriente'],
+        'transformadores': ['transformador', 'electromagnetismo', 'induccion', 'faraday', 'bobina', 'voltaje', 'corriente'],
+        'moderna': ['relatividad', 'einstein', 'foton', 'big bang', 'cosmologia', 'dilatacion temporal', 'e=mc2', 'lorentz', 'cuantica', 'efecto fotoelectrico'],
+        'relatividad': ['moderna', 'einstein', 'dilatacion', 'espacio tiempo', 'e=mc2', 'lorentz'],
+        'einstein': ['moderna', 'relatividad', 'dilatacion', 'espacio tiempo', 'foton', 'big bang'],
+        'foton': ['moderna', 'cuantica', 'luz', 'einstein', 'planck'],
+        'cuantica': ['mcuantica', 'schrodinger', 'dirac', 'planck', 'qubit', 'funcion de onda', 'efecto tunel', 'espacio de hilbert', 'postulados'],
+        'mcuantica': ['cuantica', 'dirac', 'schrodinger', 'perturbaciones', 'pozo de potencial', 'cuantizacion'],
+        'schrodinger': ['cuantica', 'mcuantica', 'funcion de onda', 'ecuacion'],
+        'dirac': ['mcuantica', 'cuantica', 'bra ket', 'notacion'],
+        'ondas': ['sonido', 'doppler', 'armonicos', 'interferencia', 'difraccion', 'vibraciones', 'resonancia'],
+        'sonido': ['ondas', 'doppler', 'frecuencia', 'acustica'],
+        'optica': ['luz', 'lente', 'espejo', 'refraccion', 'reflexion', 'laser', 'prisma', 'snell'],
+        'luz': ['optica', 'foton', 'refraccion', 'reflexion', 'laser'],
+        'termo': ['termodinamica', 'carnot', 'entropia', 'gas ideal', 'calor', 'temperatura', 'primera ley', 'fisicoquimica'],
+        'termodinamica': ['termo', 'carnot', 'entropia', 'gas ideal', 'calor', 'temperatura', 'fisicoquimica'],
+        'squash': ['deporte', 'biomecanica', 'wsf', 'arbitraje', 'manu', 'raqueta', 'pelota', 'cancha', 'torneo', 'articulaciones'],
+        'biomecanica': ['squash', 'articulaciones', 'cinematica angular', 'fuerza', 'deporte', 'manu squash'],
+        'arbitraje': ['squash', 'wsf', 'reglamento', 'let', 'stroke', 'no let'],
+        'faro': ['pods', 'reaccion', 'tof', 'esp32-s3', 'hardware', 'taller'],
+        'hbn': ['grafeno', 'monte carlo', 'nanoporos', 'dft', 'materiales'],
+        'kids': ['ninos', 'infantil', 'familias', 'juegos', 'experimentos', 'mundos', 'aventura', 'primaria'],
+        'historia': ['epistemologia', 'personajes', 'galileo', 'kepler', 'copernico', 'newton', 'maxwell', 'feynman', 'grecia'],
+        'quizzes': ['evaluaciones', 'examenes', 'pin', 'quizizz', 'wayground', 'parcial', 'antifraude'],
+        'tienda': ['cupones', 'descuento', 'comprar', 'precio', 'wompi', 'fisica30', 'obando40', 'mentores']
+    };
+
+    function normalizeSearchText(str) {
+        if (!str) return '';
+        return str
+            .toString()
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9\s]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+    window.normalizeSearchText = normalizeSearchText;
+
+    function getSearchSynonyms(token) {
+        const norm = normalizeSearchText(token);
+        const syns = new Set([norm]);
+        if (SCIENTIFIC_THESAURUS[norm]) {
+            SCIENTIFIC_THESAURUS[norm].forEach(s => syns.add(normalizeSearchText(s)));
+        }
+        for (const [key, list] of Object.entries(SCIENTIFIC_THESAURUS)) {
+            if (list.some(s => normalizeSearchText(s) === norm || s.includes(norm))) {
+                syns.add(normalizeSearchText(key));
+            }
+        }
+        return Array.from(syns);
+    }
+
+    function matchTokenSmart(token, targetText) {
+        if (!token || !targetText) return false;
+        const t = normalizeSearchText(token);
+        const text = normalizeSearchText(targetText);
+        if (text.includes(t)) return true;
+
+        const synonyms = getSearchSynonyms(t);
+        for (const syn of synonyms) {
+            if (text.includes(syn)) return true;
+        }
+
+        if (t.length >= 5) {
+            const words = text.split(' ');
+            for (const w of words) {
+                if (w.length >= 4 && (w.startsWith(t.substring(0, 4)) || t.startsWith(w.substring(0, 4)))) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    function highlightSearchMatches(text, query) {
+        if (!text || !query) return escapeHtml(text || '');
+        const tokens = normalizeSearchText(query).split(' ').filter(t => t.length >= 2);
+        if (tokens.length === 0) return escapeHtml(text);
+
+        let escaped = escapeHtml(text);
+        tokens.forEach(tok => {
+            const syns = getSearchSynonyms(tok).filter(s => s.length >= 3);
+            const searchTerms = [tok, ...syns.slice(0, 2)];
+            searchTerms.forEach(term => {
+                const regex = new RegExp('(' + term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+                escaped = escaped.replace(regex, '<mark class="search-match">$1</mark>');
+            });
+        });
+        return escaped;
+    }
+    window.highlightSearchMatches = highlightSearchMatches;
+
+    function filterCoursesBySmartQuery(coursesList, query) {
+        if (!query || !query.trim()) return coursesList;
+        const tokens = normalizeSearchText(query).split(' ').filter(Boolean);
+        if (tokens.length === 0) return coursesList;
+
+        return coursesList.filter(c => {
+            const searchable = [
+                c.titulo || '',
+                c.id || '',
+                (c.id || '').replace(/_/g, ' '),
+                c.categoria || '',
+                c.descripcion || '',
+                c.modulos || '',
+                (c.temas || []).join(' ')
+            ].join(' ');
+
+            return tokens.every(tok => matchTokenSmart(tok, searchable));
+        });
+    }
+    window.filterCoursesBySmartQuery = filterCoursesBySmartQuery;
+
     function renderCourses(filter = 'all') {
         currentCourseFilter = filter;
         const coursesGrid = document.getElementById('courses-grid');
@@ -2557,23 +2695,8 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
         if (currentCourseSearchQuery) {
-            const tokens = normalizeSearchText(currentCourseSearchQuery).split(' ').filter(Boolean);
-            if (tokens.length > 0) {
-                filtered = filtered.filter(c => {
-                    const searchable = normalizeSearchText([
-                        c.titulo || '',
-                        c.id || '',
-                        (c.id || '').replace(/_/g, ' '),
-                        c.categoria || '',
-                        c.descripcion || '',
-                        c.modulos || '',
-                        (c.temas || []).join(' ')
-                    ].join(' '));
-                    return tokens.every(tok => searchable.includes(tok));
-                });
-            }
+            filtered = filterCoursesBySmartQuery(filtered, currentCourseSearchQuery);
         }
-
         if (filtered.length === 0) {
             coursesGrid.innerHTML = `
                 <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1.5rem; background: rgba(15,23,42,0.6); border: 1px dashed rgba(99,102,241,0.35); border-radius: 16px;">
@@ -2969,7 +3092,7 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
     }
 
-    window.renderComics = function(category = 'all') {
+    function renderComics(category = 'all') {
         currentComicCategory = category;
         if (!comicsGrid) return;
         const cat = (category || 'all').toLowerCase().trim();
@@ -6810,7 +6933,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const factsGrid = document.getElementById('facts-grid');
     const factsToggleControls = document.getElementById('facts-toggle-controls');
 
-    window.renderPhysicsFacts = function(filter = 'all') {
+    function renderPhysicsFacts(filter = 'all') {
         currentFactFilter = filter;
         if (!factsGrid || !data.datosCuriosos) return;
         const f = (filter || 'all').toLowerCase();
@@ -6923,7 +7046,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    window.renderComments = function() {
+    function renderComments() {
         if (!commentsList) return;
         const userComments = getStoredComments();
         const baseComments = data.comentarios || [];
@@ -8640,36 +8763,134 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) {}
 
     // ==========================================================================
+    // ==========================================================================
     // ARQUITECTURA MODULAR POR PÁGINAS DEDICADAS (SPA ROUTER UNIVERSITARIO)
     // ==========================================================================
-    const ALL_PAGE_SECTIONS = [
-        'inicio',
-        'cursos',
-        'tienda',
-        'quizzes',
-        'trivia',
-        'trivia-historia',
-        'trivia-squash',
-        'juegos',
-        'comics',
-        'podcasts',
-        'articulos',
-        'curiosidades',
-        'profesor',
-        'recorrido',
-        'comentarios'
+    const PAGE_CATALOG = [
+        { id: 'inicio', title: 'Portal de Bienvenida', short: 'Inicio', icon: '🏠', order: 1 },
+        { id: 'cursos', title: 'Cursos & Laboratorios (33)', short: 'Cursos & Labs', icon: '🚀', order: 2 },
+        { id: 'tienda', title: 'Tienda Oficial & Cupones', short: 'Tienda & Cupones', icon: '🎟️', order: 3 },
+        { id: 'quizzes', title: 'Evaluaciones & Quizzes con PIN', short: 'Quizzes PIN', icon: '📝', order: 4 },
+        { id: 'trivia', title: 'Gran Trivia de Física (1.000 preg.)', short: 'Trivia Física', icon: '🎯', order: 5 },
+        { id: 'trivia-historia', title: 'Historia de la Física (500 preg.)', short: 'Historia Física', icon: '📜', order: 6 },
+        { id: 'trivia-squash', title: 'Gran Trivia de Squash', short: 'Trivia Squash', icon: '🎾', order: 7 },
+        { id: 'juegos', title: 'Simuladores & Minijuegos de Física', short: 'Juegos Física', icon: '🎮', order: 8 },
+        { id: 'comics', title: 'Cómics Científicos en PDF (56)', short: 'Cómics', icon: '🎨', order: 9 },
+        { id: 'podcasts', title: 'Canales en Spotify (6)', short: 'Podcasts', icon: '🎙️', order: 10 },
+        { id: 'curiosidades', title: 'Datos Curiosos Diarios (31)', short: 'Curiosidades', icon: '💡', order: 11 },
+        { id: 'articulos', title: 'Física & Biomecánica del Squash', short: 'Artículos', icon: '📰', order: 12 },
+        { id: 'profesor', title: 'Sobre el Docente Mg. Manuel Obando', short: 'Docente', icon: '👤', order: 13 },
+        { id: 'recorrido', title: 'Recorrido Virtual 3D por el Laboratorio', short: 'Recorrido 3D', icon: '🧪', order: 14 },
+        { id: 'comentarios', title: 'Buzón de Opiniones & Comunidad', short: 'Opiniones', icon: '💬', order: 15 }
     ];
+    window.PAGE_CATALOG = PAGE_CATALOG;
+
+    const ALL_PAGE_SECTIONS = PAGE_CATALOG.map(p => p.id);
+
+    let toastTimeout = null;
+    window.showExternalLinkToast = function(title, url) {
+        const toast = document.getElementById('external-link-toast');
+        const titleEl = document.getElementById('toast-title');
+        const descEl = document.getElementById('toast-desc');
+        if (!toast) return;
+
+        if (titleEl) titleEl.innerHTML = `🚀 Abriendo: ${escapeHtml(title || 'Contenido interactivo')}`;
+        if (descEl) descEl.innerHTML = `Se ha abierto en una nueva pestaña dedicada. Tu sesión y posición en <strong>PhysicsAILab</strong> siguen activas aquí.`;
+
+        toast.classList.add('toast-visible');
+        if (toastTimeout) clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => {
+            toast.classList.remove('toast-visible');
+        }, 5500);
+    };
+
+    window.closeExternalLinkToast = function() {
+        const toast = document.getElementById('external-link-toast');
+        if (toast) toast.classList.remove('toast-visible');
+        if (toastTimeout) clearTimeout(toastTimeout);
+    };
+
+    function injectPageNavigationFooters() {
+        PAGE_CATALOG.forEach((page, idx) => {
+            if (page.id === 'inicio') return;
+            const section = document.getElementById(page.id);
+            if (!section) return;
+
+            if (section.querySelector('.page-navigation-footer')) return;
+
+            const container = section.querySelector('.container') || section;
+            const prevPage = idx > 0 ? PAGE_CATALOG[idx - 1] : PAGE_CATALOG[PAGE_CATALOG.length - 1];
+            const nextPage = idx < PAGE_CATALOG.length - 1 ? PAGE_CATALOG[idx + 1] : PAGE_CATALOG[0];
+
+            const footerEl = document.createElement('div');
+            footerEl.className = 'page-navigation-footer';
+            footerEl.innerHTML = `
+                <button type="button" class="page-nav-btn page-nav-prev" onclick="navigateToSection('${prevPage.id}')" title="Ir a ${prevPage.title}">
+                    <span class="page-nav-arrow">←</span>
+                    <div class="page-nav-text">
+                        <span class="page-nav-sub">Página Anterior</span>
+                        <span class="page-nav-name">${prevPage.icon} ${prevPage.short}</span>
+                    </div>
+                </button>
+
+                <div class="page-nav-indicator">
+                    <span class="page-nav-pill">Página ${page.order} de ${PAGE_CATALOG.length}</span>
+                    <button type="button" class="page-nav-top-btn" onclick="window.scrollTo({top:0, behavior:'smooth'})" title="Volver al inicio de esta página">
+                        ↑ Subir al inicio
+                    </button>
+                </div>
+
+                <button type="button" class="page-nav-btn page-nav-next" onclick="navigateToSection('${nextPage.id}')" title="Ir a ${nextPage.title}">
+                    <div class="page-nav-text" style="text-align:right;">
+                        <span class="page-nav-sub">Página Siguiente</span>
+                        <span class="page-nav-name">${nextPage.icon} ${nextPage.short}</span>
+                    </div>
+                    <span class="page-nav-arrow">→</span>
+                </button>
+            `;
+            container.appendChild(footerEl);
+        });
+    }
+
+    function updatePageSwitcherTabs(currentSectionId) {
+        document.querySelectorAll('.dedicated-view-header').forEach(header => {
+            let switcher = header.querySelector('.page-switcher-bar');
+            if (!switcher) {
+                switcher = document.createElement('div');
+                switcher.className = 'page-switcher-bar';
+                switcher.setAttribute('aria-label', 'Selector de páginas');
+                const breadcrumbs = header.querySelector('.view-breadcrumbs');
+                if (breadcrumbs && breadcrumbs.nextSibling) {
+                    header.insertBefore(switcher, breadcrumbs.nextSibling);
+                } else {
+                    header.appendChild(switcher);
+                }
+            }
+
+            switcher.innerHTML = PAGE_CATALOG.map(p => `
+                <button type="button" class="page-tab-btn ${p.id === currentSectionId ? 'active' : ''}" 
+                        onclick="navigateToSection('${p.id}')" title="Ir a ${p.title}">
+                    <span>${p.icon}</span> <span>${p.short}</span>
+                </button>
+            `).join('');
+
+            const activeTab = switcher.querySelector('.page-tab-btn.active');
+            if (activeTab && typeof activeTab.scrollIntoView === 'function') {
+                try {
+                    activeTab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                } catch(e) {}
+            }
+        });
+    }
 
     window.navigateToSection = function(sectionId, pushToHistory = true) {
         if (!sectionId) sectionId = 'inicio';
         sectionId = sectionId.replace(/^#/, '');
 
-        // Soporte de alias para cupones -> tienda
         if (sectionId === 'cupones') {
             sectionId = 'tienda';
         }
 
-        // Si la sección solicitada es mis-cursos, redirigir a cursos y hacer scroll
         if (sectionId === 'mis-cursos') {
             window.navigateToSection('cursos', pushToHistory);
             setTimeout(() => {
@@ -8697,17 +8918,14 @@ document.addEventListener('DOMContentLoaded', () => {
             sectionId = 'inicio';
         }
 
-        // Asegurar clase modular-pages en body
         if (!document.body.classList.contains('modular-pages')) {
             document.body.classList.add('modular-pages');
         }
 
-        // Cerrar drawer móvil si está abierto
         if (typeof window.closeMobileDrawer === 'function') {
             window.closeMobileDrawer();
         }
 
-        // Ocultar todas las secciones y activar la seleccionada
         ALL_PAGE_SECTIONS.forEach(id => {
             const sec = document.getElementById(id);
             if (sec) {
@@ -8718,6 +8936,45 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         });
+
+        updatePageSwitcherTabs(sectionId);
+
+        if (pushToHistory) {
+            const newHash = sectionId === 'inicio' ? '' : '#' + sectionId;
+            const newUrl = newHash ? (window.location.pathname + newHash) : window.location.pathname;
+            if (window.location.hash !== newHash) {
+                history.pushState({ section: sectionId }, '', newUrl);
+            }
+        }
+
+        document.querySelectorAll('.nav-links a').forEach(a => {
+            const href = a.getAttribute('href') || '';
+            if (href === '#' + sectionId || (sectionId === 'inicio' && href === '#inicio')) {
+                a.classList.add('active');
+            } else {
+                a.classList.remove('active');
+            }
+        });
+
+        document.querySelectorAll('.bottom-nav-item').forEach(item => {
+            const sec = item.getAttribute('data-section') || (item.getAttribute('href') || '').replace(/^#/, '');
+            if (sec === sectionId) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
+
+        document.querySelectorAll('.quick-chip').forEach(chip => {
+            const href = chip.getAttribute('href') || '';
+            if (href === '#' + sectionId) {
+                chip.classList.add('active');
+            } else {
+                chip.classList.remove('active');
+            }
+        });
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
 
         if (sectionId === 'tienda') {
             setTimeout(() => {
@@ -8751,49 +9008,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 50);
         }
 
-        // Actualizar historial del navegador (back/forward button)
-        if (pushToHistory) {
-            const newHash = sectionId === 'inicio' ? '' : '#' + sectionId;
-            const newUrl = newHash ? (window.location.pathname + newHash) : window.location.pathname;
-            if (window.location.hash !== newHash) {
-                history.pushState({ section: sectionId }, '', newUrl);
-            }
-        }
-
-        // Actualizar enlaces activos en Navbar Desktop
-        document.querySelectorAll('.nav-links a').forEach(a => {
-            const href = a.getAttribute('href') || '';
-            if (href === '#' + sectionId || (sectionId === 'inicio' && href === '#inicio')) {
-                a.classList.add('active');
-            } else {
-                a.classList.remove('active');
-            }
-        });
-
-        // Actualizar enlaces activos en Bottom Nav Móvil
-        document.querySelectorAll('.bottom-nav-item').forEach(item => {
-            const sec = item.getAttribute('data-section') || (item.getAttribute('href') || '').replace(/^#/, '');
-            if (sec === sectionId) {
-                item.classList.add('active');
-            } else {
-                item.classList.remove('active');
-            }
-        });
-
-        // Actualizar chips de acceso rápido
-        document.querySelectorAll('.quick-chip').forEach(chip => {
-            const href = chip.getAttribute('href') || '';
-            if (href === '#' + sectionId) {
-                chip.classList.add('active');
-            } else {
-                chip.classList.remove('active');
-            }
-        });
-
-        // Desplazar suavemente arriba
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-
-        // Activadores específicos según la sección
         if (sectionId === 'juegos') {
             setTimeout(() => {
                 if (typeof window.switchPhysicsGame === 'function') {
@@ -8830,7 +9044,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Interceptor global de clics en enlaces con hash (#) para navegación fluida
     document.addEventListener('click', (e) => {
         const link = e.target.closest('a[href^="#"]');
         if (!link) return;
@@ -8843,15 +9056,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Escuchar botón Atrás/Adelante del navegador y gestos swipe en móviles
     window.addEventListener('popstate', (e) => {
         const targetSection = (e.state && e.state.section) || window.location.hash.replace(/^#/, '') || 'inicio';
         window.navigateToSection(targetSection, false);
     });
 
-    // Inicializar la vista correcta según el hash de la URL o mostrar el portal de bienvenida
     function initPageRouter() {
         document.body.classList.add('modular-pages');
+        injectPageNavigationFooters();
         const initialHash = window.location.hash.replace(/^#/, '');
         if (initialHash && (ALL_PAGE_SECTIONS.includes(initialHash) || initialHash === 'mis-cursos')) {
             window.navigateToSection(initialHash, false);
@@ -8860,6 +9072,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     initPageRouter();
+
+    document.addEventListener('click', (e) => {
+        const link = e.target.closest('a[target="_blank"]');
+        if (!link) return;
+        const href = link.getAttribute('href') || '';
+        if (href.startsWith('javascript:')) return;
+
+        let title = link.getAttribute('title') || link.innerText.trim() || 'Simulador / Contenido';
+        title = title.replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').slice(0, 50);
+        showExternalLinkToast(title, href);
+    });
     try {
         if (typeof window.renderStoreCourses === 'function') {
             window.renderStoreCourses();
@@ -8986,37 +9209,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // ========================================================
+    // ========================================================
     // BUSCADOR GLOBAL INSTANTÁNEO DE CONTENIDOS Y SIMULADORES
     // ========================================================
-    function normalizeSearchText(str) {
-        if (!str) return '';
-        return str
-            .toString()
-            .toLowerCase()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .replace(/[^a-z0-9\s]/g, ' ')
-            .replace(/\s+/g, ' ')
-            .trim();
-    }
-    window.normalizeSearchText = normalizeSearchText;
+    let currentHighlightedResultIndex = -1;
 
     window.handleGlobalSearchKeydown = function(e) {
-        if (e.key === 'Enter') {
+        const dropdown = document.getElementById('global-search-results-dropdown');
+        const items = dropdown ? dropdown.querySelectorAll('.global-search-result-item') : [];
+
+        if (e.key === 'ArrowDown') {
             e.preventDefault();
-            const q = (e.target.value || '').trim();
-            if (q) {
-                closeGlobalSearchDropdown();
-                const cursosSection = document.getElementById('cursos');
-                if (cursosSection) {
-                    cursosSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-                const coursesSearchInp = document.getElementById('courses-search-input');
-                if (coursesSearchInp) {
-                    coursesSearchInp.value = q;
-                }
-                if (typeof handleCoursesSearchInput === 'function') {
-                    handleCoursesSearchInput(q);
+            if (items.length === 0) return;
+            currentHighlightedResultIndex = (currentHighlightedResultIndex + 1) % items.length;
+            updateHighlightedSearchResult(items);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (items.length === 0) return;
+            currentHighlightedResultIndex = (currentHighlightedResultIndex - 1 + items.length) % items.length;
+            updateHighlightedSearchResult(items);
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (items.length > 0 && currentHighlightedResultIndex >= 0 && currentHighlightedResultIndex < items.length) {
+                items[currentHighlightedResultIndex].click();
+            } else {
+                const q = (e.target.value || '').trim();
+                if (q) {
+                    closeGlobalSearchDropdown();
+                    window.navigateToSection('cursos', true);
+                    const coursesSearchInp = document.getElementById('courses-search-input');
+                    if (coursesSearchInp) {
+                        coursesSearchInp.value = q;
+                    }
+                    if (typeof handleCoursesSearchInput === 'function') {
+                        handleCoursesSearchInput(q);
+                    }
                 }
             }
         } else if (e.key === 'Escape') {
@@ -9024,14 +9251,47 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    function updateHighlightedSearchResult(items) {
+        items.forEach((item, idx) => {
+            if (idx === currentHighlightedResultIndex) {
+                item.classList.add('selected-result');
+                item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            } else {
+                item.classList.remove('selected-result');
+            }
+        });
+    }
+
+    document.addEventListener('keydown', (e) => {
+        const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+        if (activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select') return;
+
+        if (e.key === '/' || (e.ctrlKey && e.key.toLowerCase() === 'k')) {
+            e.preventDefault();
+            const searchInput = document.getElementById('global-content-search');
+            if (searchInput) {
+                window.navigateToSection('inicio', true);
+                setTimeout(() => {
+                    searchInput.focus();
+                    searchInput.select();
+                    searchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 100);
+            }
+        }
+    });
+
     window.handleGlobalSearch = function(query) {
         const dropdown = document.getElementById('global-search-results-dropdown');
         const clearBtn = document.getElementById('global-search-clear-btn');
+        const kbdHint = document.getElementById('global-search-kbd');
         if (!dropdown) return;
 
         const qRaw = (query || '').trim();
         const qClean = normalizeSearchText(qRaw);
         if (clearBtn) clearBtn.style.display = qRaw ? 'block' : 'none';
+        if (kbdHint) kbdHint.style.display = qRaw ? 'none' : 'block';
+
+        currentHighlightedResultIndex = -1;
 
         if (qClean.length < 2) {
             dropdown.style.display = 'none';
@@ -9042,11 +9302,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const tokens = qClean.split(' ').filter(Boolean);
         const results = [];
 
-        // 1. Cursos y Laboratorios
+        // 1. Cursos y Laboratorios Oficiales (Catálogo de 33 materias)
         const pData = (typeof data !== 'undefined' && data) ? data : (window.PLATFORM_DATA || {});
         const courses = (pData && pData.cursos) ? pData.cursos : [];
         courses.forEach(c => {
-            const searchable = normalizeSearchText([
+            const searchable = [
                 c.titulo || '',
                 c.id || '',
                 (c.id || '').replace(/_/g, ' '),
@@ -9054,94 +9314,140 @@ document.addEventListener('DOMContentLoaded', () => {
                 c.descripcion || '',
                 c.modulos || '',
                 (c.temas || []).join(' ')
-            ].join(' '));
+            ].join(' ');
 
-            if (tokens.every(tok => searchable.includes(tok))) {
+            if (tokens.every(tok => matchTokenSmart(tok, searchable))) {
+                let badgeLabel = 'Curso Oficial';
+                let badgeColor = '#38bdf8';
+                let badgeBg = 'rgba(56,189,248,0.18)';
+                let icon = '🚀';
+
+                if (c.id === 'kids') {
+                    badgeLabel = '🌈 Niños & Familia (100% Libre)';
+                    badgeColor = '#f472b6';
+                    badgeBg = 'rgba(236,72,153,0.2)';
+                    icon = '🌈';
+                } else if (c.id === 'riel') {
+                    badgeLabel = '🧪 Lab 3D Liberado';
+                    badgeColor = '#34d399';
+                    badgeBg = 'rgba(16,185,129,0.2)';
+                    icon = '🧪';
+                } else if (c.id === 'venturi' || c.id === 'pendulo' || c.id === 'transformadores') {
+                    badgeLabel = '🧪 Lab Liberado';
+                    badgeColor = '#34d399';
+                    badgeBg = 'rgba(16,185,129,0.2)';
+                    icon = '🧪';
+                } else if (c.id === 'moderna' || c.id === 'mcuantica' || c.id === 'cuantica') {
+                    badgeLabel = '🌌 Cuántica & Moderna';
+                    badgeColor = '#c084fc';
+                    badgeBg = 'rgba(168,85,247,0.2)';
+                    icon = '🌌';
+                } else if (c.id === 'arduino') {
+                    badgeLabel = '⚡ Circuitos & Hardware';
+                    badgeColor = '#fbbf24';
+                    badgeBg = 'rgba(251,191,36,0.2)';
+                    icon = '⚡';
+                } else if (c.esPrivado) {
+                    badgeLabel = '🔬 Privado Docente';
+                    badgeColor = '#c084fc';
+                    badgeBg = 'rgba(168,85,247,0.2)';
+                    icon = '🔬';
+                }
+
                 results.push({
                     id: c.id,
-                    type: c.esPrivado ? '🔬 Privado Docente' : (c.categoria || 'Curso'),
+                    type: badgeLabel,
+                    icon: icon,
                     title: c.titulo,
                     desc: c.descripcion,
                     link: c.demoPath || '#cursos',
                     isExternal: !!c.demoPath,
                     isCourse: true,
-                    badgeColor: c.esPrivado ? '#c084fc' : '#38bdf8'
+                    badgeColor: badgeColor,
+                    badgeBg: badgeBg,
+                    score: c.titulo.toLowerCase().includes(qClean) ? 100 : 50
                 });
             }
         });
 
-        // 2. Cómics
+        // 2. Biblioteca de Cómics Científicos (56 cómics)
         const comics = (pData && pData.comics) ? pData.comics : [];
         comics.forEach(cm => {
-            const searchable = normalizeSearchText([cm.titulo || '', cm.descripcion || '', cm.categoria || ''].join(' '));
-            if (tokens.every(tok => searchable.includes(tok))) {
+            const searchable = [cm.titulo || '', cm.descripcion || '', cm.categoria || ''].join(' ');
+            if (tokens.every(tok => matchTokenSmart(tok, searchable))) {
                 results.push({
-                    type: '🎨 Cómic Científico',
+                    type: '🎨 Cómic Científico PDF',
+                    icon: '🎨',
                     title: cm.titulo,
                     desc: cm.descripcion,
                     link: cm.pdfPath || '#comics',
                     isExternal: !!cm.pdfPath,
-                    badgeColor: '#fbbf24'
+                    badgeColor: '#fbbf24',
+                    badgeBg: 'rgba(251,191,36,0.18)',
+                    score: 40
                 });
             }
         });
 
-        // 3. Podcasts
+        // 3. Podcasts Oficiales en Spotify (6 canales)
         const podcasts = (pData && pData.podcasts) ? pData.podcasts : [];
         podcasts.forEach(p => {
-            const searchable = normalizeSearchText([p.titulo || '', p.descripcion || ''].join(' '));
-            if (tokens.every(tok => searchable.includes(tok))) {
+            const searchable = [p.titulo || '', p.descripcion || ''].join(' ');
+            if (tokens.every(tok => matchTokenSmart(tok, searchable))) {
                 results.push({
-                    type: '🎙️ Podcast',
+                    type: '🎙️ Podcast en Spotify',
+                    icon: '🎙️',
                     title: p.titulo,
                     desc: p.descripcion,
                     link: p.audioPath || '#podcasts',
                     isExternal: !!p.audioPath,
-                    badgeColor: '#4ade80'
+                    badgeColor: '#4ade80',
+                    badgeBg: 'rgba(74,222,128,0.18)',
+                    score: 35
                 });
             }
         });
 
-        // 4. Trivias y Quizzes
-        const trivias = [
-            { title: 'Gran Trivia de Física (Nueva Ventana)', desc: '1.000 preguntas de física con sistema de 3 vidas y ranking oficial en ventana dedicada.', link: '/trivia.html', isExternal: true, type: '🎯 Trivia Oficial' },
-            { title: 'Física KIDS (Nueva Ventana)', desc: '10 mundos temáticos, 47 capítulos y 126 juegos interactivos para niños y familias.', link: '/material/1_cursos/kids/dist/index.html', isExternal: true, type: '🌈 Niños & Familias' },
-            { title: 'Laboratorio Virtual 3D: Riel de Aire (Nueva Ventana)', desc: '7 montajes de mecánica, colisiones, Segunda Ley, plano inclinado y fotocompuertas en 3D.', link: '/material/1_cursos/riel/dist/Riel_de_Aire.html', isExternal: true, type: '🧪 Lab Liberado' },
-            { title: 'Circuitos Vivos: Arduino & ESP32 (Nueva Ventana)', desc: '28 capítulos, protoboard virtual, simulador SPICE con cortocircuitos reales, sensores y proyectos de física.', link: '/material/1_cursos/arduino/dist/index.html', isExternal: true, type: '⚡ Arduino & Hardware' },
-            { title: 'Tratado de Física Moderna (Nueva Ventana)', desc: '28 capítulos interactivos, 95 simuladores, relatividad de Einstein, cuántica, física nuclear y cosmología del Big Bang.', link: '/material/1_cursos/moderna/dist/index.html', isExternal: true, type: '🌌 Física Moderna' },
-            { title: 'Tratado de Mecánica Cuántica', desc: '36 capítulos formales, notación Dirac, perturbaciones y problemas resueltos paso a paso.', link: '/material/1_cursos/mcuantica/dist/index.html', isExternal: true, type: '🌌 Cuántica Universitaria' },
-            { title: 'Trivia de Historia de la Física', desc: '500 preguntas con personajes, descubrimientos y biografías.', link: '#trivia-historia', type: '📜 Trivia Historia' },
-            { title: 'Gran Trivia de Squash', desc: 'Reglamento, física del bote y táctica competitiva.', link: '#trivia-squash', type: '🎾 Trivia Squash' },
-            { title: 'Quizzes Universitarios con PIN', desc: 'Evaluaciones de cinemática, dinámica y electromagnetismo con protocolo antifraude.', link: '#quizzes', type: '📝 Quiz Oficial' },
-            { title: 'Tratado de Fisicoquímica', desc: '38 capítulos interactivos, 141 simulaciones y cinética química avanzada.', link: '/material/1_cursos/fisicoquimica/dist/index.html', isExternal: true, type: '🧪 Tratado Oficial' },
-            { title: 'Simulador Manu Squash', desc: 'Suite de análisis biomecánico, rutinas tácticas y editor de trayectorias.', link: '/material/1_cursos/squash_sim/dist/index.html', isExternal: true, type: '🎮 Simulador Deportivo' },
-            { title: 'Faro: Pods de Reacción', desc: 'Manual técnico de taller, firmware ESP32-S3 y planos de ensamble.', link: '/material/1_cursos/faro/manual/dist/index.html', isExternal: true, type: '💡 Hardware & Taller' },
-            { title: 'hBN-MC: Simulador Monte Carlo', desc: 'Heteroestructuras 2D y nanoporos de grafeno/hBN.', link: '/material/1_cursos/hBN-MC/index.html', isExternal: true, type: '🔬 Simulación DFT' },
-            { title: 'Pruebas Diagnósticas', desc: 'Plataforma institucional de evaluación para colegios y universidades.', link: '/material/1_cursos/diagnosticas/dist/public/index.html', isExternal: true, type: '🏛️ Servicio Académico' }
+        // 4. Módulos Interactivos, Trivias, Quizzes, Simuladores y Tienda
+        const modules = [
+            { title: 'Gran Trivia de Física (1.000 Preguntas)', desc: 'Desafío interactivo de física con 3 vidas, racha de 10 y ranking oficial en vivo.', link: '/trivia.html', isExternal: true, type: '🎯 Trivia Oficial', icon: '🎯', badgeColor: '#f59e0b', badgeBg: 'rgba(245,158,11,0.2)' },
+            { title: 'Trivia de Historia de la Física (500 Preguntas)', desc: 'Epistemología, científicos históricos, personajes, fechas clave y biografías completas.', link: '#trivia-historia', type: '📜 Historia de la Física', icon: '📜', badgeColor: '#f59e0b', badgeBg: 'rgba(245,158,11,0.2)' },
+            { title: 'Gran Trivia de Squash', desc: 'Reglamento WSF, física del bote, biomecánica y táctica deportiva universitaria.', link: '#trivia-squash', type: '🎾 Trivia de Squash', icon: '🎾', badgeColor: '#34d399', badgeBg: 'rgba(16,185,129,0.2)' },
+            { title: 'Evaluaciones & Quizzes Universitarios con PIN', desc: 'Sala de exámenes tipo Quizizz/Wayground con PIN docente y protocolo antifraude.', link: '#quizzes', type: '📝 Quiz con PIN', icon: '📝', badgeColor: '#fb7185', badgeBg: 'rgba(244,63,94,0.2)' },
+            { title: 'Tienda Oficial de Descuentos & Cupones (-30% y -40%)', desc: 'Aplica códigos promocionales como FISICA30 u OBANDO40 con nuestros mentores.', link: '#tienda', type: '🎟️ Tienda & Descuentos', icon: '🎟️', badgeColor: '#34d399', badgeBg: 'rgba(52,211,153,0.2)' },
+            { title: 'Simuladores y Juegos de Física en Canvas', desc: 'Tiro parabólico con cañón, péndulo armónico y órbita gravitacional interactiva.', link: '#juegos', type: '🎮 Juegos de Física', icon: '🎮', badgeColor: '#38bdf8', badgeBg: 'rgba(56,189,248,0.2)' },
+            { title: 'Recorrido Virtual 3D por el Laboratorio', desc: 'Tour interactivo 3D con gemelo digital del laboratorio de física de la Universidad del Cauca.', link: '#recorrido', type: '🧪 Tour Virtual 3D', icon: '🧪', badgeColor: '#34d399', badgeBg: 'rgba(16,185,129,0.2)' },
+            { title: 'Física y Biomecánica del Squash', desc: 'Artículos científicos de cinemática articular y dinámica de impacto en pista.', link: '#articulos', type: '📰 Artículos Científicos', icon: '📰', badgeColor: '#fbbf24', badgeBg: 'rgba(251,191,36,0.2)' },
+            { title: 'Sobre el Docente Mg. Manuel Alejandro Obando', short: 'Perfil Académico', desc: 'Ingeniero Físico (Unicauca), M.Sc. en Física de Materiales (UFOP Brasil) y docente.', link: '#profesor', type: '👤 Perfil Docente', icon: '👤', badgeColor: '#a78bfa', badgeBg: 'rgba(167,139,250,0.2)' }
         ];
 
-        trivias.forEach(t => {
-            const searchable = normalizeSearchText([t.title, t.desc, t.type].join(' '));
-            if (tokens.every(tok => searchable.includes(tok))) {
-                if (!results.some(r => r.title === t.title)) {
-                    results.push({
-                        type: t.type,
-                        title: t.title,
-                        desc: t.desc,
-                        link: t.link,
-                        isExternal: !!t.isExternal,
-                        badgeColor: '#a78bfa'
-                    });
-                }
+        modules.forEach(m => {
+            const searchable = [m.title, m.desc, m.type].join(' ');
+            if (tokens.every(tok => matchTokenSmart(tok, searchable))) {
+                results.push({
+                    type: m.type,
+                    icon: m.icon,
+                    title: m.title,
+                    desc: m.desc,
+                    link: m.link,
+                    isExternal: !!m.isExternal,
+                    badgeColor: m.badgeColor,
+                    badgeBg: m.badgeBg,
+                    score: 30
+                });
             }
         });
 
+        results.sort((a, b) => (b.score || 0) - (a.score || 0));
+
         if (results.length === 0) {
             dropdown.innerHTML = `
-                <div style="text-align:center; padding:1.5rem; color:var(--text-muted); font-size:0.92rem;">
-                    🔍 No se encontraron contenidos que coincidan con "<strong>${escapeHtml(qRaw)}</strong>".
-                    <div style="margin-top:0.6rem;">
-                        <button type="button" class="btn btn-secondary" style="font-size:0.8rem; padding:0.35rem 0.8rem;" onclick="clearGlobalSearch()">Limpiar búsqueda</button>
+                <div style="text-align:center; padding:1.5rem 1rem; color:var(--text-muted);">
+                    <div style="font-size:2rem; margin-bottom:0.4rem;">🔍</div>
+                    <div style="font-weight:700; color:#fff; font-size:0.95rem; margin-bottom:0.3rem;">No se encontraron resultados</div>
+                    <div style="font-size:0.8rem; line-height:1.4;">
+                        No encontramos coincidencias para "<strong>${escapeHtml(qRaw)}</strong>".<br>
+                        Prueba con términos como: <em>mecánica, riel, venturi, arduino, cuántica, péndulo, einstein, squash, trivia</em>.
                     </div>
                 </div>
             `;
@@ -9152,31 +9458,36 @@ document.addEventListener('DOMContentLoaded', () => {
         const courseResultsCount = results.filter(r => r.isCourse).length;
 
         dropdown.innerHTML = `
-            <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; padding:0.25rem 0.5rem 0.6rem; border-bottom:1px solid rgba(255,255,255,0.08); margin-bottom:0.4rem; display:flex; justify-content:space-between; align-items:center;">
-                <span>Resultados encontrados (${results.length})</span>
-                <span style="color:#a5b4fc; font-size:0.72rem;">Presiona <strong>Enter</strong> para ver en Cursos ➔</span>
+            <div style="padding:0.4rem 0.6rem 0.6rem; border-bottom:1px solid rgba(255,255,255,0.08); font-size:0.75rem; color:var(--text-muted); display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-weight:700; color:#cbd5e1;">🎯 ${results.length} resultado${results.length === 1 ? '' : 's'} encontrado${results.length === 1 ? '' : 's'}</span>
+                <span style="color:#a5b4fc; font-size:0.7rem;">Navega con flechas ↑ ↓ y pulsa <strong>Enter</strong> para abrir</span>
             </div>
-            <div style="max-height:360px; overflow-y:auto;">
-                ${results.map(r => `
-                    <a href="${r.link}" ${r.isExternal ? 'target="_blank"' : ''} onclick="closeGlobalSearchDropdown()" 
-                       style="display:block; padding:0.65rem 0.75rem; border-radius:8px; text-decoration:none; transition:background 0.15s ease; border-bottom:1px solid rgba(255,255,255,0.04);" 
-                       onmouseover="this.style.background='rgba(99,102,241,0.15)'" onmouseout="this.style.background='transparent'">
-                        <div style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem; margin-bottom:0.2rem;">
-                            <strong style="color:#fff; font-size:0.92rem;">${escapeHtml(r.title)}</strong>
-                            <span style="font-size:0.68rem; background:${r.badgeColor}22; color:${r.badgeColor}; border:1px solid ${r.badgeColor}44; padding:0.1rem 0.45rem; border-radius:4px; font-weight:700; white-space:nowrap;">
-                                ${escapeHtml(r.type)}
+            <div style="max-height:360px; overflow-y:auto; padding:0.4rem 0;">
+                ${results.map((r, index) => `
+                    <a href="${r.link}" ${r.isExternal ? 'target="_blank" rel="noopener noreferrer"' : ''} 
+                       class="global-search-result-item" data-index="${index}"
+                       onclick="closeGlobalSearchDropdown(); ${!r.isExternal && r.link.startsWith('#') ? 'window.navigateToSection(\'' + r.link.replace('#', '') + '\'); return false;' : ''}">
+                        <div style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem; margin-bottom:0.25rem;">
+                            <div style="display:flex; align-items:center; gap:0.45rem; overflow:hidden;">
+                                <span style="font-size:1.15rem; flex-shrink:0;">${r.icon || '🚀'}</span>
+                                <strong style="color:#fff; font-size:0.92rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                                    ${highlightSearchMatches(r.title, qRaw)}
+                                </strong>
+                            </div>
+                            <span class="search-badge" style="background:${r.badgeBg}; color:${r.badgeColor}; border:1px solid ${r.badgeColor}55;">
+                                ${escapeHtml(r.type)} ${r.isExternal ? '↗' : '↓'}
                             </span>
                         </div>
-                        <p style="margin:0; font-size:0.78rem; color:var(--text-muted); line-height:1.35; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                            ${escapeHtml(r.desc)}
+                        <p style="margin:0; font-size:0.78rem; color:#94a3b8; line-height:1.35; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                            ${highlightSearchMatches(r.desc, qRaw)}
                         </p>
                     </a>
                 `).join('')}
             </div>
             ${courseResultsCount > 0 ? `
-                <div style="padding:0.5rem 0.5rem 0.2rem; border-top:1px solid rgba(255,255,255,0.08); margin-top:0.4rem; text-align:center;">
-                    <button type="button" class="btn btn-secondary" style="width:100%; font-size:0.8rem; padding:0.4rem 0.8rem; justify-content:center; color:#38bdf8; border-color:rgba(56,189,248,0.4);"
-                            onclick="closeGlobalSearchDropdown(); const cs = document.getElementById('cursos'); if(cs) cs.scrollIntoView({behavior:'smooth'}); const cinp = document.getElementById('courses-search-input'); if(cinp){ cinp.value = '${escapeHtml(qRaw).replace(/'/g, "\\\'")}'; handleCoursesSearchInput(cinp.value); }">
+                <div style="padding:0.5rem 0.5rem 0.2rem; border-top:1px solid rgba(255,255,255,0.08); margin-top:0.35rem; text-align:center;">
+                    <button type="button" class="btn btn-secondary" style="width:100%; font-size:0.8rem; padding:0.45rem 0.8rem; justify-content:center; color:#38bdf8; border-color:rgba(56,189,248,0.4);"
+                            onclick="closeGlobalSearchDropdown(); window.navigateToSection('cursos', true); const cinp = document.getElementById('courses-search-input'); if(cinp){ cinp.value = '${escapeHtml(qRaw).replace(/'/g, "\\\'")}'; handleCoursesSearchInput(cinp.value); }">
                         🔍 Ver los ${courseResultsCount} cursos filtrados en la cuadrícula de Cursos ➔
                     </button>
                 </div>
@@ -9188,9 +9499,11 @@ document.addEventListener('DOMContentLoaded', () => {
     window.clearGlobalSearch = function() {
         const inp = document.getElementById('global-content-search');
         const clearBtn = document.getElementById('global-search-clear-btn');
+        const kbdHint = document.getElementById('global-search-kbd');
         const dropdown = document.getElementById('global-search-results-dropdown');
         if (inp) { inp.value = ''; inp.focus(); }
         if (clearBtn) clearBtn.style.display = 'none';
+        if (kbdHint) kbdHint.style.display = 'block';
         if (dropdown) { dropdown.style.display = 'none'; dropdown.innerHTML = ''; }
     };
 
@@ -9199,9 +9512,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (dropdown) dropdown.style.display = 'none';
     };
 
-    // Cerrar dropdown al hacer clic fuera
-    
-    // Lanzador de Trivias en Nueva Ventana Dedicada
     window.launchTriviaWindow = function(type) {
         let targetFile = 'trivia.html';
         let nameInput = null;
@@ -9236,3 +9546,47 @@ document.addEventListener('DOMContentLoaded', () => {
             closeGlobalSearchDropdown();
         }
     });
+
+    window.filterCoursesByHeroRoute = function(route) {
+        if (typeof window.navigateToSection === 'function') {
+            window.navigateToSection('cursos', false);
+        }
+        let targetFilter = route;
+        if (targetFilter === 'materiales') targetFilter = 'labs';
+        if (targetFilter === 'ia') targetFilter = 'aplicada';
+
+        const btn = document.querySelector(`.course-filter-btn[data-filter="${targetFilter}"]`);
+        if (btn) {
+            btn.click();
+        } else if (typeof window.renderCourses === 'function') {
+            document.querySelectorAll('.course-filter-btn').forEach(b => {
+                if (b.dataset.filter === targetFilter) b.classList.add('active');
+                else b.classList.remove('active');
+            });
+            window.renderCourses(targetFilter);
+        }
+
+        document.querySelectorAll('.hero-route-card').forEach(card => {
+            const cr = card.getAttribute('data-route');
+            if (cr === route || cr === targetFilter) {
+                card.classList.add('active-route');
+                card.style.transform = 'translateY(-3px)';
+                card.style.borderColor = '#ffffff';
+                card.style.boxShadow = '0 8px 25px rgba(99, 102, 241, 0.45)';
+            } else {
+                card.classList.remove('active-route');
+                card.style.transform = '';
+                card.style.borderColor = '';
+                card.style.boxShadow = '';
+            }
+        });
+
+        setTimeout(() => {
+            const dest = document.getElementById('courses-container') || document.getElementById('courses-grid');
+            if (dest) {
+                const yOffset = -100;
+                const y = dest.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                window.scrollTo({ top: y, behavior: 'smooth' });
+            }
+        }, 120);
+    };
