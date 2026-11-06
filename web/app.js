@@ -2919,6 +2919,9 @@ window.renderEnrolledCourses = renderEnrolledCourses;
         const navGarminBtn = document.getElementById('nav-garmin-btn');
         const mobileGarminBtn = document.getElementById('mobile-garmin-btn');
         const drawerGarminItem = document.getElementById('drawer-garmin-item');
+        const navTradingBtn = document.getElementById('nav-trading-btn');
+        const mobileTradingBtn = document.getElementById('mobile-trading-btn');
+        const drawerTradingItem = document.getElementById('drawer-trading-item');
         const navAdminBtnLabel = document.getElementById('nav-admin-btn-label');
         const mobileAdminBtnLabel = document.getElementById('mobile-admin-btn-label');
 
@@ -2930,6 +2933,15 @@ window.renderEnrolledCourses = renderEnrolledCourses;
         }
         if (drawerGarminItem) {
             drawerGarminItem.style.display = adminActive ? 'block' : 'none';
+        }
+        if (navTradingBtn) {
+            navTradingBtn.style.display = adminActive ? 'inline-flex' : 'none';
+        }
+        if (mobileTradingBtn) {
+            mobileTradingBtn.style.display = adminActive ? 'inline-flex' : 'none';
+        }
+        if (drawerTradingItem) {
+            drawerTradingItem.style.display = adminActive ? 'block' : 'none';
         }
         if (navAdminBtnLabel) {
             navAdminBtnLabel.textContent = adminActive ? 'Admin 👑' : 'Docente';
@@ -2965,6 +2977,9 @@ window.renderEnrolledCourses = renderEnrolledCourses;
                         </a>
                         <a href="/garmin/" class="btn btn-secondary" style="font-size:0.82rem; padding:0.45rem 0.85rem; border-color:rgba(34, 211, 238, 0.45); color:#22d3ee; display:inline-flex; align-items:center; gap:0.35rem;" title="Abrir mi monitor personal Garmin AI Pro">
                             ⌚ Garmin Pro
+                        </a>
+                        <a href="/truetrading/" class="btn btn-secondary" style="font-size:0.82rem; padding:0.45rem 0.85rem; border-color:rgba(245, 158, 11, 0.45); color:#fbbf24; display:inline-flex; align-items:center; gap:0.35rem;" title="Abrir mi monitor privado TrueTrading Gold">
+                            📈 TrueTrading
                         </a>
                         <button class="btn btn-secondary" style="font-size:0.82rem; padding:0.45rem 0.85rem;" onclick="probarComoVisitante()" title="Desactiva el modo admin para probar la web como visitante">
                             👁️ Probar como Visitante
@@ -6957,6 +6972,31 @@ window.renderEnrolledCourses = renderEnrolledCourses;
                         <div style="display:flex; gap:0.6rem; flex-wrap:wrap; align-items:center;">
                             <a href="/garmin/" class="btn btn-primary" style="font-size:0.88rem; padding:0.55rem 1.15rem; background:linear-gradient(135deg, #0284c7, #06b6d4); border:none; display:inline-flex; align-items:center; gap:0.4rem; font-weight:700; box-shadow:0 0 16px rgba(6,182,212,0.35);">
                                 <span>🚀 Abrir Garmin AI Pro</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Módulo Exclusivo y Privado: TrueTrading Gold Web Dashboard -->
+                <div style="margin-bottom:2rem; padding:1.25rem 1.5rem; background:linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(15, 23, 42, 0.9)); border:1px solid rgba(245, 158, 11, 0.35); border-radius:14px; box-shadow:0 8px 24px rgba(0,0,0,0.3);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1.2rem;">
+                        <div style="display:flex; align-items:center; gap:1rem;">
+                            <div style="font-size:2.2rem; background:rgba(245,158,11,0.15); width:56px; height:56px; display:flex; align-items:center; justify-content:center; border-radius:14px; border:1px solid rgba(245,158,11,0.35); flex-shrink:0;">
+                                📈
+                            </div>
+                            <div>
+                                <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.3rem; flex-wrap:wrap;">
+                                    <h4 style="color:#fff; font-size:1.15rem; margin:0; font-weight:700;">TrueTrading Gold · Panel & Candados</h4>
+                                    <span style="font-size:0.7rem; background:#b45309; color:#fef3c7; padding:0.18rem 0.6rem; border-radius:999px; font-weight:700; letter-spacing:0.5px;">PRIVADO · SOLO DOCENTE</span>
+                                </div>
+                                <p style="font-size:0.84rem; color:var(--text-muted); margin:0;">
+                                    Monitoreo en vivo de TP y SL para FTMO 100k y VT Markets Cent con control interactivo de candados de protección.
+                                </p>
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:0.6rem; flex-wrap:wrap; align-items:center;">
+                            <a href="/truetrading/" target="_blank" class="btn btn-primary" style="font-size:0.88rem; padding:0.55rem 1.15rem; background:linear-gradient(135deg, #d97706, #fbbf24); color:#0b0f19; border:none; display:inline-flex; align-items:center; gap:0.4rem; font-weight:800; box-shadow:0 0 16px rgba(245,158,11,0.35);">
+                                <span>🚀 Abrir TrueTrading ↗️</span>
                             </a>
                         </div>
                     </div>
