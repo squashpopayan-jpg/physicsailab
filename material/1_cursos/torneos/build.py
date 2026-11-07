@@ -56,7 +56,10 @@ def main():
         sys.exit("La plantilla no tiene los marcadores esperados")
     app = src.replace('var LOGO="__LOGO__";', 'var LOGO="%s";' % logo())
     write(DIST, app)
-    app_with_guard = app.replace('</body>', GUARD_TAGS + '\n</body>')
+    last_body = app.rfind("</body>")
+    if last_body == -1:
+        sys.exit("No se encontró la etiqueta </body> de cierre")
+    app_with_guard = app[:last_body] + GUARD_TAGS + "\n" + app[last_body:]
     write(INDEX, app_with_guard)
     write(TEST, app.replace(FB_TAGS, '<script src="fbmock.js"></script>'))
     print("dist:", DIST, len(app), "bytes")
