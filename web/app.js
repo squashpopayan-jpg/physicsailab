@@ -541,6 +541,7 @@ function handleGlobalSearch(query) {
     // 1. Cursos Oficiales (34 materias)
     const courses = (pData && pData.cursos) ? pData.cursos : [];
     courses.forEach(c => {
+        if (c.oculto || c.privado) return;
         let badgeLabel = 'Curso Oficial';
         let badgeColor = '#38bdf8';
         let badgeBg = 'rgba(56,189,248,0.18)';
@@ -3384,9 +3385,10 @@ window.renderEnrolledCourses = renderEnrolledCourses;
         if (f === 'materiales') f = 'labs';
         if (f === 'ia') f = 'aplicada';
 
+        const baseCourses = (data.cursos || []).filter(c => !c.oculto);
         let filtered = f === 'all'
-            ? data.cursos
-            : data.cursos.filter(c => {
+            ? baseCourses
+            : baseCourses.filter(c => {
                 const cf = (c.categoriaFiltro || '').toLowerCase();
                 if (cf === f) return true;
                 if (f === 'labs' && (cf === 'materiales' || (c.categoria || '').toLowerCase().includes('lab'))) return true;
@@ -4675,7 +4677,7 @@ window.renderEnrolledCourses = renderEnrolledCourses;
         const container = document.getElementById('store-courses-grid');
         if (!container) return;
 
-        const courses = data.cursos || [];
+        const courses = (data.cursos || []).filter(c => !c.oculto);
         const countLabel = document.getElementById('store-courses-count-label');
         if (countLabel) {
             countLabel.textContent = `Mostrando ${courses.length} cursos oficiales`;

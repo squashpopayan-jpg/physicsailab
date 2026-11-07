@@ -60,7 +60,8 @@
         "moderna": ["MODERNA-2026", "RELATIVIDAD-26", "OBANDO-MOD-26", "MOD-9341-26"],
         "arduino": ["ARDUINO-2026", "CIRCUITOS-VIVOS-26", "OBANDO-ARD-26", "ARD-7291-26"],
         "kids": ["KIDS-2026", "FISICA-KIDS-26", "EXPLORADORES-26", "OBANDO-KIDS-26"],
-        "historia": ["HISTORIA-2026", "CIENCIA-HIST-26", "OBANDO-HISTORIA-26", "SABER-2026", "BIENVENIDA-2026"]
+        "historia": ["HISTORIA-2026", "CIENCIA-HIST-26", "OBANDO-HISTORIA-26", "SABER-2026", "BIENVENIDA-2026"],
+        "resultados": ["INGFISICA2026", "RESULTADOS-2026", "RA-INGFISICA-26", "RES-IF-26"]
     };
 
     function getCurrentCourseId() {
@@ -76,6 +77,7 @@
             if (raw === 'fisicoquimica') return 'fisicoquimica';
             if (raw === 'mcuantica') return 'mcuantica';
             if (raw === 'kids') return 'kids';
+            if (raw === 'resultados' || raw === 'resultado') return 'resultados';
             return raw;
         }
 
@@ -111,9 +113,11 @@
         if (p.includes('fisicoquimica')) return 'fisicoquimica';
         if (p.includes('mcuantica')) return 'mcuantica';
         if (p.includes('kids')) return 'kids';
+        if (p.includes('resultados') || p.includes('resultado')) return 'resultados';
 
         const t = (document.title || '').toLowerCase();
         if (t.includes('historia') || t.includes('llegamos a saber') || t.includes('saber')) return 'historia';
+        if ((t.includes('resultado') && t.includes('aprendizaje')) || t.includes('resultados de aprendizaje')) return 'resultados';
         if (t.includes('sólido') || t.includes('solido')) return 'solido';
         if (t.includes('arbitraje')) return 'squash_arbitraje';
         if (t.includes('faro')) return 'faro';
@@ -245,6 +249,7 @@
     const isPendulo = courseId === 'pendulo' || !!document.querySelector('nav a[data-tab="matematico"]');
     const isIngles = courseId === 'ingles' || !!document.querySelector('.stepper');
     const isTorneos = courseId === 'torneos' || location.pathname.includes('/torneos/') || document.title.toLowerCase().includes('torneo') || !!document.querySelector('.sapp, .shdr, .sc-panel');
+    const isResultados = courseId === 'resultados' || location.pathname.includes('/resultados/') || document.title.toLowerCase().includes('resultados de aprendizaje');
     const isArbitraje = courseId === 'squash_arbitraje';
     const isFaro = courseId === 'faro' || !!document.querySelector('.indice');
     const isRecorrido = courseId === 'recorrido';
@@ -940,14 +945,19 @@
             modalTitle = 'Controles & Suite de Squash Bloqueados';
             modalDesc = `Has llegado al límite de la vista previa de rutinas pre-generadas. Para manipular los controles en tiempo real, personalizar velocidades y trayectorias, crear rutinas propias en el editor, exportar datos y acceder a la suite completa de biomecánica y análisis muscular, ingresa tu clave de estudiante o adquiere la licencia completa.`;
             buyEntityName = 'Simulador de Squash';
+        } else if (curCourse === 'resultados' || isResultados) {
+            modalTitle = 'Curso Privado & Restringido';
+            modalDesc = `Este curso y las herramientas de análisis curricular de Resultados de Aprendizaje (Ingeniería Física) son de carácter personal y reservado. Para acceder al contenido completo y a las 22 herramientas interactivas, ingresa la clave de autorización asignada.`;
+            buyEntityName = 'Módulo Privado';
         }
 
+        const isRes = curCourse === 'resultados' || isResultados;
         const overlay = document.createElement('div');
         overlay.className = 'pg-overlay';
         overlay.innerHTML = `
             <div class="pg-modal">
                 <button class="pg-close" aria-label="Cerrar">✕</button>
-                <span class="pg-badge">🔒 Vista Previa Gratuita</span>
+                <span class="pg-badge">${isRes ? '🔒 Acceso Privado · Grupo Autorizado' : '🔒 Vista Previa Gratuita'}</span>
                 <h3 class="pg-title">${modalTitle}</h3>
                 <p class="pg-desc">
                     ${modalDesc}
@@ -955,14 +965,15 @@
 
                 <!-- Opción 1: Clave Estudiante Aula o Licencia -->
                 <div class="pg-card-student">
-                    <h4>🎓 ¿Eres estudiante o ya compraste tu licencia?</h4>
-                    <p>Ingresa la clave de clase proporcionada por el docente en el aula o el código de tu licencia personal para desbloquear el acceso completo permanente.</p>
+                    <h4>${isRes ? '🔐 Acceso con Clave Autorizada' : '🎓 ¿Eres estudiante o ya compraste tu licencia?'}</h4>
+                    <p>${isRes ? 'Ingresa la clave de acceso autorizada proporcionada por el docente (Mg. Manuel Alejandro Obando) para desbloquear el contenido completo.' : 'Ingresa la clave de clase proporcionada por el docente en el aula o el código de tu licencia personal para desbloquear el acceso completo permanente.'}</p>
                     <div class="pg-input-group">
-                        <input type="text" class="pg-input" id="pg-student-code-input" placeholder="Ingresa clave o código de licencia..." />
+                        <input type="text" class="pg-input" id="pg-student-code-input" placeholder="${isRes ? 'Ingresa clave de acceso (ej. INGFISICA2026)...' : 'Ingresa clave o código de licencia...'}" />
                         <button class="pg-btn-unlock" id="pg-btn-do-unlock">Desbloquear 🔓</button>
                     </div>
                 </div>
 
+                ${isRes ? '' : `
                 <!-- Opción 2: Adquisición / Compra con Cupones -->
                 <div class="pg-card-buy">
                     <h4>🛒 Adquirir Licencia del ${buyEntityName}</h4>
@@ -979,10 +990,11 @@
                         </a>
                     </div>
                 </div>
+                `}
 
                 <div style="text-align:center; margin-top:0.5rem;">
                     <button class="pg-close-btn" style="background:none; border:none; color:#94A3B8; font-size:0.84rem; cursor:pointer; text-decoration:underline;">
-                        ← Continuar explorando la vista previa gratuita
+                        ${isRes ? '← Volver a la portada' : '← Continuar explorando la vista previa gratuita'}
                     </button>
                 </div>
             </div>
@@ -1055,6 +1067,21 @@
                 document.body.classList.remove('pg-barrier-active');
                 if (activeModal) { activeModal.remove(); activeModal = null; }
                 showToast('👑 ¡Sesión de Administrador Activada! Acceso total liberado a toda la plataforma.', 'success');
+                updateGuardState();
+                return;
+            }
+
+            // 1.5. Clave oficial por defecto de la materia (incluye INGFISICA2026 para resultados)
+            const defKeys = DEFAULT_COURSE_KEYS[currentCourse] || [];
+            const isMatchDef = defKeys.some(k => {
+                const kU = (k || '').trim().toUpperCase();
+                return kU === val || (valClean && kU.replace(/[\s\-_]/g, '') === valClean);
+            });
+            if (isMatchDef) {
+                setCourseUnlocked(currentCourse, true);
+                document.body.classList.remove('pg-barrier-active');
+                if (activeModal) { activeModal.remove(); activeModal = null; }
+                showToast('🎉 ¡Clave válida autorizada! Curso desbloqueado exitosamente.', 'success');
                 updateGuardState();
                 return;
             }
@@ -1265,6 +1292,9 @@
             topBar.innerHTML = isAdmin
                 ? `<span>👑 <strong>Modo Administrador</strong> (Profesor Obando)</span>
                    <button type="button" id="pg-lock-again-btn" title="Cerrar sesión de administrador">Bloquear 🔒</button>`
+                : (isResultados || curCourse === 'resultados')
+                ? `<span>🎯 <strong>Resultados de Aprendizaje</strong> · Grupo Autorizado</span>
+                   <button type="button" id="pg-lock-again-btn" title="Bloquear curso">Bloquear 🔒</button>`
                 : `<span>🎓 <strong>Modo Estudiante Activo</strong></span>
                    <button type="button" id="pg-lock-again-btn" title="Cerrar sesión de estudiante en esta materia">Bloquear 🔒</button>`;
             const lockBtn = topBar.querySelector('#pg-lock-again-btn');
@@ -1282,7 +1312,7 @@
         } else {
             topBar.className = 'pg-top-bar';
             topBar.innerHTML = `
-                <span>👁️ <strong>Vista Previa Gratuita</strong></span>
+                <span>${(isResultados || curCourse === 'resultados') ? '🔒 <strong>Curso Privado</strong>' : '👁️ <strong>Vista Previa Gratuita</strong>'}</span>
                 <button type="button" id="pg-unlock-modal-btn">Desbloquear 🔑</button>
             `;
             const unlockBtn = topBar.querySelector('#pg-unlock-modal-btn');
@@ -1330,12 +1360,13 @@
         const firstThematic = getFirstThematicId();
 
         // 1. Sidebar TOC links (#toc a)
+        const isStrictPrivate = isResultados;
         const tocLinks = document.querySelectorAll('#toc a, .toc a');
         tocLinks.forEach((a) => {
             const href = a.getAttribute('href') || '';
             const id = a.dataset.id || href.replace(/^#/, '').split('.')[0];
-            if (!id || id === 'inicio' || (firstThematic && id === firstThematic)) {
-                // Portada y primer capítulo temático son 100% libres en la preview
+            if (!id || id === 'inicio' || (!isStrictPrivate && firstThematic && id === firstThematic)) {
+                // Portada y primer capítulo temático (solo si no es curso estrictamente privado) son libres
                 a.classList.remove('pg-locked');
                 const p = a.querySelector('.pg-lock-pill');
                 if (p) p.remove();
@@ -1432,7 +1463,7 @@
         if (!id || id === 'inicio') return;
 
         const firstThematic = getFirstThematicId();
-        if (firstThematic && id === firstThematic) return;
+        if (!isResultados && firstThematic && id === firstThematic) return;
 
         // Cualquier otro capítulo está bloqueado en preview
         e.preventDefault();
@@ -1446,7 +1477,7 @@
         if (isUnlocked()) return;
         const h = decodeURIComponent(location.hash.replace(/^#/, '')).split('.')[0];
         if (!h || h === 'inicio') return;
-        if (firstThematic && h === firstThematic) return;
+        if (!isResultados && firstThematic && h === firstThematic) return;
 
         // Intentó entrar por hash directamente a un capítulo bloqueado
         enforceFreePreviewState();

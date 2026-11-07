@@ -58,7 +58,8 @@ window.PLATFORM_DATA = {
         "kids": ["KIDS-2026", "FISICA-KIDS-26", "EXPLORADORES-26", "OBANDO-KIDS-26"],
         "moderna": ["MODERNA-2026", "RELATIVIDAD-26", "OBANDO-MOD-26", "MOD-9341-26"],
         "arduino": ["ARDUINO-2026", "CIRCUITOS-VIVOS-26", "OBANDO-ARD-26", "ARD-7291-26"],
-        "historia": ["HISTORIA-2026", "CIENCIA-HIST-26", "OBANDO-HISTORIA-26", "SABER-2026", "BIENVENIDA-2026"]
+        "historia": ["HISTORIA-2026", "CIENCIA-HIST-26", "OBANDO-HISTORIA-26", "SABER-2026", "BIENVENIDA-2026"],
+        "resultados": ["INGFISICA2026", "RESULTADOS-2026", "RA-INGFISICA-26", "RES-IF-26"]
     },
 
     // Configuración oficial de Pasarelas de Pago (Wompi PSE, Bancolombia, Nequi y Hotmart)
@@ -1559,6 +1560,53 @@ window.PLATFORM_DATA = {
             precioUSD: null,
             valorReal: null,
             descuentoTag: "Exclusivo Docente",
+            enlaceCompra: null,
+            enlaceWompi: null
+        },
+        {
+            id: "resultados",
+            titulo: "Resultados de Aprendizaje: del Decreto al Aula (Ingeniería Física)",
+            nivel: "Docentes, Comités de Calidad & Pares Académicos (Acceso Restringido)",
+            modulos: "21 Capítulos Interactivos + 22 Herramientas de Análisis Curricular",
+            categoria: "Gestión Curricular Institucional",
+            categoriaFiltro: "privado",
+            descripcion: "Curso interactivo de aseguramiento de la calidad y diseño curricular para el programa de Ingeniería Física de la Universidad del Cauca. Normativa nacional (Decreto 1330/2019, 529/2024, Acuerdos CESU), tributación en microcurrículos, rúbricas de evaluación, evidencias ante pares y tableros de logro.",
+            temas: [
+                "00. Portada & Ciclo de Aseguramiento de la Calidad",
+                "01. Por qué los Resultados de Aprendizaje son el Centro",
+                "02. Normas Nacionales e Institucionales Vigentes",
+                "03. Texto y Redacción de Resultados de Aprendizaje",
+                "04. Vocabulario y Taxonomías en Ingeniería",
+                "05. El Programa de Ingeniería Física en Cifras",
+                "06. Referentes Nacionales e Internacionales (ABET/CDIO)",
+                "07. Anatomía y Estructura de un Resultado de Aprendizaje",
+                "08. Método Paso a Paso para la Construcción Curricular",
+                "09. Borrador y Validación con Microcurrículos Reales",
+                "10. Matriz de Alineación y Tributación por Asignatura",
+                "11. Plan de Evidencias e Instrumentos de Medición",
+                "12. Rúbricas Analíticas y Niveles de Desempeño",
+                "13. Análisis Estadístico y Tableros de Logro",
+                "14. Cierre del Ciclo de Mejora Continua",
+                "15. Preparación para la Visita de Pares Académicos",
+                "16. Ruta Crítica de Trabajo Institucional",
+                "90. Glosario Técnico de Términos Curriculares",
+                "91. Fuentes Normativas y Documentos Oficiales",
+                "92. Plantillas Descargables de Instrumentos",
+                "93. Informe de Validación y Pruebas"
+            ],
+            destacado: false,
+            esLaboratorio: false,
+            tipo: "Curso Institucional Privado",
+            demoPath: "/material/1_cursos/resultados/dist/index.html",
+            esPrivado: true,
+            noComercial: true,
+            privado: true,
+            oculto: true,
+            precioEstimado: "Uso Privado / Grupo Autorizado",
+            precioCOP: null,
+            precioUSD: null,
+            valorReal: null,
+            descuentoTag: "Acceso con Clave INGFISICA2026",
             enlaceCompra: null,
             enlaceWompi: null
         }
