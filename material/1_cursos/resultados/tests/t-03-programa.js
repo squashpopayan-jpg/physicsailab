@@ -24,9 +24,27 @@ module.exports = function (T, C) {
   /* Resultados vigentes */
   T.eq(G, 'El programa declara tres resultados de aprendizaje', ras.length, 3);
   const pts = ras.map((r) => A.analizar(r.t).puntaje);
-  T.eq(G, 'Puntaje de forma de los tres resultados vigentes (citado en el cap. 9): 88, 75, 88', pts, [88, 75, 88]);
-  T.eq(G, 'RA2 vigente tiene 51 palabras (citado en el cap. 9)', A.nPalabras(ras[1].t), 51);
+  T.eq(G, 'Puntaje de forma de los tres resultados vigentes (citado en el cap. 9): 88, 75, 75', pts, [88, 75, 75]);
+  T.eq(G, 'RA2 y RA3 vigentes tienen 53 y 49 palabras (citado en el cap. 9)', [A.nPalabras(ras[1].t), A.nPalabras(ras[2].t)], [53, 49]);
   T.eq(G, 'Verbos y niveles: aplicar 3, diseñar 6, liderar 3', ras.map((r) => A.analizar(r.t).nivel), [3, 6, 3]);
+  /* PEP (borrador 2023-2024): los resultados de H.RA0 son los del PEP y el PEP contiene lo que el cap. 9 afirma */
+  const norm = (x) => x.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').toLowerCase();
+  const pep = norm(fs.readFileSync(path.join(__dirname, 'fuentes', 'pep_ingenieria_fisica.txt'), 'utf8'));
+  ras.forEach((r, i) => T.ok(G, `RA${i + 1} figura en el PEP con la redacción «Los estudiantes serán capaces de…»`, pep.includes('los estudiantes seran capaces de ' + norm(r.t).replace(/\.$/, '').slice(0, 220))));
+  T.ok(G, 'El PEP contiene la sección «Resultados de Aprendizaje»', pep.includes('resultados de aprendizaje teniendo en cuenta el perfil del egresado'));
+  T.ok(G, 'El PEP dice «se propone una modificación del Proyecto Educativo del Programa que incluya estos resultados»', pep.includes('se propone una modificacion del proyecto educativo del programa que incluya estos resultados de aprendizaje'));
+  T.ok(G, 'El PEP fija evaluación semestral a cargo del comité de programa', pep.includes('sera semestral y esta a cargo del comite de programa'));
+  const o4 = 'formar personas con integridad etica, pertinencia e idoneidad profesional';
+  T.ok(G, 'El objetivo específico 4 del PEP (ética) existe y ningún resultado menciona ética ni integridad', pep.includes(o4) && ras.every((r) => !/etic|integridad/.test(norm(r.t))));
+  T.ok(G, 'El objetivo específico 3 y RA3 comparten la expresión «liderar procesos de desarrollo disciplinar e interdisciplinar»', pep.includes('liderar procesos de desarrollo disciplinar e interdisciplinar, mediante la participacion en actividades de investigacion y pasantias') && norm(ras[2].t).includes('liderar procesos de desarrollo disciplinar e interdisciplinar'));
+  T.ok(G, 'El PEP conserva notas pendientes («PEDIR A COORDINADOR»)', pep.includes('pedir a coordinador'));
+  T.ok(G, 'El PEP conserva texto de la guía («Escribir en este numeral»)', pep.includes('escribir en este numeral'));
+  T.ok(G, 'La portada del PEP dice 2024', /2024proyecto educativo/.test(pep.replace(/ /g, '').replace(/\s/g, '')) || pep.includes('2024proyecto educativo'));
+  /* Resumen de la reunión con los pares (notas del audio) */
+  const reu = norm(fs.readFileSync(path.join(__dirname, 'fuentes', 'reunion_pares.txt'), 'utf8'));
+  T.ok(G, 'La reunión: los pares dicen que el programa no tiene formulados los resultados y es requisito normativo', reu.includes('el programa no los tiene formulados; falta definir como se implementan y se evaluan. es un requisito normativo'));
+  T.ok(G, 'La reunión: el programa responde con un formato de evaluación y de organización de las competencias', reu.includes('crear un formato de evaluacion y de organizacion de las competencias'));
+  T.ok(G, 'La reunión: es el único punto tratado como carencia normativa', reu.includes('unico punto que los pares trataron como carencia normativa'));
   /* Hallazgos del escaneo de los documentos (tools/escanear_programa.py) */
   const H = JSON.parse(fs.readFileSync(path.join(__dirname, 'fuentes', 'programa_hallazgos.json'), 'utf8'));
   T.eq(G, 'Microcurrículos leídos: 49 (29 Word y 20 PDF)', [H.microcurriculos.archivos_leidos, H.microcurriculos.docx, H.microcurriculos.pdf], [49, 29, 20]);

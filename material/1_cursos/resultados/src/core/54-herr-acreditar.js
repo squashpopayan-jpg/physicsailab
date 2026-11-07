@@ -37,7 +37,7 @@
   EM.defineSim('autodiagnostico', function (sim) {
     sim.below(); sim.side.style.gridTemplateColumns = 'minmax(0, 1fr)';
     const cv = sim.canvas({ aspect: 1.6, label: 'Radar de preparación por dimensión' });
-    const DIAG0 = [2, 1, 2, 0, 0, 0, 2, 2, 0, 1, 2, 0, 0, 0, 1, 1, 1, 0, 2, 2, 1];
+    const DIAG0 = [1, 1, 2, 0, 0, 0, 2, 2, 0, 1, 2, 0, 0, 0, 1, 1, 1, 0, 2, 2, 1];
     const resp = H.get('diag', DIAG0);
     sim.group('Responda con honestidad: la utilidad está en ver dónde está parado');
     sim.note('Los valores iniciales son una <b>lectura del autor del curso</b> de los documentos que el programa entregó (presentación a los pares, plan de mejoramiento, microcurrículos, actas). Corríjalos con lo que usted sabe.');
@@ -78,6 +78,7 @@
 
   /* ---------- Preguntas que hacen los pares ---------- */
   const PREG = [
+    { c: 'Definición', q: 'Los pares dijeron que el programa no tiene formulados los resultados de aprendizaje. ¿Qué tienen, qué falta y cuándo lo tendrán?', ev: 'PEP limpio y aprobado con la sección de resultados; matriz curricular; microcurrículos con resultados; rúbricas; primer ciclo con actas. Un cronograma con responsables y fechas.', err: 'Negar la observación, defender que basta con la lámina de la presentación, o prometer solo un «formato de competencias».' },
     { c: 'Definición', q: '¿Cuáles son los resultados de aprendizaje de su programa y cómo los definieron?', ev: 'Documento de resultados, actas de talleres con egresados, empleadores y profesores, referentes consultados.', err: 'Responder con los objetivos del programa o con una lista de contenidos.' },
     { c: 'Definición', q: '¿Por qué estos resultados y no otros? ¿Cada cuánto los revisan?', ev: 'Procedimiento de revisión, fechas de la última revisión y qué cambió.', err: 'Decir que «siempre han sido así» o que los fijó un tercero.' },
     { c: 'Definición', q: '¿Cómo participaron los empleadores y los egresados en esa definición?', ev: 'Listas de asistencia, encuestas, resultados y la decisión que se tomó con ellas.', err: 'Mostrar una encuesta de satisfacción sin relación con los resultados.' },
