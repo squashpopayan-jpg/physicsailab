@@ -1,6 +1,7 @@
 """Construye la app de torneos.
 
   dist/torneos-squash-popayan-v15.html  -> archivo final (Firebase real)
+  dist/index.html                       -> archivo servido en la plataforma (con course-guard)
   test/app-test.html                    -> misma app con Firebase simulado (test/fbmock.js + serve.py)
 
 El logo se toma de src/logo.txt (se extrae una sola vez del archivo v14 original).
@@ -15,11 +16,17 @@ SRC = os.path.join(HERE, "src", "torneos.html")
 LOGO_TXT = os.path.join(HERE, "src", "logo.txt")
 ORIG = r"C:\Users\User\Desktop\torneos-squash-popayan-v14-profesional.html"
 DIST = os.path.join(HERE, "dist", "torneos-squash-popayan-v15.html")
+INDEX = os.path.join(HERE, "dist", "index.html")
 TEST = os.path.join(HERE, "test", "app-test.html")
 
 FB_TAGS = (
     '<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>\n'
     '<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>'
+)
+
+GUARD_TAGS = (
+    '<script src="/material/course-guard.js"></script>\n'
+    '<script>if(typeof window.PhysicsAILabGuard===\'undefined\'){var s=document.createElement(\'script\');s.src=\'../../../course-guard.js\';document.head.appendChild(s);}</script>'
 )
 
 
@@ -49,8 +56,11 @@ def main():
         sys.exit("La plantilla no tiene los marcadores esperados")
     app = src.replace('var LOGO="__LOGO__";', 'var LOGO="%s";' % logo())
     write(DIST, app)
+    app_with_guard = app.replace('</body>', GUARD_TAGS + '\n</body>')
+    write(INDEX, app_with_guard)
     write(TEST, app.replace(FB_TAGS, '<script src="fbmock.js"></script>'))
     print("dist:", DIST, len(app), "bytes")
+    print("index:", INDEX, len(app_with_guard), "bytes")
     print("test:", TEST)
 
 

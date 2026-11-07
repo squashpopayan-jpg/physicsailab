@@ -244,7 +244,7 @@
     const isVenturi = courseId === 'venturi';
     const isPendulo = courseId === 'pendulo' || !!document.querySelector('nav a[data-tab="matematico"]');
     const isIngles = courseId === 'ingles' || !!document.querySelector('.stepper');
-    const isTorneos = courseId === 'torneos';
+    const isTorneos = courseId === 'torneos' || location.pathname.includes('/torneos/') || document.title.toLowerCase().includes('torneo') || !!document.querySelector('.sapp, .shdr, .sc-panel');
     const isArbitraje = courseId === 'squash_arbitraje';
     const isFaro = courseId === 'faro' || !!document.querySelector('.indice');
     const isRecorrido = courseId === 'recorrido';
@@ -465,6 +465,60 @@
             background: rgba(255, 255, 255, 0.15);
             color: #fff;
             border: 1px solid rgba(255, 255, 255, 0.25);
+        }
+
+        /* Barra flotante no invasiva para Torneos Squash Popayán */
+        .pg-top-bar.pg-torneos-bar {
+            top: auto !important;
+            bottom: 12px !important;
+            right: 12px !important;
+            left: auto !important;
+            z-index: 85 !important;
+            gap: 0.45rem !important;
+            padding: 0.25rem 0.65rem !important;
+            font-size: 0.74rem !important;
+            border-radius: 9999px !important;
+            background: rgba(10, 18, 30, 0.94) !important;
+            border: 1px solid rgba(0, 207, 255, 0.35) !important;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6) !important;
+            backdrop-filter: blur(8px) !important;
+            max-width: calc(100vw - 24px) !important;
+        }
+        .pg-top-bar.pg-torneos-bar.minimized {
+            padding: 0.2rem 0.45rem !important;
+            background: rgba(10, 18, 30, 0.88) !important;
+            gap: 0.25rem !important;
+        }
+        .pg-top-bar.pg-torneos-bar .pg-course-return {
+            color: #6b8bab;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.72rem;
+            margin-right: 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .pg-top-bar.pg-torneos-bar .pg-course-return:hover {
+            color: #00cfff;
+        }
+        .pg-top-bar.pg-torneos-bar .pg-toggle-min {
+            background: transparent !important;
+            border: none !important;
+            color: #6b8bab !important;
+            cursor: pointer !important;
+            font-size: 0.75rem !important;
+            padding: 0 3px !important;
+            line-height: 1 !important;
+        }
+        .pg-top-bar.pg-torneos-bar .pg-toggle-min:hover {
+            color: #fff !important;
+        }
+        body:has(.sapp) .pg-top-bar.pg-torneos-bar,
+        body:has(.ovl) .pg-top-bar.pg-torneos-bar,
+        .sapp ~ .pg-top-bar,
+        .sapp-open .pg-top-bar {
+            display: none !important;
         }
 
         /* Modal Paywall Overlay */
@@ -1131,6 +1185,81 @@
 
         const unlocked = isUnlocked();
         const isAdmin = localStorage.getItem('physicsailab_admin') === 'true';
+
+        if (isTorneos || curCourse === 'torneos') {
+            topBar.className = 'pg-top-bar pg-torneos-bar' + (unlocked ? ' unlocked' : '');
+            let isMin = localStorage.getItem('pg_torneos_bar_min') === 'true';
+
+            if (isMin) {
+                topBar.classList.add('minimized');
+                topBar.innerHTML = `
+                    <span style="font-size:0.95rem;cursor:pointer;" title="${isAdmin ? 'Modo Administrador (Profesor Obando)' : (unlocked ? 'Modo Estudiante Activo' : 'Vista Previa')}">${isAdmin ? '👑' : (unlocked ? '🎓' : '👁️')}</span>
+                    <button type="button" class="pg-toggle-min" title="Expandir controles" style="background:transparent;border:none;color:#6b8bab;cursor:pointer;font-size:0.75rem;padding:2px 4px;">▲</button>
+                `;
+            } else {
+                topBar.innerHTML = `
+                    <a href="/" class="pg-course-return" title="Volver a PhysicsAILab" style="color:#6b8bab;text-decoration:none;font-weight:600;font-size:0.72rem;display:inline-flex;align-items:center;gap:3px;margin-right:2px;">← PhysicsAILab</a>
+                    <span style="font-size:0.75rem;">${isAdmin ? '👑 <strong>Admin</strong>' : (unlocked ? '🎓 <strong>Activo</strong>' : '👁️ <strong>Vista</strong>')}</span>
+                    ${unlocked 
+                        ? `<button type="button" id="pg-lock-again-btn" title="Cerrar sesión" style="padding:2px 7px;font-size:0.72rem;">🔒</button>` 
+                        : `<button type="button" id="pg-unlock-modal-btn" title="Desbloquear" style="padding:2px 7px;font-size:0.72rem;">🔑</button>`
+                    }
+                    <button type="button" class="pg-toggle-min" title="Minimizar para que no estorbe" style="background:transparent;border:none;color:#6b8bab;cursor:pointer;font-size:0.75rem;padding:2px 4px;">▼</button>
+                `;
+            }
+
+            const toggleMin = topBar.querySelector('.pg-toggle-min');
+            if (toggleMin) {
+                toggleMin.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    localStorage.setItem('pg_torneos_bar_min', isMin ? 'false' : 'true');
+                    renderTopBar();
+                });
+            }
+            if (isMin) {
+                topBar.onclick = () => {
+                    localStorage.setItem('pg_torneos_bar_min', 'false');
+                    renderTopBar();
+                };
+            } else {
+                topBar.onclick = null;
+            }
+
+            const lockBtn = topBar.querySelector('#pg-lock-again-btn');
+            if (lockBtn) {
+                lockBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (isAdmin) {
+                        localStorage.removeItem('physicsailab_admin');
+                    } else {
+                        setCourseUnlocked(getCurrentCourseId(), false);
+                    }
+                    showToast('🔒 Sesión cerrada.', 'info');
+                    updateGuardState();
+                });
+            }
+            const unlockBtn = topBar.querySelector('#pg-unlock-modal-btn');
+            if (unlockBtn) {
+                unlockBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openPaywall();
+                });
+            }
+
+            if (!window._pgTorneosObserverSetup) {
+                window._pgTorneosObserverSetup = true;
+                const syncVisibility = () => {
+                    if (!topBar) return;
+                    const inMatchOrModal = !!document.querySelector('.sapp') || !!document.querySelector('.ovl');
+                    topBar.style.setProperty('display', inMatchOrModal ? 'none' : 'flex', 'important');
+                };
+                const obs = new MutationObserver(syncVisibility);
+                obs.observe(document.body, { childList: true, subtree: true });
+                syncVisibility();
+            }
+            return;
+        }
+
         if (unlocked) {
             topBar.className = 'pg-top-bar unlocked';
             topBar.innerHTML = isAdmin

@@ -2,8 +2,11 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover"/>
 <meta name="theme-color" content="#080c12"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <title>Torneos Squash Popayán by ManuSquash · v15</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600;700&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet"/>
 <style>
@@ -180,11 +183,176 @@ textarea.inp{resize:vertical;min-height:90px;font-size:13px}
 .snap{display:flex;gap:8px;align-items:center;padding:7px 9px;border:1px solid var(--bd);border-radius:7px;margin-bottom:4px;font-size:12px}
 .snap div{flex:1;min-width:0}
 .dots{display:flex;gap:2px;flex-shrink:0}.dots i{width:7px;height:7px;border-radius:50%;background:var(--bd);display:block}.dots i.on{background:var(--ac)}.dots.ed i{cursor:pointer}
-@media(max-width:560px){.mini-result{padding:5px 6px}.mini-result .label{display:none}.ko-stage{gap:42px;padding-left:8px;padding-right:8px}.ko-round{width:166px;flex-basis:166px}.dots{display:none}
-  .hdr{position:static}.main{padding:10px}.inp{font-size:16px}
-  .mr{flex-wrap:wrap;row-gap:3px;padding:8px 9px}.mr .mts{order:5;flex-basis:100%}.mr .match-actions{margin-left:auto}.mr .mt2{min-width:0}
-  .mr .mts>div:first-child{white-space:normal!important}}
-@media(max-width:500px){.tz-s{font-size:62px}}
+/* ── Mobile Ergonomics & PWA Optimization ── */
+@media(max-width:700px){
+  .hdr{
+    position:sticky;
+    top:0;
+    z-index:90;
+    padding:6px 10px;
+    gap:5px;
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+    box-shadow:0 4px 16px rgba(0,0,0,.6);
+  }
+  .hdr > div:first-child{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .hdr > div:last-child{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:6px;
+  }
+  .nav{
+    flex:1;
+    min-width:0;
+    display:flex;
+    gap:4px;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+    flex-wrap:nowrap;
+    white-space:nowrap;
+    padding-bottom:2px;
+  }
+  .nav::-webkit-scrollbar{display:none}
+  .nb{
+    flex-shrink:0;
+    padding:6px 10px;
+    font-size:11.5px;
+    white-space:nowrap;
+  }
+  .cat-tabs{
+    padding:6px 10px;
+    gap:4px;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+    flex-wrap:nowrap;
+    white-space:nowrap;
+  }
+  .cat-tabs::-webkit-scrollbar{display:none}
+  .cat-tab{
+    flex-shrink:0;
+    padding:6px 12px;
+    font-size:11.5px;
+    white-space:nowrap;
+    min-height:32px;
+  }
+  .main{
+    padding:8px 8px max(50px, env(safe-area-inset-bottom));
+  }
+  .inp{
+    font-size:16px; /* Evita zoom automático en iOS */
+  }
+  .mr{
+    flex-wrap:wrap;
+    row-gap:4px;
+    padding:8px 10px;
+  }
+  .mr .mts{
+    order:5;
+    flex-basis:100%;
+  }
+  .mr .match-actions{
+    margin-left:auto;
+  }
+  .mr .mt2{
+    min-width:0;
+  }
+  .mr .mts>div:first-child{
+    white-space:normal!important;
+  }
+  .mini-result{
+    padding:5px 8px;
+    min-height:28px;
+    display:inline-flex;
+    align-items:center;
+  }
+  .mini-result .label{
+    display:none;
+  }
+  .dots{
+    display:none;
+  }
+  .ko-stage{
+    gap:36px;
+    padding-left:6px;
+    padding-right:6px;
+  }
+  .ko-round{
+    width:160px;
+    flex-basis:160px;
+  }
+}
+
+/* Pantalla del Juez / Marcador en vivo (.sapp) para móviles */
+.sapp{
+  padding-top:env(safe-area-inset-top);
+}
+.shdr{
+  padding:8px 10px;
+  min-height:44px;
+}
+.sbody{
+  padding:8px;
+  gap:8px;
+  padding-bottom:max(32px, env(safe-area-inset-bottom));
+}
+.tz{
+  min-height:155px;
+  touch-action:manipulation;
+}
+.tz-s{
+  font-size:clamp(64px, 18vw, 86px);
+}
+.rac{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:6px;
+}
+.rb{
+  min-height:44px;
+  padding:8px 6px;
+  font-size:12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  touch-action:manipulation;
+}
+.pkr-btn{
+  min-height:46px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.side-tap{
+  min-height:38px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+
+/* Reubicación y contención defensiva de controles externos de PhysicsAILab */
+.pg-top-bar{
+  top:auto !important;
+  bottom:12px !important;
+  right:12px !important;
+  left:auto !important;
+  z-index:85 !important;
+}
+body:has(.sapp) .pg-top-bar,
+body:has(.ovl) .pg-top-bar,
+.sapp ~ .pg-top-bar,
+.sapp-open .pg-top-bar{
+  display:none !important;
+}
 </style>
 </head>
 <body>
