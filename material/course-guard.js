@@ -61,7 +61,8 @@
         "arduino": ["ARDUINO-2026", "CIRCUITOS-VIVOS-26", "OBANDO-ARD-26", "ARD-7291-26"],
         "kids": ["KIDS-2026", "FISICA-KIDS-26", "EXPLORADORES-26", "OBANDO-KIDS-26"],
         "historia": ["HISTORIA-2026", "CIENCIA-HIST-26", "OBANDO-HISTORIA-26", "SABER-2026", "BIENVENIDA-2026"],
-        "resultados": ["INGFISICA2026", "RESULTADOS-2026", "RA-INGFISICA-26", "RES-IF-26"]
+        "resultados": ["INGFISICA2026", "RESULTADOS-2026", "RA-INGFISICA-26", "RES-IF-26"],
+        "pec": ["LIBRE", "PEC-NOVIRAO", "NOVIRAO-2026"]
     };
 
     function getCurrentCourseId() {
@@ -78,6 +79,7 @@
             if (raw === 'mcuantica') return 'mcuantica';
             if (raw === 'kids') return 'kids';
             if (raw === 'resultados' || raw === 'resultado') return 'resultados';
+            if (raw === 'pec' || raw === 'novirao') return 'pec';
             return raw;
         }
 
@@ -114,10 +116,12 @@
         if (p.includes('mcuantica')) return 'mcuantica';
         if (p.includes('kids')) return 'kids';
         if (p.includes('resultados') || p.includes('resultado')) return 'resultados';
+        if (p.includes('/pec/') || p.includes('tejiendo-pec') || p.includes('pec')) return 'pec';
 
         const t = (document.title || '').toLowerCase();
         if (t.includes('historia') || t.includes('llegamos a saber') || t.includes('saber')) return 'historia';
         if ((t.includes('resultado') && t.includes('aprendizaje')) || t.includes('resultados de aprendizaje')) return 'resultados';
+        if (t.includes('tejiendo el pec') || (t.includes('pec') && t.includes('novirao')) || t.includes('proceso educativo comunitario')) return 'pec';
         if (t.includes('sólido') || t.includes('solido')) return 'solido';
         if (t.includes('arbitraje')) return 'squash_arbitraje';
         if (t.includes('faro')) return 'faro';
@@ -152,7 +156,7 @@
     function isUnlocked() {
         const cId = getCurrentCourseId();
         // Cursos 100% liberados y cortesías de bienvenida:
-        if (cId === 'venturi' || cId === 'pendulo' || cId === 'recorrido' || cId === 'historia' || cId === 'kids' || cId === 'riel') return true;
+        if (cId === 'venturi' || cId === 'pendulo' || cId === 'recorrido' || cId === 'historia' || cId === 'kids' || cId === 'riel' || cId === 'pec') return true;
         if (LAB_COURSE_IDS.includes(cId)) return true;
 
         try {
@@ -253,6 +257,7 @@
     const isArbitraje = courseId === 'squash_arbitraje';
     const isFaro = courseId === 'faro' || !!document.querySelector('.indice');
     const isRecorrido = courseId === 'recorrido';
+    const isPec = courseId === 'pec' || location.pathname.includes('/pec/') || document.title.toLowerCase().includes('tejiendo el pec');
 
     // Inyectar estilos CSS del modal, candados y barras
     const css = `
@@ -1204,6 +1209,11 @@
             topBar.innerHTML = `<span>🎁 <strong>«Cómo llegamos a saber»</strong> · Cortesía de Bienvenida · Acceso 100% Libre</span>`;
             return;
         }
+        if (curCourse === 'pec' || isPec) {
+            topBar.className = 'pg-top-bar unlocked';
+            topBar.innerHTML = `<a href="/" class="pg-course-return" title="Volver a PhysicsAILab" style="color:#6b8bab;text-decoration:none;font-weight:600;font-size:0.75rem;margin-right:8px;">← PhysicsAILab</a><span>🌱 <strong>Tejiendo el PEC (Novirao)</strong> · Curso Comunitario Privado · Acceso Libre</span>`;
+            return;
+        }
         if (LAB_COURSE_IDS.includes(curCourse)) {
             topBar.className = 'pg-top-bar unlocked';
             topBar.innerHTML = `<span>🔬 <strong>Laboratorio Virtual Abierto</strong> · Acceso Libre al Público</span>`;
@@ -2018,6 +2028,10 @@
     // ----------------------------------------------------
     function updateGuardState() {
         if (isRecorrido) return; // Tour 3D liberado
+        if (isPec || courseId === 'pec') {
+            renderTopBar();
+            return; // PEC liberado sin clave
+        }
 
         renderTopBar();
         if (isPendulo) {

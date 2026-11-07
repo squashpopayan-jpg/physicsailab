@@ -59,7 +59,8 @@ window.PLATFORM_DATA = {
         "moderna": ["MODERNA-2026", "RELATIVIDAD-26", "OBANDO-MOD-26", "MOD-9341-26"],
         "arduino": ["ARDUINO-2026", "CIRCUITOS-VIVOS-26", "OBANDO-ARD-26", "ARD-7291-26"],
         "historia": ["HISTORIA-2026", "CIENCIA-HIST-26", "OBANDO-HISTORIA-26", "SABER-2026", "BIENVENIDA-2026"],
-        "resultados": ["INGFISICA2026", "RESULTADOS-2026", "RA-INGFISICA-26", "RES-IF-26"]
+        "resultados": ["INGFISICA2026", "RESULTADOS-2026", "RA-INGFISICA-26", "RES-IF-26"],
+        "pec": ["LIBRE", "PEC-NOVIRAO", "NOVIRAO-2026"]
     },
 
     // Configuración oficial de Pasarelas de Pago (Wompi PSE, Bancolombia, Nequi y Hotmart)
@@ -1607,6 +1608,52 @@ window.PLATFORM_DATA = {
             precioUSD: null,
             valorReal: null,
             descuentoTag: "Acceso con Clave INGFISICA2026",
+            enlaceCompra: null,
+            enlaceWompi: null
+        },
+        {
+            id: "pec",
+            titulo: "Tejiendo el PEC: Proceso Educativo Comunitario (Resguardo Nasa de Novirao)",
+            nivel: "Docentes, Comunidad & Sabedores (Acceso Privado Directo)",
+            modulos: "19 Lecciones · 47 Pausas · 4 Quizzes · Examen Final (40 Preguntas)",
+            categoria: "Pedagogía Comunitaria & Etnoeducación",
+            categoriaFiltro: "privado",
+            descripcion: "Curso ilustrado y de letra grande sobre la Cartilla del Proceso Educativo Comunitario (PEC) del Resguardo Nasa de Novirao (Totoró, Cauca). La lucha por la tierra y la escuela, los dos tejidos (político-organizativo y pedagógico), los cinco hilos dinamizadores, la pedagogía comunitaria y la armonización de la estructura curricular escolar.",
+            temas: [
+                "00. Portada & Presentación Comunitaria",
+                "01. ¿Qué es el PEC? (Caminar, Pensar y Soñar)",
+                "02. Novirao: la Casa Grande y su Geografía Sagrada",
+                "03. Quiz I: Identidad, Territorio y Principios del PEC",
+                "04. La Lucha por la Tierra y la Recuperación",
+                "05. La Historia de la Escuela Comunitaria",
+                "06. Quiz II: Historia, Memoria y Escuela Indígena",
+                "07. Los Dos Tejidos: Político-Organizativo y Pedagógico",
+                "08. Los Cinco Hilos Dinamizadores de Vida",
+                "09. Prácticas, Vivencias Comunitarias y la Semilla",
+                "10. Quiz III: Tejidos, Hilos y Prácticas Productivas",
+                "11. La Pedagogía como Camino y Formación Propia",
+                "12. Resignificar el Tiempo Escolar y el Calendario Propio",
+                "13. Armonizar la Estructura Curricular y Comunitaria",
+                "14. Unificar la Planeación Pedagógica del PEC",
+                "15. Quiz IV: Pedagogía, Tiempo y Estructura Curricular",
+                "16. Examen Final del PEC: 40 Preguntas Integrales",
+                "17. Glosario de Términos Nasa Yuwe y Comunitarios",
+                "18. Resumen General del PEC en una Página"
+            ],
+            destacado: false,
+            esLaboratorio: false,
+            tipo: "Curso Comunitario Privado",
+            demoPath: "/material/1_cursos/pec/dist/index.html",
+            esPrivado: true,
+            noComercial: true,
+            privado: true,
+            oculto: true,
+            sinClave: true,
+            precioEstimado: "Uso Privado Comunitario (Sin Clave)",
+            precioCOP: null,
+            precioUSD: null,
+            valorReal: null,
+            descuentoTag: "Acceso Libre Directo (Sin Clave)",
             enlaceCompra: null,
             enlaceWompi: null
         }
