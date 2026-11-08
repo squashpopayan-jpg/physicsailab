@@ -962,6 +962,9 @@
         overlay.innerHTML = `
             <div class="pg-modal">
                 <button class="pg-close" aria-label="Cerrar">✕</button>
+                <div style="text-align:center; margin-bottom:0.75rem;">
+                    <img src="/assets/brand/logo-horizontal.png" alt="PhysicsAILab" style="max-height:44px; width:auto; filter:drop-shadow(0 4px 12px rgba(0,0,0,0.5));" />
+                </div>
                 <span class="pg-badge">${isRes ? '🔒 Acceso Privado · Grupo Autorizado' : '🔒 Vista Previa Gratuita'}</span>
                 <h3 class="pg-title">${modalTitle}</h3>
                 <p class="pg-desc">
@@ -1211,7 +1214,7 @@
         }
         if (curCourse === 'pec' || isPec) {
             topBar.className = 'pg-top-bar unlocked';
-            topBar.innerHTML = `<a href="/" class="pg-course-return" title="Volver a PhysicsAILab" style="color:#6b8bab;text-decoration:none;font-weight:600;font-size:0.75rem;margin-right:8px;">← PhysicsAILab</a><span>🌱 <strong>Tejiendo el PEC (Novirao)</strong> · Curso Comunitario Privado · Acceso Libre</span>`;
+            topBar.innerHTML = `<a href="/" class="pg-course-return" title="Volver a PhysicsAILab" style="color:#6b8bab;text-decoration:none;font-weight:600;font-size:0.75rem;margin-right:8px;display:inline-flex;align-items:center;gap:4px;"><img src="/assets/brand/logo-icon.png" alt="PAI" style="width:14px;height:14px;border-radius:50%;vertical-align:middle;display:inline-block;"> ← PhysicsAILab</a><span>🌱 <strong>Tejiendo el PEC (Novirao)</strong> · Curso Comunitario Privado · Acceso Libre</span>`;
             return;
         }
         if (LAB_COURSE_IDS.includes(curCourse)) {
@@ -1235,7 +1238,7 @@
                 `;
             } else {
                 topBar.innerHTML = `
-                    <a href="/" class="pg-course-return" title="Volver a PhysicsAILab" style="color:#6b8bab;text-decoration:none;font-weight:600;font-size:0.72rem;display:inline-flex;align-items:center;gap:3px;margin-right:2px;">← PhysicsAILab</a>
+                    <a href="/" class="pg-course-return" title="Volver a PhysicsAILab" style="color:#6b8bab;text-decoration:none;font-weight:600;font-size:0.72rem;display:inline-flex;align-items:center;gap:3px;margin-right:2px;"><img src="/assets/brand/logo-icon.png" alt="PAI" style="width:14px;height:14px;border-radius:50%;vertical-align:middle;display:inline-block;"> ← PhysicsAILab</a>
                     <span style="font-size:0.75rem;">${isAdmin ? '👑 <strong>Admin</strong>' : (unlocked ? '🎓 <strong>Activo</strong>' : '👁️ <strong>Vista</strong>')}</span>
                     ${unlocked 
                         ? `<button type="button" id="pg-lock-again-btn" title="Cerrar sesión" style="padding:2px 7px;font-size:0.72rem;">🔒</button>` 
