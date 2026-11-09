@@ -26,7 +26,7 @@
 
 * **URL Base HTTPS (Cifrada con SSL Cloudflare):**  
   ```text
-  https://terminals-riders-surrounded-gras.trycloudflare.com
+  https://argued-globe-spaces-nvidia.trycloudflare.com
   ```
 * **CORS:** Totalmente habilitado (`Access-Control-Allow-Origin: *`). La llamada desde `https://physicsailab.com` funciona directo sin bloqueos.
 
@@ -118,6 +118,6 @@ Devuelve todo el estado en una sola petición ligera:
 3. Reemplaza el cuerpo del dashboard por la plantilla limpia y moderna de `index.html` adjunta en este paquete.
 4. Asegura que la variable de API use como valor por defecto:
    ```javascript
-   const API_BASE = 'https://terminals-riders-surrounded-gras.trycloudflare.com';
+   const API_BASE = 'https://argued-globe-spaces-nvidia.trycloudflare.com';
    ```
 5. Realiza un `fetch(API_BASE + '/api/all')` cada 3 segundos para refrescar en vivo las barras y métricas.

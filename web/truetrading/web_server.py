@@ -161,6 +161,8 @@ class DashboardHandler(SimpleHTTPRequestHandler):
             self.handle_api_candado()
         elif parsed.path == "/api/desbloquear":
             self.handle_api_desbloquear()
+        elif parsed.path == "/api/control":
+            self.handle_api_control()
         else:
             self.send_response(404)
             self.end_headers()
@@ -331,6 +333,57 @@ class DashboardHandler(SimpleHTTPRequestHandler):
 
         res = {"ok": True, "message": f"🔒 Candado activado para: {', '.join(tags_to_lock).upper()}", "locked_accounts": tags_to_lock}
         self._send_json(res)
+
+
+    def handle_api_control(self):
+        length = int(self.headers.get("Content-Length", 0))
+        body = self.rfile.read(length) if length > 0 else b"{}"
+        try:
+            req = json.loads(body.decode("utf-8"))
+        except Exception:
+            req = {}
+
+        action = req.get("action", "").lower()
+        account = req.get("account", "both").lower()
+
+        if action == "candado":
+            enable = req.get("enable", True)
+            if enable:
+                self.handle_api_candado()
+            else:
+                self.handle_api_desbloquear()
+            return
+
+        tag = "ftmo" if account == "ftmo" else "vtmarkets" if account in ("vt", "vtmarkets") else "both"
+        today_str = str(datetime.date.today())
+        time_str = datetime.datetime.now().strftime("%H:%M:%S")
+
+        if action == "close_all":
+            flag_f = os.path.join(RESULTS_DIR, f"close_all_{tag}.flag")
+            with open(flag_f, "w", encoding="utf-8") as f:
+                json.dump({"action": "close_all", "account": tag, "date": today_str, "time": time_str}, f)
+            res = {"ok": True, "message": f"🛑 Orden de cierre de emergencia enviada para: {account.upper()}"}
+            self._send_json(res)
+            return
+
+        if action == "pause":
+            pause_f = os.path.join(RESULTS_DIR, f"pause_{tag}.lock")
+            with open(pause_f, "w", encoding="utf-8") as f:
+                json.dump({"paused": True, "account": tag, "date": today_str, "time": time_str}, f)
+            res = {"ok": True, "message": f"⏸️ Bot pausado para: {account.upper()}"}
+            self._send_json(res)
+            return
+
+        if action == "resume":
+            pause_f = os.path.join(RESULTS_DIR, f"pause_{tag}.lock")
+            if os.path.exists(pause_f):
+                try: os.remove(pause_f)
+                except Exception: pass
+            res = {"ok": True, "message": f"▶️ Bot reanudado para: {account.upper()}"}
+            self._send_json(res)
+            return
+
+        self._send_json({"ok": False, "message": f"Acción no reconocida: {action}"})
 
     def handle_api_desbloquear(self):
         length = int(self.headers.get("Content-Length", 0))
