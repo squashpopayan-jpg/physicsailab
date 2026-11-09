@@ -90,8 +90,10 @@
     <!-- 1. Cabecera Docente Privada Intacta -->
     <header class="flex flex-wrap items-center justify-between pb-3.5 border-b border-slate-800 text-xs gap-2.5">
       <div class="flex items-center gap-2 flex-wrap">
-        <a href="/" class="text-slate-400 hover:text-white flex items-center gap-1.5 font-semibold transition px-2.5 py-1.5 rounded-lg hover:bg-slate-900 border border-transparent hover:border-slate-800">
-          <img src="/assets/brand/logo-icon.png" alt="PAI" class="w-4 h-4 rounded-full inline-block shadow-sm"> <span>Volver a PhysicsAILab</span>
+        <a href="/" class="text-slate-200 hover:text-white flex items-center gap-2.5 font-semibold transition px-2.5 py-1.5 rounded-xl hover:bg-slate-900/90 border border-slate-800/80 hover:border-cyan-500/40 shadow-sm group">
+          <img src="/assets/brand/logo-icon.png" alt="PAI" class="w-5 h-5 rounded-full inline-block shadow-sm group-hover:scale-105 transition">
+          <img src="/assets/brand/logo-horizontal.png" alt="PhysicsAILab" class="h-5 sm:h-6 w-auto object-contain inline-block opacity-90 group-hover:opacity-100 transition">
+          <span class="text-[11px] text-slate-400 hidden md:inline border-l border-slate-800 pl-2 ml-0.5">Plataforma Principal</span>
         </a>
         <span class="text-slate-700 hidden sm:inline">·</span>
         <a href="/admin.html" class="text-indigo-400 hover:text-indigo-300 flex items-center gap-1.5 font-semibold transition px-2.5 py-1.5 rounded-lg hover:bg-slate-900 border border-transparent hover:border-slate-800">
@@ -262,8 +264,8 @@
               <span class="text-[10px] text-slate-500 font-mono">Control Remoto VPS</span>
             </div>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              <button onclick="toggleCandado('ftmo', true)" class="touch-target min-h-[48px] px-3 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition shadow border border-rose-500/40">
-                <span>🔒</span> <span>Candado</span>
+              <button id="btn-card-lock-ftmo" onclick="toggleCandado('ftmo', true)" class="touch-target min-h-[48px] px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 hover:text-emerald-300 font-bold text-xs flex items-center justify-center gap-1.5 transition border border-slate-700 shadow">
+                <span>🔒</span> <span id="btn-card-lock-ftmo-text">Candado FTMO</span>
               </button>
               <button onclick="toggleCandado('ftmo', false)" class="touch-target min-h-[48px] px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 font-bold text-xs flex items-center justify-center gap-1.5 transition border border-slate-700">
                 <span>🔓</span> <span>Levantar</span>
@@ -364,8 +366,8 @@
               <span class="text-[10px] text-slate-500 font-mono">Control Remoto VPS</span>
             </div>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              <button onclick="toggleCandado('vt', true)" class="touch-target min-h-[48px] px-3 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition shadow border border-rose-500/40">
-                <span>🔒</span> <span>Candado</span>
+              <button id="btn-card-lock-vt" onclick="toggleCandado('vt', true)" class="touch-target min-h-[48px] px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 hover:text-emerald-300 font-bold text-xs flex items-center justify-center gap-1.5 transition border border-slate-700 shadow">
+                <span>🔒</span> <span id="btn-card-lock-vt-text">Candado VT</span>
               </button>
               <button onclick="toggleCandado('vt', false)" class="touch-target min-h-[48px] px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 font-bold text-xs flex items-center justify-center gap-1.5 transition border border-slate-700">
                 <span>🔓</span> <span>Levantar</span>
@@ -1091,6 +1093,31 @@
           statusPill.textContent = acc.locked ? '🔒 Candado Activado' : 'Estado: Operando en vivo';
           statusPill.className = acc.locked ? 'text-[11px] font-mono px-2.5 py-1 rounded-lg bg-rose-500/20 text-rose-300 border border-rose-500/40' : 'text-[11px] font-mono px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300';
         }
+
+        // Estado dinámico del botón de candado inferior y superior FTMO
+        const btnCardLockFtmo = document.getElementById('btn-card-lock-ftmo');
+        const btnCardLockFtmoText = document.getElementById('btn-card-lock-ftmo-text');
+        const btnTopLockFtmo = document.getElementById('btn-lock-ftmo');
+
+        if (acc.locked) {
+          if (btnCardLockFtmo) {
+            btnCardLockFtmo.className = 'touch-target min-h-[48px] px-3 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-black text-xs flex items-center justify-center gap-1.5 transition shadow-lg shadow-rose-900/50 border border-rose-400 animate-pulse';
+          }
+          if (btnCardLockFtmoText) btnCardLockFtmoText.textContent = '🔒 CANDADO ACTIVO';
+          if (btnTopLockFtmo) {
+            btnTopLockFtmo.className = 'touch-target min-h-[48px] px-3.5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-black text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-rose-900/50 transition border border-rose-400 animate-pulse';
+            btnTopLockFtmo.innerHTML = '<span>🔒</span> <span>CANDADO FTMO ACTIVO</span>';
+          }
+        } else {
+          if (btnCardLockFtmo) {
+            btnCardLockFtmo.className = 'touch-target min-h-[48px] px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 hover:text-emerald-300 font-bold text-xs flex items-center justify-center gap-1.5 transition border border-slate-700 shadow';
+          }
+          if (btnCardLockFtmoText) btnCardLockFtmoText.textContent = '🔒 Activar Candado';
+          if (btnTopLockFtmo) {
+            btnTopLockFtmo.className = 'touch-target min-h-[48px] px-3.5 py-2.5 rounded-xl bg-rose-700/80 hover:bg-rose-600 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow transition border border-rose-500/40';
+            btnTopLockFtmo.innerHTML = '<span>🔒</span> <span>Candado FTMO</span>';
+          }
+        }
       }
 
       // Render Card VT Markets Cent Real
@@ -1200,6 +1227,31 @@
           statusPill.textContent = acc.locked ? '🔒 Candado VT Activado' : 'Estado: Operando en vivo';
           statusPill.className = acc.locked ? 'text-[11px] font-mono px-2.5 py-1 rounded-lg bg-rose-500/20 text-rose-300 border border-rose-500/40' : 'text-[11px] font-mono px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300';
         }
+
+        // Estado dinámico del botón de candado inferior y superior VT
+        const btnCardLockVt = document.getElementById('btn-card-lock-vt');
+        const btnCardLockVtText = document.getElementById('btn-card-lock-vt-text');
+        const btnTopLockVt = document.getElementById('btn-lock-vt');
+
+        if (acc.locked) {
+          if (btnCardLockVt) {
+            btnCardLockVt.className = 'touch-target min-h-[48px] px-3 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-black text-xs flex items-center justify-center gap-1.5 transition shadow-lg shadow-rose-900/50 border border-rose-400 animate-pulse';
+          }
+          if (btnCardLockVtText) btnCardLockVtText.textContent = '🔒 CANDADO ACTIVO';
+          if (btnTopLockVt) {
+            btnTopLockVt.className = 'touch-target min-h-[48px] px-3.5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-black text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-rose-900/50 transition border border-rose-400 animate-pulse';
+            btnTopLockVt.innerHTML = '<span>🔒</span> <span>CANDADO VT ACTIVO</span>';
+          }
+        } else {
+          if (btnCardLockVt) {
+            btnCardLockVt.className = 'touch-target min-h-[48px] px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 hover:text-emerald-300 font-bold text-xs flex items-center justify-center gap-1.5 transition border border-slate-700 shadow';
+          }
+          if (btnCardLockVtText) btnCardLockVtText.textContent = '🔒 Activar Candado';
+          if (btnTopLockVt) {
+            btnTopLockVt.className = 'touch-target min-h-[48px] px-3.5 py-2.5 rounded-xl bg-rose-700/80 hover:bg-rose-600 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow transition border border-rose-500/40';
+            btnTopLockVt.innerHTML = '<span>🔒</span> <span>Candado VT</span>';
+          }
+        }
       }
 
       // Render Sección 2: Métricas de la Sesión
@@ -1284,11 +1336,14 @@
       // 3. CALENDARIO POR CUADROS INTERACTIVO (CUENTAS INDEPENDIENTES)
       // -----------------------------------------------------------------------
       function getAccountHistoryData(accTag) {
-        if (!cachedData || !cachedData.history) return [];
-        const rawHistory = cachedData.history || [];
+        if (!cachedData) return [];
 
         if (accTag === 'ftmo') {
-          return rawHistory.map(h => ({
+          // Historial independiente FTMO: Arranca hoy 9 de Noviembre en $0.00 USD
+          const list = (Array.isArray(cachedData.history_ftmo) && cachedData.history_ftmo.length > 0)
+            ? cachedData.history_ftmo
+            : (Array.isArray(cachedData.history) ? cachedData.history : []);
+          return list.map(h => ({
             ...h,
             account: 'ftmo',
             currency: 'USD',
@@ -1296,20 +1351,17 @@
             meta_cumplida: (h.meta_cumplida === true || Number(h.pnl) >= 350.0)
           }));
         } else {
-          // Cuenta VT Markets Cent Real: meta 2,500 USC
-          return rawHistory.map(h => {
-            // Conversión proporcional o directa a centavos
-            const pnlUSC = Number(h.pnl) * 10; // Escala centavos de sesión
-            const targetUSC = 2500.0;
-            return {
-              ...h,
-              pnl: pnlUSC,
-              account: 'vt',
-              currency: 'USC',
-              target_tp: targetUSC,
-              meta_cumplida: (pnlUSC >= targetUSC)
-            };
-          });
+          // Historial independiente VT Markets Cent: Días 2 al 6 en centavos + hoy 9 de Nov (+33.66 USC)
+          const list = (Array.isArray(cachedData.history_vt) && cachedData.history_vt.length > 0)
+            ? cachedData.history_vt
+            : [];
+          return list.map(h => ({
+            ...h,
+            account: 'vt',
+            currency: 'USC',
+            target_tp: 2500.0,
+            meta_cumplida: (h.meta_cumplida === true || Number(h.pnl) >= 2500.0)
+          }));
         }
       }
 
@@ -1371,23 +1423,31 @@
 
           if (record) {
             const pnl = Number(record.pnl || 0);
+            const isEnCurso = (record.status === 'EN_CURSO');
             const isWin = pnl >= 0;
             const isMeta = record.meta_cumplida;
 
-            monthTotalPnl += pnl;
-            if (isWin) monthWins++; else monthLosses++;
-            if (isMeta) monthMetas++;
-            monthTotalTrades += (record.trades || 0);
-            monthTotalTradeWins += (record.wins || 0);
+            if (!isEnCurso) {
+              monthTotalPnl += pnl;
+              if (isWin) monthWins++; else monthLosses++;
+              if (isMeta) monthMetas++;
+              monthTotalTrades += (record.trades || 0);
+              monthTotalTradeWins += (record.wins || 0);
+            }
 
             const isFTMO = selectedCalendarAccount === 'ftmo';
-            const pnlFormatted = isFTMO ? `${isWin ? '+' : ''}$${pnl.toFixed(0)}` : `${isWin ? '+' : ''}${pnl.toFixed(0)}`;
+            let pnlFormatted = isFTMO ? `${pnl >= 0 ? '+' : ''}${pnl.toFixed(0)}` : `${pnl >= 0 ? '+' : ''}${pnl.toFixed(1)} USC`;
 
-            // Estilos de la tarjeta según rendimiento
+            // Estilos de la tarjeta según rendimiento y estado
             let cardClasses = 'bg-slate-900/80 border-slate-800 text-slate-300';
             let badge = '';
 
-            if (isMeta) {
+            if (isEnCurso) {
+              // Día en curso (ej. Reto FTMO hoy 9 Nov): borde neutro/azul cian distintivo
+              cardClasses = 'bg-indigo-950/40 border-2 border-indigo-400/80 text-indigo-200 shadow-md shadow-indigo-950/50 hover:border-indigo-300 animate-pulse';
+              badge = '<span class="text-[9px] font-bold text-indigo-300 px-1 py-0.5 rounded bg-indigo-500/25 border border-indigo-500/40">⏳ En Curso</span>';
+              pnlFormatted = isFTMO ? '$0.00' : '0.0 USC';
+            } else if (isMeta) {
               cardClasses = 'bg-amber-500/15 border-2 border-amber-400 text-amber-300 candado-gold-glow shadow-md shadow-amber-500/20';
               badge = '<span class="text-[11px] sm:text-xs">🏆</span>';
             } else if (isWin) {
@@ -1397,6 +1457,8 @@
               cardClasses = 'bg-rose-950/35 border border-rose-500/45 text-rose-400 hover:border-rose-400';
               badge = '<span class="text-[10px] text-rose-400 font-bold">✕</span>';
             }
+
+            const subInfo = isEnCurso ? '0 ops · En curso' : `${record.trades} ops · ${Number(record.win_rate).toFixed(0)}%`;
 
             gridHtml += `
               <div onclick="openDayDetailModal('${dateStr}', '${selectedCalendarAccount}')" 
@@ -1408,7 +1470,7 @@
                 </div>
                 <div class="text-right">
                   <div class="font-mono font-black text-xs sm:text-sm tracking-tight leading-none">${pnlFormatted}</div>
-                  <div class="text-[9px] sm:text-[10px] text-slate-400 font-mono mt-0.5 leading-none hidden sm:block">${record.trades} ops · ${Number(record.win_rate).toFixed(0)}%</div>
+                  <div class="text-[9px] sm:text-[10px] text-slate-400 font-mono mt-0.5 leading-none hidden sm:block">${subInfo}</div>
                 </div>
               </div>
             `;
@@ -1425,17 +1487,32 @@
 
         gridEl.innerHTML = gridHtml;
 
-        // Actualizar KPIs del mes
+        // Actualizar KPIs del mes con datos del servidor o calculados
         const isFTMO = selectedCalendarAccount === 'ftmo';
-        if (kpiPnl) {
-          kpiPnl.textContent = isFTMO ? `${monthTotalPnl >= 0 ? '+' : ''}${fmtUSD(monthTotalPnl)}` : `${monthTotalPnl >= 0 ? '+' : ''}${fmtUSC(monthTotalPnl)}`;
-          kpiPnl.className = 'font-mono font-black text-sm ' + (monthTotalPnl >= 0 ? 'text-emerald-400' : 'text-rose-400');
+        const isNov2026 = (year === 2026 && month === 10);
+        const serverSummary = isFTMO ? cachedData?.summary_ftmo : cachedData?.summary_vt;
+
+        let displayPnl = monthTotalPnl;
+        let displayWins = monthWins;
+        let displayLosses = monthLosses;
+        let displayMetas = monthMetas;
+        let displayWinRate = monthTotalTrades > 0 ? ((monthTotalTradeWins / monthTotalTrades) * 100).toFixed(1) : '0.0';
+
+        if (isNov2026 && serverSummary) {
+          displayPnl = Number(serverSummary.total_pnl || 0);
+          displayWins = Number(serverSummary.days_won || 0);
+          displayLosses = Number(serverSummary.days_lost || 0);
+          displayMetas = Number(serverSummary.metas_cumplidas || 0);
+          displayWinRate = Number(serverSummary.win_rate || 0).toFixed(1);
         }
-        if (kpiRatio) kpiRatio.textContent = `${monthWins}G / ${monthLosses}P`;
-        if (kpiMetas) kpiMetas.textContent = `🏆 ${monthMetas} Días`;
-        
-        const monthWR = monthTotalTrades > 0 ? ((monthTotalTradeWins / monthTotalTrades) * 100).toFixed(1) : '0.0';
-        if (kpiWinRate) kpiWinRate.textContent = `${monthWR}%`;
+
+        if (kpiPnl) {
+          kpiPnl.textContent = isFTMO ? `${displayPnl >= 0 ? '+' : ''}${fmtUSD(displayPnl)}` : `${displayPnl >= 0 ? '+' : ''}${fmtUSC(displayPnl)}`;
+          kpiPnl.className = 'font-mono font-black text-sm ' + (displayPnl >= 0 ? 'text-emerald-400' : 'text-rose-400');
+        }
+        if (kpiRatio) kpiRatio.textContent = `${displayWins}G / ${displayLosses}P`;
+        if (kpiMetas) kpiMetas.textContent = `🏆 ${displayMetas} Días`;
+        if (kpiWinRate) kpiWinRate.textContent = `${displayWinRate}%`;
 
         // Renderizar también la tabla si está activa
         renderCalendarTableRows(historyData);
@@ -1454,9 +1531,16 @@
 
         tbody.innerHTML = historyData.map(item => {
           const pnl = Number(item.pnl || 0);
+          const isEnCurso = (item.status === 'EN_CURSO');
           const isWin = pnl >= 0;
           const isMeta = item.meta_cumplida;
-          const pnlStr = isFTMO ? `${isWin ? '+' : ''}${fmtUSD(pnl)}` : `${isWin ? '+' : ''}${fmtUSC(pnl)}`;
+          
+          let pnlStr = '';
+          if (isEnCurso) {
+            pnlStr = isFTMO ? '$0.00' : '0.0 USC';
+          } else {
+            pnlStr = isFTMO ? `${isWin ? '+' : ''}${fmtUSD(pnl)}` : `${isWin ? '+' : ''}${fmtUSC(pnl)}`;
+          }
 
           let dateStr = item.date;
           try {
@@ -1465,32 +1549,33 @@
             dateStr = d.toLocaleDateString('es-CO', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
           } catch(e) {}
 
-          const rowBg = isMeta ? 'bg-amber-500/10 border-l-4 border-l-amber-400' : (isWin ? 'hover:bg-slate-800/30' : 'hover:bg-rose-950/20');
+          const rowBg = isEnCurso ? 'bg-indigo-950/20 border-l-4 border-l-indigo-400' : (isMeta ? 'bg-amber-500/10 border-l-4 border-l-amber-400' : (isWin ? 'hover:bg-slate-800/30' : 'hover:bg-rose-950/20'));
+
+          let statusBadge = '';
+          if (isEnCurso) {
+            statusBadge = '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/40">⏳ EN CURSO</span>';
+          } else if (isMeta) {
+            statusBadge = '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black text-amber-300 border border-amber-400/50 gold-shimmer-badge">🏆 META CUMPLIDA</span>';
+          } else if (isWin) {
+            statusBadge = '<span class="text-emerald-400 text-[11px] font-semibold">✓ Positivo</span>';
+          } else {
+            statusBadge = '<span class="text-rose-400 text-[11px] font-semibold">✕ Freno / Negativo</span>';
+          }
+
+          const wrDisplay = isEnCurso ? '—' : `${Number(item.win_rate || 0).toFixed(1)}%`;
+          const tradesDisplay = isEnCurso ? '0' : String(item.trades || 0);
+          const ratioDisplay = isEnCurso ? '—' : `<span class="text-emerald-400">${item.wins || 0}W</span> / <span class="text-rose-400">${item.losses || 0}L</span>`;
 
           return `
             <tr class="${rowBg} transition text-xs">
               <td class="p-2.5 font-semibold text-white capitalize">${dateStr}</td>
-              <td class="p-2.5">
-                ${isMeta ? `
-                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black text-amber-300 border border-amber-400/50 gold-shimmer-badge">
-                    🏆 META CUMPLIDA
-                  </span>
-                ` : isWin ? `
-                  <span class="text-emerald-400 text-[11px] font-semibold">✓ Positivo</span>
-                ` : `
-                  <span class="text-rose-400 text-[11px] font-semibold">✕ Freno / Negativo</span>
-                `}
-              </td>
-              <td class="p-2.5 text-right font-black ${isMeta ? 'text-amber-300' : (isWin ? 'text-emerald-400' : 'text-rose-400')}">
+              <td class="p-2.5">${statusBadge}</td>
+              <td class="p-2.5 text-right font-black ${isEnCurso ? 'text-indigo-300' : (isMeta ? 'text-amber-300' : (isWin ? 'text-emerald-400' : 'text-rose-400'))}">
                 ${pnlStr}
               </td>
-              <td class="p-2.5 text-center text-slate-300">${item.trades}</td>
-              <td class="p-2.5 text-center text-slate-400">
-                <span class="text-emerald-400">${item.wins}W</span> / <span class="text-rose-400">${item.losses}L</span>
-              </td>
-              <td class="p-2.5 text-center font-bold ${Number(item.win_rate) >= 70 ? 'text-emerald-400' : 'text-slate-300'}">
-                ${Number(item.win_rate).toFixed(1)}%
-              </td>
+              <td class="p-2.5 text-center text-slate-300">${tradesDisplay}</td>
+              <td class="p-2.5 text-center text-slate-400">${ratioDisplay}</td>
+              <td class="p-2.5 text-center font-bold ${Number(item.win_rate) >= 70 ? 'text-emerald-400' : 'text-slate-300'}">${wrDisplay}</td>
               <td class="p-2.5 text-right">
                 <button onclick="openDayDetailModal('${item.date}', '${selectedCalendarAccount}')" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-bold">
                   Ver Día ➔
@@ -1590,19 +1675,33 @@
           modalAccBadge.textContent = isFTMO ? 'Reto FTMO 100k USD' : 'VT Markets Cent Real';
           modalAccBadge.className = isFTMO ? 'px-2.5 py-0.5 rounded text-[10px] font-bold uppercase bg-blue-500/20 text-blue-300 border border-blue-500/30' : 'px-2.5 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
         }
+        const isEnCurso = (record.status === 'EN_CURSO');
         if (modalStatusBadge) {
-          modalStatusBadge.textContent = record.status || (isWin ? 'GANADOR' : 'PERDEDOR');
-          modalStatusBadge.className = isWin ? 'px-2.5 py-0.5 rounded text-[10px] font-black uppercase bg-emerald-500/20 text-emerald-300' : 'px-2.5 py-0.5 rounded text-[10px] font-black uppercase bg-rose-500/20 text-rose-300';
+          if (isEnCurso) {
+            modalStatusBadge.textContent = 'EN CURSO';
+            modalStatusBadge.className = 'px-2.5 py-0.5 rounded text-[10px] font-black uppercase bg-indigo-500/20 text-indigo-300 border border-indigo-500/40';
+          } else {
+            modalStatusBadge.textContent = record.status || (isWin ? 'GANADOR' : 'PERDEDOR');
+            modalStatusBadge.className = isWin ? 'px-2.5 py-0.5 rounded text-[10px] font-black uppercase bg-emerald-500/20 text-emerald-300' : 'px-2.5 py-0.5 rounded text-[10px] font-black uppercase bg-rose-500/20 text-rose-300';
+          }
         }
 
         if (modalPnlVal) {
-          const pnlText = isFTMO ? `${isWin ? '+' : ''}${fmtUSD(pnl)}` : `${isWin ? '+' : ''}${fmtUSC(pnl)}`;
-          modalPnlVal.textContent = pnlText;
-          modalPnlVal.className = 'text-2xl sm:text-3xl font-black font-mono my-1 ' + (isWin ? 'text-emerald-400' : 'text-rose-400');
+          if (isEnCurso) {
+            modalPnlVal.textContent = isFTMO ? '$0.00 USD' : '0.00 USC';
+            modalPnlVal.className = 'text-2xl sm:text-3xl font-black font-mono my-1 text-indigo-300';
+          } else {
+            const pnlText = isFTMO ? `${isWin ? '+' : ''}${fmtUSD(pnl)}` : `${isWin ? '+' : ''}${fmtUSC(pnl)}`;
+            modalPnlVal.textContent = pnlText;
+            modalPnlVal.className = 'text-2xl sm:text-3xl font-black font-mono my-1 ' + (isWin ? 'text-emerald-400' : 'text-rose-400');
+          }
         }
 
         if (modalMetaIndicator) {
-          if (isMeta) {
+          if (isEnCurso) {
+            modalMetaIndicator.className = 'mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold text-indigo-300 bg-indigo-500/20 border border-indigo-500/40';
+            modalMetaIndicator.innerHTML = `<span>⏳</span> <span>Jornada en curso · Esperando aperturas del bot MT5</span>`;
+          } else if (isMeta) {
             modalMetaIndicator.className = 'mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black text-amber-300 border border-amber-400/50 gold-shimmer-badge';
             modalMetaIndicator.innerHTML = `<span>🏆</span> <span>¡META DIARIA CUMPLIDA! (≥ ${isFTMO ? '+$350 USD' : '+2,500 USC'})</span>`;
           } else if (isWin) {
