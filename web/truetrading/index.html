@@ -54,6 +54,10 @@
       animation: shimmerGold 3s infinite linear;
     }
     /* Estilos táctiles para móvil Android */
+    .touch-scroll {
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+    }
     .touch-target {
       min-height: 44px;
       touch-action: manipulation;
@@ -114,21 +118,36 @@
       </div>
 
       <!-- Controles Maestros y Estado de Red -->
-      <div class="flex flex-wrap items-center gap-2.5">
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
         <!-- Indicador de Sincronización -->
-        <div onclick="scrollToApiConfig()" class="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs flex-1 sm:flex-initial justify-center cursor-pointer hover:border-slate-700 transition" title="Clic para configurar URL del Servidor">
+        <div onclick="scrollToApiConfig()" class="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs justify-center cursor-pointer hover:border-slate-700 transition shadow-sm" title="Clic para configurar URL del Servidor VPS">
           <span id="conn-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
           <span id="conn-text" class="text-slate-300 font-mono font-medium text-[11px] sm:text-xs">Sincronizando VPS...</span>
           <span class="text-slate-500 text-[10px] ml-0.5">⚙️</span>
         </div>
 
-        <!-- Botón Maestro Superior: Candado Total -->
-        <button id="btn-master-lock" onclick="toggleCandado('both', true)" class="touch-target px-3.5 sm:px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-rose-900/40 transition border border-rose-500/40 flex-1 sm:flex-initial">
-          <span>🔒</span> <span>CANDADO TOTAL (Ambas)</span>
-        </button>
-        <button id="btn-master-unlock" onclick="toggleCandado('both', false)" class="touch-target px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 hover:text-white font-semibold text-xs flex items-center justify-center gap-1 transition border border-slate-700 flex-1 sm:flex-initial">
-          <span>🔓</span> <span>Desbloquear</span>
-        </button>
+        <!-- Botones de Control de Candados: Cuadrícula 2x2 en móvil (< 640px) y fila en PC -->
+        <div class="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
+          <!-- 1. Candado FTMO -->
+          <button id="btn-lock-ftmo" onclick="toggleCandado('ftmo', true)" class="touch-target px-3 py-2 rounded-xl bg-rose-700/80 hover:bg-rose-600 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow transition border border-rose-500/40" title="Activar candado en cuenta FTMO">
+            <span>🔒</span> <span>Candado FTMO</span>
+          </button>
+          
+          <!-- 2. Candado VT -->
+          <button id="btn-lock-vt" onclick="toggleCandado('vt', true)" class="touch-target px-3 py-2 rounded-xl bg-rose-700/80 hover:bg-rose-600 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow transition border border-rose-500/40" title="Activar candado en cuenta VT Markets">
+            <span>🔒</span> <span>Candado VT</span>
+          </button>
+          
+          <!-- 3. CANDADO TOTAL (Ambas) -->
+          <button id="btn-master-lock" onclick="toggleCandado('both', true)" class="touch-target px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-black text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-rose-900/50 transition border border-rose-400/50" title="Frenar ambas cuentas a la vez">
+            <span>🔒</span> <span>CANDADO TOTAL</span>
+          </button>
+          
+          <!-- 4. Desbloquear -->
+          <button id="btn-master-unlock" onclick="toggleCandado('both', false)" class="touch-target px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-emerald-400 hover:text-emerald-300 font-bold text-xs flex items-center justify-center gap-1.5 transition border border-slate-700 shadow" title="Levantar candados y reanudar operativa">
+            <span>🔓</span> <span>Desbloquear</span>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -408,7 +427,7 @@
           <span>Operaciones Abiertas en Mercado (Flotante)</span>
           <span id="open-positions-count" class="font-mono text-slate-400 text-[11px]">0 abiertas</span>
         </h3>
-        <div class="overflow-x-auto -mx-1 sm:mx-0">
+        <div class="overflow-x-auto touch-scroll -mx-1 sm:mx-0">
           <table class="w-full text-left text-xs text-slate-300 min-w-[580px]">
             <thead class="bg-slate-950/70 text-slate-400 uppercase text-[10px]">
               <tr>
@@ -564,7 +583,7 @@
       </div>
 
       <!-- Tabla de Eventos Macroeconómicos -->
-      <div class="overflow-x-auto mt-4 -mx-1 sm:mx-0">
+      <div class="overflow-x-auto touch-scroll mt-4 -mx-1 sm:mx-0">
         <table class="w-full text-left text-xs text-slate-200 min-w-[560px]">
           <thead class="bg-slate-950 text-slate-400 uppercase text-[10px] tracking-wider">
             <tr>
@@ -597,7 +616,7 @@
           </p>
         </div>
         <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full md:w-auto font-mono">
-          <input id="api-input" type="url" value="https://rna-douglas-durable-trusted.trycloudflare.com" 
+          <input id="api-input" type="url" value="https://terminals-riders-surrounded-gras.trycloudflare.com" 
                  placeholder="https://...trycloudflare.com" 
                  class="bg-slate-950 border border-slate-700/80 rounded-xl px-3 py-2 text-slate-200 text-xs w-full sm:w-80 focus:border-amber-400 focus:outline-none transition">
           <button onclick="saveApiUrl()" class="touch-target px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs font-sans transition flex-shrink-0 shadow">
@@ -723,7 +742,12 @@
       'use strict';
 
       // Endpoint HTTPS seguro del túnel Cloudflare del VPS de Trading (configurable dinámicamente)
-      let API_BASE = localStorage.getItem('truetrading_api_url') || 'https://rna-douglas-durable-trusted.trycloudflare.com';
+      let storedUrl = localStorage.getItem('truetrading_api_url');
+      if (storedUrl && (storedUrl.includes('rna-douglas-durable-trusted') || !storedUrl.startsWith('http'))) {
+        storedUrl = 'https://terminals-riders-surrounded-gras.trycloudflare.com';
+        try { localStorage.setItem('truetrading_api_url', storedUrl); } catch(e) {}
+      }
+      let API_BASE = storedUrl || 'https://terminals-riders-surrounded-gras.trycloudflare.com';
       
       const apiInput = document.getElementById('api-input');
       if (apiInput) {
@@ -886,34 +910,77 @@
           floatEl.className = 'font-mono font-bold text-xs sm:text-sm ' + (flotante >= 0 ? 'text-emerald-400' : 'text-rose-400');
         }
 
-        // Barra TP: Meta $350.00
+        // Barra TP: Meta $350.00 (Verde 0-89%, Dorado 90-100%)
         const targetTp = acc.target_tp || 350;
-        const tpPct = Math.min(Math.max((pnlNeto / targetTp) * 100, 0), 100);
+        const tpPct = typeof acc.tp_pct === 'number' && acc.tp_pct > 0 ? acc.tp_pct : Math.min(Math.max((pnlNeto / targetTp) * 100, 0), 100);
         const tpBar = document.getElementById('ftmo-tp-bar');
         const tpLabel = document.getElementById('ftmo-tp-label');
         const adviceEl = document.getElementById('ftmo-candado-advice');
 
-        if (tpBar) tpBar.style.width = `${tpPct.toFixed(1)}%`;
+        if (tpBar) {
+          tpBar.style.width = `${Math.min(Math.max(tpPct, 0), 100).toFixed(1)}%`;
+          if (tpPct >= 90) {
+            tpBar.className = 'h-full bg-amber-400 rounded-full transition-all duration-500 shadow-[0_0_14px_rgba(251,191,36,0.85)]';
+          } else {
+            tpBar.className = 'h-full bg-emerald-500 rounded-full transition-all duration-500';
+          }
+        }
         if (tpLabel) tpLabel.textContent = `${fmtUSD(pnlNeto)} / ${fmtUSD(targetTp)} (${tpPct.toFixed(1)}%)`;
 
-        // Regla: 90% - 100% ($315 - $350) => Destello Dorado Candado Recomendado
-        const isNearTp = (pnlNeto >= targetTp * 0.9);
+        // Zona Candado 90% a 100%: Aviso dorado brillante o medalla meta cumplida
+        const isNearTp = (tpPct >= 90);
         const isCandadoZone = acc.is_candado_zone || isNearTp;
-        if (adviceEl) adviceEl.classList.toggle('hidden', !isCandadoZone);
+        if (adviceEl) {
+          if (tpPct >= 100) {
+            adviceEl.classList.remove('hidden');
+            adviceEl.className = 'mt-2 p-2 rounded-lg bg-amber-500/25 border border-amber-400 text-amber-200 text-xs font-bold flex items-center justify-between shadow-lg shadow-amber-500/20';
+            adviceEl.innerHTML = `
+              <span class="flex items-center gap-1.5">🏆 <strong>META CUMPLIDA (+${fmtUSD(pnlNeto)})</strong></span>
+              <button onclick="toggleCandado('ftmo', true)" class="px-2.5 py-1 rounded-lg bg-amber-400 text-slate-950 font-black text-[11px] hover:bg-amber-300 transition shadow">Bloquear Ganancia</button>
+            `;
+          } else if (tpPct >= 90) {
+            adviceEl.classList.remove('hidden');
+            adviceEl.className = 'mt-2 p-2 rounded-lg bg-amber-500/20 border border-amber-500/60 text-amber-300 text-xs font-bold flex items-center justify-between animate-pulse';
+            adviceEl.innerHTML = `
+              <span class="flex items-center gap-1.5">🔒 <strong>ZONA DE CANDADO RECOMENDADO (${tpPct.toFixed(0)}%)</strong></span>
+              <button onclick="toggleCandado('ftmo', true)" class="px-2.5 py-1 rounded-lg bg-amber-500 text-slate-950 font-black text-[11px] hover:bg-amber-400 transition shadow">Activar Ya</button>
+            `;
+          } else {
+            adviceEl.classList.add('hidden');
+          }
+        }
 
-        // Barra SL: Límite -$500.00
+        // Barra SL: Límite -$500.00 (Gris <50%, Naranja pulsante 50-100%)
         const targetSl = Math.abs(acc.target_sl || 500);
         const lossVal = pnlNeto < 0 ? Math.abs(pnlNeto) : 0;
-        const slPct = Math.min(Math.max((lossVal / targetSl) * 100, 0), 100);
+        const slPct = typeof acc.sl_pct === 'number' && acc.sl_pct > 0 ? acc.sl_pct : Math.min(Math.max((lossVal / targetSl) * 100, 0), 100);
         const slBar = document.getElementById('ftmo-sl-bar');
         const slLabel = document.getElementById('ftmo-sl-label');
         const slAlert = document.getElementById('ftmo-sl-alert');
 
-        if (slBar) slBar.style.width = `${slPct.toFixed(1)}%`;
-        if (slLabel) slLabel.textContent = `-$${lossVal.toFixed(2)} / -$${targetSl.toFixed(2)} (${slPct.toFixed(1)}%)`;
+        if (slBar) {
+          slBar.style.width = `${Math.min(Math.max(slPct, 0), 100).toFixed(1)}%`;
+          if (slPct >= 50) {
+            slBar.className = 'h-full bg-orange-500 rounded-full transition-all duration-500 animate-pulse shadow-[0_0_14px_rgba(249,115,22,0.8)]';
+          } else {
+            slBar.className = 'h-full bg-slate-600 rounded-full transition-all duration-500';
+          }
+        }
+        if (slLabel) slLabel.textContent = `-${lossVal.toFixed(2)} / -${targetSl.toFixed(2)} (${slPct.toFixed(1)}%)`;
 
-        const isSl50 = lossVal >= (targetSl * 0.5);
-        if (slAlert) slAlert.classList.toggle('hidden', !isSl50);
+        const isSl50 = (slPct >= 50);
+        if (slAlert) {
+          if (isSl50) {
+            slAlert.classList.remove('hidden');
+            slAlert.className = 'mt-2 p-2 rounded-lg bg-orange-500/20 border border-orange-500/60 text-orange-300 text-xs font-bold flex items-center justify-between animate-pulse';
+            slAlert.innerHTML = `
+              <span class="flex items-center gap-1.5">⚠️ <strong>ALERTA 50% SL (-${lossVal.toFixed(2)} USD)</strong></span>
+              <button onclick="toggleCandado('ftmo', true)" class="px-2.5 py-1 rounded-lg bg-orange-500 text-slate-950 font-black text-[11px] hover:bg-orange-400 transition shadow">Frenar</button>
+            `;
+          } else {
+            slAlert.classList.add('hidden');
+          }
+        }
 
         if (cardEl) {
           cardEl.classList.toggle('candado-gold-glow', isCandadoZone && !acc.locked);
@@ -954,32 +1021,75 @@
           floatEl.className = 'font-mono font-bold text-xs sm:text-sm ' + (flotante >= 0 ? 'text-emerald-400' : 'text-rose-400');
         }
 
-        // Barra TP: Meta 2,500 USC
+        // Barra TP: Meta 2,500 USC (Verde 0-89%, Dorado 90-100%)
         const targetTp = acc.target_tp || 2500;
-        const tpPct = Math.min(Math.max((pnlNeto / targetTp) * 100, 0), 100);
+        const tpPct = typeof acc.tp_pct === 'number' && acc.tp_pct > 0 ? acc.tp_pct : Math.min(Math.max((pnlNeto / targetTp) * 100, 0), 100);
         const tpBar = document.getElementById('vt-tp-bar');
         const tpLabel = document.getElementById('vt-tp-label');
         const adviceEl = document.getElementById('vt-candado-advice');
 
-        if (tpBar) tpBar.style.width = `${tpPct.toFixed(1)}%`;
+        if (tpBar) {
+          tpBar.style.width = `${Math.min(Math.max(tpPct, 0), 100).toFixed(1)}%`;
+          if (tpPct >= 90) {
+            tpBar.className = 'h-full bg-amber-400 rounded-full transition-all duration-500 shadow-[0_0_14px_rgba(251,191,36,0.85)]';
+          } else {
+            tpBar.className = 'h-full bg-emerald-500 rounded-full transition-all duration-500';
+          }
+        }
         if (tpLabel) tpLabel.textContent = `${pnlNeto.toFixed(2)} / ${targetTp.toFixed(2)} USC (${tpPct.toFixed(1)}%)`;
 
-        const isNearTp = (pnlNeto >= targetTp * 0.9);
-        if (adviceEl) adviceEl.classList.toggle('hidden', !isNearTp);
+        const isNearTp = (tpPct >= 90);
+        if (adviceEl) {
+          if (tpPct >= 100) {
+            adviceEl.classList.remove('hidden');
+            adviceEl.className = 'mt-2 p-2 rounded-lg bg-amber-500/25 border border-amber-400 text-amber-200 text-xs font-bold flex items-center justify-between shadow-lg shadow-amber-500/20';
+            adviceEl.innerHTML = `
+              <span class="flex items-center gap-1.5">🏆 <strong>META CUMPLIDA (+${pnlNeto.toFixed(0)} USC)</strong></span>
+              <button onclick="toggleCandado('vt', true)" class="px-2.5 py-1 rounded-lg bg-amber-400 text-slate-950 font-black text-[11px] hover:bg-amber-300 transition shadow">Bloquear Ganancia</button>
+            `;
+          } else if (tpPct >= 90) {
+            adviceEl.classList.remove('hidden');
+            adviceEl.className = 'mt-2 p-2 rounded-lg bg-amber-500/20 border border-amber-500/60 text-amber-300 text-xs font-bold flex items-center justify-between animate-pulse';
+            adviceEl.innerHTML = `
+              <span class="flex items-center gap-1.5">🔒 <strong>ZONA DE CANDADO RECOMENDADO (${tpPct.toFixed(0)}%)</strong></span>
+              <button onclick="toggleCandado('vt', true)" class="px-2.5 py-1 rounded-lg bg-amber-500 text-slate-950 font-black text-[11px] hover:bg-amber-400 transition shadow">Activar Ya</button>
+            `;
+          } else {
+            adviceEl.classList.add('hidden');
+          }
+        }
 
-        // Barra SL: Límite -5,000 USC
+        // Barra SL: Límite -5,000 USC (Gris <50%, Naranja pulsante 50-100%)
         const targetSl = Math.abs(acc.target_sl || 5000);
         const lossVal = pnlNeto < 0 ? Math.abs(pnlNeto) : 0;
-        const slPct = Math.min(Math.max((lossVal / targetSl) * 100, 0), 100);
+        const slPct = typeof acc.sl_pct === 'number' && acc.sl_pct > 0 ? acc.sl_pct : Math.min(Math.max((lossVal / targetSl) * 100, 0), 100);
         const slBar = document.getElementById('vt-sl-bar');
         const slLabel = document.getElementById('vt-sl-label');
         const slAlert = document.getElementById('vt-sl-alert');
 
-        if (slBar) slBar.style.width = `${slPct.toFixed(1)}%`;
+        if (slBar) {
+          slBar.style.width = `${Math.min(Math.max(slPct, 0), 100).toFixed(1)}%`;
+          if (slPct >= 50) {
+            slBar.className = 'h-full bg-orange-500 rounded-full transition-all duration-500 animate-pulse shadow-[0_0_14px_rgba(249,115,22,0.8)]';
+          } else {
+            slBar.className = 'h-full bg-slate-600 rounded-full transition-all duration-500';
+          }
+        }
         if (slLabel) slLabel.textContent = `-${lossVal.toFixed(2)} / -${targetSl.toFixed(2)} USC (${slPct.toFixed(1)}%)`;
 
-        const isSl50 = lossVal >= (targetSl * 0.5);
-        if (slAlert) slAlert.classList.toggle('hidden', !isSl50);
+        const isSl50 = (slPct >= 50);
+        if (slAlert) {
+          if (isSl50) {
+            slAlert.classList.remove('hidden');
+            slAlert.className = 'mt-2 p-2 rounded-lg bg-orange-500/20 border border-orange-500/60 text-orange-300 text-xs font-bold flex items-center justify-between animate-pulse';
+            slAlert.innerHTML = `
+              <span class="flex items-center gap-1.5">⚠️ <strong>ALERTA 50% STOP LOSS (-${lossVal.toFixed(0)} USC)</strong></span>
+              <button onclick="toggleCandado('vt', true)" class="px-2.5 py-1 rounded-lg bg-orange-500 text-slate-950 font-black text-[11px] hover:bg-orange-400 transition shadow">Frenar</button>
+            `;
+          } else {
+            slAlert.classList.add('hidden');
+          }
+        }
 
         if (cardEl) {
           cardEl.classList.toggle('candado-gold-glow', isNearTp && !acc.locked);
@@ -1511,11 +1621,16 @@
         if (!conf) return;
 
         try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 6000);
+
           const resp = await fetch(`${API_BASE}${endpoint}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ account: accountTarget })
+            body: JSON.stringify({ account: accountTarget }),
+            signal: controller.signal
           });
+          clearTimeout(timeoutId);
 
           if (!resp.ok) {
             throw new Error(`HTTP ${resp.status}`);
@@ -1523,7 +1638,7 @@
 
           const res = await resp.json();
           await fetchLiveAll();
-          showToast(`✓ Operación exitosa: ${actionName} ejecutado en ${targetLabel}`, 'success');
+          showToast(res.message || `✓ ${actionName} ejecutado en ${targetLabel}`, 'success');
         } catch (err) {
           console.error('[TrueTrading] Error ejecutando candado:', err);
           showToast(`Error al conectar con servidor MT5: ${err.message}`, 'error');
@@ -1555,7 +1670,7 @@
       // 9. INICIALIZACIÓN Y POLLING CADA 3 SEGUNDOS
       // -----------------------------------------------------------------------
       fetchLiveAll();
-      pollInterval = setInterval(fetchLiveAll, 3000);
+      pollInterval = setInterval(fetchLiveAll, 4500);
 
       window.addEventListener('beforeunload', () => {
         if (pollInterval) clearInterval(pollInterval);
