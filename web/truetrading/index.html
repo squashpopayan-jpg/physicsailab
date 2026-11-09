@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>TrueTrading Gold · Monitor Ejecutivo MT5 en Vivo & Candados</title>
   
+  <!-- Control de Caché para Móviles y PWA Android -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  
   <!-- Configuración PWA & Móviles Android / iOS -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -119,11 +124,16 @@
 
       <!-- Controles Maestros y Estado de Red -->
       <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
-        <!-- Indicador de Sincronización -->
-        <div onclick="scrollToApiConfig()" class="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs justify-center cursor-pointer hover:border-slate-700 transition shadow-sm" title="Clic para configurar URL del Servidor VPS">
-          <span id="conn-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span id="conn-text" class="text-slate-300 font-mono font-medium text-[11px] sm:text-xs">Sincronizando VPS...</span>
-          <span class="text-slate-500 text-[10px] ml-0.5">⚙️</span>
+        <!-- Indicador de Sincronización y Botón de Recarga Limpia -->
+        <div class="flex items-center gap-1.5 w-full sm:w-auto">
+          <div onclick="scrollToApiConfig()" class="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs flex-1 sm:flex-initial justify-center cursor-pointer hover:border-slate-700 transition shadow-sm" title="Clic para configurar URL del Servidor VPS">
+            <span id="conn-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span id="conn-text" class="text-slate-300 font-mono font-medium text-[11px] sm:text-xs">Sincronizando VPS...</span>
+            <span class="text-slate-500 text-[10px] ml-0.5">⚙️</span>
+          </div>
+          <button onclick="forceAppRefresh()" class="touch-target px-2.5 py-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 active:scale-95 text-slate-400 hover:text-white text-xs flex items-center justify-center transition shadow-sm flex-shrink-0" title="Forzar recarga limpia para actualizar la app">
+            <span>🔄</span>
+          </button>
         </div>
 
         <!-- Botones de Control de Candados: Cuadrícula 2x2 en móvil (< 640px) y fila en PC -->
@@ -763,6 +773,13 @@
           showToast(`URL de API guardada: ${API_BASE}`, 'success');
           fetchLiveAll();
         }
+      };
+
+      window.forceAppRefresh = function () {
+        showToast('Recargando versión más reciente...', 'info');
+        setTimeout(() => {
+          window.location.href = '/truetrading/?v=' + Date.now();
+        }, 150);
       };
 
       window.scrollToApiConfig = function () {
