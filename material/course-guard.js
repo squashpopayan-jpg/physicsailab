@@ -477,13 +477,13 @@
             border: 1px solid rgba(255, 255, 255, 0.25);
         }
 
-        /* Barra flotante no invasiva para Torneos Squash Popayán */
+        /* Barra flotante no invasiva para Torneos Squash Popayán (arriba a la derecha para no tapar navegación ni controles) */
         .pg-top-bar.pg-torneos-bar {
-            top: auto !important;
-            bottom: 12px !important;
-            right: 12px !important;
+            top: 10px !important;
+            bottom: auto !important;
+            right: 10px !important;
             left: auto !important;
-            z-index: 85 !important;
+            z-index: 100 !important;
             gap: 0.45rem !important;
             padding: 0.25rem 0.65rem !important;
             font-size: 0.74rem !important;
@@ -1228,7 +1228,8 @@
 
         if (isTorneos || curCourse === 'torneos') {
             topBar.className = 'pg-top-bar pg-torneos-bar' + (unlocked ? ' unlocked' : '');
-            let isMin = localStorage.getItem('pg_torneos_bar_min') === 'true';
+            const isMob = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 768;
+            let isMin = localStorage.getItem('pg_torneos_bar_min') === 'true' || (isMob && localStorage.getItem('pg_torneos_bar_min') !== 'false');
 
             if (isMin) {
                 topBar.classList.add('minimized');
