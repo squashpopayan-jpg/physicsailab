@@ -26,7 +26,7 @@
 
 * **URL Base HTTPS (Cifrada con SSL Cloudflare):**  
   ```text
-  https://territories-verde-dictionaries-count.trycloudflare.com
+  https://educational-calculator-briefly-ellen.trycloudflare.com
   ```
 * **CORS:** Totalmente habilitado (`Access-Control-Allow-Origin: *`). La llamada desde `https://physicsailab.com` funciona directo sin bloqueos.
 
@@ -118,6 +118,6 @@ Devuelve todo el estado en una sola petición ligera:
 3. Reemplaza el cuerpo del dashboard por la plantilla limpia y moderna de `index.html` adjunta en este paquete.
 4. Asegura que la variable de API use como valor por defecto:
    ```javascript
-   const DEFAULT_API_BASE = 'https://territories-verde-dictionaries-count.trycloudflare.com';
+   const DEFAULT_API_BASE = 'https://educational-calculator-briefly-ellen.trycloudflare.com';
    ```
 5. Realiza un `fetch(API_BASE + '/api/all')` cada 4 segundos para refrescar en vivo las barras y métricas.

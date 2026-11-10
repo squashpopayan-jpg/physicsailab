@@ -1,6 +1,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const truetradingConfigHandler = require('./api/truetrading-config');
 
 const PORT = process.env.PORT || 3000;
 const ROOT_DIR = path.join(__dirname, 'web');
@@ -108,6 +109,36 @@ const server = http.createServer((req, res) => {
         const current = getStats();
         res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
         return res.end(JSON.stringify(current));
+    }
+
+    if (decodedUrl === '/api/truetrading-config') {
+        const chunks = [];
+        req.on('data', c => chunks.push(c));
+        req.on('end', async () => {
+            const rawBody = Buffer.concat(chunks).toString('utf8');
+            if (rawBody) {
+                try { req.body = JSON.parse(rawBody); } catch (e) { req.body = rawBody; }
+            }
+            const resShim = {
+                statusCode: 200,
+                setHeader: (k, v) => res.setHeader(k, v),
+                status: (code) => {
+                    resShim.statusCode = code;
+                    res.statusCode = code;
+                    return resShim;
+                },
+                json: (obj) => {
+                    res.statusCode = resShim.statusCode;
+                    res.end(JSON.stringify(obj));
+                },
+                end: (data) => {
+                    res.statusCode = resShim.statusCode;
+                    res.end(data);
+                }
+            };
+            await truetradingConfigHandler(req, resShim);
+        });
+        return;
     }
 
     let baseDir;

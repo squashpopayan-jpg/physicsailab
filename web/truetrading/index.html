@@ -85,7 +85,7 @@
     }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen p-3 sm:p-5 md:p-8 font-sans antialiased pb-24 md:pb-8 selection:bg-amber-500 selection:text-slate-950">
+<body class="bg-slate-950 text-slate-100 min-h-screen p-3 sm:p-5 md:p-8 font-sans antialiased pb-24 md:pb-8 overflow-x-hidden selection:bg-amber-500 selection:text-slate-950">
   <div class="max-w-7xl mx-auto space-y-6 md:space-y-8">
 
     <!-- 1. Cabecera de Navegación PhysicsAILab Intacta -->
@@ -160,6 +160,26 @@
       </div>
     </div>
 
+    <!-- Indicador de Estado de Salud del VPS y Snapshots (GET /api/health) -->
+    <div id="health-status-bar" class="bg-slate-900/75 border border-slate-800/90 rounded-2xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 text-[11px] shadow-lg">
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="font-bold text-slate-300 flex items-center gap-1.5">
+          <span>🩺</span> <span>Salud VPS (<code class="text-slate-400 font-mono">/api/health</code>):</span>
+        </span>
+        <span id="health-api-badge" class="px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 font-mono font-semibold">
+          Verificando salud...
+        </span>
+      </div>
+      <div class="flex items-center gap-2 flex-wrap">
+        <span id="health-ftmo-badge" class="px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 font-mono">
+          FTMO: Esperando...
+        </span>
+        <span id="health-vt-badge" class="px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 font-mono">
+          VT: Esperando...
+        </span>
+      </div>
+    </div>
+
     <!-- ========================================================================= -->
     <!-- SECCIÓN 1: TARJETAS EN VIVO & BARRAS DINÁMICAS DE TP / SL -->
     <!-- ========================================================================= -->
@@ -189,7 +209,7 @@
                 <h3 id="ftmo-title" class="font-black text-sm sm:text-base md:text-lg text-white">Reto FTMO 100k USD</h3>
                 <span id="ftmo-lock-badge" class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">—</span>
               </div>
-              <p class="text-[11px] text-slate-400 mt-1 font-mono">Login: <span id="ftmo-login" class="text-slate-300">—</span> · Divisa: <span id="ftmo-currency" class="text-slate-300 font-bold">USD</span></p>
+              <p class="text-[11px] text-slate-400 mt-1 font-mono">Login: <span id="ftmo-login" class="text-slate-300">—</span> · <span id="ftmo-server" class="text-slate-300">FTMO-Server4</span> · Divisa: <span id="ftmo-currency" class="text-slate-300 font-bold">USD</span></p>
             </div>
             <div class="text-right flex-shrink-0">
               <div class="text-[11px] text-slate-400">Saldo (Balance)</div>
@@ -315,7 +335,7 @@
                 <h3 id="vt-title" class="font-black text-sm sm:text-base md:text-lg text-white">VT Markets Cent Real</h3>
                 <span id="vt-lock-badge" class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">—</span>
               </div>
-              <p class="text-[11px] text-slate-400 mt-1 font-mono">Login: <span id="vt-login" class="text-slate-300">—</span> · Divisa: <span id="vt-currency" class="text-slate-300 font-bold">USC</span></p>
+              <p class="text-[11px] text-slate-400 mt-1 font-mono">Login: <span id="vt-login" class="text-slate-300">—</span> · <span id="vt-server" class="text-slate-300">VTMarkets-Live 3</span> · Divisa: <span id="vt-currency" class="text-slate-300 font-bold">USC</span></p>
             </div>
             <div class="text-right flex-shrink-0">
               <div class="text-[11px] text-slate-400">Saldo (Balance)</div>
@@ -646,26 +666,28 @@
       </div>
 
       <!-- VISTA 2: TABLA DE HISTORIAL DE METAS CUMPLIDAS -->
-      <div id="calendar-table-container" class="mt-5 pt-4 border-t border-slate-800/80 overflow-x-auto touch-scroll max-h-80 overflow-y-auto -mx-1 sm:mx-0">
-        <table class="w-full text-left text-xs text-slate-200 min-w-[620px]">
-          <thead class="bg-slate-950 text-slate-400 uppercase text-[10px] tracking-wider sticky top-0 z-10">
-            <tr>
-              <th class="p-2.5 rounded-l-lg">Fecha</th>
-              <th class="p-2.5">Estado de Meta</th>
-              <th class="p-2.5 text-right">PnL Neto</th>
-              <th class="p-2.5 text-center">Meta Día</th>
-              <th class="p-2.5 text-center">Trades</th>
-              <th class="p-2.5 text-center">W / L</th>
-              <th class="p-2.5 text-center">Win Rate</th>
-              <th class="p-2.5 rounded-r-lg text-right">Detalle</th>
-            </tr>
-          </thead>
-          <tbody id="calendar-table-body" class="divide-y divide-slate-800/60 font-mono">
-            <tr>
-              <td colspan="8" class="p-4 text-center text-slate-500 text-xs font-sans">Cargando historial desde el VPS...</td>
-            </tr>
-          </tbody>
-        </table>
+      <div id="calendar-table-container" class="mt-5 pt-4 border-t border-slate-800/80 overflow-x-auto touch-scroll -mx-1 sm:mx-0" style="-webkit-overflow-scrolling: touch;">
+        <div class="max-h-80 overflow-y-auto min-w-[640px]">
+          <table class="w-full text-left text-xs text-slate-200 min-w-[640px]">
+            <thead class="bg-slate-950 text-slate-400 uppercase text-[10px] tracking-wider sticky top-0 z-10">
+              <tr>
+                <th class="p-2.5 rounded-l-lg">Fecha</th>
+                <th class="p-2.5">Estado de Meta</th>
+                <th class="p-2.5 text-right">PnL Neto</th>
+                <th class="p-2.5 text-center">Meta Día</th>
+                <th class="p-2.5 text-center">Trades</th>
+                <th class="p-2.5 text-center">W / L</th>
+                <th class="p-2.5 text-center">Win Rate</th>
+                <th class="p-2.5 rounded-r-lg text-right">Detalle</th>
+              </tr>
+            </thead>
+            <tbody id="calendar-table-body" class="divide-y divide-slate-800/60 font-mono">
+              <tr>
+                <td colspan="8" class="p-4 text-center text-slate-500 text-xs font-sans">Cargando historial desde el VPS...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </section>
 
@@ -686,8 +708,8 @@
         </div>
       </div>
 
-      <div class="overflow-x-auto touch-scroll mt-4 -mx-1 sm:mx-0">
-        <table class="w-full text-left text-xs text-slate-200 min-w-[560px]">
+      <div class="overflow-x-auto touch-scroll mt-4 -mx-1 sm:mx-0" style="-webkit-overflow-scrolling: touch;">
+        <table class="w-full text-left text-xs text-slate-200 min-w-[600px]">
           <thead class="bg-slate-950 text-slate-400 uppercase text-[10px] tracking-wider">
             <tr>
               <th class="p-2.5 rounded-l-lg">Horario (Colombia)</th>
@@ -722,13 +744,13 @@
           <button onclick="toggleVpsIframe()" id="btn-toggle-iframe" class="touch-target min-h-[44px] px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition shadow">
             <span>👁️</span> <span id="lbl-toggle-iframe">Mostrar Embebido</span>
           </button>
-          <a id="vps-external-link" href="https://territories-verde-dictionaries-count.trycloudflare.com/" target="_blank" rel="noopener noreferrer" class="touch-target min-h-[44px] px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-bold text-xs flex items-center justify-center gap-1.5 transition border border-slate-700 shadow">
+          <a id="vps-external-link" href="https://educational-calculator-briefly-ellen.trycloudflare.com/" target="_blank" rel="noopener noreferrer" class="touch-target min-h-[44px] px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-bold text-xs flex items-center justify-center gap-1.5 transition border border-slate-700 shadow">
             <span>↗</span> <span>Abrir en Ventana</span>
           </a>
         </div>
       </div>
       <div id="vps-iframe-container" class="hidden mt-4 overflow-hidden rounded-xl border border-slate-800/80 bg-slate-950 transition-all duration-300">
-        <iframe id="vps-iframe" data-src="https://territories-verde-dictionaries-count.trycloudflare.com/" style="width:100%; height:820px; border:none; border-radius:12px;" allow="clipboard-write"></iframe>
+        <iframe id="vps-iframe" data-src="https://educational-calculator-briefly-ellen.trycloudflare.com/" style="width:100%; height:820px; border:none; border-radius:12px;" allow="clipboard-write"></iframe>
       </div>
     </section>
 
@@ -740,18 +762,18 @@
             <span>⚙️</span> <span>Endpoint API del VPS (Túnel Cloudflare)</span>
           </span>
           <p class="text-[11px] text-slate-500 mt-0.5">
-            Actualiza manualmente la URL del túnel o usa <code class="text-slate-400">?api=URL</code> si el servidor cambia en el futuro.
+            Actualiza manualmente la URL del túnel o usa <code class="text-slate-400">?api=URL</code>. También sincroniza automáticamente desde <code class="text-slate-400">/api/truetrading-config</code>.
           </p>
         </div>
         <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full md:w-auto font-mono">
-          <input id="api-input" type="url" value="https://territories-verde-dictionaries-count.trycloudflare.com"
+          <input id="api-input" type="url" value="https://educational-calculator-briefly-ellen.trycloudflare.com"
                  placeholder="https://...trycloudflare.com"
                  class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 text-xs w-full sm:w-80 focus:border-amber-400 focus:outline-none transition">
           <button onclick="saveApiUrl()" class="touch-target px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs font-sans transition flex-shrink-0 shadow">
             Guardar
           </button>
-          <button onclick="resetToDefaultApi()" class="touch-target px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs font-sans transition border border-slate-700 flex-shrink-0" title="Restaurar URL por defecto">
-            Por defecto
+          <button id="btn-restore-official-api" onclick="resetToDefaultApi()" class="touch-target px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold text-xs font-sans transition border border-amber-500/30 flex-shrink-0 shadow" title="Consultar URL oficial y restaurar conexión">
+            Restaurar URL oficial
           </button>
         </div>
       </div>
@@ -865,12 +887,13 @@
     (function () {
       'use strict';
 
-      // 1. CONFIGURACIÓN DE API Y SOPORTE MULTI-DISPOSITIVO
-      const DEFAULT_API_BASE = 'https://territories-verde-dictionaries-count.trycloudflare.com';
+      // 1. CONFIGURACIÓN DE API, AUTO-SANACIÓN DE localStorage Y SOPORTE MULTI-DISPOSITIVO
+      const DEFAULT_API_BASE = 'https://educational-calculator-briefly-ellen.trycloudflare.com';
       const KNOWN_LEGACY_TUNNELS = [
         'rna-douglas-durable-trusted.trycloudflare.com',
         'terminals-riders-surrounded-gras.trycloudflare.com',
-        'argued-globe-spaces-nvidia.trycloudflare.com'
+        'argued-globe-spaces-nvidia.trycloudflare.com',
+        'territories-verde-dictionaries-count.trycloudflare.com'
       ];
 
       function cleanApiUrl(raw) {
@@ -880,23 +903,10 @@
         return trimmed;
       }
 
-      // Capturar parámetro de consulta ?api=URL y persistirlo en localStorage
-      const urlParams = new URLSearchParams(window.location.search);
-      const paramApiClean = cleanApiUrl(urlParams.get('api'));
-      if (paramApiClean) {
-        try { localStorage.setItem('truetrading_api_url', paramApiClean); } catch (e) {}
-      }
-
-      let storedUrl = '';
-      try { storedUrl = cleanApiUrl(localStorage.getItem('truetrading_api_url')); } catch (e) {}
-
-      // Migrar automáticamente túneles antiguos conocidos guardados en caché si no llegaron por ?api=
-      if (!paramApiClean && storedUrl && KNOWN_LEGACY_TUNNELS.some(h => storedUrl.includes(h))) {
-        storedUrl = DEFAULT_API_BASE;
-        try { localStorage.setItem('truetrading_api_url', DEFAULT_API_BASE); } catch (e) {}
-      }
-
-      let API_BASE = paramApiClean || storedUrl || DEFAULT_API_BASE;
+      let OFFICIAL_API_BASE = DEFAULT_API_BASE;
+      let API_BASE = DEFAULT_API_BASE;
+      let consecutiveErrors = 0;
+      let pollTickCount = 0;
 
       function syncApiElements(base) {
         const apiInput = document.getElementById('api-input');
@@ -911,6 +921,16 @@
           }
         }
       }
+
+      // Capturar parámetro de consulta ?api=URL y persistirlo en localStorage
+      const urlParams = new URLSearchParams(window.location.search);
+      const paramApiClean = cleanApiUrl(urlParams.get('api'));
+      if (paramApiClean) {
+        API_BASE = paramApiClean;
+        try { localStorage.setItem('truetrading_api_url', paramApiClean); } catch (e) {}
+      } else {
+        syncApiElements(DEFAULT_API_BASE);
+      }
       syncApiElements(API_BASE);
 
       window.saveApiUrl = function () {
@@ -918,20 +938,26 @@
         const val = cleanApiUrl(input ? input.value : '');
         if (val) {
           API_BASE = val;
+          consecutiveErrors = 0;
           try { localStorage.setItem('truetrading_api_url', API_BASE); } catch (e) {}
           syncApiElements(API_BASE);
           showToast(`URL de API actualizada: ${API_BASE}`, 'success');
+          fetchHealthStatus();
           fetchLiveAll();
         } else {
           showToast('Ingresa una URL válida con https://', 'warn');
         }
       };
 
-      window.resetToDefaultApi = function () {
-        API_BASE = DEFAULT_API_BASE;
-        try { localStorage.setItem('truetrading_api_url', DEFAULT_API_BASE); } catch (e) {}
+      window.resetToDefaultApi = async function () {
+        const serverCfgUrl = await fetchServerOfficialConfig(2500);
+        if (serverCfgUrl) OFFICIAL_API_BASE = serverCfgUrl;
+        API_BASE = OFFICIAL_API_BASE || DEFAULT_API_BASE;
+        consecutiveErrors = 0;
+        try { localStorage.setItem('truetrading_api_url', API_BASE); } catch (e) {}
         syncApiElements(API_BASE);
-        showToast('URL restaurada al servidor por defecto', 'info');
+        showToast(`URL oficial restaurada: ${API_BASE}`, 'info');
+        fetchHealthStatus();
         fetchLiveAll();
       };
 
@@ -987,8 +1013,8 @@
       const fmtUSD = (v) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(v) || 0);
       const fmtUSC = (v) => `${new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(v) || 0)} USC`;
 
-      // Helper con AbortController (timeout 5s)
-      async function fetchWithTimeout(url, options = {}, timeoutMs = 5000) {
+      // Helper con AbortController
+      async function fetchWithTimeout(url, options = {}, timeoutMs = 6000) {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
         try {
@@ -1001,44 +1027,124 @@
         }
       }
 
-      // Petición con fallback automático si el túnel guardado en localStorage falla
-      async function requestWithFallback(path, options = {}) {
+      // Consulta la URL oficial actual almacenada en backend /api/truetrading-config
+      async function fetchServerOfficialConfig(timeoutMs = 3000) {
+        if (window.location.protocol === 'file:') return '';
         try {
-          const resp = await fetchWithTimeout(`${API_BASE}${path}`, options, 5000);
-          if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-          return resp;
-        } catch (primaryErr) {
-          if (API_BASE !== DEFAULT_API_BASE && API_BASE.includes('.trycloudflare.com')) {
-            try {
-              const fallbackResp = await fetchWithTimeout(`${DEFAULT_API_BASE}${path}`, options, 5000);
-              if (!fallbackResp.ok) throw new Error(`HTTP ${fallbackResp.status}`);
-              console.warn(`[TrueTrading] Túnel en caché sin respuesta (${API_BASE}). Fallback automático a DEFAULT_API_BASE.`);
-              API_BASE = DEFAULT_API_BASE;
-              try { localStorage.setItem('truetrading_api_url', DEFAULT_API_BASE); } catch (e) {}
-              syncApiElements(API_BASE);
-              showToast('Túnel anterior inactivo. Reconectado automáticamente al servidor actual.', 'info');
-              return fallbackResp;
-            } catch (fallbackErr) {
-              // Ambos fallaron (ej. red móvil temporalmente sin cobertura): conservar URL guardada
-            }
-          }
-          throw primaryErr;
+          const resp = await fetchWithTimeout('/api/truetrading-config?t=' + Date.now(), {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' },
+            cache: 'no-store'
+          }, timeoutMs);
+          if (!resp.ok) return '';
+          const cfg = await resp.json();
+          return cleanApiUrl(cfg && cfg.apiUrl);
+        } catch (e) {
+          return '';
         }
       }
 
+      // Verifica /api/health en < 3.5s
+      async function probeHealth(baseUrl, timeoutMs = 3500) {
+        try {
+          const resp = await fetchWithTimeout(`${baseUrl}/api/health`, {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' },
+            cache: 'no-store'
+          }, timeoutMs);
+          if (resp.status !== 200) return { ok: false, status: resp.status };
+          const data = await resp.json();
+          if (!data || data.ok === false) return { ok: false, data };
+          return { ok: true, data };
+        } catch (err) {
+          return { ok: false, error: err };
+        }
+      }
+
+      // Actualiza badges del indicador de salud usando /api/health (y snapshots FTMO / VT)
+      function renderHealthIndicator(healthData, isOnline = true) {
+        const apiBadge = document.getElementById('health-api-badge');
+        const ftmoBadge = document.getElementById('health-ftmo-badge');
+        const vtBadge = document.getElementById('health-vt-badge');
+
+        if (!isOnline || !healthData) {
+          if (apiBadge) {
+            apiBadge.textContent = '🔴 API sin señal';
+            apiBadge.className = 'px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 font-mono font-semibold';
+          }
+          if (ftmoBadge) {
+            ftmoBadge.textContent = 'FTMO: Esperando sincronización';
+            ftmoBadge.className = 'px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700 font-mono';
+          }
+          if (vtBadge) {
+            vtBadge.textContent = 'VT: Esperando sincronización';
+            vtBadge.className = 'px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700 font-mono';
+          }
+          return;
+        }
+
+        if (apiBadge) {
+          const tsShort = healthData.timestamp ? (String(healthData.timestamp).split(' ')[1] || healthData.timestamp) : '';
+          apiBadge.textContent = `💚 API OK${tsShort ? ' · ' + tsShort : ''}`;
+          apiBadge.className = 'px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/40 font-mono font-semibold';
+        }
+
+        const ftmoAcc = healthData.accounts?.ftmo;
+        const vtAcc = healthData.accounts?.vt;
+
+        if (ftmoBadge) {
+          if (ftmoAcc && ftmoAcc.fresh === true && ftmoAcc.exists !== false) {
+            const age = typeof ftmoAcc.age_sec === 'number' ? ` (${Math.round(ftmoAcc.age_sec)}s)` : '';
+            ftmoBadge.textContent = `🟢 FTMO: Al día${age}`;
+            ftmoBadge.className = 'px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/40 font-mono';
+          } else {
+            const age = (ftmoAcc && typeof ftmoAcc.age_sec === 'number') ? ` (${Math.round(ftmoAcc.age_sec)}s)` : '';
+            ftmoBadge.textContent = `🟠 FTMO: Esperando sincronización${age}`;
+            ftmoBadge.className = 'px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 font-mono animate-pulse';
+          }
+        }
+
+        if (vtBadge) {
+          if (vtAcc && vtAcc.fresh === true && vtAcc.exists !== false) {
+            const age = typeof vtAcc.age_sec === 'number' ? ` (${Math.round(vtAcc.age_sec)}s)` : '';
+            vtBadge.textContent = `🟢 VT: Al día${age}`;
+            vtBadge.className = 'px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/40 font-mono';
+          } else {
+            const age = (vtAcc && typeof vtAcc.age_sec === 'number') ? ` (${Math.round(vtAcc.age_sec)}s)` : '';
+            vtBadge.textContent = `🟠 VT: Esperando sincronización${age}`;
+            vtBadge.className = 'px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 font-mono animate-pulse';
+          }
+        }
+      }
+
+      async function fetchHealthStatus() {
+        const res = await probeHealth(API_BASE, 3500);
+        if (res.ok && res.data) {
+          renderHealthIndicator(res.data, true);
+          return true;
+        }
+        if (!cachedData) {
+          renderHealthIndicator(null, false);
+        }
+        return false;
+      }
+
       // -----------------------------------------------------------------------
-      // 2. POLLING EN VIVO CADA 4 SEGUNDOS: GET ${API_BASE}/api/all
+      // 2. POLLING EN VIVO CADA 4 SEGUNDOS: GET ${API_BASE}/api/all (timeout 6s)
       // -----------------------------------------------------------------------
       async function fetchLiveAll() {
         if (isFetching) return;
         isFetching = true;
+        let shouldRetryOfficial = false;
         try {
-          const resp = await requestWithFallback('/api/all', {
+          const resp = await fetchWithTimeout(`${API_BASE}/api/all`, {
             method: 'GET',
             headers: { 'Accept': 'application/json' },
             cache: 'no-store'
-          });
+          }, 6000);
+          if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
           const data = await resp.json();
+          consecutiveErrors = 0;
           cachedData = data;
 
           // Alinear calendario al mes actual del servidor en la primera carga
@@ -1051,12 +1157,44 @@
           }
 
           updateConnectionState(true, data.timestamp);
+          renderHealthIndicator({
+            timestamp: data.timestamp,
+            accounts: {
+              ftmo: data.accounts?.ftmo,
+              vt: data.accounts?.vt
+            }
+          }, true);
           renderDashboard(data);
         } catch (err) {
-          console.warn('[TrueTrading] Error en polling /api/all:', err);
+          consecutiveErrors += 1;
+          console.warn(`[TrueTrading] Error #${consecutiveErrors} en polling /api/all:`, err);
           updateConnectionState(false);
+
+          // Fallback automático inmediato tras 2 errores consecutivos a DEFAULT_API_BASE / URL oficial
+          if (consecutiveErrors >= 2) {
+            const serverCfgUrl = await fetchServerOfficialConfig(2500);
+            if (serverCfgUrl) OFFICIAL_API_BASE = serverCfgUrl;
+            const targetFallback = OFFICIAL_API_BASE || DEFAULT_API_BASE;
+
+            if (API_BASE !== targetFallback) {
+              API_BASE = targetFallback;
+              consecutiveErrors = 0;
+              try { localStorage.setItem('truetrading_api_url', API_BASE); } catch (e) {}
+              syncApiElements(API_BASE);
+              showToast('URL anterior sin respuesta; reconectado automáticamente a la URL oficial.', 'warn');
+              shouldRetryOfficial = true;
+            } else {
+              renderHealthIndicator(null, false);
+            }
+          } else if (!cachedData) {
+            renderHealthIndicator(null, false);
+          }
         } finally {
           isFetching = false;
+        }
+        if (shouldRetryOfficial) {
+          fetchHealthStatus();
+          fetchLiveAll();
         }
       }
       window.fetchLiveAll = fetchLiveAll;
@@ -1110,6 +1248,7 @@
       function renderFTMOCard(acc) {
         const balanceEl = document.getElementById('ftmo-balance');
         const loginEl = document.getElementById('ftmo-login');
+        const serverEl = document.getElementById('ftmo-server');
         const currEl = document.getElementById('ftmo-currency');
         const titleEl = document.getElementById('ftmo-title');
         const equityEl = document.getElementById('ftmo-equity');
@@ -1131,6 +1270,7 @@
 
         if (titleEl && acc.etiqueta) titleEl.textContent = acc.etiqueta;
         if (loginEl && acc.login) loginEl.textContent = acc.login;
+        if (serverEl && acc.server) serverEl.textContent = acc.server;
         if (currEl && acc.currency) currEl.textContent = acc.currency;
         if (balanceEl) balanceEl.textContent = fmtUSD(acc.balance);
         if (equityEl) equityEl.textContent = fmtUSD(acc.equity);
@@ -1302,6 +1442,7 @@
       function renderVTCard(acc) {
         const balanceEl = document.getElementById('vt-balance');
         const loginEl = document.getElementById('vt-login');
+        const serverEl = document.getElementById('vt-server');
         const currEl = document.getElementById('vt-currency');
         const titleEl = document.getElementById('vt-title');
         const equityEl = document.getElementById('vt-equity');
@@ -1323,6 +1464,7 @@
 
         if (titleEl && acc.etiqueta) titleEl.textContent = acc.etiqueta;
         if (loginEl && acc.login) loginEl.textContent = acc.login;
+        if (serverEl && acc.server) serverEl.textContent = acc.server;
         if (currEl && acc.currency) currEl.textContent = `${acc.currency} (Centavos)`;
         if (balanceEl) balanceEl.textContent = fmtUSC(acc.balance);
         if (equityEl) equityEl.textContent = fmtUSC(acc.equity);
@@ -2086,7 +2228,7 @@
       }
 
       // -----------------------------------------------------------------------
-      // CONTROLES REMOTOS: POST /api/candado & POST /api/desbloquear
+      // CONTROLES REMOTOS: POST /api/candado, /api/desbloquear o /api/control
       // -----------------------------------------------------------------------
       window.toggleCandado = async function (accountTarget, doLock, btnEl) {
         const endpoint = doLock ? '/api/candado' : '/api/desbloquear';
@@ -2102,14 +2244,28 @@
         }
 
         try {
-          const resp = await requestWithFallback(endpoint, {
+          let resp = await fetchWithTimeout(`${API_BASE}${endpoint}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ account: accountTarget })
-          });
+          }, 6000);
 
+          if (resp.status === 404 || resp.status === 405) {
+            resp = await fetchWithTimeout(`${API_BASE}/api/control`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                action: doLock ? 'lock' : 'unlock',
+                account: accountTarget,
+                locked: doLock
+              })
+            }, 6000);
+          }
+
+          if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
           const res = await resp.json();
           await fetchLiveAll();
+          await fetchHealthStatus();
           showToast(res.message || `✓ ${actionName} ejecutado en ${targetLabel}`, 'success');
         } catch (err) {
           console.error('[TrueTrading] Error ejecutando candado:', err);
@@ -2181,9 +2337,48 @@
         }
       };
 
-      // Inicialización y polling cada 4 segundos
-      fetchLiveAll();
-      pollInterval = setInterval(fetchLiveAll, 4000);
+      // Inicialización inteligente (resuelve /api/truetrading-config, valida localStorage con /api/health < 3.5s y arranca polling cada 4s)
+      async function initTrueTradingConnection() {
+        const serverCfgUrl = await fetchServerOfficialConfig(3000);
+        if (serverCfgUrl) {
+          OFFICIAL_API_BASE = serverCfgUrl;
+        }
+
+        if (!paramApiClean) {
+          let storedCandidate = '';
+          try { storedCandidate = cleanApiUrl(localStorage.getItem('truetrading_api_url')); } catch (e) {}
+
+          const isLegacyTunnel = storedCandidate && KNOWN_LEGACY_TUNNELS.some(h => storedCandidate.includes(h));
+          if (storedCandidate && !isLegacyTunnel && storedCandidate !== OFFICIAL_API_BASE) {
+            const probe = await probeHealth(storedCandidate, 3500);
+            if (probe.ok) {
+              API_BASE = storedCandidate;
+              renderHealthIndicator(probe.data, true);
+            } else {
+              API_BASE = OFFICIAL_API_BASE;
+              try { localStorage.setItem('truetrading_api_url', OFFICIAL_API_BASE); } catch (e) {}
+              showToast('URL en caché sin respuesta; usando URL oficial activa.', 'info');
+            }
+          } else {
+            API_BASE = OFFICIAL_API_BASE;
+            try { localStorage.setItem('truetrading_api_url', OFFICIAL_API_BASE); } catch (e) {}
+          }
+        }
+
+        syncApiElements(API_BASE);
+        await Promise.allSettled([fetchHealthStatus(), fetchLiveAll()]);
+
+        if (pollInterval) clearInterval(pollInterval);
+        pollInterval = setInterval(() => {
+          pollTickCount += 1;
+          fetchLiveAll();
+          if (pollTickCount % 3 === 0) {
+            fetchHealthStatus();
+          }
+        }, 4000);
+      }
+
+      initTrueTradingConnection();
 
       window.addEventListener('beforeunload', () => {
         if (pollInterval) clearInterval(pollInterval);
