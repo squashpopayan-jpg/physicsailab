@@ -130,55 +130,39 @@ MS.TV = (function () {
     ctx.restore();
   }
 
-  function playerItems(K, pl, t, opts, items, tl) {
-    const sk = Player.skeleton(pl, t);
-    const act = opts.musculos ? MS.Muscles.activation(pl, t).act : null;
-    const A = (id) => (act && act[id] ? act[id].v : 0);
-    const SKIN = '#e9c8ad', SHORTS = '#1f2933', SHOE = '#f5f5f5';
-    const shirt = pl.color;
-    const cap = (a, b, r, col) => {
-      const ca = toCam(K, a), cb = toCam(K, b);
-      if (ca.z < NEAR || cb.z < NEAR) return;
-      const zc = (ca.z + cb.z) / 2;
-      items.push({ z: zc, draw: (ctx) => { const pa = scr(K, ca), pb = scr(K, cb); ctx.strokeStyle = col; ctx.lineCap = 'round'; ctx.lineWidth = Math.max(1, (2 * r * K.f) / zc); ctx.beginPath(); ctx.moveTo(pa.x, pa.y); ctx.lineTo(pb.x, pb.y); ctx.stroke(); } });
-    };
-    const quad = (pts, col, zbias = 0) => {
-      const cs = pts.map((p) => toCam(K, p));
-      if (cs.some((c) => c.z < NEAR)) return;
-      const zc = cs.reduce((s, c) => s + c.z, 0) / cs.length + zbias;
-      items.push({ z: zc, draw: (ctx) => { const P = cs.map((c) => scr(K, c)); ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(P[0].x, P[0].y); for (let i = 1; i < P.length; i++) ctx.lineTo(P[i].x, P[i].y); ctx.closePath(); ctx.fill(); ctx.strokeStyle = 'rgba(0,0,0,.25)'; ctx.lineWidth = 0.8; ctx.stroke(); } });
-    };
-    const heatOr = (v, base) => (act ? heatCol(v, base) : base);
-    const lgI = sk.legs.I, lgD = sk.legs.D;
-    for (const lg of [lgI, lgD]) {
-      cap(lg.hip, lg.knee, 0.075, heatOr(Math.max(A('cuadriceps'), A('isquios')), SKIN));
-      cap(lg.knee, lg.ankle, 0.055, heatOr(Math.max(A('gastro'), A('soleo'), A('tibial')), SKIN));
-      cap(lg.heel, lg.toe, 0.05, SHOE);
-      /* pantalón corto: tercio superior del muslo */
-      cap(lg.hip, U.lerp3(lg.hip, lg.knee, 0.42), 0.085, SHORTS);
-    }
-    const torsoCol = act ? heatCol(Math.max(A('abdomen'), A('oblicuos'), A('lumbares'), A('coreProf')) * 0.9, shirt) : shirt;
-    quad([sk.shL, sk.shR, sk.legs.D.hip, sk.legs.I.hip], torsoCol, -0.02);
-    cap(sk.legs.I.hip, sk.legs.D.hip, 0.09, SHORTS);
-    cap(sk.shL, sk.shR, 0.06, torsoCol);
-    const armUp = act ? heatCol(Math.max(A('deltoides'), A('triceps'), A('biceps'), A('manguito')), shirt) : shirt;
-    const armLo = act ? heatCol(Math.max(A('flexores'), A('extensores')), SKIN) : SKIN;
-    cap(sk.shA, sk.elbowA, 0.05, armUp); cap(sk.elbowA, sk.wristA, 0.04, armLo);
-    cap(sk.shO, sk.elbowO, 0.05, shirt); cap(sk.elbowO, sk.handO, 0.04, SKIN);
-    cap(sk.neck, U.lerp3(sk.neck, sk.head, 0.4), 0.05, SKIN);
-    /* raqueta */
-    cap(sk.wristA, sk.racketHead, 0.012, '#1e1e1e');
-    const rc = U.a3(sk.racketHead, U.m3(sk.racketDir, 0.09));
-    let n1 = U.c3(sk.racketDir, { x: 0, y: 0, z: 1 }); if (U.l3(n1) < 0.1) n1 = U.c3(sk.racketDir, { x: 1, y: 0, z: 0 }); n1 = U.n3(n1);
-    const ring = []; for (let i = 0; i < 14; i++) { const a = (i / 14) * Math.PI * 2; ring.push(U.a3(rc, U.a3(U.m3(sk.racketDir, Math.cos(a) * 0.115), U.m3(n1, Math.sin(a) * 0.095)))); }
+  const LIGHT = U.n3({ x: -0.3, y: 0.45, z: 0.85 });
+  /* raqueta: caña, aro y cuerdas */
+  function racketItems(K, sk, items) {
+    const A = MS.Athlete;
+    const ca = toCam(K, sk.wristA), cb = toCam(K, sk.racketHead);
+    if (ca.z > NEAR && cb.z > NEAR) items.push({ z: (ca.z + cb.z) / 2, draw: (ctx) => { const pa = scr(K, ca), pb = scr(K, cb); ctx.lineCap = 'round'; ctx.strokeStyle = '#15181c'; ctx.lineWidth = Math.max(1.2, (0.022 * K.f) / ca.z); ctx.beginPath(); ctx.moveTo(pa.x, pa.y); ctx.lineTo(pb.x, pb.y); ctx.stroke(); ctx.strokeStyle = '#f2c811'; ctx.lineWidth = Math.max(1.4, (0.03 * K.f) / ca.z); const g = { x: U.lerp(pa.x, pb.x, 0.22), y: U.lerp(pa.y, pb.y, 0.22) }; ctx.beginPath(); ctx.moveTo(pa.x, pa.y); ctx.lineTo(g.x, g.y); ctx.stroke(); } });
+    const rc = U.a3(sk.racketHead, U.m3(sk.racketDir, 0.1));
+    let n1 = U.c3(sk.racketDir, sk.fy); if (U.l3(n1) < 0.2) n1 = U.c3(sk.racketDir, { x: 0, y: 0, z: 1 }); n1 = U.n3(n1);
+    const ring = []; for (let i = 0; i < 16; i++) { const a = (i / 16) * Math.PI * 2; ring.push(U.a3(rc, U.a3(U.m3(sk.racketDir, Math.cos(a) * 0.118), U.m3(n1, Math.sin(a) * 0.092)))); }
     const rcc = toCam(K, rc);
-    if (rcc.z > NEAR && ring.every((p) => toCam(K, p).z > NEAR)) items.push({ z: rcc.z, draw: (ctx) => { const P = ring.map((p) => proj(K, p)); ctx.beginPath(); P.forEach((p, i) => (i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y))); ctx.closePath(); ctx.fillStyle = 'rgba(255,255,255,.25)'; ctx.fill(); ctx.strokeStyle = '#1e1e1e'; ctx.lineWidth = Math.max(1, (0.02 * K.f) / rcc.z); ctx.stroke(); } });
-    /* cabeza */
-    const hc = toCam(K, sk.head);
-    if (hc.z > NEAR) items.push({ z: hc.z, draw: (ctx) => { const p = scr(K, hc); const r = (0.11 * K.f) / hc.z; ctx.fillStyle = SKIN; ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#2a1d16'; ctx.beginPath(); ctx.arc(p.x, p.y - r * 0.15, r * 1.02, Math.PI * 1.05, Math.PI * 1.95); ctx.fill(); } });
-    /* sombra en el piso */
-    const sh = proj(K, { x: sk.P.x, y: sk.P.y, z: 0 });
-    return { sk, shadow: sh };
+    if (rcc.z > NEAR && ring.every((p) => toCam(K, p).z > NEAR)) items.push({ z: rcc.z, draw: (ctx) => {
+      const P = ring.map((p) => proj(K, p));
+      ctx.beginPath(); P.forEach((p, i) => (i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y))); ctx.closePath();
+      ctx.fillStyle = 'rgba(255,255,255,.22)'; ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,.55)'; ctx.lineWidth = 0.6; ctx.beginPath();
+      for (const [i, j] of [[2, 14], [4, 12], [6, 10], [1, 7], [15, 9], [3, 5], [13, 11]]) { ctx.moveTo(P[i].x, P[i].y); ctx.lineTo(P[j].x, P[j].y); }
+      ctx.stroke();
+      ctx.beginPath(); P.forEach((p, i) => (i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y))); ctx.closePath();
+      ctx.strokeStyle = '#15181c'; ctx.lineWidth = Math.max(1.2, (0.022 * K.f) / rcc.z); ctx.stroke();
+    } });
+  }
+  function playerItems(K, pl, t, opts, items, tl, ball) {
+    const A = MS.Athlete;
+    const k0 = Player.keyAt(pl, t), dist = Math.hypot(K.eye.x - k0.x, K.eye.y - k0.y, K.eye.z - 0.9);
+    const M0 = A.forPlayer(pl, t, ball, opts.lod || (dist < 4.2 ? 1.5 : 1), !!opts.musculos), sk = M0.sk;
+    const V = { proj: (p) => { const c = toCam(K, p); return c.z < NEAR ? null : scr(K, c); }, facing: (n, c) => (K.eye.x - c.x) * n.x + (K.eye.y - c.y) * n.y + (K.eye.z - c.z) * n.z > 0 };
+    let style;
+    if (opts.musculos) style = { anat: { colors: A.actColors(MS.Muscles.activation(pl, t).act), base: A.ANAT.musc, none: A.ANAT.none }, line: 'rgba(110,60,45,.5)' };
+    else style = { kit: pl._kit || (pl._kit = A.kit(pl.color, pl.idx)) };
+    const vis = A.visible(M0.Q, V, []);
+    for (const e of vis) { e.st = style; items.push(e); }
+    racketItems(K, sk, items);
+    return { sk, shadow: proj(K, { x: sk.P.x, y: sk.P.y, z: 0 }) };
   }
 
   function draw(ctx, w, h, tl, t, cam, opts = {}) {
@@ -200,11 +184,16 @@ MS.TV = (function () {
     }
     const items = [];
     const meta = [];
-    for (const pl of tl.players) meta.push(Object.assign({ pl }, playerItems(K, pl, t, opts, items, tl)));
-    /* sombras */
-    for (const m of meta) if (m.shadow) { ctx.fillStyle = 'rgba(0,0,0,.22)'; ctx.beginPath(); ctx.ellipse(m.shadow.x, m.shadow.y, (0.32 * K.f) / m.shadow.z, (0.12 * K.f) / m.shadow.z, 0, 0, Math.PI * 2); ctx.fill(); }
-    /* bola, estela y sombra */
     const b = TL.ballAt(tl, t);
+    for (const pl of tl.players) meta.push(Object.assign({ pl }, playerItems(K, pl, t, opts, items, tl, b)));
+    /* sombras */
+    for (const m of meta) {
+      if (!m.shadow) continue;
+      const blob = (p3, rx) => { const q = proj(K, p3); if (!q) return; const g = ctx.createRadialGradient(q.x, q.y, 0, q.x, q.y, (rx * K.f) / q.z); g.addColorStop(0, 'rgba(0,0,0,.30)'); g.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = g; ctx.save(); ctx.translate(q.x, q.y); ctx.scale(1, Math.max(0.2, Math.sin(cam.el) * 0.9 + 0.12)); ctx.translate(-q.x, -q.y); ctx.beginPath(); ctx.arc(q.x, q.y, (rx * K.f) / q.z, 0, Math.PI * 2); ctx.fill(); ctx.restore(); };
+      blob({ x: m.sk.P.x, y: m.sk.P.y, z: 0 }, 0.42);
+      for (const sd of ['I', 'D']) { const g = m.sk.legs[sd]; blob({ x: (g.toe.x + g.heel.x) / 2, y: (g.toe.y + g.heel.y) / 2, z: 0 }, 0.17); }
+    }
+    /* bola, estela y sombra */
     if (b) {
       const s = b.shot;
       if (s && s.res && opts.trayectoria !== false) {
@@ -230,7 +219,8 @@ MS.TV = (function () {
       if (bc.z > NEAR) items.push({ z: bc.z - 0.05, draw: (c2) => { const p = scr(K, bc); const r = Math.max(2.6, (0.026 * K.f) / bc.z); c2.fillStyle = '#0b0b0b'; c2.beginPath(); c2.arc(p.x, p.y, r, 0, Math.PI * 2); c2.fill(); if (r > 4) { c2.fillStyle = '#f2c811'; c2.beginPath(); c2.arc(p.x - r * 0.3, p.y - r * 0.2, r * 0.22, 0, Math.PI * 2); c2.arc(p.x + r * 0.25, p.y - r * 0.42, r * 0.22, 0, Math.PI * 2); c2.fill(); } } });
     }
     items.sort((a, c) => c.z - a.z);
-    for (const it of items) it.draw(ctx);
+    ctx.lineJoin = 'round';
+    for (const it of items) { if (it.draw) it.draw(ctx); else MS.Athlete.paint(ctx, it, it.st, LIGHT); }
     glass(ctx, K);
     /* etiquetas y ángulos */
     for (const m of meta) {

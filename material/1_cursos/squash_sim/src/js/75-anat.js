@@ -48,7 +48,7 @@ MS.Anat = (function () {
     map.activation(act);
   }
   function init() {
-    map = MS.Body.create(U.$('#anBody'), { interactive: true, onSelect: (id) => card(id) });
+    map = MS.Body.create(U.$('#anBody'), { mode: 'orbit', interactive: true, onSelect: (id) => card(id) });
     const pb = U.$('#anPhase');
     for (const [k, t] of PH) {
       const b = U.h('button', { class: 'chip', 'aria-pressed': String(k === phase), text: t });

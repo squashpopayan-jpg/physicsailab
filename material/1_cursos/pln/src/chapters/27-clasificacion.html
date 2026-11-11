@@ -1,0 +1,100 @@
+<template class="chapter-src" data-id="clasificacion" data-num="27" data-title="Clasificación de texto y análisis de opiniones" data-part="Parte VI · Texto como números" data-short="Tareas de clasificación; Bayes ingenuo multinomial; regresión logística; precisión, cobertura, F1 y matriz de confusión; validación cruzada; curvas de aprendizaje; errores y límites">
+<p class="lead">Decidir si una reseña es positiva, a qué tema pertenece un correo, si un mensaje es spam o en qué idioma está escrito un texto: todas son la misma tarea, <b>clasificar</b> un documento en una de varias categorías. Es la aplicación más extendida del PLN, y con las representaciones del capítulo 24 y dos algoritmos sencillos se obtiene una línea de base que a menudo cuesta superar. Este capítulo la construye y, sobre todo, enseña a medirla honestamente.</p>
+
+<section>
+<h2>Un modelo generativo: Bayes ingenuo</h2>
+<p>Dado un documento \(d\) formado por las palabras \(w_1,\dots,w_m\), se elige la clase \(c\) más probable. Por la regla de Bayes, y dado que el denominador \(P(d)\) es igual para todas las clases:</p>
+<div class="eq key" data-name="Bayes ingenuo multinomial">\[\hat c=\arg\max_{c}\;P(c)\prod_{i=1}^{m}P(w_i\mid c)=\arg\max_{c}\;\Bigl[\log P(c)+\sum_{i=1}^{m}\log P(w_i\mid c)\Bigr],\qquad P(w\mid c)=\frac{C(w,c)+\alpha}{\sum_{w'}C(w',c)+\alpha\,|V|}\]</div>
+<p>La hipótesis «ingenua» es que, dada la clase, las palabras son independientes entre sí. Es falsa («muy» y «bueno» van juntas), pero simplifica mucho el modelo: solo hay que contar cuántas veces aparece cada palabra en cada clase. El suavizado de Laplace (\(\alpha=1\)) evita que una palabra no vista con una clase anule la probabilidad de todo el documento, y se trabaja con logaritmos para no desbordar. Se entrena en un solo recorrido del corpus y funciona bien con pocos datos; por eso es una gran línea de base. Es un modelo <b>generativo</b>: modela cómo se generan los textos de cada clase.</p>
+</section>
+
+<section>
+<h2>Un modelo discriminativo: regresión logística</h2>
+<p>En lugar de modelar los textos, la <b>regresión logística</b> modela directamente la probabilidad de la clase como función de los rasgos \(\mathbf x\) (conteos o TF-IDF), con un peso \(w_j\) por rasgo:</p>
+<div class="eq key" data-name="Regresión logística binaria">\[P(y=1\mid\mathbf x)=\sigma(\mathbf w\!\cdot\!\mathbf x+b)=\frac1{1+e^{-(\mathbf w\cdot\mathbf x+b)}},\qquad \min_{\mathbf w,b}\;-C\sum_i\bigl[y_i\log p_i+(1-y_i)\log(1-p_i)\bigr]+\tfrac12\lVert\mathbf w\rVert^2\]</div>
+<p>Se ajusta minimizando la entropía cruzada con un término de regularización L2 que mantiene los pesos pequeños y evita el sobreajuste (el parámetro \(C\) de scikit-learn es el inverso de su fuerza). El problema es convexo y tiene un único mínimo; se resuelve por descenso de gradiente o por métodos de Newton, como hace el código del curso. Con más de dos clases se usa el <i>softmax</i>. Los pesos se pueden <b>leer</b>: los positivos empujan hacia la clase 1 y los negativos hacia la 0.</p>
+<p>Comparación: Bayes ingenuo tiene en cuenta cada palabra de forma independiente y se calibra mal (probabilidades demasiado extremas), pero aprende con muy pocos datos. La regresión logística ajusta los pesos conjuntamente, corrige la redundancia entre rasgos y con datos suficientes suele ganar. Los modelos de redes neuronales (capítulo 28 en adelante) son su extensión natural.</p>
+<div class="sim" data-sim="clf-laboratorio" data-title="Laboratorio de clasificación: elija representación, modelo y tamaño de entrenamiento"></div>
+<div class="sim-guide"><ul>
+<li>Con el 60 % de las opiniones para entrenar (216) y el resto para probar (144), Bayes ingenuo con conteos acierta el 88,9 % y la regresión logística, el 94,4 %. Mire en la matriz de confusión qué clase se confunde con cuál.</li>
+<li>Baje el entrenamiento al 10 % (36 opiniones): Bayes ingenuo cae al 63,3 % y el vocabulario aprendido se reduce a 100 palabras. Con pocos datos todos los modelos sufren; los de pocos parámetros resisten algo mejor.</li>
+<li>Pase a «Palabras y pares» y a TF-IDF con Bayes ingenuo: con este reparto de 60/40 da 87,5 % (frente a 88,9 %), es decir, no mejora; en la validación cruzada del programa (α = 0,5) sube de 93,6 % a 96,4 %. Moraleja: con pocos datos, una sola partición da diferencias que son ruido; por eso se usa la validación cruzada.</li>
+<li>Cambie a «Tema (10 clases)» con Bayes ingenuo: es una tarea más difícil, con un azar del 10 %, y acierta el 81,3 %. Los peores son «bases de datos» y «lematización» (F1 de 0,55 y 0,57), que se confunden con «procesamiento de datos» y entre sí.</li>
+<li>Mueva α en Bayes ingenuo: con α muy pequeño se sobreajusta a las palabras raras; con α grande, se aplana hacia la clase mayoritaria.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Medir: más allá de «exactitud»</h2>
+<p>La <b>exactitud</b> (porcentaje de aciertos) engaña cuando las clases están desbalanceadas: un filtro de spam que dice «no es spam» a todo acierta el 95 % si solo el 5 % lo es y no sirve para nada. Por eso se miran las cantidades de cada celda de la <b>matriz de confusión</b> y, por clase:</p>
+<div class="eq key" data-name="Precisión, cobertura y F1">\[P=\frac{TP}{TP+FP},\qquad R=\frac{TP}{TP+FN},\qquad F_1=\frac{2PR}{P+R}\]</div>
+<p>La precisión responde «de lo que dije que era de esta clase, ¿cuánto lo era?»; la cobertura (<i>recall</i>), «de lo que era de esta clase, ¿cuánto encontré?». F1 es la media armónica, que penaliza que una de las dos sea baja. Con varias clases se promedian: <i>macro</i> (cada clase pesa igual) o <i>micro</i> (cada documento pesa igual).</p>
+<p>Para estimar el rendimiento sobre textos nuevos hay que evaluar en datos que el modelo no vio: se reservan conjuntos de <b>entrenamiento</b>, <b>validación</b> (para elegir hiperparámetros) y <b>prueba</b> (solo al final). Con pocos datos se usa la <b>validación cruzada</b> de \(k\) bloques: cada bloque hace de prueba una vez, mientras los otros \(k-1\) entrenan. Un error clásico es la <i>fuga de datos</i>: ajustar el vocabulario o el IDF con todo el corpus antes de separar la prueba. El vectorizador es parte del modelo y se ajusta solo con los datos de entrenamiento de cada bloque.</p>
+<div class="sim" data-sim="clf-curva" data-title="Curva de aprendizaje: exactitud según el número de ejemplos de entrenamiento"></div>
+<div class="sim-guide"><ul>
+<li>Con 5 o 10 ejemplos, ambos modelos están cerca del azar (50 %). Con 160, rondan el 90 %.</li>
+<li>Con los 288 ejemplos, la regresión logística llega al 100 % y Bayes ingenuo con conteos al 90,3 %. Active «Bayes ingenuo (TF-IDF, 1-2 gramas)» para ver cómo los pares de palabras compensan su limitación.</li>
+<li>Una curva que sigue subiendo al final indica que más datos ayudarían; una que se aplana, que el límite es el modelo o los rasgos.</li>
+</ul></div>
+<div class="sim" data-sim="clf-probar" data-title="Clasificar una opinión escrita por usted"></div>
+<div class="sim-guide"><ul>
+<li>La frase de ejemplo («No me gustó la práctica de tokenización porque aprendí poco») es clara: ambos modelos dicen «negativa» y los pesos de «poco» y «no» tiran hacia abajo.</li>
+<li>Pruebe «La práctica de tokenización fue excelente y aprendí mucho»: positiva. Pruebe una frase que no esté en el estilo de las del corpus: la fiabilidad cae, porque los modelos solo conocen 124 palabras.</li>
+<li>Pruebe una negación o ironía («Qué bien, otra guía confusa»). La bolsa de palabras no entiende el sentido; los pares de palabras ayudan algo.</li>
+</ul></div>
+<div class="box py"><p>El programa entrena con <code>scikit-learn</code> cuatro clasificadores de polaridad con validación cruzada de 5 bloques (<code>Pipeline</code> para que el vectorizador se ajuste dentro de cada bloque), muestra la matriz de confusión del peor, los pesos de la regresión, la curva de aprendizaje y el resultado por tema.</p>
+<div class="py" data-py="27-clasificacion"></div></div>
+<div class="box read"><ul>
+<li><b>Validación cruzada</b>: Bayes ingenuo con conteos 0,936; con TF-IDF de uni+bigramas, 0,964; regresión logística con conteos o con TF-IDF, 1,000 en los cinco bloques.</li>
+<li><b>Matriz de confusión</b> del Bayes con conteos: 170 negativas bien y 10 mal; 167 positivas bien y 13 mal. Precisión 0,929 / 0,944 y cobertura 0,944 / 0,928: errores equilibrados porque las clases están balanceadas (180 y 180).</li>
+<li><b>Pesos de la regresión</b> (positivo): <i>importantes</i> (+2,51), <i>bastante</i> (+1,60), <i>aprendí</i> (+1,25), <i>superó</i>, <i>motivadora</i>, <i>excelente</i>; (negativo): <i>no</i> (−2,81), <i>muchos</i> (−2,50), <i>poco</i> (−2,21), <i>difícil</i>, <i>agotadora</i>, <i>confusa</i>. Es interpretable, aunque «muchos» negativo revela un artefacto del corpus sintético («muchos errores»).</li>
+<li><b>Curva de aprendizaje</b> (prueba en las últimas 72): con 10 ejemplos, 0,486 (NB) y 0,514 (logística); con 80, 0,708 y 0,819; con 288, 0,903 y 1,000. La logística aprovecha mejor los datos nuevos.</li>
+<li><b>Tema</b> (10 clases): 0,806 de exactitud con Bayes ingenuo, ocho veces el azar (0,10).</li>
+<li>Validado: el curso reproduce estas validaciones cruzadas (exactitudes, predicciones, matriz de confusión, F1) y los pesos y probabilidades de la logística con los de scikit-learn (apéndice de validación).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Lo que puede salir mal</h2>
+<ul>
+<li><b>Datos de juguete</b>: las 360 opiniones son frases generadas con plantillas. La regresión logística llega al 100 % porque el vocabulario es pequeño y las palabras decisivas se repiten. Con reseñas reales, un buen resultado con bolsa de palabras ronda el 85–90 % en polaridad binaria; con tres clases o ironía, mucho menos.</li>
+<li><b>Cambio de dominio</b>: un clasificador entrenado con reseñas de películas falla con reseñas de baterías; «impredecible» es positivo en una película y negativo en un frenado.</li>
+<li><b>Negación, ironía y contexto</b>: «no está nada mal» es positiva. Los n-gramas ayudan; los modelos preentrenados (capítulo 31) mucho más.</li>
+<li><b>Desbalance</b>: se evita con métricas por clase, ponderando las clases o remuestreando.</li>
+<li><b>Sesgos y equidad</b>: un clasificador de toxicidad puede marcar como tóxicos textos de ciertos dialectos o que mencionan identidades. Hay que evaluar por subgrupos.</li>
+</ul>
+<p>El esquema de este capítulo —representar, entrenar, validar— no cambia cuando se pasa a las redes neuronales; solo cambian las dos primeras piezas.</p>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Clasificar = asignar una categoría a un documento a partir de ejemplos etiquetados.</li>
+<li>Bayes ingenuo: argmax log P(c) + Σ log P(w | c), con suavizado; generativo, rápido, bueno con pocos datos.</li>
+<li>Regresión logística: σ(w·x + b) con regularización L2; discriminativa, pesos interpretables.</li>
+<li>Se mide con matriz de confusión, precisión, cobertura y F1, y con validación cruzada sin fuga de datos.</li>
+<li>Cuidado con el desbalance, el dominio, la negación y los sesgos.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Con P(positivo) = P(negativo) = 0,5, P(«buena» | positivo) = 0,02 y P(«buena» | negativo) = 0,005, calcule P(positivo | «buena»).
+<details><summary>Respuesta</summary><p>Positivo: 0,5·0,02 = 0,010; negativo: 0,5·0,005 = 0,0025. Normalizando: 0,010/0,0125 = 0,8.</p></details></li>
+<li><span class="lvl">Básico</span>Una palabra no aparece en los textos de una clase (200 palabras en total) y el vocabulario es de 50. ¿Qué probabilidad le da el suavizado de Laplace (α = 1)?
+<details><summary>Respuesta</summary><p>(0 + 1)/(200 + 50) = 1/250 = 0,004.</p></details></li>
+<li><span class="lvl">Intermedio</span>Un clasificador tiene TP = 40, FP = 10 y FN = 20 para la clase positiva. Calcule P, R y F1.
+<details><summary>Respuesta</summary><p>P = 40/50 = 0,8; R = 40/60 = 0,667; F1 = 2·0,8·0,667/(0,8 + 0,667) = 0,727.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Qué valor de w·x + b da P(positivo) = 0,9 en la regresión logística?
+<details><summary>Respuesta</summary><p>σ(z) = 0,9 ⇒ z = ln(0,9/0,1) = ln 9 = 2,197. Con z = 0 la probabilidad es 0,5: la frontera de decisión.</p></details></li>
+<li><span class="lvl">Avanzado</span>Un detector de spam recibe 95 correos legítimos y 5 spam. Un sistema marca todo como legítimo. Calcule su exactitud y la cobertura del spam, y explique la lección.
+<details><summary>Respuesta</summary><p>Exactitud 95/100 = 95 %; cobertura del spam 0/5 = 0. Con clases desbalanceadas, la exactitud engaña; hay que mirar precisión y cobertura de la clase minoritaria (y F1).</p></details></li>
+</ol>
+<h3>Autoevaluación</h3>
+<div class="sim" data-sim="quiz" data-cap="clasificacion" data-title="Autoevaluación del capítulo 27"></div>
+<div class="box links"><ul>
+<li><a href="https://scikit-learn.org/stable/tutorial/text_analytics/working_with_text_data.html">scikit-learn — Working with text data</a><small>Tutorial paso a paso de clasificación de texto con Pipeline.</small></li>
+<li><a href="https://scikit-learn.org/stable/modules/naive_bayes.html">scikit-learn — Naive Bayes</a><small>MultinomialNB, suavizado y fórmulas.</small></li>
+<li><a href="https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression">scikit-learn — Logistic regression</a><small>Función objetivo, regularización y solucionadores.</small></li>
+<li><a href="https://web.stanford.edu/~jurafsky/slp3/">Jurafsky y Martin — Speech and Language Processing (3.ª ed.)</a><small>Capítulos de Bayes ingenuo, análisis de sentimiento y regresión logística.</small></li>
+<li><a href="https://aclanthology.org/W02-1011/">Pang, Lee y Vaithyanathan (2002) — Thumbs up? Sentiment classification using machine learning techniques</a><small>El artículo clásico de clasificación de reseñas con Bayes ingenuo, SVM y máxima entropía.</small></li>
+</ul></div>
+</section>
+</template>

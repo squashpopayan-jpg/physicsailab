@@ -1,0 +1,131 @@
+<template class="chapter-src" data-id="historia" data-num="2" data-title="Historia y paradigmas del PLN" data-part="Parte I · El lenguaje como problema" data-short="De los autómatas y la teoría de la información a los grandes modelos de lenguaje; el péndulo entre reglas y datos; Shannon y ELIZA en funcionamiento">
+<p class="lead">La historia del PLN no es una lista de fechas: es una discusión que se repite. Una escuela sostiene que entender el lenguaje exige reglas y conocimiento escritos por expertos; otra, que basta con observar muchos datos. Cada vez que la balanza se inclinó, lo hizo por una causa práctica: más datos, más memoria, mejores algoritmos. Conocer ese vaivén explica por qué el curso tiene el orden que tiene.</p>
+
+<section>
+<h2>Los dos paradigmas fundacionales (1940–1950)</h2>
+<p>El PLN nace justo después de la Segunda Guerra Mundial, con los primeros ordenadores. Dos ideas dominan esa primera etapa.</p>
+<h3>Autómatas y lenguajes formales</h3>
+<p>El artículo de Turing de 1936 sobre los números computables es la base de la informática moderna. De él salen una primera idea de la neurona como unidad de cálculo en términos de lógica proposicional (McCulloch y Pitts, 1943) y la definición de los <span class="term">autómatas finitos</span> y las <span class="term">expresiones regulares</span> (Kleene, 1951). Shannon aplicó las cadenas de Markov, en las que la probabilidad de un evento depende solo del anterior, a modelos de lenguaje (1948). Chomsky (1956) usó máquinas de estados finitos para caracterizar gramáticas y definió las <span class="term">gramáticas libres de contexto</span>, que Backus y Naur redescubrieron para describir el lenguaje ALGOL (1959-60). De ahí surge la <i>teoría de lenguajes formales</i>, que se estudia en los capítulos 5 y 13.</p>
+<h3>Teoría de la información y modelos probabilísticos</h3>
+<p>La otra gran contribución de Shannon fue el teorema de codificación de canal: es posible transmitir y decodificar un mensaje a través de un canal con ruido. Tomó de la termodinámica el concepto de <span class="term">entropía</span> para medir cuánta información lleva una fuente, y estimó la entropía del inglés con técnicas probabilísticas. Esa idea, que un texto es la salida ruidosa de una fuente que se puede modelar, es la raíz de los modelos de lenguaje actuales. En 1952, Bell Labs construyó el primer reconocedor de dígitos hablados, con 97–99 % de aciertos para un solo hablante.</p>
+<div class="eq key" data-name="Entropía de una fuente">\[H(X)=-\sum_x P(x)\log_2 P(x)\ \text{bits},\qquad H(X_n\mid X_{n-k},\dots,X_{n-1})\ \xrightarrow{k\to\infty}\ \text{entropía por símbolo del idioma}\]</div>
+<p>La simulación siguiente reproduce la idea de Shannon: entrene una cadena de Markov de <i>k</i> caracteres con un texto pequeño y genere texto nuevo. Con <i>k</i> = 0 sale ruido con las frecuencias de las letras; al subir <i>k</i>, empiezan a aparecer sílabas, palabras y fragmentos de frases.</p>
+<div class="sim" data-sim="shannon" data-title="Aproximaciones de Shannon al español con un corpus pequeño"></div>
+<div class="sim-guide"><ul>
+<li>Suba el orden de 0 a 5. La entropía condicional baja porque cada vez hay menos continuaciones posibles; el texto generado pasa de ruido a casi copiar el corpus.</li>
+<li>Con orden 5 la entropía cae a 0,30 bits por carácter, muy por debajo de lo que estimó Shannon (1951) para el inglés escrito, entre 0,6 y 1,3 bits por carácter con contexto largo, y con orden 4 o 5 la cifra no es una propiedad del idioma. El corpus tiene solo 2.820 caracteres: el modelo memoriza en vez de generalizar. Es la primera aparición del problema que domina el aprendizaje automático: <b>sobreajuste</b>.</li>
+<li>Pulse «Regenerar» para obtener otra muestra con la misma semilla cambiada.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Paradigma simbólico y estocástico (1957–1970)</h2>
+<p>A fines de los años cincuenta el campo se partió en dos.</p>
+<ul>
+<li><b>Simbólico.</b> Tiene dos raíces. La primera es la teoría del lenguaje formal y la sintaxis generativa de Chomsky, junto con los primeros algoritmos de análisis (de arriba hacia abajo y de abajo hacia arriba, y luego por programación dinámica). Un primer sistema fue el TDAP de Zelig Harris (1958-59, Universidad de Pennsylvania). La segunda raíz es la inteligencia artificial: en el verano de 1956 McCarthy, Minsky, Shannon y Rochester reunieron al grupo de Dartmouth que bautizó el campo. La IA se centró en el razonamiento y la lógica (Newell y Simon, <i>Logic Theorist</i> y <i>General Problem Solver</i>). Los primeros sistemas de comprensión eran pequeños, de dominio restringido, y se basaban en reconocimiento de patrones y palabras clave.</li>
+<li><b>Estocástico.</b> Lo impulsaron investigadores de estadística e ingeniería electrónica. Hacia 1959 se aplicó el método bayesiano al reconocimiento óptico de caracteres: Bledsoe y Browning calcularon la probabilidad de una secuencia de letras dadas las palabras de un diccionario. En 1963 apareció el <span class="term">Brown Corpus</span>: un millón de palabras del inglés americano en 500 textos de géneros distintos (Kučera y Francis, 1967), uno de los primeros corpus electrónicos.</li>
+</ul>
+<h3>ELIZA: lo que se puede hacer con reglas de palabras clave</h3>
+<p>El sistema simbólico más famoso de la época es ELIZA (Weizenbaum, 1966), que simula a un psicoterapeuta rogeriano. No entiende nada: busca palabras clave, aplica una plantilla y refleja los pronombres («mi» → «su»). Aun así, muchas personas le atribuyeron comprensión, un fenómeno que hoy se llama efecto ELIZA. Pruébelo; las reglas son visibles.</p>
+<div class="sim" data-sim="eliza" data-title="ELIZA en español: reglas, plantillas y reflexión de pronombres"></div>
+<div class="sim-guide"><ul>
+<li>Escriba «me siento muy cansado», «quiero dormir más» o «mi madre no me entiende» y observe qué regla se activó.</li>
+<li>Escriba una frase sin ninguna palabra clave: ELIZA recurre a una respuesta de relleno. Esa es la frontera de un sistema basado solo en reglas.</li>
+<li>El mismo diseño (reglas de reconocimiento de intención y plantillas de respuesta) sigue vivo en muchos <i>chatbots</i> de atención al cliente (capítulo 37).</li>
+</ul></div>
+<div class="box py"><p>El programa reproduce las dos ideas: la aproximación de Shannon con un texto de 537 caracteres y un ELIZA con cuatro reglas.</p>
+<div class="py" data-py="02-shannon-eliza"></div></div>
+<div class="box read"><ul>
+<li><b>Entropía por orden</b>: 4,005 bits por carácter con orden 0 (casi el máximo, \(\log_2 27\approx4{,}75\), con letras no equiprobables), 2,769 con orden 1, 1,437 con orden 2, 0,507 con orden 3 y 0,220 con orden 4. Cada carácter conocido recorta la incertidumbre.</li>
+<li><b>Contextos</b>: con orden 4 hay 452 contextos distintos para 537 caracteres: casi cada contexto se ve una sola vez, así que la «entropía» baja porque el modelo memoriza el texto. No es una propiedad del español, es un artefacto del corpus pequeño.</li>
+<li><b>Texto generado</b>: con orden 4 aparece «el gato duerme en la profesora procesa el niño…»: fragmentos reales pegados sin sentido. Con orden 2 son sílabas plausibles pero palabras inexistentes.</li>
+<li><b>ELIZA</b> responde con plantillas: «¿Por qué se siente muy cansado?» refleja lo dicho sin entenderlo.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Cuatro paradigmas de investigación (1970–1983)</h2>
+<p>En los setenta hay una explosión de trabajo. Cuatro líneas, que todavía organizan el campo, se desarrollan en paralelo:</p>
+<table>
+<thead><tr><th>Paradigma</th><th>Idea</th><th>Hitos</th></tr></thead>
+<tbody>
+<tr><td><b>Estocástico</b></td><td>Modelos probabilísticos del habla</td><td>Modelos ocultos de Markov y codificación de canal (Jelinek, Bahl y Mercer en IBM; Baker en Carnegie Mellon; Bell Labs)</td></tr>
+<tr><td><b>Basado en lógica</b></td><td>Gramáticas como programas lógicos</td><td>Q-systems de Colmerauer (1978); gramáticas de cláusulas definidas en Prolog (Pereira y Warren, 1980); gramática funcional de Kay (1979); LFG de Bresnan y Kaplan (1982)</td></tr>
+<tr><td><b>Comprensión del lenguaje natural</b></td><td>Entender implica modelar el mundo</td><td>SHRDLU de Winograd (1972), un robot que mueve bloques con órdenes en lenguaje natural; la Escuela de Yale (Schank): planes, objetivos y memoria; redes semánticas (Quillian, 1968); gramática de casos (Fillmore, 1968); LUNAR (Woods)</td></tr>
+<tr><td><b>Modelado del discurso</b></td><td>Más allá de la oración</td><td>Estructura y foco del discurso (Grosz y Sidner); resolución de referencias (Hobbs, 1978); creencias-deseos-intenciones (Perrault, Allen y Cohen)</td></tr>
+</tbody></table>
+<p>SHRDLU dejó claro que el reto estaba en la semántica y el discurso, no en la sintaxis. Los paradigmas lógico y de comprensión se unieron en sistemas que usaban la lógica de predicados como representación semántica (capítulo 18).</p>
+</section>
+
+<section>
+<h2>El regreso del empirismo y el aprendizaje automático (1983–2010)</h2>
+<ul>
+<li><b>1983–1993.</b> Regresan dos familias de modelos que habían caído en desgracia por los argumentos de Chomsky (1959): los <b>modelos de estados finitos</b> (en fonología y morfología con Kaplan y Kay, 1981) y los <b>modelos empíricos</b>. Los métodos probabilísticos, impulsados por el trabajo de IBM en reconocimiento de voz, se extienden al etiquetado, al análisis sintáctico, a la desambiguación y a la semántica. Aparecen métricas cuantitativas y se exige comparar con resultados previos.</li>
+<li><b>1994–1999.</b> Los modelos probabilísticos y basados en datos se vuelven el estándar. Por el aumento de velocidad y memoria, el reconocimiento de voz y la corrección ortográfica y gramatical llegan al mercado. La web obliga a recuperar y extraer información en lenguaje natural.</li>
+<li><b>2000–2010.</b> Auge del <b>aprendizaje automático supervisado</b>. Colecciones anotadas por organizaciones como el Linguistic Data Consortium —el Penn Treebank, el Prague Dependency Treebank, PropBank— convierten el análisis sintáctico y semántico en problemas de aprendizaje supervisado: SVM, máxima entropía, regresión logística, modelos bayesianos. Como anotar es caro, desde 2005 crece el <b>aprendizaje no supervisado</b>, que se aplica por ejemplo a la traducción y al modelado de temas.</li>
+</ul>
+</section>
+
+<section>
+<h2>Aprendizaje profundo y modelos de lenguaje grandes (2006 en adelante)</h2>
+<p>En 2006 Hinton acuña el término <i>deep learning</i>. En la década de 2010 las redes neuronales profundas entran al PLN: las recurrentes reemplazan a los modelos ocultos de Markov en etiquetado y análisis, y son la base de los modelos secuencia a secuencia de la traducción y de los agentes conversacionales. Los hitos más conocidos de esta etapa, que este curso desarrolla en la parte VII, son:</p>
+<table>
+<thead><tr><th>Año</th><th>Hito</th><th>Capítulo</th></tr></thead>
+<tbody>
+<tr><td>2013</td><td>Word2Vec (Mikolov y otros): vectores de palabras aprendidos de texto sin anotar</td><td>26</td></tr>
+<tr><td>2014</td><td>Modelos secuencia a secuencia y mecanismo de atención (Sutskever y otros; Bahdanau y otros)</td><td>29</td></tr>
+<tr><td>2017</td><td>Transformer (Vaswani y otros): atención sin recurrencia</td><td>30</td></tr>
+<tr><td>2018</td><td>BERT y GPT: preentrenar y ajustar</td><td>31</td></tr>
+<tr><td>2020–2022</td><td>Modelos de lenguaje con cientos de miles de millones de parámetros; instrucciones y retroalimentación humana; asistentes conversacionales de uso masivo</td><td>32</td></tr>
+</tbody></table>
+<div class="sim" data-sim="linea-tiempo" data-title="Línea de tiempo del PLN: tres corrientes que se alternan"></div>
+<div class="sim-guide"><ul>
+<li>Mueva el año: se resaltan las corrientes activas y los hitos de esa década.</li>
+<li>Las tres corrientes (simbólica, estadística, neuronal) nunca desaparecen; cambia cuál domina. Un sistema moderno combina las tres: reglas para validar salidas, estadística para evaluar y redes para aprender.</li>
+</ul></div>
+<div class="box warn"><p>Las fechas de modelos grandes cambian cada pocos meses y esta tabla no pretende ser exhaustiva. Para la frontera actual, use las fuentes enlazadas al final y los artículos originales. Lo que no cambia es el vocabulario: tokens, probabilidades, representaciones y evaluación.</p></div>
+</section>
+
+<section>
+<h2>Qué enseña esta historia</h2>
+<ul>
+<li><b>El péndulo.</b> Racionalismo (reglas, conocimiento) y empirismo (datos). Cada giro se explica por lo disponible: sin corpus ni memoria no hay empirismo posible; con ellos, los datos superan a muchas reglas.</li>
+<li><b>La evaluación es parte de la ciencia.</b> Desde los ochenta se exige comparar con métricas y datos compartidos. Todo capítulo de este curso incluye cómo se mide.</li>
+<li><b>Los datos anotados son infraestructura.</b> Treebanks, WordNet y corpus etiquetados hicieron posible el aprendizaje supervisado; los modelos grandes reutilizan texto sin anotar, pero se siguen evaluando con datos anotados (capítulo 34).</li>
+<li><b>Nada se tira del todo.</b> Autómatas, gramáticas, modelos de n-gramas y la lógica siguen en uso; este curso los explica porque aclaran qué problema resuelven los modelos modernos.</li>
+</ul>
+<div class="box explain"><p>Es como aprender a cocinar: primero con recetas (reglas), luego probando muchos platos y quedándose con lo que gusta (datos), y por último con un cocinero que ha probado casi todo y improvisa (modelo grande). El cocinero improvisador sigue necesitando saber qué es una receta.</p></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Los fundamentos (1940–50) son los autómatas y los lenguajes formales (Turing, Kleene, Chomsky) y la teoría de la información (Shannon).</li>
+<li>Desde 1957 coexisten el paradigma simbólico (lógica, gramáticas) y el estocástico (probabilidades); en los setenta se añaden la comprensión y el discurso.</li>
+<li>Desde 1983 el empirismo regresa: corpus, probabilidades, evaluación cuantitativa; desde 2000, aprendizaje automático supervisado y luego no supervisado.</li>
+<li>Desde 2010, aprendizaje profundo; desde 2017, el Transformer; desde 2018, preentrenar y ajustar; desde 2022, asistentes de uso masivo.</li>
+<li>Un modelo de n-gramas con pocos datos memoriza: la entropía baja por sobreajuste.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Quién definió las gramáticas libres de contexto para las lenguas naturales y quién las redescubrió para un lenguaje de programación?
+<details><summary>Respuesta</summary><p>Chomsky (1956) para el lenguaje natural; Backus y Naur las usaron de forma independiente para describir ALGOL (1959-60).</p></details></li>
+<li><span class="lvl">Básico</span>¿Por qué se dice que ELIZA «no entiende»?
+<details><summary>Respuesta</summary><p>Aplica plantillas a palabras clave y refleja pronombres; no construye ninguna representación del significado ni del mundo.</p></details></li>
+<li><span class="lvl">Intermedio</span>Un modelo de caracteres de orden 3 entrenado con 537 caracteres tiene 358 contextos distintos. ¿Qué indica ese número?
+<details><summary>Respuesta</summary><p>Casi cada contexto de tres letras es distinto para cada posición: hay muy pocas repeticiones, por lo que las estimaciones de probabilidad son frágiles y el modelo tiende a memorizar el texto.</p></details></li>
+<li><span class="lvl">Intermedio</span>Explique por qué la existencia de corpus anotados (Penn Treebank) cambió la forma de plantear el análisis sintáctico.
+<details><summary>Respuesta</summary><p>Permitió tratarlo como un problema de aprendizaje supervisado: con ejemplos etiquetados se pueden entrenar y evaluar modelos con las mismas métricas, y comparar sistemas entre sí.</p></details></li>
+<li><span class="lvl">Avanzado</span>Con alfabeto de 27 símbolos, ¿cuál es la entropía máxima por carácter y qué significa que el modelo de orden 0 del corpus dé 4,005 bits?
+<details><summary>Respuesta</summary><p>El máximo es \(\log_2 27 = 4{,}755\) bits (símbolos equiprobables). Los 4,005 bits indican que las letras no son equiprobables (por ejemplo, el espacio y la «a» son más frecuentes), por lo que cada carácter lleva menos información que en el caso uniforme.</p></details></li>
+</ol>
+<h3>Autoevaluación</h3>
+<div class="sim" data-sim="quiz" data-cap="historia" data-title="Autoevaluación del capítulo 2"></div>
+<div class="box links"><ul>
+<li><a href="https://doi.org/10.1002/j.1538-7305.1948.tb01338.x">Shannon (1948) — A mathematical theory of communication</a><small>El artículo fundacional de la teoría de la información; la sección 3 trae las aproximaciones al inglés que imita la simulación.</small></li>
+<li><a href="https://doi.org/10.1145/365153.365168">Weizenbaum (1966) — ELIZA</a><small>Descripción del sistema original y de la idea de guion; lectura corta y muy clara.</small></li>
+<li><a href="https://doi.org/10.1109/TIT.1956.1056813">Chomsky (1956) — Three models for the description of language</a><small>Estados finitos, estructura sintagmática y transformaciones: el origen de la jerarquía de gramáticas.</small></li>
+<li><a href="https://web.stanford.edu/~jurafsky/slp3/">Jurafsky y Martin — Speech and Language Processing, cap. 1 y notas históricas</a><small>Historia del campo contada por los autores del texto de referencia.</small></li>
+<li><a href="https://arxiv.org/abs/1706.03762">Vaswani y otros (2017) — Attention is all you need</a><small>Artículo del Transformer; se estudia a fondo en el capítulo 30.</small></li>
+</ul></div>
+</section>
+</template>

@@ -1,0 +1,272 @@
+<template class="chapter-src" data-id="hidrodinamica" data-num="15" data-title="Hidrodinámica" data-part="Parte III · Ondas y fluidos" data-short="La ecuación de Bernoulli y el vaciado de un tanque, el medidor de Venturi, la ley de Poiseuille deducida de Navier–Stokes, la ley de Stokes y las ondas superficiales con el límite de aguas someras de los tsunamis">
+<p class="lead">Un fluido en movimiento obedece dos leyes locales: la conservación de la masa y la segunda ley de Newton para un elemento de fluido. Si no hay viscosidad, de ellas sale la ecuación de Bernoulli, que es el teorema trabajo–energía para un tubo de corriente; con viscosidad aparece el término \(\eta\nabla^2\mathbf v\) de Navier–Stokes, que determina la ley de Poiseuille para el flujo en un tubo y la de Stokes para el arrastre sobre una esfera (la constante \(C=3\pi\) que quedó pendiente en el capítulo 1). Por último, la aplicación de las mismas ecuaciones a una superficie libre produce las ondas del agua y su relación de dispersión completa, con la velocidad \(\sqrt{gh}\) de un tsunami en aguas someras.</p>
+
+<deriv id="bernoulli-tanque" title="La ecuación de Bernoulli, la ley de Torricelli y el vaciado de un tanque" tags="Fluidos, Energía">
+<goal>La relación entre presión, velocidad y altura a lo largo de una línea de corriente de un fluido ideal, y su aplicación a la velocidad de salida y al tiempo de vaciado de un depósito.</goal>
+<given>
+<g>Fluido incompresible, sin viscosidad, en flujo estacionario; conservación de la masa: \(A_1v_1=A_2v_2\) (caudal \(Q\) constante).</g>
+<g>Teorema trabajo–energía aplicado al fluido contenido en un tubo de corriente.</g>
+</given>
+<step op="Calcular el volumen que cruza cada sección en un tiempo \(\mathrm dt\)">
+\[\mathrm dV=A_1v_1\,\mathrm dt=A_2v_2\,\mathrm dt.\]
+<why>Es la continuidad: el fluido que entra por la sección 1 es el que sale por la 2.</why>
+</step>
+<step op="Trabajo de las fuerzas de presión">
+\[W=p_1A_1\,v_1\mathrm dt-p_2A_2\,v_2\mathrm dt=(p_1-p_2)\,\mathrm dV.\]
+</step>
+<step op="Variación de la energía mecánica del fluido">
+\[\Delta E=\tfrac12\rho\,\mathrm dV\,(v_2^2-v_1^2)+\rho g\,\mathrm dV\,(z_2-z_1).\]
+<why>El efecto neto de que pase la masa \(\rho\,\mathrm dV\) de la sección 1 a la 2: el resto del fluido no cambia en régimen estacionario.</why>
+</step>
+<step op="Igualar \(W=\Delta E\)">
+\[p_1+\tfrac12\rho v_1^2+\rho gz_1=p_2+\tfrac12\rho v_2^2+\rho gz_2.\]
+<why>Se divide por \(\mathrm dV\). Cada término tiene dimensión de presión (energía por unidad de volumen).</why>
+</step>
+<step op="Depósito de sección \(A\) con un orificio de área \(a\), a una profundidad \(h\)">
+\[p_1=p_2=p_\text{atm},\quad v_1=\tfrac aAv_2\ \Longrightarrow\ v_2^2\Big[1-\Big(\tfrac aA\Big)^2\Big]=2gh\ \Longrightarrow\ v_2=\frac{\sqrt{2gh}}{\sqrt{1-(a/A)^2}}\simeq\sqrt{2gh}.\]
+<why>Para \(a\ll A\) es la velocidad de una caída libre desde la altura \(h\) (Torricelli).</why>
+</step>
+<step op="Tiempo de vaciado: \(A\,\mathrm dh/\mathrm dt=-a\,v_2\)">
+\[\frac{\mathrm dh}{\mathrm dt}=-\frac aA\frac{\sqrt{2gh}}f\ \Longrightarrow\ t=\frac Aa\sqrt{\frac{2h_0}g}\;f,\qquad f=\sqrt{1-(a/A)^2}.\]
+<why>Separando variables, \(\int h^{-1/2}\mathrm dh=2\sqrt h\).</why>
+</step>
+<result name="Bernoulli y Torricelli">\[p+\tfrac12\rho v^2+\rho gz=\text{constante},\qquad v=\sqrt{2gh},\qquad t_\text{vaciado}=\frac Aa\sqrt{\frac{2h_0}g}.\]</result>
+<vars>
+<v s="p" n="presión" u="Pa"/>
+<v s="\rho" n="densidad" u="kg m^-3"/>
+<v s="v" n="velocidad del fluido" u="m s^-1"/>
+<v s="z" n="altura" u="m"/>
+<v s="g" n="aceleración de la gravedad" u="m s^-2"/>
+<v s="h" n="altura del líquido sobre el orificio" u="m"/>
+<v s="A" n="área de la sección del tanque" u="m^2"/>
+<v s="a" n="área del orificio" u="m^2"/>
+<v s="t" n="tiempo de vaciado" u="s"/>
+<v s="Q" n="caudal volumétrico de salida" u="m^3 s^-1"/>
+</vars>
+<effects>
+<e>Un depósito de 0.5 m² con un orificio de 10 cm² (\(a=10^{-3}\) m²) y 1 m de líquido: \(v=4.4287\) m/s, \(Q=4.4287\) L/s y vaciado en 225.8 s (3 min 46 s). Con \(h_0=4\) m, la velocidad se duplica (8.857 m/s, \(v\propto\sqrt h\)) y el tiempo también (451.6 s, \(t\propto\sqrt{h_0}\)).</e>
+<e>El tiempo de vaciado depende del cociente de áreas: con un orificio de 20 cm², 112.9 s (\(t\propto1/a\), \(n_a=-1\)); con un orificio muy grande (\(a=0.1\) m²) la velocidad sube un 2.1 % sobre Torricelli (4.520 m/s) por el término \(1-(a/A)^2\).</e>
+<e>La velocidad de salida no depende de la densidad del líquido (la inercia y el peso son ambos proporcionales a \(\rho\)): agua y mercurio salen igual de rápido desde la misma altura.</e>
+</effects>
+<limits>
+<l>Dimensiones: \([\rho v^2]=\mathsf M\mathsf L^{-3}\mathsf L^2\mathsf T^{-2}=[p]\), y \([\rho gz]\) igual. ✓ \((A/a)\sqrt{2h/g}\) es un tiempo.</l>
+<l>Supone régimen estacionario (en el vaciado es «cuasi-estacionario»), sin viscosidad y sin contracción del chorro; en un orificio real el chorro se estrecha (coeficiente de descarga ≈ 0.6) y el caudal real es menor. Bernoulli solo vale a lo largo de una línea de corriente.</l>
+</limits>
+<explore sim="tanque" title="Vaciado de un tanque: velocidad de salida, caudal y tiempo"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales: \(v=4.42870\) m/s, \(Q=4.4287\times10^{-3}\) m³/s, \(t=225.80\) s y Torricelli \(4.42869\) m/s.</li>
+<li>Seleccione \(a\) en el eje (log–log): el caudal sube linealmente y el tiempo cae como \(1/a\); con \(a=2\times10^{-3}\) m²: \(t=112.90\) s.</li>
+</ul></div>
+</deriv>
+
+<deriv id="venturi-bernoulli" title="El medidor de Venturi" tags="Fluidos, Bernoulli">
+<goal>El caudal que circula por una tubería a partir de la diferencia de presión entre la sección ancha y la garganta.</goal>
+<given>
+<g>Ecuación de Bernoulli horizontal (\(z_1=z_2\)) y continuidad \(A_1v_1=A_2v_2\) (deducción anterior).</g>
+</given>
+<step op="Aplicar Bernoulli entre las secciones 1 (ancha) y 2 (garganta)">
+\[p_1-p_2=\tfrac12\rho\,(v_2^2-v_1^2).\]
+</step>
+<step op="Eliminar \(v_1\) con la continuidad">
+\[v_1=\frac{A_2}{A_1}v_2\ \Longrightarrow\ p_1-p_2=\tfrac12\rho v_2^2\left[1-\Big(\frac{A_2}{A_1}\Big)^2\right].\]
+</step>
+<step op="Despejar la velocidad en la garganta y el caudal">
+\[v_2=\sqrt{\frac{2(p_1-p_2)}{\rho\,[1-(A_2/A_1)^2]}},\qquad Q=A_2v_2.\]
+</step>
+<step op="Lectura de la presión con un manómetro de líquido de densidad \(\rho_m\)">
+\[p_1-p_2=(\rho_m-\rho)\,g\,\Delta h.\]
+<why>La garganta, a mayor velocidad, tiene menor presión (efecto Venturi).</why>
+</step>
+<result name="Caudal de un Venturi">\[Q=A_2\sqrt{\frac{2(p_1-p_2)}{\rho\,[1-(A_2/A_1)^2]}}.\]</result>
+<vars>
+<v s="Q" n="caudal volumétrico" u="m^3 s^-1"/>
+<v s="A_1,\,A_2" n="áreas de la sección ancha y de la garganta" u="m^2"/>
+<v s="p_1-p_2" n="diferencia de presión" u="Pa"/>
+<v s="\rho" n="densidad del fluido" u="kg m^-3"/>
+<v s="v_2" n="velocidad en la garganta" u="m s^-1"/>
+<v s="\rho_m" n="densidad del líquido del manómetro" u="kg m^-3"/>
+<v s="\Delta h" n="desnivel del manómetro" u="m"/>
+<v s="g" n="aceleración de la gravedad" u="m s^-2"/>
+</vars>
+<effects>
+<e>Agua (1000 kg/m³), \(A_1=20\) cm², \(A_2=5\) cm² y 10 kPa: \(v_2=4.6188\) m/s, \(Q=2.3094\) L/s y \(v_1=1.1547\) m/s. Cuadruplicar la diferencia de presión duplica el caudal (4.6188 L/s): \(Q\propto\sqrt{\Delta p}\), \(n=0.5\).</e>
+<e>Con una garganta mayor (\(A_2=10\) cm²), \(Q=5.164\) L/s: aumenta 2.24 veces: el área es el doble y la velocidad sube un 12 % (la restricción es menor); con \(A_2=2\) cm², 0.899 L/s.</e>
+<e>La lectura de \(\Delta p\) con mercurio (13 595 kg/m³) en un manómetro en U: 10 kPa corresponden a \(\Delta h=8.1\) cm.</e>
+</effects>
+<limits>
+<l>Dimensiones: \([A_2\sqrt{\Delta p/\rho}]=\mathsf L^2\mathsf L\mathsf T^{-1}\). ✓</l>
+<l>Un Venturi real tiene un coeficiente de descarga \(C_d\approx0.97\)–\(0.99\) por la viscosidad y las pérdidas en el ensanchamiento; se calibra con medidas. No admite flujos con grandes cambios de densidad (gases a alta velocidad).</l>
+</limits>
+<explore sim="venturi" title="Medidor de Venturi: caudal y velocidades según áreas y presión"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (\(A_1=20\) cm², \(\beta=A_2/A_1=0.25\), 10 kPa, 1000 kg/m³): \(Q=2.30940\times10^{-3}\) m³/s, \(v_2=4.61880\) m/s y \(v_1=1.15470\) m/s.</li>
+<li>Seleccione \(\Delta p\) en el eje (log–log): recta de pendiente 0.5. Con \(\beta=0.5\) (\(A_2=10\) cm²), \(Q=5.16398\times10^{-3}\) m³/s.</li>
+</ul></div>
+</deriv>
+
+<deriv id="poiseuille" title="La ley de Poiseuille: flujo laminar en un tubo" tags="Fluidos, Viscosidad">
+<goal>El perfil de velocidades y el caudal de un fluido viscoso que fluye en régimen laminar por un tubo circular de radio \(R\) bajo una diferencia de presión \(\Delta p\).</goal>
+<given>
+<g>Flujo estacionario, axisimétrico y completamente desarrollado (\(v=v_z(r)\)); fluido incompresible con viscosidad \(\eta\).</g>
+<g>Componente axial de las ecuaciones de Navier–Stokes: \(0=-\dfrac{\mathrm dp}{\mathrm dz}+\eta\,\dfrac1r\dfrac{\mathrm d}{\mathrm dr}\!\left(r\dfrac{\mathrm dv_z}{\mathrm dr}\right)\); el gradiente de presión es uniforme.</g>
+<g>Condición de no deslizamiento: \(v_z(R)=0\); solución finita en el eje.</g>
+</given>
+<step op="Escribir la ecuación con el gradiente de presión constante \(-\mathrm dp/\mathrm dz=\Delta p/L\)">
+\[\frac1r\frac{\mathrm d}{\mathrm dr}\!\left(r\frac{\mathrm dv_z}{\mathrm dr}\right)=-\frac{\Delta p}{\eta L}.\]
+</step>
+<step op="Integrar dos veces">
+\[r\,v_z'=-\frac{\Delta p}{2\eta L}r^2+c_1\ \Rightarrow\ v_z=-\frac{\Delta p}{4\eta L}r^2+c_1\ln r+c_2.\]
+</step>
+<step op="Imponer las condiciones de contorno">
+\[c_1=0\ (\text{finito en }r=0),\qquad v_z(R)=0\ \Rightarrow\ v_z(r)=\frac{\Delta p}{4\eta L}\,(R^2-r^2).\]
+<why>Perfil parabólico, con máximo \(v_\max=\Delta pR^2/(4\eta L)\) en el eje y una media igual a la mitad del máximo:\(\bar v=v_\max/2\).</why>
+</step>
+<step op="Integrar la velocidad sobre la sección">
+\[Q=\int_0^Rv_z\,2\pi r\,\mathrm dr=\frac{\pi\Delta p}{2\eta L}\left(\frac{R^4}2-\frac{R^4}4\right)=\frac{\pi R^4\,\Delta p}{8\eta L}.\]
+</step>
+<step op="Esfuerzo cortante en la pared">
+\[\tau_w=-\eta\frac{\mathrm dv_z}{\mathrm dr}\Big|_R=\frac{\Delta p\,R}{2L}.\]
+</step>
+<result name="Ley de Poiseuille">\[Q=\frac{\pi R^4\,\Delta p}{8\eta L},\qquad v_z=\frac{\Delta p}{4\eta L}(R^2-r^2),\qquad \tau_w=\frac{\Delta pR}{2L}.\]</result>
+<vars>
+<v s="Q" n="caudal" u="m^3 s^-1"/>
+<v s="R" n="radio del tubo" u="m"/>
+<v s="\Delta p" n="diferencia de presión entre los extremos" u="Pa"/>
+<v s="\eta" n="viscosidad dinámica" u="Pa s"/>
+<v s="L" n="longitud del tubo" u="m"/>
+<v s="v_z" n="velocidad axial" u="m s^-1"/>
+<v s="\tau_w" n="esfuerzo cortante en la pared" u="Pa"/>
+</vars>
+<effects>
+<e>Tubo de 1 mm de radio y 1 m, \(\Delta p=1000\) Pa y agua (\(\eta=10^{-3}\) Pa·s): \(Q=3.927\times10^{-7}\) m³/s (0.393 mL/s), \(v_\max=0.25\) m/s, \(\tau_w=0.5\) Pa y Re = 250 (laminar).</e>
+<e>\(Q\propto R^4\): con el doble de radio, 16 veces más caudal (\(6.283\times10^{-6}\) m³/s, aunque aquí Re = 2000, en el límite del flujo laminar). Con el doble de longitud, la mitad (\(n_L=-1\)); con una viscosidad de 3.5 mPa·s (sangre), \(1.122\times10^{-7}\) m³/s (\(n_\eta=-1\)).</e>
+<e>La fuerte dependencia \(R^4\) explica por qué un pequeño estrechamiento de una arteria (un 16 % menos de radio reduce el caudal a la mitad, \(0.84^4=0.50\)) exige un gran aumento de presión.</e>
+</effects>
+<limits>
+<l>Dimensiones: \([\pi R^4\Delta p/(\eta L)]=\mathsf L^4\mathsf M\mathsf L^{-1}\mathsf T^{-2}/(\mathsf M\mathsf L^{-1}\mathsf T^{-1}\mathsf L)=\mathsf L^3\mathsf T^{-1}\). ✓</l>
+<l>Vale en régimen laminar: \(\mathrm{Re}=\rho\bar v\,2R/\eta\lesssim2000\); por encima aparecen inestabilidad y turbulencia, y el caudal crece menos que linealmente con \(\Delta p\). También se asume el tramo ya desarrollado (lejos de la entrada) y una pared rígida.</l>
+</limits>
+<explore sim="poiseuille" title="Flujo de Poiseuille: caudal, velocidad máxima, esfuerzo en la pared y Reynolds"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales: \(Q=3.9270\times10^{-7}\) m³/s, \(v_\max=0.25\) m/s, \(\tau_w=0.5\) Pa y Re = 250.</li>
+<li>Seleccione \(R\) en el eje (log–log): pendiente 4 para \(Q\) y 2 para \(v_\max\); \(\mathrm{Re}\) sube con pendiente 3.</li>
+</ul></div>
+</deriv>
+
+<deriv id="stokes-esfera" title="La ley de Stokes: el arrastre sobre una esfera y su velocidad de sedimentación" tags="Fluidos, Viscosidad">
+<goal>La fuerza que un fluido viscoso ejerce sobre una esfera de radio \(R\) que se mueve lentamente con velocidad \(U\), y la velocidad terminal de caída.</goal>
+<given>
+<g>Número de Reynolds pequeño: se desprecia la inercia y las ecuaciones de Navier–Stokes quedan \(\nabla p=\eta\nabla^2\mathbf v\), con \(\nabla\cdot\mathbf v=0\) (ecuaciones de Stokes).</g>
+<g>En el sistema de la esfera, el fluido llega con velocidad uniforme \(U\hat z\) lejos de ella y se adhiere a su superficie: \(\mathbf v=0\) en \(r=R\).</g>
+</given>
+<step op="Introducir la función de corriente axisimétrica \(\psi\)">
+\[v_r=\frac1{r^2\sin\theta}\frac{\partial\psi}{\partial\theta},\qquad v_\theta=-\frac1{r\sin\theta}\frac{\partial\psi}{\partial r}\ \Longrightarrow\ \nabla\cdot\mathbf v=0,\quad E^4\psi=0.\]
+<why>Al tomar el rotacional de la ecuación de Stokes se elimina la presión y queda \(\nabla^2(\nabla\times\mathbf v)=0\), que en términos de \(\psi\) es la ecuación biarmónica \(E^2E^2\psi=0\).</why>
+</step>
+<step op="Proponer \(\psi=\sin^2\theta\,f(r)\)">
+\[f''''-\frac4{r^2}f''+\frac8{r^3}f'-\frac8{r^4}f=0\ \Longrightarrow\ f=Ar^4+Br^2+Cr+\frac D r.\]
+<why>La dependencia angular \(\sin^2\theta\) es la del flujo uniforme; sustituyendo, queda una ecuación de Euler (equidimensional) con soluciones potencias \(r^n\) con \(n=4,2,1,-1\).</why>
+</step>
+<step op="Aplicar las condiciones de contorno">
+\[A=0,\ B=\tfrac U2\ (\text{flujo uniforme});\qquad f(R)=f'(R)=0\ \Rightarrow\ C=-\tfrac{3UR}4,\ D=\tfrac{UR^3}4.\]
+<why>Que la velocidad radial y tangencial se anulen en \(r=R\) equivale a \(f=0\) y \(f'=0\).</why>
+</step>
+<step op="Obtener la velocidad y la presión">
+\[v_r=U\cos\theta\Big(1-\frac{3R}{2r}+\frac{R^3}{2r^3}\Big),\quad v_\theta=-U\sin\theta\Big(1-\frac{3R}{4r}-\frac{R^3}{4r^3}\Big),\quad p=p_\infty-\frac{3\eta UR}{2}\frac{\cos\theta}{r^2}.\]
+</step>
+<step op="Calcular la fuerza integrando el esfuerzo sobre la esfera">
+\[\mathbf f=\boldsymbol\sigma\cdot\hat n=-p_\infty\hat n+\frac{3\eta U}{2R}\hat z\ \ (\text{uniforme sobre la superficie})\ \Longrightarrow\ F=\frac{3\eta U}{2R}\cdot4\pi R^2=6\pi\eta RU.\]
+<why>El esfuerzo \(\boldsymbol\sigma=-p\mathsf I+\eta(\nabla\mathbf v+\nabla\mathbf v^{\mathsf T})\) sobre la esfera es constante en módulo y dirección: dos tercios de la fuerza vienen del rozamiento y un tercio de la presión.</why>
+</step>
+<step op="Velocidad terminal de una esfera que cae">
+\[6\pi\eta Rv_t=\tfrac43\pi R^3(\rho_s-\rho_f)\,g\ \Longrightarrow\ v_t=\frac{2R^2(\rho_s-\rho_f)\,g}{9\eta}.\]
+</step>
+<result name="Ley de Stokes">\[F=6\pi\eta R\,U,\qquad v_t=\frac{2R^2(\rho_s-\rho_f)g}{9\eta}.\]</result>
+<vars>
+<v s="F" n="fuerza de arrastre" u="N"/>
+<v s="\eta" n="viscosidad" u="Pa s"/>
+<v s="R" n="radio de la esfera" u="m"/>
+<v s="U" n="velocidad relativa" u="m s^-1"/>
+<v s="\rho_s,\,\rho_f" n="densidades de la esfera y del fluido" u="kg m^-3"/>
+<v s="v_t" n="velocidad terminal" u="m s^-1"/>
+<v s="g" n="aceleración de la gravedad" u="m s^-2"/>
+</vars>
+<effects>
+<e>Partícula de arena (\(R=20\ \mu\)m, 2700 kg/m³) en agua: \(v_t=1.482\) mm/s, con \(\mathrm{Re}=0.059\) (la fórmula es buena) y una fuerza de arrastre de \(5.59\times10^{-10}\) N igual a su peso aparente. Una bola de acero de 1 mm de radio en glicerina (7800 y 1260 kg/m³, \(\eta=1.41\) Pa·s): \(v_t=1.011\) cm/s, \(\mathrm{Re}=0.018\): es el viscosímetro de bola.</e>
+<e>\(v_t\propto R^2\) (\(n_R=2\)): una partícula con el doble de radio cae cuatro veces más rápido; \(\propto1/\eta\). Una gota de niebla de 10 µm en aire (\(\eta=1.81\times10^{-5}\)) cae a 1.20 cm/s con \(\mathrm{Re}=0.016\): tarda minutos en caer unos metros.</e>
+<e>Confirma la constante \(C=3\pi\) en \(F=C\,\eta vd\) de la deducción del capítulo 1 (con \(d=2R\)): \(F=3\pi\eta vd\).</e>
+</effects>
+<limits>
+<l>Dimensiones: \([\eta RU]=\mathsf M\mathsf L^{-1}\mathsf T^{-1}\mathsf L\mathsf L\mathsf T^{-1}=\mathsf M\mathsf L\mathsf T^{-2}\). ✓</l>
+<l>Vale para \(\mathrm{Re}=\rho_fU\,2R/\eta\ll1\); la primera corrección (Oseen) multiplica la fuerza por \(1+\tfrac3{16}\mathrm{Re}\), un 1.1 % con \(\mathrm{Re}=0.06\). Con \(\mathrm{Re}\gtrsim1\) la fórmula sobreestima \(v_t\).</l>
+</limits>
+<explore sim="stokes" title="Sedimentación de Stokes: velocidad terminal, número de Reynolds y fuerza"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (20 µm, 2700, 1000, \(10^{-3}\) Pa·s): \(v_t=1.4819\times10^{-3}\) m/s, \(\mathrm{Re}=0.059276\) y \(F=5.5866\times10^{-10}\) N.</li>
+<li>Seleccione \(R\) en el eje (log–log): pendiente 2 para \(v_t\); a \(R\approx50\ \mu\)m el Reynolds llega a 1 (\(\mathrm{Re}\propto R^3\)) y la fórmula deja de valer.</li>
+</ul></div>
+</deriv>
+
+<deriv id="ondas-superficie" title="Ondas en la superficie del agua: dispersión con profundidad finita y tsunamis" tags="Fluidos, Ondas">
+<goal>La relación entre frecuencia y número de onda de las ondas de gravedad en agua de profundidad \(h\), y sus límites de aguas profundas y someras.</goal>
+<given>
+<g>Flujo irrotacional de un fluido incompresible: \(\mathbf v=\nabla\phi\), con \(\nabla^2\phi=0\). Amplitud pequeña (se linealizan las condiciones de contorno).</g>
+<g>Condición cinemática en la superficie (\(z=0\)): \(\partial_t\eta=\partial_z\phi\); condición dinámica (Bernoulli no estacionaria): \(\partial_t\phi+g\eta=0\); fondo rígido en \(z=-h\): \(\partial_z\phi=0\).</g>
+</given>
+<step op="Proponer una onda progresiva y una solución de la ecuación de Laplace">
+\[\eta=a\cos(kx-\omega t),\qquad \phi=B\cosh k(z+h)\,\sin(kx-\omega t).\]
+<why>Cumple \(\nabla^2\phi=0\) (cada derivada segunda en \(x\) da \(-k^2\) y en \(z\), \(+k^2\)) y \(\partial_z\phi=0\) en el fondo.</why>
+</step>
+<step op="Aplicar la condición cinemática en \(z=0\)">
+\[a\,\omega\sin(\cdot)=B\,k\sinh(kh)\sin(\cdot)\ \Longrightarrow\ a\omega=Bk\sinh kh.\]
+</step>
+<step op="Aplicar la condición dinámica en \(z=0\)">
+\[-B\omega\cosh(kh)+g\,a=0\ \Longrightarrow\ B=\frac{ga}{\omega\cosh kh}.\]
+</step>
+<step op="Combinar para eliminar \(B\) y \(a\)">
+\[\omega^2=gk\tanh(kh).\]
+<why>Sustituyendo \(B\) en la primera: \(a\omega=\dfrac{gak\sinh kh}{\omega\cosh kh}\).</why>
+</step>
+<step op="Aguas profundas (\(kh\gg1\)) y someras (\(kh\ll1\))">
+\[\tanh kh\to1:\ \omega^2=gk,\ v=\sqrt{\frac{g\lambda}{2\pi}};\qquad \tanh kh\simeq kh:\ \omega^2=ghk^2,\ v=\sqrt{gh}.\]
+<why>En aguas someras todas las longitudes de onda viajan a la misma velocidad: el medio no es dispersivo.</why>
+</step>
+<step op="Velocidad de grupo">
+\[v_g=\frac{\mathrm d\omega}{\mathrm dk}=\frac v2\left(1+\frac{2kh}{\sinh2kh}\right).\]
+</step>
+<result name="Ondas de gravedad con profundidad finita">\[\omega^2=gk\tanh kh,\qquad v_p=\sqrt{\frac gk\tanh kh}\ \xrightarrow{kh\ll1}\ \sqrt{gh}.\]</result>
+<vars>
+<v s="\omega" n="frecuencia angular" u="rad s^-1"/>
+<v s="k" n="número de onda" u="m^-1"/>
+<v s="h" n="profundidad" u="m"/>
+<v s="g" n="aceleración de la gravedad" u="m s^-2"/>
+<v s="v_p" n="velocidad de fase" u="m s^-1"/>
+<v s="\lambda" n="longitud de onda" u="m"/>
+</vars>
+<effects>
+<e>Tsunami (\(\lambda=200\) km) sobre 4000 m de agua: \(kh=0.126\), \(v=197.5\) m/s, muy cerca de \(\sqrt{gh}=198.06\) m/s (713 km/h); cruza el Pacífico (≈ 10 000 km) en unas 14 horas. Al llegar a 10 m de profundidad frena a 9.9 m/s y la ola se amplifica (conservación de la energía).</e>
+<e>Oleaje de 100 m de longitud: sobre 4000 m de agua (profunda), \(v=12.49\) m/s y \(v_g=6.25\) m/s (la mitad); a 50 m, 12.47 m/s y \(v_g=6.38\); a 2 m (somera), 4.417 m/s, muy cercana a \(\sqrt{gh}=4.429\) m/s y \(v_g\approx v\): al entrar en una playa, el oleaje se va frenando y se alinea con la costa (refracción).</e>
+<e>Con λ = 100 km y 4000 m: \(kh=0.2513\), \(v_p=196.0\) m/s y \(v_g=192.0\) m/s. En aguas profundas \(v\) crece con \(\sqrt\lambda\) (dispersión); en aguas someras solo con \(\sqrt h\): \(n_h=0.5\).</e>
+</effects>
+<limits>
+<l>Dimensiones: \([gk]=\mathsf T^{-2}\) y \(kh\) es adimensional. ✓</l>
+<l>Vale para amplitud pequeña frente a \(h\) y a \(\lambda\) (ondas lineales); para olas grandes aparecen no linealidad (ondas de Stokes, solitones) y rotura. Se omite la capilaridad, que importa solo para \(\lambda\lesssim10\) cm (capítulos 1 y 13). Con rotación (tsunamis muy largos) hay correcciones de Coriolis.</l>
+</limits>
+<explore sim="ondas-profundidad" title="Ondas del agua con profundidad finita: de aguas profundas a tsunamis"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (λ = 100 km, \(h=4000\) m): \(kh=0.25133\), \(v_p=196.013\) m/s, \(v_g=192.004\) m/s, \(\sqrt{gh}=198.057\) m/s y \(\sqrt{g\lambda/2\pi}=395.07\) m/s.</li>
+<li>Seleccione λ en el eje (log–log): la velocidad de fase crece como \(\sqrt\lambda\) hasta que \(\lambda\sim2\pi h\) y se satura en \(\sqrt{gh}\); a λ = 100 m con \(h=4000\) m es 12.493 m/s.</li>
+</ul></div>
+</deriv>
+
+<section>
+<h2>Fuentes y lecturas</h2>
+<ul class="refs">
+<li>L. D. Landau y E. M. Lifshitz, <em>Fluid Mechanics</em>, 2.ª ed., Pergamon (1987): § 5 (ecuación de Bernoulli), § 17 (flujo de Poiseuille), § 20 (resistencia de una esfera, fórmula de Stokes) y § 12 (ondas de gravedad).</li>
+<li>G. K. Batchelor, <em>An Introduction to Fluid Dynamics</em>, Cambridge University Press (1967): cap. 4 (flujo viscoso a números de Reynolds pequeños; solución de Stokes) y cap. 6 (ondas).</li>
+<li>H. Lamb, <em>Hydrodynamics</em>, 6.ª ed., Cambridge University Press (1932): caps. VIII y XI (ondas superficiales, movimiento de esferas).</li>
+<li>G. G. Stokes, «On the effect of the internal friction of fluids on the motion of pendulums», <em>Transactions of the Cambridge Philosophical Society</em> 9 (1851) 8–106; J. L. M. Poiseuille, <em>Comptes Rendus</em> 11 (1840) 961.</li>
+<li>F. M. White, <em>Fluid Mechanics</em>, McGraw-Hill: medidores de caudal (Venturi) y coeficientes de descarga.</li>
+</ul>
+</section>
+</template>

@@ -1,0 +1,120 @@
+<template class="chapter-src" data-id="preparar-texto" data-num="3" data-title="Preparar el texto: limpieza y expresiones regulares" data-part="Parte I · El lenguaje como problema" data-short="Unicode y tildes; qué se pierde con cada paso de limpieza; expresiones regulares; palabras vacías y negaciones; frecuencias y ley de Zipf (laboratorio 1)">
+<p class="lead">Antes de que un modelo vea un texto, alguien decide qué hacer con las mayúsculas, las tildes, la puntuación, las direcciones web y las palabras muy comunes. Esas decisiones parecen técnicas y son de fondo: cada paso destruye información, y la que sobra para una tarea es justo la que otra necesita. Este capítulo corresponde al laboratorio 1 del curso.</p>
+
+<section>
+<h2>Limpiar es decidir qué información conservar</h2>
+<p>Un texto en bruto trae ruido (etiquetas HTML, enlaces, espacios repetidos) y también señal (mayúsculas que marcan nombres propios, tildes que distinguen palabras, negaciones que invierten el sentido). No hay una receta universal: la pregunta correcta no es «¿qué se limpia?» sino «¿qué necesita la tarea?».</p>
+<div class="box warn"><p>Un paso de limpieza es una <b>pérdida de información sin reversa</b>. Si no se está seguro de que no hace falta, no se aplica. Y se decide antes de dividir en entrenamiento y prueba, de modo que el vocabulario y las reglas no se ajusten con los datos de evaluación (fuga de datos).</p></div>
+<table>
+<thead><tr><th>Paso</th><th>Qué hace</th><th>Qué se pierde</th><th>Cuándo conviene evitarlo</th></tr></thead>
+<tbody>
+<tr><td>Minúsculas</td><td>«Banco» y «banco» pasan a ser el mismo token</td><td>Nombres propios y siglas («PLN», «Marta»)</td><td>Reconocimiento de entidades, etiquetado</td></tr>
+<tr><td>Quitar HTML y URL</td><td>Elimina marcas y reemplaza enlaces por «URL»</td><td>El destino del enlace</td><td>Extracción de enlaces</td></tr>
+<tr><td>Quitar puntuación</td><td>Deja solo letras y números</td><td>Fin de oración, interrogaciones, emoticonos</td><td>Análisis sintáctico, sentimiento («¡Bien!»)</td></tr>
+<tr><td>Quitar tildes</td><td>«canción» → «cancion»</td><td>La distinción «papá/papa», «sí/si», «él/el»</td><td>Casi siempre en español; solo para búsquedas tolerantes</td></tr>
+<tr><td>Quitar palabras vacías</td><td>Descarta «de», «la», «que», «no»…</td><td>La negación y la estructura</td><td>Opiniones, preguntas, sintaxis, modelos neuronales</td></tr>
+</tbody></table>
+</section>
+
+<section>
+<h2>Unicode: lo que parece una letra puede ser dos</h2>
+<p>Un carácter visible puede estar formado por uno o varios <i>puntos de código</i>. «é» puede ser un único punto (U+00E9, forma <b>NFC</b>, compuesta) o la «e» seguida de un acento combinado (U+0065 U+0301, forma <b>NFD</b>, descompuesta). Las dos se ven igual, pero un programa que compare cadenas las considera distintas, y la longitud de «canción» cambia de 7 a 8. Por eso se normaliza antes de comparar o de contar. Quitar los acentos de forma segura se hace descomponiendo en NFD y descartando las marcas combinantes.</p>
+<div class="sim" data-sim="unicode" data-title="Puntos de código, NFC y NFD"></div>
+<div class="sim-guide"><ul>
+<li>Escriba «canción», «señor» o «niño». La forma NFD tiene más puntos de código que letras visibles.</li>
+<li>Pulse «Quitar tildes» para ver el resultado de descomponer y descartar las marcas. Observe que la «ñ» también pierde su tilde («señor» → «senor»), lo que en español cambia de palabra («año» frente a «ano»). Por eso no se aconseja reemplazar la «ñ» a la ligera.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Expresiones regulares</h2>
+<p>Una <span class="term">expresión regular</span> describe un conjunto de cadenas. Es la herramienta más usada para limpiar y extraer; en el capítulo 5 se verá que equivale a un autómata finito. Los elementos básicos son:</p>
+<table>
+<thead><tr><th>Patrón</th><th>Significa</th><th>Ejemplo</th></tr></thead>
+<tbody>
+<tr><td><code>\p{L}+</code></td><td>Una o más letras Unicode (con tildes y ñ)</td><td><code>canción</code></td></tr>
+<tr><td><code>\d{1,3}(?:\.\d{3})*(?:,\d+)?</code></td><td>Número a la colombiana: <code>1.234,50</code></td><td><code>12.500</code></td></tr>
+<tr><td><code>[^\s@]+@[^\s@]+\.\w+</code></td><td>Dirección de correo (aproximada)</td><td><code>ana@uni.edu.co</code></td></tr>
+<tr><td><code>\b\d{2}/\d{2}/\d{4}\b</code></td><td>Fecha dd/mm/aaaa</td><td><code>08/11/2026</code></td></tr>
+<tr><td><code>#\p{L}\w*</code></td><td>Etiqueta (hashtag)</td><td><code>#pln</code></td></tr>
+<tr><td><code>(a|b)</code>, <code>[ab]</code>, <code>a?</code>, <code>a*</code>, <code>a+</code></td><td>Alternativa, clase, opcional, cero o más, uno o más</td><td></td></tr>
+</tbody></table>
+<div class="sim" data-sim="regex" data-title="Probar una expresión regular sobre un texto"></div>
+<div class="sim-guide"><ul>
+<li>Elija una receta predefinida o escriba su propio patrón; cada coincidencia se resalta y se lista con su posición y sus grupos.</li>
+<li>Compare <code>\w+</code> con <code>\p{L}+</code> en «niño señaló 3 casas»: <code>\w+</code> trata distinto los caracteres según el motor y mezcla letras con números y guiones bajos. Con la bandera <code>u</code> se activan las propiedades Unicode.</li>
+<li>Las expresiones regulares reconocen formas, no significados: la de fechas acepta «99/99/9999».</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Palabras vacías y negaciones</h2>
+<p>Las <span class="term">palabras vacías</span> (<i>stop words</i>) son las más frecuentes y de menor contenido léxico: artículos, preposiciones, conjunciones. Quitarlas reduce el tamaño del vocabulario y deja los términos de contenido. Es razonable para recuperación de información; para otras tareas es dañino, y la razón más importante es la <b>negación</b>.</p>
+<div class="box err"><p>Muchas listas de palabras vacías incluyen «no», «sin» y «ni». La lista didáctica del laboratorio incluye «no» y «sin». Al aplicarla, <i>«No encontré problemas importantes»</i> queda como <i>«encontré problemas importantes»</i>: una opinión positiva que ahora se lee como negativa. En las 360 opiniones del laboratorio, 90 llevan «no» o «sin»; solo 20 son positivas.</p></div>
+<div class="sim" data-sim="limpieza" data-title="Efecto de cada decisión de limpieza"></div>
+<div class="sim-guide"><ul>
+<li>Seleccione la muestra «No encontré problemas importantes…» y active «Quitar palabras vacías (lista del curso)»: la negación desaparece. Cambie a «sin negaciones»: se conserva.</li>
+<li>El panel inferior aplica la misma configuración a las 360 opiniones: observe cómo cambian los tokens, el vocabulario y las palabras más frecuentes.</li>
+<li>Active «Quitar tildes» con la muestra «papá y papa»: se vuelven la misma palabra.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Frecuencias y la ley de Zipf</h2>
+<p>En casi cualquier texto, unas pocas palabras aparecen muy a menudo y la mayoría, muy pocas veces. La <span class="term">ley de Zipf</span> dice que la frecuencia de una palabra es inversamente proporcional a su posición en el ranking:</p>
+<div class="eq key" data-name="Ley de Zipf">\[f(r)\approx\frac{C}{r^{\alpha}}\quad\Longleftrightarrow\quad \log f=\log C-\alpha\log r,\qquad \alpha\approx1\ \text{en corpus grandes}.\]</div>
+<p>En escala logarítmica es una recta de pendiente \(-\alpha\). Tiene consecuencias prácticas: el vocabulario crece sin cesar con el tamaño del corpus, siempre habrá palabras nunca vistas (que hay que tratar en etiquetado y modelos de lenguaje), y las palabras más frecuentes consumen casi todo el texto.</p>
+<div class="sim" data-sim="zipf" data-title="Rango y frecuencia de las palabras en escala logarítmica"></div>
+<div class="sim-guide"><ul>
+<li>Alterne entre las 360 opiniones y el corpus de 60 oraciones. La recta ajustada tiene pendiente cercana a −0,7; los corpus sintéticos de pocas palabras no alcanzan el −1 de los corpus grandes.</li>
+<li>Active «Sin palabras vacías»: desaparecen los primeros puntos y la curva se aplana. Las palabras vacías son la cabeza de la distribución.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Práctica: limpieza y frecuencias con las opiniones del laboratorio</h2>
+<div class="box py"><p>El programa aplica la función <code>limpiar</code> del cuaderno de Colab, cuenta tokens y tipos con y sin palabras vacías, comprueba qué pasa con las negaciones y ajusta la recta de Zipf. Los datos son las 360 opiniones sintéticas (<code>data/opiniones.csv</code>).</p>
+<div class="py" data-py="03-limpieza"></div></div>
+<div class="box read"><ul>
+<li><b>Tokens y tipos</b>: 3.534 tokens y solo 127 tipos distintos (vocabulario muy pequeño porque el corpus es sintético). Quitar las palabras vacías deja 2.028 tokens y 103 tipos: casi la mitad del texto eran palabras vacías.</li>
+<li><b>Palabras más frecuentes</b>: con vacías dominan «de» (440), «la» (170) y «y» (150); sin ellas, «datos» (108) y las palabras de contenido de las plantillas.</li>
+<li><b>Negaciones</b>: 90 opiniones contienen «no» o «sin», y solo 20 son positivas. La primera muestra, «No encontré problemas importantes al estudiar tokenización», queda como «encontré problemas importantes estudiar tokenización» tras la lista: la señal positiva se invierte.</li>
+<li><b>Zipf</b>: pendiente −0,727, R² = 0,931. La palabra más frecuente aparece 440 veces. Ningún tipo es un <i>hápax</i> (aparece una sola vez), algo que en un corpus real sí ocurre con casi la mitad del vocabulario.</li>
+<li>Estas cifras describen un corpus de juguete; no se deben extrapolar a opiniones reales.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Cada paso de limpieza pierde información; se decide según la tarea y antes de separar entrenamiento y prueba.</li>
+<li>Unicode: NFC y NFD son dos representaciones del mismo texto; se normaliza antes de comparar o contar.</li>
+<li>Las tildes distinguen palabras en español; quitarlas solo sirve en búsquedas tolerantes.</li>
+<li>Las expresiones regulares reconocen formas, no significados.</li>
+<li>Las listas de palabras vacías suelen incluir negaciones; en análisis de opiniones se conservan.</li>
+<li>La ley de Zipf: la frecuencia cae como \(1/r^\alpha\); siempre habrá palabras raras o nuevas.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Cuántos puntos de código tiene «canción» en NFC y en NFD?
+<details><summary>Respuesta</summary><p>7 en NFC (c-a-n-c-i-ó-n) y 8 en NFD (la «ó» se descompone en «o» + acento combinado).</p></details></li>
+<li><span class="lvl">Básico</span>Escriba una expresión regular que reconozca fechas como 08/11/2026.
+<details><summary>Respuesta</summary><p><code>\b\d{2}/\d{2}/\d{4}\b</code>. No valida que el mes sea 01–12.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué no conviene quitar las palabras vacías antes de entrenar un clasificador de opiniones?
+<details><summary>Respuesta</summary><p>Porque las listas incluyen «no», «sin» y «ni»; sin ellas «no me gustó» y «me gustó» quedan iguales. En las 360 opiniones, 70 de las 90 con «no» o «sin» son negativas.</p></details></li>
+<li><span class="lvl">Intermedio</span>Una recta de Zipf tiene pendiente −1 y la palabra más frecuente aparece 1.000 veces. ¿Cuántas veces se espera que aparezca la décima?
+<details><summary>Respuesta</summary><p>\(f(10)=1000/10^1=100\) veces.</p></details></li>
+<li><span class="lvl">Avanzado</span>Un corpus de 1 millón de tokens tiene 30.000 tipos con \(\alpha=1\) y una constante \(C\) tal que la suma de frecuencias es 1 millón. Estime \(C\).
+<details><summary>Respuesta</summary><p>\(\sum_{r=1}^{30000}C/r=C\,H_{30000}\approx C(\ln30000+0{,}577)=C\cdot10{,}88\), luego \(C\approx1{,}0\times10^6/10{,}88\approx92\,000\): la palabra más frecuente aparece unas 92.000 veces (9,2 % del texto).</p></details></li>
+</ol>
+<h3>Autoevaluación</h3>
+<div class="sim" data-sim="quiz" data-cap="preparar-texto" data-title="Autoevaluación del capítulo 3"></div>
+<div class="box links"><ul>
+<li><a href="https://docs.python.org/3/howto/unicode.html">Python — Unicode HOWTO</a><small>Puntos de código, codificaciones y normalización; imprescindible antes de trabajar con español.</small></li>
+<li><a href="https://unicode.org/reports/tr15/">Unicode — UAX #15: formas de normalización</a><small>Definición oficial de NFC, NFD, NFKC y NFKD.</small></li>
+<li><a href="https://docs.python.org/3/howto/regex.html">Python — Regular Expression HOWTO</a><small>Guía completa del módulo <code>re</code>.</small></li>
+<li><a href="https://regex101.com/">regex101</a><small>Probador interactivo que explica cada parte de un patrón.</small></li>
+<li><a href="https://web.stanford.edu/~jurafsky/slp3/2.pdf">Jurafsky y Martin — cap. 2: Regular expressions, text normalization, edit distance</a><small>Tratamiento más completo de lo visto aquí y en los capítulos 5, 7 y 8.</small></li>
+<li><a href="https://doi.org/10.3758/s13423-014-0585-6">Piantadosi (2014) — Zipf’s word frequency law in natural language</a><small>Revisión crítica de la ley: qué se sabe de ella, cómo se ajusta bien y por qué ocurre.</small></li>
+</ul></div>
+</section>
+</template>

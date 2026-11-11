@@ -1,0 +1,91 @@
+<template class="chapter-src" data-id="preentrenamiento" data-num="31" data-title="Subpalabras y preentrenamiento: de BPE a BERT y GPT" data-part="Parte VII · Redes y modelos grandes" data-short="Tokenización por subpalabras (BPE, WordPiece, bytes); objetivos de preentrenamiento (causal, enmascarado); ajuste fino y aprendizaje por transferencia; BERT, GPT y T5; leyes de escala">
+<p class="lead">Los capítulos anteriores trabajaron con palabras como unidades. Los modelos actuales ya no lo hacen: trocean el texto en <b>subpalabras</b>, entrenan un Transformer enorme sobre texto sin etiquetar para que aprenda el idioma (<b>preentrenamiento</b>) y lo adaptan después a cada tarea con pocos ejemplos. Esa receta —tokenizar, preentrenar, ajustar— sustituyó en pocos años a casi todas las canalizaciones de los capítulos 3–27.</p>
+
+<section>
+<h2>Subpalabras: un vocabulario abierto de tamaño fijo</h2>
+<p>Con palabras enteras, el vocabulario es enorme (cada flexión de cada verbo, cada nombre propio) y siempre aparecen palabras nuevas: «descentralización» o «tuiteó». Con caracteres, el vocabulario es pequeño pero las secuencias son muy largas. Las <b>subpalabras</b> son el punto medio: las palabras frecuentes son un solo símbolo y las raras se parten en piezas conocidas, de forma que <i>cualquier</i> texto se puede escribir con un vocabulario fijo.</p>
+<p>El algoritmo más extendido es la <b>codificación por pares de bytes</b> (BPE; Sennrich y otros, 2016, adaptado de una técnica de compresión de Gage, 1994). Se entrena así:</p>
+<ol>
+<li>Se parte cada palabra del corpus en caracteres, con una marca de fin de palabra (<code>&lt;/w&gt;</code>).</li>
+<li>Se cuenta la frecuencia de cada par de símbolos adyacentes en todo el corpus.</li>
+<li>Se <b>fusiona</b> el par más frecuente en un símbolo nuevo y se anota la fusión.</li>
+<li>Se repite hasta alcanzar el número de fusiones (el tamaño de vocabulario) deseado.</li>
+</ol>
+<p>Para codificar un texto nuevo se aplican las fusiones en el orden en que se aprendieron. Variantes: <b>WordPiece</b> (BERT) elige las fusiones por verosimilitud; el <b>modelo unigrama</b> y <b>SentencePiece</b> parten de un vocabulario grande y lo poda; el <b>BPE a nivel de bytes</b> (GPT-2 y posteriores) trabaja con los 256 bytes de UTF-8 y por eso no tiene palabras desconocidas ni caracteres raros, ni siquiera emojis.</p>
+<div class="sim" data-sim="bpe-entrenar" data-title="Entrenar BPE sobre 43.000 palabras en español y ver cómo se parten las palabras"></div>
+<div class="sim-guide"><ul>
+<li>Con 0 fusiones, cada palabra es una secuencia de caracteres: unos 5 tokens por palabra. Con 100 fusiones, 3,03 tokens por palabra y el 39 % de las palabras caben en un solo token; con 600 baja a 2,13.</li>
+<li>Las primeras fusiones son las más frecuentes: <code>o + s·</code> (final «-os»), <code>d + e·</code> («de»), <code>e + n</code>, <code>e + r</code>… son terminaciones y letras comunes. Después aparecen sílabas, palabras enteras y raíces («ción», «más», «gobier»).</li>
+<li>Escriba «descentralización» o una palabra inventada como «tuiteador»: nunca queda sin codificar; se parte en las piezas que conoce. Pruebe también una palabra de otro idioma.</li>
+<li>El vocabulario real de GPT-4 tiene unos 100.000 símbolos y el de los modelos más recientes, unos 200.000: más fusiones, menos tokens por texto, pero una tabla de embeddings mayor.</li>
+</ul></div>
+<h3>Los tokenizadores no son neutrales</h3>
+<p>Los tokenizadores se entrenan con los datos de preentrenamiento, dominados por el inglés. El mismo contenido cuesta más tokens en español, y se paga por token (en dinero y en espacio de contexto). Además, los números, el código y los alfabetos poco frecuentes se parten de forma desigual, lo que afecta al rendimiento en tareas como la aritmética.</p>
+</section>
+
+<section>
+<h2>Preentrenar: aprender el idioma sin etiquetas</h2>
+<p>El texto contiene su propia supervisión: se puede construir una tarea de predicción a partir de cualquier párrafo, sin que nadie lo etiquete. Los dos objetivos principales:</p>
+<ul>
+<li><b>Modelo de lenguaje causal</b> (GPT): predecir cada palabra a partir de las anteriores, con atención causal (capítulo 30). Cada posición aporta una señal de aprendizaje y el mismo modelo sirve para generar texto.</li>
+<li><b>Modelo de lenguaje enmascarado</b> (BERT; Devlin y otros, 2018): se ocultan al azar el 15 % de las palabras y se pide recuperarlas viendo el contexto a <b>ambos lados</b>. De las elegidas, el 80 % se cambian por <code>[MASK]</code>, el 10 % por una palabra aleatoria y el 10 % se dejan, para que el modelo no dependa de la marca <code>[MASK]</code>, que no existe después. Produce representaciones muy buenas para comprender (clasificar, etiquetar, comparar), pero no genera texto con naturalidad.</li>
+<li><b>Codificador–decodificador con ruido</b> (T5, BART): se corrompe el texto (huecos, palabras borradas, frases barajadas) y el decodificador lo reconstruye. Sirve para traducir, resumir y responder.</li>
+</ul>
+<div class="sim" data-sim="objetivos-preentrenamiento" data-title="Cómo se construyen los ejemplos de entrenamiento de un modelo enmascarado y de uno causal"></div>
+<div class="sim-guide"><ul>
+<li>Para la oración elegida, la fila de arriba muestra la entrada del modelo enmascarado: las posiciones en rojo llevan <code>[MASK]</code>, las verdes se cambiaron por otra palabra o se dejaron, y la fila de abajo, las palabras originales que debe predecir.</li>
+<li>La parte de abajo muestra el modelo causal: <i>cada</i> posición es un ejemplo (el contexto ya visto y la palabra siguiente). Un modelo causal aprovecha cada palabra; uno enmascarado, solo el 15 %.</li>
+<li>Pulse «Otra máscara» para otra elección. Suba el porcentaje al 40 %: la tarea se vuelve mucho más difícil porque queda poco contexto.</li>
+</ul></div>
+<div class="box py"><p>El programa mide los tokens por palabra en dos tokenizadores reales (<code>tiktoken</code>), entrena BPE con 0 a 3.000 fusiones y compara dos Transformers diminutos preentrenados con los dos objetivos sobre las mismas oraciones.</p>
+<div class="py" data-py="31-preentrenamiento"></div></div>
+<div class="box read"><ul>
+<li><b>Tokenizadores reales</b> (tres frases paralelas): <code>cl100k_base</code> (GPT-4) usa 1,70 tokens por palabra en español y 1,17 en inglés (45 % más para el mismo contenido); <code>o200k_base</code>, con un vocabulario mayor y más multilingüe, 1,24 y 1,11. «Descentralización» se parte en <i>descent · ral · ización</i>.</li>
+<li><b>BPE propio</b>: con 0 fusiones, 4,97 tokens por palabra (91 símbolos); con 100, 3,03 (39 % de las palabras caben en un token); con 300, 2,47; con 1.000, 1,94 (55 %); con 3.000, 1,56 (67 %). Cada fusión nueva rinde menos que la anterior.</li>
+<li><b>Dos objetivos</b> (Transformers de 2 capas con d = 64, 811 posiciones enmascaradas de la prueba): la línea de base «decir siempre las cinco palabras más frecuentes» acierta el 17,1 %. El modelo enmascarado (ve ambos lados) acierta la palabra exacta en el 25,8 % de los casos y está entre las cinco primeras en el 41,4 %; el causal (solo ve la izquierda), el 21,1 % y el 43,5 %. Ver el futuro ayuda en el primer puesto (+4,7 puntos), pero con estos modelos y 43.000 palabras de entrenamiento la diferencia en el top-5 desaparece: ambos aprenden sobre todo la sintaxis más local.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Ajustar y usar: transferencia</h2>
+<p>El preentrenamiento produce un modelo que «sabe» el idioma. Para aprovecharlo hay tres vías:</p>
+<ol>
+<li><b>Ajuste fino</b> (<i>fine-tuning</i>): se sigue entrenando todo el modelo, o sus últimas capas, con unos cientos o miles de ejemplos etiquetados de la tarea (clasificación, NER, preguntas…). Con un BERT ajustado se superaron en 2018 los mejores resultados de once tareas a la vez.</li>
+<li><b>Extracción de rasgos</b>: se usan sus vectores como entrada de un clasificador sencillo (capítulo 27).</li>
+<li><b>Aprendizaje en contexto</b> (<i>prompting</i>): en los modelos más grandes basta describir la tarea y dar unos ejemplos en el mensaje, sin cambiar los pesos (<i>zero-shot</i>, <i>few-shot</i>). Es la base de los asistentes (capítulo 32).</li>
+</ol>
+<p><b>Referencias de tamaño.</b> BERT-base tiene 110 millones de parámetros (12 capas, 12 cabezas, \(d=768\)) y se entrenó con unos 3.300 millones de palabras; GPT-2, 1.500 millones; GPT-3, 175.000 millones, con unos 300.000 millones de tokens. Kaplan y otros (2020) observaron que la pérdida cae como una <b>ley de potencias</b> con el número de parámetros, de datos y de cómputo; Hoffmann y otros (2022, «Chinchilla») concluyeron que, para un presupuesto de cómputo dado, conviene repartir el esfuerzo entre parámetros y datos (del orden de 20 tokens por parámetro), no solo agrandar el modelo. Esa previsibilidad es lo que justificó invertir en modelos cada vez mayores.</p>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Las subpalabras (BPE, WordPiece, bytes) dan un vocabulario abierto de tamaño fijo; BPE fusiona el par más frecuente repetidamente.</li>
+<li>Los tokenizadores heredan el sesgo de sus datos: el español cuesta más tokens que el inglés.</li>
+<li>Preentrenamiento sin etiquetas: causal (predecir la siguiente), enmascarado (recuperar huecos) o con ruido (codificador–decodificador).</li>
+<li>Se adapta con ajuste fino, rasgos o prompting; la escala (parámetros, datos y cómputo) mejora la pérdida de forma predecible.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Con las palabras «newest» (6 veces), «widest» (3), «lower» (2) y «low» (5), ¿cuál es la primera fusión de BPE y cuántas veces aparece? (Desempate: el par menor en orden alfabético.)
+<details><summary>Respuesta</summary><p>Los pares (e, s), (s, t) y (t, &lt;/w&gt;) aparecen 9 veces cada uno (6 + 3); (w, e) 8; (l, o) y (o, w) 7. Empate a 9: por orden alfabético, (e, s). La primera fusión es e + s → «es».</p></details></li>
+<li><span class="lvl">Básico</span>Un texto de 1.000 palabras en español se codifica a 1,70 tokens por palabra. ¿Cuántos tokens son? ¿Y el equivalente en inglés a 1,17?
+<details><summary>Respuesta</summary><p>1.700 tokens frente a 1.170: el español usa un 45 % más (1.700/1.170 = 1,45), lo que cuesta más y ocupa más ventana de contexto.</p></details></li>
+<li><span class="lvl">Intermedio</span>En una secuencia de 512 palabras con el 15 % de enmascaramiento de BERT, ¿cuántas posiciones se eligen y cuántas de ellas se sustituyen por [MASK], por una palabra al azar y se dejan?
+<details><summary>Respuesta</summary><p>0,15 · 512 ≈ 77 posiciones; 80 % ≈ 61 con [MASK]; 10 % ≈ 8 con una palabra al azar; 10 % ≈ 8 sin cambiar.</p></details></li>
+<li><span class="lvl">Intermedio</span>BERT-base tiene un vocabulario de 30.522 símbolos y \(d=768\). ¿Cuántos parámetros hay en la tabla de embeddings y qué fracción de los 110 millones?
+<details><summary>Respuesta</summary><p>30.522 · 768 = 23,4 millones, el 21 % del total.</p></details></li>
+<li><span class="lvl">Avanzado</span>Compare ajuste fino y prompting para clasificar opiniones con 200 ejemplos etiquetados.
+<details><summary>Respuesta</summary><p>El ajuste fino de un modelo del tamaño de BERT con 200 ejemplos suele dar buenos resultados, es barato en inferencia y da un modelo propio y pequeño, pero exige entrenar y mantener el modelo. El prompting con un modelo grande no exige entrenamiento y es flexible (se cambia la tarea cambiando el mensaje), pero cada consulta es más cara, la salida es menos predecible y el rendimiento depende de la redacción del mensaje. Con pocos ejemplos y poca infraestructura, prompting; con mucho volumen y exigencia de coste y latencia, ajuste fino de un modelo pequeño.</p></details></li>
+</ol>
+<h3>Autoevaluación</h3>
+<div class="sim" data-sim="quiz" data-cap="preentrenamiento" data-title="Autoevaluación del capítulo 31"></div>
+<div class="box links"><ul>
+<li><a href="https://aclanthology.org/P16-1162/">Sennrich, Haddow y Birch (2016) — Neural machine translation of rare words with subword units</a><small>BPE para traducción automática neuronal.</small></li>
+<li><a href="https://aclanthology.org/N19-1423/">Devlin y otros (2019) — BERT</a><small>Preentrenamiento bidireccional con lenguaje enmascarado.</small></li>
+<li><a href="https://arxiv.org/abs/2005.14165">Brown y otros (2020) — Language models are few-shot learners (GPT-3)</a><small>Aprendizaje en contexto con un modelo de 175.000 millones de parámetros.</small></li>
+<li><a href="https://arxiv.org/abs/2001.08361">Kaplan y otros (2020) — Scaling laws for neural language models</a><small>Leyes de potencia de la pérdida frente a parámetros, datos y cómputo.</small></li>
+<li><a href="https://arxiv.org/abs/2203.15556">Hoffmann y otros (2022) — Training compute-optimal large language models (Chinchilla)</a><small>Reparto óptimo entre tamaño del modelo y cantidad de datos.</small></li>
+<li><a href="https://github.com/openai/tiktoken">tiktoken</a><small>Los tokenizadores BPE de OpenAI, usados en el programa.</small></li>
+</ul></div>
+</section>
+</template>

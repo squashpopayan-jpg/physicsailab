@@ -1,0 +1,100 @@
+﻿<template class="chapter-src" data-id="pcfg" data-num="17" data-title="Ambigüedad estructural y análisis probabilista" data-part="Parte IV · Sintaxis" data-short="Por qué una gramática da muchos árboles; gramáticas libres de contexto probabilistas; estimación en un treebank; CKY de Viterbi y algoritmo interior; inside-outside; PARSEVAL; límites de las PCFG">
+<p class="lead">«Disparé a un elefante en mi pijama»: ¿quién llevaba el pijama? La gramática da dos árboles y no sabe cuál es el correcto. El análisis probabilista añade lo que le falta: a cada regla, un número que dice cuán habitual es, y al árbol, el producto de esos números. Con un buen treebank, un analizador no solo encuentra todos los árboles, sino que escoge, casi siempre bien, el que un lector humano elegiría.</p>
+
+<section>
+<h2>La ambigüedad estructural</h2>
+<p>La <b>ambigüedad estructural</b> aparece cuando las reglas de la gramática permiten varios análisis de una misma oración. Ya se vio con los números de Catalan (capítulo 1) y la tabla de CKY (capítulo 14). Dos ejemplos clásicos:</p>
+<ul>
+<li><b>Colgado del sintagma preposicional</b> («I shot an elephant in my pajamas», Groucho Marx, 1930): «en mi pijama» puede ser un complemento del verbo (el que disparó llevaba pijama) o del nombre (el elefante lo llevaba).</li>
+<li><b>Coordinación</b>: en «hombres y mujeres mayores», el adjetivo puede cualificar solo a «mujeres» —[hombres y [mujeres mayores]]— o a ambos —[[hombres y mujeres] mayores]—.</li>
+</ul>
+<p>Un analizador debe <b>elegir uno</b>. La desambiguación necesita conocimiento estadístico, semántico y contextual. Los métodos más avanzados la integran en el propio análisis; los probabilistas son los más extendidos.</p>
+</section>
+
+<section>
+<h2>Gramáticas libres de contexto probabilistas</h2>
+<p>Una <span class="term">PCFG</span> (<i>probabilistic context-free grammar</i>) asocia a cada regla \(A\to\beta\) una probabilidad \(P(A\to\beta)\), con la condición de que para cada símbolo las probabilidades de todas sus expansiones sumen 1. Suponiendo que las reglas se aplican de forma independiente, la probabilidad de un árbol es el <b>producto</b> de las probabilidades de las reglas que usa, y el analizador devuelve el árbol más probable:</p>
+<div class="eq key" data-name="Análisis probabilista">\[\hat T=\argmax_{T:\ \mathrm{yield}(T)=w_{1:n}}P(T),\qquad P(T)=\prod_{(A\to\beta)\in T}P(A\to\beta),\qquad P(w_{1:n})=\sum_{T}P(T).\]</div>
+<p>Las probabilidades se estiman <b>por conteo</b> en un <i>treebank</i> (un corpus de oraciones ya analizadas a mano, como el Penn Treebank o la parte sintáctica de CESS-ESP):</p>
+<div class="eq key" data-name="Estimación por máxima verosimilitud">\[P(A\to\beta)=\frac{C(A\to\beta)}{\sum_{\gamma}C(A\to\gamma)}=\frac{C(A\to\beta)}{C(A)}\]</div>
+<div class="sim" data-sim="estimar-pcfg" data-title="Estimar las probabilidades de una gramática a partir de un treebank pequeño"></div>
+<div class="sim-guide"><ul>
+<li>Use pocos árboles: las probabilidades son muy bruscas (SV → V SN: 3/4 con tres árboles). Con más árboles se afinan.</li>
+<li>Elija «SV»: se ve la razón de que el colgado del verbo o del nombre tengan probabilidades distintas: depende de cuántas veces apareció cada uno en el treebank.</li>
+<li>Si no hay treebank se puede partir de un analizador no probabilista, probabilidades iguales, y reestimar iterativamente ponderando por la probabilidad de cada análisis: es el algoritmo <b>inside-outside</b> (Baker, 1979), un caso del algoritmo EM.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>CKY probabilístico</h2>
+<p>La versión probabilística de CKY (Ney, 1991) guarda en cada celda, para cada símbolo, la probabilidad del mejor árbol que lo produce. Cambia solo una línea del algoritmo: en vez de recordar que \(A\) está en la celda \([i,j]\), recuerda el valor máximo, y la regla elegida:</p>
+<div class="eq key" data-name="CKY de Viterbi y algoritmo interior">\[\delta[i,j,A]=\max_{A\to BC,\;k}\ P(A\to BC)\,\delta[i,k,B]\,\delta[k,j,C],\qquad \beta[i,j,A]=\sum_{A\to BC,\;k}P(A\to BC)\,\beta[i,k,B]\,\beta[k,j,C].\]</div>
+<p>Con \(\max\) se obtiene el mejor árbol (<b>Viterbi</b>); con suma, la probabilidad de la oración (<b>algoritmo interior</b>, <i>inside</i>), necesaria para entrenar con EM y para usar la PCFG como modelo de lenguaje. El costo no cambia: \(O(n^3|G|)\).</p>
+<div class="sim" data-sim="pcfg" data-title="Elegir entre varios árboles: probabilidad de cada análisis"></div>
+<div class="sim-guide"><ul>
+<li>Con «yo vi un elefante en mi pijama» hay dos árboles. Con los pesos iniciales gana el que cuelga el sintagma del verbo (4,00×10<sup>−9</sup>, frente a 2,00×10<sup>−9</sup> del que lo cuelga del nombre: el 67 % de la probabilidad total).</li>
+<li>Baje «SV → SV SP» a 10 y el ganador cambia: el del nombre (2,50×10<sup>−9</sup> frente a 2,08×10<sup>−9</sup>). La preferencia de un analizador depende de las proporciones aprendidas.</li>
+<li>Los valores de los árboles se comprobaron contra NLTK en 11 oraciones: el mejor árbol (Viterbi) y la probabilidad total (interior) coinciden con el máximo y la suma de las probabilidades de todos los árboles que enumera NLTK (apéndice de validación). Esa comprobación detectó un error de la primera versión del código, que mezclaba las puntuaciones de Viterbi con las interiores.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Evaluar un analizador: PARSEVAL</h2>
+<p>Para comparar el árbol de un sistema con el de referencia se usa la medida <b>PARSEVAL</b>: cada constituyente se identifica por su símbolo y los límites de las palabras que abarca; se calculan precisión (constituyentes propuestos que están en la referencia), cobertura (constituyentes de la referencia que se propusieron) y su media armónica \(F_1\). En oraciones ambiguas, un solo error de colgado de un sintagma cambia varios constituyentes.</p>
+<div class="sim" data-sim="parseval" data-title="PARSEVAL: precisión, cobertura y F1 de un análisis"></div>
+<div class="sim-guide"><ul>
+<li>Se compara el análisis «el sintagma cuelga del nombre» con el de referencia («cuelga del verbo»). Se equivoca en los constituyentes SV [1,4] y SN [2,7], que no existen en el otro árbol: 6 de 7 coinciden (F1 = 0,857).</li>
+<li>Un error de adjunción parece pequeño pero afecta a la interpretación completa de la oración; PARSEVAL lo refleja de forma suave.</li>
+</ul></div>
+<div class="box py"><p>El programa define una PCFG con NLTK, enumera los dos análisis con su probabilidad, comprueba que <code>ViterbiParser</code> elige el mejor y estima las probabilidades con cuatro árboles.</p>
+<div class="py" data-py="17-pcfg"></div></div>
+<div class="box read"><ul>
+<li><b>Dos árboles</b>: P = 0,00050 (colgado del verbo) y P = 0,00044 (del nombre). Son casi un empate, de ahí que la ambigüedad sea tan difícil; la probabilidad total es 0,00094.</li>
+<li><b>Viterbi</b>: <code>ViterbiParser</code> devuelve el árbol de 0,00050.</li>
+<li><b>Estimación</b> con cuatro árboles: SN → Det N 7/11 = 0,636; SN → Pron 3/11 = 0,273; el resto de 11 expansiones de SN son SN → SN SP, con 1/11 = 0,091 (en un solo árbol). La entropía de las expansiones de SN es 1,241 bits.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Límites y mejoras</h2>
+<ul>
+<li><b>Independencia excesiva</b>: la PCFG no sabe que «ver con telescopio» es más probable que «gato con telescopio»; las reglas ignoran las palabras. Las PCFG <b>lexicalizadas</b> (Collins, 1999) añaden la palabra núcleo a cada símbolo.</li>
+<li><b>Anotación del treebank</b>: refinar los símbolos (SN de sujeto frente a SN de objeto) mejora mucho (Klein y Manning, 2003).</li>
+<li><b>Modelos neuronales</b>: los analizadores actuales (por ejemplo, el de Kitaev y Klein, basado en Transformer) puntúan los constituyentes con una red y decodifican con CKY. El esquema es el mismo; las puntuaciones, aprendidas. En inglés con el Penn Treebank superan el 95 % de F1 de PARSEVAL.</li>
+<li><b>Dependencias</b>: muchos sistemas modernos analizan directamente en dependencias (capítulo 16).</li>
+</ul>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>La ambigüedad estructural (colgado del sintagma preposicional, coordinación) exige elegir entre varios árboles.</li>
+<li>Una PCFG da una probabilidad a cada regla; la del árbol es el producto, la de la oración, la suma.</li>
+<li>Las probabilidades se estiman por conteo en un treebank, \(C(A\to\beta)/C(A)\), o por inside-outside sin treebank.</li>
+<li>CKY con máximos da el mejor árbol; con sumas, la probabilidad de la oración.</li>
+<li>PARSEVAL mide precisión, cobertura y F1 de los constituyentes.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un árbol usa reglas de probabilidades 1; 0,4; 0,5; 0,2. ¿Cuál es su probabilidad?
+<details><summary>Respuesta</summary><p>1 · 0,4 · 0,5 · 0,2 = 0,04.</p></details></li>
+<li><span class="lvl">Básico</span>En un treebank, SN se expande 100 veces, 60 como Det N. ¿Cuánto vale P(SN → Det N)?
+<details><summary>Respuesta</summary><p>60/100 = 0,6.</p></details></li>
+<li><span class="lvl">Intermedio</span>Dos árboles de una oración tienen probabilidades 0,0005 y 0,0004. ¿Cuál es la probabilidad de la oración y qué cuota del total tiene el mejor?
+<details><summary>Respuesta</summary><p>0,0009; 0,0005/0,0009 = 55,6 %.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué se suele trabajar con logaritmos de probabilidades al analizar oraciones largas?
+<details><summary>Respuesta</summary><p>Porque el producto de muchas probabilidades pequeñas se desborda por abajo en coma flotante; el logaritmo convierte el producto en suma, como en Viterbi para el etiquetado.</p></details></li>
+<li><span class="lvl">Avanzado</span>Explique por qué una PCFG sin lexicalizar elige siempre el mismo colgado de un sintagma preposicional para una configuración de reglas dada, aunque las palabras cambien.
+<details><summary>Respuesta</summary><p>Las probabilidades de las reglas estructurales (SV → SV SP frente a SN → SN SP) no dependen de las palabras; la comparación entre ambos árboles depende solo de esas reglas (las léxicas, comunes a los dos). La preferencia es la misma para «vi un elefante en pijama» que para «vi un libro en pijama»; hace falta lexicalizar o usar contexto.</p></details></li>
+</ol>
+<h3>Autoevaluación</h3>
+<div class="sim" data-sim="quiz" data-cap="pcfg" data-title="Autoevaluación del capítulo 17"></div>
+<div class="box links"><ul>
+<li><a href="https://web.stanford.edu/~jurafsky/slp3/17.pdf">Jurafsky y Martin — cap. 17: PCFG, CKY probabilístico y PARSEVAL</a><small>Los temas de este capítulo con ejemplos en inglés.</small></li>
+<li><a href="https://aclanthology.org/P03-1054/">Klein y Manning (2003) — Accurate unlexicalized parsing</a><small>Refinar los símbolos de la PCFG, sin léxico, da resultados competitivos.</small></li>
+<li><a href="https://aclanthology.org/P18-1249/">Kitaev y Klein (2018) — Constituency parsing with a self-attentive encoder</a><small>Analizador neuronal de constituyentes: una red puntúa los constituyentes y se decodifica con CKY.</small></li>
+<li><a href="https://www.nltk.org/api/nltk.parse.viterbi.html">NLTK — ViterbiParser y PCFG</a><small>La implementación usada en el programa.</small></li>
+<li><a href="https://aclanthology.org/J93-2004/">Marcus y otros (1993) — Penn Treebank</a><small>El corpus de árboles con el que se estiman las gramáticas de inglés.</small></li>
+</ul></div>
+</section>
+</template>
+

@@ -1,0 +1,91 @@
+<template class="chapter-src" data-id="sentidos" data-num="21" data-title="Sentidos de las palabras y WordNet" data-part="Parte V · El significado" data-short="Palabra, lema y sentido; homonimia, polisemia y metonimia; sinonimia, antonimia, hiponimia y meronimia; tesauros; WordNet y los synsets; cuánta ambigüedad hay">
+<p class="lead">Hasta ahora el significado se ha calculado a partir de símbolos que alguien definió: <code>libro(x)</code>, <code>lee(x, y)</code>. Pero ¿qué es «libro»? ¿Y qué significa «banco» en «el banco está cerrado»? La semántica léxica estudia los significados de las palabras, que casi nunca son uno solo, y las relaciones entre ellos. El recurso más usado para trabajar con ellos es WordNet, una gran red de sentidos que cualquier programa puede consultar.</p>
+
+<section>
+<h2>Palabra, lema y sentido</h2>
+<p>Hay que distinguir tres cosas que en la conversación se confunden. La <b>forma</b> (<i>wordform</i>) es lo que aparece en el texto: «canto», «cantó». El <b>lema</b> es la forma de diccionario que agrupa las flexiones: «cantar». Y el <b>sentido</b> es cada uno de los significados de un lema: «cantar» como emitir sonidos con la voz o como confesar. Una entrada de diccionario es, en realidad, una lista de sentidos. El problema central de la semántica léxica es que forma y sentido no se corresponden uno a uno.</p>
+<ul>
+<li>La <b>homonimia</b> es la relación entre sentidos <i>sin conexión</i> entre sí: «banco» (asiento) y «banco» (entidad financiera); «cabo» (militar, accidente geográfico, trozo de cuerda). Si además se escriben igual son homógrafos; si solo suenan igual, homófonos («cabo»/«cavo»). Es la causa principal de errores en el procesamiento del lenguaje.</li>
+<li>La <b>polisemia</b> es la relación entre sentidos <i>relacionados</i>: «hoja» de árbol y de papel (lámina), «boca» del río. La distinción con la homonimia no es siempre nítida; los lexicógrafos la deciden por el origen histórico y por la intuición.</li>
+<li>La <b>metonimia</b> es una forma sistemática de polisemia: se nombra una cosa con el nombre de otra relacionada. «Leer a Cervantes» (autor por obra), «el banco anunció pérdidas» (edificio por institución), «Madrid ganó» (ciudad por equipo). Esos desplazamientos son regulares y se pueden predecir con reglas.</li>
+</ul>
+<p>Una prueba práctica de si hay sentidos distintos es el <b>zeugma</b>: «Marta perdió el tren y la paciencia» suena forzado porque «perder» tiene sentidos distintos para cada complemento.</p>
+</section>
+
+<section>
+<h2>Relaciones entre sentidos</h2>
+<p>Los sentidos se organizan en una red de relaciones. Las más importantes:</p>
+<table class="mx" style="text-align:left"><thead><tr><th style="text-align:left">Relación</th><th style="text-align:left">Significado</th><th style="text-align:left">Ejemplo</th></tr></thead><tbody>
+<tr><td style="text-align:left"><b>Sinonimia</b></td><td style="text-align:left;white-space:normal">Dos formas con el mismo sentido (en algún contexto); no existe sinonimia perfecta</td><td style="text-align:left">coche – automóvil</td></tr>
+<tr><td style="text-align:left"><b>Antonimia</b></td><td style="text-align:left;white-space:normal">Sentidos opuestos respecto de un rasgo (graduales, complementarios, inversos)</td><td style="text-align:left">bueno – malo; vivo – muerto; comprar – vender</td></tr>
+<tr><td style="text-align:left"><b>Hiperonimia / hiponimia</b></td><td style="text-align:left;white-space:normal">«Es un» (IS-A): la clase incluye a sus miembros</td><td style="text-align:left">vehículo ⊐ coche; animal ⊐ perro</td></tr>
+<tr><td style="text-align:left"><b>Meronimia / holonimia</b></td><td style="text-align:left;white-space:normal">«Parte de»</td><td style="text-align:left">rueda ⊂ coche; hoja ⊂ árbol</td></tr>
+<tr><td style="text-align:left"><b>Cohiponimia</b></td><td style="text-align:left;white-space:normal">Hermanos bajo un mismo hiperónimo</td><td style="text-align:left">perro – gato</td></tr>
+</tbody></table>
+<p>La hiponimia es transitiva (si un perro es un mamífero y un mamífero es un animal, un perro es un animal) y es la columna vertebral de los tesauros y de las ontologías de la lógica descriptiva (capítulo 19): la jerarquía «es un» (<i>IS-A</i>) es el \(\sqsubseteq\) entre conceptos. Un <b>tesauro</b> es un recurso que lista las palabras junto con sus sinónimos, antónimos y otras relaciones, para saber qué sentidos hay y cómo se conectan.</p>
+</section>
+
+<section>
+<h2>WordNet</h2>
+<p><b>WordNet</b> (Miller y otros, Universidad de Princeton, desde 1985) es una base de datos léxica del inglés. Su unidad es el <b>synset</b> (<i>synonym set</i>): un conjunto de palabras que pueden expresar un mismo sentido, junto con una definición (glosa) y, a veces, ejemplos. «Perro» en el sentido de animal doméstico es el synset <code>dog.n.01</code> = {dog, domestic dog, <i>Canis familiaris</i>}. Las relaciones (hiperonimia, meronimia, antonimia…) unen synsets (y la antonimia une <i>lemas</i> concretos). La versión 3.0 tiene más de 82.000 synsets de sustantivos, además de los verbos, adjetivos y adverbios.</p>
+<p>Para el español se usa el <b>WordNet multilingüe abierto</b> (<i>Open Multilingual Wordnet</i>, OMW): conecta las palabras españolas a los synsets ingleses. El mismo synset tiene lemas en varios idiomas, lo que permite traducir sentidos, aunque las glosas siguen en inglés. Las dos simulaciones usan un subconjunto de 637 synsets (62 palabras comunes del español con la cadena de hiperónimos hasta la raíz) extraído de NLTK.</p>
+<div class="sim" data-sim="wn-sentidos" data-title="Los sentidos de una palabra del español y su lugar en la jerarquía de WordNet"></div>
+<div class="sim-guide"><ul>
+<li>«Banco» tiene 11 sentidos (entidad financiera, asiento, banco de peces, de arena, de iglesia…): la ambigüedad es real y no hay un «sentido correcto» sin contexto.</li>
+<li>«Perro» tiene solo 2 en el subconjunto (el animal y la persona despreciable, un uso figurado). Recorra los dos y compare las cadenas de hiperónimos: el animal sube por <i>animal doméstico → animal → criatura → organismo → … → ente</i>; la persona despreciable, por <i>antipático → persona non grata → alguien → agente causal → …</i>. Dos «perros» sin nada en común salvo la palabra.</li>
+<li>Elija «coche»: sus 4 sentidos son vehículos distintos (automóvil, vagón, coche de caballos). Los sinónimos en español de cada synset cambian, y eso es lo que usará el algoritmo de Lesk en el capítulo siguiente.</li>
+<li>Fíjese en la profundidad: un mismo synset puede tener caminos de longitudes distintas hasta la raíz si tiene varios hiperónimos (WordNet es un grafo, no un árbol).</li>
+</ul></div>
+<div class="sim" data-sim="wn-polisemia" data-title="Cuántos sentidos tienen las palabras comunes"></div>
+<div class="sim-guide"><ul>
+<li>La media del subconjunto es muy superior a la del WordNet completo (ver el programa): las palabras que se eligieron son las comunes, y esas son las más polisémicas.</li>
+<li>Pocas palabras tienen un único sentido. Cuando se desambigua un texto real, casi toda palabra de contenido tiene varias opciones.</li>
+</ul></div>
+<div class="box py"><p>El programa consulta WordNet con NLTK: cuenta los synsets de cuatro palabras españolas, recorre las relaciones de <code>dog.n.01</code> y de <code>car.n.01</code>, la antonimia de <i>good</i>, el subsumidor de «dog» y «cat» y mide la polisemia de todos los sustantivos del WordNet inglés.</p>
+<div class="py" data-py="21-wordnet"></div></div>
+<div class="box read"><ul>
+<li><b>Ambigüedad</b>: «banco» tiene 11 synsets, «radio» 9, «hoja» 4 y «perro» 2. Son los mismos que enumera la simulación.</li>
+<li><b>Jerarquía</b>: la cadena más larga de dog.n.01 va <i>entity → physical_entity → object → whole → living_thing → organism → animal → domestic_animal → dog</i>. Tiene dos hiperónimos directos (animal doméstico y cánido). El subsumidor más bajo de «dog» y «cat» es <i>carnivore</i>.</li>
+<li><b>Antonimia</b>: la de <i>good</i> es <i>bad</i>, definida entre lemas.</li>
+<li><b>Polisemia global</b>: en los 117.798 sustantivos del WordNet inglés la media es de 1,24 sentidos y el 86,5 % tiene solo uno; apenas el 0,8 % tiene más de cinco. Pero esas pocas palabras son las más frecuentes en los textos, así que la ambigüedad que se encuentra al leer es mucho mayor que la que sugiere la media del diccionario.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Otros recursos léxicos</h2>
+<p>WordNet no es el único. <b>FrameNet</b> organiza los verbos en <i>marcos</i> (el marco de «comprar» tiene comprador, vendedor, mercancía y dinero), y <b>PropBank</b> anota roles semánticos en corpus. <b>BabelNet</b> fusiona WordNet y Wikipedia en una red multilingüe enorme. En español, además del WordNet multilingüe, existe el repositorio <b>MCR</b> (Multilingual Central Repository) y diccionarios como el DLE de la RAE. En los últimos años los sentidos se obtienen también de modo implícito mediante <i>embeddings</i> contextuales (capítulos 26 y 31): cada ocurrencia de «banco» recibe un vector distinto según su contexto. Las redes de sentidos siguen siendo útiles como referencia y para evaluar. Se verán todos en el capítulo 34.</p>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Forma, lema y sentido son cosas distintas; cada lema suele tener varios sentidos.</li>
+<li>Homonimia: sentidos sin conexión. Polisemia: sentidos relacionados. Metonimia: polisemia sistemática.</li>
+<li>Relaciones: sinonimia, antonimia, hiponimia/hiperonimia (IS-A, transitiva), meronimia (parte de).</li>
+<li>WordNet: synsets (conjuntos de sinónimos con glosa) unidos por relaciones; el español se conecta con OMW.</li>
+<li>La media de sentidos por palabra engaña: las palabras frecuentes son las más ambiguas.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Clasifique: «cabo» (rango militar) / «cabo» (accidente geográfico); «hoja» (de árbol) / «hoja» (de papel).
+<details><summary>Respuesta</summary><p>Los dos primeros son homónimos (sin conexión de sentido); los otros dos, polisémicos (comparten la idea de lámina plana).</p></details></li>
+<li><span class="lvl">Básico</span>Complete: gato es … de felino y … de perro.
+<details><summary>Respuesta</summary><p>Hipónimo de felino; cohipónimo (hermano) de perro, ambos bajo carnívoro/animal.</p></details></li>
+<li><span class="lvl">Intermedio</span>Una palabra tiene 5 sentidos en el diccionario; ¿cuántas asignaciones de sentido hay en una oración con 3 palabras de 5, 3 y 2 sentidos?
+<details><summary>Respuesta</summary><p>5 · 3 · 2 = 30. La ambigüedad se multiplica, por eso la desambiguación de oraciones largas necesita algoritmos más inteligentes que probar todas las combinaciones.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué se dice que la hiponimia es transitiva y la meronimia a veces no?
+<details><summary>Respuesta</summary><p>Si A es un B y B es un C, A es un C. En cambio «la manilla es parte de la puerta» y «la puerta es parte de la casa» no implica que, en el uso corriente, «la manilla sea parte de la casa»: la meronimia puede ser transitiva solo en algunos tipos de parte.</p></details></li>
+<li><span class="lvl">Avanzado</span>Un synset de «dog.n.01» tiene dos hiperónimos directos. ¿Qué implica para la profundidad de dog y para medir distancias en WordNet?
+<details><summary>Respuesta</summary><p>La jerarquía es un grafo acíclico, no un árbol: hay varias cadenas hasta la raíz con longitudes distintas, por lo que la «profundidad» puede ser mínima o máxima. Las medidas de similitud (capítulo 23) deben precisar si usan la mínima, la máxima o el camino más corto.</p></details></li>
+</ol>
+<h3>Autoevaluación</h3>
+<div class="sim" data-sim="quiz" data-cap="sentidos" data-title="Autoevaluación del capítulo 21"></div>
+<div class="box links"><ul>
+<li><a href="https://wordnet.princeton.edu/">WordNet — Princeton University</a><small>Sitio oficial: descargas, documentación y buscador.</small></li>
+<li><a href="https://omwn.org/">Open Multilingual Wordnet</a><small>WordNets de muchos idiomas conectados al inglés, incluido el español.</small></li>
+<li><a href="https://www.nltk.org/howto/wordnet.html">NLTK — HOWTO de WordNet</a><small>Cómo consultar synsets, relaciones y similitudes con NLTK.</small></li>
+<li><a href="https://framenet.icsi.berkeley.edu/">FrameNet</a><small>Marcos semánticos con roles y ejemplos anotados.</small></li>
+<li><a href="https://babelnet.org/">BabelNet</a><small>Red semántica multilingüe que integra WordNet y Wikipedia.</small></li>
+<li><a href="https://web.stanford.edu/~jurafsky/slp3/">Jurafsky y Martin — Speech and Language Processing (3.ª ed.)</a><small>Capítulo sobre léxicos y semántica léxica.</small></li>
+</ul></div>
+</section>
+</template>

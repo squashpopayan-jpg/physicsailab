@@ -56,7 +56,11 @@ function computeWordSimilarity(token, word) {
 
 const SCIENTIFIC_THESAURUS = {
     'mecanica': ['newton', 'cinematica', 'dinamica', 'proyectil', 'vectores', 'caida libre', 'choque', 'colision', 'segunda ley', 'plano inclinado', 'riel', 'fuerza', 'aceleracion', 'velocidad', 'momento', 'energia', 'lagrange'],
-    'newton': ['mecanica', 'segunda ley', 'riel', 'fuerza', 'inercia', 'accion reaccion', 'gravedad'],
+    'deducciones': ['formula por dentro', 'deduccion', 'derivacion', 'demostracion', 'ecuaciones', 'sympy', 'lagrangiano', 'hamiltoniano', 'maxwell', 'schrodinger', 'einstein', 'relatividad', 'termodinamica', 'analisis dimensional'],
+    'deduccion': ['deducciones', 'formula por dentro', 'derivacion', 'demostracion', 'teorema', 'ecuacion'],
+    'formula': ['deducciones', 'la formula por dentro', 'derivacion', 'demostracion', 'ecuacion', 'analisis dimensional'],
+    'derivacion': ['deducciones', 'formula por dentro', 'deduccion', 'demostracion', 'calculo'],
+    'newton': ['mecanica', 'segunda ley', 'riel', 'fuerza', 'inercia', 'accion reaccion', 'gravedad', 'deducciones'],
     'riel': ['riel de aire', 'fotocompuertas', 'colisiones', 'segunda ley', 'newton', 'oscilador', 'polea', 'mecanica', 'carrito', 'plano inclinado', 'choques', 'momento lineal', 'dinamica'],
     'colision': ['riel', 'choque', 'momento lineal', 'conservacion', 'mecanica'],
     'choque': ['riel', 'colision', 'momento', 'energia', 'mecanica'],
@@ -86,9 +90,18 @@ const SCIENTIFIC_THESAURUS = {
     'optica': ['luz', 'lente', 'espejo', 'refraccion', 'reflexion', 'laser', 'prisma', 'snell', 'foton'],
     'termo': ['termodinamica', 'carnot', 'entropia', 'gas ideal', 'calor', 'temperatura', 'primera ley', 'fisicoquimica'],
     'termodinamica': ['termo', 'carnot', 'entropia', 'gas ideal', 'calor', 'temperatura', 'fisicoquimica'],
-    'squash': ['deporte', 'biomecanica', 'wsf', 'arbitraje', 'manu', 'raqueta', 'pelota', 'cancha', 'torneo', 'articulaciones', 'faro'],
-    'biomecanica': ['squash', 'articulaciones', 'cinematica angular', 'fuerza', 'deporte', 'manu squash'],
+    'squash': ['deporte', 'biomecanica', 'wsf', 'arbitraje', 'manu', 'raqueta', 'pelota', 'cancha', 'torneo', 'articulaciones', 'faro', 'atleta 3d', 'anatomia 3d'],
+    'biomecanica': ['squash', 'articulaciones', 'cinematica angular', 'fuerza', 'deporte', 'manu squash', 'atleta 3d', 'anatomia 3d', 'musculos'],
     'arbitraje': ['squash', 'wsf', 'reglamento', 'let', 'stroke', 'no let'],
+    'pln': ['nlp', 'procesamiento del lenguaje natural', 'maquinas que leen', 'llm', 'transformers', 'transformer', 'atencion', 'tokenizacion', 'bpe', 'embeddings', 'word2vec', 'bert', 'gpt', 'rag', 'chatbots', 'python', 'ia'],
+    'nlp': ['pln', 'procesamiento del lenguaje natural', 'maquinas que leen', 'llm', 'transformers', 'embeddings', 'tokenizacion'],
+    'llm': ['pln', 'maquinas que leen', 'transformers', 'gpt', 'bert', 'atencion', 'rag', 'finetuning', 'lora', 'ia'],
+    'transformers': ['pln', 'maquinas que leen', 'atencion', 'self-attention', 'llm', 'bert', 'gpt', 'ia'],
+    'transformer': ['pln', 'transformers', 'maquinas que leen', 'atencion', 'llm'],
+    'tokenizacion': ['pln', 'maquinas que leen', 'bpe', 'nlp', 'embeddings', 'regex'],
+    'embeddings': ['pln', 'maquinas que leen', 'word2vec', 'vectores', 'semantica', 'similitud coseno'],
+    'chatbots': ['pln', 'maquinas que leen', 'agentes conversacionales', 'llm', 'rag'],
+    'ml': ['machine learning', 'ciencia de datos', 'ia', 'inteligencia artificial', 'pln', 'redes neuronales', 'regresion'],
     'faro': ['pods', 'reaccion', 'tof', 'esp32-s3', 'hardware', 'taller'],
     'kids': ['ninos', 'infantil', 'familias', 'juegos', 'experimentos', 'mundos', 'aventura', 'primaria'],
     'historia': ['epistemologia', 'personajes', 'galileo', 'kepler', 'copernico', 'newton', 'maxwell', 'feynman', 'grecia'],
@@ -184,6 +197,9 @@ function highlightSearchMatches(text, query) {
 }
 
 const CURATED_SEARCH_SUGGESTIONS = [
+    { text: 'La Fórmula por Dentro: Deducciones de la Física', sub: '42 capítulos, 216 deducciones paso a paso, 218 simulaciones', icon: '📐', query: 'La Fórmula por Dentro Deducciones' },
+    { text: 'Máquinas que Leen: PLN & Modelos de Lenguaje', sub: '37 capítulos, 89 simulaciones en vivo, Python, Transformers & LLMs', icon: '🗣️', query: 'Máquinas que Leen PLN' },
+    { text: 'Simulador 3D de Squash & Biomecánica', sub: '22 rutinas, atleta volumétrico 3D y anatomía 3D giratoria', icon: '🎾', query: 'Squash Biomecánica' },
     { text: 'Riel de Aire 3D', sub: 'Laboratorio Virtual 3D · Dinámica de Newton', icon: '🏎️', query: 'Riel de Aire 3D' },
     { text: 'Dispositivos Activos y Pasivos', sub: '30 capítulos, 128 simuladores SPICE', icon: '🔌', query: 'Dispositivos Activos y Pasivos' },
     { text: 'Circuitos Vivos Arduino & ESP32', sub: 'Protoboard interactiva y microcontroladores', icon: '⚡', query: 'Circuitos Vivos Arduino ESP32' },
@@ -433,6 +449,20 @@ function handleGlobalSearchFocus() {
 
             <div class="search-autocomplete-header">🔥 Sugerencias Populares Destacadas</div>
             <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(210px, 1fr)); gap:0.5rem; margin-bottom:0.85rem;">
+                <button type="button" class="search-quick-item" onclick="setGlobalSearchQuery('La Fórmula por Dentro Deducciones')">
+                    <span style="font-size:1.15rem;">📐</span>
+                    <div>
+                        <strong style="display:block; color:#fff; font-size:0.82rem;">La Fórmula por Dentro</strong>
+                        <small style="color:#94a3b8; font-size:0.7rem;">42 capítulos · 216 deducciones · 218 sims</small>
+                    </div>
+                </button>
+                <button type="button" class="search-quick-item" onclick="setGlobalSearchQuery('Máquinas que Leen PLN')">
+                    <span style="font-size:1.15rem;">🗣️</span>
+                    <div>
+                        <strong style="display:block; color:#fff; font-size:0.82rem;">Máquinas que Leen (PLN & LLMs)</strong>
+                        <small style="color:#94a3b8; font-size:0.7rem;">37 caps · 89 sims · Python & Transformers</small>
+                    </div>
+                </button>
                 <button type="button" class="search-quick-item" onclick="setGlobalSearchQuery('Dispositivos Activos y Pasivos')">
                     <span style="font-size:1.15rem;">🔌</span>
                     <div>
@@ -538,7 +568,7 @@ function handleGlobalSearch(query) {
     const pData = (typeof data !== 'undefined' && data) ? data : (window.PLATFORM_DATA || {});
     const candidateItems = [];
 
-    // 1. Cursos Oficiales (34 materias)
+    // 1. Cursos Oficiales (36 materias)
     const courses = (pData && pData.cursos) ? pData.cursos : [];
     courses.forEach(c => {
         if (c.oculto || c.privado) return;
@@ -552,6 +582,21 @@ function handleGlobalSearch(query) {
             badgeColor = '#f472b6';
             badgeBg = 'rgba(236,72,153,0.2)';
             icon = '🌈';
+        } else if (c.id === 'deducciones') {
+            badgeLabel = '📐 Tratado de Deducciones';
+            badgeColor = '#38bdf8';
+            badgeBg = 'rgba(56,189,248,0.2)';
+            icon = '📐';
+        } else if (c.id === 'pln') {
+            badgeLabel = '🗣️ IA & PLN (LLMs)';
+            badgeColor = '#fbbf24';
+            badgeBg = 'rgba(251,191,36,0.2)';
+            icon = '🗣️';
+        } else if (c.id === 'squash_sim') {
+            badgeLabel = '🎾 Deporte & Biomecánica 3D';
+            badgeColor = '#fbbf24';
+            badgeBg = 'rgba(251,191,36,0.2)';
+            icon = '🎾';
         } else if (c.id === 'riel') {
             badgeLabel = '🧪 Lab 3D Liberado';
             badgeColor = '#34d399';
@@ -2429,6 +2474,8 @@ window.renderEnrolledCourses = renderEnrolledCourses;
     function generateUniqueStudentCode(courseId) {
         const prefixMap = {
             mecanica: 'MEC',
+            deducciones: 'DED',
+            pln: 'PLN',
             materiales: 'MAT',
             transformadores: 'TRA',
             ondas: 'OND',
@@ -2436,13 +2483,23 @@ window.renderEnrolledCourses = renderEnrolledCourses;
             electromagnetismo: 'ELM',
             ml: 'MLA',
             cuantica: 'CUA',
+            mcuantica: 'MCU',
+            moderna: 'MOD',
             retie: 'RET',
             squash_sim: 'SQU',
+            squash_arbitraje: 'ARB',
             finanzas: 'FIN',
             termo: 'TER',
             torneos: 'TOR',
             laboratorio: 'LAB',
             fluidos: 'FLU',
+            fisicoquimica: 'FQO',
+            optica: 'OPT',
+            solido: 'SOL',
+            arduino: 'ARD',
+            dispositivos: 'DIS',
+            faro: 'FAR',
+            diagnosticas: 'DIA',
             guias: 'GUI',
             ingles: 'ENG'
         };
@@ -3437,6 +3494,8 @@ window.renderEnrolledCourses = renderEnrolledCourses;
             const isPrivado = !!c.esPrivado;
             const isDiagnosticas = c.id === 'diagnosticas';
             const isFaro = c.id === 'faro';
+            const isDeducciones = c.id === 'deducciones';
+            const isPln = c.id === 'pln';
             const adminMode = isAdmin();
             const courseUnlocked = isPrivado ? adminMode : isCourseUnlocked(c.id);
             const likeInfo = getItemLikeInfo('curso-' + c.id);
@@ -3448,6 +3507,10 @@ window.renderEnrolledCourses = renderEnrolledCourses;
                 openBtnText = 'Ver Portal Institucional 🏛️';
             } else if (isFaro) {
                 openBtnText = courseUnlocked ? 'Abrir Manual de Taller 💡' : 'Vista Previa de Taller 👁️';
+            } else if (isDeducciones) {
+                openBtnText = courseUnlocked ? 'Abrir Tratado de Deducciones (Nueva Ventana ↗) 📐' : 'Vista Previa Deducciones 👁️';
+            } else if (isPln) {
+                openBtnText = courseUnlocked ? 'Abrir Curso PLN & LLMs (Nueva Ventana ↗) 🗣️' : 'Vista Previa PLN 👁️';
             } else if (isArbitraje) {
                 openBtnText = courseUnlocked ? 'Abrir Sistema de Arbitraje ⚖️' : 'Vista Previa del Arbitraje 👁️';
             } else if (isKids) {
@@ -9495,7 +9558,7 @@ window.renderEnrolledCourses = renderEnrolledCourses;
     // ==========================================================================
     const PAGE_CATALOG = [
         { id: 'inicio', title: 'Portal de Bienvenida', short: 'Inicio', icon: '🏠', order: 1 },
-        { id: 'cursos', title: 'Cursos & Laboratorios (34)', short: 'Cursos & Labs', icon: '🚀', order: 2 },
+        { id: 'cursos', title: 'Cursos & Laboratorios (36)', short: 'Cursos & Labs', icon: '🚀', order: 2 },
         { id: 'quizzes', title: 'Evaluaciones & Quizzes con PIN', short: 'Quizzes PIN', icon: '📝', order: 3 },
         { id: 'trivia', title: 'Gran Trivia de Física (1.000 preg.)', short: 'Trivia Física', icon: '🎯', order: 4 },
         { id: 'trivia-historia', title: 'Historia de la Física (500 preg.)', short: 'Historia Física', icon: '📜', order: 5 },

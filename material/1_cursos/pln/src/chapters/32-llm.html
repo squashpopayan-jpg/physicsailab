@@ -1,0 +1,107 @@
+<template class="chapter-src" data-id="llm" data-num="32" data-title="Grandes modelos de lenguaje: uso, recuperación y evaluación" data-part="Parte VII · Redes y modelos grandes" data-short="De predecir palabras a seguir instrucciones; ajuste fino y alineamiento (RLHF, DPO); decodificación (voraz, temperatura, top-k, top-p); alucinaciones y recuperación (RAG); BLEU, ROUGE y límites de la evaluación">
+<p class="lead">Un modelo de lenguaje preentrenado solo sabe una cosa: continuar un texto de la forma más plausible. Un <i>asistente</i> es otra cosa: obedece, responde y rechaza. Entre ambos hay dos fases de entrenamiento y un conjunto de técnicas de uso que se estudian en este capítulo: cómo se elige cada palabra al generar, cómo se le da al modelo conocimiento actual y cómo se mide si lo hace bien.</p>
+
+<section>
+<h2>De predecir la palabra siguiente a seguir instrucciones</h2>
+<p>El camino típico de un modelo actual tiene tres etapas:</p>
+<ol>
+<li><b>Preentrenamiento</b> (capítulo 31): predecir la palabra siguiente sobre billones de tokens de texto. El modelo aprende gramática, hechos y estilos, pero también cómo suena un foro, un error o una mentira: simplemente continúa.</li>
+<li><b>Ajuste fino con instrucciones</b> (<i>instruction tuning</i>, <i>SFT</i>): se entrena con miles o cientos de miles de pares «instrucción → respuesta deseada», escritos o curados por personas. Convierte al continuador de texto en un modelo que sigue órdenes («resume esto», «traduce», «escribe una función»).</li>
+<li><b>Alineamiento con preferencias</b>: se entrena un <b>modelo de recompensa</b> con comparaciones humanas («la respuesta A es mejor que la B») y se optimiza el modelo de lenguaje para maximizar esa recompensa, sin alejarse demasiado del modelo de partida (aprendizaje por refuerzo con retroalimentación humana, RLHF; Ouyang y otros, 2022). Alternativas más simples, como la <b>optimización directa de preferencias</b> (DPO), obtienen un efecto parecido sin el paso de refuerzo explícito.</li>
+</ol>
+<p>El resultado sigue siendo un modelo que predice palabras, ahora condicionado por una instrucción. Todo lo que hace pasa por el mismo mecanismo de generar, palabra a palabra, con una distribución de probabilidad, de modo que la forma de <i>elegir</i> cada palabra importa mucho.</p>
+</section>
+
+<section>
+<h2>Generar: la elección de cada palabra</h2>
+<p>En cada paso, el modelo da una distribución \(P(w\mid\text{contexto})\) sobre todo el vocabulario. Las estrategias de decodificación son:</p>
+<ul>
+<li><b>Voraz</b>: tomar siempre la más probable. Es determinista, pero produce texto repetitivo y soso, y cae en bucles.</li>
+<li><b>Muestreo con temperatura</b>: se elige al azar según \(P_T(w)\propto P(w)^{1/T}\). Con \(T<1\) la distribución se afila (más conservadora); con \(T>1\) se aplana (más creativa y más propensa a incoherencias). \(T\to0\) equivale a la decodificación voraz.</li>
+<li><b>Top-k</b> (Fan y otros, 2018): se muestrea solo entre las \(k\) palabras más probables, renormalizando. Corta la cola de palabras absurdas.</li>
+<li><b>Top-p o de núcleo</b> (Holtzman y otros, 2020): se muestrea entre el conjunto más pequeño cuya probabilidad acumulada alcanza \(p\) (por ejemplo 0,9). Se adapta: pocas candidatas cuando el modelo está seguro, muchas cuando duda.</li>
+<li><b>Búsqueda por haz</b> (capítulo 29): maximiza la probabilidad de la secuencia completa. Va bien en traducción; en texto abierto da frases genéricas.</li>
+</ul>
+<div class="sim" data-sim="decodificacion" data-title="Probar estrategias de decodificación con un modelo de lenguaje real"></div>
+<div class="sim-guide"><ul>
+<li>Con «el presidente del» y la estrategia voraz solo queda una candidata (la más probable, «gobierno»); las cinco frases salen idénticas, y además la decodificación voraz acaba en un bucle («… de el presidente del gobierno en el mercado de valores de conductividad del orden de el presidente del gobierno…»). Con muestreo y T = 1 aparecen otras continuaciones y las frases difieren.</li>
+<li>Suba la temperatura a 2: la cola de palabras raras gana peso y las frases se vuelven incoherentes. Bájela a 0,3: casi voraz.</li>
+<li>Con top-k (k = 10) y top-p (p = 0,9) se recorta la cola: la mayoría de las incoherencias desaparece sin perder variedad. Observe cuántas candidatas quedan en cada contexto («Palabras candidatas que quedan»): con top-p cambia según lo seguro que esté el modelo.</li>
+<li>La entropía de la distribución original mide la incertidumbre del modelo en ese contexto. Cuanto mayor, más importante es la estrategia.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Alucinaciones y recuperación aumentada (RAG)</h2>
+<p>Un modelo de lenguaje optimiza lo <i>plausible</i>, no lo verdadero. Puede producir texto fluido con hechos inventados, fechas erróneas o referencias inexistentes: una <b>alucinación</b>. Además, su conocimiento termina en la fecha de su entrenamiento y no incluye los documentos privados del usuario. La <b>generación aumentada con recuperación</b> (<i>retrieval-augmented generation</i>, RAG; Lewis y otros, 2020) lo mitiga:</p>
+<ol>
+<li>Se divide una colección de documentos en pasajes y se indexa (con TF-IDF o BM25 del capítulo 24, o con embeddings densos del 26).</li>
+<li>Para cada pregunta se <b>recuperan</b> los pasajes más cercanos.</li>
+<li>Se pegan en el mensaje del modelo con la instrucción de responder usando solo ese contexto y citar la fuente.</li>
+</ol>
+<p>El modelo ya no tiene que recordar el dato, solo leerlo. La calidad depende de la recuperación: si el pasaje correcto no llega al contexto, el modelo inventa o no responde. Por eso la recuperación se evalúa por separado (¿está el pasaje correcto entre los \(k\) primeros?).</p>
+<div class="sim" data-sim="rag-mini" data-title="Recuperar pasajes y construir el mensaje para un modelo"></div>
+<div class="sim-guide"><ul>
+<li>Con la pregunta de ejemplo, los pasajes recuperados mezclan temas: el primero habla de «economía» (la palabra más rara de la pregunta, de mayor peso TF-IDF) y los siguientes, del presidente y del gobierno. La recuperación no entiende la pregunta: solo pondera palabras. Cuanto más específicos los términos, mejor se recupera.</li>
+<li>Pruebe una pregunta con palabras que no están en el corpus, como «criptomoneda blockchain»: no hay pasajes con coseno positivo y el mensaje lo dice. Un sistema RAG bien hecho debe decir «no lo sé» en ese caso en vez de inventar. (Con «recetas de cocina», en cambio, aparece una frase sobre una cocina de bar: coincide la palabra, no la intención.)</li>
+<li>Suba k: más pasajes dan más cobertura, pero también más ruido y más longitud (coste, y el modelo puede distraerse con pasajes irrelevantes).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Evaluar lo que se genera</h2>
+<p>No hay una única respuesta correcta para una traducción, un resumen o una respuesta de chat. Se usan tres familias de medidas:</p>
+<ul>
+<li><b>Solapamiento de n-gramas con referencias</b>: <b>BLEU</b> (Papineni y otros, 2002), de la traducción automática, mide la <i>precisión</i> de n-gramas de la candidata respecto a las referencias, con una penalización por brevedad: \(\mathrm{BLEU}=\mathrm{BP}\cdot\exp\bigl(\tfrac14\sum_{n=1}^{4}\log p_n\bigr)\), \(\mathrm{BP}=\min(1,e^{1-r/c})\). <b>ROUGE</b> (Lin, 2004), del resumen, mide la <i>cobertura</i> (ROUGE-1 y -2 de palabras y pares; ROUGE-L, la subsecuencia común más larga). <b>chrF</b> hace lo mismo con n-gramas de caracteres, que funciona mejor con lenguas de morfología rica.</li>
+<li><b>Similitud semántica</b>: BERTScore y COMET comparan los vectores de las palabras o de las frases (capítulos 26 y 31), de modo que una paráfrasis puntúa alto aunque no comparta palabras.</li>
+<li><b>Evaluación humana y por modelos</b>: personas, o un modelo de lenguaje potente que actúa de juez (<i>LLM-as-a-judge</i>), puntúan la calidad, la veracidad y la utilidad. Es la más fiable y la más cara; las pruebas de comprensión y razonamiento (MMLU y similares) se evalúan por exactitud.</li>
+</ul>
+<div class="sim" data-sim="bleu-rouge" data-title="BLEU y ROUGE de una candidata frente a una referencia"></div>
+<div class="sim-guide"><ul>
+<li>«Idéntica»: BLEU 100 y todos los ROUGE a 1. «Reordenada» (voz pasiva): se conservan casi todas las palabras pero se rompen muchos pares; BLEU baja a 57,1, ROUGE-1 sigue en 0,82 y ROUGE-L cae a 0,64.</li>
+<li>«Sinónimos»: el sentido es el mismo, pero solo comparten «el», «económico», «para», «el»: puntuaciones bajas. Ninguna medida de n-gramas entiende los sinónimos.</li>
+<li>«Demasiado corta»: la precisión es perfecta pero la penalización por brevedad la hunde (BLEU 26,0). «Repetición»: «país» seis veces acierta en la precisión de unigramas solo una vez gracias al recorte (cada palabra se cuenta como mucho las veces que está en la referencia).</li>
+</ul></div>
+<div class="box py"><p>El programa calcula BLEU, chrF y ROUGE con <code>sacrebleu</code> y <code>rouge-score</code> sobre cinco candidatas; compara la recuperación TF-IDF con BM25 sobre 300 consultas; y mide, para seis estrategias de decodificación con un modelo de bigramas, la longitud, la probabilidad media y la diversidad del texto generado.</p>
+<div class="py" data-py="32-llm"></div></div>
+<div class="box read"><ul>
+<li><b>Medidas</b> (referencia «el gobierno anunció una nueva política económica para el país»): la candidata idéntica da BLEU 100 y chrF 100; la <i>reordenada</i> (voz pasiva), BLEU 57,1, chrF 84,9 y ROUGE-1/-2/-L de 0,818/0,700/0,636; los <i>sinónimos</i>, BLEU 5,0, chrF 30,2 y ROUGE-1 0,200: el sentido es el mismo y la puntuación es casi la de un texto no relacionado; la <i>demasiado corta</i>, BLEU 26,0 pese a que todo lo que dice es correcto, por la penalización de brevedad; la <i>repetición</i>, BLEU 4,2.</li>
+<li><b>Recuperación</b> (300 consultas de cinco palabras tomadas de oraciones del corpus de 2.400): TF-IDF con coseno acierta la oración de origen en primer lugar el 95,3 % de las veces (MRR 0,970); BM25, el 98,0 % (MRR 0,987); ambos la tienen entre las cinco primeras el 99,7 %. BM25 gana, como se espera, aunque con consultas que son un fragmento exacto la tarea es fácil.</li>
+<li><b>Decodificación</b> (bigramas, 300 frases por estrategia): la voraz da siempre la misma frase corta (distintas-1 de 0,003 sobre las 300). El muestreo con T = 0,5 da frases de 9 palabras con una probabilidad media de −4,20 (log por palabra) y diversidad moderada; con T = 1 y 1,5 las frases son largas (19 palabras), muy diversas (distintas-2 de 0,991 y 1,000) y de probabilidad baja (−7,8 y −8,2): coherencia más pobre. Top-p con 0,9 se parece al muestreo con T = 1 (−7,71 frente a −7,82) y el top-k con k = 10 genera frases cortas y probables (−3,55). Es el compromiso entre fiabilidad y variedad: ninguna estrategia gana en todo.</li>
+<li>El curso valida su BLEU (de corpus con una y dos referencias, con y sin suavizado, y de oración) contra <code>sacrebleu</code>, y ROUGE-1, -2 y -L contra <code>rouge-score</code> (apéndice de validación).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Asistente = preentrenamiento + ajuste con instrucciones + alineamiento con preferencias (RLHF o DPO).</li>
+<li>Decodificación: voraz, temperatura, top-k, top-p, haz. La temperatura y el recorte controlan el equilibrio entre fiabilidad y variedad.</li>
+<li>Las alucinaciones surgen de optimizar lo plausible; RAG da al modelo pasajes recuperados para que responda con fuentes.</li>
+<li>BLEU (precisión), ROUGE (cobertura) y chrF miden solapamiento; BERTScore/COMET, similitud semántica; los humanos y los jueces automáticos, la calidad global.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Una distribución sobre cuatro palabras es (0,5; 0,3; 0,15; 0,05). Aplique top-p con p = 0,8 y renormalice.
+<details><summary>Respuesta</summary><p>El conjunto más pequeño cuya suma alcanza 0,8 es {0,5; 0,3} (suma 0,8). Renormalizado: 0,625 y 0,375.</p></details></li>
+<li><span class="lvl">Básico</span>Con T = 0,5, ¿cómo cambian las probabilidades (0,6; 0,4)?
+<details><summary>Respuesta</summary><p>P^(1/T) = P²: (0,36; 0,16), que normalizado da (0,692; 0,308): la más probable gana peso.</p></details></li>
+<li><span class="lvl">Intermedio</span>Una candidata de 8 palabras tiene 6 unigramas y 3 bigramas correctos (7 bigramas posibles); la referencia tiene 10 palabras. Calcule la precisión de unigramas, la de bigramas y la penalización por brevedad.
+<details><summary>Respuesta</summary><p>p₁ = 6/8 = 0,75; p₂ = 3/7 = 0,43; BP = exp(1 − 10/8) = exp(−0,25) = 0,779.</p></details></li>
+<li><span class="lvl">Intermedio</span>Una referencia de 12 palabras y una candidata de 10 comparten 6 palabras. Calcule la precisión, la cobertura y F1 de ROUGE-1.
+<details><summary>Respuesta</summary><p>P = 6/10 = 0,6; R = 6/12 = 0,5; F1 = 2·0,6·0,5/(0,6 + 0,5) = 0,545.</p></details></li>
+<li><span class="lvl">Avanzado</span>Un sistema RAG responde mal a una pregunta. Describa cómo averiguar si el fallo está en la recuperación o en la generación.
+<details><summary>Respuesta</summary><p>Revisar los pasajes recuperados: si el pasaje con la respuesta no está entre los k primeros, el fallo es de recuperación (se arregla con mejores índices, embeddings, consultas reescritas o más k). Si el pasaje está en el contexto y el modelo no lo usa o lo contradice, el fallo es de generación (mejores instrucciones, menos pasajes irrelevantes, un modelo más fiable, verificación de las citas).</p></details></li>
+</ol>
+<h3>Autoevaluación</h3>
+<div class="sim" data-sim="quiz" data-cap="llm" data-title="Autoevaluación del capítulo 32"></div>
+<div class="box links"><ul>
+<li><a href="https://arxiv.org/abs/2203.02155">Ouyang y otros (2022) — Training language models to follow instructions with human feedback</a><small>InstructGPT: ajuste con instrucciones y RLHF.</small></li>
+<li><a href="https://arxiv.org/abs/2305.18290">Rafailov y otros (2023) — Direct preference optimization</a><small>Alineamiento con preferencias sin aprendizaje por refuerzo explícito.</small></li>
+<li><a href="https://arxiv.org/abs/1904.09751">Holtzman y otros (2020) — The curious case of neural text degeneration</a><small>Muestreo de núcleo (top-p) y por qué la búsqueda de máxima probabilidad da texto pobre.</small></li>
+<li><a href="https://arxiv.org/abs/2005.11401">Lewis y otros (2020) — Retrieval-augmented generation for knowledge-intensive NLP tasks</a><small>El artículo que da nombre a RAG.</small></li>
+<li><a href="https://aclanthology.org/P02-1040/">Papineni y otros (2002) — BLEU</a><small>La medida original de traducción automática.</small></li>
+<li><a href="https://aclanthology.org/W04-1013/">Lin (2004) — ROUGE</a><small>Medidas de evaluación automática de resúmenes.</small></li>
+<li><a href="https://github.com/mjpost/sacrebleu">sacrebleu</a><small>La biblioteca de referencia para calcular BLEU de forma reproducible.</small></li>
+</ul></div>
+</section>
+</template>

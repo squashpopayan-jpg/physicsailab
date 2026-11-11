@@ -1,0 +1,87 @@
+<template class="chapter-src" data-id="parsing" data-num="14" data-title="Análisis sintáctico: descendente, ascendente, CKY y Earley" data-part="Parte IV · Sintaxis" data-short="Búsqueda descendente y ascendente con retroceso; el problema de la recursión izquierda; programación dinámica con la tabla de CKY y forma normal de Chomsky; Earley; la ambigüedad compartida en la tabla">
+<p class="lead">Dada una gramática y una oración, analizar es encontrar sus árboles. Se puede buscar de arriba hacia abajo (partir de S y predecir), de abajo hacia arriba (partir de las palabras y agrupar), o llenar una tabla que guarda cada subproblema una sola vez. Las dos primeras estrategias, sencillas, se estrellan contra la ambigüedad; la tercera, la programación dinámica, es la que hace práctico el análisis sintáctico.</p>
+
+<section>
+<h2>Dos estrategias de búsqueda</h2>
+<p>Las estrategias clásicas con gramáticas libres de contexto se llaman por la dirección en que recorren el árbol:</p>
+<ul>
+<li><b>Descendente</b> (<i>top-down</i>, dirigido por objetivos): parte del símbolo inicial S y expande las reglas, de izquierda a derecha, hasta producir las palabras de la oración. Nunca construye un constituyente que no pueda formar parte de una S, pero explora árboles que ni siquiera casan con las palabras.</li>
+<li><b>Ascendente</b> (<i>bottom-up</i>, dirigido por los datos): parte de las palabras, las etiqueta y va reduciendo secuencias a constituyentes con las reglas, hasta llegar a S. Solo construye lo que está respaldado por las palabras, pero produce constituyentes que no llegarán a ninguna S.</li>
+</ul>
+<p>Con una gramática ambigua o de cobertura amplia ambas estrategias, implementadas con <b>retroceso</b> (probar y deshacer), repiten una y otra vez el mismo trabajo: reconstruyen el mismo sintagma en cada análisis que lo contiene. Además el descendente tiene un defecto de diseño: la <b>recursión por la izquierda</b>. Con la regla \(\text{SN}\to\text{SN SP}\), predecir un SN es predecir primero un SN, y así sin parar.</p>
+<div class="box warn"><p>NLTK lo muestra con claridad: el analizador descendente con la gramática que tiene <code>SN -&gt; SN SP</code> no termina (agota su límite de tiempo), mientras que con una gramática equivalente sin recursión por la izquierda sí. Las gramáticas reales se reescriben para eliminarla, o se usan analizadores que no la sufren: los ascendentes, CKY y Earley.</p></div>
+</section>
+
+<section>
+<h2>Programación dinámica: el algoritmo CKY</h2>
+<p>La idea es guardar en una tabla las soluciones de los subproblemas. El subproblema es: «¿qué constituyentes abarcan las palabras de la posición \(i\) a la \(j\)?». El algoritmo de Cocke, Kasami y Younger exige una gramática en <b>forma normal de Chomsky</b> (reglas \(A\to B\,C\) o \(A\to w\)). Toda gramática libre de contexto se convierte a esa forma sin perder poder expresivo: las reglas que mezclan terminales y no terminales introducen símbolos nuevos, las unitarias \(A\to B\) se absorben, y las reglas con más de dos símbolos a la derecha se parten en binarias con símbolos auxiliares.</p>
+<div class="eq key" data-name="Recurrencia de CKY">\[T[i,j]=\{A\;:\;A\to B\,C,\ \ B\in T[i,k],\ C\in T[k,j],\ \ i\lt k\lt j\},\qquad T[i,i+1]=\{A:A\to w_{i+1}\}\]</div>
+<p>Se llena de las celdas cortas a las largas. La oración es gramatical si S está en \(T[0,n]\). Si cada símbolo guarda <b>punteros</b> a las dos celdas de las que proviene y se permite que un mismo símbolo tenga varias derivaciones, la tabla contiene todos los árboles: devolver uno consiste en seguir los punteros. El costo es \(O(n^3\,|G|)\): \(O(n^2)\) celdas, \(O(n)\) puntos de partición en cada una y las reglas de la gramática.</p>
+<div class="sim" data-sim="cky" data-title="La tabla de CKY de una oración"></div>
+<div class="sim-guide"><ul>
+<li>Mueva «Longitud de span calculada» para ver cómo se llena: primero las palabras (spans de 1), luego pares, y así hasta la celda de la esquina superior derecha, que contiene S.</li>
+<li>En «yo vi un elefante en mi pijama» la celda [0, 7] guarda S con superíndice 2: dos derivaciones, los dos análisis del chiste de Groucho. La tabla los guarda juntos.</li>
+<li>Los símbolos auxiliares de la binarización no se muestran. Cada símbolo aparece una sola vez por celda aunque tenga muchas derivaciones: ahí está el ahorro.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El algoritmo de Earley</h2>
+<p>El algoritmo de Earley (1970) analiza <b>de izquierda a derecha</b> sin exigir forma normal. Mantiene, para cada posición, un conjunto de <i>elementos</i> \([A\to\alpha\bullet\beta,\,i]\): una regla parcialmente reconocida (el punto separa lo ya visto de lo que falta) y la posición donde empezó. Tiene tres operaciones:</p>
+<ul>
+<li><b>Predicción</b>: si tras el punto hay un no terminal \(B\), se añaden todas las reglas de \(B\) con el punto al principio.</li>
+<li><b>Escáner</b>: si tras el punto hay una palabra y coincide con la siguiente de la entrada, el punto avanza.</li>
+<li><b>Completado</b>: si una regla llega al final, se avanza el punto en los elementos que esperaban ese constituyente.</li>
+</ul>
+<p>Combina lo mejor de ambas estrategias (predice de arriba hacia abajo, completa de abajo hacia arriba), funciona con recursión por la izquierda y tiene el mismo \(O(n^3)\) en el peor caso, que baja a \(O(n^2)\) con gramáticas no ambiguas y a \(O(n)\) en muchas gramáticas de lenguajes de programación.</p>
+</section>
+
+<section>
+<h2>Comparación de las cuatro estrategias</h2>
+<div class="sim" data-sim="comparar-analizadores" data-title="Cuánto trabaja cada analizador cuando crece la ambigüedad"></div>
+<div class="sim-guide"><ul>
+<li>Se analiza «el niño ve un gato» seguido de \(n\) veces «con un telescopio». Los análisis crecen como Catalan: 1, 2, 5, 14.</li>
+<li>Los pasos del analizador ascendente con retroceso se multiplican por unos 15 con cada sintagma preposicional (259, 4.089, 63.531, 986.127), porque rehace el trabajo en cada árbol. Con CKY y Earley el trabajo crece de forma suave (18, 31, 50, 77 combinaciones; 160, 234, 313, 397 elementos de Earley).</li>
+<li>El descendente se evalúa con la gramática sin recursión por la izquierda, que es otra gramática (tiene \(n+1\) análisis). Aun así hace cientos de expansiones para una oración corta.</li>
+<li>Los números de análisis de CKY, del ascendente y de Earley (reconocimiento) coinciden con los de NLTK en 11 oraciones (apéndice de validación).</li>
+</ul></div>
+<div class="box py"><p>El programa usa los analizadores de NLTK sobre una oración con dos sintagmas preposicionales, muestra el fallo del descendente con recursión izquierda y cuenta los arcos de la tabla al crecer la ambigüedad.</p>
+<div class="py" data-py="14-analizadores"></div></div>
+<div class="box read"><ul>
+<li><b>Recursión izquierda</b>: el descendente agota su límite de tiempo con \(\text{SN}\to\text{SN SP}\); con la gramática reescrita termina y da 3 análisis.</li>
+<li><b>Tabla</b>: el analizador ascendente genera 154 arcos, el de tabla de gráfico 106 y Earley 104, y los tres hallan los mismos 5 análisis: Earley predice menos de lo que el ascendente construye en vano.</li>
+<li><b>Catalan sin explosión</b>: con 1 a 6 sintagmas preposicionales los análisis son 2, 5, 14, 42, 132 y 429, mientras los arcos de la tabla solo crecen de 67 a 352. La tabla representa un número exponencial de árboles en espacio polinómico.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Descendente: de S a las palabras; ascendente: de las palabras a S; ambos con retroceso rehacen trabajo y el descendente falla con recursión izquierda.</li>
+<li>CKY llena una tabla \(T[i,j]\) con gramática en forma normal de Chomsky en \(O(n^3|G|)\) y comparte subárboles.</li>
+<li>Con punteros, la tabla guarda todos los análisis; elegir uno es otro problema (capítulo 17).</li>
+<li>Earley analiza de izquierda a derecha con predicción, escáner y completado, sin forma normal.</li>
+<li>La programación dinámica convierte un número exponencial de árboles en un cálculo polinómico.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Convierta \(\text{VP}\to\text{V NP PP}\) a forma normal de Chomsky.
+<details><summary>Respuesta</summary><p>\(\text{VP}\to\text{V X}_1\) y \(\text{X}_1\to\text{NP PP}\).</p></details></li>
+<li><span class="lvl">Básico</span>¿Por qué CKY solo necesita celdas \([i,j]\) con \(i\lt j\)?
+<details><summary>Respuesta</summary><p>Cada celda representa un span no vacío de palabras de la \(i+1\) a la \(j\): hay \(n(n+1)/2\).</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Cuántas celdas tiene la tabla de una oración de 7 palabras?
+<details><summary>Respuesta</summary><p>7·8/2 = 28.</p></details></li>
+<li><span class="lvl">Intermedio</span>Explique por qué la recursión por la izquierda no afecta a CKY ni a Earley.
+<details><summary>Respuesta</summary><p>CKY es ascendente por spans: nunca predice, solo combina celdas ya calculadas más cortas. Earley añade cada elemento una sola vez al conjunto y comprueba duplicados, de modo que la predicción repetida de \(\text{SN}\to\bullet\text{SN SP}\) no genera nada nuevo.</p></details></li>
+<li><span class="lvl">Avanzado</span>La tabla de CKY de una oración de 20 palabras con una gramática de 1.000 reglas binarias. Estime el número máximo de combinaciones probadas.
+<details><summary>Respuesta</summary><p>El número de divisiones (celda, punto de partición) es \(\binom{n+1}{3}=\binom{21}{3}=1.330\). Multiplicado por 1.000 reglas da del orden de 1,3 millones de comprobaciones: trivial para un ordenador, y muy lejos de los miles de millones de árboles que algunas oraciones ambiguas de 20 palabras pueden tener (\(C_{19}\approx1{,}8\times10^{9}\)).</p></details></li>
+</ol>
+<h3>Autoevaluación</h3>
+<div class="sim" data-sim="quiz" data-cap="parsing" data-title="Autoevaluación del capítulo 14"></div>
+<div class="box links"><ul>
+<li><a href="https://doi.org/10.1145/362007.362035">Earley (1970) — An efficient context-free parsing algorithm</a><small>El artículo original.</small></li>
+<li><a href="https://www.nltk.org/api/nltk.parse.html">NLTK — módulo nltk.parse</a><small>Analizadores descendente, ascendente, de gráfico y Earley, con la implementación usada en el programa.</small></li>
+<li><a href="https://web.stanford.edu/~jurafsky/slp3/17.pdf">Jurafsky y Martin — cap. 17</a><small>CKY, forma normal de Chomsky y evaluación.</small></li>
+<li><a href="https://doi.org/10.1016/S0019-9958(67)80007-X">Younger (1967) — Recognition and parsing of context-free languages in time n³</a><small>Una de las descripciones originales del algoritmo CKY.</small></li>
+</ul></div>
+</section>
+</template>

@@ -1,0 +1,100 @@
+<template class="chapter-src" data-id="similitud" data-num="23" data-title="Similitud entre palabras" data-part="Parte V · El significado" data-short="Similitud frente a relación; medidas con tesauro (camino, Wu-Palmer, Resnik, Lin); hipótesis distribucional; matriz palabra–contexto; PMI positivo y coseno; evaluación">
+<p class="lead">«Perro» se parece más a «gato» que a «coche»; «presidente» se parece a «ministro» más que a «manzana». Casi toda tarea de PLN se apoya, de forma explícita o escondida, en poder medir esos parecidos: buscar documentos, agrupar, recomendar, traducir, completar frases. Hay dos grandes maneras de medirlos: mirar la <b>jerarquía</b> que construyó un lingüista (WordNet) o mirar los <b>contextos</b> en que la palabra aparece en el texto. La segunda es el origen de los <i>embeddings</i>.</p>
+
+<section>
+<h2>Similitud y relación</h2>
+<p>Conviene distinguir dos nociones: <b>similitud</b> (<i>taza</i> y <i>vaso</i>: cosas del mismo tipo, que cumplen funciones parecidas) y <b>relación</b> (<i>taza</i> y <i>café</i>: no se parecen, pero van juntas). Las medidas de jerarquía miden sobre todo similitud; las distribucionales mezclan ambas, y por eso conviene decir qué se evalúa. Para validar una medida se compara con juicios humanos de pares de palabras (WordSim-353, SimLex-999) y se mide la correlación de Spearman entre sus puntuaciones y las de la medida.</p>
+</section>
+
+<section>
+<h2>Con un tesauro: la jerarquía de hiperónimos</h2>
+<p>Si dos conceptos están cerca en la jerarquía «es un», se parecen. Las medidas más usadas:</p>
+<ul>
+<li><b>Camino</b>: \(\mathrm{sim}_{\text{camino}}(a,b)=\dfrac{1}{1+\text{arcos del camino más corto entre }a\text{ y }b}\). Todos los arcos pesan igual.</li>
+<li><b>Wu-Palmer</b>: tiene en cuenta la profundidad del subsumidor más bajo (el hiperónimo común más específico, LCS): \(\mathrm{sim}_{WP}(a,b)=\dfrac{2\,\mathrm{prof}(\mathrm{LCS})}{\mathrm{prof}(a)+\mathrm{prof}(b)}\). Dos conceptos que solo se encuentran cerca de la raíz se parecen poco.</li>
+<li><b>Contenido de información</b> (Resnik, 1995; Lin, 1998): se estima \(IC(c)=-\log P(c)\) con las frecuencias del concepto en un corpus; los conceptos generales (animal) informan poco, los específicos (cánido) más. Resnik usa \(IC(\mathrm{LCS})\); Lin lo normaliza: \(\mathrm{sim}_{Lin}=\dfrac{2\,IC(\mathrm{LCS})}{IC(a)+IC(b)}\).</li>
+</ul>
+<p>Cuando cada palabra tiene varios sentidos, se calcula la similitud de todas las parejas de sentidos y se toma la mayor.</p>
+<div class="sim" data-sim="sim-tesauro" data-title="Similitud entre palabras con la jerarquía de WordNet"></div>
+<div class="sim-guide"><ul>
+<li>«Perro» y «gato» dan Wu-Palmer = 0,857 (mismos 0,857 que NLTK para <code>dog.n.01</code> y <code>cat.n.01</code>) y el subsumidor es «carnívoro». Cambie B a «coche» y la mejor pareja baja a 0,44 (con los primeros sentidos de NLTK, 0,40): solo se encuentran en conceptos muy generales («conjunto», «cosa»), a unos diez arcos.</li>
+<li>Pruebe «banco» frente a «dinero»: la mejor pareja de sentidos aparece arriba, y los demás sentidos de «banco» (asiento, bancal) quedan en filas más abajo con valores menores.</li>
+<li>Con «médico» y «hospital»: son cosas relacionadas pero distintas (persona frente a edificio), así que la medida da valores bajos: la jerarquía mide similitud, no relación.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Con el texto: semántica distribucional</h2>
+<p>Un tesauro hay que construirlo a mano, cubre mal las palabras nuevas y los dominios especializados y no existe en todos los idiomas. La alternativa es aprender el parecido del propio texto. La <b>hipótesis distribucional</b> (Harris, 1954; Firth, 1957: «conocerás una palabra por la compañía que mantiene») dice que las palabras que aparecen en contextos parecidos tienen significados parecidos. «Gobierno» y «ejecutivo» van con «ministro», «presidente», «decidió»…; «equipo» y «partido», con «ganó», «jugadores», «gol».</p>
+<h3>La matriz palabra–contexto</h3>
+<p>Se define un <b>contexto</b> (aquí, las palabras situadas a distancia ≤ 2 en la misma oración) y se cuenta cuántas veces coocurre cada palabra con cada contexto. Cada fila es el vector de una palabra. La matriz del curso se calcula sobre CESS-ESP completo: 400 palabras de contenido (filas) por 800 contextos (columnas), con 19.063 celdas no nulas y 55.722 pares de coocurrencia. Es pequeña y dispersa: casi todo son ceros.</p>
+<h3>De los conteos al PMI</h3>
+<p>Los conteos brutos están dominados por los contextos más frecuentes («de», «la», «que»), que aparecen con todo y no distinguen nada. Se prefiere la <b>información mutua puntual</b> (PMI): cuánto más a menudo coocurren de lo que se esperaría si fueran independientes.</p>
+<div class="eq key" data-name="PMI y PMI positivo">\[\mathrm{PMI}(w,c)=\log_2\frac{P(w,c)}{P(w)\,P(c)},\qquad \mathrm{PPMI}(w,c)=\max\bigl(\mathrm{PMI}(w,c),\,0\bigr)\]</div>
+<p>Se trunca a cero porque un PMI negativo («coocurren menos de lo esperable») es poco fiable con corpus finitos: con 0 coocurrencias el PMI es \(-\infty\). Las probabilidades salen de los conteos: \(P(w,c)=C(w,c)/N\), \(P(w)=\sum_c C(w,c)/N\), \(P(c)=\sum_w C(w,c)/N\). Los contextos poco frecuentes tienden a recibir PMI altos; una corrección habitual es suavizar \(P(c)\) elevándola a 0,75 (Levy y otros, 2015).</p>
+<h3>Coseno</h3>
+<p>El parecido entre dos palabras es el coseno del ángulo entre sus vectores, que no depende de su longitud (es decir, de lo frecuente que sea la palabra):</p>
+<div class="eq key" data-name="Similitud coseno">\[\cos(\mathbf v,\mathbf w)=\frac{\mathbf v\cdot\mathbf w}{\lVert\mathbf v\rVert\,\lVert\mathbf w\rVert}=\frac{\sum_i v_iw_i}{\sqrt{\sum_i v_i^2}\sqrt{\sum_i w_i^2}}\]</div>
+<div class="sim" data-sim="sim-distribucional" data-title="Vecinos más cercanos con vectores de coocurrencia"></div>
+<div class="sim-guide"><ul>
+<li>Con «gobierno» y PMI positivo, los vecinos son <i>parlamento</i> (0,26), <i>presidente</i>, <i>ministro</i>, <i>ejecutivo</i>: las palabras del mismo campo político. Es un resultado notable con solo 190.000 palabras de texto.</li>
+<li>Cambie a «Conteos»: ahora aparecen <i>pnv</i>, <i>psoe</i>, <i>precio</i> con cosenos de 0,91 o más. Los cosenos son altos para casi todo, porque los contextos más frecuentes dominan; el PMI los descuenta (con pares al azar, la media del coseno baja de 0,53 con conteos a 0,06 con PPMI).</li>
+<li>Elija «años»: sus vecinos son <i>días</i>, <i>meses</i>, <i>minutos</i>: unidades de tiempo, aunque «años» sea una forma plural y no haya lematización.</li>
+<li>Mire la tercera tabla («Comparar con»): muestra qué contextos concretos hacen parecidas a dos palabras. Con «gobierno» y «presidente» aparecen contextos como «propuesta», «anunció» o «cree», típicos de quien decide y comunica.</li>
+<li>Con palabras de pocos datos o muy polisémicas («partido», político o deportivo) los vecinos mezclan los dos sentidos: un solo vector por forma no distingue sentidos.</li>
+</ul></div>
+<div class="box py"><p>El programa calcula con NLTK cuatro medidas de tesauro sobre cinco pares (incluidas las dos que necesitan un corpus, Resnik y Lin, con las frecuencias del corpus Brown) y construye con NumPy la matriz de coocurrencia, el PPMI y los vecinos por coseno sobre CESS-ESP.</p>
+<div class="py" data-py="23-similitud"></div></div>
+<div class="box read"><ul>
+<li><b>Tesauro</b>: dog–cat obtiene camino 0,200, Wu-Palmer 0,857, Resnik 7,91 y Lin 0,877; dog–car, 0,077, 0,400, 1,53 y 0,185. Las cuatro medidas ordenan igual (perro–gato más parecidos que perro–coche), aunque con escalas distintas: Resnik no está entre 0 y 1.</li>
+<li><b>Matriz</b>: 400 × 800, 19.063 celdas no nulas, 55.722 pares. <b>Vecinos de «gobierno»</b>: parlamento (0,26), presidente (0,23), ministro (0,22), ejecutivo (0,19), grupo (0,18).</li>
+<li><b>Coseno</b>: gobierno–presidente 0,231 frente a gobierno–años 0,111. La diferencia es clara pero los valores son bajos: los vectores de 800 contextos con pocos datos son muy dispersos. Con mucho texto o con vectores densos (capítulo 26) el contraste sería mayor.</li>
+<li><b>Límite</b>: «partido» recibe vecinos mezclados (<i>día</i>, <i>debate</i>, <i>encuentro</i>, <i>psoe</i>): político y deportivo a la vez. Es la polisemia del capítulo 21 vista desde los vectores.</li>
+<li>El curso valida su PPMI, su coseno y sus vecinos más cercanos contra NumPy (apéndice de validación).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Comparación y siguiente paso</h2>
+<table class="mx" style="text-align:left"><thead><tr><th style="text-align:left"></th><th style="text-align:left">Con tesauro</th><th style="text-align:left">Distribucional</th></tr></thead><tbody>
+<tr><td style="text-align:left"><b>Fuente</b></td><td style="text-align:left;white-space:normal">Jerarquía hecha por lingüistas</td><td style="text-align:left;white-space:normal">Texto sin etiquetar</td></tr>
+<tr><td style="text-align:left"><b>Cobertura</b></td><td style="text-align:left;white-space:normal">Solo palabras del recurso, sin neologismos ni jerga</td><td style="text-align:left;white-space:normal">Cualquier palabra frecuente en el corpus</td></tr>
+<tr><td style="text-align:left"><b>Mide</b></td><td style="text-align:left;white-space:normal">Sobre todo similitud taxonómica</td><td style="text-align:left;white-space:normal">Similitud y relación mezcladas</td></tr>
+<tr><td style="text-align:left"><b>Sentidos</b></td><td style="text-align:left;white-space:normal">Por sentido (synset)</td><td style="text-align:left;white-space:normal">Un vector por forma (mezcla los sentidos)</td></tr>
+<tr><td style="text-align:left"><b>Verbos y adjetivos</b></td><td style="text-align:left;white-space:normal">Jerarquía menos profunda</td><td style="text-align:left;white-space:normal">Igual que los nombres</td></tr>
+</tbody></table>
+<p>Los vectores de coocurrencia son <b>largos y dispersos</b> (miles de dimensiones, casi todo ceros). El paso siguiente, que se verá en la Parte VI, es comprimirlos en vectores <b>densos</b> de unas cientos de dimensiones (por descomposición en valores singulares o con redes que predicen el contexto, como <i>word2vec</i>). Esos vectores densos, los <i>embeddings</i>, capturan además regularidades de tipo analogía («rey − hombre + mujer ≈ reina»), y son la entrada de casi todos los modelos modernos.</p>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Similitud (mismo tipo de cosa) no es lo mismo que relación (van juntas).</li>
+<li>Con tesauro: camino, Wu-Palmer, y con contenido de información, Resnik y Lin.</li>
+<li>Hipótesis distribucional: contextos parecidos, significados parecidos.</li>
+<li>Matriz palabra–contexto → PMI positivo → coseno; el PMI descuenta los contextos frecuentes.</li>
+<li>Los vectores de coocurrencia son dispersos y mezclan los sentidos; los vectores densos son el paso siguiente.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Dos sentidos están a 4 arcos en la jerarquía. ¿Cuánto vale su similitud por camino?
+<details><summary>Respuesta</summary><p>1/(1 + 4) = 0,2.</p></details></li>
+<li><span class="lvl">Básico</span>El subsumidor de dos synsets tiene profundidad 5 y cada uno tiene profundidad 7. Calcule Wu-Palmer.
+<details><summary>Respuesta</summary><p>2·5/(7 + 7) = 10/14 = 0,714.</p></details></li>
+<li><span class="lvl">Intermedio</span>P(w, c) = 0,01, P(w) = 0,1 y P(c) = 0,05. Calcule el PMI.
+<details><summary>Respuesta</summary><p>log₂(0,01/(0,1·0,05)) = log₂(2) = 1 bit: coocurren el doble de lo esperado.</p></details></li>
+<li><span class="lvl">Intermedio</span>Calcule el coseno de (1, 2, 0) y (2, 1, 1).
+<details><summary>Respuesta</summary><p>Producto escalar 1·2 + 2·1 + 0·1 = 4. Normas: √5 y √6. Coseno = 4/√30 = 0,730.</p></details></li>
+<li><span class="lvl">Avanzado</span>¿Por qué «partido» tiene vecinos mezclados en un modelo distribucional y qué dos soluciones hay?
+<details><summary>Respuesta</summary><p>Hay un solo vector por forma y la forma tiene varios sentidos (político, deportivo), de modo que el vector es una mezcla de los contextos de ambos. Soluciones: aprender un vector por sentido (agrupando los contextos) o usar representaciones contextuales que dan un vector distinto a cada ocurrencia (capítulo 31).</p></details></li>
+</ol>
+<h3>Autoevaluación</h3>
+<div class="sim" data-sim="quiz" data-cap="similitud" data-title="Autoevaluación del capítulo 23"></div>
+<div class="box links"><ul>
+<li><a href="https://web.stanford.edu/~jurafsky/slp3/">Jurafsky y Martin — Speech and Language Processing (3.ª ed.)</a><small>Capítulos de semántica vectorial y embeddings: matriz palabra–contexto, PMI, coseno y TF-IDF.</small></li>
+<li><a href="https://aclanthology.org/Q15-1016/">Levy, Goldberg y Dagan (2015) — Improving distributional similarity with lessons learned from word embeddings</a><small>El PMI con suavizado de contextos y su relación con los embeddings.</small></li>
+<li><a href="https://aclanthology.org/J15-4004/">Hill, Reichart y Korhonen (2015) — SimLex-999</a><small>El conjunto de evaluación que mide similitud y no relación.</small></li>
+<li><a href="https://www.nltk.org/howto/wordnet.html">NLTK — WordNet y medidas de similitud</a><small>path_similarity, wup_similarity, res_similarity y lin_similarity.</small></li>
+<li><a href="https://numpy.org/doc/stable/">NumPy — documentación</a><small>La biblioteca con la que el programa construye la matriz y los vecinos.</small></li>
+</ul></div>
+</section>
+</template>

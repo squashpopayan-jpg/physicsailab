@@ -24,7 +24,8 @@ const ids = {}; for (const m of sections.matchAll(/\sid="([^"]+)"/g)) { if (ids[
 for (const m of js.matchAll(/U\.\$\('#([A-Za-z0-9_-]+)'/g)) if (!ids[m[1]] && !['modal', 'modalTitle', 'modalBody', 'modalRow', 'themeBtn'].includes(m[1])) { console.warn('JS usa #' + m[1] + ' que no existe en el HTML'); problems++; }
 const shell = read(path.join(src, 'shell.html'));
 const page = shell.replace('{{CSS}}', () => css).replace('{{SECTIONS}}', () => sections).replace('{{LOGO}}', () => logo).replace('{{JS}}', () => js);
-const full = `<!doctype html>\n<html lang="es">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n<link rel="icon" href="${logo}">\n</head>\n<body>\n${page}\n</body>\n</html>\n`;
+const guardScripts = '<script src="/material/course-guard.js"></script>\n<script>if(typeof window.PhysicsAILabGuard===\'undefined\'){var s=document.createElement(\'script\');s.src=\'../../../course-guard.js\';document.head.appendChild(s);}</script>\n';
+const full = `<!doctype html>\n<html lang="es">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n<link rel="icon" href="${logo}">\n</head>\n<body>\n${page}\n${guardScripts}</body>\n</html>\n`;
 fs.mkdirSync(path.join(root, 'dist'), { recursive: true });
 fs.writeFileSync(path.join(root, 'dist', 'index.html'), full);
 fs.writeFileSync(path.join(root, 'dist', 'Simulador-Manu-Squash.html'), full);

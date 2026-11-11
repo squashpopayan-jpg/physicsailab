@@ -1,0 +1,235 @@
+<template class="chapter-src" data-id="biofisica" data-num="41" data-title="Biofísica: potenciales de membrana, cable neuronal, difusión, polímeros y ósmosis" data-part="Parte XII · Sistemas complejos y aplicados" data-short="Los potenciales de Nernst y de Goldman, la ecuación del cable de los axones, la difusión de Stokes–Einstein, la elasticidad entrópica del ADN y la presión osmótica">
+<p class="lead">La materia viva obedece las mismas leyes de la física, pero a escalas donde dominan la agitación térmica, la viscosidad y las fuerzas entrópicas. Cinco deducciones ilustran el método: la tensión eléctrica de una membrana celular sale del equilibrio de Boltzmann, la propagación pasiva en un axón de una ecuación de difusión, el movimiento de una proteína de la relación de Einstein, la elasticidad del ADN del recuento de configuraciones y la presión osmótica del potencial químico.</p>
+
+<deriv id="nernst-goldman" title="Los potenciales de membrana: ecuaciones de Nernst y de Goldman–Hodgkin–Katz" tags="Biofísica, Membranas">
+<goal>La diferencia de potencial eléctrico entre el interior y el exterior de una célula en función de las concentraciones iónicas y de la permeabilidad de la membrana a cada ion.</goal>
+<given>
+<g>Equilibrio de Boltzmann para un ion de carga \(ze\): la probabilidad relativa de encontrarlo en un lado y en el otro es \(e^{-ze\Delta V/kT}\).</g>
+<g>Campo eléctrico constante en la membrana (hipótesis de Goldman) y flujo de cada ion por electrodifusión (ley de Nernst–Planck); en reposo la corriente neta es cero.</g>
+</given>
+<step op="Equilibrio de un único ion permeable: las concentraciones a cada lado cumplen \(c_i/c_o=e^{-ze(V_i-V_o)/kT}\)">
+\[V_m=V_i-V_o=\frac{kT}{ze}\ln\frac{c_o}{c_i}\qquad(\text{Nernst}).\]
+<why>Es la condición de que el potencial electroquímico del ion sea igual dentro y fuera: el gradiente químico compensa el eléctrico.</why>
+</step>
+<step op="Flujo electrodifusivo de un ion monovalente a través de la membrana de espesor \(d\), con \(u=eV_m/kT\) (campo constante)">
+\[J=P\,u\,\frac{c_i-c_o\,e^{-u}}{1-e^{-u}},\qquad P=\frac{D}{d}\ \text{(permeabilidad)}.\]
+</step>
+<step op="Para un anión (carga −e) el mismo cálculo da \(J=Pu\,(c_ie^{-u}-c_o)/(1-e^{-u})\); la corriente neta es \(e\,(\sum J_\text{cat}-\sum J_\text{an})\) y se anula en reposo">
+\[\sum_\text{cat}P_k\left(c_{i,k}-c_{o,k}e^{-u}\right)-\sum_\text{an}P_a\left(c_{i,a}e^{-u}-c_{o,a}\right)=0.\]
+</step>
+<step op="Despejar \(e^{-u}\)">
+\[V_m=\frac{kT}e\ln\frac{P_K[K]_o+P_\text{Na}[\text{Na}]_o+P_\text{Cl}[\text{Cl}]_i}{P_K[K]_i+P_\text{Na}[\text{Na}]_i+P_\text{Cl}[\text{Cl}]_o}.\]
+</step>
+<result name="Ecuación de Goldman–Hodgkin–Katz">\[V_m=\frac{kT}e\ln\frac{P_K[K]_o+P_\text{Na}[\text{Na}]_o+P_\text{Cl}[\text{Cl}]_i}{P_K[K]_i+P_\text{Na}[\text{Na}]_i+P_\text{Cl}[\text{Cl}]_o},\qquad E_\text{ion}=\frac{kT}{ze}\ln\frac{c_o}{c_i}.\]</result>
+<vars>
+<v s="V_m" n="potencial de membrana" u="V"/>
+<v s="E_\text{ion}" n="potencial de Nernst" u="V"/>
+<v s="k" n="constante de Boltzmann" u="J K^-1"/>
+<v s="T" n="temperatura" u="K"/>
+<v s="e" n="carga elemental" u="C"/>
+<v s="z" n="valencia del ion" u="1"/>
+<v s="c_o,\,c_i" n="concentraciones exterior e interior" u="mol m^-3"/>
+<v s="P_K,\,P_\text{Na},\,P_\text{Cl}" n="permeabilidades de la membrana" u="m s^-1"/>
+<v s="u" n="potencial adimensional \(eV_m/kT\)" u="1"/>
+</vars>
+<effects>
+<e>A 37 °C \(kT/e=26.73\) mV. Neurona de mamífero ([K]=5/140 mM, [Na]=145/12, [Cl]=110/10): \(E_K=-89.06\) mV, \(E_\text{Na}=+66.60\) mV y \(E_\text{Cl}=-64.09\) mV. Con permeabilidades relativas \(P_K:P_\text{Na}:P_\text{Cl}=1:0.04:0.45\) el potencial de reposo es \(V_m=-67.33\) mV, cercano a \(E_K\) porque la membrana es sobre todo permeable al potasio.</e>
+<e>Durante un potencial de acción \(P_\text{Na}\) sube (≈ 20 veces \(P_K\)) y \(V_m\) se acerca a \(E_\text{Na}\) (positivo). Cada factor 10 en la relación de concentraciones de un ion monovalente desplaza \(E\) en \((kT/e)\ln10=61.5\) mV (a 37 °C).</e>
+</effects>
+<limits>
+<l>Dimensiones: \(kT/e\) es un voltaje y el argumento del logaritmo es adimensional. ✓</l>
+<l>Campo constante dentro de la membrana (valida para membranas finas y baja concentración iónica) y concentraciones uniformes a cada lado. Ignora el transporte activo (bomba Na⁺/K⁺-ATPasa), que mantiene los gradientes y aporta unos −3 mV al potencial real, y los iones divalentes (Ca²⁺).</l>
+</limits>
+<explore sim="bio-goldman" title="Potenciales de Nernst y de Goldman–Hodgkin–Katz"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (37 °C, neurona típica): \(kT/e=26.7267\) mV, \(E_K=-89.0587\) mV, \(E_\text{Na}=66.5982\) mV, \(E_\text{Cl}=-64.0877\) mV y \(V_m=-67.3262\) mV.</li>
+<li>Con \(P_\text{Na}/P_K\) en el eje (log): \(V_m\) pasa de \(\approx E_K\) a \(\approx E_\text{Na}\) cuando la permeabilidad al sodio domina.</li>
+</ul></div>
+</deriv>
+
+<deriv id="ecuacion-cable" title="La ecuación del cable: propagación pasiva en un axón" tags="Biofísica, Neuronas">
+<goal>Cómo decae a lo largo de un axón una perturbación de potencial aplicada en un punto, y cuáles son sus escalas de longitud y de tiempo.</goal>
+<given>
+<g>El axón es un cilindro de radio \(a\) con axoplasma de resistividad \(R_i\) y una membrana de resistencia específica \(R_m\) (Ω·cm²) y capacidad específica \(C_m\) (F/cm²) por unidad de área.</g>
+<g>Por unidad de longitud: resistencia axial \(r_i=R_i/\pi a^2\), resistencia de membrana \(r_m=R_m/2\pi a\) y capacidad \(c_m=2\pi aC_m\).</g>
+</given>
+<step op="Ley de Ohm para la corriente axial \(I_i\) entre dos puntos separados \(\mathrm dx\)">
+\[\frac{\partial V}{\partial x}=-r_iI_i.\]
+</step>
+<step op="Conservación de la corriente: la que se pierde por la membrana por unidad de longitud es resistiva más capacitiva">
+\[-\frac{\partial I_i}{\partial x}=\frac V{r_m}+c_m\frac{\partial V}{\partial t}.\]
+</step>
+<step op="Eliminar \(I_i\)">
+\[\lambda^2\frac{\partial^2V}{\partial x^2}=V+\tau\frac{\partial V}{\partial t},\qquad\lambda=\sqrt{\frac{r_m}{r_i}}=\sqrt{\frac{aR_m}{2R_i}},\quad\tau=r_mc_m=R_mC_m.\]
+</step>
+<step op="Estado estacionario con \(V(0)=V_0\): ecuación de segundo orden con solución que decae">
+\[\lambda^2V''=V\ \Longrightarrow\ V(x)=V_0\,e^{-x/\lambda}.\]
+</step>
+<result name="Ecuación del cable">\[\lambda^2\partial_x^2V=V+\tau\,\partial_tV,\qquad\lambda=\sqrt{\frac{aR_m}{2R_i}},\quad\tau=R_mC_m.\]</result>
+<vars>
+<v s="V" n="potencial de membrana respecto al reposo" u="V"/>
+<v s="\lambda" n="constante de longitud" u="m"/>
+<v s="\tau" n="constante de tiempo de la membrana" u="s"/>
+<v s="a" n="radio del axón" u="m"/>
+<v s="R_m" n="resistencia específica de la membrana" u="Ohm m^2"/>
+<v s="R_i" n="resistividad del axoplasma" u="Ohm m"/>
+<v s="C_m" n="capacidad específica de la membrana" u="F m^-2"/>
+<v s="x" n="distancia a lo largo del axón" u="m"/>
+</vars>
+<effects>
+<e>Axón gigante del calamar (\(a=238\) µm, \(R_m=1000\ \Omega\cdot\text{cm}^2\), \(R_i=35.4\ \Omega\cdot\text{cm}\), \(C_m=1\ \mu\text{F/cm}^2\)): \(\lambda=5.798\) mm, \(\tau=1.000\) ms y \(\lambda/\tau=5.80\) m/s. A \(x=1\) cm el potencial cae a \(0.178\,V_0\).</e>
+<e>\(\lambda\propto\sqrt a\): un axón cuatro veces más grueso conduce el doble de lejos. Por eso los invertebrados engrosan sus axones (calamar, \(a\sim0.5\) mm) y los vertebrados los aíslan con mielina (aumenta \(R_m\) y disminuye \(C_m\)); la propagación activa del potencial de acción regenera la señal y alcanza 100 m/s en fibras mielinizadas.</e>
+</effects>
+<limits>
+<l>Dimensiones: \(aR_m/R_i\) tiene unidades de \(\Omega\,\text{m}^2\cdot\text{m}/(\Omega\,\text{m})=\text{m}^2\). ✓</l>
+<l>Membrana pasiva (lineal) y cable infinito; el axón real tiene canales dependientes del voltaje que amplifican la señal (modelo de Hodgkin y Huxley), y las ramificaciones de las dendritas requieren condiciones de contorno adicionales.</l>
+</limits>
+<explore sim="bio-cable" title="Ecuación del cable: constante de longitud, constante de tiempo y decaimiento"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (calamar, \(x=5.8\) mm): \(\lambda=5.79792\) mm, \(\tau=1\) ms, \(V/V_0=0.3677\) (cercano a \(1/e\)) y \(\lambda/\tau=5.79792\) m/s.</li>
+<li>Con \(x\) en el eje: la tensión cae exponencialmente; con \(a\) en el eje (log–log): \(\lambda\propto\sqrt a\) (pendiente ½).</li>
+</ul></div>
+</deriv>
+
+<deriv id="stokes-einstein" title="La difusión de Stokes–Einstein y el tiempo de difusión en una célula" tags="Biofísica, Difusión">
+<goal>El coeficiente de difusión de una molécula o partícula en un fluido viscoso a partir de su tamaño, y cuánto tarda en recorrer una distancia dada.</goal>
+<given>
+<g>Una partícula esférica de radio \(r\) que se mueve lentamente en un fluido de viscosidad \(\eta\) sufre la fuerza de arrastre de Stokes \(F=6\pi\eta r\,v\).</g>
+<g>En equilibrio térmico, una distribución de partículas sometidas a una fuerza constante \(F\) tiene perfil de Boltzmann \(n\propto e^{Fx/kT}\) (se cancelan los flujos de deriva y de difusión).</g>
+</given>
+<step op="Flujo de deriva por la fuerza (velocidad límite \(v=F/\zeta\) con \(\zeta=6\pi\eta r\)) y flujo de difusión (ley de Fick)">
+\[J=nv-D\frac{\mathrm dn}{\mathrm dx}=\frac{nF}\zeta-D\frac{\mathrm dn}{\mathrm dx}.\]
+</step>
+<step op="Equilibrio: \(J=0\) con \(n\propto e^{Fx/kT}\), es decir \(\mathrm dn/\mathrm dx=Fn/kT\)">
+\[\frac F\zeta=D\,\frac F{kT}\ \Longrightarrow\ D=\frac{kT}\zeta\qquad(\text{relación de Einstein}).\]
+</step>
+<step op="Con el arrastre de Stokes">
+\[D=\frac{kT}{6\pi\eta r}.\]
+</step>
+<step op="Desplazamiento cuadrático medio de un paseo aleatorio (de la ecuación de difusión, en \(d\) dimensiones)">
+\[\langle x^2\rangle=2Dt\ (d=1),\qquad\langle r^2\rangle=6Dt\ (d=3)\ \Longrightarrow\ t=\frac{L^2}{2D}\ (\text{1D}).\]
+</step>
+<result name="Relación de Stokes–Einstein">\[D=\frac{kT}{6\pi\eta r},\qquad t=\frac{L^2}{2D}.\]</result>
+<vars>
+<v s="D" n="coeficiente de difusión" u="m^2 s^-1"/>
+<v s="k" n="constante de Boltzmann" u="J K^-1"/>
+<v s="T" n="temperatura" u="K"/>
+<v s="\eta" n="viscosidad dinámica" u="Pa s"/>
+<v s="r" n="radio hidrodinámico" u="m"/>
+<v s="\zeta" n="coeficiente de fricción" u="kg s^-1"/>
+<v s="L" n="distancia" u="m"/>
+<v s="F" n="fuerza" u="N"/>
+<v s="v" n="velocidad" u="m s^-1"/>
+<v s="t" n="tiempo" u="s"/>
+<v s="n" n="concentración" u="m^-3"/>
+</vars>
+<effects>
+<e>Agua a 25 °C (\(\eta=0.890\) mPa·s): una molécula de radio 0.5 nm tiene \(D=490.7\ \mu\text{m}^2/\text{s}\) y tarda 0.102 s en recorrer 10 µm (una dimensión); la glucosa (\(r=0.36\) nm, \(D=681.6\ \mu\text{m}^2/\text{s}\), valor medido ≈ 670) tarda 73.4 ms; una proteína como la lisozima (\(r=1.9\) nm, \(D=129.1\ \mu\text{m}^2/\text{s}\), medido ≈ 110) tarda 0.387 s.</e>
+<e>El tiempo crece con el cuadrado de la distancia: recorrer 1 mm por difusión tarda \(10^4\) veces más que 10 µm (unos 12 minutos para la glucosa); por eso las células grandes necesitan transporte activo, sistemas circulatorios o un tamaño pequeño. En un citoplasma 10 veces más viscoso, el tiempo se multiplica por 10.</e>
+</effects>
+<limits>
+<l>Dimensiones: \(kT/(6\pi\eta r)\) tiene unidades de \(\mathrm{J/(Pa\,s\,m)}=\mathrm{m^2/s}\). ✓</l>
+<l>El fluido se trata como un continuo (válido si \(r\) es mayor que el tamaño de las moléculas de agua); en el citoplasma abarrotado, la difusión es subdifusiva y la viscosidad efectiva depende del tamaño. Para moléculas pequeñas la fricción «de deslizamiento» da \(4\pi\eta r\) en lugar de \(6\pi\eta r\).</l>
+</limits>
+<explore sim="bio-difusion" title="Difusión de Stokes–Einstein: coeficiente, fricción y tiempo de difusión"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (\(r=0.5\) nm, agua a 25 °C, \(L=10\) µm): \(D=490.746\ \mu\text{m}^2/\text{s}\), \(\zeta=8.38805\) pN·s/m, \(t=0.101886\) s y \(x_\text{rms}(1\ \text{s})=31.3\ \mu\)m.</li>
+<li>Con \(r\) en el eje (log–log): \(D\propto r^{-1}\) (pendiente −1) y \(t\propto r\).</li>
+</ul></div>
+</deriv>
+
+<deriv id="elasticidad-polimeros" title="La elasticidad entrópica: el ADN como cadena de segmentos libres" tags="Biofísica, Polímeros">
+<goal>El tamaño de un polímero flexible en solución y la fuerza que hay que aplicarle para estirarlo, que es de origen entrópico.</goal>
+<given>
+<g>Cadena ideal de \(N\) segmentos rígidos de longitud \(b\) (de Kuhn), cada uno con orientación independiente (cadena de segmentos libres); longitud de contorno \(L=Nb\).</g>
+<g>Entropía \(S=k\ln\Omega\); a temperatura fija, la fuerza para mantener una extensión \(x\) es \(F=-\partial(-TS)/\partial x=T\,\partial S/\partial x\).</g>
+</given>
+<step op="Distancia extremo a extremo: suma de vectores aleatorios independientes de módulo \(b\)">
+\[\langle R^2\rangle=\sum_{i,j}\langle\mathbf b_i\cdot\mathbf b_j\rangle=Nb^2\ \Longrightarrow\ R_\text{rms}=b\sqrt N.\]
+</step>
+<step op="Teorema del límite central para \(N\) grande: densidad gaussiana de la separación \(\mathbf R\)">
+\[P(\mathbf R)\propto\exp\left(-\frac{3R^2}{2Nb^2}\right).\]
+</step>
+<step op="Entropía \(S=k\ln P+\text{const}\) y fuerza a extensión pequeña">
+\[F=T\frac{\partial S}{\partial x}=-\frac{3kT}{Nb^2}\,x\quad\Rightarrow\ \text{(módulo)}\ \ F=\frac{3kT}{Nb^2}\,x.\]
+<why>Es un muelle de constante \(k_\text{muelle}=3kT/Nb^2\), proporcional a la temperatura: al calentar un polímero estirado, se contrae (efecto de la goma).</why>
+</step>
+<step op="Estiramiento grande: con una fuerza \(F\), cada segmento tiene energía \(-Fb\cos\theta\) y el valor medio de \(\cos\theta\) es la función de Langevin">
+\[\frac xL=\mathcal L\!\left(\frac{Fb}{kT}\right)=\coth\frac{Fb}{kT}-\frac{kT}{Fb}\ \Longrightarrow\ F=\frac{kT}b\,\mathcal L^{-1}\!\left(\frac xL\right).\]
+</step>
+<result name="Cadena de segmentos libres">\[R_\text{rms}=b\sqrt N,\qquad F_\text{gauss}=\frac{3kT}{Nb^2}x,\qquad F=\frac{kT}b\,\mathcal L^{-1}\!\left(\frac xL\right).\]</result>
+<vars>
+<v s="R_\text{rms}" n="distancia extremo a extremo cuadrática media" u="m"/>
+<v s="N" n="número de segmentos de Kuhn" u="1"/>
+<v s="b" n="longitud de Kuhn" u="m"/>
+<v s="x" n="extensión" u="m"/>
+<v s="L" n="longitud de contorno" u="m"/>
+<v s="F" n="fuerza de estiramiento" u="N"/>
+<v s="k" n="constante de Boltzmann" u="J K^-1"/>
+<v s="T" n="temperatura" u="K"/>
+<v s="\mathcal L" n="función de Langevin" u="1"/>
+</vars>
+<effects>
+<e>ADN del fago λ (\(L=16.5\ \mu\)m, \(b=100\) nm, \(N=165\), a 310 K): \(R_\text{rms}=1.285\ \mu\)m; \(kT/b=0.0428\) pN. A \(x/L=0.1\): \(F=0.01285\) pN (gaussiana) frente a 0.01292 pN (cadena exacta); a \(x/L=0.5\): 0.0642 y 0.0769 pN; a \(x/L=0.9\) la gaussiana da 0.116 pN y la cadena exacta 0.428 pN, 3.7 veces más: la fuerza diverge al llegar a la extensión total.</e>
+<e>La fuerza es de décimas de piconewton (el movimiento browniano de una bolita de 1 µm ya la mueve): las pinzas ópticas y magnéticas miden estas fuerzas, y las curvas medidas del ADN siguen la forma de la cadena de segmentos libres o, más fielmente, de la cadena de persistencia (modelo de Marko y Siggia).</e>
+</effects>
+<limits>
+<l>Dimensiones: \(kT/b\) es una fuerza. ✓</l>
+<l>Sin interacciones entre segmentos (volumen excluido, fuerzas de van der Waals) ni elasticidad del contorno; por encima de 10 pN el ADN se estira más allá de su longitud de contorno (transición de sobreestiramiento a 65 pN). La longitud de Kuhn es dos veces la longitud de persistencia (≈ 50 nm en el ADN).</l>
+</limits>
+<explore sim="bio-polimero" title="Cadena de segmentos libres: tamaño y fuerza de estiramiento"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (\(N=165\), \(b=100\) nm, \(x/L=0.5\), 310.15 K): \(R_\text{rms}=1.28452\ \mu\)m, \(L=16.5\ \mu\)m, \(F_\text{gauss}=0.0642312\) pN y \(F_\text{FJC}=0.0769386\) pN.</li>
+<li>Con \(x/L\) en el eje: la fuerza gaussiana crece linealmente y la exacta diverge cuando \(x/L\to1\).</li>
+</ul></div>
+</deriv>
+
+<deriv id="osmosis" title="La presión osmótica de van't Hoff" tags="Biofísica, Termodinámica">
+<goal>La presión que equilibra el paso de agua a través de una membrana semipermeable que separa agua pura de una disolución.</goal>
+<given>
+<g>El potencial químico del disolvente en una disolución diluida es \(\mu_w=\mu_w^0(P)+RT\ln(1-x_s)\), con \(x_s\) la fracción molar de soluto; \(\partial\mu_w^0/\partial P=V_w\) (volumen molar del agua).</g>
+</given>
+<step op="Equilibrio osmótico: el agua pura a presión \(P\) y la disolución a \(P+\Pi\) tienen el mismo potencial químico">
+\[\mu_w^0(P)=\mu_w^0(P+\Pi)+RT\ln(1-x_s).\]
+</step>
+<step op="Desarrollar \(\mu_w^0(P+\Pi)=\mu_w^0(P)+V_w\Pi\) (líquido incompresible)">
+\[\Pi=-\frac{RT}{V_w}\ln(1-x_s).\]
+</step>
+<step op="Disolución diluida: \(\ln(1-x_s)\simeq-x_s\) y \(x_s\simeq cV_w\) (con \(c\) la concentración molar de soluto)">
+\[\Pi=cRT.\]
+</step>
+<result name="Presión osmótica de van't Hoff">\[\Pi=cRT\quad\left(\text{exacta: }\Pi=-\frac{RT}{V_w}\ln(1-cV_w)\right).\]</result>
+<vars>
+<v s="\Pi" n="presión osmótica" u="Pa"/>
+<v s="c" n="concentración de partículas de soluto (osmolaridad)" u="mol m^-3"/>
+<v s="R" n="constante de los gases" u="J mol^-1 K^-1"/>
+<v s="T" n="temperatura" u="K"/>
+<v s="V_w" n="volumen molar del agua" u="m^3 mol^-1"/>
+<v s="x_s" n="fracción molar de soluto" u="1"/>
+</vars>
+<effects>
+<e>Plasma sanguíneo (≈ 300 mOsm/L \(=300\) mol/m³) a 310.15 K: \(\Pi=773.6\) kPa \(=7.64\) atm (743.7 kPa a 25 °C), equivalente a una columna de agua de 78.9 m; la fórmula exacta (con \(V_w=18.2\) cm³/mol) da 775.7 kPa, 0.27 % más. Una célula roja en agua destilada recibe esta presión neta sobre su membrana y estalla (hemólisis).</e>
+<e>Agua de mar (≈ 1000 mOsm/L): \(\Pi\approx24\) atm, la presión mínima que debe superar la ósmosis inversa para desalinizar; las plantas elevan agua por ósmosis, con presiones de 5–10 atm. \(\Pi\) es proporcional al número de partículas, no a su masa: 1 mol de NaCl disuelto (dos iones) equivale a 2 osmoles.</e>
+</effects>
+<limits>
+<l>Dimensiones: \(cRT\) es \(\mathrm{mol\,m^{-3}\cdot J\,mol^{-1}K^{-1}\cdot K}=\mathrm{Pa}\). ✓</l>
+<l>Disolución diluida e ideal: a concentraciones altas (> 1 mol/L) los coeficientes de actividad introducen correcciones (coeficiente osmótico); el modelo supone una membrana perfectamente semipermeable.</l>
+</limits>
+<explore sim="bio-osmosis" title="Presión osmótica de van't Hoff y su valor exacto"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (300 mol/m³, 310.15 K): \(\Pi=773.619\) kPa, 7.63503 atm, 78.8872 m de columna de agua y valor exacto 775.739 kPa.</li>
+<li>Con \(c\) en el eje (log–log): \(\Pi\propto c\) (pendiente 1) salvo una pequeña desviación a concentraciones altas.</li>
+</ul></div>
+</deriv>
+
+<section>
+<h2>Fuentes y lecturas</h2>
+<ul class="refs">
+<li>P. Nelson, <em>Biological Physics: Energy, Information, Life</em>, W. H. Freeman (2004): caps. 4 (difusión), 7 (potenciales de membrana), 9 (nervios), 10 (polímeros).</li>
+<li>R. Phillips, J. Kondev, J. Theriot y H. Garcia, <em>Physical Biology of the Cell</em>, 2.ª ed., Garland (2012).</li>
+<li>A. L. Hodgkin y B. Katz, <em>Journal of Physiology</em> 108 (1949) 37; D. E. Goldman, <em>Journal of General Physiology</em> 27 (1943) 37; A. L. Hodgkin y A. F. Huxley, <em>Journal of Physiology</em> 117 (1952) 500.</li>
+<li>A. Einstein, <em>Annalen der Physik</em> 17 (1905) 549; J. F. Marko y E. D. Siggia, <em>Macromolecules</em> 28 (1995) 8759; J. H. van't Hoff, <em>Zeitschrift für Physikalische Chemie</em> 1 (1887) 481.</li>
+<li>W. Bialek, <em>Biophysics: Searching for Principles</em>, Princeton University Press (2012).</li>
+</ul>
+</section>
+</template>

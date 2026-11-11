@@ -1,0 +1,98 @@
+<template class="chapter-src" data-id="modelos-lenguaje" data-num="25" data-title="Modelos de lenguaje de n-gramas" data-part="Parte VI · Texto como números" data-short="Probabilidad de una secuencia; regla de la cadena y hipótesis de Markov; estimación por conteo; palabras desconocidas; suavizado (Laplace, interpolación, Kneser–Ney); perplejidad; generación">
+<p class="lead">¿Qué frase es más probable en español: «el presidente del gobierno» o «el presidente del plátano»? Un <b>modelo de lenguaje</b> responde asignando una probabilidad a cada secuencia de palabras. Es la idea detrás del corrector del móvil, del reconocimiento de voz, de la traducción automática y, llevada a la escala de miles de millones de parámetros, de los grandes modelos de lenguaje que se estudian más adelante. Todo empieza con contar palabras vecinas.</p>
+
+<section>
+<h2>Probabilidad de una secuencia</h2>
+<p>La regla de la cadena descompone la probabilidad de una frase en productos de probabilidades de cada palabra dada todas las anteriores:</p>
+<div class="eq key" data-name="Regla de la cadena">\[P(w_1,\dots,w_m)=\prod_{i=1}^{m}P(w_i\mid w_1,\dots,w_{i-1})\]</div>
+<p>Es exacta pero inútil en la práctica: casi ninguna historia larga ha aparecido nunca en el corpus. La <b>hipótesis de Markov</b> la simplifica: solo importan las \(n-1\) palabras anteriores. Un <b>modelo de n-gramas</b> usa:</p>
+<div class="eq key" data-name="Modelo de n-gramas">\[P(w_i\mid w_1,\dots,w_{i-1})\approx P(w_i\mid w_{i-n+1},\dots,w_{i-1}),\qquad \hat P_{\text{MV}}(w_i\mid w_{i-n+1}^{i-1})=\frac{C(w_{i-n+1}^{i})}{C(w_{i-n+1}^{i-1})}\]</div>
+<p>El unigrama (\(n=1\)) ignora el contexto, el bigrama usa la palabra anterior y el trigrama las dos anteriores. Para dar sentido a las primeras palabras se rellena la oración con \(n-1\) símbolos <code>&lt;s&gt;</code> al principio y un <code>&lt;/s&gt;</code> al final; este último permite que el modelo también aprenda cuándo termina una oración. Como las probabilidades son muy pequeñas, se trabaja con logaritmos.</p>
+<p>Los datos del capítulo son 2.400 oraciones de CESS-ESP (43.198 palabras) para entrenar y otras 300 para probar. El vocabulario conserva las palabras vistas al menos dos veces: 3.631 tipos (de 9.687 formas distintas), y todo lo demás se convierte en <code>&lt;unk&gt;</code>, un símbolo que el modelo aprende a predecir como cualquier otra palabra.</p>
+<div class="sim" data-sim="lm-siguiente" data-title="¿Qué palabra viene después? Probabilidades de un modelo de n-gramas"></div>
+<div class="sim-guide"><ul>
+<li>Con «el presidente del» y un trigrama de Kneser–Ney, las más probables son las que siguieron a «presidente del» en el corpus: «gobierno» (0,29), «banco», «ejecutivo»… También reciben probabilidad el fin de oración y <code>&lt;unk&gt;</code>.</li>
+<li>Elija «Máxima verosimilitud» y escriba una historia que nunca se vio, como «gobierno gobierno»: ninguna palabra tiene probabilidad. Con Laplace o Kneser–Ney, sí.</li>
+<li>Cambie de trigrama a bigrama y a unigrama: con unigrama la lista no cambia nunca (sale lo más frecuente: «de», «la», «que») y la frase generada es un montón de palabras comunes.</li>
+<li>Pulse «Generar una frase»: con el trigrama la frase suena más a español que con el bigrama, aunque con 43.000 palabras de entrenamiento es sobre todo un collage de fragmentos del corpus.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Evaluar: perplejidad</h2>
+<p>La mejor evaluación es <b>intrínseca</b>: cuánta probabilidad asigna el modelo a un texto de prueba que no vio al entrenar. La medida estándar es la <b>perplejidad</b>, la inversa de la probabilidad del texto normalizada por su longitud:</p>
+<div class="eq key" data-name="Perplejidad">\[\mathrm{PP}(W)=P(w_1\dots w_m)^{-1/m}=2^{H(W)},\qquad H(W)=-\frac1m\sum_{i=1}^{m}\log_2P(w_i\mid w_{i-n+1}^{i-1})\]</div>
+<p>Se interpreta como el <b>factor de ramificación medio</b>: una perplejidad de 100 significa que el modelo duda, en cada palabra, como si tuviera que elegir entre 100 opciones equiprobables. Cuanto menor, mejor. Solo se pueden comparar perplejidades calculadas con el mismo vocabulario y el mismo texto de prueba, porque un vocabulario menor (más <code>&lt;unk&gt;</code>) hace bajar el número trivialmente.</p>
+<div class="sim" data-sim="lm-perplejidad" data-title="Perplejidad de una oración y de la prueba, según el modelo"></div>
+<div class="sim-guide"><ul>
+<li>Con «máxima verosimilitud» y un bigrama, la perplejidad de la prueba es infinita: algún par de palabras de la prueba no se vio nunca. El modelo «ve» una probabilidad cero y rechaza toda la frase.</li>
+<li>Con Kneser–Ney, el bigrama da 102,2 y el trigrama 103,2 en las 300 oraciones; con Laplace (k = 1) el trigrama empeora hasta 1.614. Mueva los controles k y D para ver cómo cambia.</li>
+<li>Escriba una frase con palabras raras (por ejemplo «el plátano gobierna»): todas se convierten en <code>&lt;unk&gt;</code>, que el modelo trata como una palabra bastante frecuente, y no se penalizan tanto como cabría esperar. Por eso la perplejidad solo se compara entre modelos con el mismo vocabulario.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El problema de los ceros y el suavizado</h2>
+<p>Un trigrama no visto recibe probabilidad cero con máxima verosimilitud, y la frase entera con él. Pero por grande que sea el corpus, el lenguaje produce siempre combinaciones nuevas. El <b>suavizado</b> reparte parte de la masa de probabilidad de lo visto entre lo no visto. Las técnicas principales:</p>
+<ul>
+<li><b>Laplace (add-k)</b>: suma \(k\) a todos los conteos: \(P(w\mid h)=\dfrac{C(hw)+k}{C(h)+kV}\). Es sencillo pero, con vocabularios grandes, regala demasiada masa a lo no visto; con \(k<1\) mejora algo.</li>
+<li><b>Interpolación lineal</b> (Jelinek–Mercer): se mezclan modelos de órdenes distintos, \(P=\lambda_3\hat P_3+\lambda_2\hat P_2+\lambda_1\hat P_1+\lambda_0/V\) con \(\sum\lambda_i=1\). Los pesos se ajustan en un conjunto de validación. Si el trigrama no se vio, el bigrama y el unigrama aportan.</li>
+<li><b>Retroceso</b> (<i>backoff</i>, Katz): usar el orden alto si hay datos y, si no, retroceder al inferior con un factor de corrección. Una variante barata para corpus enormes es el <i>stupid backoff</i> (Brants y otros, 2007), que no normaliza.</li>
+<li><b>Kneser–Ney</b> (1995) es el método clásico más eficaz. Combina dos ideas: <i>descuento absoluto</i> (se resta una constante \(D\approx0{,}75\) a cada conteo visto y esa masa se reparte entre las continuaciones inferiores) y <i>probabilidad de continuación</i> (en los órdenes inferiores, una palabra se pondera por en cuántos contextos distintos aparece, no por cuántas veces).</li>
+</ul>
+<div class="eq key" data-name="Kneser–Ney interpolado (orden más alto)">\[P_{\mathrm{KN}}(w\mid h)=\frac{\max\bigl(C(hw)-D,\,0\bigr)}{C(h)}+\underbrace{\frac{D\cdot N_{1+}(h\bullet)}{C(h)}}_{\gamma(h)}\;P_{\mathrm{cont}}(w\mid h'),\qquad P_{\mathrm{cont}}(w)=\frac{N_{1+}(\bullet w)}{N_{1+}(\bullet\bullet)}\]</div>
+<p>donde \(N_{1+}(h\bullet)\) es el número de palabras distintas que siguen a \(h\), \(N_{1+}(\bullet w)\) el de contextos distintos que preceden a \(w\) y \(h'\) la historia sin su palabra más antigua. El ejemplo clásico: «Francisco» es una palabra frecuente, pero casi siempre sigue a «San». Cuando no se conoce el contexto, es peor candidata que «ciudad», menos frecuente pero versátil. La probabilidad de continuación lo recoge.</p>
+<div class="box py"><p>El programa implementa los conteos y los cuatro métodos con diccionarios de Python, calcula la perplejidad en las 300 oraciones de prueba, genera frases y compara con <code>nltk.lm</code>.</p>
+<div class="py" data-py="25-modelos-lenguaje"></div></div>
+<div class="box read"><ul>
+<li><b>Máxima verosimilitud</b>: unigrama 159,8; bigrama y trigrama, infinita. <b>Laplace (k = 1)</b>: 163,8; 470,7; 1.614,1. Con k = 0,1: 160,2; 244,9; 907,2.</li>
+<li><b>Interpolación lineal</b> (pesos fijos): 162,3; 122,8; 175,0. La mezcla del bigrama funciona; en el trigrama, con pocos datos, los pesos elegidos son malos (habría que ajustarlos con datos de validación).</li>
+<li><b>Kneser–Ney</b> (D = 0,75): bigrama 102,2, trigrama 103,2. Gana con claridad: el mejor otro método (interpolación del bigrama) queda en 122,8.</li>
+<li><b>Con NLTK</b> (<code>nltk.lm</code>): Kneser–Ney interpolado de orden 3 con descuento 0,75 da 103,2, igual que el código propio, y Laplace da 1.614,9 frente a 1.614,1 (difiere solo en el tratamiento del vocabulario). Es la comprobación del curso: el apéndice de validación compara además las perplejidades con las del programa independiente.</li>
+<li><b>Generación</b>: las frases salen locales y gramaticales a trozos pero sin sentido global. El trigrama solo mira dos palabras atrás y el corpus es pequeño.</li>
+<li>Subir de bigrama a trigrama casi no mejora aquí (102,2 → 103,2): con 43.000 palabras faltan datos. Con más texto, el trigrama gana al bigrama.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Límites y camino hacia los modelos neuronales</h2>
+<ul>
+<li><b>Memoria corta</b>: «El libro que Marta compró ayer en la librería del centro <i>está</i>…»: el verbo concuerda con «libro», a nueve palabras. Ningún n-grama razonable lo ve.</li>
+<li><b>Tamaño</b>: el número de n-gramas posibles crece como \(V^n\). Con el trigrama de 3.631 palabras, 4,8·10<sup>10</sup> combinaciones posibles y unas 45.000 observaciones.</li>
+<li><b>Sin generalización</b>: «el gato bebe leche» no ayuda a estimar «el perro bebe agua», aunque las palabras sean parecidas. Los <b>modelos neuronales</b> (capítulos 28–31) representan las palabras con vectores y comparten información entre las parecidas; los Transformer ven toda la historia a la vez.</li>
+</ul>
+<p>La perplejidad sigue siendo la medida estándar al evaluar los modelos neuronales: un buen modelo de n-gramas de 1990 se compara con uno de 2020 en la misma escala.</p>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Un modelo de lenguaje da una probabilidad a las secuencias; por la regla de la cadena y la hipótesis de Markov se reduce a n-gramas.</li>
+<li>Máxima verosimilitud = conteos relativos; produce ceros con n-gramas no vistos.</li>
+<li>Suavizado: Laplace, interpolación, retroceso y Kneser–Ney (el mejor de los clásicos).</li>
+<li>Perplejidad = exp de la entropía cruzada por palabra; menor es mejor; solo comparable con el mismo vocabulario.</li>
+<li>Los n-gramas tienen memoria corta y no generalizan: de ahí los modelos neuronales.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>En un corpus, «el» aparece 60 veces y «el gato» 6. ¿Cuánto vale P(gato | el) por máxima verosimilitud? ¿Y con Laplace (k = 1) con V = 1.000?
+<details><summary>Respuesta</summary><p>MV: 6/60 = 0,1. Laplace: (6 + 1)/(60 + 1.000) = 7/1.060 = 0,0066. Con vocabularios grandes Laplace reduce mucho las probabilidades de lo visto.</p></details></li>
+<li><span class="lvl">Básico</span>Con el corpus «&lt;s&gt; yo veo &lt;/s&gt;», «&lt;s&gt; yo leo &lt;/s&gt;», «&lt;s&gt; tú veo &lt;/s&gt;» calcule por máxima verosimilitud P(yo | &lt;s&gt;) y P(veo | yo).
+<details><summary>Respuesta</summary><p>P(yo | &lt;s&gt;) = 2/3; P(veo | yo) = 1/2 (yo veo, yo leo).</p></details></li>
+<li><span class="lvl">Intermedio</span>Un modelo asigna a un texto de 4 palabras las probabilidades 1/2, 1/4, 1/8 y 1/2. Calcule la perplejidad.
+<details><summary>Respuesta</summary><p>Producto = 1/128; PP = (1/128)^(−1/4) = 128^(1/4) = 3,364. Equivalente: entropía = (1 + 2 + 3 + 1)/4 = 1,75 bits; 2^1,75 = 3,364.</p></details></li>
+<li><span class="lvl">Intermedio</span>Con descuento D = 0,75, C(a b) = 4, C(a) = 10 y cuatro continuaciones distintas de a, calcule el término de orden alto de Kneser–Ney para P(b | a) y el peso γ de la interpolación.
+<details><summary>Respuesta</summary><p>Término alto: (4 − 0,75)/10 = 0,325. γ = 0,75 · 4 / 10 = 0,30. El 30 % de la masa se reparte con el modelo de orden inferior (que se ponderará por continuación).</p></details></li>
+<li><span class="lvl">Avanzado</span>¿Por qué el trigrama puede tener peor perplejidad en la prueba que el bigrama con los mismos datos, y qué método lo corrige?
+<details><summary>Respuesta</summary><p>El trigrama tiene muchísimos más parámetros que datos: casi todos los trigramas de la prueba son nuevos, así que dependen de cómo el suavizado reparta la masa. Los métodos que retroceden o interpolan al bigrama con pesos adecuados (Kneser–Ney, interpolación ajustada) lo corrigen.</p></details></li>
+</ol>
+<h3>Autoevaluación</h3>
+<div class="sim" data-sim="quiz" data-cap="modelos-lenguaje" data-title="Autoevaluación del capítulo 25"></div>
+<div class="box links"><ul>
+<li><a href="https://web.stanford.edu/~jurafsky/slp3/">Jurafsky y Martin — Speech and Language Processing (3.ª ed.), capítulo de modelos de lenguaje de n-gramas</a><small>Estimación, perplejidad, suavizado y Kneser–Ney con ejemplos.</small></li>
+<li><a href="https://aclanthology.org/D07-1090/">Brants y otros (2007) — Large language models in machine translation</a><small>El «stupid backoff» y los modelos de n-gramas con billones de palabras.</small></li>
+<li><a href="https://www.nltk.org/api/nltk.lm.html">NLTK — módulo lm</a><small>MLE, Laplace, Kneser–Ney y perplejidad usados en el programa.</small></li>
+<li><a href="https://aclanthology.org/P96-1041/">Chen y Goodman (1996) — An empirical study of smoothing techniques for language modeling</a><small>Comparación clásica de los métodos de suavizado.</small></li>
+<li><a href="https://web.stanford.edu/~jurafsky/slp3/3.pdf">Jurafsky y Martin — cap. 3: N-gram language models</a><small>Capítulo de referencia en inglés, con PDF libre.</small></li>
+</ul></div>
+</section>
+</template>

@@ -1,0 +1,109 @@
+<template class="chapter-src" data-id="transductores" data-num="6" data-title="Transductores y análisis morfológico de dos niveles" data-part="Parte II · Las palabras" data-short="Autómatas de dos cintas; lexicón de dos niveles; reglas ortográficas como transductores; cascada superficie ⇄ intermedio ⇄ léxico; análisis por inversión">
+<p class="lead">Un autómata finito dice si una cadena es una palabra. Un transductor hace algo más útil: la traduce. Lee «lugares» y escribe «lugar +N +Masc +Pl»; o recorre el camino inverso y genera la forma correcta a partir del lema y los rasgos. Es la pieza que convierte la morfología en un programa, y su gran virtud es que los mismos transductores sirven para analizar y para generar.</p>
+
+<section>
+<h2>De reconocer a traducir</h2>
+<p>Un <span class="term">transductor de estados finitos</span> (FST) es un autómata finito con dos cintas, una de entrada y otra de salida. Cada arco lleva un par \(s_1{:}s_2\): lee \(s_1\) en una cinta y escribe \(s_2\) en la otra. Si \(s_1=s_2\) se escribe un solo símbolo (par por defecto), y \(\varepsilon\) indica «sin símbolo». Define una <b>relación</b> entre cadenas, no una función: una entrada puede tener varias salidas (es la ambigüedad) o ninguna.</p>
+<div class="mono-box">nivel léxico        vino +N +Masc +Pl
+                         ↕  lexicón de dos niveles
+nivel intermedio    vin^os#
+                         ↕  reglas ortográficas (transductores)
+nivel de superficie vinos</div>
+<p>En el paradigma de la morfología de estados finitos una palabra es la correspondencia entre un <b>nivel léxico</b> (lema y rasgos de cada morfema) y un <b>nivel de superficie</b> (la ortografía). Como símbolos auxiliares se usan <code>^</code> (frontera entre morfemas) y <code>#</code> (frontera de palabra). El transductor que une los dos niveles tiene dos partes: un lexicón con información de dos niveles, y las reglas ortográficas.</p>
+</section>
+
+<section>
+<h2>Lexicón de dos niveles</h2>
+<p>En el capítulo anterior el lexicón era un autómata con una sola cinta: solo reconocía. Con una segunda cinta cada morfema se anota con su significado gramatical. Para el nombre regular «gato»:</p>
+<div class="mono-box">léxico:      g a t o  +N   +Masc  +Sg           g a t o  +N  +Fem  +Pl
+intermedio:  g a t ^o #   ε     ε     ε             g a t ^a s #   ε    ε    ε</div>
+<p>Las letras de la raíz son pares por defecto; la vocal final del lema pasa a ser un sufijo; las etiquetas se escriben en la cinta léxica sin consumir entrada (\(\varepsilon\)). Los verbos funcionan igual, con tabla de terminaciones. Las formas irregulares se listan completas: el inglés «geese» se enlaza con «goose +N +Pl» mediante el par \(e{:}o\) dos veces, y el español «fue» con «ser +V +Perf +3P +Sg» y con «ir +V +Perf +3P +Sg». Una misma forma puede entrar por dos caminos: eso es lo que produce la ambigüedad del capítulo 4.</p>
+</section>
+
+<section>
+<h2>Reglas ortográficas como transductores</h2>
+<p>El lexicón solo concatena morfemas. Pero «nuez» + «-s» no da «nuezs»: da «nueces». Los cambios de escritura que ocurren al unir dos morfemas son las <span class="term">reglas ortográficas</span>, y cada una es un transductor que copia la cadena tal cual salvo en el lugar donde la regla se activa. Las del español que usamos:</p>
+<table>
+<thead><tr><th>Regla</th><th>Contexto</th><th>Ejemplo</th></tr></thead>
+<tbody>
+<tr><td>Inserción de <b>e</b></td><td><code>ε → e / C ^ _ s#</code> (consonante, frontera, plural -s)</td><td>lugar^s# → lugar^es#</td></tr>
+<tr><td><b>z → c</b></td><td><code>z → c / _ ^e</code></td><td>nuez^es# → nuec^es#</td></tr>
+<tr><td><b>Pérdida de tilde</b></td><td><code>á é í ó ú → a e i o u / _ {n,s}^e</code></td><td>canción^es# → cancion^es#</td></tr>
+<tr><td>Quitar fronteras</td><td><code>^ , # → ε</code></td><td>cancion^es# → canciones</td></tr>
+</tbody></table>
+<p>La regla de inserción de «e» es la más instructiva. Se compila a un transductor de 6 estados: <i>q</i><sub>0</sub> copia; al ver una consonante pasa a <i>q</i><sub>C</sub>; si sigue la frontera <code>^</code>, a <i>q</i><sub>C^</sub>. Desde ahí hay un arco \(\varepsilon{:}e\) que inserta la «e» y exige que siga «s#»; y otro camino, sin insertar, que se anula si lo que viene es «s#». Por eso la regla es <b>obligatoria</b>: «lugar^s#» solo tiene la salida «lugar^es#».</p>
+<div class="sim" data-sim="regla-fst" data-title="Aplicar un transductor de regla ortográfica a una cadena intermedia"></div>
+<div class="sim-guide"><ul>
+<li>Elija una regla y una cadena intermedia: se muestra la salida, el camino de estados y el número de salidas posibles.</li>
+<li>Con «padre^s#» la inserción de «e» no se activa (la raíz acaba en vocal). Con «lugar^s#» sí.</li>
+<li>Active «sentido inverso»: el transductor lee la salida y propone todas las entradas que la producen. Es la base del análisis, y también la fuente de candidatos falsos que el lexicón descartará.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Morfología de dos niveles: cascada y análisis</h2>
+<p>Al combinar el transductor del lexicón con las reglas se obtiene la <b>morfología de dos niveles</b> (Koskenniemi, 1983). Las reglas se pueden ejecutar <b>en paralelo</b> (todas a la vez, intersectadas) o <b>en serie</b>, en cascada; es una decisión de diseño. En este curso se ejecutan en serie:</p>
+<div class="mono-box">GENERACIÓN  léxico ──lexicón──▶ intermedio ──[inserción e]──▶ ──[z→c]──▶ ──[tilde]──▶ ──[quitar ^#]──▶ superficie
+ANÁLISIS    léxico ◀──lexicón── intermedio ◀──[inversas, en orden contrario]───────────────────────────── superficie</div>
+<p>Para <b>analizar</b> se recorre la cascada al revés. Como los transductores son relaciones, cada inversa propone varios candidatos: «lugares» puede venir de «lugar^s#», de «lugar^es#» (sin aplicar la regla), de «lugare^s#»… El lexicón actúa como filtro: solo «lugar^s#» corresponde a una raíz existente con un sufijo permitido. Es el mismo problema de generar y comprobar, pero organizado con autómatas: cada paso se hace en tiempo lineal en la longitud de la palabra.</p>
+<div class="sim" data-sim="dos-niveles" data-title="Analizar por inversión de la cascada o generar a partir del lema"></div>
+<div class="sim-guide"><ul>
+<li>En «Analizar» escriba una forma de superficie: se muestran los candidatos de nivel intermedio que propone la cascada invertida y los que sobreviven al lexicón.</li>
+<li>En «Generar» elija una forma intermedia y observe cada transformación de la cascada.</li>
+<li>Los resultados son idénticos a los del analizador por índice del capítulo 4 en todas las formas del lexicón (apéndice de validación): son dos formas de calcular la misma relación.</li>
+</ul></div>
+<div class="box py"><p>El programa construye los transductores de las cuatro reglas en Python con un compilador de reglas de contexto derecho, los aplica en cascada y prueba el sentido inverso.</p>
+<div class="py" data-py="06-transductores"></div></div>
+<div class="box read"><ul>
+<li><b>Tamaño</b>: el transductor de inserción de «e» tiene 6 estados y 141 arcos sobre un alfabeto de 36 símbolos. Casi todos son arcos de copia; la regla en sí ocupa unos pocos.</li>
+<li><b>Cascada</b>: «nuez^s#» pasa por «nuez^es#», luego «nuec^es#» y termina en «nueces»; «canción^s#» llega a «canciones» solo tras perder la tilde. El orden importa: la «z→c» necesita la «e» ya insertada.</li>
+<li><b>Sin cambios</b>: «padre^s#» y «gat^as#» atraviesan las reglas intactos y salen «padres», «gatas». Una regla bien diseñada deja pasar lo que no es suyo.</li>
+<li><b>Obligatoriedad</b>: «lugar^s#» da solo «lugar^es#»; «lugar^as#» no cambia.</li>
+<li><b>Inverso</b>: entre cinco intermedios candidatos, cinco producen «lugares»: <i>lugar^es#</i>, <i>lugar^s#</i>, <i>lugares#</i>, <i>lugare^s#</i> y <i>luga^res#</i>. Solo el lexicón decide cuál es una raíz real.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Ventajas y límites</h2>
+<ul>
+<li><b>Bidireccional</b>: el mismo transductor analiza y genera; se invierte cambiando las cintas.</li>
+<li><b>Componible</b>: dos transductores en serie equivalen a uno solo (su composición); un analizador real combina decenas de reglas en un único autómata muy rápido.</li>
+<li><b>Eficiente</b>: tiempo lineal en la longitud de la palabra. Es la base de herramientas como Apertium (que usa transductores para analizar y generar), HFST y OpenFst.</li>
+<li><b>Costoso de construir</b>: hay que escribir el lexicón y las reglas a mano, y mantenerlos.</li>
+<li><b>Límites lingüísticos</b>: la morfología <i>no concatenativa</i> (las raíces de tres consonantes del árabe, la reduplicación) necesita extensiones; las lenguas con muchos recursos hoy complementan el analizador con modelos entrenados.</li>
+</ul>
+<div class="box when"><p>Si se cuenta con un buen analizador de estados finitos para la lengua, es difícil de superar en precisión y velocidad para tareas de lematización y generación. Si no existe y hay poco texto anotado, un modelo neuronal sobre unidades de subpalabra (capítulo 31) es la alternativa más práctica.</p></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Un transductor tiene dos cintas y define una relación entre cadenas; analiza y genera con el mismo diseño.</li>
+<li>El lexicón de dos niveles asocia cada morfema con sus rasgos; los pares por defecto copian lo que no cambia.</li>
+<li>Cada regla ortográfica es un transductor que copia salvo en su contexto.</li>
+<li>La morfología de dos niveles combina reglas (en serie o en paralelo) y lexicón.</li>
+<li>Para analizar se invierte la cascada; el lexicón filtra los candidatos falsos.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Qué diferencia hay entre el autómata finito del capítulo 5 y un transductor?
+<details><summary>Respuesta</summary><p>El autómata solo acepta o rechaza; el transductor tiene una segunda cinta y escribe una salida, por lo que traduce entre dos niveles.</p></details></li>
+<li><span class="lvl">Básico</span>Aplique la cascada del capítulo a «color^s#».
+<details><summary>Respuesta</summary><p>color^es# (inserción de e tras la consonante), sin cambio de z ni de tilde, y al quitar fronteras: «colores».</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué «lugar^s#» no puede dar «lugar^s#» como salida de la regla de inserción?
+<details><summary>Respuesta</summary><p>La regla es obligatoria: el camino sin insertar entra en un estado que no admite «#» a continuación, y se anula.</p></details></li>
+<li><span class="lvl">Intermedio</span>«Lápices»: ¿qué reglas y en qué orden produjeron esa forma desde «lápiz^s#»?
+<details><summary>Respuesta</summary><p>Inserción de e (lápiz^es#), z → c (lápic^es#), no hay pérdida de tilde (la «á» no precede a n/s + e), y se quitan las fronteras.</p></details></li>
+<li><span class="lvl">Avanzado</span>Si se invirtiera «quitar fronteras» sin restricciones, ¿por qué se dispararía el número de candidatos?
+<details><summary>Respuesta</summary><p>Su inversa inserta ^ y # en cualquier posición y de forma repetida (arcos de entrada vacía): el espacio de cadenas crece exponencialmente con la longitud. Por eso en el curso se sustituye por la inserción controlada de a lo sumo un ^ y un # final, que es lo que permite la morfotáctica.</p></details></li>
+</ol>
+<h3>Autoevaluación</h3>
+<div class="sim" data-sim="quiz" data-cap="transductores" data-title="Autoevaluación del capítulo 6"></div>
+<div class="box links"><ul>
+<li><a href="https://aclanthology.org/J94-3001/">Kaplan y Kay (1994) — Regular models of phonological rule systems</a><small>Cómo compilar reglas de reescritura a transductores; la teoría tras lo que hace el programa.</small></li>
+<li><a href="https://doi.org/10.1017/CBO9780511597879">Beesley y Karttunen (2003) — Finite State Morphology</a><small>El libro de referencia de la morfología con transductores (herramientas xfst y lexc).</small></li>
+<li><a href="https://hfst.github.io/">HFST — Helsinki Finite-State Technology</a><small>Biblioteca libre para construir analizadores morfológicos como transductores.</small></li>
+<li><a href="https://www.openfst.org/">OpenFst</a><small>Biblioteca de transductores ponderados usada en reconocimiento de voz.</small></li>
+<li><a href="https://www.apertium.org/">Apertium</a><small>Traductor automático libre basado en transductores, con analizador del español.</small></li>
+</ul></div>
+</section>
+</template>

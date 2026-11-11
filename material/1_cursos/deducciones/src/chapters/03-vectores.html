@@ -1,0 +1,295 @@
+<template class="chapter-src" data-id="vectores" data-num="3" data-title="Vectores, coordenadas curvilíneas y teoremas integrales" data-part="Parte I · Herramientas" data-short="Factores de escala, divergencia y teorema de Gauss, laplaciano en esféricas, rotacional y teorema de Stokes, la delta de Dirac como límite y el volumen de la bola en n dimensiones">
+<p class="lead">Las leyes de la física de campos (gravitación, electricidad, magnetismo, fluidos, calor) se escriben con tres operadores, el gradiente, la divergencia y el rotacional, y con dos teoremas que los vinculan con integrales: el de Gauss y el de Stokes. Aquí se deducen a partir de su significado geométrico, en coordenadas curvilíneas cualesquiera, de modo que las fórmulas de cilíndricas y esféricas que se usarán después no se citan: se calculan. Al final se prueba la identidad que sostiene la ley de Coulomb diferencial, \(\nabla\cdot(\hat r/r^2)=4\pi\delta^3(\mathbf r)\), y se calcula el volumen de una bola en \(n\) dimensiones, que reaparece en la mecánica estadística.</p>
+
+<section>
+<h2>Coordenadas ortogonales y factores de escala</h2>
+<p>Sea \(\mathbf r(q_1,q_2,q_3)\) un sistema de coordenadas y \(\hat e_i=\partial_i\mathbf r/|\partial_i\mathbf r|\) sus vectores unitarios (con \(\partial_i=\partial/\partial q_i\)). Un desplazamiento infinitesimal es \(\mathrm d\mathbf r=\sum_i\partial_i\mathbf r\,\mathrm dq_i=\sum_ih_i\,\mathrm dq_i\,\hat e_i\), donde \(h_i=|\partial_i\mathbf r|\) es el <span class="term">factor de escala</span>: la longitud que corresponde a un cambio unitario de \(q_i\). Si los \(\hat e_i\) son perpendiculares entre sí (coordenadas ortogonales), la longitud de arco y el volumen son</p>
+\[\mathrm ds^2=\sum_ih_i^2\,\mathrm dq_i^2,\qquad \mathrm dV=h_1h_2h_3\,\mathrm dq_1\mathrm dq_2\mathrm dq_3.\]
+<p>El gradiente se obtiene exigiendo \(\mathrm df=\nabla f\cdot\mathrm d\mathbf r\). Como \(\mathrm df=\sum_i\partial_if\,\mathrm dq_i\) y \(\nabla f\cdot\mathrm d\mathbf r=\sum_i(\nabla f)_i\,h_i\,\mathrm dq_i\), resulta \((\nabla f)_i=\dfrac1{h_i}\partial_if\).</p>
+<div class="tablewrap narrow"><table><tr><th>Sistema</th><th>Coordenadas \((q_1,q_2,q_3)\)</th><th>\((h_1,h_2,h_3)\)</th><th>\(\mathrm dV\)</th></tr>
+<tr><td>Cartesianas</td><td>\((x,y,z)\)</td><td>\((1,1,1)\)</td><td>\(\mathrm dx\,\mathrm dy\,\mathrm dz\)</td></tr>
+<tr><td>Cilíndricas</td><td>\((\rho,\varphi,z)\)</td><td>\((1,\rho,1)\)</td><td>\(\rho\,\mathrm d\rho\,\mathrm d\varphi\,\mathrm dz\)</td></tr>
+<tr><td>Esféricas</td><td>\((r,\theta,\varphi)\)</td><td>\((1,\,r,\,r\sin\theta)\)</td><td>\(r^2\sin\theta\,\mathrm dr\,\mathrm d\theta\,\mathrm d\varphi\)</td></tr></table></div>
+<p>Cálculo de los de esféricas: con \(\mathbf r=(r\sin\theta\cos\varphi,\,r\sin\theta\sin\varphi,\,r\cos\theta)\), \(\partial_r\mathbf r\) tiene módulo \(\sqrt{\sin^2\theta+\cos^2\theta}=1\); \(\partial_\theta\mathbf r=r(\cos\theta\cos\varphi,\cos\theta\sin\varphi,-\sin\theta)\) tiene módulo \(r\); \(\partial_\varphi\mathbf r=r\sin\theta(-\sin\varphi,\cos\varphi,0)\) tiene módulo \(r\sin\theta\).</p>
+</section>
+
+<deriv id="divergencia" title="Divergencia en coordenadas curvilíneas y teorema de Gauss" tags="Cálculo vectorial, Campos">
+<goal>La expresión de \(\nabla\cdot\mathbf F\) en cualquier sistema ortogonal, el teorema \(\oint\mathbf F\cdot\mathrm d\mathbf A=\int\nabla\cdot\mathbf F\,\mathrm dV\) y su aplicación a \(\mathbf F=k\,r^m\,\hat r\).</goal>
+<given>
+<g>Definición física: la divergencia es el flujo que sale de un volumen por unidad de volumen, en el límite de volumen nulo.</g>
+<g>Factores de escala \(h_i\) y desarrollo de Taylor de primer orden.</g>
+</given>
+<step op="Dibujar una caja infinitesimal de aristas \(h_i\,\mathrm dq_i\)">
+\[\text{caras}\perp\hat e_1:\ \mathrm dA_1=h_2h_3\,\mathrm dq_2\mathrm dq_3,\qquad \mathrm dV=h_1h_2h_3\,\mathrm dq_1\mathrm dq_2\mathrm dq_3.\]
+<why>En coordenadas ortogonales la caja es, a primer orden, un paralelepípedo recto.</why>
+</step>
+<step op="Calcular el flujo neto por el par de caras \(q_1\) y \(q_1+\mathrm dq_1\)">
+\[\Big[F_1h_2h_3\Big]_{q_1+\mathrm dq_1}-\Big[F_1h_2h_3\Big]_{q_1}=\frac{\partial(F_1h_2h_3)}{\partial q_1}\,\mathrm dq_1\mathrm dq_2\mathrm dq_3.\]
+<why>El flujo saliente por la cara de arriba cuenta \(+\), el de la de abajo \(-\). Se desarrolla en Taylor a primer orden; \(h_2h_3\) puede variar con \(q_1\), por eso entra dentro de la derivada.</why>
+</step>
+<step op="Sumar las tres parejas de caras">
+\[\Phi=\Big[\partial_1(h_2h_3F_1)+\partial_2(h_3h_1F_2)+\partial_3(h_1h_2F_3)\Big]\mathrm dq_1\mathrm dq_2\mathrm dq_3.\]
+</step>
+<step op="Dividir por el volumen">
+\[\nabla\cdot\mathbf F=\frac\Phi{\mathrm dV}=\frac1{h_1h_2h_3}\Big[\partial_1(h_2h_3F_1)+\partial_2(h_3h_1F_2)+\partial_3(h_1h_2F_3)\Big].\]
+<why>Con \(h_i=1\) da la expresión cartesiana \(\partial_xF_x+\partial_yF_y+\partial_zF_z\).</why>
+</step>
+<step op="Teorema de Gauss: sumar muchas cajas">
+\[\sum_\text{cajas}\Phi=\sum(\nabla\cdot\mathbf F)\,\mathrm dV\ \Longrightarrow\ \oint_{\partial V}\mathbf F\cdot\mathrm d\mathbf A=\int_V\nabla\cdot\mathbf F\,\mathrm dV.\]
+<why>En cada cara compartida por dos cajas vecinas, el flujo que sale de una entra en la otra: se cancela. Solo sobreviven las caras de la superficie exterior.</why>
+</step>
+<step op="Particularizar a esféricas con un campo radial \(F_r=k\,r^m\)">
+\[\nabla\cdot\mathbf F=\frac1{r^2}\frac{\mathrm d}{\mathrm dr}\left(r^2\,k\,r^m\right)=(m+2)\,k\,r^{m-1}.\]
+<why>Con \(h=(1,r,r\sin\theta)\) y \(F_\theta=F_\varphi=0\), solo sobrevive el primer término.</why>
+</step>
+<step op="Comprobar el teorema con una esfera de radio \(R\)">
+\[\oint\mathbf F\cdot\mathrm d\mathbf A=kR^m\cdot4\pi R^2=4\pi kR^{m+2},\qquad \int_0^R(m+2)k\,r^{m-1}\,4\pi r^2\,\mathrm dr=4\pi kR^{m+2}.\]
+<why>Los dos lados coinciden para \(m\gt-2\). Para \(m=-2\) la divergencia es 0 en todo punto distinto del origen pero el flujo vale \(4\pi k\): la divergencia se concentra en el origen (ver la deducción de la delta).</why>
+</step>
+<result name="Divergencia y teorema de Gauss">\[\nabla\cdot\mathbf F=\frac1{h_1h_2h_3}\sum_i\partial_i\!\left(\frac{h_1h_2h_3}{h_i}F_i\right),\qquad \oint\mathbf F\cdot\mathrm d\mathbf A=\int\nabla\cdot\mathbf F\,\mathrm dV.\]</result>
+<vars>
+<v s="\mathbf F" n="campo vectorial (p. ej., velocidad de un fluido)" u="m s^-1"/>
+<v s="k" n="constante del campo (para \(m=1\), tasa de expansión)" u="s^-1"/>
+<v s="r" n="distancia al origen" u="m"/>
+<v s="R" n="radio de la esfera" u="m"/>
+<v s="\nabla\cdot\mathbf F" n="divergencia (en la comprobación, de \(\mathbf F\) en m/s)" u="s^-1"/>
+<v s="\Phi" n="flujo (caudal) a través de la esfera" u="m^3 s^-1"/>
+</vars>
+<effects>
+<e>Para \(m=1\) (\(\mathbf F=k\mathbf r\), un flujo que se expande uniformemente) la divergencia es \(3k\) en todas partes y el flujo es \(\tfrac43\pi R^3\cdot3k=4\pi kR^3\): duplicar \(R\) multiplica el flujo por 8 (\(n_R=3\)). Con \(k=1\), \(R=2\): 100.53.</e>
+<e>La divergencia en la superficie crece como \(R^{m-1}\) y el flujo como \(R^{m+2}\): para \(m=0\) (campo de módulo constante \(k\)) la divergencia vale \(2k/R\) y el flujo \(4\pi kR^2\), proporcional al área.</e>
+<e>Para \(m=-1\), \(k=1\), \(R=1\): \(\nabla\cdot\mathbf F=1\) y flujo \(4\pi=12.566\). El flujo es proporcional a \(k\) siempre (\(n_k=1\)).</e>
+</effects>
+<limits>
+<l>Dimensiones: \([\nabla\cdot\mathbf F]=[F]/\mathsf L\), y \([\Phi]=[F]\,\mathsf L^2\). Con \(F\) en m/s, resulta s⁻¹ y m³/s. ✓</l>
+<l>El flujo y la integral de volumen solo coinciden si \(\mathbf F\) es derivable en todo el volumen; en singularidades, como \(\mathbf F\propto\hat r/r^2\) en el origen, hay que tratarlas aparte.</l>
+</limits>
+<explore sim="div-esfera" title="Divergencia, flujo y integral de volumen de F = k rᵐ r̂: el teorema de Gauss numérico"/>
+<div class="sim-guide"><ul>
+<li>Con \(m=1\), \(k=1\), \(R=1\): \(\nabla\cdot\mathbf F=3\), flujo \(=12.5664\) e integral de volumen \(=12.5664\): los dos números coinciden dígito a dígito. Mueva \(m\) a 0 y a −1: divergencias 2 y 1, y el mismo flujo \(4\pi\).</li>
+<li>Con \(m=3\), \(k=2\), \(R=0.5\): \(\nabla\cdot\mathbf F=2.5\) y flujo \(=0.7854\) (\(=\pi/4\)). La tabla de sensibilidad da \(n_R=m+2=5\) para el flujo.</li>
+</ul></div>
+</deriv>
+
+<deriv id="laplaciano-esf" title="El laplaciano en esféricas y las soluciones armónicas rⁿ Pₗ" tags="Cálculo vectorial, Campos">
+<goal>La forma de \(\nabla^2f\) en coordenadas esféricas, su acción sobre \(r^nP_l(\cos\theta)\) y las únicas potencias de \(r\) que dan \(\nabla^2f=0\).</goal>
+<given>
+<g>\(\nabla^2f=\nabla\cdot(\nabla f)\), la divergencia en coordenadas ortogonales y el gradiente \((\nabla f)_i=\partial_if/h_i\).</g>
+<g>Factores de escala esféricos \(h=(1,\,r,\,r\sin\theta)\).</g>
+<g>La ecuación de Legendre para \(P_l(x)\): \(\dfrac{1}{\sin\theta}\dfrac{\mathrm d}{\mathrm d\theta}\!\left(\sin\theta\dfrac{\mathrm dP_l}{\mathrm d\theta}\right)=-l(l+1)P_l\), con \(x=\cos\theta\) (se deduce en el capítulo 4).</g>
+</given>
+<step op="Escribir el gradiente en esféricas">
+\[\nabla f=\Big(\partial_rf,\ \frac1r\partial_\theta f,\ \frac1{r\sin\theta}\partial_\varphi f\Big).\]
+</step>
+<step op="Aplicar la fórmula de la divergencia a este vector">
+\[\nabla^2f=\frac1{r^2\sin\theta}\Big[\partial_r\!\big(r^2\sin\theta\,\partial_rf\big)+\partial_\theta\!\big(\sin\theta\,\partial_\theta f\big)+\partial_\varphi\!\Big(\frac1{\sin\theta}\partial_\varphi f\Big)\Big].\]
+<why>Con \(F_r=\partial_rf\), \(F_\theta=\partial_\theta f/r\), \(F_\varphi=\partial_\varphi f/(r\sin\theta)\): \(h_2h_3F_1=r^2\sin\theta\,\partial_rf\); \(h_3h_1F_2=r\sin\theta\cdot\partial_\theta f/r\); \(h_1h_2F_3=r\cdot\partial_\varphi f/(r\sin\theta)\).</why>
+</step>
+<step op="Separar las partes radial y angular">
+\[\nabla^2f=\frac1{r^2}\frac\partial{\partial r}\!\left(r^2\frac{\partial f}{\partial r}\right)+\frac1{r^2}\Lambda f,\qquad \Lambda=\frac1{\sin\theta}\partial_\theta(\sin\theta\,\partial_\theta)+\frac1{\sin^2\theta}\partial_\varphi^2.\]
+<why>El único factor que cambia de un término a otro es \(r^2\): se saca. \(\Lambda\) es el laplaciano sobre la esfera unidad.</why>
+</step>
+<step op="Aplicar a \(f=r^nP_l(\cos\theta)\)">
+\[\frac1{r^2}\frac{\mathrm d}{\mathrm dr}\!\left(r^2\,n\,r^{n-1}\right)P_l=n(n+1)\,r^{n-2}P_l,\qquad \frac{r^n}{r^2}\Lambda P_l=-l(l+1)\,r^{n-2}P_l.\]
+<why>\(P_l\) no depende de \(\varphi\), así que el término en \(\partial_\varphi^2\) se anula y queda la ecuación de Legendre.</why>
+</step>
+<step op="Sumar y buscar los ceros">
+\[\nabla^2\!\left(r^nP_l\right)=\big[n(n+1)-l(l+1)\big]\,r^{n-2}P_l=0\ \Longleftrightarrow\ (n-l)(n+l+1)=0.\]
+<why>\(n(n+1)-l(l+1)=(n-l)(n+l+1)\): la diferencia de dos «\(x(x+1)\)» se factoriza.</why>
+</step>
+<result name="Laplaciano en esféricas">\[\nabla^2f=\frac1{r^2}\partial_r(r^2\partial_rf)+\frac1{r^2}\Lambda f,\qquad \nabla^2(r^nP_l)=(n-l)(n+l+1)\,r^{n-2}P_l.\]</result>
+<vars>
+<v s="f" n="función escalar (p. ej., temperatura)" u="K"/>
+<v s="\nabla^2f" n="laplaciano de \(f\)" u="K m^-2"/>
+<v s="r" n="distancia al origen" u="m"/>
+<v s="n" n="exponente de \(r\)" u="1"/>
+<v s="l" n="orden del polinomio de Legendre" u="1"/>
+</vars>
+<effects>
+<e>Soluciones armónicas: \(n=l\) y \(n=-(l+1)\). Para \(l=0\): \(f=\) constante y \(f=1/r\) (el potencial de una carga puntual). Para \(l=1\): \(r\cos\theta=z\) y \(\cos\theta/r^2\) (campo uniforme y dipolo). Para \(l=2\): \(r^2P_2\) y \(P_2/r^3\) (cuadrupolo).</e>
+<e>\(\nabla^2r^2=6\) (\(n=2\), \(l=0\)): el laplaciano de la energía potencial de un oscilador es constante. Con \(n=2\) y \(l=1\) el coeficiente es \(6-2=4\); con \(n=3\), \(l=2\), \(12-6=6\).</e>
+<e>Para \(n\) entre \(-(l+1)\) y \(l\), \(\lambda\lt0\); fuera de ese intervalo, \(\lambda\gt0\). El exponente local de \(\nabla^2f\) respecto de \(r\) es siempre \(n-2\): cada cuarto de década de \(r\) baja el laplaciano por \(10^{(n-2)/4}\).</e>
+</effects>
+<limits>
+<l>Dimensiones: cada término tiene \([f]/\mathsf L^2\). ✓ (\(\Lambda\) no tiene dimensión).</l>
+<l>Comprobación independiente: en cartesianas, \(f=z\) y \(f=x^2+y^2-2z^2\) (\(\propto r^2P_2\)) tienen laplaciano nulo; con \(f=x^2+y^2+z^2=r^2\) da 6, que concuerda con \(n(n+1)=6\).</l>
+</limits>
+<explore sim="lap-rn" title="Laplaciano de rⁿ Pₗ(cos θ): el coeficiente (n−l)(n+l+1)"/>
+<div class="sim-guide"><ul>
+<li>Con \(n=2\), \(l=0\): \(\lambda=6\); ponga \(n=0\) y \(n=-1\): \(\lambda=0\) (las dos soluciones armónicas con \(l=0\)). Con \(l=3\): las raíces son \(n=3\) y \(n=-4\), que el simulador muestra a la derecha.</li>
+<li>Con \(n=4\), \(l=2\) y \(r=2\): \(\lambda=20-6=14\) y \(\nabla^2f/P_l=14\cdot2^2=56\).</li>
+</ul></div>
+</deriv>
+
+<deriv id="rotacional" title="Rotacional y teorema de Stokes" tags="Cálculo vectorial, Campos">
+<goal>El rotacional como circulación por unidad de área, el teorema \(\oint\mathbf F\cdot\mathrm d\mathbf l=\iint(\nabla\times\mathbf F)\cdot\mathrm d\mathbf A\) y su aplicación a un campo azimutal \(\mathbf F=a\,r^m\hat\varphi\).</goal>
+<given>
+<g>Definición: la componente del rotacional normal a una superficie es la circulación alrededor de su borde por unidad de área, cuando el área tiende a cero.</g>
+</given>
+<step op="Calcular la circulación alrededor de un rectángulo \(\mathrm dx\times\mathrm dy\) (sentido antihorario)">
+\[\oint\mathbf F\cdot\mathrm d\mathbf l=F_x(y)\,\mathrm dx+F_y(x+\mathrm dx)\,\mathrm dy-F_x(y+\mathrm dy)\,\mathrm dx-F_y(x)\,\mathrm dy.\]
+<why>Lado inferior: se recorre en \(+x\); lado derecho, en \(+y\); lado superior, en \(-x\); lado izquierdo, en \(-y\).</why>
+</step>
+<step op="Desarrollar en Taylor a primer orden">
+\[F_y(x+\mathrm dx)-F_y(x)=\partial_xF_y\,\mathrm dx,\qquad F_x(y+\mathrm dy)-F_x(y)=\partial_yF_x\,\mathrm dy\ \Rightarrow\ \oint=\big(\partial_xF_y-\partial_yF_x\big)\,\mathrm dx\,\mathrm dy.\]
+</step>
+<step op="Definir la componente del rotacional y generalizar">
+\[(\nabla\times\mathbf F)_z=\frac{\oint\mathbf F\cdot\mathrm d\mathbf l}{\mathrm dA}=\partial_xF_y-\partial_yF_x,\qquad (\nabla\times\mathbf F)_i=\frac1{h_jh_k}\Big[\partial_j(h_kF_k)-\partial_k(h_jF_j)\Big]\ \ (ijk\ \text{cíclico}).\]
+<why>La forma en curvilíneas sale del mismo rectángulo con lados \(h_j\mathrm dq_j\) y \(h_k\mathrm dq_k\).</why>
+</step>
+<step op="Teorema de Stokes: sumar rectángulos">
+\[\oint_{\partial S}\mathbf F\cdot\mathrm d\mathbf l=\iint_S(\nabla\times\mathbf F)\cdot\mathrm d\mathbf A.\]
+<why>En cada borde compartido por dos rectángulos vecinos, la circulación se recorre en sentidos opuestos y se cancela; solo queda el borde exterior.</why>
+</step>
+<step op="Calcular el rotacional del campo azimutal en el plano">
+\[F_\varphi=a\,r^m:\qquad(\nabla\times\mathbf F)_z=\frac1{r}\frac{\mathrm d}{\mathrm dr}\!\left(r\,F_\varphi\right)=(m+1)\,a\,r^{m-1}.\]
+<why>De la fórmula general con \(h_r=1\), \(h_\varphi=r\): \((\nabla\times\mathbf F)_z=\frac1r[\partial_r(rF_\varphi)-\partial_\varphi F_r]\) y \(F_r=0\).</why>
+</step>
+<step op="Verificar con una circunferencia de radio \(R\)">
+\[\oint\mathbf F\cdot\mathrm d\mathbf l=a\,R^m\cdot2\pi R=2\pi aR^{m+1},\qquad \int_0^R(m+1)a\,r^{m-1}\,2\pi r\,\mathrm dr=2\pi aR^{m+1}.\]
+<why>Los dos miembros coinciden (para \(m\gt-1\)).</why>
+</step>
+<result name="Rotacional y teorema de Stokes">\[(\nabla\times\mathbf F)_z=\partial_xF_y-\partial_yF_x,\qquad \oint\mathbf F\cdot\mathrm d\mathbf l=\iint(\nabla\times\mathbf F)\cdot\mathrm d\mathbf A.\]</result>
+<vars>
+<v s="\mathbf F" n="campo vectorial (velocidad de un fluido)" u="m s^-1"/>
+<v s="a" n="constante (para \(m=1\), velocidad angular)" u="s^-1"/>
+<v s="R" n="radio de la circunferencia" u="m"/>
+<v s="r" n="distancia al eje" u="m"/>
+<v s="(\nabla\times\mathbf F)_z" n="componente axial del rotacional" u="s^-1"/>
+<v s="\Gamma" n="circulación" u="m^2 s^-1"/>
+</vars>
+<effects>
+<e>\(m=1\), \(a=\omega\): rotación rígida \(\mathbf v=\boldsymbol\omega\times\mathbf r\); rotacional \(=2\omega\) en todo punto y circulación \(2\pi\omega R^2=2\omega\cdot\pi R^2\). Con \(a=1\), \(R=1\): rotacional 2 y circulación \(6.2832\); con \(R=2\), la circulación se cuadruplica (\(n_R=m+1=2\)).</e>
+<e>\(m=0\) (módulo constante): rotacional \(a/r\) y circulación \(2\pi aR\), proporcional al perímetro. Con \(m=2\), \(a=1\), \(R=1\): rotacional 3, circulación \(2\pi\).</e>
+<e>\(m=-1\) (el «vórtice libre», \(F_\varphi=a/r\)): el rotacional es nulo en todo punto salvo el eje y la circulación es siempre \(2\pi a\), independiente de \(R\). Es el campo magnético de un hilo con corriente.</e>
+</effects>
+<limits>
+<l>Dimensiones: \([\partial_xF_y]=[F]/\mathsf L\) y \([\oint\mathbf F\cdot\mathrm d\mathbf l]=[F]\mathsf L\). Con \(F\) en m/s: s⁻¹ y m²/s. ✓</l>
+<l>Un campo con rotacional nulo en una región simplemente conexa tiene circulación nula y es un gradiente; el vórtice libre es el contraejemplo, porque la región (el plano sin el eje) no es simplemente conexa.</l>
+</limits>
+<explore sim="rot-azim" title="Rotacional, circulación y flujo del rotacional de F = a rᵐ φ̂ (Stokes numérico)"/>
+<div class="sim-guide"><ul>
+<li>Con \(m=1\), \(a=1\), \(R=1\): rotacional 2, circulación \(6.2832\) y flujo del rotacional \(6.2832\) (Simpson). Con \(m=2\), \(a=2\), \(R=1.5\): rotacional \(9\), circulación \(2\pi\cdot2\cdot1.5^3=42.41\).</li>
+<li>Baje \(m\) a −0.5: el rotacional \((m+1)aR^{m-1}=0.5\,aR^{-1.5}\) decae con el radio, mientras la circulación sigue aumentando como \(R^{0.5}\).</li>
+</ul></div>
+</deriv>
+
+<deriv id="delta-4pi" title="La divergencia de r̂/r² y la delta de Dirac" tags="Cálculo vectorial, Distribuciones">
+<goal>Demostrar que \(\nabla\cdot(\hat r/r^2)=4\pi\,\delta^3(\mathbf r)\), con la delta definida por \(\int\delta^3\,\mathrm dV=1\), y ver cómo se llega a ella como límite de una fuente extendida.</goal>
+<given>
+<g>Teorema de Gauss (deducción anterior), válido para campos derivables.</g>
+<g>La integral gaussiana: \(\int_{\mathbb R^3}\mathrm e^{-r^2/2\sigma^2}\mathrm d^3r=(2\pi\sigma^2)^{3/2}\) (capítulo 2).</g>
+</given>
+<step op="Calcular el flujo de \(\mathbf E=\hat r/r^2\) por una esfera de radio \(R\)">
+\[\oint\mathbf E\cdot\mathrm d\mathbf A=\frac1{R^2}\cdot4\pi R^2=4\pi\qquad(\text{independiente de }R).\]
+</step>
+<step op="Calcular la divergencia lejos del origen">
+\[\nabla\cdot\mathbf E=\frac1{r^2}\frac{\mathrm d}{\mathrm dr}\left(r^2\cdot\frac1{r^2}\right)=0\qquad(r\ne0).\]
+<why>Con \(m=-2\) y \(k=1\) en la deducción de la divergencia: el factor \(m+2\) se anula.</why>
+</step>
+<step op="Concluir que la divergencia vive en el origen">
+\[\int_V\nabla\cdot\mathbf E\,\mathrm dV=4\pi\ \ \text{para todo }V\ni\mathbf 0,\qquad \nabla\cdot\mathbf E=0\ \text{fuera del origen}\ \Longrightarrow\ \nabla\cdot\mathbf E=4\pi\,\delta^3(\mathbf r).\]
+<why>Una función ordinaria que se anula salvo en un punto tiene integral 0; para obtener \(4\pi\) hace falta una distribución concentrada en un punto con integral 1: la delta de Dirac (que se define así).</why>
+</step>
+<step op="Regularizar: fuente gaussiana de integral 1">
+\[\rho_\sigma(r)=\frac{\mathrm e^{-r^2/2\sigma^2}}{(2\pi\sigma^2)^{3/2}},\qquad\int\rho_\sigma\,\mathrm d^3r=1,\qquad\rho_\sigma\xrightarrow{\sigma\to0}\delta^3(\mathbf r).\]
+<why>La constante de normalización sale de la integral gaussiana en tres dimensiones, una por coordenada.</why>
+</step>
+<step op="Calcular la fracción de la fuente dentro de la esfera \(r\lt R\)">
+\[Q(R)=4\pi\!\int_0^R\!\rho_\sigma\,r^2\mathrm dr=\sqrt{\tfrac2\pi}\int_0^{x}u^2\mathrm e^{-u^2/2}\mathrm du=\operatorname{erf}\!\frac{x}{\sqrt2}-\sqrt{\tfrac2\pi}\,x\,\mathrm e^{-x^2/2},\qquad x=\frac R\sigma.\]
+<why>Con \(u=r/\sigma\). Se integra por partes con \(u\cdot u\mathrm e^{-u^2/2}\): \(\int_0^xu^2\mathrm e^{-u^2/2}\mathrm du=-x\,\mathrm e^{-x^2/2}+\int_0^x\mathrm e^{-u^2/2}\mathrm du\), y \(\int_0^x\mathrm e^{-u^2/2}\mathrm du=\sqrt{\pi/2}\operatorname{erf}(x/\sqrt2)\).</why>
+</step>
+<step op="Obtener el campo de la fuente extendida con el teorema de Gauss">
+\[4\pi r^2F_\sigma(r)=4\pi\,Q(r)\ \Longrightarrow\ \mathbf F_\sigma=\frac{Q(r)}{r^2}\,\hat r,\qquad\nabla\cdot\mathbf F_\sigma=\frac1{r^2}\frac{\mathrm dQ}{\mathrm dr}=4\pi\rho_\sigma.\]
+<why>Por simetría esférica el campo es radial y de módulo constante sobre cada esfera. Como \(\mathrm dQ/\mathrm dr=4\pi r^2\rho_\sigma\), la divergencia reproduce la fuente (ecuación diferencial de Gauss).</why>
+</step>
+<step op="Pasar al límite \(\sigma\to0\)">
+\[Q(R)\to1\ \ (R\gt0),\qquad \mathbf F_\sigma\to\frac{\hat r}{r^2},\qquad 4\pi\rho_\sigma\to4\pi\,\delta^3(\mathbf r).\]
+</step>
+<result name="Delta y ley de Gauss diferencial">\[\nabla\cdot\frac{\hat r}{r^2}=4\pi\,\delta^3(\mathbf r),\qquad \nabla^2\frac1r=-4\pi\,\delta^3(\mathbf r).\]</result>
+<vars>
+<v s="R" n="radio de la esfera" u="m"/>
+<v s="\sigma" n="anchura de la fuente gaussiana" u="m"/>
+<v s="\rho_\sigma" n="densidad de la fuente (integral 1)" u="m^-3"/>
+<v s="Q" n="fracción de la fuente dentro de \(R\)" u="1"/>
+<v s="F" n="módulo del campo \(Q/R^2\)" u="m^-2"/>
+</vars>
+<effects>
+<e>A \(R=\sigma\) solo el 19.87 % de la fuente está dentro: el campo es 0.1987 veces el de la carga puntual. A \(R=2\sigma\), 73.85 %; a \(3\sigma\), 97.07 %; a \(4\sigma\), 99.887 %; a \(5\sigma\), el 99.9985 % (queda \(1.544\times10^{-5}\) fuera).</e>
+<e>Por eso el campo de una distribución extendida es el de una carga puntual en todos los puntos suficientemente fuera de ella (\(R\gtrsim5\sigma\) da 4 cifras) y es proporcional a \(r\) cerca del centro: \(Q\propto R^3\), \(F\propto R\) para \(R\ll\sigma\) (exponente local 1 de \(F\) respecto de \(R\)).</e>
+<e>Reducir \(\sigma\) con \(R=1\) fija: \(\sigma=1\) da \(Q=0.19875\) y \(\sigma=0.2\) da \(Q=0.999985\); la fuente puntual es el límite \(\sigma\to0\).</e>
+</effects>
+<limits>
+<l>Dimensiones: \([\rho_\sigma]=\mathsf L^{-3}\) (el exponente \(r^2/2\sigma^2\) es adimensional); \(Q\) es adimensional y \([F]=\mathsf L^{-2}\). ✓</l>
+<l>Para \(R\to\infty\), \(Q\to1\) y \(F\to1/R^2\); para \(R\to0\), \(Q\to\sqrt{2/\pi}\,x^3/3\) (la fuente crece con el volumen).</l>
+</limits>
+<explore sim="delta-reg" title="Fracción de una fuente gaussiana dentro de R: de la carga extendida a la delta"/>
+<div class="sim-guide"><ul>
+<li>Con \(R=1\), \(\sigma=1\): \(Q=0.19875\), fuera 0.80125 y \(F=0.19875\). Seleccione \(R\) en el eje: la curva \(F(R)\) sube linealmente, alcanza un máximo de \(0.2140/\sigma^2\) en \(R=1.369\sigma\) y decae como \(1/R^2\).</li>
+<li>Con \(\sigma=0.2\) (\(R=1=5\sigma\)): \(1-Q=1.544\times10^{-5}\). Con \(\sigma=0.01\) y \(R=1\) el exterior es \(0\) a todos los efectos.</li>
+</ul></div>
+</deriv>
+
+<deriv id="bola-n" title="Volumen y superficie de la bola en n dimensiones" tags="Integrales, Mecánica estadística">
+<goal>El volumen \(V_n(R)\) de una bola de radio \(R\) en \(\mathbb R^n\) y el área \(S_{n-1}(R)\) de su superficie.</goal>
+<given>
+<g>La integral gaussiana en una dimensión, \(\int\mathrm e^{-x^2}\mathrm dx=\sqrt\pi\), y la función gamma, \(\int_0^\infty u^{s}\mathrm e^{-u}\mathrm du=\Gamma(s+1)\) (capítulo 2).</g>
+<g>La superficie de una esfera en \(n\) dimensiones escala como \(R^{n-1}\); su volumen, como \(R^n\) (análisis dimensional).</g>
+</given>
+<step op="Calcular \(\int\mathrm e^{-|\mathbf x|^2}\mathrm d^nx\) por coordenadas cartesianas">
+\[\int_{\mathbb R^n}\mathrm e^{-(x_1^2+\cdots+x_n^2)}\mathrm d^nx=\prod_{i=1}^n\int_{-\infty}^\infty\mathrm e^{-x_i^2}\mathrm dx_i=\pi^{n/2}.\]
+<why>La exponencial de una suma es el producto de exponenciales y cada factor depende de una sola variable: la integral se factoriza.</why>
+</step>
+<step op="Calcular la misma integral en cáscaras esféricas">
+\[\int_{\mathbb R^n}\mathrm e^{-r^2}\mathrm d^nx=S_{n-1}\int_0^\infty r^{n-1}\mathrm e^{-r^2}\mathrm dr,\qquad S_{n-1}\equiv S_{n-1}(R=1).\]
+<why>El volumen de la cáscara entre \(r\) y \(r+\mathrm dr\) es \(S_{n-1}\,r^{n-1}\mathrm dr\).</why>
+</step>
+<step op="Resolver la integral radial con \(u=r^2\)">
+\[\int_0^\infty r^{n-1}\mathrm e^{-r^2}\mathrm dr=\frac12\int_0^\infty u^{n/2-1}\mathrm e^{-u}\mathrm du=\frac12\,\Gamma\!\left(\frac n2\right).\]
+<why>\(\mathrm du=2r\,\mathrm dr\) y \(r^{n-2}=u^{n/2-1}\).</why>
+</step>
+<step op="Igualar los dos cálculos y despejar la superficie">
+\[S_{n-1}\cdot\tfrac12\Gamma(\tfrac n2)=\pi^{n/2}\ \Longrightarrow\ S_{n-1}=\frac{2\pi^{n/2}}{\Gamma(n/2)}.\]
+</step>
+<step op="Integrar la superficie para obtener el volumen">
+\[V_n(R)=\int_0^RS_{n-1}\,r^{n-1}\mathrm dr=\frac{S_{n-1}R^n}{n}=\frac{\pi^{n/2}}{\Gamma(n/2+1)}\,R^n.\]
+<why>\(\tfrac n2\,\Gamma(\tfrac n2)=\Gamma(\tfrac n2+1)\), por la ecuación funcional de la gamma.</why>
+</step>
+<step op="Comprobar los casos conocidos">
+\[n=1:\ 2R;\quad n=2:\ \pi R^2;\quad n=3:\ \tfrac{\pi^{3/2}}{\Gamma(5/2)}R^3=\tfrac43\pi R^3.\]
+<why>\(\Gamma(\tfrac32)=\tfrac{\sqrt\pi}{2}\) y \(\Gamma(\tfrac52)=\tfrac{3\sqrt\pi}{4}\).</why>
+</step>
+<result name="Bola en n dimensiones">\[S_{n-1}(R)=\frac{2\pi^{n/2}}{\Gamma(n/2)}R^{n-1},\qquad V_n(R)=\frac{\pi^{n/2}}{\Gamma(n/2+1)}R^n.\]</result>
+<vars>
+<v s="n" n="dimensión del espacio" u="1"/>
+<v s="R" n="radio" u="m"/>
+<v s="V_3" n="volumen en \(n=3\)" u="m^3"/>
+<v s="S_2" n="superficie en \(n=3\)" u="m^2"/>
+</vars>
+<effects>
+<e>Volumen de la bola unidad: 2 (\(n=1\)), 3.1416, 4.1888, 4.9348, 5.2638 (\(n=5\), el máximo entre enteros), 5.1677 (\(n=6\)), 2.5502 (\(n=10\)), 0.025807 (\(n=20\)) y \(2.19\times10^{-5}\) (\(n=30\)). Con \(n\) real, el máximo es 5.2778 en \(n\approx5.26\).</e>
+<e>Duplicar el radio multiplica \(V_n\) por \(2^n\) (\(n_R=n\)); para \(n=3\), ×8 (de 4.1888 a 33.51). La superficie: \(2^{n-1}\).</e>
+<e>La bola unidad casi no tiene volumen en alta dimensión: la caja \([-1,1]^n\) vale \(2^n\), y la fracción de ella ocupada por la bola cae a \(2.5	imes10^{-8}\) en \(n=20\). Esto es lo que hace que el volumen del espacio de fases de \(N\) partículas (\(n=3N\)) se concentre en la cáscara exterior (capítulo 18).</e>
+</effects>
+<limits>
+<l>Dimensiones (\(n=3\)): \([\pi^{3/2}R^3/\Gamma(5/2)]=\mathsf L^3\) y \(S_2=4\pi R^2\) tiene \(\mathsf L^2\). ✓ En general \([V_n]=\mathsf L^n\).</l>
+<l>Relación útil: \(S_{n-1}=n\,V_n/R\), y \(\mathrm dV_n/\mathrm dR=S_{n-1}\).</l>
+</limits>
+<explore sim="bola-n" title="Volumen y superficie de la bola en n dimensiones (n real)"/>
+<div class="sim-guide"><ul>
+<li>Con \(n=3\), \(R=1\): \(V=4.18879\), \(S=12.5664\). Suba \(n\) a 5.3: el volumen pasa por su máximo, 5.2778. Con \(n=20\): \(V=0.025807\) y \(S=0.51614\).</li>
+<li>Seleccione \(R\) en el eje horizontal: en log–log \(V\) es una recta de pendiente \(n\), y la tabla marca \(n_R=n\) para el volumen y \(n-1\) para la superficie.</li>
+</ul></div>
+</deriv>
+
+<section>
+<h2>Fuentes y lecturas</h2>
+<ul class="refs">
+<li>D. J. Griffiths, <em>Introduction to Electrodynamics</em>, 4.ª ed., Cambridge University Press (2017): cap. 1 (cálculo vectorial, teoremas de Gauss y Stokes, delta de Dirac, § 1.5).</li>
+<li>J. D. Jackson, <em>Classical Electrodynamics</em>, 3.ª ed., Wiley (1999): § 1.2 (ley de Gauss y \(\nabla^2(1/r)=-4\pi\delta\)) y las fórmulas de operadores en coordenadas curvilíneas de las guardas del libro.</li>
+<li>G. B. Arfken, H. J. Weber, F. E. Harris, <em>Mathematical Methods for Physicists</em>, 7.ª ed., Academic Press (2013): cap. 3 (coordenadas curvilíneas ortogonales, factores de escala, gradiente, divergencia, rotacional y laplaciano).</li>
+<li>H. M. Schey, <em>Div, Grad, Curl, and All That</em>, 4.ª ed., Norton (2005): la interpretación geométrica con flujo y circulación por unidad de volumen y de área.</li>
+<li>F. W. J. Olver <em>et al.</em> (eds.), <em>NIST Digital Library of Mathematical Functions</em>, § 5 (función gamma) y § 7 (función de error); y para el volumen de la bola en \(n\) dimensiones, J. H. Conway y N. J. A. Sloane, <em>Sphere Packings, Lattices and Groups</em>, Springer (1999), cap. 1.</li>
+</ul>
+</section>
+</template>

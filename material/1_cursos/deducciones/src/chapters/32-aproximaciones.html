@@ -1,0 +1,289 @@
+<template class="chapter-src" data-id="aproximaciones" data-num="32" data-title="Métodos de aproximación: WKB, perturbaciones, variacional y regla de oro" data-part="Parte VIII · Física cuántica" data-short="La cuantización WKB, la teoría de perturbaciones (oscilador anarmónico y efecto Stark), el método variacional del helio y la regla de oro de Fermi con la vida media de un estado excitado">
+<p class="lead">Casi ningún problema cuántico real se resuelve en forma cerrada. Este capítulo reúne las cuatro herramientas con las que se obtiene la física de átomos, moléculas y sólidos: el método semiclásico (WKB), la teoría de perturbaciones (independiente y dependiente del tiempo) y el principio variacional. Cada fórmula se deduce y se contrasta con la solución exacta o con la diagonalización numérica, de modo que se vea hasta dónde llega la aproximación y qué la rompe.</p>
+
+<deriv id="wkb-cuantizacion" title="La cuantización semiclásica (WKB): neutrones que rebotan en un espejo" tags="Cuántica, Aproximaciones">
+<goal>Las energías de los estados ligados cuando el potencial cambia poco en una longitud de onda de de Broglie, y su aplicación a una partícula que rebota sobre un espejo en el campo gravitatorio.</goal>
+<given>
+<g>Ecuación de Schrödinger estacionaria \(\phi''=-\dfrac{p(x)^2}{\hbar^2}\phi\) con \(p(x)=\sqrt{2m\,[E-V(x)]}\).</g>
+<g>El potencial varía lentamente: \(|\mathrm d\lambda/\mathrm dx|\ll1\) con \(\lambda=h/p\) (la aproximación falla en los puntos de retorno, donde \(p\to0\); allí se empalma con la función de Airy).</g>
+</given>
+<step op="Escribir \(\phi=e^{iS(x)/\hbar}\) y sustituir">
+\[(S')^2-i\hbar S''=p^2.\]
+<why>Es exacta: \(S\) no se supone pequeña, solo se desarrolla en potencias de \(\hbar\) (que es pequeña frente a la acción típica).</why>
+</step>
+<step op="Orden \(\hbar^0\) y \(\hbar^1\) de \(S=S_0+\hbar S_1+\dots\)">
+\[S_0'=\pm p,\qquad 2S_0'S_1'=iS_0''\ \Longrightarrow\ S_1=\tfrac i2\ln p\ \Longrightarrow\ \phi\simeq\frac{C_\pm}{\sqrt{p}}\,e^{\pm\frac i\hbar\int p\,\mathrm dx}.\]
+<why>La amplitud \(|\phi|^2\propto1/p\propto1/v\): la partícula pasa más tiempo donde va más despacio, igual que en la mecánica clásica.</why>
+</step>
+<step op="Empalme en un punto de retorno blando \(b\) (el potencial es lineal cerca de \(b\): solución de Airy)">
+\[\phi\simeq\frac{2C}{\sqrt{p}}\cos\!\left(\frac1\hbar\int_x^bp\,\mathrm dx'-\frac\pi4\right)\quad(x<b),\qquad\phi\to0\ \text{(decae) para }x>b.\]
+<why>La solución de Airy regular que decae a la derecha se comporta, lejos del punto de retorno, como un coseno con desfase \(\pi/4\): ese es el origen del «\(\tfrac14\)» (o del «\(\tfrac12\)») de la regla de Bohr–Sommerfeld.</why>
+</step>
+<step op="Pared dura en \(z=0\) (\(\phi(0)=0\)) y punto de retorno blando en \(b\): condición de cuantización">
+\[\cos\!\big(\Phi-I(z)-\tfrac\pi4\big)\propto\sin I(z)\ \Longrightarrow\ \Phi-\tfrac\pi4=\left(k+\tfrac12\right)\pi\ \Longrightarrow\ \int_0^bp\,\mathrm dz=\left(n-\tfrac14\right)\pi\hbar,\quad n=1,2,\dots\]
+<why>\(\Phi=\frac1\hbar\int_0^bp\,\mathrm dz\) e \(I(z)=\frac1\hbar\int_0^zp\,\mathrm dz'\). Con dos puntos de retorno blandos resulta \(\oint p\,\mathrm dx=(n+\tfrac12)h\); para el oscilador armónico esta regla da el resultado exacto \((n+\tfrac12)\hbar\omega\).</why>
+</step>
+<step op="Potencial gravitatorio \(V=mgz\) (\(z\ge0\)): \(p=\sqrt{2m(E-mgz)}\), punto de retorno \(b=E/mg\)">
+\[\int_0^bp\,\mathrm dz=\frac{2\sqrt{2m}}{3\,mg}\,E^{3/2}.\]
+</step>
+<step op="Igualar a \((n-\tfrac14)\pi\hbar\) y despejar la energía">
+\[E_n=\left[\frac{3\pi}2\left(n-\tfrac14\right)\right]^{2/3}\left(\frac{mg^2\hbar^2}2\right)^{1/3}.\]
+</step>
+<result name="Cuantización WKB en el campo gravitatorio">\[E_n=\left[\frac{3\pi}2\left(n-\frac14\right)\right]^{2/3}\left(\frac{mg^2\hbar^2}2\right)^{1/3},\qquad z_n=\frac{E_n}{mg},\qquad l_0=\left(\frac{\hbar^2}{2m^2g}\right)^{1/3}.\]</result>
+<vars>
+<v s="E_n" n="energía del nivel \(n\)" u="J"/>
+<v s="p" n="cantidad de movimiento clásica" u="kg m s^-1"/>
+<v s="m" n="masa" u="kg"/>
+<v s="g" n="aceleración de la gravedad" u="m s^-2"/>
+<v s="\hbar" n="constante de Planck reducida" u="J s"/>
+<v s="z_n" n="altura del punto de retorno" u="m"/>
+<v s="b" n="punto de retorno" u="m"/>
+<v s="l_0" n="longitud característica del problema" u="m"/>
+<v s="n" n="número del nivel" u="1"/>
+<v s="S" n="fase (acción) de la onda" u="J s"/>
+</vars>
+<effects>
+<e>Neutrón (\(m=1.00866\) u) sobre un espejo: \(l_0=5.8686\ \mu\)m y \(mgl_0=0.60165\) peV. El primer nivel exacto (cero de la función de Airy, \(2.33811\)) está en \(E_1=1.40672\) peV, a \(z_1=13.72\ \mu\)m; WKB da \(1.39598\) peV (error \(-0.76\ \%\)). Para \(n=2\): exacto \(2.45951\) peV y WKB \(2.45581\) peV (\(-0.150\ \%\)); \(n=3\): 3.32144 y 3.31939 peV (\(-0.0615\ \%\)); \(n=5\): 4.77958 y 4.77859 peV (\(-0.0207\ \%\)). El error decrece como \(n^{-2}\).</e>
+<e>Los niveles no son equiespaciados: \(E_2/E_1=1.7484\) (WKB: 1.7592) y \(E_2-E_1=1.0528\) peV, es decir, una transición de unos 254.6 Hz, que se mide con campos oscilantes (experimentos qBounce).</e>
+<e>Escalas: \(E_n\propto m^{1/3}g^{2/3}\). Multiplicar \(g\) por 2 sube todas las energías en \(2^{2/3}=1.5874\); multiplicar la masa por 8 las duplica; en cambio la altura \(z_n=E_n/mg\) baja como \(m^{-2/3}g^{-1/3}\).</e>
+</effects>
+<limits>
+<l>Dimensiones: \((mg^2\hbar^2)^{1/3}\) tiene unidades de \((\mathrm{kg}\cdot\mathrm{m^2\,s^{-4}}\cdot\mathrm{kg^2\,m^4\,s^{-2}})^{1/3}=\mathrm{kg\,m^2\,s^{-2}}\): energía. ✓</l>
+<l>La aproximación mejora al crecer \(n\) (principio de correspondencia) y falla para potenciales que cambian bruscamente en una longitud de onda, como paredes de pozos finitos pequeños o deltas. Los números \(\tfrac14\) y \(\tfrac12\) son exactos solo en el sentido asintótico; para \(n=1\) el error ya es del 0.8 %.</l>
+</limits>
+<explore sim="wkb" title="Cuantización WKB en un campo gravitatorio: energía, altura y error frente al resultado exacto"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (neutrón, \(g=9.80665\) m/s², \(n=1\)): \(E_1^\text{WKB}=1.395975\) peV, \(z_1=13.6167\ \mu\)m, \(l_0=5.8686\ \mu\)m y error \(-0.76\ \%\).</li>
+<li>Seleccione \(n\) en el eje: \(E\propto(n-\tfrac14)^{2/3}\) y el error se reduce rápidamente; con \(g\), \(E\propto g^{2/3}\).</li>
+</ul></div>
+</deriv>
+
+<deriv id="perturbacion-no-degenerada" title="Teoría de perturbaciones: oscilador anarmónico y efecto Stark cuadrático" tags="Cuántica, Aproximaciones">
+<goal>El corrimiento de un nivel no degenerado por una perturbación pequeña, a primer y segundo orden, y dos aplicaciones: el oscilador con término \(x^4\) y la polarizabilidad del hidrógeno.</goal>
+<given>
+<g>\(H=H_0+\lambda H'\) con \(H_0\varphi_n=E_n\varphi_n\), niveles no degenerados y \(\{\varphi_n\}\) ortonormal; se desarrolla \(E=E_n+\lambda E^{(1)}+\lambda^2E^{(2)}+\cdots\) y \(\psi=\varphi_n+\lambda\psi^{(1)}+\cdots\) con \(\langle\varphi_n|\psi^{(k)}\rangle=0\) (\(k\ge1\)).</g>
+</given>
+<step op="Igualar potencias de \(\lambda\) en \((H_0+\lambda H')\psi=E\psi\)">
+\[(H_0-E_n)\psi^{(1)}=(E^{(1)}-H')\varphi_n,\qquad(H_0-E_n)\psi^{(2)}=(E^{(1)}-H')\psi^{(1)}+E^{(2)}\varphi_n.\]
+</step>
+<step op="Proyectar el orden 1 sobre \(\varphi_n\) (el lado izquierdo se anula por hermiticidad de \(H_0\))">
+\[E^{(1)}_n=\langle n|H'|n\rangle.\]
+</step>
+<step op="Desarrollar \(\psi^{(1)}=\sum_{m\ne n}c_m\varphi_m\) y proyectar sobre \(\varphi_m\)">
+\[c_m=\frac{H'_{mn}}{E_n-E_m}.\]
+<why>El denominador exige niveles no degenerados: si \(E_m=E_n\) la fórmula diverge y se necesita la teoría degenerada (deducción siguiente).</why>
+</step>
+<step op="Proyectar el orden 2 sobre \(\varphi_n\)">
+\[E^{(2)}_n=\langle n|H'|\psi^{(1)}\rangle=\sum_{m\ne n}\frac{|H'_{mn}|^2}{E_n-E_m}.\]
+<why>El segundo orden del nivel más bajo es siempre negativo: los niveles inferiores «se repelen» con los superiores.</why>
+</step>
+<step op="Oscilador anarmónico \(H'=\beta x^4\) con \(x_0^2=\hbar/m\omega\): elementos de matriz de \(x\) en la base \(|n\rangle\)">
+\[\langle n|x^4|n\rangle=\frac{x_0^4}4\left(6n^2+6n+3\right)\ \Longrightarrow\ \frac{E_n}{\hbar\omega}=n+\tfrac12+\frac\varepsilon4(6n^2+6n+3)-\frac{\varepsilon^2}8\left(34n^3+51n^2+59n+21\right),\ \ \varepsilon=\frac{\beta x_0^4}{\hbar\omega}.\]
+<why>El término de segundo orden se obtiene con \(\langle n\pm4|x^4|n\rangle\) y \(\langle n\pm2|x^4|n\rangle\) (los únicos no nulos, además del diagonal).</why>
+</step>
+<step op="Efecto Stark del estado 1s: \(H'=eFz\), cuyo primer orden se anula por paridad; el segundo orden se resuelve sin sumar infinitos estados (Dalgarno–Lewis)">
+\[\psi^{(1)}=-\mathcal F\left(r+\frac{r^2}2\right)\cos\theta\;\psi_{100}\ \Longrightarrow\ E^{(2)}=\langle\psi_{100}|\mathcal Fz|\psi^{(1)}\rangle=-\frac94\,\mathcal F^2\ \Longleftrightarrow\ E^{(2)}=-\frac94\,(4\pi\varepsilon_0)\,a_0^3F^2.\]
+<why>En unidades atómicas (\(r\) en \(a_0\), \(\mathcal F=eFa_0/E_h\)) esa función resuelve exactamente \((H_0-E_1)\psi^{(1)}=-\mathcal Fz\,\psi_{100}\): no hay que sumar sobre los infinitos estados ligados y del continuo.</why>
+</step>
+<result name="Perturbaciones y polarizabilidad">\[E^{(1)}_n=\langle n|H'|n\rangle,\qquad E^{(2)}_n=\sum_{m\ne n}\frac{|H'_{mn}|^2}{E_n-E_m},\qquad\Delta E=-\tfrac12\alpha F^2,\quad\alpha=\frac92\,(4\pi\varepsilon_0)\,a_0^3.\]</result>
+<vars>
+<v s="E_n" n="energía no perturbada" u="J"/>
+<v s="H'" n="perturbación" u="J"/>
+<v s="H'_{mn}" n="elemento de matriz de la perturbación" u="J"/>
+<v s="\beta" n="constante del término cuártico" u="J m^-4"/>
+<v s="x_0" n="longitud del oscilador \(\sqrt{\hbar/m\omega}\)" u="m"/>
+<v s="\hbar" n="constante de Planck reducida" u="J s"/>
+<v s="m" n="masa" u="kg"/>
+<v s="\omega" n="frecuencia angular" u="rad s^-1"/>
+<v s="\varepsilon" n="parámetro de anarmonicidad" u="1"/>
+<v s="n" n="número cuántico" u="1"/>
+<v s="F" n="campo eléctrico" u="V m^-1"/>
+<v s="\alpha" n="polarizabilidad" u="C m^2 V^-1"/>
+<v s="\varepsilon_0" n="permitividad del vacío" u="F m^-1"/>
+<v s="a_0" n="radio de Bohr" u="m"/>
+</vars>
+<effects>
+<e>Hidrógeno en 1s: \(\alpha/(4\pi\varepsilon_0)=\tfrac92a_0^3=0.66683\ \text{Å}^3\) (\(\alpha=7.4195\times10^{-41}\) C m²/V). A \(F=10\) MV/m: \(\Delta E=-0.0231544\ \mu\)eV (\(-5.5987\) MHz) y dipolo inducido de \(8.7511\times10^{-5}\,ea_0\); a 100 MV/m el corrimiento es 100 veces mayor (\(-2.3154\ \mu\)eV). Para un ion hidrogenoide \(\alpha\propto Z^{-4}\): en He⁺, \(0.041677\ \text{Å}^3\).</e>
+<e>Oscilador con \(\varepsilon=0.05\): el nivel fundamental pasa de \(0.5\) a \(0.5375\,\hbar\omega\) (1.er orden) o \(0.53094\,\hbar\omega\) (2.º orden), frente al valor exacto de la diagonalización, \(0.53264\,\hbar\omega\). La separación entre niveles ya no es constante: \(1+3\varepsilon(n+1)\), por ejemplo 1.15 entre \(n=0\) y \(n=1\).</e>
+<e>La serie es asintótica: con \(\varepsilon=0.01\) el nivel \(n=0\) coincide a 2×10⁻⁵ (\(0.507237\) frente a \(0.507256\)), pero con \(\varepsilon=0.1\) y \(n=2\) el segundo orden da \(2.706\) y el valor exacto es \(3.139\): la corrección crece como \(\varepsilon n^2\) y la teoría se rompe en niveles altos.</e>
+</effects>
+<limits>
+<l>Dimensiones: \(\alpha F^2\) tiene unidades \(\mathrm{C\,m^2\,V^{-1}}\cdot\mathrm{V^2\,m^{-2}}=\mathrm{C\,V}=\mathrm{J}\); \(\beta x_0^4\) es una energía. ✓</l>
+<l>Válida si \(|H'_{mn}|\ll|E_n-E_m|\); el campo de ionización del hidrógeno es del orden de \(5\times10^{11}\) V/m, muy por encima de los campos del ejemplo. En el oscilador, para \(\beta<0\) el potencial no tiene estado ligado verdadero y la serie no converge.</l>
+</limits>
+<explore sim="anarmonico" title="Oscilador anarmónico: corrimiento de los niveles a primer y segundo orden"/>
+<explore sim="stark-cuad" title="Efecto Stark cuadrático del hidrógeno: polarizabilidad y corrimiento"/>
+<div class="sim-guide"><ul>
+<li>Anarmónico (\(n=0\), \(\varepsilon=0.05\)): \(E/\hbar\omega=0.5375\) (1.er orden), \(0.5309375\) (2.º orden), separación 1.15 y corrimiento \(0.0375\).</li>
+<li>Stark (\(Z=1\), \(F=10\) MV/m): \(\alpha/4\pi\varepsilon_0=0.666831\ \text{Å}^3\), \(\Delta E=-0.0231544\ \mu\)eV, \(-5.59872\) MHz; \(\Delta E\propto F^2\) y \(\propto Z^{-4}\).</li>
+</ul></div>
+</deriv>
+
+<deriv id="perturbacion-degenerada" title="Perturbaciones con degeneración: el efecto Stark lineal del hidrógeno" tags="Cuántica, Aproximaciones">
+<goal>Los niveles \(n=2\) del hidrógeno, de energía idéntica para 2s y 2p, en un campo eléctrico: el desdoblamiento es lineal en \(F\) y el átomo se comporta como si tuviera un dipolo permanente.</goal>
+<given>
+<g>Nivel degenerado: cuatro estados \(2s,\,2p_0,\,2p_{\pm1}\) con la misma energía \(E_2=-13.6057/4\) eV; perturbación \(H'=eFz\).</g>
+<g>Los elementos \(H'_{ab}=\langle a|H'|b\rangle\) entre los estados degenerados deben diagonalizarse primero: la teoría no degenerada tendría denominadores nulos.</g>
+</given>
+<step op="Teoría degenerada: los estados correctos de orden cero diagonalizan \(H'\) dentro del subespacio">
+\[\det\left(H'_{ab}-E^{(1)}\delta_{ab}\right)=0.\]
+<why>Con denominadores \(E_a-E_b=0\) el orden 1 solo es finito si el numerador \(\langle b|H'|a\rangle\) se anula: eso fija la combinación lineal de \(\varphi_a\) y \(\varphi_b\) correcta.</why>
+</step>
+<step op="Reglas de selección: \(z\) es impar bajo paridad y conmuta con \(L_z\)">
+\[\langle l'm'|z|lm\rangle\ne0\ \Longrightarrow\ l'=l\pm1,\quad m'=m.\]
+<why>De los cuatro estados solo el par \(2s\)–\(2p_0\) queda acoplado: \(2p_{\pm1}\) tienen \(m\ne0\) y no se mezclan con nada.</why>
+</step>
+<step op="Elemento de matriz: parte radial por parte angular">
+\[\langle2s|z|2p_0\rangle=\underbrace{\int_0^\infty R_{20}R_{21}\,r^3\,\mathrm dr}_{-3\sqrt3\,a_0}\times\underbrace{\int Y_{00}^*\cos\theta\,Y_{10}\,\mathrm d\Omega}_{1/\sqrt3}=-3a_0.\]
+</step>
+<step op="Diagonalizar la matriz \(2\times2\) y fijar los estados">
+\[\begin{pmatrix}0&-3eFa_0\\-3eFa_0&0\end{pmatrix}\ \Longrightarrow\ E^{(1)}=\pm3\,ea_0F,\qquad|\pm\rangle=\tfrac1{\sqrt2}\left(|2s\rangle\mp|2p_0\rangle\right).\]
+</step>
+<step op="Generalización a cualquier \(n\) (coordenadas parabólicas, \(q=n_1-n_2\))">
+\[\Delta E=\tfrac32\,n\,q\,ea_0F,\qquad|q|\le n-1-|m|.\]
+<why>La separación entre los extremos del multiplete es \(3n(n-1)\,ea_0F\): crece como \(n^2\), de modo que los estados de Rydberg son extremadamente sensibles a campos débiles.</why>
+</step>
+<result name="Efecto Stark lineal">\[\Delta E_n=\frac32\,n\,q\,e\,a_0\,F,\qquad\text{n = 2: }\ \Delta E=\pm3\,ea_0F\ \text{(y 0 para }2p_{\pm1}\text{)}.\]</result>
+<vars>
+<v s="\Delta E" n="corrimiento de energía" u="J"/>
+<v s="e" n="carga elemental" u="C"/>
+<v s="a_0" n="radio de Bohr" u="m"/>
+<v s="F" n="campo eléctrico" u="V m^-1"/>
+<v s="n" n="número cuántico principal" u="1"/>
+<v s="q" n="número parabólico \(n_1-n_2\)" u="1"/>
+<v s="z" n="coordenada a lo largo del campo" u="m"/>
+<v s="H'_{ab}" n="elemento de matriz de la perturbación" u="J"/>
+</vars>
+<effects>
+<e>Para \(n=2\) y \(F=10\) MV/m: \(\Delta E=\pm1587.53\ \mu\)eV (\(\pm383.863\) GHz), es decir, un dipolo permanente de \(3ea_0=7.6252\) D. Es mucho mayor que la estructura fina del \(n=2\) (\(45.28\ \mu\)eV): ambas se igualan en \(F=2.852\times10^5\) V/m (2.852 kV/cm).</e>
+<e>Para \(n=3\) los niveles se reparten en \(0,\pm4.5,\pm9\)\(\,ea_0F\) con multiplicidades 3, 2+2 y 1+1; a 10 MV/m el estado extremo se desplaza \(\pm4762.6\ \mu\)eV y el multiplete ocupa \(9525.2\ \mu\)eV. Para \(n=10\), \(q=9\) y \(F=1\) MV/m, \(\Delta E=7143.9\ \mu\)eV.</e>
+</effects>
+<limits>
+<l>Dimensiones: \(ea_0F\) es carga × longitud × (voltios/metro) = energía. ✓</l>
+<l>Válida mientras \(\Delta E\) sea pequeña frente a la separación entre capas y el campo no ionice el átomo: el campo clásico de ionización es \(F\approx5.14\times10^{11}/(9n^4)\) V/m, es decir, \(3.57\times10^9\) V/m para \(n=2\). Si el desdoblamiento es menor que la estructura fina, el efecto pasa a ser cuadrático para cada nivel \(j\) y debe tratarse con la perturbación no degenerada.</l>
+</limits>
+<explore sim="stark-lineal" title="Efecto Stark lineal del hidrógeno: corrimiento, dipolo y anchura del multiplete"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (\(n=2\), \(q=1\), \(F=10\) MV/m): \(\Delta E=1587.53\ \mu\)eV, 383.863 GHz, dipolo 7.62524 D y anchura del multiplete 3175.06 µeV.</li>
+<li>Con \(n\) en el eje: la anchura crece como \(n(n-1)\); con \(F\), todo es lineal.</li>
+</ul></div>
+</deriv>
+
+<deriv id="variacional" title="El método variacional y la energía del helio" tags="Cuántica, Aproximaciones">
+<goal>Una cota superior a la energía del estado fundamental de un sistema sin solución exacta, y su aplicación al átomo de helio y a los iones con dos electrones.</goal>
+<given>
+<g>\(H\) con espectro \(E_0\le E_1\le\cdots\) y base completa de autoestados \(\varphi_n\); cualquier función de prueba normalizada \(\psi\).</g>
+<g>Helio en unidades atómicas (\(\hbar=m=e=4\pi\varepsilon_0=1\); energía en hartree \(E_h=27.2114\) eV): \(H=-\tfrac12\nabla_1^2-\tfrac12\nabla_2^2-\dfrac Z{r_1}-\dfrac Z{r_2}+\dfrac1{r_{12}}\).</g>
+</given>
+<step op="Principio variacional">
+\[\langle\psi|H|\psi\rangle=\sum_n|c_n|^2E_n\ \ge\ E_0\sum_n|c_n|^2=E_0.\]
+<why>Cada término \(|c_n|^2(E_n-E_0)\ge0\): el error de la energía es de segundo orden en el error de la función, de modo que una función mediocre da una energía razonable.</why>
+</step>
+<step op="Función de prueba para el helio: producto de dos orbitales 1s con carga efectiva \(\zeta\) como parámetro">
+\[\Psi(\mathbf r_1,\mathbf r_2)=\frac{\zeta^3}\pi\,e^{-\zeta(r_1+r_2)}.\]
+<why>El otro electrón apantalla parcialmente al núcleo: cada uno «ve» una carga \(\zeta<Z\).</why>
+</step>
+<step op="Energía cinética y atracción nuclear (valores medios hidrogenoides con carga \(\zeta\))">
+\[\langle T\rangle=2\times\frac{\zeta^2}2=\zeta^2,\qquad\langle V_\text{ne}\rangle=-2Z\zeta.\]
+</step>
+<step op="Repulsión electrónica: potencial de una nube esférica">
+\[\left\langle\frac1{r_{12}}\right\rangle=\int\!\!\int\frac{\rho(r_1)\rho(r_2)}{r_{12}}\,\mathrm d^3r_1\mathrm d^3r_2=\frac58\,\zeta,\qquad\rho=\frac{\zeta^3}\pi e^{-2\zeta r}.\]
+<why>Para distribuciones esféricas, \(\int\rho(r_2)/r_{12}\,\mathrm d^3r_2=\frac1{r_1}\int_0^{r_1}\rho\,4\pi r^2\mathrm dr+\int_{r_1}^\infty\rho\,4\pi r\,\mathrm dr\) (teorema de Newton).</why>
+</step>
+<step op="Minimizar \(E(\zeta)=\zeta^2-2Z\zeta+\tfrac58\zeta\)">
+\[\frac{\mathrm dE}{\mathrm d\zeta}=2\zeta-2Z+\tfrac58=0\ \Longrightarrow\ \zeta=Z-\tfrac5{16},\qquad E_\text{min}=-\left(Z-\tfrac5{16}\right)^2\ \text{hartree}.\]
+</step>
+<result name="Helio variacional">\[E_\text{var}=-E_h\left(Z-\frac5{16}\right)^2,\qquad\zeta=Z-\frac5{16}.\]</result>
+<vars>
+<v s="E_\text{var}" n="energía variacional" u="J"/>
+<v s="E_h" n="hartree (energía atómica)" u="J"/>
+<v s="\zeta" n="carga efectiva" u="1"/>
+<v s="Z" n="carga del núcleo" u="1"/>
+<v s="a_0" n="radio de Bohr" u="m"/>
+<v s="m" n="masa del electrón" u="kg"/>
+<v s="\hbar" n="constante de Planck reducida" u="J s"/>
+<v s="r_{12}" n="distancia entre electrones" u="m"/>
+<v s="\rho" n="densidad de carga de un electrón (a.u.)" u="1"/>
+</vars>
+<effects>
+<e>Helio (\(Z=2\)): \(\zeta=1.6875\), \(E_\text{var}=-2.8477\) hartree \(=-77.489\) eV frente al valor experimental \(-79.005\) eV (error \(1.9\ \%\)); la perturbación de primer orden daría \(-74.831\) eV (error 5.3 %). La energía de ionización estimada es 23.066 eV (experimental, 24.587 eV).</e>
+<e>Li⁺ (\(Z=3\)): \(-196.54\) eV frente a \(-198.094\) eV (error 0.79 %); Be²⁺: \(-370.01\) eV frente a \(-371.615\) eV (0.43 %). El error relativo baja con \(Z\) porque la repulsión entre electrones pesa cada vez menos frente a la atracción del núcleo.</e>
+<e>La misma función con \(Z=1\) (H⁻) da \(E=-12.862\) eV, por encima de la energía del H más un electrón libre (\(-13.606\) eV): no predice el ion H⁻, que sí existe (afinidad 0.754 eV) y requiere describir la correlación entre electrones. Un orbital 1s gaussiano para el hidrógeno da \(-4/(3\pi)=-0.42441\) hartree (85 % del valor exacto \(-0.5\)).</e>
+</effects>
+<limits>
+<l>Dimensiones: \(E_h=\hbar^2/(ma_0^2)\) es una energía. ✓</l>
+<l>El método solo acota la energía del estado fundamental (o del más bajo de cada simetría); la calidad de las funciones de prueba no se controla. El límite de Hartree–Fock para el helio es \(-2.8617\) hartree y el valor no relativista casi exacto (Hylleraas, Pekeris) \(-2.9037\) hartree.</l>
+</limits>
+<explore sim="variacional" title="Átomos con dos electrones por el método variacional: carga efectiva, energía y ionización"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (\(Z=2\)): \(\zeta=1.6875\), \(E_\text{var}=-77.4887\) eV, perturbación de 1.er orden \(-74.8313\) eV e ionización estimada 23.0659 eV.</li>
+<li>Seleccione \(Z\) en el eje (log–log): \(E\propto(Z-5/16)^2\), casi \(Z^2\) para \(Z\) grande.</li>
+</ul></div>
+</deriv>
+
+<deriv id="regla-de-oro" title="La regla de oro de Fermi y la vida media de un estado excitado" tags="Cuántica, Aproximaciones">
+<goal>La probabilidad por unidad de tiempo con que un átomo excitado emite un fotón, y la vida media del nivel 2p del hidrógeno.</goal>
+<given>
+<g>Perturbación armónica \(H'(t)=We^{-i\omega t}+W^\dagger e^{i\omega t}\) y teoría de perturbaciones dependiente del tiempo a primer orden.</g>
+<g>Acoplamiento dipolar con el campo electromagnético cuantizado en un volumen \(V\): \(|\langle f;\mathbf k\lambda|H'|i;0\rangle|^2=\dfrac{\hbar\omega}{2\varepsilon_0V}\,|\mathbf d_{fi}\cdot\hat\epsilon|^2\), con \(\mathbf d=-e\mathbf r\).</g>
+</given>
+<step op="Amplitud de transición a primer orden y probabilidad">
+\[c_f(t)=\frac{W_{fi}}{i\hbar}\int_0^te^{i(\omega_{fi}-\omega)t'}\mathrm dt'\ \Longrightarrow\ P_f(t)=\frac{|W_{fi}|^2}{\hbar^2}\,\frac{\sin^2(\Delta t/2)}{(\Delta/2)^2},\quad\Delta=\omega_{fi}-\omega.\]
+</step>
+<step op="Tiempos largos: la función se vuelve una delta de Dirac porque \(\int\frac{\sin^2(\Delta t/2)}{(\Delta/2)^2}\mathrm d\Delta=2\pi t\)">
+\[P_f\simeq\frac{2\pi t}{\hbar^2}|W_{fi}|^2\,\delta(\omega_{fi}-\omega)\ \Longrightarrow\ \Gamma=\frac{2\pi}\hbar\,|W_{fi}|^2\,\rho(E_f).\]
+<why>La probabilidad crece linealmente con el tiempo: es una tasa constante (probabilidad por unidad de tiempo) cuando los estados finales forman un continuo de densidad \(\rho\).</why>
+</step>
+<step op="Densidad de fotones por unidad de energía y de ángulo sólido en el volumen \(V\)">
+\[\rho(E)\,\mathrm d\Omega=\frac{V\omega^2}{(2\pi)^3c^3\hbar}\,\mathrm d\Omega\qquad\text{(por polarización).}\]
+</step>
+<step op="Sumar sobre polarizaciones e integrar sobre todas las direcciones del fotón">
+\[\sum_\lambda\int|\mathbf d\cdot\hat\epsilon|^2\,\mathrm d\Omega=\int|\mathbf d|^2\sin^2\theta\,\mathrm d\Omega=\frac{8\pi}3|\mathbf d|^2.\]
+</step>
+<step op="Multiplicar: el volumen \(V\) se cancela">
+\[A=\frac{2\pi}\hbar\cdot\frac{\hbar\omega}{2\varepsilon_0V}\cdot\frac{V\omega^2}{8\pi^3c^3\hbar}\cdot\frac{8\pi}3|\mathbf d_{fi}|^2=\frac{\omega^3|\mathbf d_{fi}|^2}{3\pi\varepsilon_0\hbar c^3}.\]
+</step>
+<step op="Con \(\alpha=e^2/4\pi\varepsilon_0\hbar c\) y \(\mathbf d=-e\mathbf r\)">
+\[A=\frac{4\alpha\,\omega^3\,|\mathbf r_{fi}|^2}{3c^2}.\]
+</step>
+<result name="Coeficiente A de Einstein">\[A=\frac{\omega^3\,|\mathbf d_{fi}|^2}{3\pi\varepsilon_0\hbar c^3}=\frac{4\alpha\,\omega^3\,|\mathbf r_{fi}|^2}{3c^2},\qquad\tau=\frac1A.\]</result>
+<vars>
+<v s="A" n="coeficiente de emisión espontánea" u="s^-1"/>
+<v s="\omega" n="frecuencia angular del fotón" u="rad s^-1"/>
+<v s="d_{fi}" n="momento dipolar de transición" u="C m"/>
+<v s="r_{fi}" n="elemento de matriz de la posición" u="m"/>
+<v s="\varepsilon_0" n="permitividad del vacío" u="F m^-1"/>
+<v s="\hbar" n="constante de Planck reducida" u="J s"/>
+<v s="c" n="velocidad de la luz" u="m s^-1"/>
+<v s="\alpha" n="constante de estructura fina" u="1"/>
+<v s="\tau" n="vida media" u="s"/>
+<v s="V" n="volumen de cuantización" u="m^3"/>
+<v s="W_{fi}" n="elemento de matriz de la perturbación" u="J"/>
+<v s="\rho" n="densidad de estados finales" u="J^-1"/>
+</vars>
+<effects>
+<e>Línea Lyman α (2p → 1s) con \(\hbar\omega=10.2043\) eV y \(|\mathbf r_{fi}|=\tfrac{2^7\sqrt2}{3^5}a_0=0.744936\,a_0\): \(A=6.2683\times10^8\) s⁻¹, \(\tau=1.5953\) ns, anchura natural \(\Delta\nu=A/2\pi=99.763\) MHz y \(\lambda=121.502\) nm. Con la masa reducida (\(\hbar\omega=10.1987\) eV, \(r\) mayor en \(1/\mu\)) se obtiene \(6.2649\times10^8\) s⁻¹ y \(\tau=1.5961\) ns, el valor tabulado.</e>
+<e>Como \(A\propto\omega^3|r|^2\): duplicar la energía del fotón con el mismo dipolo multiplica \(A\) por 8. En un ion hidrogenoide \(\omega\propto Z^2\) y \(r\propto1/Z\), de modo que \(A\propto Z^4\): para He⁺ (2p → 1s) \(A=1.0029\times10^{10}\) s⁻¹ y \(\tau=99.7\) ps. Por eso la emisión espontánea es despreciable en radiofrecuencia y dominante en rayos X.</e>
+</effects>
+<limits>
+<l>Dimensiones: \(\omega^3d^2/(\varepsilon_0\hbar c^3)\) es \(\mathrm s^{-3}\cdot\mathrm{C^2m^2}\) dividido por \(\mathrm{C^2\,J^{-1}m^{-1}}\cdot\mathrm{J\,s}\cdot\mathrm{m^3s^{-3}}\) igual a \(\mathrm s^{-1}\). ✓</l>
+<l>Aproximación dipolar: vale si el tamaño del átomo es pequeño frente a la longitud de onda (\(a_0/\lambda\approx4\times10^{-4}\) en Lyα). Las transiciones prohibidas por la regla del dipolo (por ejemplo, 2s → 1s, que solo ocurre con dos fotones, \(\tau\approx0.12\) s) son mucho más lentas. La regla de oro supone un continuo de estados finales y tiempos mayores que \(1/\omega\) y menores que \(1/\Gamma\).</l>
+</limits>
+<explore sim="emision" title="Emisión espontánea: coeficiente A, vida media y anchura natural de la línea"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (Lyα con masa infinita): \(A=6.26832\times10^8\) s⁻¹, \(\tau=1.59533\) ns, \(\Delta\nu=99.7633\) MHz y \(\lambda=121.502\) nm.</li>
+<li>Con ħω en el eje: \(A\propto(\hbar\omega)^3\) para un dipolo fijo; con \(r\): \(A\propto r^2\).</li>
+</ul></div>
+</deriv>
+
+<section>
+<h2>Fuentes y lecturas</h2>
+<ul class="refs">
+<li>D. J. Griffiths y D. F. Schroeter, <em>Introduction to Quantum Mechanics</em>, 3.ª ed., Cambridge University Press (2018): caps. 7 (WKB), 6 (perturbaciones y variacional) y 11 (regla de oro y emisión).</li>
+<li>J. J. Sakurai y J. Napolitano, <em>Modern Quantum Mechanics</em>, 3.ª ed., Cambridge University Press (2021): caps. 5 y 7.</li>
+<li>L. D. Landau y E. M. Lifshitz, <em>Quantum Mechanics</em>, 3.ª ed., Pergamon (1977): §§ 46–47 (WKB), 38–41 (perturbaciones), 77 (helio), 44 (Stark).</li>
+<li>A. Dalgarno y J. T. Lewis, <em>Proceedings of the Royal Society A</em> 233 (1955) 70; E. A. Hylleraas, <em>Zeitschrift für Physik</em> 54 (1929) 347; V. V. Nesvizhevsky et al., <em>Nature</em> 415 (2002) 297 (neutrones en el campo gravitatorio).</li>
+<li>P. A. M. Dirac, <em>Proceedings of the Royal Society A</em> 114 (1927) 243; E. Fermi, <em>Nuclear Physics</em>, University of Chicago Press (1950); NIST Atomic Spectra Database (coeficientes A).</li>
+</ul>
+</section>
+</template>

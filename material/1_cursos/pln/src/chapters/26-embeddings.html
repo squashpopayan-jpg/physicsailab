@@ -1,0 +1,95 @@
+<template class="chapter-src" data-id="embeddings" data-num="26" data-title="Embeddings: vectores densos de palabras" data-part="Parte VI · Texto como números" data-short="Vectores densos frente a dispersos; reducción por SVD (LSA); skip-gram con muestreo negativo (word2vec); gradientes; GloVe y fastText; analogías y sesgos; embeddings estáticos frente a contextuales">
+<p class="lead">Los vectores de coocurrencia del capítulo 23 tienen 800 dimensiones, casi todas cero. Pero la información útil —«gobierno» se parece a «ejecutivo»— cabe en unas pocas decenas de números. Un <b>embedding</b> es ese vector corto y denso: cada palabra es un punto de un espacio de pocas dimensiones donde la distancia mide parecido de uso. Hay dos caminos clásicos para llegar a él: comprimir la matriz de coocurrencias (SVD) o entrenar una red pequeña para que prediga el contexto (word2vec). Se verán los dos, con el mismo corpus.</p>
+
+<section>
+<h2>Por qué denso</h2>
+<ul>
+<li><b>Generaliza</b>: en el vector disperso, «bueno» y «excelente» son columnas sin relación; en el denso, comparten dimensiones, y lo que se aprende de una vale para la otra.</li>
+<li><b>Es pequeño</b>: 50–300 números por palabra, frente a decenas de miles. Los modelos que lo usan como entrada tienen muchos menos parámetros.</li>
+<li><b>Reduce el ruido</b>: las dimensiones principales recogen regularidades y se descartan las fluctuaciones de un corpus finito.</li>
+</ul>
+</section>
+
+<section>
+<h2>Primer camino: SVD de la matriz PPMI</h2>
+<p>La descomposición en valores singulares escribe una matriz como \(P=U\Sigma V^{\top}\), con \(U\) y \(V\) de columnas ortonormales y \(\Sigma\) diagonal con los valores singulares \(\sigma_1\ge\sigma_2\ge\dots\). El teorema de Eckart–Young dice que quedarse con los \(k\) mayores da la <b>mejor aproximación de rango \(k\)</b> en norma de Frobenius. Aplicada a una matriz palabra–documento se llama <i>análisis semántico latente</i> (LSA, Deerwester y otros, 1990); aplicada a la palabra–contexto, con PPMI, da embeddings:</p>
+<div class="eq key" data-name="Embeddings por SVD">\[P\approx U_k\Sigma_kV_k^{\top},\qquad \mathbf w_i=\text{fila } i\text{ de }U_k\Sigma_k\ \in\mathbb R^k,\qquad \text{energía conservada}=\frac{\sum_{j\le k}\sigma_j^2}{\sum_j\sigma_j^2}\]</div>
+<p>Multiplicar por \(\Sigma_k^{\alpha}\) con \(\alpha\) entre 0 y 1 cambia cuánto pesan las primeras dimensiones; \(\alpha=0{,}5\) suele funcionar bien. La primera dimensión suele reflejar sobre todo la frecuencia de la palabra; las siguientes ya separan temas.</p>
+<p>La SVD completa cuesta \(O(\min(mn^2,m^2n))\); para matrices grandes se usan métodos iterativos que calculan solo los \(k\) vectores principales. El código de este curso lo hace con iteración de subespacio y una diagonalización final del problema pequeño: 20 valores singulares en medio segundo sobre la matriz de 400 × 800.</p>
+<div class="sim" data-sim="emb-svd" data-title="De la matriz PPMI a vectores densos: vecinos y mapa"></div>
+<div class="sim-guide"><ul>
+<li>Con «gobierno» y 20 dimensiones, los vecinos son <i>ejecutivo</i> (0,85), <i>presidente</i> (0,83), <i>ministro</i> (0,78), <i>secretario</i>, <i>parlamento</i>… Los cosenos son mucho mayores que los de la matriz dispersa (0,26 el mejor): los vectores densos son más «apretados» y sus valores no se comparan entre representaciones.</li>
+<li>Mire el mapa (dimensiones 2 y 3): las palabras de un mismo campo aparecen cerca. Cambie de palabra para ver cómo se mueve la nube de vecinos.</li>
+<li>Pase de 20 a 5 dimensiones: la energía conservada baja del 20,7 % al 9,8 % y los vecinos coinciden menos con los de la matriz completa (de 8, pasa de 4 a solo 1). Con 50 dimensiones la energía sube al 37,3 %, pero los vecinos en común siguen en 4: más dimensiones no mejoran lo que importa, porque esta matriz tiene la información repartida entre muchas direcciones (poco texto).</li>
+<li>La cifra «Vecinos en común» compara el resultado denso con el de la matriz completa: la compresión conserva la mitad de los vecinos (4 de 8 con 20 dimensiones) y los cambia por otros, a veces mejores (<i>secretario</i>, <i>vicepresidente</i>) y a veces peores (<i>pnv</i>).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Segundo camino: word2vec y el skip-gram</h2>
+<p>Mikolov y otros (2013) propusieron aprender los vectores como subproducto de una tarea de predicción. En el <b>skip-gram</b>, dada una palabra central \(w\), se predice cada palabra \(c\) de su ventana. Calcular la probabilidad con un <i>softmax</i> sobre todo el vocabulario es caro, así que se usa el <b>muestreo negativo</b>: en lugar de contrastar \(c\) con todas las palabras, se toma el par real \((w,c)\) como ejemplo positivo y \(k\) pares falsos \((w,n_i)\), con \(n_i\) muestreadas de una distribución (la frecuencia elevada a 0,75), como ejemplos negativos. Es un clasificador logístico, con dos juegos de vectores (los de palabra \(\mathbf w\) y los de contexto \(\mathbf c\)):</p>
+<div class="eq key" data-name="Skip-gram con muestreo negativo">\[\mathcal L(w,c)=-\log\sigma(\mathbf w\!\cdot\!\mathbf c)-\sum_{i=1}^{k}\log\sigma(-\mathbf w\!\cdot\!\mathbf n_i),\qquad\frac{\partial\mathcal L}{\partial\mathbf w}=\bigl(\sigma(\mathbf w\!\cdot\!\mathbf c)-1\bigr)\mathbf c+\sum_i\sigma(\mathbf w\!\cdot\!\mathbf n_i)\,\mathbf n_i\]</div>
+<p>Por descenso de gradiente estocástico, el par real acerca \(\mathbf w\) y \(\mathbf c\), y los falsos alejan \(\mathbf w\) de \(\mathbf n_i\). Tras recorrer el corpus varias veces, las palabras con contextos parecidos acaban con vectores parecidos. Levy y Goldberg (2014) demostraron que skip-gram con muestreo negativo factoriza implícitamente una matriz PMI desplazada por \(\log k\): es primo hermano del camino anterior.</p>
+<p>Variantes: <b>CBOW</b> predice la palabra central a partir del contexto; <b>GloVe</b> (Pennington y otros, 2014) ajusta los vectores para que su producto reproduzca el logaritmo de las coocurrencias globales; <b>fastText</b> (Bojanowski y otros, 2017) suma vectores de subpalabras (grupos de letras), por lo que da vector también a palabras no vistas y funciona bien en idiomas con mucha morfología, como el español.</p>
+<div class="sim" data-sim="emb-sgns" data-title="Entrenar skip-gram con muestreo negativo, época a época"></div>
+<div class="sim-guide"><ul>
+<li>Antes de entrenar, los vectores son ruido y no hay vecinos. Tras 2 épocas la pérdida es de 2,43 y ya aparecen vecinos, aunque todavía poco precisos (para «gobierno», palabras muy frecuentes de los deportes y la política).</li>
+<li>Entrene 10 épocas más. La pérdida sigue bajando, pero despacio: con 43.000 palabras hay pocos ejemplos de cada palabra. Los vecinos de «gobierno» no igualan a los del SVD.</li>
+<li>Compare las dos tablas. Aquí el SVD de PPMI da mejor resultado que word2vec: con corpus pequeños los métodos de recuento suelen ganar (Levy y otros, 2015). Word2vec destaca con corpus de cientos de millones de palabras, donde además admite vocabularios mucho mayores.</li>
+<li>Reinicie y entrene de nuevo con otros pasos: el resultado cambia por el azar de la inicialización y de los negativos (el entrenamiento es estocástico).</li>
+</ul></div>
+<div class="box py"><p>El programa calcula la SVD de la matriz PPMI con NumPy (energía conservada y vecinos) y entrena <code>gensim.models.Word2Vec</code> (skip-gram, 5 negativos, 30 épocas) con las mismas oraciones del capítulo 25.</p>
+<div class="py" data-py="26-embeddings"></div></div>
+<div class="box read"><ul>
+<li><b>Valores singulares</b>: 106,0; 52,0; 49,9; 45,2… El primero es el doble del segundo: refleja la frecuencia. Con rango 5, 20 y 100 se conserva el 9,8 %, el 20,7 % y el 57,7 % de la energía.</li>
+<li><b>Vecinos</b>: «gobierno» → <i>ejecutivo, presidente, ministro, secretario, parlamento</i> con SVD; con Word2Vec, <i>gol, diario, banco, siglo, general</i>, es decir, ruido. «años» → <i>días, últimos, meses, minutos</i> con SVD y <i>pocos, días, edad…</i> con Word2Vec. En este corpus, SVD gana con claridad.</li>
+<li><b>Acuerdo</b>: de los 10 vecinos SVD de cada palabra, el 42,2 % aparece entre los 300 más cercanos de Word2Vec (media de 100 palabras): los métodos concuerdan a medias.</li>
+<li><b>Moraleja</b>: las ventajas de word2vec requieren datos. Con un corpus pequeño, un buen suavizado (PPMI) y una SVD son difíciles de superar. Con el corpus de un buscador o de una enciclopedia la situación se invierte.</li>
+<li>El curso valida la SVD frente a <code>numpy.linalg.svd</code> (valores singulares y cosenos) y la pérdida y el gradiente del skip-gram frente al autograd de PyTorch, a precisión de máquina (apéndice de validación).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Qué se hace con ellos</h2>
+<ul>
+<li><b>Similitud y vecinos</b>: coseno entre vectores (capítulo 23) con mucha menos memoria.</li>
+<li><b>Entrada de redes</b>: las capas de embeddings de las redes neuronales (capítulo 28) son una tabla de vectores como esta, que se inicializa con embeddings preentrenados o se aprende junto con la tarea.</li>
+<li><b>Analogías</b>: con corpus grandes, las diferencias entre vectores capturan relaciones: \(\mathbf{rey}-\mathbf{hombre}+\mathbf{mujer}\approx\mathbf{reina}\). Es un fenómeno llamativo pero frágil; no funciona con este corpus.</li>
+<li><b>Sesgos</b>: los vectores heredan los sesgos del texto. Bolukbasi y otros (2016) mostraron asociaciones como «programador» más cerca de «hombre» y «ama de casa» de «mujer». Medir y corregirlo es un campo de investigación en sí mismo.</li>
+</ul>
+<p><b>Limitación decisiva</b>: son <b>estáticos</b>. Cada palabra tiene un único vector, aunque tenga varios sentidos (capítulo 21): «banco» es una mezcla del asiento y de la entidad financiera. Los modelos contextuales (ELMo, BERT; capítulo 31) producen un vector distinto en cada ocurrencia, calculado a partir de toda la frase. Siguen necesitando, por dentro, una tabla de embeddings de entrada como la de este capítulo.</p>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Un embedding es un vector denso y corto; las palabras de uso parecido quedan cerca.</li>
+<li>SVD de la matriz PPMI: mejor aproximación de rango k; filas de U·Σ como vectores.</li>
+<li>Skip-gram con muestreo negativo: clasificador que distingue pares reales de falsos; pérdida y gradiente simples.</li>
+<li>Con poco texto, SVD de PPMI iguala o supera a word2vec; con mucho, gana word2vec.</li>
+<li>Son estáticos (un vector por forma) y heredan sesgos; los contextuales resuelven lo primero.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Calcule el coseno de u = (1, 2) y v = (2, 1).
+<details><summary>Respuesta</summary><p>u·v = 4; |u| = |v| = √5; coseno = 4/5 = 0,8.</p></details></li>
+<li><span class="lvl">Básico</span>Una matriz de 400 × 800 se aproxima con rango 20. ¿Cuántos números hay que guardar de U·Σ y V (sin contar Σ por separado)?
+<details><summary>Respuesta</summary><p>U·Σ: 400 × 20 = 8.000 y V: 800 × 20 = 16.000, en total 24.000 números (la matriz original tiene 320.000 celdas, aunque solo 19.063 no nulas).</p></details></li>
+<li><span class="lvl">Intermedio</span>En un par con w·c = 0 y dos negativos con w·n = 0, calcule la pérdida y el gradiente respecto de w.
+<details><summary>Respuesta</summary><p>σ(0) = 0,5. Pérdida = −ln 0,5 − 2 ln 0,5 = 3 ln 2 = 2,079. Gradiente = (0,5 − 1)c + 0,5 n₁ + 0,5 n₂ = −0,5 c + 0,5 n₁ + 0,5 n₂: empuja w hacia c y lejos de n₁ y n₂.</p></details></li>
+<li><span class="lvl">Intermedio</span>Con rey = (5, 1), hombre = (1, 1) y mujer = (1, 3), calcule rey − hombre + mujer y compárelo con reina = (5, 3).
+<details><summary>Respuesta</summary><p>(5, 1) − (1, 1) + (1, 3) = (5, 3), exactamente reina: coseno 1. Con vectores reales la coincidencia es solo aproximada y el vecino más cercano a veces es otro (por ejemplo, el propio «rey»).</p></details></li>
+<li><span class="lvl">Avanzado</span>Un corpus pequeño dio mejores vecinos con SVD de PPMI que con word2vec. Dé dos razones.
+<details><summary>Respuesta</summary><p>(1) La SVD usa de una vez todas las coocurrencias (estadística global), mientras que el skip-gram las ve por muestreo estocástico y con pocos ejemplos por palabra no converge a buenos vectores. (2) El PPMI ya está suavizado y descuenta las palabras frecuentes, y el skip-gram necesita muchas épocas, un buen ritmo de aprendizaje y datos para llegar a algo equivalente.</p></details></li>
+</ol>
+<h3>Autoevaluación</h3>
+<div class="sim" data-sim="quiz" data-cap="embeddings" data-title="Autoevaluación del capítulo 26"></div>
+<div class="box links"><ul>
+<li><a href="https://arxiv.org/abs/1301.3781">Mikolov y otros (2013) — Efficient estimation of word representations in vector space</a><small>El artículo de word2vec: CBOW y skip-gram.</small></li>
+<li><a href="https://arxiv.org/abs/1310.4546">Mikolov y otros (2013) — Distributed representations of words and phrases and their compositionality</a><small>Muestreo negativo y submuestreo de palabras frecuentes.</small></li>
+<li><a href="https://aclanthology.org/Q15-1016/">Levy, Goldberg y Dagan (2015) — Improving distributional similarity with lessons learned from word embeddings</a><small>Por qué los métodos de recuento pueden igualar a los neuronales.</small></li>
+<li><a href="https://aclanthology.org/D14-1162/">Pennington, Socher y Manning (2014) — GloVe</a><small>Vectores globales para la representación de palabras.</small></li>
+<li><a href="https://aclanthology.org/Q17-1010/">Bojanowski y otros (2017) — Enriching word vectors with subword information (fastText)</a><small>Subpalabras para morfología rica y palabras no vistas.</small></li>
+<li><a href="https://radimrehurek.com/gensim/models/word2vec.html">gensim — Word2Vec</a><small>La implementación usada en el programa.</small></li>
+</ul></div>
+</section>
+</template>

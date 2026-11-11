@@ -1,0 +1,37 @@
+<template class="chapter-src" data-id="validacion" data-num="D" data-title="Validación del curso" data-part="Apéndices" data-short="Cómo se comprueba que los algoritmos del curso calculan lo correcto: referencias independientes, panel de pruebas ejecutable en su navegador y límites de lo comprobado">
+<p class="lead">Un curso con simulaciones solo vale si lo que muestran es correcto. Cada algoritmo que usan las simulaciones está programado en JavaScript, sin depender de la página, y se compara con una <b>implementación independiente</b>: NLTK, scikit-learn, NumPy, SciPy, PyTorch, SymPy, Gensim, sacrebleu, rouge-score, rdflib o un programa propio de Python escrito aparte. Este apéndice explica el método y le deja ejecutar las comprobaciones en su navegador.</p>
+
+<section>
+<h2>El método</h2>
+<ol>
+<li>Un programa de Python (<code>tests/referencias.py</code>) calcula, con las bibliotecas de referencia, los valores esperados y los guarda en el curso.</li>
+<li>El curso ejecuta su propio código con las mismas entradas y compara: un valor exacto (conteos, etiquetas) o con una tolerancia (flotantes, entre 10⁻¹² y 10⁻⁵ según el caso).</li>
+<li>Cada prueba lleva su fuente («NLTK 3.10.4 ChartParser», «PyTorch autograd»…) y su error.</li>
+<li>Si el curso difiere de la referencia, hay un error en uno de los dos y se corrige. Este proceso detectó errores reales durante la construcción: un CKY que mezclaba puntuaciones de Viterbi con las interiores, una pérdida de skip-gram con el signo cambiado, un tamaño oculto mal calculado en la LSTM, entre otros.</li>
+</ol>
+<h2>Qué se comprueba</h2>
+<ul>
+<li><b>Cálculo exacto frente a bibliotecas</b>: tokenización y TF-IDF (scikit-learn), conteo de árboles (NLTK), Viterbi y HMM, FOL (Model de NLTK), lambda (simplify de NLTK), WordNet (rutas, Wu-Palmer), modelos de lenguaje (perplejidades), BLEU y ROUGE, clasificadores, SVD, gradientes, RNN/LSTM/conv, bloque de Transformer (nn.TransformerEncoderLayer).</li>
+<li><b>Coincidencia entre implementaciones</b>: el perceptrón de entidades del cap. 33 da exactamente las mismas etiquetas en Python y en JavaScript.</li>
+<li><b>Identidades matemáticas</b>: Catalan, suma de probabilidades, atención causal.</li>
+</ul>
+<h2>Qué no se comprueba</h2>
+<ul>
+<li>La <b>calidad lingüística</b> de los resultados: que el algoritmo calcule bien no significa que el resultado sea útil (los corpus pequeños dan modelos modestos).</li>
+<li>Los <b>entrenamientos estocásticos</b> de redes (skip-gram, perceptrón multicapa en el navegador): se validan sus gradientes y su pérdida, no una trayectoria concreta.</li>
+<li>Las <b>cifras de los programas de Python</b> son las de una ejecución con semilla fija; con otras versiones de las bibliotecas pueden variar en los decimales.</li>
+</ul>
+</section>
+
+<section>
+<h2>Ejecutar las pruebas en su navegador</h2>
+<div class="sim" data-sim="validacion-panel" data-title="Panel de validación: ejecutar las comprobaciones del curso"></div>
+<div class="sim-guide"><ul>
+<li>Elija un capítulo y pulse «Ejecutar»: se calculan en su navegador los valores y se comparan con las referencias guardadas.</li>
+<li>«Todos» ejecuta cientos de pruebas; tarda unos segundos (algunas entrenan modelos).</li>
+<li>La versión completa del informe, con las 689 pruebas, su tolerancia y su fuente, está en <code>docs/VALIDACION.md</code> y se regenera con <code>node tests/validar.js</code>.</li>
+</ul></div>
+<h3>Autoevaluación</h3>
+<div class="sim" data-sim="quiz" data-cap="validacion" data-title="Autoevaluación del apéndice D"></div>
+</section>
+</template>

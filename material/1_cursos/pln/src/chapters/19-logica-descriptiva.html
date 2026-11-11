@@ -1,0 +1,104 @@
+<template class="chapter-src" data-id="logica-descriptiva" data-num="19" data-title="Lógica descriptiva y ontologías" data-part="Parte V · El significado" data-short="Conceptos, roles e individuos; constructores de ALC; TBox y ABox; subsunción y satisfacibilidad con tableaux; mundo abierto; OWL, RDF y SPARQL; grafos de conocimiento">
+<p class="lead">La lógica de primer orden es muy expresiva y, por eso mismo, difícil de manejar: no hay forma de saber si un razonador terminará. Las <b>lógicas descriptivas</b> toman de ella solo lo necesario para describir <i>clases de cosas</i> y sus relaciones: «un estudiante es una persona que cursa algún curso». Con esa renuncia ganan algo valioso, un razonador que siempre termina. Son la base de las ontologías, de OWL y de gran parte de los grafos de conocimiento.</p>
+
+<section>
+<h2>Conceptos, roles e individuos</h2>
+<p>El vocabulario de una lógica descriptiva tiene tres tipos de símbolos:</p>
+<ul>
+<li><b>Conceptos</b> (clases): <code>Persona</code>, <code>Curso</code>; en lógica de primer orden son predicados de un argumento.</li>
+<li><b>Roles</b> (propiedades): <code>cursa</code>, <code>ensena</code>; son predicados de dos argumentos.</li>
+<li><b>Individuos</b>: <code>ana</code>, <code>c1</code>; son constantes.</li>
+</ul>
+<p>La lógica más sencilla con negación completa se llama <b>ALC</b> (<i>attributive language with complements</i>). Sus constructores dan conceptos nuevos a partir de otros; la tabla indica su significado en una interpretación \(\mathcal I=(\Delta,\cdot^{\mathcal I})\), con \(\Delta\) un conjunto de individuos:</p>
+<table class="mx" style="text-align:left"><thead><tr><th style="text-align:left">Constructor</th><th style="text-align:left">Sintaxis</th><th style="text-align:left">Significado</th></tr></thead><tbody>
+<tr><td style="text-align:left">Negación</td><td style="text-align:left">\(\neg C\)</td><td style="text-align:left">\(\Delta\setminus C^{\mathcal I}\)</td></tr>
+<tr><td style="text-align:left">Conjunción</td><td style="text-align:left">\(C\sqcap D\)</td><td style="text-align:left">\(C^{\mathcal I}\cap D^{\mathcal I}\)</td></tr>
+<tr><td style="text-align:left">Disyunción</td><td style="text-align:left">\(C\sqcup D\)</td><td style="text-align:left">\(C^{\mathcal I}\cup D^{\mathcal I}\)</td></tr>
+<tr><td style="text-align:left">Existencial</td><td style="text-align:left">\(\exists r.C\)</td><td style="text-align:left">individuos con <i>algún</i> \(r\)-sucesor en \(C\)</td></tr>
+<tr><td style="text-align:left">Universal</td><td style="text-align:left">\(\forall r.C\)</td><td style="text-align:left">individuos cuyos \(r\)-sucesores, <i>si los hay</i>, están todos en \(C\)</td></tr>
+</tbody></table>
+<p>Todo concepto es en realidad una fórmula de primer orden con una variable libre; por ejemplo, el de estudiante es \(\mathrm{persona}(x)\wedge\exists y\,(\mathrm{cursa}(x,y)\wedge\mathrm{curso}(y))\). Los cuantificadores de ALC solo recorren «los vecinos» a través de un rol, y esa disciplina es la que garantiza la decidibilidad.</p>
+</section>
+
+<section>
+<h2>TBox y ABox</h2>
+<p>El conocimiento se separa en dos cajas:</p>
+<ul>
+<li>La <b>TBox</b> (terminología) define conceptos y los relaciona: \(\mathrm{Estudiante}\equiv\mathrm{Persona}\sqcap\exists\mathrm{cursa}.\mathrm{Curso}\), y también afirma inclusiones \(C\sqsubseteq D\) («todo C es D»).</li>
+<li>La <b>ABox</b> (afirmaciones) dice hechos sobre individuos: \(\mathrm{ana}:\mathrm{Persona}\), \(\mathrm{cursa}(\mathrm{ana},\mathrm{c1})\).</li>
+</ul>
+<p>Un razonador contesta preguntas de cuatro tipos, que se reducen todas a decidir si un concepto es satisfacible:</p>
+<div class="eq key" data-name="Razonamiento en ALC">\[\begin{aligned}
+&\text{Satisfacibilidad: } C\text{ es satisfacible}\iff\text{hay una interpretación con }C^{\mathcal I}\neq\varnothing\\
+&\text{Subsunción: } C\sqsubseteq D\iff C\sqcap\neg D\text{ es insatisfacible}\\
+&\text{Instancia: } a:C\text{ se sigue de la ABox}\iff\mathcal A\cup\{a:\neg C\}\text{ es inconsistente}\\
+&\text{Consistencia: } \mathcal A\text{ tiene al menos un modelo}
+\end{aligned}\]</div>
+<p>El algoritmo estándar es el de <b>tableaux</b>: se intenta construir un modelo del concepto, expandiéndolo con cuatro reglas (⊓ añade las dos partes; ⊔ bifurca; ∃ crea un individuo nuevo; ∀ propaga el concepto a los sucesores). Si todas las ramas acaban en un choque (un individuo que es \(A\) y \(\neg A\)), el concepto es insatisfacible. La satisfacibilidad de un concepto de ALC es PSPACE-completa; con inclusiones generales sube a EXPTIME-completa. Aun así, la decidibilidad hace que el razonador siempre responda.</p>
+<div class="sim" data-sim="alc-subsuncion" data-title="Satisfacibilidad y subsunción con el razonador de tableaux"></div>
+<div class="sim-guide"><ul>
+<li>Con C = Monitor y D = Estudiante, el razonador responde C ⊑ D: Monitor se define como Estudiante ⊓ Docente, luego todo monitor es estudiante.</li>
+<li>Con C = «∃cursa.Curso ⊓ ∀cursa.¬Curso» es insatisfacible: el curso que pide el ∃ debería ser y no ser Curso.</li>
+<li>Con C = Estudiante y D = Docente son independientes: puede haber individuos de ambos y de uno solo.</li>
+<li>Con C = «Estudiante ⊓ ¬Persona» da insatisfacible: la definición de Estudiante exige ser Persona.</li>
+<li>Escriba sus propios conceptos con <code>some</code>, <code>only</code>, <code>~</code>, <code>&amp;</code> y <code>|</code>.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Mundo abierto: lo que no consta no es falso</h2>
+<p>Una base de datos usa la hipótesis del <b>mundo cerrado</b>: si el hecho no está, es falso. La lógica descriptiva usa el <b>mundo abierto</b>: lo que no está dicho puede ser cierto o no. Que no conste que ana es docente no significa que no lo sea, y un razonador solo responde «sí» si se sigue de lo dicho y «no» si lo que se sigue es la negación; en los demás casos responde «desconocido». Es lo razonable cuando el conocimiento es incompleto, como en los textos que se analizan.</p>
+<div class="sim" data-sim="alc-abox" data-title="Instancias de un concepto: sí, no y desconocido"></div>
+<div class="sim-guide"><ul>
+<li>En «Universidad», ana resulta ser Estudiante (persona que cursa c1), luis Docente y pepe Monitor. Nada de esto se dijo: se dedujo de las definiciones.</li>
+<li>En «Información escasa» de ana solo se sabe que es persona; todas las demás casillas salen «?». Active el mundo cerrado y se convierten en «no», como contestaría una base de datos.</li>
+<li>En «Con negación», ana solo cursa lo que no es curso: el razonador sí concluye que <b>no</b> es estudiante, mientras que Docente sigue sin saberse.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>OWL, RDF y los grafos de conocimiento</h2>
+<p>En la práctica las ontologías se escriben en <b>OWL</b> (<i>Web Ontology Language</i>, W3C), cuyo núcleo, OWL 2 DL, corresponde a una lógica descriptiva más expresiva que ALC (SROIQ). Se serializa sobre <b>RDF</b>, donde todo hecho es una tripleta <i>sujeto–predicado–objeto</i>, y se consulta con <b>SPARQL</b>. Los constructores de ALC tienen su equivalente directo: <code>owl:Class</code>, <code>owl:ObjectProperty</code>, <code>owl:intersectionOf</code>, <code>owl:unionOf</code>, <code>owl:complementOf</code>, <code>owl:someValuesFrom</code> (∃), <code>owl:allValuesFrom</code> (∀) y <code>owl:equivalentClass</code> (≡). Los <i>perfiles</i> OWL 2 EL, QL y RL restringen el lenguaje para razonar en tiempo polinomial sobre millones de tripletas.</p>
+<p>Un <b>grafo de conocimiento</b> (Wikidata, DBpedia, el de un buscador) es un conjunto enorme de tripletas con un esquema ligero. En PLN aparecen como destino de la <i>vinculación de entidades</i> («Cauca» → el departamento y no el río; capítulo 33), como fuente de relaciones para <i>preguntas y respuestas</i> y como memoria externa de los modelos de lenguaje (capítulo 32). WordNet (capítulo 21) es, en esencia, una ontología léxica con hiperónimos y partes.</p>
+<div class="box py"><p>El programa construye la misma ontología con <code>rdflib</code>, añade los hechos de la ABox y aplica el razonador OWL RL de <code>owlrl</code>. Después consulta con SPARQL qué individuos pertenecen a cada clase.</p>
+<div class="py" data-py="19-ontologia"></div></div>
+<div class="box read"><ul>
+<li><b>El razonamiento añade conocimiento</b>: pasa de 40 a 262 tripletas, entre axiomas generales de RDFS y OWL que el razonador materializa y las pertenencias deducidas.</li>
+<li><b>Las pertenencias coinciden con las de la simulación del escenario «Universidad»</b>: Estudiante = {ana, pepe}, Docente = {luis, pepe}, Monitor = {pepe}. Nadie dijo que pepe fuera monitor: se dedujo de que cursa y enseña. Dos razonadores distintos (reglas de producción y tableaux), el mismo resultado.</li>
+<li><b>Límite</b>: OWL RL es un fragmento. No puede, por ejemplo, concluir que ana <i>no</i> es estudiante en el escenario con negación; para eso hace falta un razonador completo de OWL DL, como HermiT o Pellet.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Las lógicas descriptivas describen clases (conceptos), relaciones (roles) e individuos, con un razonador que siempre termina.</li>
+<li>ALC: ¬, ⊓, ⊔, ∃r.C y ∀r.C; es un fragmento de la lógica de primer orden.</li>
+<li>La TBox define conceptos; la ABox afirma hechos. Subsunción, instancia y consistencia se reducen a satisfacibilidad (tableaux).</li>
+<li>Mundo abierto: lo que no consta no es falso; las respuestas son sí, no o desconocido.</li>
+<li>OWL es la lógica descriptiva de la web semántica; RDF y SPARQL guardan y consultan tripletas; los perfiles EL, QL y RL permiten razonar a gran escala.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Escriba en ALC «una persona que solo tiene hijos médicos».
+<details><summary>Respuesta</summary><p>Persona ⊓ ∀tieneHijo.Médico (incluye a quien no tiene hijos; para exigir al menos uno, añadir ∃tieneHijo.⊤).</p></details></li>
+<li><span class="lvl">Básico</span>¿Qué diferencia hay entre la TBox y la ABox?
+<details><summary>Respuesta</summary><p>La TBox contiene el esquema (definiciones e inclusiones entre conceptos); la ABox contiene los hechos sobre individuos concretos.</p></details></li>
+<li><span class="lvl">Intermedio</span>Compruebe que Monitor ⊑ Docente con la regla «C ⊑ D si C ⊓ ¬D es insatisfacible».
+<details><summary>Respuesta</summary><p>Monitor ⊓ ¬Docente se despliega en Persona ⊓ ∃cursa.Curso ⊓ Persona ⊓ ∃ensena.Curso ⊓ ¬(Persona ⊓ ∃ensena.Curso). Por De Morgan, la última parte es ¬Persona ⊔ ∀ensena.¬Curso. Con ¬Persona hay choque con Persona; con ∀ensena.¬Curso, el sucesor creado por ∃ensena.Curso debe ser Curso y ¬Curso: choque. Todas las ramas se cierran: insatisfacible, luego Monitor ⊑ Docente.</p></details></li>
+<li><span class="lvl">Intermedio</span>Un sistema responde «no» a «¿es ana docente?» porque la base de datos no contiene ese hecho. ¿Qué hipótesis usa y qué respondería un razonador de lógica descriptiva?
+<details><summary>Respuesta</summary><p>Usa el mundo cerrado. El razonador, con mundo abierto, respondería «desconocido» salvo que se siga el hecho o su negación.</p></details></li>
+<li><span class="lvl">Avanzado</span>Traduzca a primer orden el concepto ∀cursa.Curso e indique por qué incluye a quienes no cursan nada.
+<details><summary>Respuesta</summary><p>\(\forall y\,(\mathrm{cursa}(x,y)\to\mathrm{curso}(y))\). Si no hay ningún \(y\) con cursa(x, y), la implicación se cumple para todo \(y\) (antecedente falso): se satisface vacuamente.</p></details></li>
+</ol>
+<h3>Autoevaluación</h3>
+<div class="sim" data-sim="quiz" data-cap="logica-descriptiva" data-title="Autoevaluación del capítulo 19"></div>
+<div class="box links"><ul>
+<li><a href="https://www.w3.org/TR/owl2-primer/">W3C — OWL 2 Web Ontology Language Primer</a><small>Introducción oficial a OWL 2 con ejemplos.</small></li>
+<li><a href="https://www.w3.org/TR/rdf11-primer/">W3C — RDF 1.1 Primer</a><small>Tripletas, grafos y serializaciones.</small></li>
+<li><a href="https://www.w3.org/TR/sparql11-query/">W3C — SPARQL 1.1 Query Language</a><small>El lenguaje de consulta de los grafos RDF.</small></li>
+<li><a href="https://rdflib.readthedocs.io/">rdflib — documentación</a><small>La biblioteca de Python usada en el programa.</small></li>
+<li><a href="https://owl-rl.readthedocs.io/">owlrl — documentación</a><small>Razonador OWL RL para rdflib.</small></li>
+<li><a href="https://www.w3.org/TR/owl2-profiles/">W3C — OWL 2 Profiles</a><small>Los perfiles EL, QL y RL y su coste de razonamiento.</small></li>
+</ul></div>
+</section>
+</template>

@@ -1,0 +1,361 @@
+<template class="chapter-src" data-id="semiconductores" data-num="35" data-title="Semiconductores y superconductividad" data-part="Parte IX · Materia condensada" data-short="Concentración de portadores y ley de acción de masas, dopado, unión p–n, diodo de Shockley, ecuaciones de London, flujo cuantizado, efecto Josephson y la brecha de BCS">
+<p class="lead">Dos extremos de la materia condensada: los semiconductores, cuya conductividad se controla con millonésimas de impurezas y sostiene toda la electrónica, y los superconductores, que conducen sin resistencia y expulsan el campo magnético. En ambos casos el resultado práctico —una corriente, un campo, una frecuencia— sale de unas pocas deducciones que arrancan de la estadística de Fermi–Dirac, la ecuación de Poisson y una función de onda macroscópica.</p>
+
+<deriv id="semiconductor-intrinseco" title="Semiconductores intrínsecos: concentración de portadores y ley de acción de masas" tags="Semiconductores, Estadística">
+<goal>Cuántos electrones y huecos hay en un semiconductor puro a la temperatura \(T\), en función de la brecha \(E_g\) y de las masas efectivas.</goal>
+<given>
+<g>Cerca de los bordes de banda \(E_c\) (conducción) y \(E_v\) (valencia), la energía es parabólica con masa efectiva \(m^*\): densidad de estados \(g_c(E)=\dfrac1{2\pi^2}\left(\dfrac{2m_e^*}{\hbar^2}\right)^{3/2}\sqrt{E-E_c}\) (incluido el espín).</g>
+<g>Ocupación de Fermi–Dirac; el nivel de Fermi \(\mu\) está dentro de la brecha, lejos de los bordes (\(E_c-\mu\gg kT\)), de modo que \(f\simeq e^{-(E-\mu)/kT}\) (estadística de Boltzmann).</g>
+</given>
+<step op="Concentración de electrones: integrar \(g_c f\) sobre la banda de conducción">
+\[n=\int_{E_c}^\infty g_c(E)\,e^{-(E-\mu)/kT}\,\mathrm dE=\frac1{2\pi^2}\left(\frac{2m_e^*kT}{\hbar^2}\right)^{3/2}\Gamma\!\left(\tfrac32\right)e^{-(E_c-\mu)/kT}.\]
+<why>Con \(x=(E-E_c)/kT\) la integral es \(\int_0^\infty\sqrt x\,e^{-x}\mathrm dx=\Gamma(3/2)=\sqrt\pi/2\).</why>
+</step>
+<step op="Resultado compacto con la densidad efectiva de estados">
+\[n=N_c\,e^{-(E_c-\mu)/kT},\qquad N_c=2\left(\frac{m_e^*kT}{2\pi\hbar^2}\right)^{3/2}.\]
+</step>
+<step op="Huecos (ausencias de electrones en la banda de valencia), con \(m_h^*\)">
+\[p=N_v\,e^{-(\mu-E_v)/kT},\qquad N_v=2\left(\frac{m_h^*kT}{2\pi\hbar^2}\right)^{3/2}.\]
+</step>
+<step op="Producto de ambas: el potencial químico se cancela (ley de acción de masas)">
+\[np=N_cN_v\,e^{-E_g/kT},\qquad E_g=E_c-E_v.\]
+</step>
+<step op="Material puro: cada electrón excitado deja un hueco (\(n=p=n_i\))">
+\[n_i=\sqrt{N_cN_v}\;e^{-E_g/2kT},\qquad\mu=E_i=\frac{E_c+E_v}2+\frac{kT}2\ln\frac{N_v}{N_c}.\]
+</step>
+<result name="Concentración intrínseca">\[n_i=2\left(\frac{kT}{2\pi\hbar^2}\right)^{3/2}(m_e^*m_h^*)^{3/4}\,e^{-E_g/2kT},\qquad np=n_i^2\ \text{(también en equilibrio con dopado).}\]</result>
+<vars>
+<v s="n_i" n="concentración intrínseca" u="m^-3"/>
+<v s="N_c,\,N_v" n="densidades efectivas de estados" u="m^-3"/>
+<v s="E_g" n="ancho de la brecha" u="J"/>
+<v s="m^*" n="masa efectiva" u="kg"/>
+<v s="k" n="constante de Boltzmann" u="J K^-1"/>
+<v s="T" n="temperatura" u="K"/>
+<v s="\hbar" n="constante de Planck reducida" u="J s"/>
+<v s="\mu" n="potencial químico (nivel de Fermi)" u="J"/>
+<v s="E" n="energía" u="J"/>
+</vars>
+<effects>
+<e>Silicio a 300 K con \(E_g=1.12\) eV, \(m_e^*=1.08\,m\) y \(m_h^*=0.56\,m\): \(N_c=2.816\times10^{19}\ \text{cm}^{-3}\), \(N_v=1.052\times10^{19}\ \text{cm}^{-3}\) y \(n_i=6.73\times10^{9}\ \text{cm}^{-3}\) (el valor medido es \(1.0\times10^{10}\)); el nivel de Fermi intrínseco queda 12.7 meV bajo el centro de la brecha.</e>
+<e>GaAs (\(E_g=1.424\) eV, \(0.067\,m\), \(0.47\,m\)): \(n_i=2.05\times10^6\ \text{cm}^{-3}\); germanio (\(0.66\) eV, \(0.55\,m\), \(0.37\,m\)): \(n_i=2.17\times10^{13}\ \text{cm}^{-3}\), en buen acuerdo con los valores medidos (≈ \(2\times10^6\) y \(2.4\times10^{13}\)). La dependencia exponencial en \(E_g/2kT\) hace que \(n_i\) cambie en siete órdenes de magnitud entre Si y GaAs.</e>
+<e>Cerca de 300 K, \(n_i\) se duplica cada 9.0 K en el silicio (\(\mathrm d\ln n_i/\mathrm dT=\tfrac{3}{2T}+\tfrac{E_g}{2kT^2}=0.0772\ \text{K}^{-1}\)): por eso los circuitos de silicio dejan de funcionar cerca de 150–200 °C, cuando \(n_i\) alcanza el dopado.</e>
+</effects>
+<limits>
+<l>Dimensiones: \((m^*kT/\hbar^2)^{3/2}\) es una inversa de volumen. ✓</l>
+<l>Vale si \(E_c-\mu\gg kT\) (no degenerado); con dopados muy altos hay que usar la integral de Fermi–Dirac completa. Las masas son masas efectivas de densidad de estados (en Si, 6 valles de la banda de conducción); \(E_g\) depende de \(T\) y las masas, de la banda real.</l>
+</limits>
+<explore sim="intrinseco" title="Semiconductor intrínseco: n_i, N_c y N_v según la brecha, las masas y la temperatura"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (Si, 300 K): \(n_i=6.73279\times10^9\ \text{cm}^{-3}\), \(N_c=2.81649\times10^{19}\), \(N_v=1.05161\times10^{19}\ \text{cm}^{-3}\) y \(E_i-E_g/2=-0.0127343\) eV.</li>
+<li>Con \(T\) en el eje (log–log): la pendiente local \(1.5+E_g/2kT\) crece al enfriar y vale 23.2 a 300 K.</li>
+</ul></div>
+</deriv>
+
+<deriv id="dopado" title="Dopado: portadores mayoritarios y conductividad" tags="Semiconductores, Dopado">
+<goal>La concentración de electrones y huecos y la conductividad de un semiconductor con \(N_D\) donadores por unidad de volumen, completamente ionizados.</goal>
+<given>
+<g>Ley de acción de masas \(np=n_i^2\) y neutralidad de carga \(n+N_A^-=p+N_D^+\); con solo donadores completamente ionizados, \(N_A^-=0\) y \(N_D^+=N_D\).</g>
+<g>Corriente de arrastre \(\mathbf j=q(n\mu_n+p\mu_p)\mathbf E\), con movilidades \(\mu_n,\mu_p\) (velocidad por unidad de campo).</g>
+</given>
+<step op="Neutralidad: \(n=p+N_D\), con \(p=n_i^2/n\)">
+\[n^2-N_Dn-n_i^2=0.\]
+</step>
+<step op="Raíz positiva de la cuadrática">
+\[n=\frac{N_D}2+\sqrt{\frac{N_D^2}4+n_i^2},\qquad p=\frac{n_i^2}n.\]
+</step>
+<step op="Nivel de Fermi respecto al intrínseco (de \(n=n_ie^{(\mu-E_i)/kT}\))">
+\[\mu-E_i=kT\ln\frac n{n_i}\simeq kT\ln\frac{N_D}{n_i}\quad(N_D\gg n_i).\]
+</step>
+<step op="Conductividad">
+\[\sigma=q\,(n\mu_n+p\mu_p)\simeq qN_D\mu_n\quad(N_D\gg n_i).\]
+</step>
+<result name="Semiconductor tipo n">\[n=\frac{N_D}2+\sqrt{\frac{N_D^2}4+n_i^2},\quad p=\frac{n_i^2}n,\quad\sigma=q(n\mu_n+p\mu_p).\]</result>
+<vars>
+<v s="n,\,p" n="concentraciones de electrones y huecos" u="m^-3"/>
+<v s="N_D" n="concentración de donadores" u="m^-3"/>
+<v s="n_i" n="concentración intrínseca" u="m^-3"/>
+<v s="\sigma" n="conductividad" u="S m^-1"/>
+<v s="\mu_n,\,\mu_p" n="movilidades" u="m^2 V^-1 s^-1"/>
+<v s="q" n="carga elemental" u="C"/>
+<v s="\mu-E_i" n="nivel de Fermi sobre el intrínseco" u="J"/>
+<v s="k" n="constante de Boltzmann" u="J K^-1"/>
+<v s="T" n="temperatura" u="K"/>
+</vars>
+<effects>
+<e>Silicio a 300 K (\(n_i=10^{10}\ \text{cm}^{-3}\), \(\mu_n=1350\), \(\mu_p=480\ \text{cm}^2/\text{V s}\)): con \(N_D=10^{16}\ \text{cm}^{-3}\) hay \(n=10^{16}\) y \(p=10^{4}\ \text{cm}^{-3}\) (los huecos son \(10^{12}\) veces menos); \(\mu-E_i=0.3572\) eV y \(\sigma=2.163\) S/cm. Con \(N_D=10^{14}\ \text{cm}^{-3}\): 0.2381 eV y \(0.02163\) S/cm; con \(10^{19}\ \text{cm}^{-3}\): 0.5357 eV y 2163 S/cm.</e>
+<e>La conductividad del silicio intrínseco es \(q\,n_i(\mu_n+\mu_p)=2.9\times10^{-6}\) S/cm: un átomo donador por cada \(5\times10^{6}\) átomos de silicio la multiplica por \(7.4\times10^{5}\). Cada década de dopado sube el nivel de Fermi \(kT\ln10=59.5\) meV.</e>
+</effects>
+<limits>
+<l>Dimensiones: \(\sigma\) en S/m es \(\mathrm{C\,m^{-3}\,m^2\,V^{-1}s^{-1}}\). ✓</l>
+<l>Ionización completa: vale a temperatura ambiente (energías de ionización de 45 meV en fósforo), pero a bajas temperaturas los donadores se congelan y a altas \(n_i\) alcanza \(N_D\). Con dopados altos las movilidades disminuyen por la dispersión con impurezas.</l>
+</limits>
+<explore sim="dopado" title="Semiconductor dopado tipo n: electrones, huecos, nivel de Fermi y conductividad"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (\(N_D=10^{16}\ \text{cm}^{-3}\), \(n_i=10^{10}\ \text{cm}^{-3}\), 300 K): \(n=10^{16}\), \(p=10^4\ \text{cm}^{-3}\), \(\mu-E_i=0.357159\) eV y \(\sigma=2.16294\) S/cm.</li>
+<li>Con \(N_D\) en el eje (log–log): \(n\propto N_D\), \(p\propto1/N_D\) (para \(N_D\gg n_i\)); para \(N_D\ll n_i\) la pendiente de \(n\) cae a 0.</li>
+</ul></div>
+</deriv>
+
+<deriv id="union-pn" title="La unión p–n: potencial de contacto, zona de deplexión y capacidad" tags="Semiconductores, Unión p–n">
+<goal>La barrera de potencial entre un semiconductor tipo p y uno tipo n, el espesor de la región vaciada de portadores y cómo cambia con la tensión aplicada.</goal>
+<given>
+<g>En equilibrio el nivel de Fermi es único a través de la unión; lejos de ella \(n=N_D\) en el lado n y \(p=N_A\) en el lado p.</g>
+<g>Aproximación de deplexión: carga \(-qN_A\) para \(-x_p<x<0\) y \(+qN_D\) para \(0<x<x_n\); fuera, neutralidad. Ecuación de Poisson \(\varphi''=-\rho/\varepsilon\).</g>
+</given>
+<step op="Potencial de contacto: de \(n=n_ie^{(\mu-E_i)/kT}\) a cada lado se obtiene \(E_i\) a distinta altura">
+\[qV_{bi}=kT\ln\frac{N_D}{n_i}+kT\ln\frac{N_A}{n_i}\ \Longrightarrow\ V_{bi}=\frac{kT}q\ln\frac{N_AN_D}{n_i^2}.\]
+</step>
+<step op="Campo eléctrico: integrar Poisson una vez con \(E=0\) en los extremos de la zona de deplexión">
+\[E(x)=-\frac{qN_A}\varepsilon\,(x+x_p)\ \ (x<0),\qquad E(x)=-\frac{qN_D}\varepsilon\,(x_n-x)\ \ (x>0).\]
+<why>El campo es continuo en \(x=0\): \(N_Ax_p=N_Dx_n\), lo que equivale a la neutralidad de carga global.</why>
+</step>
+<step op="Campo máximo (en la unión) y caída de potencial: área del triángulo">
+\[E_\text{máx}=\frac{qN_Dx_n}\varepsilon,\qquad V_{bi}-V_a=\tfrac12E_\text{máx}\,W,\quad W=x_n+x_p.\]
+</step>
+<step op="Despejar el ancho con \(x_n=WN_A/(N_A+N_D)\)">
+\[W=\sqrt{\frac{2\varepsilon\,(N_A+N_D)\,(V_{bi}-V_a)}{q\,N_AN_D}}.\]
+</step>
+<step op="Capacidad por unidad de área (como un condensador de placas de separación \(W\))">
+\[C_j=\frac{\varepsilon}W\propto\frac1{\sqrt{V_{bi}-V_a}}.\]
+</step>
+<result name="Unión abrupta">\[V_{bi}=\frac{kT}q\ln\frac{N_AN_D}{n_i^2},\qquad W=\sqrt{\frac{2\varepsilon(N_A+N_D)(V_{bi}-V_a)}{qN_AN_D}},\qquad C_j=\frac\varepsilon W.\]</result>
+<vars>
+<v s="V_{bi}" n="potencial de contacto" u="V"/>
+<v s="V_a" n="tensión aplicada" u="V"/>
+<v s="W" n="ancho de la zona de deplexión" u="m"/>
+<v s="x_n,\,x_p" n="penetración en cada lado" u="m"/>
+<v s="N_A,\,N_D" n="concentraciones de aceptores y donadores" u="m^-3"/>
+<v s="n_i" n="concentración intrínseca" u="m^-3"/>
+<v s="\varepsilon" n="permitividad del semiconductor" u="F m^-1"/>
+<v s="q" n="carga elemental" u="C"/>
+<v s="E_\text{máx}" n="campo eléctrico máximo" u="V m^-1"/>
+<v s="C_j" n="capacidad por unidad de área" u="F m^-2"/>
+<v s="k" n="constante de Boltzmann" u="J K^-1"/>
+<v s="T" n="temperatura" u="K"/>
+</vars>
+<effects>
+<e>Silicio simétrico (\(N_A=N_D=10^{16}\ \text{cm}^{-3}\), \(\varepsilon_r=11.7\), \(n_i=10^{10}\ \text{cm}^{-3}\), 300 K): \(V_{bi}=0.7143\) V, \(W=0.4298\ \mu\)m (\(x_n=x_p=0.2149\ \mu\)m), \(E_\text{máx}=33.24\) kV/cm y \(C_j=24.10\ \text{nF/cm}^2\).</e>
+<e>Con \(V_a=-5\) V el ancho crece a \(1.2157\ \mu\)m y con \(V_a=+0.3\) V baja a \(0.3273\ \mu\)m: la capacidad es un condensador controlado por tensión (varactor). Unión asimétrica (\(N_A=10^{17}\), \(N_D=10^{15}\ \text{cm}^{-3}\)): el mismo \(V_{bi}\) pero \(W=0.9659\ \mu\)m, casi todo en el lado poco dopado (\(x_n=0.9563\ \mu\)m, \(x_p=0.0096\ \mu\)m).</e>
+</effects>
+<limits>
+<l>Dimensiones: \(\varepsilon(N_A+N_D)V/(qN_AN_D)\) es \(\mathrm m^2\). ✓</l>
+<l>La aproximación de deplexión desprecia los portadores libres dentro de \(W\) (error de unos \(kT/q\) en el potencial) y la unión abrupta idealiza el perfil de dopado; en directa, para \(V_a\to V_{bi}\), \(W\to0\) y el modelo deja de valer (inyección de portadores).</l>
+</limits>
+<explore sim="union-pn" title="Unión p–n abrupta: potencial de contacto, ancho de deplexión, campo y capacidad"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (\(N_A=N_D=10^{16}\ \text{cm}^{-3}\), \(V_a=0\)): \(V_{bi}=0.714317\) V, \(W=0.429821\ \mu\)m, \(x_n=0.214911\ \mu\)m, \(E_\text{máx}=33.2379\) kV/cm y \(C_j=24.1017\) nF/cm².</li>
+<li>Con \(V_a\) en el eje: \(W\propto\sqrt{V_{bi}-V_a}\) (pendiente negativa; crece en inversa) y \(C_j\propto1/W\).</li>
+</ul></div>
+</deriv>
+
+<deriv id="diodo-shockley" title="La ecuación del diodo de Shockley" tags="Semiconductores, Diodo">
+<goal>La corriente que atraviesa una unión p–n en función de la tensión aplicada: \(I=I_s\,(e^{qV/kT}-1)\).</goal>
+<given>
+<g>Baja inyección: los portadores minoritarios inyectados \(\Delta p\) en el lado n neutro cumplen la ecuación de difusión con recombinación \(D_p\,\Delta p''=\Delta p/\tau_p\) (y análoga para electrones en el lado p).</g>
+<g>Ley de la unión: los portadores minoritarios en el borde de la deplexión están en equilibrio cuasi-térmico con la tensión: \(p_n(x_n)=p_{n0}\,e^{qV/kT}\), con \(p_{n0}=n_i^2/N_D\).</g>
+</given>
+<step op="Exceso de huecos en el borde de la región neutra del lado n">
+\[\Delta p(x_n)=p_{n0}\left(e^{qV/kT}-1\right).\]
+</step>
+<step op="Resolver la ecuación de difusión para \(x>x_n\) con \(\Delta p\to0\) lejos">
+\[\Delta p(x)=\Delta p(x_n)\,e^{-(x-x_n)/L_p},\qquad L_p=\sqrt{D_p\tau_p}.\]
+</step>
+<step op="Corriente de huecos: difusión (sin campo en la región neutra)">
+\[J_p=-qD_p\frac{\mathrm d\,\Delta p}{\mathrm dx}\Big|_{x_n}=\frac{qD_pp_{n0}}{L_p}\left(e^{qV/kT}-1\right).\]
+</step>
+<step op="Análogo para electrones inyectados en el lado p; sumar las dos corrientes en el borde de la deplexión (sin recombinación dentro de ella)">
+\[I=I_s\left(e^{qV/kT}-1\right),\qquad I_s=qA\left(\frac{D_pp_{n0}}{L_p}+\frac{D_nn_{p0}}{L_n}\right),\quad p_{n0}=\frac{n_i^2}{N_D},\ n_{p0}=\frac{n_i^2}{N_A}.\]
+</step>
+<result name="Diodo ideal">\[I=I_s\left(e^{qV/kT}-1\right),\qquad I_s=qAn_i^2\left(\frac{D_p}{L_pN_D}+\frac{D_n}{L_nN_A}\right).\]</result>
+<vars>
+<v s="I" n="corriente del diodo" u="A"/>
+<v s="I_s" n="corriente de saturación" u="A"/>
+<v s="V" n="tensión aplicada" u="V"/>
+<v s="q" n="carga elemental" u="C"/>
+<v s="k" n="constante de Boltzmann" u="J K^-1"/>
+<v s="T" n="temperatura" u="K"/>
+<v s="D_p,\,D_n" n="coeficientes de difusión" u="m^2 s^-1"/>
+<v s="L_p,\,L_n" n="longitudes de difusión" u="m"/>
+<v s="\tau_p" n="tiempo de vida de los minoritarios" u="s"/>
+<v s="p_{n0},\,n_{p0}" n="concentraciones minoritarias en equilibrio" u="m^-3"/>
+<v s="A" n="área de la unión" u="m^2"/>
+<v s="N_A,\,N_D" n="dopados" u="m^-3"/>
+<v s="n_i" n="concentración intrínseca" u="m^-3"/>
+</vars>
+<effects>
+<e>Silicio con \(N_A=N_D=10^{16}\ \text{cm}^{-3}\), \(n_i=10^{10}\ \text{cm}^{-3}\), \(D_n=36\), \(D_p=12\ \text{cm}^2/\text{s}\) y \(\tau=1\ \mu\)s (\(L_n=60\ \mu\)m, \(L_p=34.6\ \mu\)m): la densidad de saturación es \(J_s=1.5\times10^{-11}\ \text{A/cm}^2\) (para \(A=10^{-4}\ \text{cm}^2\), \(I_s=1.5\) fA).</e>
+<e>A 300 K, \(kT/q=25.852\) mV y la corriente se multiplica por 10 cada \(59.53\) mV. Con \(I_s=1\) pA y \(V=0.6\) V, \(I=12.0\) mA; la resistencia dinámica \(\mathrm dV/\mathrm dI=(kT/q)/I\) vale 2.15 Ω. Subir 0.1 V multiplica \(I\) por 48 (\(e^{3.868}\)).</e>
+<e>\(I_s\propto n_i^2\propto T^3e^{-E_g/kT}\): a igual \(V\), la corriente crece rápidamente con \(T\); una polarización en directa de 0.6 V da unos 7.7 % más de corriente por cada kelvin de calentamiento.</e>
+</effects>
+<limits>
+<l>Dimensiones: \(qAD_pp_{n0}/L_p\) es \(\mathrm{C\,m^2\cdot m^2s^{-1}\cdot m^{-3}\cdot m^{-1}}=\mathrm{C/s}=\mathrm A\). ✓</l>
+<l>Modelo ideal: sin recombinación en la zona de deplexión (que añade un término \(\propto e^{qV/2kT}\) a bajas tensiones), sin alta inyección ni resistencia en serie, y con regiones «largas» frente a \(L\). En inversa la corriente satura en \(-I_s\) hasta que ocurre la ruptura.</l>
+</limits>
+<explore sim="diodo" title="Diodo de Shockley: corriente, tensión térmica y resistencia dinámica"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (\(I_s=1\) pA, \(T=300\) K, \(V=0.6\) V): \(I=12.01\) mA, \(kT/q=25.852\) mV, 59.5264 mV por década y \(r_d=2.15\ \Omega\).</li>
+<li>Con \(V\) en el eje: \(I\) crece exponencialmente; la pendiente logarítmica local \(qV/kT\) vale 23.2 en 0.6 V.</li>
+</ul></div>
+</deriv>
+
+<deriv id="london-meissner" title="Superconductividad: las ecuaciones de London y el efecto Meissner" tags="Superconductividad, Electromagnetismo">
+<goal>Por qué un superconductor expulsa el campo magnético, y a qué profundidad penetra.</goal>
+<given>
+<g>Electrones superconductores de densidad \(n_s\) que se aceleran libremente (sin colisiones): \(m\,\dot{\mathbf v}_s=-e\mathbf E\), con corriente \(\mathbf j_s=-n_se\mathbf v_s\).</g>
+<g>Ecuaciones de Maxwell estáticas: \(\nabla\times\mathbf B=\mu_0\mathbf j_s\), \(\nabla\cdot\mathbf B=0\) y \(\nabla\times\mathbf E=-\partial_t\mathbf B\).</g>
+</given>
+<step op="Primera ecuación de London (aceleración sin resistencia)">
+\[\frac{\partial\mathbf j_s}{\partial t}=\frac{n_se^2}m\,\mathbf E.\]
+</step>
+<step op="Rotacional de la primera y ley de Faraday">
+\[\frac\partial{\partial t}\left(\nabla\times\mathbf j_s+\frac{n_se^2}m\mathbf B\right)=0.\]
+<why>Esto permite que el campo congelado (\(\partial_t\mathbf B=0\)) de un conductor perfecto sea cualquiera. London postuló que la constante es cero —el estado superconductor es una condición de equilibrio, no de historia—: eso es el efecto Meissner.</why>
+</step>
+<step op="Segunda ecuación de London">
+\[\nabla\times\mathbf j_s=-\frac{n_se^2}m\mathbf B.\]
+</step>
+<step op="Rotacional de Ampère y la identidad \(\nabla\times(\nabla\times\mathbf B)=-\nabla^2\mathbf B\) (porque \(\nabla\cdot\mathbf B=0\))">
+\[\nabla^2\mathbf B=\frac{\mathbf B}{\lambda_L^2},\qquad\lambda_L=\sqrt{\frac m{\mu_0n_se^2}}.\]
+</step>
+<step op="Semiespacio \(x>0\) con campo \(B_0\) en la superficie: la solución que no diverge">
+\[B(x)=B_0\,e^{-x/\lambda_L},\qquad j_s(x)=\frac{B_0}{\mu_0\lambda_L}\,e^{-x/\lambda_L}.\]
+</step>
+<result name="Efecto Meissner">\[B(x)=B_0e^{-x/\lambda_L},\qquad\lambda_L=\sqrt{\frac m{\mu_0n_se^2}}.\]</result>
+<vars>
+<v s="\lambda_L" n="profundidad de penetración de London" u="m"/>
+<v s="n_s" n="densidad de electrones superconductores" u="m^-3"/>
+<v s="m" n="masa del electrón" u="kg"/>
+<v s="e" n="carga elemental" u="C"/>
+<v s="\mu_0" n="permeabilidad del vacío" u="H m^-1"/>
+<v s="B" n="inducción magnética" u="T"/>
+<v s="B_0" n="inducción en la superficie" u="T"/>
+<v s="j_s" n="densidad de corriente apantalladora" u="A m^-2"/>
+<v s="x" n="profundidad" u="m"/>
+</vars>
+<effects>
+<e>Con \(n_s=18.1\times10^{28}\ \text{m}^{-3}\) (Al): \(\lambda_L=12.49\) nm; el campo cae a \(1/e=0.3679\) a \(x=\lambda_L\), a \(0.0498\) a \(3\lambda_L\) y a \(0.0067\) a \(5\lambda_L\). La corriente apantalladora en la superficie es \(B_0/(\mu_0\lambda_L)=6.37\times10^{13}\ \text{A/m}^2\) por tesla.</e>
+<e>Para \(n_s=13.2\times10^{28}\) m⁻³ (Pb): 14.63 nm; \(n_s=14.8\times10^{28}\) (Sn): 13.81 nm. Los valores medidos son mayores (16 nm en Al, 37 nm en Pb, 34 nm en Sn) porque la densidad efectiva de superelectrones es menor que la total y el efecto es no local; en todos los casos, \(\lambda_L\) es de decenas de nanómetros: una lámina de 1 µm blinda totalmente el campo.</e>
+<e>Como \(\lambda_L\propto n_s^{-1/2}\), cuadruplicar la densidad reduce la penetración a la mitad.</e>
+</effects>
+<limits>
+<l>Dimensiones: \(m/(\mu_0n_se^2)\) tiene unidades \(\mathrm{kg/(H\,m^{-1}\cdot m^{-3}C^2)}=\mathrm m^2\). ✓</l>
+<l>Teoría local y fenomenológica: el valor de \(n_s\) y su dependencia con la temperatura no se deducen (la teoría BCS los fija), y cerca de \(T_c\) la longitud de coherencia limita la validez; para campos mayores que el crítico el estado superconductor se destruye.</l>
+</limits>
+<explore sim="london" title="Profundidad de penetración de London y decaimiento del campo"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (\(n_s=18.1\times10^{28}\ \text{m}^{-3}\), \(x=12.4908\) nm): \(\lambda_L=12.4908\) nm, \(B/B_0=0.367879\) y \(j_s/B_0=63.7\) TA/(m² T).</li>
+<li>Con \(x\) en el eje (log–log): pendiente 0 para \(x\ll\lambda_L\) y exponencial para \(x\gtrsim\lambda_L\).</li>
+</ul></div>
+</deriv>
+
+<deriv id="flujo-josephson" title="El cuanto de flujo y el efecto Josephson" tags="Superconductividad, Cuántica">
+<goal>El flujo magnético atrapado en un anillo superconductor solo toma valores múltiplos de \(h/2e\), y una unión entre dos superconductores oscila con frecuencia \(2eV/h\).</goal>
+<given>
+<g>Función de onda macroscópica de los pares de Cooper (carga \(q=2e\), masa \(m^*=2m\)): \(\Psi=\sqrt{n_s}\,e^{i\theta}\), univaluada.</g>
+<g>Corriente cuántica invariante de gauge: \(\mathbf j_s=\dfrac{n_sq}{m^*}\left(\hbar\nabla\theta-q\mathbf A\right)\).</g>
+</given>
+<step op="Dentro de un superconductor grueso \(\mathbf j_s=0\) (Meissner)">
+\[\hbar\nabla\theta=q\mathbf A.\]
+</step>
+<step op="Circular por un camino cerrado dentro del anillo; la fase solo puede cambiar un múltiplo entero de \(2\pi\)">
+\[\oint\hbar\nabla\theta\cdot\mathrm d\mathbf l=2\pi n\hbar=q\oint\mathbf A\cdot\mathrm d\mathbf l=q\,\Phi.\]
+</step>
+<step op="Cuanto de flujo">
+\[\Phi=n\,\Phi_0,\qquad\Phi_0=\frac h{2e}.\]
+</step>
+<step op="Unión Josephson: dos superconductores débilmente acoplados con \(\psi_j=\sqrt{n_j}e^{i\theta_j}\) y energías \(U_1,U_2\)">
+\[i\hbar\dot\psi_1=U_1\psi_1+K\psi_2,\qquad i\hbar\dot\psi_2=U_2\psi_2+K\psi_1.\]
+</step>
+<step op="Separar parte real e imaginaria: \(\varphi=\theta_2-\theta_1\)">
+\[\dot n_1=\frac{2K}\hbar\sqrt{n_1n_2}\,\sin\varphi\ \Longrightarrow\ I=I_c\sin\varphi,\qquad\dot\varphi=\frac{U_1-U_2}\hbar=\frac{2eV}\hbar.\]
+<why>Con \(U_1-U_2=qV=2eV\), la fase relativa avanza uniformemente y la corriente alterna con frecuencia \(f=\dot\varphi/2\pi\).</why>
+</step>
+<result name="Cuanto de flujo y relación de Josephson">\[\Phi_0=\frac h{2e},\qquad I=I_c\sin\varphi,\qquad f=\frac{2eV}h.\]</result>
+<vars>
+<v s="\Phi" n="flujo magnético a través del anillo" u="Wb"/>
+<v s="\Phi_0" n="cuanto de flujo" u="Wb"/>
+<v s="h" n="constante de Planck" u="J s"/>
+<v s="e" n="carga elemental" u="C"/>
+<v s="f" n="frecuencia de la corriente alterna" u="Hz"/>
+<v s="V" n="tensión continua de la unión" u="V"/>
+<v s="\hbar" n="constante de Planck reducida" u="J s"/>
+<v s="\mathbf j_s" n="densidad de corriente superconductora" u="A m^-2"/>
+<v s="n_s" n="densidad de pares" u="m^-3"/>
+<v s="m^*" n="masa de un par de Cooper" u="kg"/>
+<v s="\nabla\theta" n="gradiente de la fase" u="m^-1"/>
+<v s="\mathbf A" n="potencial vector" u="T m"/>
+</vars>
+<effects>
+<e>\(\Phi_0=2.067834\times10^{-15}\) Wb (2.067834 fWb): un anillo de 1 µm² con un cuanto atrapado tiene \(B=2.0678\) mT; para un área de 1 mm² y el campo terrestre (50 µT) hay \(2.4\times10^4\) cuantos, y los SQUID detectan fracciones de \(10^{-6}\Phi_0\).</e>
+<e>\(f/V=2e/h=483.598\) MHz/µV: a 100 µV, \(f=48.3598\) GHz. Es una medida de \(e/h\) de precisión: la constante de Josephson \(K_J=483597.848\) GHz/V se usó como patrón de tensión.</e>
+<e>La relación vale para cualquier tipo de unión (puntual, de capa delgada o microconstricción) porque solo depende de que la fase relativa avance con la energía de un par.</e>
+</effects>
+<limits>
+<l>Dimensiones: \(h/2e\) es \(\mathrm{J\,s/C}=\mathrm{V\,s}=\mathrm{Wb}\). ✓</l>
+<l>La corriente crítica \(I_c\) depende de la unión y la temperatura; la fase relativa en un circuito real obedece al modelo RCSJ (resistencia, capacitancia y fuente de corriente), que da el escalón de Shapiro cuando se irradia con microondas.</l>
+</limits>
+<explore sim="josephson" title="Cuanto de flujo y frecuencia de Josephson"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (\(V=100\ \mu\)V, \(n=1\), 1 µm²): \(f=48.3598\) GHz, \(\Phi_0=2.06783\) fWb, \(n\Phi_0=2.06783\) fWb y \(B=2067.83\ \mu\)T.</li>
+<li>Con \(V\) en el eje (log–log): \(f\) es proporcional a \(V\) con la constante \(2e/h\).</li>
+</ul></div>
+</deriv>
+
+<deriv id="bcs-brecha" title="La brecha de BCS y la temperatura crítica" tags="Superconductividad, BCS">
+<goal>Por qué existe una brecha de energía en el espectro de excitaciones de un superconductor y cómo se relaciona con la temperatura crítica.</goal>
+<given>
+<g>Hamiltoniano BCS: pares de Cooper con interacción atractiva \(V\) entre electrones de energía dentro de \(\hbar\omega_D\) de la superficie de Fermi; el estado variacional \(\prod_k(u_k+v_kc^\dagger_{k\uparrow}c^\dagger_{-k\downarrow})|0\rangle\) da cuasipartículas con energía \(E=\sqrt{\varepsilon^2+\Delta^2}\) (\(\varepsilon\): energía normal medida desde el nivel de Fermi).</g>
+<g>Ecuación de la brecha, con \(N(0)\) la densidad de estados por espín en el nivel de Fermi: \(1=N(0)V\displaystyle\int_0^{\hbar\omega_D}\frac{\tanh(E/2kT)}{E}\,\mathrm d\varepsilon\).</g>
+</given>
+<step op="A \(T=0\) (\(\tanh\to1\))">
+\[\frac1{N(0)V}=\int_0^{\hbar\omega_D}\frac{\mathrm d\varepsilon}{\sqrt{\varepsilon^2+\Delta^2}}=\operatorname{arcsinh}\frac{\hbar\omega_D}{\Delta}.\]
+</step>
+<step op="Despejar la brecha">
+\[\Delta(0)=\frac{\hbar\omega_D}{\sinh\left[1/N(0)V\right]}\simeq2\hbar\omega_De^{-1/N(0)V}\quad\left(N(0)V\ll1\right).\]
+<why>El resultado no es analítico en \(V\): no puede obtenerse por teoría de perturbaciones en la interacción (\(e^{-1/V}\) no tiene desarrollo en serie en \(V=0\)).</why>
+</step>
+<step op="En \(T=T_c\) la brecha se anula (\(E\to\varepsilon\))">
+\[\frac1{N(0)V}=\int_0^{\hbar\omega_D}\frac{\tanh(\varepsilon/2kT_c)}\varepsilon\,\mathrm d\varepsilon=\ln\frac{2e^\gamma\hbar\omega_D}{\pi kT_c}\quad\left(\hbar\omega_D\gg kT_c\right).\]
+<why>Para \(x\gg1\), \(\int_0^x\tanh y\,\mathrm dy/y\simeq\ln(4e^\gamma x/\pi)\), con \(\gamma=0.5772\) la constante de Euler.</why>
+</step>
+<step op="Temperatura crítica y cociente universal">
+\[kT_c=\frac{2e^\gamma}\pi\,\hbar\omega_D\,e^{-1/N(0)V}=1.134\,\hbar\omega_De^{-1/N(0)V},\qquad\frac{\Delta(0)}{kT_c}=\frac\pi{e^\gamma}=1.764.\]
+</step>
+<result name="Teoría BCS (acoplamiento débil)">\[kT_c=1.134\,\hbar\omega_De^{-1/N(0)V},\qquad2\Delta(0)=3.528\,kT_c.\]</result>
+<vars>
+<v s="\Delta" n="brecha de energía" u="J"/>
+<v s="T_c" n="temperatura crítica" u="K"/>
+<v s="\omega_D" n="frecuencia de Debye" u="rad s^-1"/>
+<v s="N(0)V" n="acoplamiento electrón–fonón" u="1"/>
+<v s="\hbar" n="constante de Planck reducida" u="J s"/>
+<v s="k" n="constante de Boltzmann" u="J K^-1"/>
+<v s="\varepsilon" n="energía medida desde el nivel de Fermi" u="J"/>
+<v s="E" n="energía de la cuasipartícula" u="J"/>
+<v s="T" n="temperatura" u="K"/>
+</vars>
+<effects>
+<e>Aluminio (\(\theta_D=428\) K, \(\hbar\omega_D=36.88\) meV): con \(N(0)V=0.1666\) la fórmula da \(T_c=1.200\) K, \(\Delta(0)=0.18241\) meV y \(\Delta/kT_c=1.7639\); el Al medido tiene \(2\Delta/kT_c\approx3.4\), muy cerca del valor BCS de 3.528. Superconductores de acoplamiento fuerte como el Pb dan 4.3 y exigen la teoría de Eliashberg.</e>
+<e>La temperatura crítica es extremadamente sensible al acoplamiento: con \(\theta_D=428\) K, \(N(0)V=0.1\) da \(T_c=0.022\) K, \(0.17\) da 1.353 K y \(0.3\) da 17.3 K (factor 786 al triplicar el acoplamiento). El efecto isotópico \(T_c\propto\omega_D\propto M^{-1/2}\) fue la pista experimental de que los fonones median el acoplamiento.</e>
+</effects>
+<limits>
+<l>Dimensiones: \(\hbar\omega_D\) y \(\Delta\) son energías; \(N(0)V\) es adimensional. ✓</l>
+<l>La fórmula vale para acoplamiento débil (\(N(0)V\lesssim0.3\)) y \(\hbar\omega_D\gg kT_c\); en los superconductores de alta temperatura crítica (cupratos) el mecanismo y la simetría del par son distintos y esta teoría no los describe.</l>
+</limits>
+<explore sim="bcs" title="Teoría BCS en acoplamiento débil: temperatura crítica y brecha"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (\(N(0)V=0.17\), \(\theta_D=428\) K): \(T_c=1.35311\) K, \(\Delta(0)=0.205673\) meV, \(\Delta/kT_c=1.76389\) y \(\hbar\omega_D=36.8822\) meV.</li>
+<li>Con \(N(0)V\) en el eje: \(T_c\) crece exponencialmente (\(\propto e^{-1/N(0)V}\)).</li>
+</ul></div>
+</deriv>
+
+<section>
+<h2>Fuentes y lecturas</h2>
+<ul class="refs">
+<li>S. M. Sze y K. K. Ng, <em>Physics of Semiconductor Devices</em>, 3.ª ed., Wiley (2007): caps. 1–3 (portadores, unión p–n, diodo).</li>
+<li>W. Shockley, <em>Bell System Technical Journal</em> 28 (1949) 435; M. A. Green, <em>Journal of Applied Physics</em> 67 (1990) 2944 (silicio).</li>
+<li>M. Tinkham, <em>Introduction to Superconductivity</em>, 2.ª ed., McGraw-Hill (1996): caps. 1–3 (London, BCS, flujo, Josephson).</li>
+<li>F. London y H. London, <em>Proceedings of the Royal Society A</em> 149 (1935) 71; J. Bardeen, L. N. Cooper y J. R. Schrieffer, <em>Physical Review</em> 108 (1957) 1175; B. D. Josephson, <em>Physics Letters</em> 1 (1962) 251; B. S. Deaver y W. M. Fairbank, <em>Physical Review Letters</em> 7 (1961) 43.</li>
+<li>C. Kittel, <em>Introduction to Solid State Physics</em>, 8.ª ed., Wiley (2005): caps. 8, 10, 11.</li>
+</ul>
+</section>
+</template>

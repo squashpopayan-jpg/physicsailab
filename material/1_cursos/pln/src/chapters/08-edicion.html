@@ -1,0 +1,89 @@
+<template class="chapter-src" data-id="edicion" data-num="8" data-title="Distancia de edición y corrección ortográfica" data-part="Parte II · Las palabras" data-short="Levenshtein y Damerau por programación dinámica; alineamiento; canal ruidoso de Bayes; candidatos a una y dos ediciones; un corrector con modelo de lengua; errores de palabra y de contexto">
+<p class="lead">¿Qué tan parecidas son «intención» y «ejecución»? ¿Qué quiso escribir quien tecleó «ejemlpo»? Las dos preguntas se contestan con la misma idea: contar las operaciones mínimas que convierten una cadena en otra. Con esa medida y una pizca de probabilidad se construye un corrector ortográfico. Es el primer algoritmo del curso que combina un modelo de errores con un modelo del idioma, y esa estructura reaparece en el etiquetado, el reconocimiento de voz y la traducción.</p>
+
+<section>
+<h2>Distancia de edición</h2>
+<p>La <span class="term">distancia de edición</span> entre dos cadenas es el número mínimo de operaciones que transforman la una en la otra. Tres operaciones básicas: <b>inserción</b>, <b>borrado</b> y <b>sustitución</b>. La variante de <b>Damerau</b> añade la <b>transposición</b> de dos letras adyacentes, el error de tecleo más común («hoal» por «hola»). Cada operación tiene un costo; con costos 1, 1, 1 es la distancia de Levenshtein, y con sustitución de costo 2 (una sustitución equivale a borrar y a insertar) se obtiene la variante de Jurafsky y Martin.</p>
+<div class="eq key" data-name="Levenshtein por programación dinámica">\[D_{i,0}=i,\quad D_{0,j}=j,\qquad D_{i,j}=\min\begin{cases}D_{i-1,j}+1 & \text{(borrar } a_i)\\ D_{i,j-1}+1 & \text{(insertar } b_j)\\ D_{i-1,j-1}+\ind{a_i\ne b_j} & \text{(sustituir o copiar)}\end{cases}\]</div>
+<p>\(D_{i,j}\) es la distancia entre los primeros \(i\) caracteres de \(a\) y los primeros \(j\) de \(b\). Cada celda depende de tres vecinas, así que llenar la tabla cuesta \(O(nm)\). Para recuperar <b>cuáles</b> operaciones se hicieron se retrocede desde la última celda hacia la primera, eligiendo en cada paso la vecina que explica el valor: eso es el <b>alineamiento</b>.</p>
+<div class="sim" data-sim="edicion" data-title="Tabla de programación dinámica y alineamiento"></div>
+<div class="sim-guide"><ul>
+<li>Escriba dos palabras. La ruta del retroceso se resalta en la tabla y debajo aparece el alineamiento: <b>=</b> copiar, <b>s</b> sustituir, <b>i</b> insertar, <b>d</b> borrar, <b>t</b> transponer.</li>
+<li>«Intención» → «ejecución» cuesta 5 con costos 1, 1, 1 (cinco sustituciones) y 8 con sustitución de costo 2: cuando sustituir cuesta lo mismo que borrar e insertar, al algoritmo le conviene combinar los tres tipos de operación.</li>
+<li>Con «hola» → «hoal» la distancia pasa de 2 (Levenshtein) a 1 (Damerau).</li>
+<li>Estas tres variantes se compararon con RapidFuzz en 306 pares de palabras sin discrepancias (apéndice de validación).</li>
+</ul></div>
+<p>La distancia de edición se usa mucho más allá de la ortografía: la <b>tasa de error por palabra</b> (WER) del reconocimiento de voz es la distancia de edición entre la transcripción correcta y la del sistema, dividida por el número de palabras de la primera; la tasa por carácter (CER) hace lo mismo a nivel de letras; y sirve también para unir registros duplicados con nombres mal escritos.</p>
+<div class="eq" data-name="Tasa de error por palabra">\[\mathrm{WER}=\frac{S+D+I}{N}\qquad(S\text{ sustituciones, }D\text{ borrados, }I\text{ inserciones, }N\text{ palabras de la referencia})\]</div>
+</section>
+
+<section>
+<h2>Detectar y corregir errores ortográficos</h2>
+<p>Hay dos tipos de error. En un <b>error de palabra inexistente</b> («ejemlpo») el resultado no está en el diccionario: se detecta con una simple consulta. En un <b>error de palabra real</b> («cuanto» por «cuando», «sabana» por «sábana») el resultado es una palabra válida y solo el contexto delata el error. Damerau (1964) observó que alrededor del 80 % de los errores ortográficos de palabras inexistentes tienen una sola edición, de modo que basta buscar candidatos cercanos.</p>
+<p>Los <b>candidatos a una edición</b> de una palabra de \(n\) letras son \(n\) borrados, \(n-1\) transposiciones, \(a\,n\) sustituciones y \(a\,(n+1)\) inserciones, siendo \(a\) el tamaño del alfabeto. Con las 33 letras del español (incluidas las vocales con tilde, la ñ y la ü) una palabra de 4 letras genera 304 cadenas, 297 distintas. A dos ediciones son decenas de miles, pero casi todas son cadenas sin sentido: basta quedarse con las que están en el vocabulario.</p>
+</section>
+
+<section>
+<h2>El canal ruidoso</h2>
+<p>La idea central, de los años ochenta, es tratar la escritura como una comunicación con ruido: la persona quiere escribir una palabra \(w\), pasa por un canal que la deforma y sale lo que vemos, \(x\). Corregir es decodificar:</p>
+<div class="eq key" data-name="Corrector de canal ruidoso">\[\hat w=\argmax_{w\in V}\ \underbrace{P(x\mid w)}_{\text{modelo del error}}\ \underbrace{P(w)}_{\text{modelo del idioma}}\ ,\qquad P(x\mid w)\approx\lambda^{\,d(x,w)}\]</div>
+<p>El <b>modelo del idioma</b> \(P(w)\) es aquí la frecuencia relativa de cada palabra en un corpus (unigrama), calculada con CESS-ESP (155.967 palabras). El <b>modelo del error</b> supone que cada edición ocurre con probabilidad \(\lambda\), pequeña (aquí 0,01). Es una simplificación: los modelos reales estiman, a partir de errores reales, matrices de confusión (por ejemplo, que «s» se confunde con «c» más que con «k»).</p>
+<div class="sim" data-sim="corrector" data-title="Un corrector ortográfico de canal ruidoso"></div>
+<div class="sim-guide"><ul>
+<li>Escriba una palabra con error o elija un ejemplo. La tabla ordena los candidatos por \(\log P(w)+d\log\lambda\).</li>
+<li>Con «cassa» gana «casa» (51 apariciones) frente a «causa» (15): ambas están a una edición, y desempata la frecuencia.</li>
+<li>Suba \(\lambda\) hacia 0,5: la probabilidad de error es tan alta que el corrector «corrige» palabras que ya eran correctas («deben» → «debe»). Bájela a 10<sup>−6</sup> y casi nunca corrige. La elección de \(\lambda\) es el equilibrio entre detectar errores y no molestar con falsas alarmas.</li>
+<li>El modo «Norvig» prioriza siempre el candidato más cercano y desempata por frecuencia, sin probabilidades.</li>
+</ul></div>
+<div class="box py"><p>El programa implementa la distancia por programación dinámica, la compara con NLTK, y construye el corrector con el corpus CESS-ESP.</p>
+<div class="py" data-py="08-edicion"></div></div>
+<div class="box read"><ul>
+<li><b>Distancias</b>: «intención» → «ejecución» da 5 y 8 según el costo de sustitución, y coincide con <code>nltk.edit_distance</code>. «Perro» → «pero» cuesta 1 con cualquier costo (es un borrado); «casa» → «caza», 1 o 2.</li>
+<li><b>Corrector</b>: «pais» → «país» (177 apariciones); «ladrilo» → «ladrillo» aunque aparece una sola vez, porque es la única palabra del vocabulario a una edición; «rapidamenet» → «rápidamente» necesita dos ediciones (una transposición y una tilde).</li>
+<li><b>Ambigüedad</b>: «abla» tiene tres candidatos a una edición, «tabla» (13), «habla» (11) y «alba» (4); sin contexto no hay forma de decidir si se quiso decir «tabla» o «habla».</li>
+<li><b>Falsas correcciones</b>: con \(\lambda=0{,}5\), «deben» se «corrige» a «debe»; con \(\lambda=0{,}01\) o menos, la palabra correcta se respeta. Lo mismo con «menor» (→ «mejor») y «firma» (→ «forma»).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Límites y mejoras</h2>
+<ul>
+<li><b>Errores de palabra real</b>: el corrector de unigramas no los ve. Hace falta un modelo de lenguaje que mire el contexto: «el <i>cuanto</i> llegó» es improbable aunque «cuanto» exista (capítulo 25).</li>
+<li><b>Palabras legítimas fuera del vocabulario</b>: nombres propios, tecnicismos, neologismos. Un diccionario pequeño las marca como error.</li>
+<li><b>El español y las tildes</b>: gran parte de los errores reales son tildes omitidas («pais»). Un corrector debe tratarlas como edición de bajo costo.</li>
+<li><b>Modelos modernos</b>: los correctores actuales usan redes neuronales entrenadas con pares (texto con error, texto correcto) y toman el contexto completo de la oración. La estructura bayesiana subyace, solo que con probabilidades aprendidas.</li>
+</ul>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>La distancia de edición cuenta las inserciones, borrados y sustituciones mínimos (y transposiciones en Damerau); se calcula en \(O(nm)\) con programación dinámica.</li>
+<li>El retroceso por la tabla da el alineamiento entre las dos cadenas.</li>
+<li>Un corrector de canal ruidoso elige \(\argmax P(x\mid w)P(w)\): modelo del error por modelo del idioma.</li>
+<li>Los candidatos a una edición se generan sistemáticamente y se filtran con el vocabulario.</li>
+<li>Los errores de palabra real exigen contexto; \(\lambda\) regula el equilibrio entre corregir de más y de menos.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Calcule la distancia de Levenshtein entre «gato» y «pato».
+<details><summary>Respuesta</summary><p>1: una sustitución (g → p).</p></details></li>
+<li><span class="lvl">Básico</span>¿Cuál es la WER si la referencia es «el gato duerme en casa» y el sistema produce «el gato duerme casa»?
+<details><summary>Respuesta</summary><p>Hay un borrado («en») sobre 5 palabras de referencia: 1/5 = 0,2 (20 %).</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Cuántos candidatos (con repeticiones) a una edición tiene una palabra de 5 letras con un alfabeto de 33?
+<details><summary>Respuesta</summary><p>Borrados 5, transposiciones 4, sustituciones 33·5 = 165, inserciones 33·6 = 198: total 372.</p></details></li>
+<li><span class="lvl">Intermedio</span>Con \(\lambda=0{,}01\), «abla» puede ser «tabla» (13 apariciones) o «habla» (11), ambas a distancia 1. ¿Cuál gana y por qué?
+<details><summary>Respuesta</summary><p>«Tabla»: tiene la misma distancia, de modo que el canal no distingue, y el modelo del idioma favorece a la más frecuente (13 frente a 11).</p></details></li>
+<li><span class="lvl">Avanzado</span>Demuestre que la distancia de edición con costos 1, 1, 1 es una métrica (cumple la desigualdad triangular).
+<details><summary>Respuesta</summary><p>Positividad y simetría se siguen de la definición (borrar e insertar son inversos). Triangular: una secuencia de operaciones que lleva \(a\) a \(b\) seguida de otra que lleva \(b\) a \(c\) es una transformación de \(a\) en \(c\); la mínima no puede costar más que esa concatenación, de modo que \(d(a,c)\le d(a,b)+d(b,c)\).</p></details></li>
+</ol>
+<h3>Autoevaluación</h3>
+<div class="sim" data-sim="quiz" data-cap="edicion" data-title="Autoevaluación del capítulo 8"></div>
+<div class="box links"><ul>
+<li><a href="https://norvig.com/spell-correct.html">Peter Norvig — How to write a spelling corrector</a><small>El corrector de veinte líneas en Python en el que se basa el programa del capítulo.</small></li>
+<li><a href="https://doi.org/10.1145/363958.363994">Damerau (1964) — A technique for computer detection and correction of spelling errors</a><small>Origen de la transposición como operación básica y de la cifra del 80 % de errores de una edición.</small></li>
+<li><a href="https://aclanthology.org/C90-2036/">Kernighan, Church y Gale (1990) — A spelling correction program based on a noisy channel model</a><small>El artículo que formuló el corrector como canal ruidoso con matrices de confusión.</small></li>
+<li><a href="https://rapidfuzz.github.io/RapidFuzz/">RapidFuzz</a><small>Biblioteca rápida de distancias de edición (Levenshtein, Damerau-OSA, Jaro-Winkler) usada para validar el capítulo.</small></li>
+<li><a href="https://web.stanford.edu/~jurafsky/slp3/B.pdf">Jurafsky y Martin — Apéndice B: spelling correction and the noisy channel</a><small>Tratamiento completo con matrices de confusión y corrección con contexto.</small></li>
+</ul></div>
+</section>
+</template>

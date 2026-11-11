@@ -1,0 +1,113 @@
+<template class="chapter-src" data-id="semantica-composicional" data-num="20" data-title="Análisis semántico dirigido por la sintaxis" data-part="Parte V · El significado" data-short="Principio de composición; cálculo lambda y β-reducción; gramáticas con anotaciones semánticas (regla a regla); ámbito de cuantificadores y almacenamiento de Cooper; análisis integrado frente a en dos etapas">
+<p class="lead">El capítulo anterior terminó con una fórmula como \(\forall x\,(\mathrm{est}(x)\to\exists y\,(\mathrm{libro}(y)\wedge\mathrm{lee}(x,y)))\). Falta saber cómo se llega a ella desde la oración sin que un programador escriba una fórmula para cada frase posible. La respuesta es el <b>principio de composición</b>: el significado de la oración se calcula a partir del de sus partes y de la forma en que la sintaxis las combina. Con una pequeña máquina matemática, el cálculo lambda, ese cálculo es automático.</p>
+
+<section>
+<h2>El principio de composición</h2>
+<p>La idea, atribuida a Frege, es que una oración es más que las palabras que contiene: «el perro muerde al niño» y «el niño muerde al perro» tienen las mismas palabras y significados opuestos. El significado depende también del <i>orden</i>, de la <i>agrupación</i> y de las <i>relaciones</i> entre palabras, que es lo que describe el árbol sintáctico. En el <b>análisis semántico dirigido por la sintaxis</b> el árbol sirve de guía: cada nodo recibe un significado que se calcula a partir del de sus hijos.</p>
+<p>Esta etapa supone que la ambigüedad ya se ha tratado en otra parte: el analizador sintáctico entrega el mejor árbol o varios, y cada uno se interpreta por separado. Dos conocimientos son imprescindibles: el de la <b>estructura</b> (en un verbo transitivo, el sujeto y el objeto son sus argumentos) y el del <b>léxico</b> (qué relación expresa «abrir» frente a «gustar»). No existe una plantilla única que valga para todos los verbos.</p>
+</section>
+
+<section>
+<h2>Cálculo lambda: funciones para construir significados</h2>
+<p>Para componer necesitamos una forma de escribir «una fórmula con un hueco» y de rellenarlo. El <b>cálculo lambda</b> ofrece exactamente eso:</p>
+<ul>
+<li><b>Abstracción</b>: \(\lambda x.\,\varphi\) es la función que, dado \(x\), da \(\varphi\). Por ejemplo, \(\lambda x.\,\mathrm{duerme}(x)\) es la propiedad «dormir».</li>
+<li><b>Aplicación</b>: \((\lambda x.\,\varphi)(a)\) aplica la función al argumento \(a\).</li>
+<li><b>β-reducción</b>: sustituir en \(\varphi\) la variable ligada por el argumento.</li>
+</ul>
+<div class="eq key" data-name="β-reducción">\[(\lambda x.\,\varphi)(a)\ \Longrightarrow_\beta\ \varphi[x:=a]\qquad\text{por ejemplo}\qquad(\lambda x.\,\mathrm{duerme}(x))(\mathrm{juan})\Longrightarrow\mathrm{duerme}(\mathrm{juan})\]</div>
+<p>La sustitución debe hacerse <b>sin captura</b>: en \((\lambda x.\lambda y.\,\mathrm{quiere}(x,y))(y)\), la \(y\) del argumento es libre y no debe quedar ligada por la \(\lambda y\) interior; se renombra esa variable ligada antes de sustituir (conversión α). El cálculo es confluente: se reduzca en el orden que se reduzca, la forma normal, si existe, es la misma.</p>
+<div class="sim" data-sim="lambda-reducir" data-title="β-reducción paso a paso"></div>
+<div class="sim-guide"><ul>
+<li>Con «un libro aplicado a lee marta» cada línea es el resultado de una β-reducción (a veces de una subexpresión, como <code>libro(x)</code>): el determinante recibe su nombre, luego el predicado de la oración, y se obtiene \(\exists x\,(\mathrm{libro}(x)\wedge\mathrm{lee}(\mathrm{marta},x))\).</li>
+<li>Con la expresión de captura de variable, el programa renombra la variable ligada (aparece una \(y\) con un número) y el resultado conserva la \(y\) libre.</li>
+<li>Escriba, por ejemplo, <code>(\x.\y.lee(x,y))(juan)(libro)</code> y cuente los pasos: son dos, uno por argumento.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Gramáticas con anotaciones semánticas: la hipótesis «regla a regla»</h2>
+<p>Hay infinitos árboles posibles, así que no se puede diseñar un intérprete para cada uno. La solución es la <b>hipótesis regla a regla</b> (<i>rule-to-rule</i>, Bach, 1976): a cada regla de la gramática se le añade una <b>anotación semántica</b> que dice cómo calcular el significado del nodo con los de sus hijos. Se resume en tres principios:</p>
+<ol>
+<li><b>Las reglas léxicas llevan expresiones lambda</b> (el léxico). Un nombre propio es una constante o, mejor, \(\lambda P.\,P(\mathrm{marta})\); un nombre común es una propiedad, \(\lambda x.\,\mathrm{libro}(x)\); un determinante, una función de dos propiedades; un verbo transitivo, una relación con sus huecos de sujeto y de objeto.</li>
+<li><b>Una regla con un solo hijo copia su significado</b> (SN → Nom: el sintagma significa lo mismo que el nombre propio).</li>
+<li><b>Una regla con dos hijos aplica el significado de uno al del otro</b> como si fuera una función (SN → Det N: significado de Det aplicado al de N; SV → V SN; S → SN SV).</li>
+</ol>
+<p>Con el lexicón del curso, la frase «todo estudiante lee un libro» se calcula así:</p>
+<div class="eq key" data-name="Composición de «todo estudiante lee un libro»">\[\begin{aligned}
+\text{todo}&=\lambda P.\lambda Q.\,\forall x\,(P(x)\to Q(x)) &\text{un}&=\lambda P.\lambda Q.\,\exists x\,(P(x)\wedge Q(x))\\
+\text{lee}&=\lambda Y.\lambda x.\,Y(\lambda y.\,\mathrm{lee}(x,y))\\
+\mathrm{SN}_{\text{objeto}}&=\text{un}(\text{libro})=\lambda Q.\,\exists y\,(\mathrm{libro}(y)\wedge Q(y))\\
+\mathrm{SV}&=\text{lee}(\mathrm{SN}_{\text{objeto}})=\lambda x.\,\exists y\,(\mathrm{libro}(y)\wedge\mathrm{lee}(x,y))\\
+\mathrm{S}&=\text{todo}(\text{estudiante})(\mathrm{SV})=\forall x\,(\mathrm{est}(x)\to\exists y\,(\mathrm{libro}(y)\wedge\mathrm{lee}(x,y)))
+\end{aligned}\]</div>
+<p>La razón de que los sintagmas con determinante sean funciones de propiedades (y no individuos) es que así «todo estudiante», «un libro» y «Marta» (con \(\lambda P.\,P(\mathrm{marta})\)) tienen el mismo tipo y se combinan con el verbo con la misma regla. Es la idea de Montague (1973): una gramática del español y una del lenguaje lógico que avanzan al unísono.</p>
+<div class="sim" data-sim="sdd-arbol" data-title="Significado de cada nodo del árbol, de las hojas a la raíz"></div>
+<div class="sim-guide"><ul>
+<li>Con «todo estudiante lee un libro» la tabla muestra tres niveles: el SN objeto «un libro», el SV «lee un libro» y la oración. Cambie el ámbito a «El objeto abarca» y la fórmula pasa a \(\exists y\,\forall x\) (la lectura de «un mismo libro para todos»).</li>
+<li>Con «marta lee un libro» no cambia nada al conmutar el ámbito: hay un solo cuantificador.</li>
+<li>Elija «Con evento» para ver el verbo como evento: \(\exists z\,(\mathrm{lectura}(z)\wedge\mathrm{lector}(z,x)\wedge\mathrm{leido}(z,y))\). Es la representación del capítulo 18; ahora aparece automáticamente al cambiar solo la entrada léxica del verbo, sin tocar las reglas.</li>
+<li>Con predicados simples se calcula también el valor de verdad en los tres mundos del capítulo 18 (en ellos solo duerme Ana y no hay profesores ni gatos: «un profesor ve todo gato» sale falsa en los tres si el sujeto abarca, y verdadera, por vacuidad, si el objeto abarca).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Cuando hay dos lecturas: el ámbito de los cuantificadores</h2>
+<p>La composición recién descrita da <b>una</b> lectura: el cuantificador del sujeto abarca al del objeto. La otra lectura exige que el objeto «suba» por encima del sujeto. Se resuelve de tres maneras:</p>
+<ul>
+<li><b>Elevación de cuantificadores</b> (<i>quantifier raising</i>): reescribir el árbol moviendo el sintagma cuantificado a una posición de mayor alcance.</li>
+<li><b>Almacenamiento de Cooper</b> (1983): el significado de un sintagma cuantificado se guarda en un almacén y se «recupera» más tarde, en cualquier orden; cada orden da una lectura.</li>
+<li><b>Representaciones infraespecificadas</b>: dejar la ambigüedad sin resolver mientras no haga falta, fijando solo las restricciones entre cuantificadores.</li>
+</ul>
+<div class="box py"><p>El programa define una gramática del español con atributos <code>SEM</code> en <code>nltk.grammar.FeatureGrammar</code>, analiza cuatro frases y las interpreta con <code>root_semrep</code>. Después usa el almacenamiento de Cooper de NLTK sobre una frase con dos cuantificadores.</p>
+<div class="py" data-py="20-semantica"></div></div>
+<div class="box read"><ul>
+<li><b>La fórmula de NLTK coincide con la del curso</b> para «todo estudiante lee un libro»: ∀x (estudiante(x) → ∃z libro(z) ∧ lee(x, z)); solo cambia el nombre de las variables. El curso valida su β-reducción contra <code>Expression.simplify</code> de NLTK (apéndice de validación).</li>
+<li><b>«ningún estudiante duerme»</b> da ¬∃x (estudiante(x) ∧ duerme(x)): el determinante «ningún» es otra entrada léxica y la gramática no cambia.</li>
+<li><b>Dos lecturas</b> con «every girl chases a dog»: la primera, ∃x (perro(x) ∧ ∀z (niña(z) → persigue(z, x))), con «un perro» abarcando; la segunda, ∀x (niña(x) → ∃z …), con «toda niña» abarcando. Mismo árbol, dos fórmulas.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Análisis integrado frente a análisis en dos etapas</h2>
+<p>La arquitectura de la figura clásica es una tubería: primero el analizador sintáctico, luego el semántico con el árbol ya formado. Pero las anotaciones semánticas viven en las reglas, así que ambos análisis pueden hacerse <b>a la vez</b>: el significado de un constituyente está disponible en cuanto se han procesado sus hijos.</p>
+<table class="mx" style="text-align:left"><thead><tr><th style="text-align:left"></th><th style="text-align:left">Ventaja</th><th style="text-align:left">Inconveniente</th></tr></thead><tbody>
+<tr><td style="text-align:left"><b>En dos etapas</b></td><td style="text-align:left;white-space:normal">Cada módulo se desarrolla y prueba por separado.</td><td style="text-align:left;white-space:normal">Se interpretan árboles que quizá un criterio semántico habría descartado.</td></tr>
+<tr><td style="text-align:left"><b>Integrado</b></td><td style="text-align:left;white-space:normal">Una semántica sin sentido (un objeto que no puede ser argumento del verbo) descarta pronto el análisis, y simplifica la búsqueda.</td><td style="text-align:left;white-space:normal">Se calcula semántica de constituyentes que no llegan a formar un árbol válido: trabajo inútil.</td></tr>
+</tbody></table>
+<p>Los sistemas modernos de análisis semántico ya no escriben estas gramáticas a mano: aprenden a traducir directamente la oración a una forma lógica o a una consulta, con redes (<i>semantic parsing</i>, capítulo 33). La estructura compositiva sigue siendo la referencia para entender lo que esos modelos tienen que reproducir.</p>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>El significado de una oración se calcula con el de sus partes y la estructura sintáctica (composición).</li>
+<li>El cálculo lambda ofrece abstracción, aplicación y β-reducción (sin captura de variables).</li>
+<li>Hipótesis regla a regla: cada regla gramatical lleva una anotación semántica; el léxico lleva las expresiones lambda.</li>
+<li>Reglas con un hijo copian el significado; con dos, aplican uno al otro.</li>
+<li>El ámbito de los cuantificadores da varias lecturas de un solo árbol; se trata con elevación, almacenamiento de Cooper o infraespecificación.</li>
+<li>El análisis puede ser integrado con el sintáctico (poda temprana, riesgo de trabajo inútil) o en dos etapas.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Reduzca \((\lambda x.\lambda y.\,\mathrm{lee}(x,y))(\mathrm{juan})(\mathrm{libro})\).
+<details><summary>Respuesta</summary><p>Primero \(x:=\mathrm{juan}\): \(\lambda y.\,\mathrm{lee}(\mathrm{juan},y)\); luego \(y:=\mathrm{libro}\): \(\mathrm{lee}(\mathrm{juan},\mathrm{libro})\). Dos β-reducciones.</p></details></li>
+<li><span class="lvl">Básico</span>Calcule el significado de «marta duerme» con \(\mathrm{marta}=\lambda P.\,P(\mathrm{marta})\) y \(\mathrm{duerme}=\lambda x.\,\mathrm{duerme}(x)\).
+<details><summary>Respuesta</summary><p>S = SN(SV) = \((\lambda P.\,P(\mathrm{marta}))(\lambda x.\,\mathrm{duerme}(x))\Rightarrow(\lambda x.\,\mathrm{duerme}(x))(\mathrm{marta})\Rightarrow\mathrm{duerme}(\mathrm{marta})\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Escriba la entrada léxica de «ningún» y calcule «ningún estudiante duerme».
+<details><summary>Respuesta</summary><p>ningún = \(\lambda P.\lambda Q.\,\neg\exists x\,(P(x)\wedge Q(x))\). Aplicado a estudiante y luego a duerme: \(\neg\exists x\,(\mathrm{est}(x)\wedge\mathrm{duerme}(x))\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Escriba con evento «Matías abrió un restaurante».
+<details><summary>Respuesta</summary><p>\(\exists e\,\exists x\,(\mathrm{Abrir}(e)\wedge\mathrm{Restaurante}(x)\wedge\mathrm{Abridor}(e,\mathrm{matias})\wedge\mathrm{Abierto}(e,x))\). La entrada léxica de «abrió» es \(\lambda Y.\lambda y.\,Y(\lambda x.\,\exists e\,(\mathrm{Abrir}(e)\wedge\mathrm{Abridor}(e,y)\wedge\mathrm{Abierto}(e,x)))\).</p></details></li>
+<li><span class="lvl">Avanzado</span>¿Por qué la oración «un profesor ve todo gato» tiene dos lecturas aunque tenga un solo árbol? Escríbalas.
+<details><summary>Respuesta</summary><p>Tiene dos cuantificadores y el árbol no fija cuál abarca al otro. Sujeto abarca: \(\exists x\,(\mathrm{profesor}(x)\wedge\forall y\,(\mathrm{gato}(y)\to\mathrm{ve}(x,y)))\) (un mismo profesor ve todos). Objeto abarca: \(\forall y\,(\mathrm{gato}(y)\to\exists x\,(\mathrm{profesor}(x)\wedge\mathrm{ve}(x,y)))\) (cada gato lo ve algún profesor, quizá distinto).</p></details></li>
+</ol>
+<h3>Autoevaluación</h3>
+<div class="sim" data-sim="quiz" data-cap="semantica-composicional" data-title="Autoevaluación del capítulo 20"></div>
+<div class="box links"><ul>
+<li><a href="https://www.nltk.org/book/ch10.html">NLTK Book — cap. 10: Analyzing the Meaning of Sentences</a><small>Cálculo lambda, gramáticas con SEM y almacenamiento de Cooper, con el código que usa el programa.</small></li>
+<li><a href="https://plato.stanford.edu/entries/compositionality/">Stanford Encyclopedia — Compositionality</a><small>Historia y discusión filosófica del principio de composición.</small></li>
+<li><a href="https://plato.stanford.edu/entries/lambda-calculus/">Stanford Encyclopedia — The Lambda Calculus</a><small>Definición formal, reducción y confluencia.</small></li>
+<li><a href="https://web.stanford.edu/~jurafsky/slp3/">Jurafsky y Martin — Speech and Language Processing (3.ª ed.)</a><small>Capítulos sobre representación del significado y análisis semántico.</small></li>
+<li><a href="https://www.nltk.org/howto/semantics.html">NLTK — HOWTO de semántica</a><small>Valuaciones, modelos y expresiones lógicas en NLTK.</small></li>
+</ul></div>
+</section>
+</template>

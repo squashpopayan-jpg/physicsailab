@@ -1,0 +1,282 @@
+<template class="chapter-src" data-id="cinematica" data-num="5" data-title="Cinemática" data-part="Parte II · Mecánica clásica" data-short="Movimiento con aceleración constante, el tiro parabólico con su ángulo óptimo y su envolvente, el movimiento circular, la velocidad y la aceleración en coordenadas polares y la adición de velocidades al cruzar un río">
+<p class="lead">La cinemática describe el movimiento sin preguntar por sus causas: posición, velocidad y aceleración como derivadas sucesivas, y las fórmulas que se obtienen al integrarlas. Aquí no hay ninguna fórmula de memoria. Cada una sale de integrar \(a=\mathrm dv/\mathrm dt\) o de derivar un vector de posición, con las condiciones iniciales que fijan las constantes. Se parte del caso más simple, la aceleración constante, se llega al tiro parabólico (con la altura inicial y la parábola envolvente que da el alcance máximo), y se terminan los dos formalismos que se usarán durante todo el curso: las coordenadas polares y el cambio de sistema de referencia.</p>
+
+<section>
+<h2>Posición, velocidad y aceleración: derivadas e integrales</h2>
+<p>Para una partícula con vector de posición \(\mathbf r(t)\) se definen la velocidad y la aceleración instantáneas como límites:</p>
+\[\mathbf v=\frac{\mathrm d\mathbf r}{\mathrm dt}=\lim_{\Delta t\to0}\frac{\mathbf r(t+\Delta t)-\mathbf r(t)}{\Delta t},\qquad \mathbf a=\frac{\mathrm d\mathbf v}{\mathrm dt}=\frac{\mathrm d^2\mathbf r}{\mathrm dt^2}.\]
+<p>El teorema fundamental del cálculo las invierte: \(\mathbf v(t)=\mathbf v_0+\int_0^t\mathbf a\,\mathrm dt'\) y \(\mathbf r(t)=\mathbf r_0+\int_0^t\mathbf v\,\mathrm dt'\). Dos lecturas geométricas: la velocidad es la pendiente de la gráfica \(x(t)\), y el desplazamiento es el <em>área</em> bajo la gráfica \(v(t)\) (con signo). Las constantes \(\mathbf r_0\) y \(\mathbf v_0\) no salen de la cinemática: son las condiciones iniciales, dos por cada coordenada, y la dinámica (capítulo 6) las necesita para predecir. Las componentes cartesianas son independientes, y por eso un movimiento en el plano se descompone en dos movimientos rectilíneos.</p>
+</section>
+
+<deriv id="mrua" title="Movimiento con aceleración constante" tags="Cinemática, Integración">
+<goal>Posición y velocidad en función del tiempo cuando \(a\) es constante, la relación entre velocidad y posición sin tiempo, y la distancia de frenado.</goal>
+<given>
+<g>Movimiento rectilíneo con aceleración constante \(a\), posición inicial \(x_0\) y velocidad inicial \(v_0\).</g>
+<g>Definiciones \(a=\mathrm dv/\mathrm dt\) y \(v=\mathrm dx/\mathrm dt\).</g>
+</given>
+<step op="Integrar la aceleración">
+\[\int_{v_0}^{v}\mathrm dv'=\int_0^ta\,\mathrm dt'\ \Longrightarrow\ v=v_0+at.\]
+<why>Como \(a\) es constante sale de la integral. El límite inferior \(v_0\) es la condición inicial.</why>
+</step>
+<step op="Integrar la velocidad">
+\[x=x_0+\int_0^t(v_0+at')\,\mathrm dt'=x_0+v_0t+\tfrac12at^2.\]
+<why>La velocidad ya no es constante; su integral es el área del trapecio bajo la recta \(v(t)\).</why>
+</step>
+<step op="Eliminar el tiempo">
+\[t=\frac{v-v_0}a\ \Longrightarrow\ x-x_0=v_0\frac{v-v_0}a+\frac{(v-v_0)^2}{2a}\ \Longrightarrow\ v^2=v_0^2+2a\,(x-x_0).\]
+<why>Se despeja \(t\) de la primera ecuación y se sustituye en la segunda; \(v_0\,(v-v_0)+\tfrac12(v-v_0)^2=\tfrac12(v^2-v_0^2)\).</why>
+</step>
+<step op="Interpretar la velocidad media">
+\[\bar v=\frac{x-x_0}t=v_0+\tfrac12at=\frac{v_0+v}2.\]
+<why>Como \(v(t)\) es una recta, su promedio en el tiempo es el promedio de los extremos. Esto no vale si \(a\) varía.</why>
+</step>
+<step op="Aplicar al frenado hasta el reposo (\(a\lt0\))">
+\[v=0:\quad t_s=\frac{v_0}{|a|},\qquad d=\frac{v_0^2}{2|a|}.\]
+<why>De \(v=v_0+at=0\) y de \(0=v_0^2-2|a|\,d\).</why>
+</step>
+<result name="Aceleración constante">\[v=v_0+at,\qquad x=x_0+v_0t+\tfrac12at^2,\qquad v^2=v_0^2+2a\,\Delta x,\qquad d_\text{frenado}=\frac{v_0^2}{2|a|}.\]</result>
+<vars>
+<v s="x" n="posición" u="m"/>
+<v s="x_0" n="posición inicial" u="m"/>
+<v s="v" n="velocidad" u="m s^-1"/>
+<v s="v_0" n="velocidad inicial" u="m s^-1"/>
+<v s="a" n="aceleración (constante)" u="m s^-2"/>
+<v s="t" n="tiempo" u="s"/>
+<v s="d" n="distancia de frenado" u="m"/>
+</vars>
+<effects>
+<e>La distancia de frenado crece con el <em>cuadrado</em> de la velocidad inicial (\(n_{v_0}=2\)) y decrece como \(1/|a|\) (\(n_a=-1\)): doblar la rapidez cuadruplica la distancia. Con \(v_0=30\) m/s y \(a=-7\) m/s²: \(d=64.29\) m y \(t_s=4.286\) s; con \(v_0=60\), \(d=257.1\) m.</e>
+<e>A \(t=2\) s con esos datos: \(x=46\) m, \(v=16\) m/s y \(\bar v=23\) m/s. Un coche a 100 km/h (27.78 m/s) con \(a=-7\) m/s² se detiene en 55.1 m; con 1 s de reacción (27.8 m recorridos a velocidad constante) son 82.9 m.</e>
+<e>La velocidad media en un intervalo es la del punto medio solo si \(a\) es constante; la comprobación \(v^2=v_0^2+2ax\) es la forma de reconocer errores de despeje.</e>
+</effects>
+<limits>
+<l>Dimensiones: \([at^2]=\mathsf L\mathsf T^{-2}\mathsf T^2=\mathsf L\); \([v_0^2/a]=\mathsf L^2\mathsf T^{-2}/(\mathsf L\mathsf T^{-2})=\mathsf L\). ✓</l>
+<l>Límite \(a\to0\): \(x=x_0+v_0t\) (movimiento uniforme). La fórmula del frenado no tiene sentido para \(a\gt0\) (no hay detención) y supone que la aceleración sigue constante hasta el reposo.</l>
+</limits>
+<explore sim="mrua" title="Aceleración constante: posición, velocidad, velocidad media y distancia de frenado"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (\(v_0=30\), \(a=-7\), \(t=2\)): \(x=46\) m, \(v=16\) m/s, \(\bar v=23\) m/s, \(v_0^2+2ax=256=v^2\) y distancia de frenado 64.286 m. La tabla de sensibilidad de la distancia de frenado muestra \(n_{v_0}=2\) y \(n_a=-1\).</li>
+<li>Seleccione <em>t</em> en el eje: \(x(t)\) es una parábola que alcanza su máximo en \(t=v_0/|a|=4.29\) s; después \(x\) decrece (el móvil regresa, porque la fórmula sigue valiendo con \(a\) constante).</li>
+</ul></div>
+</deriv>
+
+<deriv id="proyectil" title="Tiro parabólico con altura inicial, alcance máximo y envolvente" tags="Cinemática, Gravedad">
+<goal>Trayectoria, altura máxima, tiempo de vuelo y alcance de un proyectil lanzado a ángulo \(\theta\) desde una altura \(h\), y el ángulo que da el alcance máximo.</goal>
+<given>
+<g>Aceleración constante \((0,-g)\); sin resistencia del aire. Lanzamiento desde \((0,h)\) con rapidez \(v_0\) a ángulo \(\theta\) sobre la horizontal, sobre un terreno plano a \(y=0\).</g>
+<g>Los movimientos horizontal y vertical son independientes (deducción anterior aplicada a cada eje).</g>
+</given>
+<step op="Integrar cada componente de la aceleración">
+\[v_x=v_0\cos\theta,\qquad v_y=v_0\sin\theta-gt;\qquad x=v_0\cos\theta\,t,\qquad y=h+v_0\sin\theta\,t-\tfrac12gt^2.\]
+</step>
+<step op="Eliminar \(t\) para obtener la trayectoria">
+\[y=h+x\tan\theta-\frac{g\,x^2}{2v_0^2\cos^2\theta}.\]
+<why>\(t=x/(v_0\cos\theta)\): una parábola.</why>
+</step>
+<step op="Altura máxima: \(v_y=0\)">
+\[t_m=\frac{v_0\sin\theta}g\ \Longrightarrow\ H=h+\frac{v_0^2\sin^2\theta}{2g}.\]
+</step>
+<step op="Tiempo de vuelo: \(y=0\)">
+\[\tfrac12gT^2-v_0\sin\theta\,T-h=0\ \Longrightarrow\ T=\frac{v_0\sin\theta+\sqrt{v_0^2\sin^2\theta+2gh}}g.\]
+<why>Se toma la raíz positiva de la ecuación cuadrática en \(T\).</why>
+</step>
+<step op="Alcance horizontal">
+\[R=v_0\cos\theta\,T=\frac{v_0\cos\theta}g\left(v_0\sin\theta+\sqrt{v_0^2\sin^2\theta+2gh}\right);\qquad h=0:\ \ R=\frac{v_0^2\sin2\theta}g.\]
+<why>Con \(h=0\), \(T=2v_0\sin\theta/g\) y \(2\sin\theta\cos\theta=\sin2\theta\): el máximo es a 45° con \(R=v_0^2/g\), y los ángulos \(\theta\) y \(90^\circ-\theta\) dan el mismo alcance.</why>
+</step>
+<step op="Escribir la trayectoria como ecuación cuadrática en \(u=\tan\theta\)">
+\[\frac{g\,x^2}{2v_0^2}\,u^2-x\,u+\left(y-h+\frac{g\,x^2}{2v_0^2}\right)=0,\qquad \frac1{\cos^2\theta}=1+u^2.\]
+<why>Para cada punto \((x,y)\), existe un ángulo de lanzamiento que pasa por él solo si esta ecuación tiene solución real para \(u\).</why>
+</step>
+<step op="Exigir discriminante no negativo: la envolvente">
+\[x^2-\frac{2g\,x^2}{v_0^2}\left(y-h+\frac{g\,x^2}{2v_0^2}\right)\ge0\ \Longleftrightarrow\ y\le h+\frac{v_0^2}{2g}-\frac{g\,x^2}{2v_0^2}.\]
+<why>Esa parábola es la «parábola de seguridad»: el límite del alcance de todos los ángulos. Todo lo que está por encima no se puede alcanzar con rapidez \(v_0\).</why>
+</step>
+<step op="Alcance máximo y ángulo óptimo">
+\[y=0:\quad R_{\max}=\frac{v_0}g\sqrt{v_0^2+2gh},\qquad \tan\theta^*=\frac{v_0^2}{g\,R_{\max}}=\frac{v_0}{\sqrt{v_0^2+2gh}}.\]
+<why>En el límite el discriminante es cero y la raíz doble es \(u=x/(g\,x^2/v_0^2)=v_0^2/(gx)\). Para \(h\gt0\) el ángulo óptimo es menor que 45°.</why>
+</step>
+<result name="Tiro parabólico">\[R=\frac{v_0\cos\theta}g\Big(v_0\sin\theta+\sqrt{v_0^2\sin^2\theta+2gh}\Big),\quad R_{\max}=\frac{v_0}{g}\sqrt{v_0^2+2gh},\quad \tan\theta^*=\frac{v_0}{\sqrt{v_0^2+2gh}}.\]</result>
+<vars>
+<v s="v_0" n="rapidez inicial" u="m s^-1"/>
+<v s="\theta" n="ángulo de lanzamiento" u="rad"/>
+<v s="h" n="altura inicial" u="m"/>
+<v s="g" n="aceleración de la gravedad" u="m s^-2"/>
+<v s="R" n="alcance horizontal" u="m"/>
+<v s="H" n="altura máxima" u="m"/>
+<v s="T" n="tiempo de vuelo" u="s"/>
+</vars>
+<effects>
+<e>Con \(v_0=20\) m/s, \(\theta=45^\circ\), desde el suelo: \(R=40.77\) m, \(H=10.19\) m, \(T=2.883\) s; con \(30^\circ\) y con \(60^\circ\) el alcance es el mismo, 35.31 m (pero \(H=5.10\) y 15.29 m). Duplicar \(v_0\) cuadruplica \(R\) (\(n_{v_0}=2\)); en la Luna (\(g=1.62\)), \(R=246.9\) m (seis veces más).</e>
+<e>Desde \(h=10\) m a 45°: \(R=49.08\) m, \(H=20.19\) m y \(T=3.471\) s. El ángulo óptimo ya no es 45° sino \(\theta^*=39.32^\circ\), con \(R_{\max}=49.78\) m (1.4 % más). Con \(h=2\) m, \(\theta^*=43.66^\circ\).</e>
+<e>Para alcance máximo desde una altura, a mayor velocidad el óptimo se acerca a 45° (\(2gh\ll v_0^2\)); a menor velocidad se acerca a 0° (con \(v_0\ll\sqrt{2gh}\) conviene lanzar casi horizontal).</e>
+</effects>
+<limits>
+<l>Dimensiones: \([v_0^2/g]=\mathsf L\); \([2gh]=\mathsf L^2\mathsf T^{-2}\) como \([v_0^2]\), así que la raíz tiene dimensión de velocidad y \(R\) es una longitud. ✓</l>
+<l>Límites: \(h\to0\) da \(R_{\max}=v_0^2/g\) y \(\theta^*=45^\circ\); \(v_0\to0\) da la caída libre. Con resistencia del aire el óptimo baja de 45° (capítulo 6).</l>
+</limits>
+<explore sim="proyectil" title="Tiro parabólico: trayectoria, ángulo óptimo y envolvente"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (\(v_0=20\), \(\theta=45^\circ\), \(h=10\), \(g=9.81\)): \(R=49.082\) m, \(H=20.194\) m, \(T=3.4706\) s, \(\theta^*=39.321^\circ\) y \(R_{\max}=49.780\) m. La curva discontinua es la trayectoria del ángulo óptimo y la punteada gris, la envolvente.</li>
+<li>Seleccione θ en el eje horizontal: el alcance sube hasta 39.3° y baja después (la curva es casi plana alrededor del máximo: ±5° cambian \(R\) en torno al 1 %). Con \(h\) pequeño la curva se vuelve simétrica alrededor de 45°.</li>
+</ul></div>
+</deriv>
+
+<deriv id="circular" title="Movimiento circular uniforme: la aceleración centrípeta" tags="Cinemática, Vectores">
+<goal>Velocidad y aceleración de una partícula que recorre una circunferencia de radio \(R\) con rapidez constante, y su relación con el periodo.</goal>
+<given>
+<g>Posición \(\mathbf r=R(\cos\varphi,\sin\varphi)\) con \(\varphi=\omega t\) (la velocidad angular \(\omega\) es constante).</g>
+</given>
+<step op="Derivar la posición para obtener la velocidad">
+\[\mathbf v=\frac{\mathrm d\mathbf r}{\mathrm dt}=R\omega(-\sin\varphi,\ \cos\varphi),\qquad |\mathbf v|=\omega R.\]
+<why>Regla de la cadena: \(\mathrm d\varphi/\mathrm dt=\omega\). Es perpendicular a \(\mathbf r\) (producto escalar nulo): tangente a la circunferencia.</why>
+</step>
+<step op="Derivar la velocidad">
+\[\mathbf a=\frac{\mathrm d\mathbf v}{\mathrm dt}=-R\omega^2(\cos\varphi,\ \sin\varphi)=-\omega^2\,\mathbf r.\]
+<why>La rapidez es constante pero la dirección de \(\mathbf v\) cambia: hay aceleración, dirigida hacia el centro.</why>
+</step>
+<step op="Expresar el módulo de varias formas">
+\[a_c=\omega^2R=\frac{v^2}R=\frac{4\pi^2R}{T^2},\qquad v=\frac{2\pi R}T.\]
+<why>\(\omega T=2\pi\) define el periodo; \(v=\omega R\).</why>
+</step>
+<step op="Comparar con la gravedad (prueba de Newton con la Luna)">
+\[a_c(\text{Luna})=\frac{4\pi^2r}{T^2}=2.72\times10^{-3}\ \frac{\mathrm m}{\mathrm s^2}\quad\Longrightarrow\quad \frac g{a_c}=3602\approx\Big(\frac r{R_T}\Big)^2=3640.\]
+<why>Con \(r=3.844\times10^8\) m y \(T=27.32\) d. Si la gravedad cae como \(1/r^2\), a 60.3 radios terrestres es \(3640\) veces menor: concuerda al 1 %, la base de la gravitación universal (capítulo 9).</why>
+</step>
+<result name="Movimiento circular uniforme">\[\mathbf a=-\omega^2\mathbf r,\qquad a_c=\frac{v^2}R=\omega^2R=\frac{4\pi^2R}{T^2}.\]</result>
+<vars>
+<v s="R" n="radio de la trayectoria" u="m"/>
+<v s="\omega" n="velocidad angular" u="rad s^-1"/>
+<v s="T" n="periodo" u="s"/>
+<v s="v" n="rapidez" u="m s^-1"/>
+<v s="a_c" n="aceleración centrípeta" u="m s^-2"/>
+</vars>
+<effects>
+<e>Un punto del ecuador (\(R=6.371\times10^6\) m, \(T=86164\) s sideral) tiene \(v=464.6\) m/s y \(a_c=0.03388\) m/s², el 0.35 % de \(g\): es una de las razones (junto con el achatamiento de la Tierra) de que el peso aparente en el ecuador sea algo menor.</e>
+<e>La Luna: \(v=1023\) m/s y \(a_c=2.724\times10^{-3}\) m/s². La Tierra en su órbita: \(v=29.79\) km/s y \(a_c=5.93\times10^{-3}\) m/s².</e>
+<e>A periodo fijo, \(a_c\propto R\) (\(n_R=1\)); a radio fijo, \(a_c\propto T^{-2}\) (\(n_T=-2\)): hacer girar algo al doble de rápido (\(T\) a la mitad) cuadruplica la aceleración.</e>
+</effects>
+<limits>
+<l>Dimensiones: \([4\pi^2R/T^2]=\mathsf L\mathsf T^{-2}\). ✓</l>
+<l>Solo vale con rapidez constante; si cambia, aparece además una aceleración tangencial (siguiente deducción).</l>
+</limits>
+<explore sim="circular" title="Movimiento circular: velocidad, aceleración centrípeta y comparación con g"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (ecuador terrestre): \(\omega=7.2921\times10^{-5}\) rad/s, \(v=464.58\) m/s, \(a_c=0.033878\) m/s² y \(a_c/g=3.4546\times10^{-3}\).</li>
+<li>Con \(R=3.844\times10^8\) m y \(T=2.3604\times10^6\) s: \(v=1023.2\) m/s, \(a_c=2.7238\times10^{-3}\). Seleccione <em>T</em> en el eje horizontal y vea la recta de pendiente −2 en log–log.</li>
+</ul></div>
+</deriv>
+
+<deriv id="polares" title="Velocidad y aceleración en coordenadas polares" tags="Cinemática, Vectores">
+<goal>Las componentes radial y transversal de \(\mathbf v\) y \(\mathbf a\) para un movimiento plano arbitrario en términos de \(r(t)\) y \(\theta(t)\).</goal>
+<given>
+<g>Vectores unitarios \(\hat r=(\cos\theta,\sin\theta)\) y \(\hat\theta=(-\sin\theta,\cos\theta)\), que cambian con la posición.</g>
+</given>
+<step op="Derivar los vectores unitarios con la regla de la cadena">
+\[\dot{\hat r}=\dot\theta\,(-\sin\theta,\cos\theta)=\dot\theta\,\hat\theta,\qquad \dot{\hat\theta}=\dot\theta\,(-\cos\theta,-\sin\theta)=-\dot\theta\,\hat r.\]
+<why>Los unitarios polares giran con el mismo ritmo \(\dot\theta\) que el punto.</why>
+</step>
+<step op="Derivar \(\mathbf r=r\,\hat r\) para obtener la velocidad">
+\[\mathbf v=\dot r\,\hat r+r\,\dot{\hat r}=\dot r\,\hat r+r\dot\theta\,\hat\theta.\]
+<why>Regla del producto: la derivada del módulo más el módulo por la derivada de la dirección.</why>
+</step>
+<step op="Derivar otra vez">
+\[\mathbf a=\ddot r\,\hat r+\dot r\dot\theta\,\hat\theta+(\dot r\dot\theta+r\ddot\theta)\,\hat\theta-r\dot\theta^2\,\hat r.\]
+<why>Cuatro términos: derivar \(\dot r\,\hat r\) y \(r\dot\theta\,\hat\theta\) con la regla del producto, usando de nuevo \(\dot{\hat r}\) y \(\dot{\hat\theta}\).</why>
+</step>
+<step op="Agrupar por componentes">
+\[a_r=\ddot r-r\dot\theta^2,\qquad a_\theta=r\ddot\theta+2\dot r\dot\theta.\]
+</step>
+<step op="Identificar los términos">
+\[-r\dot\theta^2:\ \text{centrípeta};\qquad 2\dot r\dot\theta:\ \text{término cruzado (tipo Coriolis)};\qquad r\ddot\theta:\ \text{tangencial}.\]
+<why>\(\dot r=0\), \(\ddot\theta=0\) reproduce el movimiento circular uniforme. El término \(2\dot r\dot\theta\) aparece cuando el radio y el ángulo cambian a la vez, por ejemplo para una cuenta que sube por una varilla que gira.</why>
+</step>
+<result name="Aceleración en polares">\[\mathbf v=\dot r\,\hat r+r\dot\theta\,\hat\theta,\qquad \mathbf a=(\ddot r-r\dot\theta^2)\,\hat r+(r\ddot\theta+2\dot r\dot\theta)\,\hat\theta.\]</result>
+<vars>
+<v s="r" n="distancia al origen" u="m"/>
+<v s="\dot r" n="velocidad radial" u="m s^-1"/>
+<v s="\ddot r" n="aceleración radial" u="m s^-2"/>
+<v s="\dot\theta" n="velocidad angular" u="rad s^-1"/>
+<v s="\ddot\theta" n="aceleración angular" u="rad s^-2"/>
+<v s="a_r" n="componente radial de la aceleración" u="m s^-2"/>
+<v s="a_\theta" n="componente transversal de la aceleración" u="m s^-2"/>
+</vars>
+<effects>
+<e>Cuenta a \(r=2\) m que sube por una varilla a \(\dot r=1\) m/s con \(\dot\theta=3\) rad/s (sin aceleración radial ni angular): \(a_r=-18\) m/s², \(a_\theta=2\dot r\dot\theta=6\) m/s², \(v_\theta=6\) m/s, \(|\mathbf v|=6.083\) m/s y \(|\mathbf a|=18.97\) m/s². El término cruzado aporta toda la componente transversal.</e>
+<e>El término centrípeto domina cuando \(\dot\theta\) es grande: \(a_r\propto\dot\theta^2\) (\(n=2\)); el término cruzado crece solo linealmente con \(\dot\theta\) y con \(\dot r\).</e>
+</effects>
+<limits>
+<l>Dimensiones: \([r\dot\theta^2]=\mathsf L\mathsf T^{-2}\) y \([2\dot r\dot\theta]=\mathsf L\mathsf T^{-1}\mathsf T^{-1}\). ✓ (\(\theta\) es adimensional).</l>
+<l>Comprobación: una partícula con movimiento rectilíneo uniforme (\(\mathbf a=0\)) debe dar \(a_r=a_\theta=0\) aunque \(\ddot r\) y \(\ddot\theta\) no se anulen: con \(x=vt\), \(y=b\), las fórmulas devuelven cero.</l>
+</limits>
+<explore sim="polares" title="Componentes de la velocidad y la aceleración en polares"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales: \(a_r=-18\), \(a_\theta=6\), \(v_\theta=6\), \(|\mathbf v|=6.0828\), \(|\mathbf a|=18.974\).</li>
+<li>Seleccione \(\dot\theta\) en el eje: \(a_r\) cae como una parábola (\(n=2\)) y \(a_\theta\) como una recta. Con \(\ddot\theta=2\) rad/s²: \(a_\theta=2\cdot2+6=10\).</li>
+</ul></div>
+</deriv>
+
+<deriv id="rio" title="Adición de velocidades: cruzar un río" tags="Cinemática, Relatividad galileana">
+<goal>El tiempo y la deriva al cruzar un río con corriente, la proa que lleva al punto directamente opuesto y su tiempo.</goal>
+<given>
+<g>Transformación de Galileo: si el sistema \(S'\) se mueve respecto de \(S\) con velocidad \(\mathbf V\), \(\mathbf r=\mathbf r'+\mathbf Vt\) y \(\mathbf v=\mathbf v'+\mathbf V\).</g>
+<g>Río de ancho \(d\) con corriente uniforme \(w\) en el eje \(y\) (corriente abajo); bote con rapidez \(u\) respecto del agua.</g>
+</given>
+<step op="Derivar la transformación de posiciones">
+\[\mathbf r=\mathbf r'+\mathbf Vt\ \Longrightarrow\ \mathbf v=\mathbf v'+\mathbf V,\qquad \mathbf a=\mathbf a'\ \ (\mathbf V=\text{cte.}).\]
+<why>La aceleración es la misma en todos los sistemas inerciales: la base de la relatividad de Galileo.</why>
+</step>
+<step op="Escribir la velocidad del bote respecto de la orilla">
+\[v_x=u\cos\alpha,\qquad v_y=w-u\sin\alpha,\]
+<why>\(\alpha\) es el ángulo de la proa medido desde la perpendicular a las orillas, hacia aguas arriba.</why>
+</step>
+<step op="Tiempo de travesía y deriva">
+\[T(\alpha)=\frac d{u\cos\alpha},\qquad \Delta y(\alpha)=v_yT=\frac{d\,(w-u\sin\alpha)}{u\cos\alpha}.\]
+</step>
+<step op="Minimizar el tiempo">
+\[\alpha=0:\quad T_{\min}=\frac du,\qquad \Delta y=\frac{wd}u.\]
+<why>\(T\) es mínimo cuando \(\cos\alpha=1\). La corriente arrastra al bote durante todo ese tiempo.</why>
+</step>
+<step op="Llegar al punto opuesto: deriva nula">
+\[v_y=0\ \Longrightarrow\ \sin\alpha=\frac wu\ \Longrightarrow\ \alpha=\arcsin\frac wu,\qquad T=\frac d{u\cos\alpha}=\frac d{\sqrt{u^2-w^2}}.\]
+<why>Solo es posible si \(u\gt w\). La componente de la proa contra la corriente anula la corriente; con la que queda se cruza.</why>
+</step>
+<step op="Comparar los dos casos con \(f=w/u\)">
+\[\frac{T_2}{T_1}=\frac1{\sqrt{1-f^2}},\qquad \Delta y_\min(u\lt w)=\frac{d\sqrt{w^2-u^2}}u\ \ \text{(a }\sin\alpha=u/w).\]
+<why>Con \(u\lt w\) es imposible llegar al punto opuesto y la deriva mínima se obtiene derivando \(\Delta y(\alpha)\): un mínimo en \(\sin\alpha=u/w\).</why>
+</step>
+<result name="Cruce de un río">\[T_{\min}=\frac du,\quad \Delta y=\frac{wd}{u},\qquad T_\text{opuesto}=\frac d{\sqrt{u^2-w^2}},\quad \alpha=\arcsin\frac wu.\]</result>
+<vars>
+<v s="d" n="ancho del río" u="m"/>
+<v s="u" n="rapidez del bote respecto del agua" u="m s^-1"/>
+<v s="w" n="rapidez de la corriente" u="m s^-1"/>
+<v s="\alpha" n="ángulo de la proa" u="rad"/>
+<v s="T" n="tiempo de travesía" u="s"/>
+<v s="\Delta y" n="deriva corriente abajo" u="m"/>
+</vars>
+<effects>
+<e>Río de 100 m, bote a 2 m/s y corriente de 1 m/s (\(f=0.5\)): cruce más rápido, 50 s, con deriva de 50 m; para llegar al punto opuesto, proa a 30° contra la corriente y 57.74 s (15.5 % más).</e>
+<e>A medida que la corriente se acerca a la rapidez del bote, el cruce directo se vuelve imposible: con \(f=0.8\), 83.3 s y 53.1°; con \(f=0.95\), 160.1 s y 71.8°; el tiempo diverge como \((1-f^2)^{-1/2}\). Con \(f=0.2\), solo 51.0 s y 11.5°.</e>
+<e>La deriva en el cruce rápido es \(fd\): proporcional al ancho y a la razón de velocidades (\(n_f=1\), \(n_d=1\)); el tiempo mínimo no depende de la corriente.</e>
+</effects>
+<limits>
+<l>Dimensiones: \([d/u]=\mathsf T\), \([wd/u]=\mathsf L\). ✓</l>
+<l>La transformación de Galileo falla cuando las velocidades se aproximan a \(c\); la relatividad especial (capítulo 27) la sustituye por la de Lorentz, que reduce a esta para \(v\ll c\).</l>
+</limits>
+<explore sim="rio" title="Cruzar un río: tiempo mínimo, deriva y proa para el punto opuesto"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales: \(T_{\min}=50\) s, deriva 50 m, \(T_\text{opuesto}=57.735\) s y proa a 30.000°.</li>
+<li>Seleccione \(f\) en el eje: el tiempo \(T_\text{opuesto}\) diverge cuando \(f\to1\) (la pendiente local en log–log es \(f^2/(1-f^2)\): 0.33 en \(f=0.5\) y 9.26 en \(f=0.95\)).</li>
+</ul></div>
+</deriv>
+
+<section>
+<h2>Fuentes y lecturas</h2>
+<ul class="refs">
+<li>D. Kleppner y R. J. Kolenkow, <em>An Introduction to Mechanics</em>, 2.ª ed., Cambridge University Press (2014): cap. 1 (vectores, coordenadas polares, cinemática) y cap. 2 (transformación de Galileo).</li>
+<li>J. R. Taylor, <em>Classical Mechanics</em>, University Science Books (2005): cap. 1 (aceleración, trayectorias) y cap. 2 (proyectiles).</li>
+<li>M. Alonso y E. J. Finn, <em>Física</em>, vol. I: cap. de cinemática; y D. Halliday, R. Resnick y J. Walker, <em>Fundamentals of Physics</em>: movimiento unidimensional y en dos dimensiones.</li>
+<li>R. P. Feynman, R. B. Leighton y M. Sands, <em>The Feynman Lectures on Physics</em>, vol. I, caps. 5, 8 y 9: movimiento y prueba de la gravitación con la Luna.</li>
+</ul>
+</section>
+</template>

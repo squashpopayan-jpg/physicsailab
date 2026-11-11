@@ -36,7 +36,7 @@
   --warn: #b8740f;
   --bad: #c03636;
   --muscle: #e9bfae;
-  --muscle-line: #b9826e;
+  --muscle-line: #8a5545;
   --skin: #f5e9e0;
   --skin-line: #cdb6a7;
   --shadow: 0 1px 2px rgba(15, 26, 38, .06), 0 6px 18px rgba(15, 26, 38, .07);
@@ -1712,11 +1712,13 @@ MS.Player = (function () {
     const E = pl.feet[f];
     let last = null;
     for (let i = 0; i < E.length; i++) { if (E[i].tLift <= t) last = E[i]; else break; }
-    if (!last) return Object.assign({ z: 0 }, pl.footInit[f]);
-    if (t >= last.tLand) return Object.assign({ z: 0 }, last.to);
+    if (!last) return Object.assign({ z: 0, pitch: 0 }, pl.footInit[f]);
+    if (t >= last.tLand) return Object.assign({ z: 0, pitch: 0 }, last.to);
     const k = (t - last.tLift) / Math.max(1e-6, last.tLand - last.tLift);
     const e = U.smooth(k);
-    return { x: U.lerp(last.from.x, last.to.x, e), y: U.lerp(last.from.y, last.to.y, e), a: U.lerpAng(last.from.a, last.to.a, e), z: Math.sin(Math.PI * k) * Math.min(0.13, 0.05 + U.dist(last.from, last.to) * 0.07) };
+    return { x: U.lerp(last.from.x, last.to.x, e), y: U.lerp(last.from.y, last.to.y, e), a: U.lerpAng(last.from.a, last.to.a, e), z: Math.sin(Math.PI * k) * Math.min(0.15, 0.05 + U.dist(last.from, last.to) * 0.08),
+      /* despega de punta (talón arriba) y aterriza de talón: así entra el pie en la estocada */
+      pitch: last.kind === 'split' ? 0 : -Math.sin(2 * Math.PI * k) * Math.min(0.6, 0.2 + U.dist(last.from, last.to) * 0.45) };
   }
 
   /* Corta el plan en ts (antes de un nuevo desplazamiento) */
@@ -1791,7 +1793,7 @@ MS.Player = (function () {
       else {
         /* tiempo en que el centro de masa pasa por la fracción correspondiente del recorrido */
         const frac = ((i + 1) / (N - 1)) * 0.88;
-        land.push(ts + T * Math.min(prof.inv(frac) + 0.06, 0.95));
+        land.push(ts + T * Math.min(prof.inv(frac), 0.95));
       }
     }
     for (let i = 1; i < N; i++) if (land[i] < land[i - 1] + 0.09) land[i] = Math.min(te - (N - 1 - i) * 0.06, land[i - 1] + 0.09);
@@ -1802,7 +1804,8 @@ MS.Player = (function () {
       if (i === N - 1) to = st.feet[lastFoot];
       else if (i === N - 2) to = st.feet[other(lastFoot)];
       else {
-        const frac = ((i + 1) / (N - 1)) * 0.9;
+        /* el pie cae por delante del centro de masa (unos 0,3 m), como en la carrera real */
+        const frac = Math.min(0.97, ((i + 1) / (N - 1)) * 0.88 + 0.32 / Math.max(d, 0.5));
         const p = bez(frac);
         const L = leftOf(moveDir);
         const sgn = f === 'I' ? 1 : -1;
@@ -1858,39 +1861,65 @@ MS.Player = (function () {
     return { st: 'return', k: U.smooth((t - tE) / (tR - tE)), sw };
   }
 
+  const slerpV = (a, b, k) => {
+    const la = U.l3(a), lb = U.l3(b); if (la < 1e-6 || lb < 1e-6) return U.lerp3(a, b, k);
+    const ua = U.m3(a, 1 / la), ub = U.m3(b, 1 / lb), c = U.clamp(U.d3(ua, ub), -1, 1), om = Math.acos(c), L = U.lerp(la, lb, k);
+    if (om < 1e-3 || om > 3.1) return U.m3(U.n3(U.lerp3(ua, ub, k)), L);
+    const so = Math.sin(om);
+    return U.m3(U.a3(U.m3(ua, Math.sin((1 - k) * om) / so), U.m3(ub, Math.sin(k * om) / so)), L);
+  };
+
   function skeleton(pl, t, ballNow) {
     const k = keyAt(pl, t);
-    const yaw = k.yaw, f = { x: Math.cos(yaw), y: Math.sin(yaw), z: 0 }, r = { x: -Math.sin(yaw), y: Math.cos(yaw), z: 0 }, z = { x: 0, y: 0, z: 1 };
+    const kA = keyAt(pl, t - 0.05), kB = keyAt(pl, t + 0.05);
+    const speed = Math.hypot(kB.x - kA.x, kB.y - kA.y) / 0.1, run = U.clamp(speed / 2.6, 0, 1);
+    const yaw = k.yaw, f0 = { x: Math.cos(yaw), y: Math.sin(yaw), z: 0 }, r0 = { x: -Math.sin(yaw), y: Math.cos(yaw), z: 0 }, z = { x: 0, y: 0, z: 1 };
     const S = U.a3, M = U.m3;
-    const P = { x: k.x, y: k.y, z: k.h };
-    const lean = k.lean;
-    const up = U.n3(S(M(f, Math.sin(lean)), M(z, Math.cos(lean))));
+    const ftI = footAt(pl, 'I', t), ftD = footAt(pl, 'D', t);
+    /* zancada: >0 si el pie izquierdo va adelante. Mueve cadera y brazos en contrafase */
+    const gait = U.clamp(((ftI.x - ftD.x) * f0.x + (ftI.y - ftD.y) * f0.y) / 0.8, -1, 1);
     const sw = swingAt(pl, t);
+    const swinging = sw.st !== 'ready';
+    const hipTw = gait * 0.22 * (swinging ? 0.5 : 1);
+    const r = U.n3({ x: r0.x - f0.x * hipTw, y: r0.y - f0.y * hipTw, z: 0 }), f = { x: -r.y, y: r.x, z: 0 };
+    const idle = (1 - run) * (k.h > 0.8 ? 1 : 0.3);
+    const P = { x: k.x, y: k.y, z: k.h + 0.006 * idle * Math.sin(t * 5.2 + pl.idx * 1.7) - 0.012 * run * Math.abs(gait) };
+    const lean = k.lean + 0.06 * run;
+    const up = U.n3(S(M(f0, Math.sin(lean)), M(z, Math.cos(lean))));
     const sigma = pl.mano === 'D' ? 1 : -1;
     const fh = sw.sw ? sw.sw.fh : true;
     const b = sigma * (fh ? 1 : -1);
     /* giro de hombros: leve (el manual insiste en minimizar la rotación del tronco) */
-    let twist = 0;
-    if (sw.st === 'toPrep') twist = 0.28 * b * sw.k; else if (sw.st === 'prep') twist = 0.28 * b; else if (sw.st === 'fwd') twist = U.lerp(0.28, -0.25, sw.k) * b; else if (sw.st === 'finish') twist = U.lerp(-0.25, -0.35, sw.k) * b; else if (sw.st === 'return') twist = U.lerp(-0.35, 0, sw.k) * b;
+    let twist = -gait * 0.16 * run * (swinging ? 0.3 : 1);
+    if (sw.st === 'toPrep') twist += 0.3 * b * sw.k; else if (sw.st === 'prep') twist += 0.3 * b; else if (sw.st === 'fwd') twist += U.lerp(0.3, -0.25, sw.k) * b; else if (sw.st === 'finish') twist += U.lerp(-0.25, -0.38, sw.k) * b; else if (sw.st === 'return') twist += U.lerp(-0.38, 0, sw.k) * b;
     if (pl.tecnica === 'cambiada' && sw.sw) twist *= 1.8;
-    const ry = { x: Math.cos(twist) * r.x - Math.sin(twist) * f.x, y: Math.cos(twist) * r.y - Math.sin(twist) * f.y, z: 0 };
+    const ry = { x: Math.cos(twist) * r0.x - Math.sin(twist) * f0.x, y: Math.cos(twist) * r0.y - Math.sin(twist) * f0.y, z: 0 };
     const fy = { x: -ry.y, y: ry.x, z: 0 };
     const hipL = S(P, M(r, -0.1)), hipR = S(P, M(r, 0.1));
     const chest = S(P, M(up, 0.36));
     const neck = S(P, M(up, 0.56));
-    const head = S(neck, S(M(z, 0.12), M(f, 0.03)));
-    const shL = S(S(P, M(up, 0.52)), M(ry, -0.19)), shR = S(S(P, M(up, 0.52)), M(ry, 0.19));
+    /* la cabeza sigue la bola (hasta ~75° respecto del pecho) y se mantiene erguida */
+    let look = fy;
+    const tgt = ballNow || (sw.sw && sw.sw.ball) || null;
+    if (tgt) {
+      const d = U.norm({ x: tgt.x - k.x, y: tgt.y - k.y });
+      const a0 = Math.atan2(fy.y, fy.x), da = U.clamp(U.angDiff(a0, Math.atan2(d.y, d.x)), -1.3, 1.3);
+      look = { x: Math.cos(a0 + da), y: Math.sin(a0 + da), z: 0 };
+    }
+    const head = S(neck, S(M(z, 0.118), S(M(up, 0.012), M(look, 0.02))));
+    const shL = S(S(P, M(up, 0.515)), M(ry, -0.195)), shR = S(S(P, M(up, 0.515)), M(ry, 0.195));
     /* piernas */
     const legs = {};
     for (const side of ['I', 'D']) {
-      const ft = footAt(pl, side, t);
+      const ft = side === 'I' ? ftI : ftD;
       const ff = { x: Math.cos(ft.a), y: Math.sin(ft.a), z: 0 };
-      const ankle = { x: ft.x - ff.x * 0.03, y: ft.y - ff.y * 0.03, z: LEN.ankle + ft.z };
+      const pt = ft.pitch || 0, cp = Math.cos(pt), sp = Math.sin(pt);
+      const ankle = { x: ft.x - ff.x * 0.03, y: ft.y - ff.y * 0.03, z: LEN.ankle + ft.z + Math.max(0, -sp) * 0.07 };
       const hip = side === 'I' ? hipL : hipR;
-      const hint = S(M(ff, 1), M(f, 0.6));
+      const hint = S(M(ff, 1), M(f0, 0.6));
       const knee = ik(hip, ankle, LEN.thigh, LEN.shank, hint);
-      const toe = S(ankle, S(M(ff, 0.17), { x: 0, y: 0, z: -0.05 }));
-      const heel = S(ankle, S(M(ff, -0.07), { x: 0, y: 0, z: -0.05 }));
+      const toe = { x: ankle.x + ff.x * 0.17 * cp, y: ankle.y + ff.y * 0.17 * cp, z: Math.max(0.012, ankle.z - 0.05 + 0.17 * sp) };
+      const heel = { x: ankle.x - ff.x * 0.07 * cp, y: ankle.y - ff.y * 0.07 * cp, z: Math.max(0.012, ankle.z - 0.05 - 0.07 * sp) };
       const v1 = U.s3(hip, knee), v2 = U.s3(ankle, knee);
       const kneeAng = U.deg(Math.acos(U.clamp(U.d3(v1, v2) / (U.l3(v1) * U.l3(v2)), -1, 1)));
       const overToe = U.d3(U.s3(knee, toe), ff);
@@ -1899,42 +1928,49 @@ MS.Player = (function () {
     /* brazos */
     const shA = sigma > 0 ? shR : shL, shO = sigma > 0 ? shL : shR;
     const W = (o, a, bb, c) => S(S(S(o, M(fy, a)), M(ry, bb)), M(z, c));
-    const READY = { w: W(shA, 0.42, -sigma * 0.16, -0.34), d: U.n3(S(S(M(fy, 0.45), M(z, 0.85)), M(ry, sigma * 0.1))) };
-    const PREP = { w: W(shA, 0.02, b * 0.36, 0.12), d: U.n3(S(S(M(z, 0.85), M(ry, b * 0.45)), M(fy, -0.2))) };
-    const FIN = { w: W(shA, 0.25, -b * 0.47, 0.26), d: U.n3(S(M(z, 0.9), M(ry, -b * 0.45))) };
+    /* braceo al correr: cada brazo va adelante con la pierna contraria */
+    const swA = sigma * gait * 0.2 * run, swO = -sigma * gait * 0.24 * run;
+    const READY = { w: W(shA, 0.4 + swA, -sigma * 0.14, -0.3 + Math.abs(swA) * 0.3), d: U.n3(S(S(M(fy, 0.4), M(z, 0.9)), M(ry, -sigma * 0.12))) };
+    const PREP = { w: W(shA, -0.02, b * 0.34, 0.16), d: U.n3(S(S(M(z, 0.8), M(ry, b * 0.3)), M(fy, -0.5))) };
+    const FIN = { w: W(shA, 0.22, -b * 0.42, 0.3), d: U.n3(S(S(M(z, 0.85), M(ry, -b * 0.5)), M(fy, -0.2))) };
     let IMP;
     const ballP = sw.sw && sw.sw.ball ? sw.sw.ball : null;
     if (ballP) {
       const dir = U.n3(U.s3(ballP, shA));
-      const w = S(shA, M(dir, 0.56));
+      const reachA = Math.min(0.56, Math.max(0.3, U.l3(U.s3(ballP, shA)) - 0.5));
+      const w = S(shA, M(dir, reachA));
       IMP = { w, d: U.n3(U.s3(ballP, w)) };
     } else IMP = { w: W(shA, 0.5, b * -0.05, -0.32), d: U.n3(S(M(fy, 0.8), M(z, -0.4))) };
-    const mix = (A, B, kk) => ({ w: U.lerp3(A.w, B.w, kk), d: U.n3(U.lerp3(A.d, B.d, kk)) });
+    /* la mano describe un arco alrededor del hombro; la cabeza de la raqueta se retrasa (kd) y entra al final */
+    const mix = (A, B, kk, kd) => ({ w: S(shA, slerpV(U.s3(A.w, shA), U.s3(B.w, shA), kk)), d: U.n3(slerpV(A.d, B.d, kd == null ? kk : kd)) });
     let arm;
     switch (sw.st) {
       case 'toPrep': arm = mix(READY, PREP, sw.k); break;
       case 'prep': arm = PREP; break;
-      case 'fwd': arm = mix(PREP, IMP, sw.k); break;
-      case 'finish': arm = mix(IMP, FIN, sw.k); break;
+      case 'fwd': arm = mix(PREP, IMP, sw.k, Math.pow(sw.k, 2.2)); break;
+      case 'finish': arm = mix(IMP, FIN, sw.k, Math.pow(sw.k, 0.7)); break;
       case 'return': arm = mix(FIN, READY, sw.k); break;
       default: arm = READY;
     }
-    const elbowA = ik(shA, arm.w, LEN.upper, LEN.fore, S(M(z, -1), M(ry, sigma * 0.5)));
+    const elbowA = ik(shA, arm.w, LEN.upper, LEN.fore, S(S(M(z, -1), M(ry, sigma * 0.55)), M(fy, -0.35)));
     const wristA = arm.w;
     const racketHead = S(wristA, M(arm.d, 0.5));
     const racketTip = S(wristA, M(arm.d, LEN.racket));
     /* brazo libre: equilibrio y «tijera» de escápulas en el revés */
+    const REST = W(shO, 0.22 + swO, -sigma * 0.07, -0.42 + Math.abs(swO) * 0.35);
     let hand;
-    if (!sw.sw || sw.st === 'ready') hand = W(shO, 0.3, sigma * 0.05, -0.38);
+    if (!sw.sw || sw.st === 'ready') hand = REST;
     else if (fh) {
-      const prepH = W(shO, 0.45, -sigma * 0.05, -0.08), impH = W(shO, 0.18, -sigma * 0.28, -0.22), finH = W(shO, 0.05, -sigma * 0.32, -0.12);
-      hand = sw.st === 'toPrep' ? U.lerp3(W(shO, 0.3, sigma * 0.05, -0.38), prepH, sw.k) : sw.st === 'prep' ? prepH : sw.st === 'fwd' ? U.lerp3(prepH, impH, sw.k) : sw.st === 'finish' ? U.lerp3(impH, finH, sw.k) : U.lerp3(finH, W(shO, 0.3, sigma * 0.05, -0.38), sw.k);
+      const prepH = W(shO, 0.42, -sigma * 0.08, -0.1), impH = W(shO, 0.14, -sigma * 0.32, -0.2), finH = W(shO, 0.0, -sigma * 0.36, -0.14);
+      hand = sw.st === 'toPrep' ? U.lerp3(REST, prepH, sw.k) : sw.st === 'prep' ? prepH : sw.st === 'fwd' ? U.lerp3(prepH, impH, sw.k) : sw.st === 'finish' ? U.lerp3(impH, finH, sw.k) : U.lerp3(finH, REST, sw.k);
     } else {
-      const prepH = S(chest, S(M(fy, 0.26), M(z, -0.2))), impH = W(shO, -0.12, -sigma * 0.3, -0.05), finH = W(shO, -0.22, -sigma * 0.36, 0.08);
-      hand = sw.st === 'toPrep' ? U.lerp3(W(shO, 0.3, sigma * 0.05, -0.38), prepH, sw.k) : sw.st === 'prep' ? prepH : sw.st === 'fwd' ? U.lerp3(prepH, impH, sw.k) : sw.st === 'finish' ? U.lerp3(impH, finH, sw.k) : U.lerp3(finH, W(shO, 0.3, sigma * 0.05, -0.38), sw.k);
+      const prepH = S(chest, S(M(fy, 0.24), M(z, -0.18))), impH = W(shO, -0.14, -sigma * 0.32, -0.06), finH = W(shO, -0.26, -sigma * 0.38, 0.1);
+      hand = sw.st === 'toPrep' ? U.lerp3(REST, prepH, sw.k) : sw.st === 'prep' ? prepH : sw.st === 'fwd' ? U.lerp3(prepH, impH, sw.k) : sw.st === 'finish' ? U.lerp3(impH, finH, sw.k) : U.lerp3(finH, REST, sw.k);
     }
-    const elbowO = ik(shO, hand, LEN.upper, LEN.fore, S(M(z, -1), M(ry, -sigma * 0.5)));
-    return { P, chest, neck, head, shL, shR, shA, shO, legs, elbowA, wristA, racketHead, racketTip, racketDir: arm.d, elbowO, handO: hand, yaw, swing: sw, k };
+    const elbowO = ik(shO, hand, LEN.upper, LEN.fore, S(S(M(z, -1), M(ry, -sigma * 0.55)), M(fy, -0.35)));
+    const armA = { sh: shA, el: elbowA, wr: wristA, front: fy, hd: arm.d }, armO = { sh: shO, el: elbowO, wr: hand, front: fy };
+    const arms = sigma > 0 ? { D: armA, I: armO } : { I: armA, D: armO };
+    return { P, up, r, f, ry, fy, look, chest, neck, head, shL, shR, shA, shO, arms, legs, elbowA, wristA, racketHead, racketTip, racketDir: arm.d, elbowO, handO: hand, yaw, swing: sw, k, speed };
   }
 
   return { LEVELS, tMin, profile, create, readyStance, stance, keyAt, footAt, move, truncate, addPhase, phasesAt, swingAt, skeleton, other, FRONT, H_READY };
@@ -2143,8 +2179,14 @@ MS.Compile = (function () {
     /* pequeño salto con apertura de pies; cae justo cuando el rival impacta */
     const k0 = Player.keyAt(pl, t0);
     if (t0 < (pl.keys[pl.keys.length - 1].t) - 0.01) return;  // en pleno movimiento: no se fuerza
-    pl.keys.push({ t: t0 + (t1 - t0) * 0.45, x: k0.x, y: k0.y, h: k0.h + 0.05, yaw: k0.yaw, lean: k0.lean });
-    pl.keys.push({ t: t1, x: k0.x, y: k0.y, h: k0.h - 0.05, yaw: k0.yaw, lean: k0.lean + 0.05 });
+    pl.keys.push({ t: t0 + (t1 - t0) * 0.45, x: k0.x, y: k0.y, h: k0.h + 0.06, yaw: k0.yaw, lean: k0.lean });
+    pl.keys.push({ t: t1, x: k0.x, y: k0.y, h: k0.h - 0.07, yaw: k0.yaw, lean: k0.lean + 0.08 });
+    for (const f of ['I', 'D']) {
+      const c = Player.footAt(pl, f, t0), sg = f === 'I' ? 1 : -1;
+      const L = { x: Math.sin(k0.yaw), y: -Math.cos(k0.yaw) };
+      const wide = Math.abs((c.x - k0.x) * L.x + (c.y - k0.y) * L.y) < 0.3 ? 0.07 : 0;
+      pl.feet[f].push({ tLift: t0, tLand: t1 - 0.01, from: { x: c.x, y: c.y, a: c.a }, to: { x: c.x + L.x * sg * wide, y: c.y + L.y * sg * wide, a: c.a }, kind: 'split' });
+    }
   }
   function golpePhases(pl, ts, te, st, late) {
     const T = te - ts;
@@ -2173,7 +2215,7 @@ MS.Compile = (function () {
         const dt = b.t - a.t;
         if (dt > 0.01) vmax = Math.max(vmax, d / dt);
       }
-      let steps = 0; for (const f of ['I', 'D']) steps += pl.feet[f].length;
+      let steps = 0; for (const f of ['I', 'D']) steps += pl.feet[f].filter((e) => e.kind !== 'split').length;
       const lungI = pl.lunges.filter((l) => l.pie === 'I').length, lungD = pl.lunges.filter((l) => l.pie === 'D').length;
       /* distancia a la T cuando golpea otro jugador (dominio de la T) */
       const others = tl.shots.filter((s) => s.j !== pl.id && s.golpe !== 'fantasma');
@@ -2647,110 +2689,126 @@ MS.TL = (function () {
 })();
 
 /* ==== 40-bodymap.js ==== */
-/* Mapa corporal estilizado (vista anterior y posterior) con regiones musculares interactivas.
-   Las formas se definen para la mitad derecha (x ≥ 100) y se reflejan; las marcadas «c» van centradas. */
+/* Modelo anatómico 3D: la misma malla del atleta en pose anatómica, con los músculos como regiones
+   seleccionables. Modo «dual» (anterior + posterior, fijo) o «orbit» (una figura que se gira arrastrando). */
 MS.Body = (function () {
   const { U } = MS;
-  /* Trazo suave cerrado por Catmull-Rom */
-  function smooth(pts) {
-    const n = pts.length;
-    let d = `M${pts[0][0]},${pts[0][1]}`;
-    for (let i = 0; i < n; i++) {
-      const p0 = pts[(i - 1 + n) % n], p1 = pts[i], p2 = pts[(i + 1) % n], p3 = pts[(i + 2) % n];
-      const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6], c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
-      d += `C${c1[0].toFixed(1)},${c1[1].toFixed(1)} ${c2[0].toFixed(1)},${c2[1].toFixed(1)} ${p2[0]},${p2[1]}`;
-    }
-    return d + 'Z';
-  }
-  const mir = (pts) => pts.map(([x, y]) => [200 - x, y]);
-  const SIL = {
-    torso: [[100, 72], [114, 72], [134, 79], [145, 89], [142, 104], [139, 130], [133, 162], [135, 196], [140, 220], [124, 232], [100, 238], [76, 232], [60, 220], [65, 196], [67, 162], [61, 130], [58, 104], [55, 89], [66, 79], [86, 72]],
-    upper: [[142, 92], [152, 86], [160, 100], [163, 130], [162, 166], [154, 170], [148, 150], [144, 120]],
-    fore: [[153, 172], [163, 168], [169, 190], [170, 222], [168, 246], [161, 248], [157, 226], [152, 196]],
-    thigh: [[102, 236], [124, 230], [140, 222], [143, 250], [140, 290], [134, 326], [114, 330], [106, 300], [103, 262]],
-    shank: [[112, 334], [134, 330], [137, 360], [132, 400], [127, 428], [116, 428], [113, 400], [109, 362]],
-    foot: [[114, 428], [128, 428], [134, 446], [110, 448]],
-  };
-  const FRONT = [
-    ['pectoral', [[102, 92], [124, 86], [140, 96], [141, 112], [130, 124], [112, 128], [102, 124]]],
-    ['deltoides', [[138, 82], [150, 86], [160, 100], [160, 118], [150, 122], [142, 108], [138, 94]]],
-    ['biceps', [[147, 124], [157, 122], [162, 140], [160, 162], [153, 166], [147, 148]]],
-    ['flexores', [[153, 172], [163, 170], [168, 192], [166, 222], [160, 236], [155, 220], [152, 194]]],
-    ['serrato', [[134, 118], [140, 116], [140, 140], [135, 146], [131, 134]]],
-    ['abdomen', [[102, 130], [116, 130], [117, 172], [116, 212], [102, 214]]],
-    ['oblicuos', [[119, 132], [134, 130], [134, 160], [134, 196], [123, 212], [119, 180]]],
-    ['psoas', [[105, 198], [115, 194], [125, 226], [119, 236], [109, 222]], 'deep'],
-    ['aductores', [[102, 240], [114, 236], [118, 262], [116, 296], [108, 304], [103, 276]]],
-    ['cuadriceps', [[128, 236], [140, 232], [142, 262], [138, 300], [130, 318], [126, 290], [126, 258]]],
-    ['cuadriceps', [[116, 240], [127, 238], [127, 280], [124, 314], [118, 316], [116, 280]]],
-    ['cuadriceps', [[108, 292], [116, 298], [118, 318], [114, 328], [106, 318]]],
-    ['tibial', [[124, 338], [132, 338], [133, 368], [128, 400], [124, 404], [122, 372]]],
-    ['peroneos', [[133, 342], [137, 350], [136, 380], [131, 398], [130, 370]]],
-  ];
-  const FRONT_C = [['coreProf', [[88, 176], [112, 176], [116, 200], [100, 214], [84, 200]], 'deep'], ['oculares', [[88, 34], [96, 33], [97, 38], [88, 39]]], ['oculares', [[104, 33], [112, 34], [112, 39], [103, 38]]]];
-  const BACK = [
-    ['trapecio', [[100, 62], [110, 66], [122, 76], [140, 84], [128, 94], [114, 108], [108, 134], [100, 146]]],
-    ['deltoides', [[138, 84], [150, 86], [160, 102], [158, 120], [148, 120], [140, 104]]],
-    ['manguito', [[113, 98], [133, 95], [137, 108], [131, 121], [117, 123], [111, 110]]],
-    ['dorsal', [[104, 142], [117, 128], [136, 124], [140, 140], [136, 168], [122, 190], [106, 196]]],
-    ['lumbares', [[101, 168], [111, 164], [114, 210], [102, 216]]],
-    ['triceps', [[148, 124], [158, 122], [162, 142], [160, 164], [152, 166], [147, 146]]],
-    ['extensores', [[153, 172], [163, 170], [168, 192], [166, 222], [160, 236], [155, 220], [152, 194]]],
-    ['gluteoMed', [[113, 200], [134, 196], [140, 214], [128, 222], [112, 216]]],
-    ['gluteoMax', [[102, 220], [126, 216], [140, 224], [140, 248], [126, 262], [104, 262]]],
-    ['isquios', [[104, 268], [124, 264], [138, 264], [138, 292], [130, 322], [116, 326], [106, 300]]],
-    ['gastro', [[110, 336], [124, 332], [136, 338], [136, 364], [128, 388], [116, 388], [110, 366]]],
-    ['soleo', [[114, 389], [130, 387], [133, 404], [126, 416], [116, 414]]],
-    ['aquiles', [[117, 415], [125, 415], [124, 430], [118, 430]]],
-  ];
+  const meshCache = {};
+  function mesh(lod) { return meshCache[lod] || (meshCache[lod] = MS.Athlete.build(MS.Athlete.anatSkeleton(), { lod, edges: true })); }
 
-  function figureSVG(dx, muscles, centered, label) {
-    let s = `<g transform="translate(${dx},0)">`;
-    s += `<ellipse class="sil" cx="100" cy="38" rx="19" ry="24"/>`;
-    s += `<path class="sil" d="M92,58 L108,58 L110,76 L90,76Z"/>`;
-    s += `<path class="sil" d="${smooth(SIL.torso)}"/>`;
-    for (const k of ['upper', 'fore', 'thigh', 'shank', 'foot']) { s += `<path class="sil" d="${smooth(SIL[k])}"/><path class="sil" d="${smooth(mir(SIL[k]))}"/>`; }
-    s += `<ellipse class="sil" cx="167" cy="262" rx="8" ry="14"/><ellipse class="sil" cx="33" cy="262" rx="8" ry="14"/>`;
-    for (const [id, pts, deep] of muscles) {
-      const cls = 'm' + (deep ? ' deep' : '');
-      s += `<path class="${cls}" data-m="${id}" d="${smooth(pts)}"/><path class="${cls}" data-m="${id}" d="${smooth(mir(pts))}"/>`;
-    }
-    for (const [id, pts, deep] of centered || []) s += `<path class="m${deep ? ' deep' : ''}" data-m="${id}" d="${smooth(pts)}"/>`;
-    s += `<text x="100" y="466" text-anchor="middle">${label}</text></g>`;
-    return s;
-  }
-
-  function svg() {
-    return `<svg viewBox="0 0 410 472" role="img" aria-label="Mapa muscular, vista anterior y posterior">${figureSVG(0, FRONT, FRONT_C, 'ANTERIOR')}${figureSVG(210, BACK, null, 'POSTERIOR')}</svg>`;
-  }
-
-  /* Crea un mapa en `host`. opts: {interactive, onSelect(id), onHover(id)} */
-  function create(host, opts = {}) {
-    host.classList.add('bodymap');
-    host.innerHTML = svg();
-    const paths = U.$$('[data-m]', host);
-    const base = () => getComputedStyle(host).getPropertyValue('--muscle').trim() || '#ecd3c6';
-    let selected = null;
-    const api = {
-      paint(fn) { const b = base(); for (const p of paths) p.style.fill = fn(p.dataset.m, b) || b; },
-      activation(act) { api.paint((id, b) => (act && act[id] ? MS.TV.heatCol(act[id].v, b) : b)); },
-      select(id) { selected = id; for (const p of paths) p.classList.toggle('sel', p.dataset.m === id); },
-      clear() { api.paint(() => null); },
+  function view(az, cx, baseY, sc) {
+    const d = { x: Math.cos(az), y: Math.sin(az) }, rt = { x: -d.y, y: d.x };
+    return {
+      proj: (p) => ({ x: cx + (p.x * rt.x + p.y * rt.y) * sc, y: baseY - p.z * sc, z: p.x * d.x + p.y * d.y }),
+      facing: (n) => n.x * d.x + n.y * d.y < -0.02,
+      light: U.n3({ x: -d.x * 0.6 - rt.x * 0.35, y: -d.y * 0.6 - rt.y * 0.35, z: 0.55 }),
     };
-    if (opts.interactive) {
-      for (const p of paths) {
-        p.setAttribute('tabindex', '-1');
-        p.addEventListener('mouseenter', () => { for (const q of paths) q.classList.toggle('hov', q.dataset.m === p.dataset.m); opts.onHover && opts.onHover(p.dataset.m); });
-        p.addEventListener('mouseleave', () => { for (const q of paths) q.classList.remove('hov'); opts.onHover && opts.onHover(null); });
-        p.addEventListener('click', () => { api.select(p.dataset.m); opts.onSelect && opts.onSelect(p.dataset.m); });
-        const g = MS.Muscles.byId[p.dataset.m];
-        if (g) { const t = document.createElementNS('http://www.w3.org/2000/svg', 'title'); t.textContent = g.nombre; p.append(t); }
+  }
+
+  /* opts: {mode:'dual'|'orbit', interactive, onSelect(id), onHover(id), labels} */
+  function create(host, opts = {}) {
+    const A = MS.Athlete, mode = opts.mode || 'dual';
+    host.classList.add('bodymap');
+    host.innerHTML = '';
+    const cv = U.h('canvas', { role: 'img', 'aria-label': mode === 'dual' ? 'Modelo muscular, vistas anterior y posterior' : 'Modelo muscular 3D. Arrastre para girar.' });
+    host.append(cv);
+    const st = { colors: null, sel: null, hover: null, az: Math.PI / 2, drawn: [], raf: 0, spin: false };
+    let btns = null;
+    if (mode === 'orbit') {
+      btns = U.h('div', { class: 'seg', role: 'group', 'aria-label': 'Vista del modelo', style: { marginTop: '8px' } });
+      for (const [t, a] of [['Anterior', Math.PI / 2], ['Lateral der.', Math.PI], ['Posterior', -Math.PI / 2], ['Lateral izq.', 0]]) {
+        const b = U.h('button', { text: t }); b.addEventListener('click', () => { st.spin = false; st.az = a; sync(); render(); }); b._a = a; btns.append(b);
+      }
+      const sp = U.h('button', { text: 'Girar' }); sp.addEventListener('click', () => { st.spin = !st.spin; sync(); if (st.spin) spin(); }); sp._spin = true; btns.append(sp);
+      host.append(btns);
+    }
+    const sync = () => { if (btns) for (const b of btns.children) b.setAttribute('aria-pressed', String(b._spin ? st.spin : !st.spin && Math.abs(U.angDiff(b._a, st.az)) < 0.05)); };
+    let lastSpin = 0;
+    function spin(ts) { if (!st.spin || !cv.isConnected) return; if (lastSpin && ts) st.az += (ts - lastSpin) * 0.0007; lastSpin = ts || 0; render(true); requestAnimationFrame(spin); }
+
+    function tokens() {
+      const cs = getComputedStyle(host), g = (n, d) => (cs.getPropertyValue(n).trim() || d);
+      return { musc: A.parseColor(g('--muscle', '#e9bfae')), none: A.parseColor(g('--skin', '#f5e9e0')), line: g('--muscle-line', '#b9826e'), ink: g('--ink', '#0f1a26'), ink3: g('--ink-3', '#75859a'), surf: g('--surface', '#fff'), brand: g('--brand', '#0a5a92') };
+    }
+    function render(now) {
+      if (!now) { if (st.raf) return; st.raf = requestAnimationFrame(() => { st.raf = 0; render(true); }); return; }
+      const w = Math.max(160, host.clientWidth || 300);
+      const h = mode === 'dual' ? Math.round(w * 1.1) : Math.round(Math.min(w * 1.28, 600));
+      cv.style.width = '100%'; cv.style.height = h + 'px';
+      const ctx = U.fitCanvas(cv, w, h);
+      ctx.clearRect(0, 0, w, h);
+      const T = tokens();
+      const lod = mode === 'dual' ? 2 : 3;
+      const Q = mesh(lod);
+      const style = { anat: { colors: st.colors, base: T.musc, none: T.none }, sel: st.sel, line: T.line, selLine: T.ink };
+      const sc = (h - (mode === 'dual' ? 30 : 16)) / 1.84, baseY = h - (mode === 'dual' ? 24 : 8);
+      const views = mode === 'dual' ? [[Math.PI / 2, w * 0.26, 'ANTERIOR'], [-Math.PI / 2, w * 0.74, 'POSTERIOR']] : [[st.az, w / 2, null]];
+      st.drawn = [];
+      const cent = {};
+      ctx.lineJoin = 'round';
+      views.forEach(([az, cx, label], vi) => {
+        const V = view(az, cx, baseY, sc);
+        /* sombra de contacto */
+        const g = ctx.createRadialGradient(cx, baseY - 2, 0, cx, baseY - 2, sc * 0.34);
+        g.addColorStop(0, 'rgba(0,0,0,.16)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.save(); ctx.translate(cx, baseY - 2); ctx.scale(1, 0.22); ctx.translate(-cx, -(baseY - 2)); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, baseY - 2, sc * 0.34, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+        const vis = A.visible(Q, V, []);
+        vis.sort((a, b) => b.z - a.z);
+        for (const e of vis) {
+          A.paint(ctx, e, style, V.light);
+          const m = e.q.reg.m;
+          if (m && (m === st.sel || m === st.hover)) { const k = m + ':' + vi, c = cent[k] || (cent[k] = { x: 0, y: 0, n: 0, cx, m }); c.x += (e.a.x + e.c.x) / 2; c.y += (e.a.y + e.c.y) / 2; c.n++; }
+          st.drawn.push(e);
+        }
+        if (label) { ctx.fillStyle = T.ink3; ctx.font = '700 10px Saira, Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic'; try { ctx.letterSpacing = '1px'; } catch (e) { /* opcional */ } ctx.fillText(label, cx, h - 6); }
+      });
+      /* etiquetas con línea guía para el músculo elegido y el señalado */
+      if (opts.labels !== false) {
+        for (const id of [st.sel, st.hover !== st.sel ? st.hover : null]) {
+          if (!id) continue;
+          let best = null; for (const k in cent) if (cent[k].m === id && (!best || cent[k].n > best.n)) best = cent[k];
+          if (!best) continue;
+          const px = best.x / best.n, py = best.y / best.n, name = MS.Muscles.byId[id] ? MS.Muscles.byId[id].nombre.replace(/ \(.*\)$/, '') : id;
+          ctx.font = '600 12px "Source Sans 3", Arial';
+          const tw = ctx.measureText(name).width + 14, right = px >= best.cx;
+          let lx = right ? Math.min(w - tw - 4, px + 34) : Math.max(4, px - 34 - tw), ly = U.clamp(py - 30, 6, h - 30);
+          ctx.strokeStyle = T.ink; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(right ? lx : lx + tw, ly + 10); ctx.stroke();
+          ctx.fillStyle = T.ink; ctx.beginPath(); ctx.arc(px, py, 3, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = id === st.sel ? T.ink : T.brand; ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(lx, ly, tw, 20, 6); else ctx.rect(lx, ly, tw, 20); ctx.fill();
+          ctx.fillStyle = T.surf; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(name, lx + 7, ly + 10.5);
+        }
       }
     }
-    api.clear();
+    function pick(ev) {
+      const r = cv.getBoundingClientRect(), x = ev.clientX - r.left, y = ev.clientY - r.top;
+      for (let i = st.drawn.length - 1; i >= 0; i--) if (A.inQuad(st.drawn[i], x, y)) return st.drawn[i].q.reg.m;
+      return null;
+    }
+    const api = {
+      paint(fn) { const T = tokens(), base = `rgb(${T.musc.join(',')})`; st.colors = {}; for (const g of MS.Muscles.G) { const c = fn(g.id, base); if (c) st.colors[g.id] = A.parseColor(c); } render(); },
+      activation(act) { st.colors = A.actColors(act, tokens().musc); render(); },
+      select(id) { st.sel = id; render(); },
+      clear() { st.colors = null; render(); },
+      setView(az) { st.az = az; sync(); render(); },
+      render,
+    };
+    if (opts.interactive) {
+      let drag = null, moved = false;
+      cv.style.touchAction = mode === 'orbit' ? 'pan-y' : 'auto';
+      cv.addEventListener('pointerdown', (e) => { moved = false; if (mode === 'orbit') { drag = { x: e.clientX, az: st.az }; st.spin = false; try { cv.setPointerCapture(e.pointerId); } catch (er) { /* sin captura */ } } });
+      cv.addEventListener('pointermove', (e) => {
+        if (drag) { const dx = e.clientX - drag.x; if (Math.abs(dx) > 3) moved = true; if (moved) { st.az = drag.az + dx * 0.012; sync(); render(); } return; }
+        const m = pick(e); if (m !== st.hover) { st.hover = m; cv.style.cursor = m ? 'pointer' : mode === 'orbit' ? 'grab' : 'default'; opts.onHover && opts.onHover(m); render(); }
+      });
+      const end = (e) => { const was = drag; drag = null; if (was && moved) return; const m = pick(e); if (m) { api.select(m); opts.onSelect && opts.onSelect(m); } };
+      cv.addEventListener('pointerup', end);
+      cv.addEventListener('pointerleave', () => { if (st.hover) { st.hover = null; render(); } });
+    }
+    if (typeof ResizeObserver !== 'undefined') new ResizeObserver(() => render()).observe(host);
+    sync(); render();
     return api;
   }
-  return { create, svg, smooth };
+  return { create };
 })();
 
 /* ==== 42-chart.js ==== */
@@ -2887,35 +2945,32 @@ MS.Top = (function () {
     }
   }
 
-  /* figura vista desde arriba a partir del esqueleto 3D */
-  function figure(ctx, L, pl, t, sel) {
-    const { s, X, Y } = L;
-    const sk = Player.skeleton(pl, t);
+  /* figura vista desde arriba: la misma malla 3D del atleta en proyección cenital */
+  const LTOP = U.n3({ x: -0.35, y: -0.45, z: 0.8 });
+  function figure(ctx, L, pl, t, sel, ball, opts) {
+    const { s, X, Y } = L, A = MS.Athlete;
+    const M0 = A.forPlayer(pl, t, ball, 1, !!(opts && opts.musculos)), sk = M0.sk;
+    const g = ctx.createRadialGradient(X(sk.P.x), Y(sk.P.y), 0, X(sk.P.x), Y(sk.P.y), 0.5 * s);
+    g.addColorStop(0, 'rgba(0,0,0,.28)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(X(sk.P.x), Y(sk.P.y), 0.5 * s, 0, Math.PI * 2); ctx.fill();
+    if (sel) { ctx.strokeStyle = pl.color; ctx.lineWidth = 2; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.arc(X(sk.P.x), Y(sk.P.y), 0.62 * s, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]); }
+    const V = { proj: (p) => ({ x: X(p.x), y: Y(p.y), z: -p.z }), facing: (n) => n.z > 0.02 };
+    const style = opts && opts.musculos ? { anat: { colors: A.actColors(MS.Muscles.activation(pl, t).act), base: A.ANAT.musc, none: A.ANAT.none }, line: 'rgba(110,60,45,.45)' } : { kit: pl._kit || (pl._kit = A.kit(pl.color, pl.idx)) };
+    const vis = A.visible(M0.Q, V, []);
+    /* raqueta, por altura */
     const P = (q) => [X(q.x), Y(q.y)];
-    const seg = (a, b, w, col) => { ctx.strokeStyle = col; ctx.lineWidth = Math.max(1.2, w * s); ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(...P(a)); ctx.lineTo(...P(b)); ctx.stroke(); };
-    /* sombra */
-    ctx.fillStyle = 'rgba(0,0,0,.16)'; ctx.beginPath(); ctx.ellipse(X(sk.P.x), Y(sk.P.y), 0.32 * s, 0.24 * s, sk.yaw, 0, Math.PI * 2); ctx.fill();
-    if (sel) { ctx.strokeStyle = pl.color; ctx.lineWidth = 2; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.arc(X(sk.P.x), Y(sk.P.y), 0.5 * s, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]); }
-    for (const f of ['I', 'D']) {
-      const lg = sk.legs[f];
-      seg(lg.hip, lg.knee, 0.13, '#2a3340');
-      seg(lg.knee, lg.ankle, 0.1, '#d9b9a2');
-      seg(lg.heel, lg.toe, 0.09, f === 'I' ? '#f7f7f7' : '#e8e8e8');
-    }
-    seg(sk.shL, sk.shR, 0.2, pl.color);
-    seg(sk.legs.I.hip, sk.legs.D.hip, 0.2, '#2a3340');
-    seg(sk.shO, sk.elbowO, 0.08, pl.color); seg(sk.elbowO, sk.handO, 0.065, '#d9b9a2');
-    seg(sk.shA, sk.elbowA, 0.08, pl.color); seg(sk.elbowA, sk.wristA, 0.065, '#d9b9a2');
-    seg(sk.wristA, sk.racketHead, 0.03, '#222');
-    ctx.save(); ctx.translate(X(sk.racketHead.x + (sk.racketTip.x - sk.racketHead.x) * 0.5), Y(sk.racketHead.y + (sk.racketTip.y - sk.racketHead.y) * 0.5));
-    ctx.rotate(Math.atan2(sk.racketTip.y - sk.racketHead.y, sk.racketTip.x - sk.racketHead.x));
-    const rl = Math.max(0.05, Math.hypot(sk.racketTip.x - sk.racketHead.x, sk.racketTip.y - sk.racketHead.y)) * s * 0.75;
-    ctx.strokeStyle = '#222'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.ellipse(0, 0, Math.max(2, rl), 0.1 * s, 0, 0, Math.PI * 2); ctx.stroke();
-    ctx.restore();
-    /* cabeza con nariz para la orientación */
-    ctx.fillStyle = '#3a2a22'; ctx.beginPath(); ctx.arc(X(sk.head.x), Y(sk.head.y), 0.11 * s, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = '#f3dcc8'; ctx.lineWidth = Math.max(1.5, 0.04 * s);
-    ctx.beginPath(); ctx.moveTo(X(sk.head.x), Y(sk.head.y)); ctx.lineTo(X(sk.head.x + Math.cos(sk.yaw) * 0.15), Y(sk.head.y + Math.sin(sk.yaw) * 0.15)); ctx.stroke();
+    vis.push({ z: -Math.max(sk.wristA.z, sk.racketTip.z) - 0.02, draw: () => {
+      ctx.strokeStyle = '#15181c'; ctx.lineCap = 'round'; ctx.lineWidth = Math.max(1.5, 0.03 * s); ctx.beginPath(); ctx.moveTo(...P(sk.wristA)); ctx.lineTo(...P(sk.racketHead)); ctx.stroke();
+      const mx = (sk.racketHead.x + sk.racketTip.x) / 2, my = (sk.racketHead.y + sk.racketTip.y) / 2;
+      const len = Math.hypot(sk.racketTip.x - sk.racketHead.x, sk.racketTip.y - sk.racketHead.y);
+      ctx.save(); ctx.translate(X(mx), Y(my)); ctx.rotate(Math.atan2(sk.racketTip.y - sk.racketHead.y, sk.racketTip.x - sk.racketHead.x));
+      ctx.fillStyle = 'rgba(255,255,255,.3)'; ctx.strokeStyle = '#15181c'; ctx.lineWidth = Math.max(1.2, 0.022 * s);
+      ctx.beginPath(); ctx.ellipse(0, 0, Math.max(2, (len / 2 + 0.03) * s), Math.max(1.5, 0.09 * s * Math.max(0.25, Math.abs(sk.racketDir.z) < 0.9 ? 1 : 0.4)), 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.restore();
+    } });
+    vis.sort((a, b2) => b2.z - a.z);
+    ctx.lineJoin = 'round';
+    for (const e of vis) { if (e.draw) e.draw(); else A.paint(ctx, e, style, LTOP); }
     return sk;
   }
 
@@ -2993,7 +3048,7 @@ MS.Top = (function () {
     }
     /* figuras */
     const order = tl.players.slice().sort((a, b2) => Player.keyAt(a, t).y - Player.keyAt(b2, t).y);
-    for (const pl of order) figure(ctx, L, pl, t, focus === pl.id);
+    for (const pl of order) figure(ctx, L, pl, t, focus === pl.id, b, opts);
     /* bola */
     if (b) {
       ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.arc(X(b.x), Y(b.y), 0.05 * s + 1, 0, Math.PI * 2); ctx.fill();
@@ -3013,6 +3068,318 @@ MS.Top = (function () {
   }
 
   return { layout, court, draw, figure, COL };
+})();
+
+/* ==== 48-athlete.js ==== */
+/* Atleta volumétrico: malla 3D generada sobre el esqueleto (secciones elípticas con relieve muscular).
+   Cada cara conoce su región anatómica (músculo) y su material (piel, camiseta, pantalón…), de modo que
+   la misma malla sirve para el jugador en la cancha, para pintar la activación muscular sobre el cuerpo
+   y para el modelo anatómico giratorio. */
+MS.Athlete = (function () {
+  const { U } = MS;
+  const S = U.a3, M = U.m3, D = U.d3, X = U.c3, N = U.n3, SUB = U.s3, TAU = Math.PI * 2;
+  const Z = { x: 0, y: 0, z: 1 };
+
+  function parseColor(c) {
+    if (Array.isArray(c)) return c;
+    if (!c) return [200, 200, 200];
+    c = String(c).trim();
+    if (c[0] === '#') { if (c.length === 4) c = '#' + c[1] + c[1] + c[2] + c[2] + c[3] + c[3]; return [parseInt(c.slice(1, 3), 16), parseInt(c.slice(3, 5), 16), parseInt(c.slice(5, 7), 16)]; }
+    const m = c.match(/rgba?\(([^)]+)\)/); if (m) { const p = m[1].split(/[, ]+/).map(Number); return [p[0], p[1], p[2]]; }
+    return [200, 200, 200];
+  }
+  const HEAT = [[0, [226, 186, 170]], [0.3, [255, 214, 110]], [0.65, [242, 142, 56]], [1, [208, 52, 44]]];
+  function heat(v, base) {
+    v = U.clamp(v, 0, 1);
+    if (v < 0.1 && base) return base;
+    let i = 0; while (i < HEAT.length - 2 && v > HEAT[i + 1][0]) i++;
+    const [a, ca] = HEAT[i], [b, cb] = HEAT[i + 1], f = (v - a) / (b - a);
+    return [U.lerp(ca[0], cb[0], f), U.lerp(ca[1], cb[1], f), U.lerp(ca[2], cb[2], f)];
+  }
+
+  /* ---- regiones (músculo m + material k), cacheadas ---- */
+  const RC = {};
+  const R = (m, k, pt) => { const key = m + '|' + k + '|' + (pt || ''); return RC[key] || (RC[key] = { m: m || null, k, pt: pt || '' }); };
+  const cr = (p0, p1, p2, p3, u) => 0.5 * (2 * p1 + (-p0 + p2) * u + (2 * p0 - 5 * p1 + 4 * p2 - p3) * u * u + (-p0 + 3 * p1 - 3 * p2 + p3) * u * u * u);
+  function dense(spec, sub) {
+    if (sub <= 1) return spec;
+    const out = [], n = spec.length;
+    for (let i = 0; i < n - 1; i++) {
+      const p0 = spec[Math.max(0, i - 1)], p1 = spec[i], p2 = spec[i + 1], p3 = spec[Math.min(n - 1, i + 2)];
+      for (let k = 0; k < sub; k++) { const u = k / sub; out.push(p1.map((_, c) => (c === 0 ? U.lerp(p1[0], p2[0], u) : Math.max(0.003, cr(p0[c], p1[c], p2[c], p3[c], u))))); }
+    }
+    out.push(spec[n - 1]);
+    return out;
+  }
+
+  /* Añade a Q las caras de una superficie definida por anillos. rings[i] = {c, sd, fr, rs, rf, rb, t}.
+     Con OPT.fine, las caras que cruzan un borde entre músculos se subdividen para que el contorno salga suave. */
+  let OPT = { edges: false, fine: 0 };
+  const L3 = (a, b, k) => ({ x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k, z: a.z + (b.z - a.z) * k });
+  function skin(Q, rings, nSeg, cls, ls, tag) {
+    const nr = rings.length, pts = [];
+    for (let i = 0; i < nr; i++) {
+      const g = rings[i], row = [];
+      for (let j = 0; j < nSeg; j++) {
+        const th = (j / nSeg) * TAU, cs = Math.cos(th), sn = Math.sin(th), rr = sn >= 0 ? g.rf : g.rb;
+        row.push({ x: g.c.x + g.sd.x * g.rs * cs + g.fr.x * rr * sn, y: g.c.y + g.sd.y * g.rs * cs + g.fr.y * rr * sn, z: g.c.z + g.sd.z * g.rs * cs + g.fr.z * rr * sn });
+      }
+      pts.push(row);
+    }
+    const reg = (t, th) => cls(t, Math.cos(th) * ls, Math.sin(th));
+    const tMin = rings[0].t, tMax = rings[nr - 1].t, edges = OPT.edges, fine = OPT.fine;
+    for (let i = 0; i < nr - 1; i++) for (let j = 0; j < nSeg; j++) {
+      const j1 = (j + 1) % nSeg, t0 = rings[i].t, t1 = rings[i + 1].t, th0 = (j / nSeg) * TAU, th1 = ((j + 1) / nSeg) * TAU;
+      const p00 = pts[i][j], p01 = pts[i][j1], p11 = pts[i + 1][j1], p10 = pts[i + 1][j];
+      let n = 1;
+      if (fine > 1) {
+        const e = 1e-4, a = reg(t0 + e, th0 + e), b2 = reg(t0 + e, th1 - e), c2 = reg(t1 - e, th1 - e), d2 = reg(t1 - e, th0 + e);
+        if (a !== b2 || a !== c2 || a !== d2) n = fine;
+      }
+      const c0 = rings[i].c, c1 = rings[i + 1].c;
+      for (let a = 0; a < n; a++) for (let b2 = 0; b2 < n; b2++) {
+        const s0 = a / n, s1 = (a + 1) / n, r0 = b2 / n, r1 = (b2 + 1) / n;
+        const q0 = n === 1 ? p00 : L3(L3(p00, p01, r0), L3(p10, p11, r0), s0), q1 = n === 1 ? p01 : L3(L3(p00, p01, r1), L3(p10, p11, r1), s0);
+        const q2 = n === 1 ? p11 : L3(L3(p00, p01, r1), L3(p10, p11, r1), s1), q3 = n === 1 ? p10 : L3(L3(p00, p01, r0), L3(p10, p11, r0), s1);
+        const c = { x: (q0.x + q1.x + q2.x + q3.x) / 4, y: (q0.y + q1.y + q2.y + q3.y) / 4, z: (q0.z + q1.z + q2.z + q3.z) / 4 };
+        const ac = L3(c0, c1, (s0 + s1) / 2);
+        let nn = X(SUB(q2, q0), SUB(q3, q1));
+        const rad = SUB(c, ac);
+        if (U.l3(nn) < 1e-10) nn = rad; else if (D(nn, rad) < 0) nn = M(nn, -1);
+        nn = N(nn);
+        const ta = U.lerp(t0, t1, s0), tb = U.lerp(t0, t1, s1), tm = (ta + tb) / 2, dt = tb - ta;
+        const tha = U.lerp(th0, th1, r0), thb = U.lerp(th0, th1, r1), thm = (tha + thb) / 2, dth = thb - tha;
+        const rg = reg(tm, thm);
+        let e = 0;
+        if (edges) {
+          const df = (o, bit) => { if (o.m !== rg.m) e |= bit; else if (rg.m && o.pt !== rg.pt) e |= bit << 4; };
+          if (tm - dt > tMin) df(reg(tm - dt, thm), 1);
+          df(reg(tm, thm + dth), 2);
+          if (tm + dt < tMax) df(reg(tm + dt, thm), 4);
+          df(reg(tm, thm - dth), 8);
+        }
+        Q.push({ p: [q0, q1, q2, q3], n: nn, c, reg: rg, e, tag });
+      }
+    }
+  }
+  function tube(Q, A, B, front, spec, nSeg, cls, lat, tag) {
+    const ax = SUB(B, A), L = U.l3(ax); if (L < 1e-5) return;
+    const a = M(ax, 1 / L);
+    let fr = SUB(front, M(a, D(front, a)));
+    if (U.l3(fr) < 1e-4) { fr = X(a, Z); if (U.l3(fr) < 1e-4) fr = { x: 1, y: 0, z: 0 }; }
+    fr = N(fr);
+    const sd = N(X(a, fr));
+    const ls = lat ? (D(sd, lat) >= 0 ? 1 : -1) : 1;
+    skin(Q, spec.map((s) => ({ c: S(A, M(a, s[0] * L)), sd, fr, rs: s[1], rf: s[2], rb: s[3] == null ? s[2] : s[3], t: s[0] })), nSeg, cls, ls, tag);
+  }
+  function ball(Q, c, rs, rf, rz, axis, front, nSeg, nRing, cls, tag) {
+    const spec = [];
+    for (let i = 0; i <= nRing; i++) { const t = i / nRing, s = Math.max(0.03, Math.sin(Math.PI * t)), tt = (1 - Math.cos(Math.PI * t)) / 2; spec.push([tt, rs * s, rf * s, rf * s]); }
+    tube(Q, S(c, M(axis, -rz)), S(c, M(axis, rz)), front, spec, nSeg, cls, null, tag);
+  }
+
+  /* ---- clasificación anatómica (u: + lateral o derecha, v: + anterior). pt = subdivisión dentro del músculo ---- */
+  const DEG = 180 / Math.PI;
+  const TORSO = [[-0.105, 0.03, 0.03, 0.03], [-0.075, 0.11, 0.07, 0.08], [-0.035, 0.158, 0.09, 0.108], [0, 0.17, 0.098, 0.118], [0.09, 0.158, 0.1, 0.108], [0.19, 0.134, 0.094, 0.088], [0.3, 0.15, 0.106, 0.1], [0.4, 0.172, 0.118, 0.112], [0.47, 0.182, 0.106, 0.108], [0.515, 0.17, 0.084, 0.094], [0.548, 0.105, 0.062, 0.074], [0.58, 0.054, 0.05, 0.056]];
+  function clsTorso(h, u, v) {
+    const phi = Math.atan2(Math.abs(u), v) * DEG, sd = u >= 0 ? 'd' : 'i';
+    const kit = h < 0.115 ? 'shorts' : (phi > 78 && phi < 102 && h < 0.5 ? 'stripe' : 'shirt');
+    if (h < 0.1) {
+      if (phi > 100) return R(phi < 168 && h > 0.015 + 0.07 * ((phi - 100) / 68) ? 'gluteoMed' : 'gluteoMax', kit, sd);
+      if (phi > 66) return R(h > -0.03 ? 'gluteoMed' : 'gluteoMax', kit, sd);
+      return R(phi > 24 && h < 0.095 - (phi - 24) * 0.0012 ? 'psoas' : 'coreProf', kit, sd);
+    }
+    if (h < 0.345) {
+      if (phi < 27) return R('abdomen', kit, sd + Math.floor((h - 0.1) / 0.066));
+      if (phi < 112 || (h < 0.18 && phi < 138)) return R('oblicuos', kit, sd);
+      return R(phi > 180 - (h < 0.21 ? 40 : 40 - (h - 0.21) * 130) ? 'lumbares' : 'dorsal', kit, sd);
+    }
+    if (h < 0.512) {
+      if (phi < 80) {
+        const low = 0.372 - 0.03 * Math.cos((phi / 80) * Math.PI * 1.15);
+        if (h > low) return R('pectoral', kit, sd);
+        return R(phi < 27 ? 'abdomen' : 'serrato', kit, phi < 27 ? sd + 3 : sd);
+      }
+      if (phi < 114) return R(h < 0.445 ? 'serrato' : 'dorsal', kit, sd);
+      if (phi > 180 - (16 + (h - 0.345) * 250)) return R('trapecio', kit, sd);
+      return R(h > 0.4 && phi > 120 ? 'manguito' : 'dorsal', kit, sd);
+    }
+    return R(phi < 62 ? null : 'trapecio', h > 0.552 ? 'skin' : kit, sd);
+  }
+  const THIGH = [[-0.14, 0.04, 0.04, 0.04], [-0.06, 0.07, 0.074, 0.08], [0.04, 0.084, 0.09, 0.096], [0.22, 0.09, 0.1, 0.092], [0.55, 0.075, 0.086, 0.074], [0.85, 0.055, 0.058, 0.052], [1, 0.05, 0.052, 0.048]];
+  function clsThigh(t, u, v) {
+    const kit = t < 0.44 ? 'shorts' : 'skin', a = Math.atan2(v, u) * DEG;
+    if (a < -22 && a > -166) { if (t > 0.93) return R(null, kit); return R(t < 0.07 ? 'gluteoMax' : 'isquios', kit, a > -92 ? 'b' : 's'); }
+    if ((a >= 126 || a <= -166) && t < 0.78 - Math.max(0, 150 - Math.abs(a)) * 0.012) return R('aductores', kit);
+    if (t > 0.9 + (a > 105 ? 0.04 : 0) - 0.05 * Math.abs(Math.cos((a - 90) / DEG))) return R(null, kit);
+    return R('cuadriceps', kit, a < 62 ? 'vl' : a > 112 ? 'vm' : 'rf');
+  }
+  const SHANK = [[0, 0.05, 0.05, 0.05], [0.24, 0.055, 0.048, 0.072], [0.5, 0.048, 0.042, 0.058], [0.8, 0.034, 0.034, 0.036], [1, 0.031, 0.033, 0.035]];
+  function clsShank(t, u, v) {
+    const kit = t > 0.84 ? 'sock' : 'skin', a = Math.atan2(v, u) * DEG;
+    if (t < 0.06) return R(null, kit);
+    if (a < -28 && a > -152) {
+      const b = Math.abs(a + 90);
+      if (t < 0.56 - 0.0016 * Math.abs(b - 30) * 2) return R('gastro', kit, a > -90 ? 'l' : 'm');
+      if (t < 0.78) return R(b < 26 && t > 0.6 + b * 0.004 ? 'aquiles' : 'soleo', kit);
+      return R(b < 34 && t < 0.97 ? 'aquiles' : null, kit);
+    }
+    if ((a <= -8 && a >= -28) || a <= -152 || a > 170) return R(t > 0.26 && t < 0.76 ? 'soleo' : null, kit);
+    if (t > 0.86) return R(null, kit);
+    if (a < 42) return R('peroneos', kit);
+    if (a < 104) return R(t < 0.8 ? 'tibial' : null, kit);
+    return R(null, kit);
+  }
+  const UPPER = [[0, 0.053, 0.055, 0.053], [0.3, 0.051, 0.052, 0.05], [0.6, 0.044, 0.052, 0.047], [1, 0.036, 0.036, 0.036]];
+  function clsUpper(t, u, v) {
+    const kit = t < 0.52 ? 'shirt' : 'skin';
+    if (t < 0.2 + 0.24 * Math.max(0, u) * Math.max(0, u)) return R('deltoides', kit, v > 0.35 ? 'a' : v < -0.35 ? 'p' : 'm');
+    if (t > 0.93) return R(null, kit);
+    return R(v > 0 ? 'biceps' : 'triceps', kit, v > 0 ? '' : (u > 0 ? 'l' : 'm'));
+  }
+  const FORE = [[0, 0.038, 0.04, 0.038], [0.28, 0.043, 0.043, 0.041], [0.8, 0.029, 0.026, 0.026], [1, 0.026, 0.021, 0.021]];
+  const clsFore = (t, u, v) => (t > 0.84 - 0.1 * Math.abs(u) ? R(null, 'skin') : R(v > 0 ? 'flexores' : 'extensores', 'skin'));
+  const clsDelt = (t, u, v) => R('deltoides', 'shirt', v > 0.35 ? 'a' : v < -0.35 ? 'p' : 'm');
+  const clsNone = () => R(null, 'skin');
+  const clsNeck = (t, u, v) => R(v < -0.25 ? 'trapecio' : null, 'skin', u >= 0 ? 'd' : 'i');
+  function clsHead(t, u, v) {
+    const au = Math.abs(u);
+    if (v > 0.45) { const e = ((t - 0.555) / 0.05) ** 2 + ((au - 0.4) / 0.24) ** 2; if (e < 1) return R('oculares', e < 0.16 ? 'eye' : 'skin', u > 0 ? 'd' : 'i'); }
+    if (t > 0.76 || v < -0.32 || (t > 0.62 && v < 0.4)) return R(null, 'hair');
+    return R(null, 'skin');
+  }
+  const SHOE = [[0, 0.03, 0.036, 0.022], [0.16, 0.043, 0.062, 0.03], [0.45, 0.048, 0.055, 0.03], [0.8, 0.049, 0.036, 0.028], [1, 0.03, 0.02, 0.02]];
+  const clsShoe = (t, u, v) => R(null, v < -0.45 ? 'sole' : t > 0.36 && t < 0.56 && v < 0.75 ? 'shoeStripe' : 'shoe');
+  const HAND = [[0, 0.024, 0.017, 0.017], [0.4, 0.042, 0.02, 0.02], [1, 0.02, 0.012, 0.012]];
+
+  /* Construye la malla. sk: esqueleto con P, up, r, f (pelvis), ry, fy (hombros), neck, head, look, arms{I,D}, legs{I,D} */
+  function build(sk, o = {}) {
+    const lod = o.lod || 1, sub = lod >= 3 ? 6 : lod >= 2 ? 4 : lod >= 1.4 ? 2 : 1, sg = (n) => Math.max(6, Math.round(n * lod));
+    const Q = [];
+    OPT = { edges: !!o.edges, fine: o.edges && lod >= 2 ? 4 : 0 };
+    /* tronco */
+    const st = dense(TORSO, sub), rings = [];
+    for (const s of st) {
+      const h = s[0], wt = U.smooth((h - 0.04) / 0.42);
+      const sd = N(U.lerp3(sk.r, sk.ry, wt));
+      let fr = U.lerp3(sk.f, sk.fy, wt); fr = N(SUB(fr, M(sk.up, D(fr, sk.up))));
+      rings.push({ c: S(sk.P, M(sk.up, h)), sd, fr, rs: s[1], rf: s[2], rb: s[3], t: h });
+    }
+    skin(Q, rings, sg(16), clsTorso, 1, 'torso');
+    /* cuello y cabeza */
+    const hax = N(S(M(Z, 0.75), M(sk.up, 0.25)));
+    tube(Q, S(sk.neck, M(sk.up, -0.03)), sk.head, sk.fy, [[0, 0.05, 0.05, 0.052], [1, 0.046, 0.048, 0.05]], sg(8), clsNeck, null, 'neck');
+    ball(Q, sk.head, 0.092, 0.106, 0.118, hax, sk.look || sk.fy, sg(13), Math.round(8 * Math.min(lod, 3)), clsHead, 'head');
+    /* brazos */
+    for (const side of ['I', 'D']) {
+      const a = sk.arms[side], lat = side === 'D' ? sk.ry : M(sk.ry, -1);
+      let bend = SUB(U.lerp3(a.sh, a.wr, 0.5), a.el);
+      const fr = U.l3(bend) > 0.035 ? N(bend) : (a.front || sk.fy);
+      ball(Q, a.sh, 0.054, 0.057, 0.05, N(SUB(a.el, a.sh)), fr, sg(9), Math.round(4 * Math.min(lod, 2.5)), clsDelt, 'arm');
+      tube(Q, a.sh, a.el, fr, dense(UPPER, sub), sg(9), clsUpper, lat, 'arm');
+      ball(Q, a.el, 0.037, 0.037, 0.037, Z, fr, sg(6), 4, clsNone, 'arm');
+      tube(Q, a.el, a.wr, fr, dense(FORE, sub), sg(8), clsFore, lat, 'arm');
+      const hd = N(SUB(a.wr, a.el));
+      tube(Q, a.wr, S(a.wr, M(a.hd || hd, 0.095)), fr, dense(HAND, Math.min(sub, 3)), sg(6), clsNone, null, 'hand');
+    }
+    /* piernas */
+    for (const side of ['I', 'D']) {
+      const g = sk.legs[side], lat = side === 'D' ? sk.r : M(sk.r, -1);
+      const ff = N({ x: g.toe.x - g.heel.x, y: g.toe.y - g.heel.y, z: 0 });
+      const bend = SUB(g.knee, U.lerp3(g.hip, g.ankle, 0.5));
+      const fr = U.l3(bend) > 0.03 ? N(bend) : ff;
+      tube(Q, g.hip, g.knee, fr, dense(THIGH, sub), sg(11), clsThigh, lat, 'leg');
+      ball(Q, S(g.knee, M(fr, 0.008)), 0.05, 0.052, 0.05, Z, fr, sg(7), 4, clsNone, 'leg');
+      tube(Q, g.knee, g.ankle, fr, dense(SHANK, sub), sg(10), clsShank, lat, 'leg');
+      const fa = N(SUB(g.toe, g.heel)), lift = { x: 0, y: 0, z: 0.014 };
+      tube(Q, S(S(g.heel, M(fa, -0.025)), lift), S(S(g.toe, M(fa, 0.03)), lift), Z, dense(SHOE, Math.min(sub, 3)), sg(8), clsShoe, null, 'shoe');
+    }
+    return Q;
+  }
+
+  /* Pose anatómica de referencia (de pie, brazos algo separados, palmas al frente) mirando a −y */
+  function anatSkeleton() {
+    const P = { x: 0, y: 0, z: 0.955 }, r = { x: 1, y: 0, z: 0 }, f = { x: 0, y: -1, z: 0 }, up = Z;
+    const sk = { P, r, f, ry: r, fy: f, up, neck: S(P, M(up, 0.56)), look: f, arms: {}, legs: {} };
+    sk.head = S(sk.neck, { x: 0, y: -0.015, z: 0.125 });
+    for (const side of ['I', 'D']) {
+      const s = side === 'D' ? 1 : -1;
+      const sh = { x: s * 0.2, y: 0, z: P.z + 0.515 }, el = { x: s * 0.265, y: 0.012, z: sh.z - 0.295 }, wr = { x: s * 0.325, y: -0.03, z: el.z - 0.262 };
+      sk.arms[side] = { sh, el, wr, front: f, hd: N({ x: s * 0.18, y: -0.05, z: -1 }) };
+      const hip = { x: s * 0.1, y: 0, z: P.z }, ankle = { x: s * 0.135, y: 0.01, z: 0.075 }, knee = { x: s * 0.118, y: -0.012, z: 0.52 };
+      const ffv = N({ x: s * 0.2, y: -1, z: 0 });
+      sk.legs[side] = { hip, knee, ankle, toe: { x: ankle.x + ffv.x * 0.17, y: ankle.y + ffv.y * 0.17, z: 0.02 }, heel: { x: ankle.x - ffv.x * 0.07, y: ankle.y - ffv.y * 0.07, z: 0.02 } };
+    }
+    return sk;
+  }
+
+  /* Materiales del uniforme */
+  const SKINS = [[233, 196, 168], [214, 170, 136], [176, 128, 96]], HAIRS = [[44, 30, 22], [26, 22, 20], [92, 62, 36]];
+  function kit(color, idx = 0) {
+    const c = parseColor(color);
+    return { skin: SKINS[idx % 3], hair: HAIRS[idx % 3], eye: [30, 24, 22], shirt: c, stripe: [c[0] * 0.55 + 115, c[1] * 0.55 + 115, c[2] * 0.55 + 115], shorts: [34, 42, 54], sock: [245, 245, 245], shoe: [248, 248, 250], shoeStripe: c, sole: [70, 74, 82] };
+  }
+  const TINT = {};
+  const tint = (id) => { if (TINT[id] == null) { let h = 0; for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) % 97; TINT[id] = (h / 96) * 0.55; } return TINT[id]; };
+  const ANAT = { musc: [226, 186, 170], none: [240, 226, 214], hair: [240, 226, 214], eye: [90, 70, 62], shoe: [240, 226, 214], sole: [205, 190, 178] };
+
+  /* Proyecta y descarta caras ocultas. V: {proj(p)→{x,y,z}|null, facing(n,c)} */
+  function visible(Q, V, out) {
+    for (const q of Q) {
+      if (!V.facing(q.n, q.c)) continue;
+      const a = V.proj(q.p[0]), b = V.proj(q.p[1]), c = V.proj(q.p[2]), d = V.proj(q.p[3]);
+      if (!a || !b || !c || !d) continue;
+      out.push({ z: (a.z + b.z + c.z + d.z) / 4, q, a, b, c, d });
+    }
+    return out;
+  }
+  /* Pinta una cara. o: {kit} o bien {anat:{colors:{id:rgb}, base, none}, sel, line, selLine}; L = luz (unitaria) */
+  function paint(ctx, e, o, L) {
+    const q = e.q, reg = q.reg;
+    let col;
+    if (o.anat) {
+      const A = o.anat;
+      if (reg.m) { col = A.colors && A.colors[reg.m]; if (!col) { const k = tint(reg.m), d = A.deep || [196, 122, 108]; col = [U.lerp(A.base[0], d[0], k), U.lerp(A.base[1], d[1], k), U.lerp(A.base[2], d[2], k)]; } if (reg.k === 'eye') col = ANAT.eye; }
+      else col = reg.k === 'eye' ? ANAT.eye : A.none;
+    } else col = o.kit[reg.k] || o.kit.skin;
+    const dl = D(q.n, L), sh = 0.5 + 0.5 * Math.pow(Math.max(0, dl), 0.8) + 0.07 * Math.max(0, q.n.z);
+    const fill = `rgb(${Math.min(255, col[0] * sh) | 0},${Math.min(255, col[1] * sh) | 0},${Math.min(255, col[2] * sh) | 0})`;
+    /* cada cara se dilata ~0,7 px desde su centro: tapa las uniones sin trazar el contorno (el trazo es lo caro) */
+    const mx = (e.a.x + e.b.x + e.c.x + e.d.x) / 4, my = (e.a.y + e.b.y + e.c.y + e.d.y) / 4;
+    ctx.beginPath();
+    for (let i = 0; i < 4; i++) { const p = i === 0 ? e.a : i === 1 ? e.b : i === 2 ? e.c : e.d; const dx = p.x - mx, dy = p.y - my, l = Math.sqrt(dx * dx + dy * dy) || 1, k = 1 + 0.75 / l; if (i) ctx.lineTo(mx + dx * k, my + dy * k); else ctx.moveTo(mx + dx * k, my + dy * k); }
+    ctx.closePath(); ctx.fillStyle = fill; ctx.fill();
+    if (o.anat && q.e) {
+      const isSel = o.sel && reg.m === o.sel;
+      const seg = (bits) => { ctx.beginPath();
+        if (bits & 1) { ctx.moveTo(e.a.x, e.a.y); ctx.lineTo(e.b.x, e.b.y); }
+        if (bits & 2) { ctx.moveTo(e.b.x, e.b.y); ctx.lineTo(e.c.x, e.c.y); }
+        if (bits & 4) { ctx.moveTo(e.c.x, e.c.y); ctx.lineTo(e.d.x, e.d.y); }
+        if (bits & 8) { ctx.moveTo(e.d.x, e.d.y); ctx.lineTo(e.a.x, e.a.y); }
+        ctx.stroke(); };
+      if (q.e >> 4) { ctx.strokeStyle = o.line || 'rgba(110,60,45,.55)'; ctx.globalAlpha = 0.45; ctx.lineWidth = 0.7; seg(q.e >> 4); ctx.globalAlpha = 1; }
+      if (q.e & 15) { ctx.strokeStyle = isSel ? o.selLine || '#0a3c66' : o.line || 'rgba(110,60,45,.55)'; ctx.lineWidth = isSel ? 1.7 : 1; seg(q.e & 15); }
+    }
+  }
+  /* colores por músculo a partir de la activación */
+  function actColors(act, base) {
+    const out = {};
+    if (act) for (const id in act) out[id] = heat(act[id].v, base || ANAT.musc);
+    return out;
+  }
+  const inQuad = (e, x, y) => {
+    const P = [e.a, e.b, e.c, e.d]; let s = 0;
+    for (let i = 0; i < 4; i++) { const p = P[i], q = P[(i + 1) % 4]; const cr2 = (q.x - p.x) * (y - p.y) - (q.y - p.y) * (x - p.x); if (Math.abs(cr2) < 1e-9) continue; if (s === 0) s = Math.sign(cr2); else if (Math.sign(cr2) !== s) return false; }
+    return true;
+  };
+  /* malla del jugador en el instante t, compartida por las vistas del mismo cuadro */
+  function forPlayer(pl, t, ball, lod, edges) {
+    const c = pl._mesh;
+    if (c && c.t === t && c.lod >= lod && c.edges === edges && c.tec === pl.tecnica) return c;
+    const sk = MS.Player.skeleton(pl, t, ball);
+    return (pl._mesh = { t, lod, edges, tec: pl.tecnica, sk, Q: build(sk, { lod, edges }) });
+  }
+  return { forPlayer, build, anatSkeleton, visible, paint, kit, ANAT, heat, actColors, parseColor, inQuad };
 })();
 
 /* ==== 50-render-tv.js ==== */
@@ -3148,55 +3515,39 @@ MS.TV = (function () {
     ctx.restore();
   }
 
-  function playerItems(K, pl, t, opts, items, tl) {
-    const sk = Player.skeleton(pl, t);
-    const act = opts.musculos ? MS.Muscles.activation(pl, t).act : null;
-    const A = (id) => (act && act[id] ? act[id].v : 0);
-    const SKIN = '#e9c8ad', SHORTS = '#1f2933', SHOE = '#f5f5f5';
-    const shirt = pl.color;
-    const cap = (a, b, r, col) => {
-      const ca = toCam(K, a), cb = toCam(K, b);
-      if (ca.z < NEAR || cb.z < NEAR) return;
-      const zc = (ca.z + cb.z) / 2;
-      items.push({ z: zc, draw: (ctx) => { const pa = scr(K, ca), pb = scr(K, cb); ctx.strokeStyle = col; ctx.lineCap = 'round'; ctx.lineWidth = Math.max(1, (2 * r * K.f) / zc); ctx.beginPath(); ctx.moveTo(pa.x, pa.y); ctx.lineTo(pb.x, pb.y); ctx.stroke(); } });
-    };
-    const quad = (pts, col, zbias = 0) => {
-      const cs = pts.map((p) => toCam(K, p));
-      if (cs.some((c) => c.z < NEAR)) return;
-      const zc = cs.reduce((s, c) => s + c.z, 0) / cs.length + zbias;
-      items.push({ z: zc, draw: (ctx) => { const P = cs.map((c) => scr(K, c)); ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(P[0].x, P[0].y); for (let i = 1; i < P.length; i++) ctx.lineTo(P[i].x, P[i].y); ctx.closePath(); ctx.fill(); ctx.strokeStyle = 'rgba(0,0,0,.25)'; ctx.lineWidth = 0.8; ctx.stroke(); } });
-    };
-    const heatOr = (v, base) => (act ? heatCol(v, base) : base);
-    const lgI = sk.legs.I, lgD = sk.legs.D;
-    for (const lg of [lgI, lgD]) {
-      cap(lg.hip, lg.knee, 0.075, heatOr(Math.max(A('cuadriceps'), A('isquios')), SKIN));
-      cap(lg.knee, lg.ankle, 0.055, heatOr(Math.max(A('gastro'), A('soleo'), A('tibial')), SKIN));
-      cap(lg.heel, lg.toe, 0.05, SHOE);
-      /* pantalón corto: tercio superior del muslo */
-      cap(lg.hip, U.lerp3(lg.hip, lg.knee, 0.42), 0.085, SHORTS);
-    }
-    const torsoCol = act ? heatCol(Math.max(A('abdomen'), A('oblicuos'), A('lumbares'), A('coreProf')) * 0.9, shirt) : shirt;
-    quad([sk.shL, sk.shR, sk.legs.D.hip, sk.legs.I.hip], torsoCol, -0.02);
-    cap(sk.legs.I.hip, sk.legs.D.hip, 0.09, SHORTS);
-    cap(sk.shL, sk.shR, 0.06, torsoCol);
-    const armUp = act ? heatCol(Math.max(A('deltoides'), A('triceps'), A('biceps'), A('manguito')), shirt) : shirt;
-    const armLo = act ? heatCol(Math.max(A('flexores'), A('extensores')), SKIN) : SKIN;
-    cap(sk.shA, sk.elbowA, 0.05, armUp); cap(sk.elbowA, sk.wristA, 0.04, armLo);
-    cap(sk.shO, sk.elbowO, 0.05, shirt); cap(sk.elbowO, sk.handO, 0.04, SKIN);
-    cap(sk.neck, U.lerp3(sk.neck, sk.head, 0.4), 0.05, SKIN);
-    /* raqueta */
-    cap(sk.wristA, sk.racketHead, 0.012, '#1e1e1e');
-    const rc = U.a3(sk.racketHead, U.m3(sk.racketDir, 0.09));
-    let n1 = U.c3(sk.racketDir, { x: 0, y: 0, z: 1 }); if (U.l3(n1) < 0.1) n1 = U.c3(sk.racketDir, { x: 1, y: 0, z: 0 }); n1 = U.n3(n1);
-    const ring = []; for (let i = 0; i < 14; i++) { const a = (i / 14) * Math.PI * 2; ring.push(U.a3(rc, U.a3(U.m3(sk.racketDir, Math.cos(a) * 0.115), U.m3(n1, Math.sin(a) * 0.095)))); }
+  const LIGHT = U.n3({ x: -0.3, y: 0.45, z: 0.85 });
+  /* raqueta: caña, aro y cuerdas */
+  function racketItems(K, sk, items) {
+    const A = MS.Athlete;
+    const ca = toCam(K, sk.wristA), cb = toCam(K, sk.racketHead);
+    if (ca.z > NEAR && cb.z > NEAR) items.push({ z: (ca.z + cb.z) / 2, draw: (ctx) => { const pa = scr(K, ca), pb = scr(K, cb); ctx.lineCap = 'round'; ctx.strokeStyle = '#15181c'; ctx.lineWidth = Math.max(1.2, (0.022 * K.f) / ca.z); ctx.beginPath(); ctx.moveTo(pa.x, pa.y); ctx.lineTo(pb.x, pb.y); ctx.stroke(); ctx.strokeStyle = '#f2c811'; ctx.lineWidth = Math.max(1.4, (0.03 * K.f) / ca.z); const g = { x: U.lerp(pa.x, pb.x, 0.22), y: U.lerp(pa.y, pb.y, 0.22) }; ctx.beginPath(); ctx.moveTo(pa.x, pa.y); ctx.lineTo(g.x, g.y); ctx.stroke(); } });
+    const rc = U.a3(sk.racketHead, U.m3(sk.racketDir, 0.1));
+    let n1 = U.c3(sk.racketDir, sk.fy); if (U.l3(n1) < 0.2) n1 = U.c3(sk.racketDir, { x: 0, y: 0, z: 1 }); n1 = U.n3(n1);
+    const ring = []; for (let i = 0; i < 16; i++) { const a = (i / 16) * Math.PI * 2; ring.push(U.a3(rc, U.a3(U.m3(sk.racketDir, Math.cos(a) * 0.118), U.m3(n1, Math.sin(a) * 0.092)))); }
     const rcc = toCam(K, rc);
-    if (rcc.z > NEAR && ring.every((p) => toCam(K, p).z > NEAR)) items.push({ z: rcc.z, draw: (ctx) => { const P = ring.map((p) => proj(K, p)); ctx.beginPath(); P.forEach((p, i) => (i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y))); ctx.closePath(); ctx.fillStyle = 'rgba(255,255,255,.25)'; ctx.fill(); ctx.strokeStyle = '#1e1e1e'; ctx.lineWidth = Math.max(1, (0.02 * K.f) / rcc.z); ctx.stroke(); } });
-    /* cabeza */
-    const hc = toCam(K, sk.head);
-    if (hc.z > NEAR) items.push({ z: hc.z, draw: (ctx) => { const p = scr(K, hc); const r = (0.11 * K.f) / hc.z; ctx.fillStyle = SKIN; ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#2a1d16'; ctx.beginPath(); ctx.arc(p.x, p.y - r * 0.15, r * 1.02, Math.PI * 1.05, Math.PI * 1.95); ctx.fill(); } });
-    /* sombra en el piso */
-    const sh = proj(K, { x: sk.P.x, y: sk.P.y, z: 0 });
-    return { sk, shadow: sh };
+    if (rcc.z > NEAR && ring.every((p) => toCam(K, p).z > NEAR)) items.push({ z: rcc.z, draw: (ctx) => {
+      const P = ring.map((p) => proj(K, p));
+      ctx.beginPath(); P.forEach((p, i) => (i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y))); ctx.closePath();
+      ctx.fillStyle = 'rgba(255,255,255,.22)'; ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,.55)'; ctx.lineWidth = 0.6; ctx.beginPath();
+      for (const [i, j] of [[2, 14], [4, 12], [6, 10], [1, 7], [15, 9], [3, 5], [13, 11]]) { ctx.moveTo(P[i].x, P[i].y); ctx.lineTo(P[j].x, P[j].y); }
+      ctx.stroke();
+      ctx.beginPath(); P.forEach((p, i) => (i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y))); ctx.closePath();
+      ctx.strokeStyle = '#15181c'; ctx.lineWidth = Math.max(1.2, (0.022 * K.f) / rcc.z); ctx.stroke();
+    } });
+  }
+  function playerItems(K, pl, t, opts, items, tl, ball) {
+    const A = MS.Athlete;
+    const k0 = Player.keyAt(pl, t), dist = Math.hypot(K.eye.x - k0.x, K.eye.y - k0.y, K.eye.z - 0.9);
+    const M0 = A.forPlayer(pl, t, ball, opts.lod || (dist < 4.2 ? 1.5 : 1), !!opts.musculos), sk = M0.sk;
+    const V = { proj: (p) => { const c = toCam(K, p); return c.z < NEAR ? null : scr(K, c); }, facing: (n, c) => (K.eye.x - c.x) * n.x + (K.eye.y - c.y) * n.y + (K.eye.z - c.z) * n.z > 0 };
+    let style;
+    if (opts.musculos) style = { anat: { colors: A.actColors(MS.Muscles.activation(pl, t).act), base: A.ANAT.musc, none: A.ANAT.none }, line: 'rgba(110,60,45,.5)' };
+    else style = { kit: pl._kit || (pl._kit = A.kit(pl.color, pl.idx)) };
+    const vis = A.visible(M0.Q, V, []);
+    for (const e of vis) { e.st = style; items.push(e); }
+    racketItems(K, sk, items);
+    return { sk, shadow: proj(K, { x: sk.P.x, y: sk.P.y, z: 0 }) };
   }
 
   function draw(ctx, w, h, tl, t, cam, opts = {}) {
@@ -3218,11 +3569,16 @@ MS.TV = (function () {
     }
     const items = [];
     const meta = [];
-    for (const pl of tl.players) meta.push(Object.assign({ pl }, playerItems(K, pl, t, opts, items, tl)));
-    /* sombras */
-    for (const m of meta) if (m.shadow) { ctx.fillStyle = 'rgba(0,0,0,.22)'; ctx.beginPath(); ctx.ellipse(m.shadow.x, m.shadow.y, (0.32 * K.f) / m.shadow.z, (0.12 * K.f) / m.shadow.z, 0, 0, Math.PI * 2); ctx.fill(); }
-    /* bola, estela y sombra */
     const b = TL.ballAt(tl, t);
+    for (const pl of tl.players) meta.push(Object.assign({ pl }, playerItems(K, pl, t, opts, items, tl, b)));
+    /* sombras */
+    for (const m of meta) {
+      if (!m.shadow) continue;
+      const blob = (p3, rx) => { const q = proj(K, p3); if (!q) return; const g = ctx.createRadialGradient(q.x, q.y, 0, q.x, q.y, (rx * K.f) / q.z); g.addColorStop(0, 'rgba(0,0,0,.30)'); g.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = g; ctx.save(); ctx.translate(q.x, q.y); ctx.scale(1, Math.max(0.2, Math.sin(cam.el) * 0.9 + 0.12)); ctx.translate(-q.x, -q.y); ctx.beginPath(); ctx.arc(q.x, q.y, (rx * K.f) / q.z, 0, Math.PI * 2); ctx.fill(); ctx.restore(); };
+      blob({ x: m.sk.P.x, y: m.sk.P.y, z: 0 }, 0.42);
+      for (const sd of ['I', 'D']) { const g = m.sk.legs[sd]; blob({ x: (g.toe.x + g.heel.x) / 2, y: (g.toe.y + g.heel.y) / 2, z: 0 }, 0.17); }
+    }
+    /* bola, estela y sombra */
     if (b) {
       const s = b.shot;
       if (s && s.res && opts.trayectoria !== false) {
@@ -3248,7 +3604,8 @@ MS.TV = (function () {
       if (bc.z > NEAR) items.push({ z: bc.z - 0.05, draw: (c2) => { const p = scr(K, bc); const r = Math.max(2.6, (0.026 * K.f) / bc.z); c2.fillStyle = '#0b0b0b'; c2.beginPath(); c2.arc(p.x, p.y, r, 0, Math.PI * 2); c2.fill(); if (r > 4) { c2.fillStyle = '#f2c811'; c2.beginPath(); c2.arc(p.x - r * 0.3, p.y - r * 0.2, r * 0.22, 0, Math.PI * 2); c2.arc(p.x + r * 0.25, p.y - r * 0.42, r * 0.22, 0, Math.PI * 2); c2.fill(); } } });
     }
     items.sort((a, c) => c.z - a.z);
-    for (const it of items) it.draw(ctx);
+    ctx.lineJoin = 'round';
+    for (const it of items) { if (it.draw) it.draw(ctx); else MS.Athlete.paint(ctx, it, it.st, LIGHT); }
     glass(ctx, K);
     /* etiquetas y ángulos */
     for (const m of meta) {
@@ -4523,7 +4880,7 @@ MS.Anat = (function () {
     map.activation(act);
   }
   function init() {
-    map = MS.Body.create(U.$('#anBody'), { interactive: true, onSelect: (id) => card(id) });
+    map = MS.Body.create(U.$('#anBody'), { mode: 'orbit', interactive: true, onSelect: (id) => card(id) });
     const pb = U.$('#anPhase');
     for (const [k, t] of PH) {
       const b = U.h('button', { class: 'chip', 'aria-pressed': String(k === phase), text: t });

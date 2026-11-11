@@ -1,0 +1,89 @@
+<template class="chapter-src" data-id="transformer" data-num="30" data-title="El Transformer" data-part="Parte VII · Redes y modelos grandes" data-short="Autoatención; consultas, claves y valores; atención multicabeza; codificación posicional; red prealimentada, residuales y normalización; codificador, decodificador y codificador–decodificador; coste cuadrático">
+<p class="lead">«Attention is all you need» (Vaswani y otros, 2017) propuso eliminar la recurrencia y quedarse con la atención del capítulo anterior, aplicada a la propia secuencia. El resultado es el <b>Transformer</b>, la arquitectura sobre la que están construidos BERT, GPT y todos los grandes modelos de lenguaje. Sus ventajas son prácticas: se entrena en paralelo (no hay que esperar al paso anterior), cada palabra ve directamente a todas las demás y escala a modelos y corpus enormes.</p>
+
+<section>
+<h2>Qué hay que resolver</h2>
+<p>Una red recurrente lee las palabras de una en una y arrastra un estado. Un Transformer toma <b>toda la secuencia a la vez</b>, y debe resolver dos cosas: cómo relacionar cada palabra con las demás (la <b>autoatención</b>) y cómo saber el orden, ya que al procesarlas en paralelo no hay un «antes» y un «después» (la <b>codificación posicional</b>).</p>
+</section>
+
+<section>
+<h2>Autoatención y multicabeza</h2>
+<p>En la autoatención, cada palabra se proyecta tres veces con matrices aprendidas: una <b>consulta</b> \(\mathbf q_i=\mathbf x_iW_Q\), una <b>clave</b> \(\mathbf k_i=\mathbf x_iW_K\) y un <b>valor</b> \(\mathbf v_i=\mathbf x_iW_V\). La salida de la palabra \(i\) es un promedio de los valores de todas las palabras, ponderado por la compatibilidad entre su consulta y las claves (capítulo 29). En forma matricial para toda la secuencia \(X\in\mathbb R^{n\times d}\):</p>
+<div class="eq key" data-name="Autoatención y multicabeza">\[\operatorname{Atención}(X)=\operatorname{softmax}\!\Bigl(\tfrac{XW_Q(XW_K)^{\top}}{\sqrt{d_k}}+M\Bigr)XW_V,\qquad\operatorname{MultiCabeza}(X)=\bigl[\mathrm{cab}_1;\dots;\mathrm{cab}_h\bigr]W_O\]</div>
+<p>donde \(M\) es la máscara (0, o \(-\infty\) en las posiciones prohibidas). En la <b>atención multicabeza</b> se divide la dimensión \(d\) en \(h\) cabezas de tamaño \(d_k=d/h\); cada una calcula su propia atención con proyecciones distintas, de modo que pueden especializarse en relaciones diferentes (la palabra anterior, el sujeto del verbo, el antecedente de un pronombre…), y se concatenan y proyectan con \(W_O\).</p>
+<h3>La posición</h3>
+<p>La autoatención no distingue el orden: si se baraja la entrada, la salida de cada palabra no cambia (solo cambia de sitio). Para dárselo se suma a cada embedding un vector de posición. En el artículo original es una función sinusoidal fija; hoy es habitual aprender posiciones o usar rotaciones relativas (RoPE).</p>
+<div class="eq key" data-name="Codificación posicional sinusoidal">\[\mathrm{PE}(p,2i)=\sin\!\Bigl(\frac{p}{10000^{2i/d}}\Bigr),\qquad\mathrm{PE}(p,2i+1)=\cos\!\Bigl(\frac{p}{10000^{2i/d}}\Bigr),\qquad\mathrm{PE}(p)\!\cdot\!\mathrm{PE}(p+k)=\sum_{i}\cos(\omega_ik)\]</div>
+<p>Las dimensiones bajas oscilan rápido (distinguen posiciones vecinas) y las altas, despacio (distinguen regiones lejanas), como las agujas de un reloj. La última igualdad muestra que el producto escalar entre dos posiciones solo depende de su distancia \(k\).</p>
+<div class="sim" data-sim="pos-enc" data-title="Codificación posicional sinusoidal: mapa y similitud entre posiciones"></div>
+<div class="sim-guide"><ul>
+<li>En el mapa, la primera columna (dimensión 0) cambia con cada posición; las últimas, apenas. Con dimensión 8 hay pocas frecuencias; con 128 hay muchas.</li>
+<li>Mueva k: PE(0)·PE(k) y PE(10)·PE(10 + k) valen lo mismo, porque solo depende de la distancia. Y PE(p)·PE(p) es siempre d/2 (cada pareja seno–coseno suma 1).</li>
+<li>La curva de la derecha empieza en 1 y baja con la distancia (con oscilaciones): posiciones cercanas se parecen más que lejanas.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El bloque completo</h2>
+<p>Un bloque del Transformer encadena la atención con una pequeña red prealimentada aplicada a cada posición por separado, con conexiones residuales y normalización de capa que estabilizan el entrenamiento de pilas de decenas de bloques:</p>
+<div class="eq key" data-name="Bloque del Transformer (versión original)">\[\mathbf A=\operatorname{LN}\bigl(X+\operatorname{MultiCabeza}(X)\bigr),\qquad Y=\operatorname{LN}\bigl(\mathbf A+\operatorname{FFN}(\mathbf A)\bigr),\qquad\operatorname{FFN}(\mathbf a)=W_2\,\mathrm{ReLU}(W_1\mathbf a+\mathbf b_1)+\mathbf b_2\]</div>
+<p>La <b>conexión residual</b> (\(X+\dots\)) deja pasar la información y el gradiente sin cambios. La <b>normalización de capa</b> centra y reescala cada vector: \(\operatorname{LN}(\mathbf x)=\gamma\odot(\mathbf x-\mu)/\sqrt{\sigma^2+\epsilon}+\beta\). Las variantes modernas normalizan <i>antes</i> de la subcapa (pre-norm), usan GELU o SwiGLU en vez de ReLU y emplean \(d_{ff}\approx4d\). Los parámetros de un bloque son \(4d^2+4d\) (atención) más \(2d\,d_{ff}+d_{ff}+d\) (FFN) más \(4d\) (normalizaciones): con \(d=16\) y \(d_{ff}=32\) son 2.224.</p>
+<div class="sim" data-sim="transformer-bloque" data-title="Un bloque de Transformer aplicado a una frase"></div>
+<div class="sim-guide"><ul>
+<li>Con codificación posicional y orden normal, la salida de cada palabra depende de su posición. Desactive «Sumar la codificación posicional» y mire el cambio al invertir el orden: se reduce a cero (≈ 10<sup>−16</sup>). Sin posiciones, el bloque no distingue «A antes de B» de «B antes de A».</li>
+<li>Active la máscara causal: la matriz de cada cabeza queda triangular (todo lo de encima de la diagonal es 0). Así se entrenan los modelos de lenguaje: cada palabra solo ve las anteriores. El primer token ve solo a sí mismo: su atención es exactamente 1.</li>
+<li>Cambie el número de cabezas: cada una calcula su propia matriz. Con pesos aleatorios los patrones no tienen significado; el entrenamiento los convierte en relaciones como «mirar la palabra anterior».</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Tres familias</h2>
+<ul>
+<li><b>Solo codificador</b> (BERT, capítulo 31): sin máscara causal; cada palabra ve el contexto a ambos lados. Produce representaciones para clasificar, etiquetar o comparar.</li>
+<li><b>Solo decodificador</b> (GPT y sus sucesores, capítulos 31–32): con máscara causal; predice la palabra siguiente. Es la base de los modelos generativos actuales.</li>
+<li><b>Codificador–decodificador</b> (Transformer original, T5, traducción): el codificador lee la entrada y el decodificador genera la salida con <i>atención cruzada</i> (sus consultas, las claves y valores del codificador), igual que en el capítulo 29.</li>
+</ul>
+<p>El coste de la atención crece como \(O(n^2)\) en la longitud \(n\) de la secuencia (hay una matriz de \(n\times n\) pesos por cabeza), y de ahí el límite de contexto de los modelos. Hay variantes eficientes (atención dispersa o local, FlashAttention, que no cambia el resultado pero reduce la memoria) y ahora se manejan contextos de cientos de miles de palabras.</p>
+<div class="box py"><p>El programa entrena con PyTorch un Transformer de solo decodificador (2 capas, 4 cabezas, \(d=64\)) como modelo de lenguaje con las mismas 2.400 oraciones y el mismo vocabulario del capítulo 25, y compara su perplejidad con la de Kneser–Ney.</p>
+<div class="py" data-py="30-transformer"></div></div>
+<div class="box read"><ul>
+<li><b>Tamaño</b>: 535.729 parámetros para un vocabulario de 3.633 símbolos; la mayoría están en las capas de embeddings y de salida (2 × 3.633 × 64 ≈ 465.000), no en los bloques.</li>
+<li><b>Perplejidad en prueba</b>: 161,2 tras una época; 111,4 en la quinta; <b>104,4 en la octava</b>; después, empeora: 105,3 (décima), 120,8 (15.ª), 147,6 (20.ª), 183,8 (25.ª) y 246,2 (30.ª), mientras la pérdida de entrenamiento sigue bajando (de 5,5 a 3,1). Es sobreajuste puro: con 43.000 palabras, el modelo memoriza.</li>
+<li><b>Comparación</b>: el mejor Transformer (104,4) iguala al trigrama de Kneser–Ney (103,2) y al bigrama (102,2). No gana. Con un corpus tan pequeño los métodos de recuento bien suavizados son muy competitivos; la ventaja de los Transformer aparece con cientos de millones de palabras, donde los n-gramas no pueden crecer.</li>
+<li><b>Las cabezas</b>: en el modelo de la mejor época, las cuatro cabezas de la última capa dan entre 0,07 y 0,14 de su atención a la palabra anterior (una atención uniforme daría 0,132) y entre 0,07 y 0,23 a la propia palabra. Casi no se han especializado: la «cabeza de la palabra anterior» o la «del sujeto» de los modelos grandes aparecen con muchos más datos y capas.</li>
+<li>El curso valida su bloque de Transformer (salida y pesos de cada cabeza, con normalización previa y posterior, con y sin máscara causal) contra <code>nn.TransformerEncoderLayer</code> de PyTorch, y la codificación posicional contra NumPy (apéndice de validación).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Transformer = atención + red prealimentada + residuales + normalización, apilados; se procesa toda la secuencia en paralelo.</li>
+<li>Autoatención: Q, K, V proyectadas con matrices aprendidas; multicabeza: varias atenciones en paralelo.</li>
+<li>Sin codificación posicional no se distingue el orden; la sinusoidal depende solo de la distancia relativa en el producto escalar.</li>
+<li>La máscara causal define los modelos de lenguaje; sin máscara, los codificadores; con atención cruzada, los codificador–decodificador.</li>
+<li>Coste O(n²) en la longitud; con pocos datos, un Transformer puede igualar pero no superar a un n-grama.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Con d = 512 y h = 8 cabezas, ¿qué dimensión tiene cada cabeza?
+<details><summary>Respuesta</summary><p>d_k = 512/8 = 64.</p></details></li>
+<li><span class="lvl">Básico</span>¿Cuántos parámetros tiene la atención multicabeza (con sesgos) para d = 512?
+<details><summary>Respuesta</summary><p>4d² + 4d = 4·262.144 + 2.048 = 1.050.624 (W_Q, W_K, W_V y W_O).</p></details></li>
+<li><span class="lvl">Intermedio</span>Una secuencia de 1.000 palabras con 8 cabezas: ¿cuántos pesos de atención hay en una capa? ¿Y con 4.000 palabras?
+<details><summary>Respuesta</summary><p>8 · 1.000² = 8 millones; con 4.000: 8 · 16 millones = 128 millones: cuadruplicar la longitud multiplica por 16 la memoria de la matriz de atención.</p></details></li>
+<li><span class="lvl">Intermedio</span>Calcule PE(1, 0) y PE(1, 1) con d = 4.
+<details><summary>Respuesta</summary><p>PE(1, 0) = sin(1/10000⁰) = sin 1 = 0,841; PE(1, 1) = cos 1 = 0,540.</p></details></li>
+<li><span class="lvl">Avanzado</span>¿Por qué un modelo de lenguaje con atención causal puede entrenarse con toda la frase a la vez, en vez de palabra a palabra como una RNN?
+<details><summary>Respuesta</summary><p>Con la máscara causal, la posición t solo atiende a las posiciones ≤ t, así que se pueden calcular a la vez las predicciones de todas las posiciones, cada una con su historia correcta, en una sola pasada y en paralelo. Una RNN debe calcular h_t después de h_{t−1}.</p></details></li>
+</ol>
+<h3>Autoevaluación</h3>
+<div class="sim" data-sim="quiz" data-cap="transformer" data-title="Autoevaluación del capítulo 30"></div>
+<div class="box links"><ul>
+<li><a href="https://arxiv.org/abs/1706.03762">Vaswani y otros (2017) — Attention is all you need</a><small>El artículo original del Transformer.</small></li>
+<li><a href="https://jalammar.github.io/illustrated-transformer/">Alammar — The illustrated Transformer</a><small>Explicación ilustrada paso a paso.</small></li>
+<li><a href="https://nlp.seas.harvard.edu/annotated-transformer/">Harvard NLP — The annotated Transformer</a><small>El artículo comentado con código de PyTorch.</small></li>
+<li><a href="https://pytorch.org/docs/stable/generated/torch.nn.TransformerEncoderLayer.html">PyTorch — TransformerEncoderLayer</a><small>La capa con la que el curso valida su bloque.</small></li>
+<li><a href="https://arxiv.org/abs/2104.09864">Su y otros (2021) — RoFormer: Enhanced Transformer with rotary position embedding</a><small>Los embeddings rotatorios (RoPE) usados por muchos modelos actuales.</small></li>
+</ul></div>
+</section>
+</template>

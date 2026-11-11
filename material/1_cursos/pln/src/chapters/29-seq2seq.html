@@ -1,0 +1,90 @@
+<template class="chapter-src" data-id="seq2seq" data-num="29" data-title="Secuencia a secuencia y atención" data-part="Parte VII · Redes y modelos grandes" data-short="Codificador–decodificador; cuello de botella; atención (consulta, clave, valor); mapas de atención; enmascaramiento causal; decodificación voraz y por haz; forzado del maestro">
+<p class="lead">Traducir «3 de mayo de 2021» a «2021-05-03» o una frase del español al inglés exige leer una secuencia y escribir otra, de otra longitud y, a menudo, en otro orden. Para eso se inventó el modelo <b>secuencia a secuencia</b> (seq2seq): un <b>codificador</b> que lee la entrada y un <b>decodificador</b> que genera la salida. La versión original con redes recurrentes tenía un defecto serio, y su solución, la <b>atención</b>, es la idea que da lugar al Transformer y a los grandes modelos de lenguaje.</p>
+
+<section>
+<h2>El codificador–decodificador</h2>
+<p>El codificador (una RNN, capítulo 28) lee la entrada \(x_1,\dots,x_n\) y produce un estado final \(\mathbf h_n\). El decodificador es otra RNN, inicializada con ese estado, que genera la salida palabra a palabra: en cada paso \(t\) recibe la palabra anterior \(y_{t-1}\) y su estado, y calcula una distribución sobre el vocabulario \(P(y_t\mid y_{\lt t},x)\). La salida más probable se elige y se alimenta al paso siguiente hasta que aparece el símbolo de fin <code>&lt;/s&gt;</code>. Se entrena minimizando la entropía cruzada de cada palabra de referencia:</p>
+<div class="eq key" data-name="Modelo secuencia a secuencia">\[P(y\mid x)=\prod_{t=1}^{m}P(y_t\mid y_{\lt t},x),\qquad\mathcal L=-\sum_{t=1}^{m}\log P\bigl(y_t^{\text{ref}}\mid y^{\text{ref}}_{\lt t},x\bigr)\]</div>
+<p>Durante el entrenamiento se usa el <b>forzado del maestro</b> (<i>teacher forcing</i>): en cada paso el decodificador recibe la palabra correcta anterior, no la que él mismo predijo. Es rápido y estable, pero crea el <i>sesgo de exposición</i>: en la prueba, un error se arrastra porque el modelo nunca vio sus propios errores al entrenar.</p>
+<p>Las tareas de este tipo son muchas: traducción automática, resumen, diálogo, corrección gramatical, conversión de voz a texto, generación de código, normalización de fechas o de números.</p>
+<h3>El cuello de botella</h3>
+<p>Todo lo que el decodificador sabe de la entrada es un único vector, de tamaño fijo. Para «3 de mayo de 2021» hay que meter día, mes y año en, digamos, 48 números; para una frase de 40 palabras es mucho peor. Además, el decodificador necesita datos distintos en cada momento: al escribir el año, debe «mirar» al final de la entrada; al escribir el día, al principio.</p>
+</section>
+
+<section>
+<h2>Atención</h2>
+<p>Bahdanau, Cho y Bengio (2014) propusieron que el decodificador, en cada paso, <b>consulte</b> todos los estados del codificador y se quede con una mezcla ponderada de ellos. Los pesos los decide la propia red. En el lenguaje de consultas, claves y valores:</p>
+<ul>
+<li>la <b>consulta</b> \(\mathbf q\) es el estado actual del decodificador («¿qué necesito ahora?»),</li>
+<li>cada <b>clave</b> \(\mathbf k_j\) describe la posición \(j\) de la entrada («esto es lo que tengo»),</li>
+<li>cada <b>valor</b> \(\mathbf v_j\) es la información de esa posición que se copia si se atiende a ella.</li>
+</ul>
+<div class="eq key" data-name="Atención por producto escalar escalado">\[\alpha_j=\operatorname{softmax}_j\!\left(\frac{\mathbf q\cdot\mathbf k_j}{\sqrt{d_k}}\right),\qquad\mathbf c=\sum_{j}\alpha_j\,\mathbf v_j,\qquad\text{en matrices:}\ \ \operatorname{Atención}(Q,K,V)=\operatorname{softmax}\!\left(\frac{QK^{\top}}{\sqrt{d_k}}\right)V\]</div>
+<p>El vector de contexto \(\mathbf c\) se concatena con la entrada del decodificador y con su salida. Los pesos \(\alpha\) son positivos y suman 1: son una distribución sobre las posiciones de la entrada, y se pueden dibujar como un mapa de calor. La división por \(\sqrt{d_k}\) evita que, en dimensiones altas, los productos escalares sean tan grandes que el softmax se sature y sus gradientes se anulen. La <b>temperatura</b> del softmax controla la concentración: alta, reparte la atención; baja, la concentra en una sola posición.</p>
+<div class="sim" data-sim="atencion-calculo" data-title="Calcular la atención de una palabra sobre las demás con vectores reales"></div>
+<div class="sim-guide"><ul>
+<li>De «el presidente del gobierno anunció una decisión sobre el partido» solo quedan las cinco palabras de contenido (los vectores del capítulo 26 son de palabras de contenido). Con la consulta «gobierno» (posición 2), los pesos son 0,50 para sí misma, 0,275 para «presidente» y 0,07–0,08 para las demás: los vectores ponen cerca las palabras del campo político.</li>
+<li>Suba la temperatura a 4: los pesos se uniformizan y la entropía llega a 2,29 bits, casi el máximo log₂5 = 2,32. Bájela a 0,2: casi todo el peso va a una sola palabra (0,27 bits).</li>
+<li>Desactive «Dividir por √d»: las puntuaciones crecen √20 ≈ 4,5 veces y la entropía baja de 1,84 a 0,35 bits: el softmax se concentra casi del todo en una palabra, aunque la información sea la misma. Con vectores de cientos de dimensiones el efecto es mayor y, sin la escala, el entrenamiento se atasca.</li>
+<li>La matriz completa es la autoatención: cada palabra mira a las demás. En el Transformer (capítulo 30) las consultas, claves y valores no son los vectores originales, sino proyecciones aprendidas distintas, por lo que la red aprende qué debe mirarse.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Un experimento: fechas con y sin atención</h2>
+<p>Para ver el efecto se entrena el mismo modelo, con y sin atención, a convertir fechas del tipo «16 de septiembre de 2006» en «2006-09-16», carácter a carácter. Es un problema pequeño pero revelador: el orden de salida (año, mes, día) es el inverso del de entrada, y el mes se escribe con letras que hay que traducir a dígitos.</p>
+<div class="sim" data-sim="s2s-fechas" data-title="Mapa de atención aprendido y curva de aprendizaje con y sin atención"></div>
+<div class="sim-guide"><ul>
+<li>En el mapa, las filas son los caracteres de la salida y las columnas, los de la entrada. Con «16 de septiembre de 2006», los cuatro primeros caracteres de salida («2006») atienden, uno a uno, a los cuatro últimos de la entrada; los dos del mes («09») atienden a letras de «septiembre»; los del día («16») miran al «16» y al «de» que lo sigue, que marca dónde acaba el número. La red ha aprendido una alineación <b>no monótona</b> sin que nadie se lo enseñara.</li>
+<li>Compare los resultados de cada ejemplo: el modelo sin atención suele acertar el año y falla el día o el mes; por ejemplo escribe «2014-07-01» en lugar de «2014-07-02».</li>
+<li>La curva de aprendizaje: con atención, el modelo llega al 92 % con solo 100 pasos y al 100 % con 200; sin atención, tras 1.500 pasos solo acierta el 24,9 % de las fechas completas.</li>
+</ul></div>
+<div class="box py"><p>El programa define con PyTorch un codificador GRU y un decodificador GRUCell, con y sin atención, los entrena con 20.000 fechas y mide el porcentaje de fechas exactas en 1.000 de prueba. También guarda las atenciones que usa la simulación.</p>
+<div class="py" data-py="29-seq2seq"></div></div>
+<div class="box read"><ul>
+<li><b>Sin atención</b> (25.430 parámetros): pérdida 0,237, 24,9 % de fechas exactas, 88,2 % de caracteres correctos. <b>Con atención</b> (33.014 parámetros, es decir, 7.584 más): pérdida 0,000, 100 % de fechas exactas.</li>
+<li><b>Curva</b>: con atención, 4,4 % → 92,0 % → 100,0 % a los 50, 100 y 200 pasos. Sin atención, 0,0 %, 0,0 %, 0,8 %, 3,0 %, 9,4 % y 24,9 % a los 50, 100, 200, 400, 800 y 1.500 pasos: aprende despacio, y en 1.500 pasos aún no ha llegado.</li>
+<li><b>Errores típicos sin atención</b>: «2014-07-01» por «2014-07-02»; «2006-10-09» por «2006-09-16»; «2015-06-16» por «2015-05-16». El modelo sin atención conserva el sentido general de la fecha, pero confunde los datos finos: no puede releer la entrada.</li>
+<li>Con 128 unidades y más pasos, el modelo sin atención también llega al 100 % en este problema (se comprobó en una ejecución previa): la atención no es imprescindible para un problema tan corto; es sobre todo una ayuda enorme para aprender rápido y para entradas largas.</li>
+<li>El curso valida su implementación de la atención (pesos, salida y versión causal) contra <code>scaled_dot_product_attention</code> de PyTorch (apéndice de validación).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Generar: voraz, por haz y otras</h2>
+<p>El decodificador entrega, en cada paso, una distribución. Cómo elegir la secuencia completa es un problema aparte. La decodificación <b>voraz</b> toma la palabra más probable en cada paso; es rápida, pero un error temprano no se corrige. La <b>búsqueda por haz</b> (<i>beam search</i>) mantiene las \(B\) mejores secuencias parciales (ordenadas por log-probabilidad) y las expande todas en cada paso; con \(B\) entre 4 y 10 mejora claramente la traducción. Para texto abierto (chat, historias) se muestrea con temperatura, <i>top-k</i> o <i>top-p</i> (capítulo 32).</p>
+<p>En la <b>atención del decodificador</b>, cuando todo el texto de referencia se procesa a la vez (como en el Transformer), cada posición debe ver solo las anteriores. Eso se logra con una <b>máscara causal</b>: las puntuaciones de las posiciones futuras se fijan en \(-\infty\) antes del softmax, y sus pesos resultan exactamente 0.</p>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Seq2seq = codificador (lee) + decodificador (escribe); se entrena con forzado del maestro.</li>
+<li>Resumir la entrada en un vector fijo es un cuello de botella; la atención deja que el decodificador consulte todas las posiciones.</li>
+<li>Atención = softmax(QKᵀ/√d)·V: consulta, claves y valores; los pesos son una distribución y se pueden visualizar.</li>
+<li>La máscara causal impide mirar al futuro; la autoatención usa la misma secuencia para Q, K y V.</li>
+<li>Decodificación voraz o por haz; el muestreo se verá con los grandes modelos.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Las puntuaciones q·k de una consulta con tres claves son (2, 1, 0). Calcule los pesos de atención.
+<details><summary>Respuesta</summary><p>e² = 7,389; e¹ = 2,718; e⁰ = 1; suma = 11,107. Pesos: 0,665; 0,245; 0,090.</p></details></li>
+<li><span class="lvl">Básico</span>Los pesos son (0,5; 0,5) sobre los valores (1, 0) y (0, 1). ¿Cuál es el vector de contexto?
+<details><summary>Respuesta</summary><p>c = 0,5·(1, 0) + 0,5·(0, 1) = (0,5; 0,5).</p></details></li>
+<li><span class="lvl">Intermedio</span>Con d_k = 64, ¿por qué número se dividen las puntuaciones? Si q·k = 16, ¿qué puntuación escalada resulta?
+<details><summary>Respuesta</summary><p>Por √64 = 8; 16/8 = 2.</p></details></li>
+<li><span class="lvl">Intermedio</span>Con búsqueda por haz de tamaño 3 y un vocabulario de 5.000 palabras, ¿cuántas expansiones candidatas se evalúan en cada paso y cuántas se conservan?
+<details><summary>Respuesta</summary><p>3 × 5.000 = 15.000 candidatas, de las que se conservan las 3 mejores por log-probabilidad acumulada. La voraz evalúa 5.000 y se queda con 1.</p></details></li>
+<li><span class="lvl">Avanzado</span>Explique el sesgo de exposición del forzado del maestro y una forma de mitigarlo.
+<details><summary>Respuesta</summary><p>Al entrenar, el decodificador siempre recibe la palabra de referencia anterior; al generar, recibe la suya, que puede ser errónea, y entra en estados que nunca vio. Se mitiga con muestreo programado (a veces se alimenta la predicción del modelo), con entrenamiento por secuencia completa (por ejemplo, con aprendizaje por refuerzo) o con búsqueda por haz y reordenación.</p></details></li>
+</ol>
+<h3>Autoevaluación</h3>
+<div class="sim" data-sim="quiz" data-cap="seq2seq" data-title="Autoevaluación del capítulo 29"></div>
+<div class="box links"><ul>
+<li><a href="https://arxiv.org/abs/1409.3215">Sutskever, Vinyals y Le (2014) — Sequence to sequence learning with neural networks</a><small>El artículo que popularizó el modelo codificador–decodificador.</small></li>
+<li><a href="https://arxiv.org/abs/1409.0473">Bahdanau, Cho y Bengio (2014) — Neural machine translation by jointly learning to align and translate</a><small>Introduce la atención en traducción automática.</small></li>
+<li><a href="https://arxiv.org/abs/1508.04025">Luong, Pham y Manning (2015) — Effective approaches to attention-based neural machine translation</a><small>Atención por producto escalar y variantes globales y locales.</small></li>
+<li><a href="https://arxiv.org/abs/1406.1078">Cho y otros (2014) — Learning phrase representations using RNN encoder–decoder</a><small>La GRU y el codificador–decodificador para traducción.</small></li>
+<li><a href="https://distill.pub/2016/augmented-rnns/">Olah y Carter (2016) — Attention and augmented recurrent neural networks</a><small>Explicación ilustrada de la atención.</small></li>
+</ul></div>
+</section>
+</template>

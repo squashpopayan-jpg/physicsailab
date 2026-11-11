@@ -1,0 +1,268 @@
+<template class="chapter-src" data-id="ondas" data-num="13" data-title="Ondas y sonido" data-part="Parte III · Ondas y fluidos" data-short="La ecuación de onda de la cuerda y los modos de cuerdas y tubos, la velocidad del sonido en un gas, la intensidad y el decibelio, el efecto Doppler y la velocidad de grupo en un medio dispersivo">
+<p class="lead">Una onda es una perturbación que se propaga sin transportar materia. Una sola ecuación, \(\partial_t^2\psi=v^2\partial_x^2\psi\), describe la cuerda de una guitarra, el sonido en el aire, las ondas en un cable y, con otra constante, la luz. Se deduce aquí aplicando la segunda ley de Newton a un elemento de cuerda y se extiende al sonido a partir de la continuidad, la ecuación de Euler y el comportamiento adiabático de un gas. Después se calculan la energía y la intensidad (de donde sale el decibelio), el efecto Doppler y la diferencia entre las velocidades de fase y de grupo cuando el medio es dispersivo, como el agua.</p>
+
+<deriv id="cuerda-modos" title="La ecuación de onda de la cuerda y los modos de cuerdas y tubos" tags="Ondas, Modos">
+<goal>La ecuación que gobierna las pequeñas vibraciones de una cuerda tensa, la velocidad de las ondas y las frecuencias propias de una cuerda fija en sus extremos y de los tubos sonoros.</goal>
+<given>
+<g>Cuerda de densidad lineal \(\mu\) con tensión \(T\) uniforme y desplazamientos transversales \(y(x,t)\) pequeños: \(\sin\theta\simeq\tan\theta=\partial_xy\).</g>
+<g>Segunda ley de Newton para el elemento entre \(x\) y \(x+\mathrm dx\), de masa \(\mu\,\mathrm dx\).</g>
+</given>
+<step op="Calcular la fuerza vertical neta sobre el elemento">
+\[F_y=T\sin\theta(x+\mathrm dx)-T\sin\theta(x)\simeq T\left[\frac{\partial y}{\partial x}\Big|_{x+\mathrm dx}-\frac{\partial y}{\partial x}\Big|_x\right]=T\frac{\partial^2y}{\partial x^2}\,\mathrm dx.\]
+<why>La diferencia de pendientes en los dos extremos es la derivada segunda por \(\mathrm dx\) (desarrollo de Taylor a primer orden).</why>
+</step>
+<step op="Aplicar la segunda ley y obtener la ecuación de onda">
+\[\mu\,\mathrm dx\,\frac{\partial^2y}{\partial t^2}=T\frac{\partial^2y}{\partial x^2}\,\mathrm dx\ \Longrightarrow\ \frac{\partial^2y}{\partial t^2}=v^2\frac{\partial^2y}{\partial x^2},\qquad v=\sqrt{\frac T\mu}.\]
+</step>
+<step op="Comprobar las soluciones de d'Alembert">
+\[y=f(x-vt)+g(x+vt)\ \Longrightarrow\ \partial_t^2y=v^2(f''+g'')=v^2\partial_x^2y.\]
+<why>Regla de la cadena: \(\partial_tf(x-vt)=-vf'\) y \(\partial_xf=f'\). \(f\) viaja hacia \(+x\) y \(g\) hacia \(-x\), sin cambiar de forma, con velocidad \(v\).</why>
+</step>
+<step op="Buscar modos estacionarios con los extremos fijos \(y(0)=y(L)=0\)">
+\[y=A\sin kx\cos\omega t,\ \ \omega=vk;\qquad \sin kL=0\ \Longrightarrow\ k_n=\frac{n\pi}L\ \Longrightarrow\ f_n=\frac{nv}{2L}.\]
+<why>Con la separación de variables, \(X''=-k^2X\) y \(T''=-\omega^2T\), con \(\omega=vk\). La condición en \(x=L\) cuantiza \(k\).</why>
+</step>
+<step op="Tubos sonoros: nodos de presión en los extremos abiertos">
+\[\text{abierto–abierto: }p\propto\sin kx\Rightarrow f_n=\frac{nc}{2L};\qquad \text{cerrado–abierto: }p\propto\cos kx,\ \cos kL=0\Rightarrow f_n=\frac{(2n-1)c}{4L}.\]
+<why>En el extremo abierto la presión es la atmosférica (nodo de presión). En el cerrado, el aire no se mueve (antinodo de presión, nodo de desplazamiento): solo se permiten armónicos impares.</why>
+</step>
+<result name="Ondas en cuerdas y tubos">\[v=\sqrt{\frac T\mu},\qquad f_n=\frac{nv}{2L};\qquad f_n^{(\text{cerrado})}=\frac{(2n-1)c}{4L}.\]</result>
+<vars>
+<v s="T" n="tensión" u="N"/>
+<v s="\mu" n="densidad lineal de masa" u="kg m^-1"/>
+<v s="v" n="velocidad de las ondas" u="m s^-1"/>
+<v s="L" n="longitud" u="m"/>
+<v s="f_n" n="frecuencia del armónico \(n\)" u="Hz"/>
+<v s="c" n="velocidad del sonido en el aire" u="m s^-1"/>
+<v s="k" n="número de onda" u="m^-1"/>
+</vars>
+<effects>
+<e>Cuerda de 0.65 m con \(T=70\) N y \(\mu=0.5\) g/m: \(v=374.2\) m/s y \(f_1=287.82\) Hz, \(f_2=575.64\) Hz, \(f_3=863.46\) Hz (serie armónica). Doblar la tensión sube \(f\) un 41 % (\(n_T=0.5\)): 407.0 Hz; doblar la longitud la baja a la mitad (\(n_L=-1\)); doblar \(\mu\) la baja un 29 % (\(n_\mu=-0.5\)).</e>
+<e>Un tubo abierto de 0.65 m en aire (343.2 m/s) suena a 264.0 Hz; uno cerrado, a 132.0 Hz (una octava más grave) con armónicos 3\(f_1\)=396.0 Hz, 5\(f_1\)…: por eso un clarinete (cerrado en un extremo, en el aspecto acústico) suena una octava más grave que una flauta de la misma longitud.</e>
+<e>La afinación de un instrumento de cuerda se hace con la tensión (\(f\propto\sqrt T\)); las notas se tocan acortando la longitud efectiva (\(f\propto1/L\)); y los graves usan cuerdas más pesadas (\(f\propto\mu^{-1/2}\)).</e>
+</effects>
+<limits>
+<l>Dimensiones: \([T/\mu]=\mathsf M\mathsf L\mathsf T^{-2}/(\mathsf M\mathsf L^{-1})=\mathsf L^2\mathsf T^{-2}\). ✓</l>
+<l>La rigidez de la cuerda real hace que los armónicos sean ligeramente más agudos que \(nf_1\) (inarmonicidad), y en los tubos la «corrección de extremo» (≈ 0.6 veces el radio) alarga el tubo efectivo.</l>
+</limits>
+<explore sim="cuerda-modos" title="Cuerda tensa y tubos: velocidad, frecuencias y longitud de onda de cada armónico"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (\(T=70\), \(\mu=0.5\) g/m, \(L=0.65\), \(n=1\)): \(v=374.17\) m/s, \(f_1=287.82\) Hz, \(\lambda=1.3\) m, tubo abierto 264.0 Hz y cerrado 132.0 Hz.</li>
+<li>Con \(n=3\): \(f_3=863.46\) Hz, tubo abierto 792.0 Hz y cerrado 660.0 Hz. La tabla de sensibilidad de \(f_n\) da \(n_T=0.5\), \(n_\mu=-0.5\), \(n_L=-1\).</li>
+</ul></div>
+</deriv>
+
+<deriv id="sonido-gas" title="La velocidad del sonido en un gas ideal" tags="Ondas, Termodinámica">
+<goal>La velocidad de propagación de una pequeña perturbación de presión en un gas, \(c=\sqrt{\gamma RT/M}\).</goal>
+<given>
+<g>Pequeñas perturbaciones alrededor del reposo: densidad \(\rho=\rho_0+\rho'\), presión \(p=p_0+p'\) y velocidad \(u\), todas de primer orden.</g>
+<g>Conservación de la masa y segunda ley de Newton (ecuación de Euler); la compresión es tan rápida que no hay tiempo para conducción de calor: proceso adiabático, \(p\rho^{-\gamma}=\text{constante}\) (Laplace).</g>
+</given>
+<step op="Linealizar la continuidad y la ecuación de Euler (una dimensión)">
+\[\frac{\partial\rho'}{\partial t}+\rho_0\frac{\partial u}{\partial x}=0,\qquad \rho_0\frac{\partial u}{\partial t}=-\frac{\partial p'}{\partial x}.\]
+</step>
+<step op="Eliminar \(u\)">
+\[\frac{\partial^2\rho'}{\partial t^2}=-\rho_0\frac\partial{\partial x}\frac{\partial u}{\partial t}=\frac{\partial^2p'}{\partial x^2}.\]
+<why>Se deriva la primera ecuación respecto de \(t\) y se usa la segunda.</why>
+</step>
+<step op="Relacionar \(p'\) con \(\rho'\) por el proceso adiabático">
+\[p'=\left(\frac{\partial p}{\partial\rho}\right)_{\!s}\rho'=\frac{\gamma p_0}{\rho_0}\,\rho'\equiv c^2\rho'.\]
+<why>De \(p=K\rho^\gamma\): \(\mathrm dp/\mathrm d\rho=\gamma p/\rho\).</why>
+</step>
+<step op="Obtener la ecuación de onda">
+\[\frac{\partial^2\rho'}{\partial t^2}=c^2\frac{\partial^2\rho'}{\partial x^2},\qquad c=\sqrt{\frac{\gamma p_0}{\rho_0}}.\]
+</step>
+<step op="Gas ideal: \(p_0/\rho_0=RT/M\)">
+\[c=\sqrt{\frac{\gamma RT}M}.\]
+<why>De \(p_0V=nRT\) con \(\rho_0=nM/V\). La velocidad del sonido solo depende de la temperatura y de la composición, no de la presión.</why>
+</step>
+<result name="Velocidad del sonido">\[c=\sqrt{\frac{\gamma p_0}{\rho_0}}=\sqrt{\frac{\gamma RT}M}.\]</result>
+<vars>
+<v s="c" n="velocidad del sonido" u="m s^-1"/>
+<v s="\gamma" n="coeficiente adiabático \(c_p/c_v\)" u="1"/>
+<v s="R" n="constante de los gases" u="kg m^2 s^-2 mol^-1 K^-1"/>
+<v s="T" n="temperatura absoluta" u="K"/>
+<v s="M" n="masa molar" u="kg mol^-1"/>
+<v s="p_0" n="presión de equilibrio" u="Pa"/>
+<v s="\rho_0" n="densidad de equilibrio" u="kg m^-3"/>
+</vars>
+<effects>
+<e>Aire (\(M=28.96\) g/mol, \(\gamma=1.4\)): \(c=343.26\) m/s a 20 °C y 331.35 m/s a 0 °C; la ecuación isoterma de Newton daba 290.11 m/s, un 15.5 % menos (\(1/\sqrt{1.4}=0.845\)), el error que corrigió Laplace en 1816.</e>
+<e>Helio (\(M=4.003\), \(\gamma=5/3\)): 1007.4 m/s a 20 °C (por eso la voz se agudiza al inhalarlo: cambian las frecuencias de resonancia del tracto vocal); hidrógeno, 1305.6 m/s; CO₂ (44.01, 1.289), 267.2 m/s. \(c\propto\sqrt T\) (\(n_T=0.5\)) y \(\propto M^{-1/2}\).</e>
+<e>La velocidad no depende de la presión ni de la frecuencia (aire no dispersivo): en una sinfonía el sonido de cada instrumento llega con la misma velocidad.</e>
+</effects>
+<limits>
+<l>Dimensiones: \([\gamma RT/M]=\mathsf M\mathsf L^2\mathsf T^{-2}\mathsf{mol}^{-1}\mathsf K^{-1}\,\mathsf K/(\mathsf M\,\mathsf{mol}^{-1})=\mathsf L^2\mathsf T^{-2}\). ✓</l>
+<l>Vale para amplitudes pequeñas (acústica lineal); con amplitudes grandes (ondas de choque) la velocidad depende de la amplitud. En frecuencias muy altas (GHz) la absorción y la relajación hacen que \(c\) dependa de \(f\).</l>
+</limits>
+<explore sim="sonido-gas" title="Velocidad del sonido en un gas según temperatura, masa molar y γ"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (aire a 293.15 K): \(c=343.26\) m/s, valor de Newton 290.11 m/s y cociente 0.84515.</li>
+<li>Con \(M=4.0026\) g/mol y γ = 1.667: \(c=1007.4\) m/s. Con \(T=273.15\) K y el aire: 331.35 m/s (+0.6 m/s por °C cerca de 20 °C).</li>
+</ul></div>
+</deriv>
+
+<deriv id="sonido-intensidad" title="Energía, intensidad y nivel sonoro en decibelios" tags="Ondas, Sonido">
+<goal>La potencia que transporta una onda sonora, su intensidad a una distancia de la fuente y el nivel sonoro \(\beta\) en decibelios.</goal>
+<given>
+<g>Onda sonora plana \(s=s_0\cos(kx-\omega t)\), \(u=\dot s\) y la ecuación de Euler \(\rho\,\partial_tu=-\partial_xp'\) (deducción anterior).</g>
+<g>La intensidad es la potencia media por unidad de área: \(I=\langle p'u\rangle\).</g>
+</given>
+<step op="Relacionar la amplitud de presión con la de desplazamiento">
+\[u=u_0\cos(kx-\omega t),\ \ \partial_xp'=-\rho\,\partial_tu=-\rho\omega u_0\sin(kx-\omega t)\ \Longrightarrow\ p'=\frac{\rho\omega u_0}k\cos(kx-\omega t)=\rho c\,u_0\cos(kx-\omega t),\]
+con \(u_0=\omega s_0\), de modo que \(p_0=\rho c\,\omega s_0\).
+<why>Se integra la ecuación de Euler respecto de \(x\) con \(\omega=ck\): presión y velocidad están en fase.</why>
+</step>
+<step op="Intensidad media">
+\[I=\langle p'u\rangle=\tfrac12p_0u_0=\frac{p_0^2}{2\rho c}=\tfrac12\rho c\,\omega^2s_0^2=\frac{p_\text{rms}^2}{\rho c}.\]
+<why>El promedio de \(\sin^2\) es \(\tfrac12\); \(u_0=\omega s_0=p_0/\rho c\).</why>
+</step>
+<step op="Fuente puntual isótropa: conservación de la potencia">
+\[I(r)=\frac P{4\pi r^2}.\]
+</step>
+<step op="Definir el nivel sonoro">
+\[\beta=10\log_{10}\frac I{I_0},\qquad I_0=10^{-12}\ \mathrm{W/m^2}\ (p_\text{ref}=20\ \mu\mathrm{Pa}).\]
+<why>El oído responde de forma logarítmica y cubre doce órdenes de magnitud. \(I_0\) corresponde aproximadamente al umbral de audición a 1 kHz.</why>
+</step>
+<step op="Consecuencias">
+\[\Delta\beta=-20\log_{10}\frac{r_2}{r_1}\ \ (\text{duplicar }r:-6.02\ \mathrm{dB}),\qquad \Delta\beta=+10\log_{10}2=+3.01\ \mathrm{dB}\ \ (\text{duplicar }P).\]
+</step>
+<result name="Intensidad y decibelios">\[I=\frac{p_\text{rms}^2}{\rho c}=\frac P{4\pi r^2},\qquad \beta=10\log_{10}\frac I{10^{-12}\,\mathrm{W/m^2}}.\]</result>
+<vars>
+<v s="I" n="intensidad" u="W m^-2"/>
+<v s="P" n="potencia acústica" u="W"/>
+<v s="r" n="distancia" u="m"/>
+<v s="p_0" n="amplitud de presión" u="Pa"/>
+<v s="\rho" n="densidad del aire" u="kg m^-3"/>
+<v s="c" n="velocidad del sonido" u="m s^-1"/>
+<v s="s_0" n="amplitud de desplazamiento" u="m"/>
+<v s="\omega" n="frecuencia angular" u="rad s^-1"/>
+<v s="\beta" n="nivel sonoro" u="1"/>
+</vars>
+<effects>
+<e>Una fuente de 1 W a 10 m: \(I=7.958\times10^{-4}\) W/m², \(\beta=89.01\) dB, \(p_\text{rms}=0.5734\) Pa y, a 1 kHz, la amplitud de desplazamiento es \(s_0=0.312\ \mu\mathrm m\): el oído detecta movimientos de moléculas menores que un micrómetro. A 100 m, 69.01 dB (20 dB menos por cada década de distancia).</e>
+<e>Una fuente de 10 µW a 1 m (conversación normal): 59.01 dB y \(p_\text{rms}=0.0181\) Pa, unas \(9\times10^{-7}\) veces la presión atmosférica. La presión de referencia, 20 µPa, corresponde a \(I=9.7\times10^{-13}\) W/m² con \(\rho c=413.2\) kg/(m²·s).</e>
+<e>\(I\propto P\) y \(I\propto r^{-2}\); \(s_0\) a una frecuencia dada crece como \(\sqrt I\) y decrece como \(1/f\): a bajas frecuencias el mismo nivel sonoro exige desplazamientos mucho mayores.</e>
+</effects>
+<limits>
+<l>Dimensiones: \([p^2/\rho c]=\mathsf M^2\mathsf L^{-2}\mathsf T^{-4}/(\mathsf M\mathsf L^{-3}\mathsf L\mathsf T^{-1})=\mathsf M\mathsf T^{-3}\), una intensidad (W/m²). ✓ El argumento del logaritmo es adimensional.</l>
+<l>Vale para campo libre (sin reflexiones ni absorción); en el aire real hay absorción dependiente de la frecuencia y del clima. El nivel sonoro percibido depende además de la frecuencia (curvas de Fletcher–Munson; unidades dB(A)).</l>
+</limits>
+<explore sim="sonido-int" title="Sonido de una fuente puntual: intensidad, decibelios, presión y desplazamiento"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (1 W, 10 m, 1 kHz): \(I=7.9577\times10^{-4}\) W/m², \(\beta=89.008\) dB, \(p_\text{rms}=0.57343\) Pa y \(s_0=3.1235\times10^{-7}\) m.</li>
+<li>Seleccione \(r\) en el eje (log–log): la intensidad cae con pendiente −2. El nivel \(\beta\) baja 6.02 dB por doblar la distancia.</li>
+</ul></div>
+</deriv>
+
+<deriv id="doppler" title="El efecto Doppler acústico" tags="Ondas, Sonido">
+<goal>El cambio de frecuencia que percibe un observador cuando la fuente, el observador o ambos se mueven respecto del aire.</goal>
+<given>
+<g>El sonido viaja a velocidad \(c\) respecto del aire, independiente del movimiento de la fuente. La fuente emite una cresta cada \(T_s=1/f\).</g>
+<g>Velocidades positivas hacia el otro: \(v_s\) de la fuente hacia el observador y \(v_o\) del observador hacia la fuente.</g>
+</given>
+<step op="Fuente en movimiento: la distancia entre crestas">
+\[\lambda'=(c-v_s)\,T_s=\frac{c-v_s}f.\]
+<why>Entre dos emisiones, la primera cresta avanza \(cT_s\) y la fuente \(v_sT_s\) en el mismo sentido: las crestas quedan más juntas cuando la fuente se acerca.</why>
+</step>
+<step op="Observador en movimiento: velocidad relativa de las crestas">
+\[v_\text{rel}=c+v_o.\]
+</step>
+<step op="Frecuencia con que el observador recibe las crestas">
+\[f'=\frac{v_\text{rel}}{\lambda'}=f\,\frac{c+v_o}{c-v_s}.\]
+</step>
+<step op="Casos particulares y aproximación para velocidades pequeñas">
+\[v_o=0:\ f'=\frac{f}{1-v_s/c};\qquad v_s=0:\ f'=f\Big(1+\frac{v_o}c\Big);\qquad \Delta f\simeq f\,\frac{v_s+v_o}c\ \ (v\ll c).\]
+<why>Desarrollo binomial \((1-x)^{-1}\simeq1+x\) (capítulo 2).</why>
+</step>
+<step op="Fuente supersónica">
+\[v_s\ge c:\ \text{no hay solución}\ \Longrightarrow\ \text{cono de Mach},\quad \sin\vartheta=\frac c{v_s}.\]
+<why>Las crestas se acumulan sobre un cono: llega todo a la vez como una onda de choque (el «estampido sónico»).</why>
+</step>
+<result name="Efecto Doppler">\[f'=f\,\frac{c+v_o}{c-v_s}.\]</result>
+<vars>
+<v s="f" n="frecuencia emitida" u="Hz"/>
+<v s="f'" n="frecuencia percibida" u="Hz"/>
+<v s="c" n="velocidad del sonido" u="m s^-1"/>
+<v s="v_s" n="velocidad de la fuente (hacia el observador)" u="m s^-1"/>
+<v s="v_o" n="velocidad del observador (hacia la fuente)" u="m s^-1"/>
+<v s="\lambda'" n="longitud de onda en el medio" u="m"/>
+</vars>
+<effects>
+<e>Ambulancia de 700 Hz con \(c=343\) m/s: acercándose a 30 m/s, \(f'=767.09\) Hz; alejándose, 643.70 Hz; un observador que se acerca a 10 m/s a una fuente fija, 720.41 Hz; ambos a la vez (30 y 10 m/s), 789.46 Hz; observador que se aleja a 10 m/s, 679.59 Hz.</e>
+<e>No es simétrico: la fuente que se mueve cambia la longitud de onda (\(\lambda'=0.4471\) m frente a 0.4900 m), y el observador que se mueve solo cambia la velocidad de llegada. A \(v_s=100\) m/s, \(f'=988.07\) Hz y el efecto crece sin límite cuando \(v_s\to c\).</e>
+<e>La caída de tono \(f'_\text{acerca}/f'_\text{aleja}=(c+v)/(c-v)=1.19\) a 30 m/s es de casi tres semitonos: es lo que se oye al pasar la sirena.</e>
+</effects>
+<limits>
+<l>Dimensiones: \(f'\) y \(f\) tienen las mismas; \((c+v_o)/(c-v_s)\) es adimensional. ✓</l>
+<l>Vale para velocidades medidas respecto del aire; para la luz no existe medio y el efecto depende solo de la velocidad relativa (capítulo 27). Si la fuente se mueve con ángulo \(\vartheta\), se usa la componente de la velocidad a lo largo de la línea de visión.</l>
+</limits>
+<explore sim="doppler" title="Efecto Doppler: frecuencia percibida según el movimiento de la fuente y del observador"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (700 Hz, fuente a 30 m/s hacia el observador): \(f'=767.09\) Hz, \(\Delta f=67.09\) Hz y \(\lambda'=0.44714\) m.</li>
+<li>Seleccione \(v_s\) en el eje: la curva es una hipérbola, \(f'=\infty\) cuando \(v_s\to c\); para valores negativos (fuente que se aleja) \(f'\) disminuye suavemente.</li>
+</ul></div>
+</deriv>
+
+<deriv id="grupo" title="Velocidad de fase y de grupo en las ondas del agua" tags="Ondas, Dispersión">
+<goal>La velocidad con que viaja un paquete de ondas (\(v_g=\mathrm d\omega/\mathrm dk\)) comparada con la de las crestas (\(v_p=\omega/k\)), y su valor para ondas de gravedad y capilares en el agua.</goal>
+<given>
+<g>Relación de dispersión de ondas en agua profunda con gravedad y capilaridad (capítulo 1): \(\omega^2=gk+\dfrac{\sigma k^3}\rho\).</g>
+<g>Identidad \(\cos a+\cos b=2\cos\frac{a-b}2\cos\frac{a+b}2\).</g>
+</given>
+<step op="Superponer dos ondas de frecuencias próximas \((k\pm\Delta k,\ \omega\pm\Delta\omega)\)">
+\[y=\cos[(k-\Delta k)x-(\omega-\Delta\omega)t]+\cos[(k+\Delta k)x-(\omega+\Delta\omega)t].\]
+</step>
+<step op="Aplicar la identidad suma–producto">
+\[y=2\cos(\Delta k\,x-\Delta\omega\,t)\,\cos(kx-\omega t).\]
+<why>El segundo factor es la «portadora» (las crestas) y el primero, una envolvente que varía despacio: los batidos de los capítulos anteriores, ahora en el espacio.</why>
+</step>
+<step op="Leer las dos velocidades">
+\[v_p=\frac\omega k\ \ (\text{portadora}),\qquad v_g=\frac{\Delta\omega}{\Delta k}\ \xrightarrow{\Delta k\to0}\ \frac{\mathrm d\omega}{\mathrm dk}\ \ (\text{envolvente}).\]
+<why>La energía y la información viajan con la envolvente: \(v_g\) es la velocidad con que se desplaza el grupo.</why>
+</step>
+<step op="Derivar la relación de dispersión del agua">
+\[2\omega\,\mathrm d\omega=\Big(g+\frac{3\sigma k^2}\rho\Big)\mathrm dk\ \Longrightarrow\ v_g=\frac{g+3\sigma k^2/\rho}{2\omega}.\]
+</step>
+<step op="Límites">
+\[\sigma\to0:\ \omega=\sqrt{gk}\Rightarrow v_g=\tfrac12v_p;\qquad g\to0:\ \omega=\sqrt{\sigma k^3/\rho}\Rightarrow v_g=\tfrac32v_p;\qquad v_g=v_p\ \text{ en }\lambda_m=2\pi\sqrt{\frac\sigma{\rho g}}.\]
+<why>En el mínimo de \(v_p(k)\) la pendiente de \(\omega=kv_p\) es \(v_p+k\,\mathrm dv_p/\mathrm dk=v_p\): en general \(v_g=v_p-\lambda\,\mathrm dv_p/\mathrm d\lambda\). En esa longitud de onda (1.71 cm en el agua) coinciden.</why>
+</step>
+<result name="Velocidad de grupo">\[v_g=\frac{\mathrm d\omega}{\mathrm dk}=\frac{g+3\sigma k^2/\rho}{2\sqrt{gk+\sigma k^3/\rho}}.\]</result>
+<vars>
+<v s="\omega" n="frecuencia angular" u="rad s^-1"/>
+<v s="k" n="número de onda" u="m^-1"/>
+<v s="v_p" n="velocidad de fase" u="m s^-1"/>
+<v s="v_g" n="velocidad de grupo" u="m s^-1"/>
+<v s="g" n="aceleración de la gravedad" u="m s^-2"/>
+<v s="\sigma" n="tensión superficial" u="kg s^-2"/>
+<v s="\rho" n="densidad" u="kg m^-3"/>
+</vars>
+<effects>
+<e>Agua a 20 °C: con \(\lambda=10\) m (gravedad), \(v_p=3.951\) m/s y \(v_g=1.976\) m/s (cociente 0.5000): las crestas avanzan por el grupo, nacen atrás y mueren adelante. Con \(\lambda=1\) m, 1.2497 y 0.6252 m/s; con \(\lambda=10\) cm, 0.4009 y 0.2119 m/s (0.5285).</e>
+<e>Ondas capilares: \(\lambda=1\) cm, \(v_p=0.2479\) m/s y \(v_g=0.3088\) m/s (cociente 1.246); \(\lambda=5\) mm, 0.3154 y 0.4483 (1.42); \(\lambda=1\) mm, 0.678 y 1.015 m/s (cociente 1.497, el límite 3/2). En \(\lambda_m=1.71\) cm, \(v_p=v_g=0.2313\) m/s.</e>
+<e>En el agua, un barco deja una estela cuyo grupo de ondas de gravedad avanza a la mitad de la velocidad de las crestas; en un medio no dispersivo (el aire para el sonido) las dos velocidades coinciden.</e>
+</effects>
+<limits>
+<l>Dimensiones: \([\mathrm d\omega/\mathrm dk]=\mathsf T^{-1}/\mathsf L^{-1}=\mathsf L\mathsf T^{-1}\) y \([\sigma k^2/\rho]=\mathsf L\mathsf T^{-2}\), igual que \([g]\). ✓</l>
+<l>La envolvente se ensancha con el tiempo (dispersión de la velocidad de grupo, \(\mathrm d^2\omega/\mathrm dk^2\ne0\)): el paquete se deforma; esa es la misma física que hace que un pulso de luz se ensanche en una fibra óptica (capítulo 26) o que un paquete de ondas cuántico se difunda (capítulo 30).</l>
+</limits>
+<explore sim="grupo" title="Velocidad de fase y de grupo de las ondas en agua: de la gravedad a la capilaridad"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (λ = 10 cm): \(v_p=0.40089\) m/s, \(v_g=0.21188\) m/s, cociente 0.52852 y \(\omega=25.189\) rad/s.</li>
+<li>Seleccione λ en el eje (log–log): el cociente \(v_g/v_p\) sube de 1/2 (olas largas) a 3/2 (capilares) y cruza 1 en 1.71 cm.</li>
+</ul></div>
+</deriv>
+
+<section>
+<h2>Fuentes y lecturas</h2>
+<ul class="refs">
+<li>H. J. Pain, <em>The Physics of Vibrations and Waves</em>, 6.ª ed., Wiley (2005): caps. 4–7 (ondas en cuerdas, sonido, grupo y dispersión).</li>
+<li>L. E. Kinsler, A. R. Frey, A. B. Coppens y J. V. Sanders, <em>Fundamentals of Acoustics</em>, 4.ª ed., Wiley (2000): caps. 5–6 (ecuación de onda acústica, intensidad, decibelios).</li>
+<li>L. D. Landau y E. M. Lifshitz, <em>Fluid Mechanics</em>, 2.ª ed., Pergamon (1987): § 64 (ondas sonoras).</li>
+<li>P.-S. Laplace (1816), corrección de la fórmula de Newton para la velocidad del sonido (adiabática); I. Newton, <em>Principia</em> (1687), libro II.</li>
+<li>N. H. Fletcher y T. D. Rossing, <em>The Physics of Musical Instruments</em>, 2.ª ed., Springer (1998): cuerdas y tubos sonoros, inarmonicidad.</li>
+<li>G. B. Whitham, <em>Linear and Nonlinear Waves</em>, Wiley (1974): velocidad de grupo.</li>
+</ul>
+</section>
+</template>

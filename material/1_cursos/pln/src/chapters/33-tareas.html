@@ -1,0 +1,105 @@
+<template class="chapter-src" data-id="tareas" data-num="33" data-title="Tareas de PLN: entidades, emparejamiento, resumen, preguntas y traducción" data-part="Parte VII · Redes y modelos grandes" data-short="Reconocimiento de entidades nombradas (BIO, evaluación por entidades); emparejamiento de textos; resumen extractivo y abstractivo; respuesta a preguntas; traducción automática">
+<p class="lead">Las piezas de los capítulos anteriores se combinan en tareas con nombre propio que están detrás de los productos cotidianos: marcar los nombres de personas y lugares en una noticia, decidir si dos frases significan lo mismo, resumir un documento, contestar una pregunta o traducir. Este capítulo recorre las más importantes, con una implementación completa de la primera (reconocimiento de entidades) y las ideas de evaluación de las demás.</p>
+
+<section>
+<h2>Reconocimiento de entidades nombradas</h2>
+<p>El <b>reconocimiento de entidades nombradas</b> (NER) localiza en un texto los fragmentos que nombran cosas concretas y les da un tipo: personas (PER), organizaciones (ORG), lugares (LOC) y otras (MISC). «<i>Gabriel García Márquez</i> (PER) nació en <i>Aracataca</i> (LOC)». Es la base de la extracción de información, de la vinculación con grafos de conocimiento (capítulo 19) y de los asistentes. Es un problema de <b>etiquetado de secuencias</b> como el de las categorías gramaticales (capítulos 10–12), con un esquema de etiquetas que marca los límites:</p>
+<ul>
+<li><b>BIO</b>: <code>B-X</code> comienza una entidad de tipo X, <code>I-X</code> continúa una entidad y <code>O</code> está fuera: «Gabriel/B-PER García/I-PER Márquez/I-PER nació/O en/O Aracataca/B-LOC».</li>
+</ul>
+<p>El clasificador puede ser un perceptrón o una regresión logística sobre rasgos del entorno de cada palabra (la palabra, su forma —mayúsculas, dígitos—, sus prefijos y sufijos, las palabras vecinas y la etiqueta anterior), un CRF o un Transformer (capítulos 30–31). Los rasgos clave son las mayúsculas, el contexto («según el <i>X</i>») y que las palabras de una entidad se parecen entre sí (apellidos, siglas).</p>
+<h3>Evaluar por entidades</h3>
+<p>La exactitud por etiqueta engaña, porque la gran mayoría de las palabras son <code>O</code>: acertar todas las <code>O</code> da una exactitud alta sin encontrar ninguna entidad. Se evalúa por <b>entidad completa</b> (estilo <i>conlleval</i> de CoNLL): una entidad predicha es correcta solo si coinciden <b>el tipo y los límites exactos</b>. Con eso se calculan precisión, cobertura y F1 (capítulo 27), por tipo y en total.</p>
+<div class="eq key" data-name="Evaluación por entidades">\[P=\frac{\#\{\text{entidades predichas que coinciden con una de referencia}\}}{\#\{\text{entidades predichas}\}},\qquad R=\frac{\#\{\text{coincidencias}\}}{\#\{\text{entidades de referencia}\}},\qquad F_1=\frac{2PR}{P+R}\]</div>
+<div class="sim" data-sim="ner-etiquetar" data-title="Etiquetar entidades con un perceptrón entrenado con CoNLL-2002"></div>
+<div class="sim-guide"><ul>
+<li>El modelo se entrena al abrir la simulación (1.200 oraciones del corpus CoNLL-2002 en español, 5 épocas). Recorra las oraciones de prueba y compare las etiquetas predichas con las de la referencia; las casillas en rojo son los errores.</li>
+<li>Escriba una frase propia: «Gabriel García Márquez nació en Aracataca y vivió en México». Funciona con nombres que el modelo ha visto o que se parecen a los vistos; con nombres de otro dominio (científicos, empresas pequeñas) falla más.</li>
+<li>Pruebe «la inteligencia artificial cambia la universidad del cauca» sin mayúsculas: el modelo depende mucho de la forma de la palabra y pierde casi todas las entidades.</li>
+<li>La cifra del encabezado resume los resultados del programa de Python: F1 de 0,713.</li>
+</ul></div>
+<div class="box py"><p>El programa implementa el perceptrón promediado estructurado (con la etiqueta predicha anterior como rasgo), la extracción de entidades de las etiquetas BIO y la evaluación por entidades, y compara con una línea de base.</p>
+<div class="py" data-py="33-ner"></div></div>
+<div class="box read"><ul>
+<li><b>Datos</b>: 1.200 oraciones de entrenamiento (20.766 palabras, 1.925 entidades) y 300 de prueba (620 entidades). El 83,9 % de las palabras son <code>O</code>.</li>
+<li><b>Línea de base</b> (a cada palabra, su etiqueta más frecuente en el entrenamiento): F1 = 0,595, con precisión 0,797 y cobertura 0,474: acierta lo que conoce, pero no ve las entidades nuevas.</li>
+<li><b>Perceptrón promediado</b> (5 épocas, 2 s): F1 total 0,713 (P 0,718, R 0,708). Por tipo: PER 0,764, LOC 0,743, ORG 0,708 y MISC 0,217 (la categoría residual es la más difícil).</li>
+<li><b>Exactitud por etiqueta</b>: 0,939. Parece mucho, pero un modelo que dijera siempre <code>O</code> tendría 0,839: la diferencia real está en el F1 por entidad.</li>
+<li><b>Rasgos con más peso</b> para B-PER: «según» a la izquierda, la forma «Xx» (una mayúscula inicial) y comas alrededor; para B-ORG, el prefijo «efe» (la agencia EFE), el artículo «el» a la izquierda y la forma «X» (siglas).</li>
+<li><b>Errores</b> (entidades de referencia no acertadas): 102 por tipo equivocado (la entidad se encuentra con los límites correctos pero con otro tipo), 31 por límites distintos y 48 no detectadas. El fallo principal es de tipo: ¿«Cantabria» es lugar u organización?, ¿«Real Madrid» es lugar o equipo? Esta ambigüedad requiere conocimiento del mundo y contexto.</li>
+<li>La implementación del curso en JavaScript da exactamente las mismas etiquetas que este programa (apéndice de validación), y su evaluación coincide con la de Python.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Emparejamiento de textos</h2>
+<p>Muchas tareas piden decidir cuánto se parecen dos textos: detectar duplicados y paráfrasis, buscar la pregunta frecuente que responde una consulta, comprobar si una hipótesis se desprende de una premisa (<i>implicación textual</i>). Hay una escalera de métodos:</p>
+<ul>
+<li><b>Léxicos</b>: solapamiento de palabras (Jaccard), TF-IDF y coseno (capítulo 24), distancia de edición (capítulo 8).</li>
+<li><b>Semánticos</b>: coseno de embeddings promediados (capítulo 26); más finos, el <i>Word Mover's Distance</i>.</li>
+<li><b>Neuronales sobre el par</b>: un Transformer lee las dos frases juntas (<code>[CLS] A [SEP] B</code>) y predice la relación (equivalente, contradictoria, neutra). Capturan la negación y el orden, donde los anteriores fallan.</li>
+</ul>
+<div class="sim" data-sim="emparejar-textos" data-title="Cuatro medidas de similitud entre dos frases"></div>
+<div class="sim-guide"><ul>
+<li>«Paráfrasis»: casi no comparten palabras (Jaccard 0,08; coseno TF-IDF 0,01), pero los embeddings dan 0,45, porque «gobierno» y «ejecutivo» tienen vectores cercanos. Sin embargo, la pareja «sin relación» da 0,39: con vectores de un corpus tan pequeño (190.000 palabras) la señal es débil. Con embeddings entrenados con billones de palabras la diferencia sería grande.</li>
+<li>«Contradicción por negación»: las frases comparten casi todo (Jaccard 0,86; coseno TF-IDF 0,95; embeddings 1,00) aunque dicen lo contrario. La palabra «no» casi no pesa.</li>
+<li>«Misma palabra, otro sentido»: las medidas léxicas (Jaccard 0,27; TF-IDF 0,33) ven un parecido por compartir «banco» que no es real: la ambigüedad del capítulo 21. «Mismo contenido, otro orden» da 0,86 y 0,96 en las léxicas y 1,00 en embeddings, aunque la distancia de edición cae a 0,31: la forma de superficie cambió y el significado, no.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen automático</h2>
+<p>El <b>resumen extractivo</b> selecciona y copia las frases más importantes; el <b>abstractivo</b> escribe un texto nuevo con un modelo de lenguaje. Los métodos extractivos clásicos puntúan cada frase y se quedan con las mejores:</p>
+<ul>
+<li><b>Posición</b> (<i>lead</i>): en las noticias, las primeras frases resumen el resto; es una línea de base sorprendentemente fuerte.</li>
+<li><b>Centro del documento</b>: la frase más parecida (coseno TF-IDF) a la suma de todas las demás.</li>
+<li><b>TextRank</b> (Mihalcea y Tarau, 2004): se construye un grafo con las frases como nodos y su similitud como peso de las aristas, y se aplica PageRank: una frase es importante si se parece a muchas frases importantes.</li>
+</ul>
+<div class="sim" data-sim="resumen-extractivo" data-title="Resumen extractivo con tres métodos"></div>
+<div class="sim-guide"><ul>
+<li>Con el texto de ejemplo (ocho frases) y tres frases de resumen, compare los métodos: «Las primeras» elige las frases 1, 2 y 3 (definición y primeras aplicaciones); el centro de TF-IDF y TextRank eligen las 4, 6 y 7 (métodos estadísticos, representaciones aprendidas y tareas actuales), las que más comparten vocabulario con el resto.</li>
+<li>Pegue una noticia propia. Observe cómo cambia el resumen al subir o bajar el número de frases: todo extractivo tiene la fluidez de las frases originales, pero puede perder la coherencia entre ellas (referencias como «Estos modelos»).</li>
+<li>El resumen abstractivo con un modelo grande es más fluido y condensa más, pero puede incluir hechos que no están en el texto (alucinaciones, capítulo 32); se evalúa con ROUGE, con medidas semánticas y con personas.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Respuesta a preguntas y traducción</h2>
+<ul>
+<li><b>Respuesta a preguntas extractiva</b> (SQuAD): dado un pasaje y una pregunta, el modelo predice el <i>comienzo</i> y el <i>fin</i> del fragmento que contiene la respuesta. Se evalúa con coincidencia exacta (EM) y F1 de palabras sobre el fragmento. Los modelos generativos (capítulo 32) redactan la respuesta, a menudo con recuperación previa (RAG), y se juzgan por veracidad y utilidad.</li>
+<li><b>Traducción automática</b>: reglas (años 50–80), estadística de frases (años 90–2010), redes con atención (2014–2017), Transformer (2017–) y, hoy, grandes modelos multilingües. Se evalúa con BLEU y chrF (capítulo 32), con medidas aprendidas como COMET y, para las decisiones importantes, con personas. Los retos permanentes: lenguas con pocos datos, dominios técnicos, género y cortesía, y alucinaciones en la traducción de textos largos.</li>
+<li><b>Otras</b>: extracción de relaciones y de eventos, análisis de sentimiento por aspectos (capítulo 27), resolución de correferencias («ella» → «María»), detección de idioma, generación de texto a partir de datos, diálogo (capítulos 36–37).</li>
+</ul>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>NER = etiquetado de secuencias con esquema BIO; se evalúa por entidad completa (tipo y límites exactos), no por palabra.</li>
+<li>Las medidas léxicas y semánticas de similitud entre textos fallan con la negación y los sentidos; los modelos sobre el par las superan.</li>
+<li>Resumen extractivo: posición, centro TF-IDF, TextRank; abstractivo: modelos de lenguaje, con riesgo de alucinación.</li>
+<li>Preguntas: extractivas (fragmento) o generativas (con RAG). Traducción: evolución hasta los modelos multilingües; BLEU/chrF/COMET.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Etiquete en BIO: «Marta Pérez trabaja en Telefónica».
+<details><summary>Respuesta</summary><p>Marta/B-PER Pérez/I-PER trabaja/O en/O Telefónica/B-ORG.</p></details></li>
+<li><span class="lvl">Básico</span>Un texto tiene 100 palabras, 90 de ellas O. Un modelo siempre dice O. ¿Qué exactitud por palabra y qué F1 por entidad?
+<details><summary>Respuesta</summary><p>Exactitud 90 %; F1 por entidad = 0 (no encuentra ninguna entidad: precisión indefinida y cobertura 0).</p></details></li>
+<li><span class="lvl">Intermedio</span>Referencia: [Marta Pérez]PER, [Telefónica]ORG. Predicción: [Marta]PER, [Telefónica]LOC. Calcule P, R y F1 por entidad.
+<details><summary>Respuesta</summary><p>Ninguna coincide (la primera tiene límites distintos y la segunda, tipo distinto): 0 de 2 predichas y 0 de 2 de referencia, P = R = F1 = 0. La evaluación por entidad es estricta.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué TextRank no necesita datos de entrenamiento?
+<details><summary>Respuesta</summary><p>Es un método no supervisado: la importancia de una frase se deduce de la estructura de similitudes del propio documento mediante PageRank, sin ejemplos de buenos resúmenes.</p></details></li>
+<li><span class="lvl">Avanzado</span>La frase «el presidente no viajó a la capital» y «el presidente viajó a la capital» tienen una similitud coseno de embeddings promedio muy alta. ¿Qué tipo de modelo la resuelve y por qué?
+<details><summary>Respuesta</summary><p>Un clasificador de implicación textual con un Transformer que lee el par junto: la autoatención relaciona «no» con «viajó» y el contexto bidireccional compone el significado de la oración completa. Los promedios de vectores pierden el orden y la composición.</p></details></li>
+</ol>
+<h3>Autoevaluación</h3>
+<div class="sim" data-sim="quiz" data-cap="tareas" data-title="Autoevaluación del capítulo 33"></div>
+<div class="box links"><ul>
+<li><a href="https://aclanthology.org/W02-2024/">Tjong Kim Sang (2002) — Introduction to the CoNLL-2002 shared task: language-independent named entity recognition</a><small>El corpus en español y neerlandés y el protocolo de evaluación por entidades.</small></li>
+<li><a href="https://aclanthology.org/W04-3252/">Mihalcea y Tarau (2004) — TextRank: bringing order into texts</a><small>Resumen y palabras clave con PageRank.</small></li>
+<li><a href="https://aclanthology.org/D16-1264/">Rajpurkar y otros (2016) — SQuAD: 100,000+ questions for machine comprehension of text</a><small>El conjunto de referencia de respuesta a preguntas extractiva.</small></li>
+<li><a href="https://aclanthology.org/2020.emnlp-main.213/">Rei y otros (2020) — COMET: a neural framework for MT evaluation</a><small>Evaluación de la traducción con un modelo aprendido.</small></li>
+<li><a href="https://www.nltk.org/api/nltk.chunk.html">NLTK — chunk</a><small>Corpus CoNLL y utilidades de etiquetado de fragmentos.</small></li>
+</ul></div>
+</section>
+</template>

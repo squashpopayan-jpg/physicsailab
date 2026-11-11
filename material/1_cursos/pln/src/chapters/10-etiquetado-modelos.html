@@ -1,0 +1,93 @@
+<template class="chapter-src" data-id="etiquetado-modelos" data-num="10" data-title="Etiquetar con reglas y con estadísticas" data-part="Parte III · Etiquetado morfosintáctico" data-short="Etiquetado por reglas; línea de base de la palabra más frecuente; taggers de unigrama y bigrama con retroceso; palabras desconocidas y sufijos; curva de aprendizaje">
+<p class="lead">Antes de los modelos ocultos de Markov hay una pregunta práctica: ¿cuánto se logra con las ideas más simples? Asignar a cada palabra su etiqueta más frecuente ya acierta cuatro de cada cinco. Cada mejora posterior, mirar el contexto, tratar las palabras desconocidas, se mide contra esa línea de base. Es una buena lección de método: antes de construir algo sofisticado, mida qué hace lo trivial.</p>
+
+<section>
+<h2>Etiquetado por reglas</h2>
+<p>Los primeros etiquetadores (años sesenta a ochenta) trabajaban en dos pasos: <b>(1)</b> un lexicón asigna a cada palabra todas sus etiquetas posibles; <b>(2)</b> reglas hechas a mano eliminan las que el contexto contradice. Por ejemplo: «si la palabra puede ser sustantivo o verbo y la anterior es un determinante, descártese el verbo». El sistema ENGTWOL (para inglés) llegó a tener más de mil reglas de este tipo (gramática de restricciones). Funcionan bien y son interpretables, pero cada regla cuesta horas de lingüista, cada lengua exige un conjunto nuevo y las excepciones se acumulan.</p>
+<p>Un compromiso fue el aprendizaje de reglas por transformaciones (Brill, capítulo 12). En este capítulo se parte de lo más barato: contar sobre un corpus anotado.</p>
+</section>
+
+<section>
+<h2>La línea de base: la etiqueta más frecuente</h2>
+<p>El <b>tagger de unigramas</b> guarda, para cada palabra del corpus de entrenamiento, la etiqueta con la que más veces apareció, y la usa siempre. Para las palabras que no vio asigna una etiqueta por defecto, la más frecuente del corpus. No mira el contexto: «vino» siempre será lo mismo. Pese a eso, en CESS-ESP con 5.427 oraciones de entrenamiento acierta el 81,1 % con las 15 clases gruesas, y las palabras conocidas rondan el 94 %. Es la <b>línea de base</b> (<i>baseline</i>): cualquier sistema nuevo debe superarla para justificar su complejidad.</p>
+</section>
+
+<section>
+<h2>Retroceso: del contexto al sufijo y al valor por defecto</h2>
+<p>Se pueden encadenar taggers con <b>retroceso</b> (<i>backoff</i>): cada uno intenta etiquetar y, si no tiene información, pasa la palabra al siguiente. La cadena de este capítulo, de más a menos específica:</p>
+<ol>
+<li><b>Bigrama</b>: contexto (etiqueta anterior, palabra) → etiqueta más frecuente. Distingue «el vino» de «vino de»: tras un determinante, «vino» fue sustantivo.</li>
+<li><b>Unigrama</b>: la etiqueta más frecuente de la palabra.</li>
+<li><b>Sufijos</b>: para palabras que no se vieron, la etiqueta más frecuente entre las palabras <i>raras</i> del entrenamiento que acaban igual (sufijos de 3, 2 y 1 letras). Así «-mente» sugiere adverbio, «-ción» sustantivo, «-aron» verbo.</li>
+<li><b>Valor por defecto</b>: la etiqueta más frecuente del corpus.</li>
+</ol>
+<div class="sim" data-sim="cadena-taggers" data-title="Una cadena de taggers con retroceso sobre oraciones de CESS-ESP"></div>
+<div class="sim-guide"><ul>
+<li>Active o desactive el bigrama y los sufijos y observe la exactitud en las 60 oraciones de prueba, separada en palabras conocidas y desconocidas.</li>
+<li>Los sufijos no cambian las palabras conocidas pero elevan las desconocidas de 43,5 % a 60,7 % con etiquetas gruesas (con la cadena completa: 84,5 % en total). El bigrama mejora las conocidas de 94,4 % a 96,4 %.</li>
+<li>Con etiquetas finas (EAGLES) la línea de base cae a 62,0 %: casi todas las palabras desconocidas fallan, porque el valor por defecto es una etiqueta de sustantivo concreta.</li>
+<li>Elija una oración de prueba para ver palabra por palabra las etiquetas predichas y las reales.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Palabras desconocidas</h2>
+<p>El problema que más pesa en el etiquetado es el de las palabras nuevas. En una muestra de prueba aparecen palabras que el entrenamiento no contiene (la ley de Zipf lo garantiza). Las estrategias habituales:</p>
+<ul>
+<li><b>Etiqueta por defecto</b>: sustantivo (o sustantivo propio si empieza con mayúscula).</li>
+<li><b>Sufijos y prefijos</b>: el morfema final informa de la categoría («-ando» verbo, «-oso» adjetivo).</li>
+<li><b>Capitalización y cifras</b>: mayúscula inicial en mitad de oración sugiere nombre propio; dígitos, numerales.</li>
+<li><b>Hápax como sustitutos</b>: tratar las palabras vistas una sola vez como representantes de las desconocidas (capítulo 11).</li>
+<li><b>Representaciones aprendidas</b> (vectores de subpalabra, capítulo 26): generalizan a palabras nuevas por sus partes.</li>
+</ul>
+<div class="sim" data-sim="curva-aprendizaje" data-title="Exactitud frente a la cantidad de datos de entrenamiento"></div>
+<div class="sim-guide"><ul>
+<li>La curva sube rápido con las primeras decenas de oraciones y luego se aplana: los datos adicionales aportan palabras nuevas, no mejor contexto.</li>
+<li>La fracción de palabras desconocidas en la prueba (línea punteada) baja lentamente: con 240 oraciones de entrenamiento todavía quedan decenas de por ciento de palabras nuevas, y por eso importan los sufijos.</li>
+<li>Las curvas de etiquetas finas parten de mucho más abajo: necesitan muchos más ejemplos para cubrir sus 170 etiquetas.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Práctica con NLTK sobre el corpus completo</h2>
+<div class="box py"><p>El programa entrena los taggers de NLTK sobre el 90 % de CESS-ESP (5.427 oraciones) y mide la exactitud en el 10 % restante (603 oraciones). Compare las cifras con las de las simulaciones, que usan solo 240 oraciones.</p>
+<div class="py" data-py="10-etiquetado"></div></div>
+<div class="box read"><ul>
+<li><b>Escalera de exactitud</b>: «siempre sustantivo» acierta 18,1 %; unas pocas reglas de sufijo, 36,7 %; el unigrama, 81,1 %; el unigrama con las reglas como retroceso, 88,4 %; con bigramas, 89,8 %; con trigramas, 89,9 %. Casi toda la ganancia viene de saber la palabra; el contexto añade poco.</li>
+<li><b>Ambigüedad</b>: 5,3 % de los tipos y 36,9 % de los tokens, las mismas cifras del capítulo anterior.</li>
+<li><b>Confusiones</b>: las más frecuentes son verbo → sustantivo (325), adjetivo → sustantivo (324) y nombre propio → sustantivo (201): casi todas son palabras desconocidas que reciben la etiqueta por defecto, que es la de sustantivo. También pronombre → determinante (89), el par ambiguo «la/lo/los».</li>
+<li><b>Techo</b>: un 10 % de error con los métodos más sencillos explica por qué se necesita un modelo de secuencias (capítulo 11): el trigrama apenas mejora porque la mayoría de los contextos no se han visto.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Los etiquetadores por reglas asignan todas las etiquetas posibles y eliminan por restricciones; son precisos pero caros de mantener.</li>
+<li>El tagger de unigramas (etiqueta más frecuente de cada palabra) es la línea de base: ≈ 81 % con 13 clases en CESS-ESP.</li>
+<li>El retroceso encadena taggers de más específico a más general: bigrama → unigrama → sufijos → valor por defecto.</li>
+<li>La mayor parte del error viene de las palabras desconocidas; los sufijos las mejoran mucho.</li>
+<li>Con etiquetas finas, la dispersión de datos reduce mucho la exactitud.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un tagger de unigramas ve «vino» 10 veces como sustantivo y 3 como verbo. ¿Qué etiqueta le dará siempre?
+<details><summary>Respuesta</summary><p>Sustantivo (la más frecuente), incluso en «vino de un lugar lejano».</p></details></li>
+<li><span class="lvl">Básico</span>¿Qué es una línea de base y para qué sirve?
+<details><summary>Respuesta</summary><p>Un sistema muy simple cuya exactitud sirve de referencia: cualquier método más complejo debe superarla para justificarse.</p></details></li>
+<li><span class="lvl">Intermedio</span>En una prueba de 1.000 palabras hay 200 desconocidas. Un tagger acierta el 95 % de las conocidas y el 50 % de las desconocidas. ¿Exactitud total?
+<details><summary>Respuesta</summary><p>(800·0,95 + 200·0,50)/1000 = (760 + 100)/1000 = 86 %.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué el trigrama mejora tan poco sobre el bigrama?
+<details><summary>Respuesta</summary><p>Porque casi ningún contexto de dos etiquetas más palabra se vio en el entrenamiento: la tabla es muy dispersa y casi siempre se retrocede al bigrama.</p></details></li>
+<li><span class="lvl">Avanzado</span>Con etiquetas gruesas, la exactitud sobre palabras conocidas es 94 % con unigramas y 96 % con bigramas. ¿Qué parte del error restante podría deberse a la anotación del corpus y no al modelo?
+<details><summary>Respuesta</summary><p>Hay incoherencias de anotación (la misma palabra con etiquetas distintas en contextos idénticos: «gobierno» propio frente a común) y ambigüedades reales no resolubles con el contexto cercano. Los anotadores humanos coinciden entre sí en torno al 97 % en etiquetado clásico, lo que fija un techo práctico.</p></details></li>
+</ol>
+<h3>Autoevaluación</h3>
+<div class="sim" data-sim="quiz" data-cap="etiquetado-modelos" data-title="Autoevaluación del capítulo 10"></div>
+<div class="box links"><ul>
+<li><a href="https://www.nltk.org/api/nltk.tag.sequential.html">NLTK — taggers secuenciales (unigrama, bigrama, trigrama, expresiones regulares)</a><small>La implementación usada en el programa del capítulo.</small></li>
+<li><a href="https://aclanthology.org/J95-4004/">Brill (1995) — Transformation-based error-driven learning</a><small>Aprendizaje automático de reglas de etiquetado (capítulo 12).</small></li>
+<li><a href="https://en.wikipedia.org/wiki/Constraint_grammar">Constraint Grammar (Wikipedia)</a><small>El enfoque de etiquetado por reglas más refinado de su época, con referencias a ENGTWOL y a los trabajos de Karlsson y Voutilainen.</small></li>
+<li><a href="https://web.stanford.edu/~jurafsky/slp3/8.pdf">Jurafsky y Martin — cap. 8: sequence labeling for parts of speech and named entities</a><small>Tratamiento moderno del etiquetado, de HMM a redes neuronales.</small></li>
+</ul></div>
+</section>
+</template>

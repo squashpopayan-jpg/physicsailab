@@ -1,0 +1,80 @@
+<template class="chapter-src" data-id="agentes" data-num="36" data-title="Agentes conversacionales" data-part="Parte VIII · Recursos y agentes" data-short="Definición; cómo conversan las personas (turnos, actos de habla, máximas de Grice); tipos de agentes; estructura (comprensión, gestor de diálogo, generación); ELIZA; agentes con modelos grandes y herramientas">
+<p class="lead">Un <b>agente conversacional</b> es un sistema que dialoga con una persona en lenguaje natural, por texto o por voz. Van desde el menú de un teléfono hasta los asistentes que redactan, buscan y actúan. Para construirlos hay que entender primero cómo conversamos las personas, porque la conversación tiene reglas que van mucho más allá de la gramática.</p>
+
+<section>
+<h2>Cómo conversan las personas</h2>
+<ul>
+<li><b>Turnos</b>: se alternan con pausas de unos 200 milisegundos, y a menudo se empieza a hablar antes de que el otro termine. Un agente de voz debe predecir el final del turno, tolerar interrupciones y responder con muy baja latencia.</li>
+<li><b>Actos de habla</b> (Austin, Searle): al hablar se hacen cosas: preguntar, pedir, prometer, agradecer. «¿Puede pasarme la sal?» tiene forma de pregunta y es una petición (acto <i>indirecto</i>). El significado de la intención no se ve en la forma.</li>
+<li><b>Terreno común</b> (<i>grounding</i>): los interlocutores confirman que se entienden («ajá», «¿cómo?», repetir lo dicho). Un agente debe verificar lo que entendió antes de actuar.</li>
+<li><b>Máximas de Grice</b>: la conversación es cooperativa. Cantidad (ni más ni menos información de la necesaria), calidad (decir lo que se cree verdadero), relación (ser relevante) y modo (ser claro). Las <i>implicaturas</i> nacen de aparentes violaciones: «¿Vienes a la fiesta?» — «Tengo examen mañana» quiere decir que no.</li>
+<li><b>Iniciativa</b>: puede llevarla el usuario, el sistema o ambos (iniciativa mixta, lo natural).</li>
+<li><b>Contexto y referencia</b>: «Reserva una mesa… cámbiala a las nueve»; «eso» y «la» se refieren a lo dicho antes (capítulo 1).</li>
+</ul>
+<div class="sim" data-sim="actos-habla" data-title="Clasificar el acto de habla de un enunciado"></div>
+<div class="sim-guide"><ul>
+<li>Con «¿Puede pasarme la sal?» el clasificador acierta: petición (0,92). No es porque entienda el acto indirecto, sino porque «pasarme» aparece en peticiones del entrenamiento (como «pásame la sal»). Cambie «pasarme la sal» por un verbo que no esté en los ejemplos y compruebe cómo la forma de pregunta empieza a pesar más: es la dificultad real del acto de habla indirecto.</li>
+<li>Pruebe «pásame la sal», «gracias por la ayuda», «hola» y «el tren sale a las ocho»: las formas claras se reconocen con facilidad, porque las palabras clave son muy distintas entre sí.</li>
+<li>Quite los signos de interrogación a una pregunta («qué hora es»): el modelo conserva sus palabras interrogativas y suele acertar.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Tipos de agentes</h2>
+<ul>
+<li><b>Basados en reglas</b> (ELIZA, 1966; AIML): patrones y plantillas escritos a mano. Previsibles, auditables y baratos; frágiles fuera de lo previsto.</li>
+<li><b>Basados en recuperación</b>: eligen la respuesta más parecida de un repertorio (preguntas frecuentes) con TF-IDF o embeddings (capítulos 24, 26).</li>
+<li><b>Orientados a tareas</b>: persiguen un objetivo (reservar, consultar un saldo) con una estructura de intenciones y huecos (capítulo 37).</li>
+<li><b>Generativos de dominio abierto</b>: modelos de lenguaje que producen la respuesta palabra a palabra (capítulo 32), con instrucciones y, cada vez más, <b>herramientas</b> (buscar, calcular, consultar una base de datos, ejecutar código) que el modelo decide invocar. Eso es lo que hoy se llama un <i>agente</i>.</li>
+</ul>
+<h3>ELIZA y el efecto ELIZA</h3>
+<p>ELIZA (Weizenbaum, MIT, 1966) simulaba a un psicoterapeuta rogeriano con muy pocas reglas: buscar una palabra clave, reflejar la frase («Me siento mal» → «¿Desde cuándo se siente mal?») y, si no hay nada, decir «Cuénteme más». Weizenbaum se sorprendió de que la gente le atribuyese comprensión: el <i>efecto ELIZA</i>, que sigue vigente con modelos mucho más capaces. La fluidez de una respuesta no prueba que haya comprensión ni veracidad.</p>
+</section>
+
+<section>
+<h2>Estructura de un agente orientado a tareas</h2>
+<ol>
+<li><b>Comprensión del lenguaje (NLU)</b>: detecta la intención y extrae los huecos de cada turno (clasificación de texto y NER, capítulos 27 y 33).</li>
+<li><b>Gestor de diálogo</b>: mantiene el <i>estado</i> (qué se ha entendido, qué falta) y decide la siguiente acción: preguntar un dato, confirmar, ejecutar, pedir perdón. Puede ser una máquina de estados, un conjunto de reglas, un modelo entrenado con aprendizaje por refuerzo o un modelo de lenguaje.</li>
+<li><b>Generación del lenguaje (NLG)</b>: convierte la acción en texto (plantillas o un modelo) o en voz (síntesis).</li>
+<li>En voz se añaden el <b>reconocimiento del habla</b> (ASR) y la <b>síntesis del habla</b> (TTS), con errores que se propagan.</li>
+</ol>
+<div class="box py"><p>El programa implementa ELIZA con seis reglas de patrones, reflexión de pronombres y tres respuestas por defecto, y mantiene un breve diálogo.</p>
+<div class="py" data-py="36-agentes"></div></div>
+<div class="box read"><ul>
+<li>Seis frases, seis respuestas coherentes: «Me siento muy cansado» → «¿Desde cuándo está muy cansado?»; «Mi madre siempre me critica» → «¿Qué relación tiene con su madre?»; «Necesito unas vacaciones» → «¿Qué significaría para usted conseguir unas vacaciones?».</li>
+<li>Cuando no hay regla («Hace calor hoy») entra la respuesta por defecto («Cuénteme más»). Con la regla «no» y «¿por qué no?» se obtiene una respuesta casi sin sentido para «No sé por qué».</li>
+<li>Todo el «saber» son 6 reglas y 3 respuestas. No hay comprensión: solo coincidencia de patrones. La simulación del capítulo 2 permite conversar con una versión de este tipo.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>La conversación humana tiene turnos, actos de habla, terreno común y máximas de cooperación (Grice).</li>
+<li>Los agentes pueden ser de reglas, de recuperación, orientados a tareas o generativos con herramientas.</li>
+<li>Estructura clásica: comprensión → gestor de diálogo → generación.</li>
+<li>Fluidez no es comprensión (efecto ELIZA).</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Clasifique el acto de habla: «¿Podrías cerrar la ventana?».
+<details><summary>Respuesta</summary><p>Petición indirecta (con forma de pregunta sobre capacidad).</p></details></li>
+<li><span class="lvl">Básico</span>«¿Tienes fuego?» — «No fumo.» ¿Qué máxima de Grice parece violarse y qué se implica?
+<details><summary>Respuesta</summary><p>Parece violar la relación (no responde directamente), pero implica que no tiene fuego; es una implicatura.</p></details></li>
+<li><span class="lvl">Intermedio</span>Un usuario dice «Cámbiala a las nueve». ¿Qué necesita saber el gestor de diálogo?
+<details><summary>Respuesta</summary><p>A qué reserva se refiere «la» (estado previo del diálogo, resolución de la referencia) y el hueco «hora» que debe actualizar.</p></details></li>
+<li><span class="lvl">Intermedio</span>Compare un agente de reglas con uno generativo.
+<details><summary>Respuesta</summary><p>El de reglas es predecible, barato y auditable, pero limitado al diseño; el generativo cubre un dominio abierto y es flexible, pero puede alucinar, es más caro y más difícil de controlar y probar.</p></details></li>
+<li><span class="lvl">Avanzado</span>¿Qué es un agente que usa herramientas y por qué exige cuidado?
+<details><summary>Respuesta</summary><p>Un modelo de lenguaje que decide invocar funciones externas (buscar, consultar, escribir) y usa los resultados para seguir. Exige límites de permisos, confirmación para acciones irreversibles, registro y defensa frente a instrucciones maliciosas escondidas en los textos que lee.</p></details></li>
+</ol>
+<h3>Autoevaluación</h3>
+<div class="sim" data-sim="quiz" data-cap="agentes" data-title="Autoevaluación del capítulo 36"></div>
+<div class="box links"><ul>
+<li><a href="https://web.stanford.edu/~jurafsky/slp3/">Jurafsky y Martin — Speech and Language Processing (3.ª ed.)</a><small>Capítulos de diálogo y chatbots.</small></li>
+<li><a href="https://dl.acm.org/doi/10.1145/365153.365168">Weizenbaum (1966) — ELIZA</a><small>El artículo original.</small></li>
+<li><a href="https://plato.stanford.edu/entries/implicature/">Stanford Encyclopedia — Implicature</a><small>Grice, máximas e implicaturas.</small></li>
+<li><a href="https://plato.stanford.edu/entries/speech-acts/">Stanford Encyclopedia — Speech Acts</a><small>Austin, Searle y los actos de habla indirectos.</small></li>
+</ul></div>
+</section>
+</template>

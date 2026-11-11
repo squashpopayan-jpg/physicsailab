@@ -1,0 +1,80 @@
+<template class="chapter-src" data-id="recursos" data-num="34" data-title="Recursos lingüísticos: corpus, léxicos y licencias" data-part="Parte VIII · Recursos y agentes" data-short="Corpus anotados y masivos en español; léxicos (WordNet, FrameNet, PropBank, BabelNet); medir un corpus; Zipf y cobertura; licencias, sesgos y privacidad">
+<p class="lead">Un sistema de PLN es tan bueno como los datos y los conocimientos con los que se construye. Los <b>recursos lingüísticos</b> son esos materiales: colecciones de textos, diccionarios, redes de significados, textos anotados. Saber qué existe para el español, cómo medirlo y con qué condiciones se puede usar es parte del oficio, tanto como saber programar.</p>
+
+<section>
+<h2>Corpus</h2>
+<p>Un <b>corpus</b> es una colección de textos (o de habla) reunida con un criterio y almacenada en formato digital. Se distinguen:</p>
+<ul>
+<li><b>Corpus de referencia o equilibrados</b>: representan un idioma, con textos de géneros y épocas variados. Para el español, el CREA y el CORPES XXI de la Real Academia Española, con cientos de millones de formas, y el Corpus del Español de Davies.</li>
+<li><b>Corpus anotados</b>: cada texto lleva anotaciones lingüísticas hechas por personas. <b>CESS-ESP</b> y <b>AnCora</b> (Universidad de Barcelona) llevan categorías gramaticales, lemas y estructura sintáctica; <b>CoNLL-2002</b> lleva entidades nombradas; <b>PropBank</b> y <b>FrameNet</b> en español, roles semánticos. Son pequeños (cientos de miles de palabras) pero imprescindibles para entrenar y evaluar.</li>
+<li><b>Corpus paralelos</b>: el mismo contenido en dos idiomas, alineado por oraciones (Europarl, Naciones Unidas, OPUS). Son la materia prima de la traducción automática.</li>
+<li><b>Corpus masivos de la web</b>: <b>OSCAR</b>, <b>mC4</b>, <b>CC-100</b>, <b>Wikipedia</b>. Tienen billones de palabras y se usan para preentrenar modelos (capítulo 31). Son ruidosos y exigen filtrar, quitar duplicados y repasar contenidos dañinos.</li>
+<li><b>Corpus orales y de redes sociales</b>: transcripciones de conversaciones, tuits, comentarios: léxico, ortografía y sintaxis distintos del escrito formal.</li>
+</ul>
+<h3>Qué mirar antes de usar un corpus</h3>
+<ul>
+<li><b>Tamaño y cobertura</b>: ¿cuántas palabras y cuántas formas distintas? ¿Qué parte del texto nuevo cubre el vocabulario? Casi siempre más de la mitad de las formas distintas aparece una sola vez (<i>hapax</i>), y por eso hace falta suavizado (capítulo 25) o subpalabras (capítulo 31).</li>
+<li><b>Dominio y variedad</b>: un etiquetador entrenado con noticias de España funciona peor con tuits o con español americano.</li>
+<li><b>Calidad de la anotación</b>: acuerdo entre anotadores, guía de anotación, versión.</li>
+<li><b>Licencia</b>: «CC BY» permite el uso comercial con atribución; «CC BY-NC» no; los textos de prensa tienen derechos de autor. Hay que verificar si se puede redistribuir y si se puede usar para entrenar un producto.</li>
+<li><b>Privacidad y sesgos</b>: datos personales (nombres, direcciones, mensajes), representación desigual de géneros y dialectos. Un corpus no es neutral.</li>
+</ul>
+<div class="sim" data-sim="corpus-cobertura" data-title="Cuánto texto cubre un vocabulario de N formas, en dos corpus reales"></div>
+<div class="sim-guide"><ul>
+<li>Con 100 formas ya se cubre en torno a la mitad del texto («de», «la», «que», «el», «en»…): la ley de Zipf del capítulo 3. Con 1.000 formas, del 70 % al 75 %; con 5.000, cerca del 90 % (cifras de las muestras pequeñas de la simulación; las de los corpus completos están más abajo).</li>
+<li>El último 10 % es una cola larga de palabras raras: para alcanzar el 99 % haría falta un vocabulario de decenas de miles de formas. Los hapax (la última cifra del recuadro) suelen ser más de la mitad de las formas distintas.</li>
+<li>Compare los dos corpus: con 1.000 formas el de CoNLL cubre el 75,4 % y el de noticias el 70,2 %; los hapax son el 62 % y el 64 % de las formas, más que en los corpus completos porque las muestras son pequeñas (cuanto menos texto, más palabras vistas una sola vez).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Léxicos y bases de conocimiento</h2>
+<ul>
+<li><b>WordNet</b> (capítulo 21): redes de synsets del inglés; el <b>Open Multilingual Wordnet</b> conecta unos 30 idiomas, entre ellos el español. El <b>Multilingual Central Repository</b> (MCR) es el repositorio español-catalán-vasco-gallego-inglés.</li>
+<li><b>FrameNet</b> y <b>PropBank</b>: marcos y roles de los verbos («comprar» tiene comprador, vendedor, mercancía, precio). Hay versiones en español.</li>
+<li><b>BabelNet</b>: fusiona WordNet, Wikipedia y otros recursos en una red multilingüe con millones de sentidos.</li>
+<li><b>Wikidata, DBpedia</b>: grafos de conocimiento (capítulo 19) con millones de entidades y relaciones.</li>
+<li><b>Diccionarios y listas</b>: el <i>Diccionario de la lengua española</i> (DLE), listas de palabras vacías, gazetteers de nombres propios, lexicones de sentimiento.</li>
+</ul>
+<div class="box py"><p>El programa mide con NLTK los corpus CESS-ESP y CoNLL-2002 (palabras, formas distintas, hapax, cobertura) y el tamaño de WordNet y de sus lemas en español.</p>
+<div class="py" data-py="34-recursos"></div></div>
+<div class="box read"><ul>
+<li><b>CESS-ESP</b>: 6.030 oraciones, 155.978 palabras, 19.968 formas distintas; el 52,9 % son hapax. Con las 100, 1.000 y 5.000 formas más frecuentes se cubre el 51,4 %, el 70,0 % y el 86,8 % del texto.</li>
+<li><b>CoNLL-2002</b> (entrenamiento): 8.323 oraciones, 222.677 palabras, 20.596 formas; hapax el 44,6 %; cobertura 50,4 %, 70,9 % y 88,4 %.</li>
+<li><b>WordNet 3.0</b>: 82.115 synsets de sustantivos, 13.767 de verbos y 18.156 de adjetivos; con 32 idiomas disponibles vía OMW. Los lemas en español de <code>dog.n.01</code>: can, canino, <i>canis familiaris</i>, perra, perro.</li>
+<li>NLTK trae 313 palabras vacías para el español. Los corpus masivos que se usan hoy son tres o cuatro órdenes de magnitud mayores: 150.000 palabras frente a cientos de miles de millones.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Corpus de referencia, anotados, paralelos, masivos y orales: cada uno para un fin distinto.</li>
+<li>Los léxicos (WordNet, FrameNet, BabelNet) y los grafos de conocimiento aportan significado explícito.</li>
+<li>Antes de usar un recurso: tamaño, dominio, calidad, licencia, privacidad y sesgos.</li>
+<li>Zipf: pocas formas cubren mucho texto, y más de la mitad de las formas distintas son hapax.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un corpus tiene 200.000 palabras y 20.000 formas distintas, de las que 10.000 son hapax. ¿Qué proporción de las formas son hapax? ¿Qué proporción del texto?
+<details><summary>Respuesta</summary><p>De las formas, 10.000/20.000 = 50 %. Del texto, 10.000/200.000 = 5 %: son muchas formas pero poco texto.</p></details></li>
+<li><span class="lvl">Básico</span>¿Qué tipo de corpus necesita para entrenar un traductor español–inglés?
+<details><summary>Respuesta</summary><p>Un corpus paralelo alineado por oraciones (Europarl, OPUS…).</p></details></li>
+<li><span class="lvl">Intermedio</span>Con un vocabulario de las 1.000 formas más frecuentes cubre el 70 % del texto. Si el resto se convierte en «&lt;unk&gt;», ¿cuántas palabras de una página de 500 serán desconocidas?
+<details><summary>Respuesta</summary><p>El 30 %: unas 150 palabras. Por eso se usan subpalabras o vocabularios mayores.</p></details></li>
+<li><span class="lvl">Intermedio</span>Una empresa quiere ajustar un modelo con un corpus «CC BY-NC». ¿Qué problema tiene?
+<details><summary>Respuesta</summary><p>La licencia no permite uso comercial; debe pedir permiso al titular o usar otro corpus. También hay que ver si permite crear obras derivadas (el modelo) y su distribución.</p></details></li>
+<li><span class="lvl">Avanzado</span>Un etiquetador entrenado con noticias obtiene 95 % en noticias y 85 % en tuits. ¿Qué dos medidas toma?
+<details><summary>Respuesta</summary><p>Anotar una muestra de tuits para evaluar de verdad y adaptar el modelo (ajuste con ese dominio, normalización de la ortografía, léxico propio); y vigilar el rendimiento por dominio en producción.</p></details></li>
+</ol>
+<h3>Autoevaluación</h3>
+<div class="sim" data-sim="quiz" data-cap="recursos" data-title="Autoevaluación del capítulo 34"></div>
+<div class="box links"><ul>
+<li><a href="https://www.rae.es/recursos/banco-de-datos">RAE — Bancos de datos (CREA, CORPES XXI)</a><small>Corpus de referencia del español.</small></li>
+<li><a href="https://omwn.org/">Open Multilingual Wordnet</a><small>WordNets de muchos idiomas.</small></li>
+<li><a href="https://oscar-project.org/">OSCAR</a><small>Corpus multilingüe masivo extraído de la web.</small></li>
+<li><a href="https://opus.nlpl.eu/">OPUS</a><small>Colección de corpus paralelos.</small></li>
+<li><a href="https://huggingface.co/datasets">Hugging Face — Datasets</a><small>Catálogo de conjuntos de datos con su licencia.</small></li>
+<li><a href="https://www.nltk.org/nltk_data/">NLTK Data</a><small>Corpus y modelos que descarga NLTK, incluidos CESS-ESP y CoNLL-2002.</small></li>
+</ul></div>
+</section>
+</template>

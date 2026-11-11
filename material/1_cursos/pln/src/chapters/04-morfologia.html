@@ -1,0 +1,118 @@
+<template class="chapter-src" data-id="morfologia" data-num="4" data-title="Morfología: las partes de las palabras" data-part="Parte II · Las palabras" data-short="Morfemas, lexemas y rasgos; flexión, derivación y composición; qué produce un analizador (lema y rasgos); por qué el español es más difícil que el inglés">
+<p class="lead">«Mujeres» no es una unidad indivisible: es «mujer» más «-es». «Cantábamos» son tres piezas con significado. La morfología estudia cómo se arman las palabras con piezas menores, y la morfología computacional intenta recuperar esas piezas automáticamente. Sin ella, un buscador no sabe que «piénsalo» es una forma de «pensar», y un generador de texto no sabe concordar un adjetivo con su sustantivo.</p>
+
+<section>
+<h2>Morfemas, lexemas y rasgos gramaticales</h2>
+<p>La <span class="term">morfología</span> es la parte de la gramática que estudia la estructura de las palabras. Su unidad es el <span class="term">morfema</span>: la unidad mínima de una palabra capaz de expresar un significado. Hay dos clases:</p>
+<ul>
+<li><b>Lexema</b> (o raíz): la parte invariante, con el significado léxico principal. En «mujeres», «mujer»; en «cantábamos», «cant-».</li>
+<li><b>Morfema gramatical</b> (o flexivo): aporta significado gramatical, como género, número, persona, modo y tiempo. En «mujeres», «-es» (plural); en «cantábamos», «-aba-» (indicativo, pasado) y «-mos» (primera persona del plural).</li>
+</ul>
+<p>El singular «mujer» tiene también un <span class="term">morfema cero</span> de número singular: un morfema gramatical sin realización sonora ni escrita, pero con significado. Por eso se dice que «mujer» tiene dos morfemas y no uno.</p>
+<div class="sim" data-sim="morfemas" data-title="Descomponer palabras en morfemas"></div>
+<div class="sim-guide"><ul>
+<li>Elija una palabra: cada pieza se colorea según su tipo (raíz, flexivo, derivativo, cero) y se indica qué significado aporta.</li>
+<li>Compare «mujeres» y «cantábamos»: una palabra nominal lleva dos o tres piezas; una verbal acumula tiempo, modo, persona y número.</li>
+<li>«Desconfiadamente» y «sacacorchos» muestran que no todos los morfemas son flexivos: hay también derivación y composición.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Flexión, derivación y composición</h2>
+<table>
+<thead><tr><th>Proceso</th><th>Qué hace</th><th>¿Cambia de categoría?</th><th>Ejemplos</th></tr></thead>
+<tbody>
+<tr><td><b>Flexión</b></td><td>Añade rasgos gramaticales a una palabra</td><td>No</td><td>gato → gatas; cantar → cantábamos</td></tr>
+<tr><td><b>Derivación</b></td><td>Crea una palabra nueva con prefijo o sufijo</td><td>A menudo</td><td>feliz → <i>in</i>feliz; cantar → cant<i>ante</i>; claro → clara<i>mente</i></td></tr>
+<tr><td><b>Composición</b></td><td>Une dos raíces</td><td>A veces</td><td>saca + corchos → sacacorchos; para + sol → parasol</td></tr>
+</tbody></table>
+<p>Las lenguas difieren en cuánta información acumulan en una palabra. En una lengua <i>aislante</i> (chino mandarín) casi cada palabra es un morfema; en una <i>aglutinante</i> (turco, finés) cada pieza lleva un solo rasgo y se pegan en cadena; en una <i>fusional</i> (español) un solo morfema suele fundir varios rasgos: «-amos» a la vez significa primera persona, plural y, según el verbo, presente o pretérito. Esa fusión hace que la segmentación en el español sea menos transparente que en turco.</p>
+</section>
+
+<section>
+<h2>Qué produce un analizador morfológico</h2>
+<p>El <span class="term">análisis morfológico</span> parte de una palabra y devuelve la <b>raíz o lema</b> y sus <b>rasgos morfológicos</b>. Para «vino» hay dos análisis:</p>
+<table>
+<thead><tr><th>Entrada</th><th>Lema</th><th>Rasgos</th></tr></thead>
+<tbody>
+<tr><td>vino</td><td>venir</td><td>+V +Perf +3P +Sg (verbo, pretérito perfecto simple, tercera persona del singular)</td></tr>
+<tr><td>vino</td><td>vino</td><td>+N +Masc +Sg (sustantivo masculino singular)</td></tr>
+</tbody></table>
+<p>Una misma entrada puede devolver varios análisis: la <b>ambigüedad morfológica</b>, que se resuelve después con el contexto (etiquetado, capítulos 9 a 12). En el sentido contrario, la <b>generación</b> toma lema y rasgos y devuelve la forma de la palabra, necesaria para producir texto con concordancia correcta.</p>
+<div class="sim" data-sim="analizador" data-title="Analizar una palabra: lema, rasgos y reglas aplicadas"></div>
+<div class="sim-guide"><ul>
+<li>Pruebe «vino», «canto», «fue» y «sobre»: tienen más de un análisis.</li>
+<li>Pruebe «nueces», «canciones», «lápices» o «autobuses»: se muestra la cascada de reglas ortográficas que explica la forma (z → c, pérdida de tilde, inserción de «e»).</li>
+<li>Una palabra fuera del lexicón mínimo devuelve cero análisis. Un analizador real cubre cientos de miles de formas y adivina las desconocidas con reglas de sufijos.</li>
+</ul></div>
+<p>Para construir un analizador hacen falta tres componentes, que los capítulos 5 y 6 desarrollan como autómatas y transductores:</p>
+<ol>
+<li><b>Lexicón</b>: la lista de morfemas con su información básica (por ejemplo, que «gat-» es una raíz nominal). No lista todas las palabras, porque eso es inviable: lista los morfemas.</li>
+<li><b>Hechos morfotácticos</b>: qué morfemas pueden seguir a cuáles, y en qué orden. Por ejemplo, el plural «-s» solo va <i>después</i> de la raíz nominal, nunca antes.</li>
+<li><b>Reglas ortográficas</b>: los cambios de escritura al unir morfemas, como «nuez» + «-s» → «nueces» o «canción» + «-es» → «canciones».</li>
+</ol>
+</section>
+
+<section>
+<h2>Por qué el español es más difícil que el inglés</h2>
+<p>La mayor parte de la investigación en morfología computacional se hizo en inglés, donde el análisis es más sencillo: un verbo regular tiene cinco formas (<i>sing, sings, sang, sung, singing</i>). Un verbo regular español tiene decenas de formas distintas, y hay además alteraciones en la raíz.</p>
+<div class="sim" data-sim="conjugador" data-title="Formas de un verbo regular español frente a uno inglés"></div>
+<div class="sim-guide"><ul>
+<li>Elija un verbo: con el mini-lexicón, un verbo regular genera 45 análisis (siete tiempos con seis personas, más infinitivo, gerundio y participio) y 40 formas distintas, porque algunas se repiten («cantamos» es presente y pretérito; «cante», primera y tercera persona).</li>
+<li>El mini-lexicón omite el imperativo, los tiempos compuestos, las formas con pronombres pegados («piénsalo», «dáselo») y los verbos irregulares; un conjugador completo supera con facilidad las 50 formas por verbo.</li>
+<li>Consecuencia para el PLN: las formas se reparten el uso del verbo, cada una aparece menos veces y muchas faltan en un corpus pequeño. Por eso se lematiza (capítulo 7) o se trabaja con piezas menores que la palabra (capítulo 31).</li>
+</ul></div>
+<div class="box py"><p>El programa implementa el mismo modelo en Python: terminaciones por conjugación, cascada de reglas ortográficas y un índice para detectar formas ambiguas.</p>
+<div class="py" data-py="04-morfologia"></div></div>
+<div class="box read"><ul>
+<li><b>cantar</b>: 45 análisis y 40 formas distintas. Las cinco formas repetidas son los sincretismos: «cantamos» (presente y pretérito), «cantaba» (1.ª y 3.ª persona), «cante», «cantara» y «cantaría» (1.ª y 3.ª persona del singular).</li>
+<li><b>Ambigüedad</b>: en el mini-lexicón (tres verbos y los homógrafos «vino» y «canto») hay 16 formas con más de un análisis; la mayoría son pares de persona (1.ª y 3.ª del singular), y «canto» mezcla verbo y sustantivo.</li>
+<li><b>Plurales</b>: las reglas producen «lugares», «nueces», «canciones», «lápices» y «autobuses»; «padre» y «café» solo añaden «-s».</li>
+<li>El modelo JavaScript de esta página y el Python dan exactamente los mismos pares forma-análisis para los 23 verbos regulares y los plurales de prueba (apéndice de validación).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Para qué sirve la morfología en PLN</h2>
+<ul>
+<li><b>Búsqueda e indexación</b>: que «pensar» encuentre «piénsalo», «pensaremos» y «pensando».</li>
+<li><b>Generación de texto</b>: concordar género y número del sustantivo con su adjetivo y la persona del verbo con el sujeto.</li>
+<li><b>Corrección</b>: decidir si «cantastes» es una forma de un verbo o un error.</li>
+<li><b>Etiquetado y análisis sintáctico</b>: los rasgos (número, persona) restringen qué palabras pueden combinarse.</li>
+<li><b>Traducción</b>: el inglés expresa con palabras sueltas lo que el español flexiona.</li>
+</ul>
+<div class="box when"><p>Hay alternativas más simples que un analizador completo. El <i>stemming</i> de Porter (1980) corta terminaciones con reglas en cascada y devuelve raíces que no siempre son palabras. La lematización con un diccionario devuelve el lema real. Los modelos neuronales modernos aprenden las piezas de las palabras de los datos (capítulo 31). El analizador morfológico clásico sigue siendo la mejor opción en lenguas con poco texto y mucha morfología.</p></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>El morfema es la unidad mínima con significado: lexema (léxico) o morfema gramatical (género, número, persona, modo, tiempo).</li>
+<li>Flexión añade rasgos; derivación crea palabras nuevas; composición une raíces.</li>
+<li>El análisis devuelve lema y rasgos, y puede devolver varios análisis (ambigüedad morfológica).</li>
+<li>Un analizador necesita lexicón, hechos morfotácticos y reglas ortográficas.</li>
+<li>El español es fusional y de morfología rica: muchas formas por verbo, y cada una aparece poco.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Descomponga «cantábamos» en morfemas e indique el tipo de cada uno.
+<details><summary>Respuesta</summary><p>cant- (lexema), -aba- (gramatical: indicativo, pretérito imperfecto), -mos (gramatical: primera persona del plural).</p></details></li>
+<li><span class="lvl">Básico</span>¿Qué es un morfema cero? Dé un ejemplo.
+<details><summary>Respuesta</summary><p>Un morfema gramatical sin realización: el singular de «mujer» lleva un morfema cero de número.</p></details></li>
+<li><span class="lvl">Intermedio</span>Clasifique como flexión, derivación o composición: «gatas», «infeliz», «sacacorchos», «cantamos».
+<details><summary>Respuesta</summary><p>Flexión (género y número), derivación (prefijo in-), composición, flexión (persona y número).</p></details></li>
+<li><span class="lvl">Intermedio</span>Un verbo regular genera 45 análisis y 40 formas distintas. ¿Qué indica la diferencia?
+<details><summary>Respuesta</summary><p>Hay 5 sincretismos: formas idénticas con varios análisis, por ejemplo «cantamos» (presente y pretérito). Son fuente de ambigüedad morfológica.</p></details></li>
+<li><span class="lvl">Avanzado</span>Aplique la cascada a «lápiz^s#» y explique cada regla.
+<details><summary>Respuesta</summary><p>Inserción de «e» tras consonante: lápiz^es#. Regla z → c ante e: lápic^es#. Pérdida de tilde (no se aplica: la tilde no precede a n/s + e). Al quitar las fronteras: «lápices».</p></details></li>
+</ol>
+<h3>Autoevaluación</h3>
+<div class="sim" data-sim="quiz" data-cap="morfologia" data-title="Autoevaluación del capítulo 4"></div>
+<div class="box links"><ul>
+<li><a href="https://web.stanford.edu/~jurafsky/slp3/">Jurafsky y Martin — Speech and Language Processing</a><small>El capítulo 3 de la 2.ª edición («Words and Transducers») es la referencia clásica de morfología con autómatas; la 3.ª edición trata la normalización de texto en su capítulo 2.</small></li>
+<li><a href="https://universaldependencies.org/u/feat/index.html">Universal Dependencies — rasgos morfológicos</a><small>Inventario común de rasgos (Gender, Number, Person, Tense, Mood…) usado por corpus de decenas de lenguas, incluido el español.</small></li>
+<li><a href="https://unimorph.github.io/">UniMorph</a><small>Tablas de paradigmas morfológicos de más de 100 lenguas, para entrenar y evaluar analizadores y generadores.</small></li>
+<li><a href="https://nlp.lsi.upc.edu/freeling/">FreeLing</a><small>Analizador morfológico y sintáctico de código abierto con diccionario de español.</small></li>
+<li><a href="https://dle.rae.es/morfología">RAE — Diccionario de la lengua española: morfología</a><small>Definición oficial en la que se apoya el tema.</small></li>
+</ul></div>
+</section>
+</template>

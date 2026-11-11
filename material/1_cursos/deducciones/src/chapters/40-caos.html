@@ -1,0 +1,243 @@
+<template class="chapter-src" data-id="caos" data-num="40" data-title="Caos y sistemas no lineales: bifurcaciones, atractores, ciclos límite, fractales y sincronización" data-part="Parte XII · Sistemas complejos y aplicados" data-short="El mapa logístico y la cascada de Feigenbaum, el sistema de Lorenz, el oscilador de Van der Pol, la dimensión fractal y la sincronización de Kuramoto">
+<p class="lead">Los sistemas no lineales no se resuelven sumando soluciones, pero sí se entienden: se buscan sus puntos de equilibrio, se estudia su estabilidad y se cuenta cómo cambia el comportamiento cuando se varía un parámetro. Las cinco deducciones de este capítulo muestran cómo aparecen el caos determinista, las oscilaciones autosostenidas, la geometría fractal y la sincronización colectiva a partir de ecuaciones muy simples.</p>
+
+<deriv id="mapa-logistico" title="El mapa logístico: bifurcaciones, constante de Feigenbaum y exponente de Lyapunov" tags="Caos, Mapas">
+<goal>Los comportamientos del mapa \(x_{n+1}=rx_n(1-x_n)\) según \(r\): equilibrio, ciclos de período doble y caos, con un criterio cuantitativo de caos.</goal>
+<given>
+<g>Mapa \(f(x)=rx(1-x)\) con \(0\le x\le1\) y \(0<r\le4\); un punto fijo satisface \(f(x)=x\) y es estable si \(|f'(x)|<1\).</g>
+</given>
+<step op="Puntos fijos: resolver \(rx(1-x)=x\)">
+\[x=0\quad\text{y}\quad x^*=1-\frac1r\quad(r>1).\]
+</step>
+<step op="Multiplicador del punto fijo y su estabilidad">
+\[f'(x^*)=r(1-2x^*)=2-r,\qquad|2-r|<1\iff1<r<3.\]
+<why>En \(r=3\) el multiplicador vale \(-1\): el punto fijo pierde estabilidad y aparece un ciclo de período 2.</why>
+</step>
+<step op="Ciclo de período 2: soluciones de \(f(f(x))=x\) distintas de los puntos fijos">
+\[x_\pm=\frac{(r+1)\pm\sqrt{(r-3)(r+1)}}{2r},\qquad\Lambda_2=f'(x_+)f'(x_-)=4+2r-r^2.\]
+</step>
+<step op="Estabilidad del ciclo: \(|\Lambda_2|<1\iff3<r<1+\sqrt6=3.4495\). Cada ciclo de período \(2^n\) se duplica en \(r_n\)">
+\[\delta=\lim_{n\to\infty}\frac{r_n-r_{n-1}}{r_{n+1}-r_n}=4.6692\ldots,\qquad r_\infty=3.5699\ldots\]
+<why>La razón \(\delta\) es universal: la misma para toda función unimodal suave con un máximo cuadrático (Feigenbaum, 1978).</why>
+</step>
+<step op="Exponente de Lyapunov: promedio de la tasa de separación de trayectorias vecinas">
+\[\lambda=\lim_{N\to\infty}\frac1N\sum_{i=0}^{N-1}\ln|f'(x_i)|,\qquad\lambda>0\ \Rightarrow\ \text{caos}.\]
+</step>
+<result name="Mapa logístico">\[x^*=1-\frac1r,\quad f'(x^*)=2-r,\quad r_2=1+\sqrt6,\quad\delta=4.6692,\quad\lambda=\langle\ln|r(1-2x)|\rangle.\]</result>
+<vars>
+<v s="x" n="variable del mapa" u="1"/>
+<v s="r" n="parámetro de crecimiento" u="1"/>
+<v s="x^*" n="punto fijo" u="1"/>
+<v s="\Lambda_2" n="multiplicador del ciclo de período 2" u="1"/>
+<v s="\delta" n="constante de Feigenbaum" u="1"/>
+<v s="\lambda" n="exponente de Lyapunov (por iteración)" u="1"/>
+</vars>
+<effects>
+<e>\(r=2.5\): \(x^*=0.6\), \(f'(x^*)=-0.5\) y \(\lambda=\ln0.5=-0.6931\) (equilibrio estable). \(r=3.2\): ciclo de período 2 con \(x_\pm=0.5130,\,0.7995\) y \(\lambda=\tfrac12\ln|4+2r-r^2|=-0.9163\). \(r=3.5\): ciclo de período 4 (\(\lambda=-0.8725\)).</e>
+<e>Caos: \(r=3.7\) da \(\lambda=+0.3494\); \(r=3.9\), \(\lambda=+0.4798\); \(r=4\), \(\lambda=0.6927\), próximo al valor exacto \(\ln2=0.6931\). Dos condiciones iniciales que difieren en \(10^{-10}\) se separan hasta ser independientes en unas \(\ln(10^{10})/\lambda\approx48\) iteraciones (\(r=3.9\)): pérdida de predictibilidad.</e>
+<e>Entre el caos hay ventanas de periodicidad: en \(r=1+\sqrt8=3.8284\) aparece un ciclo de período 3, que implica la existencia de ciclos de todos los períodos (teorema de Li y Yorke, «período tres implica caos»).</e>
+</effects>
+<limits>
+<l>Todo es adimensional. ✓</l>
+<l>El mapa es una idealización (poblaciones discretas sin estructura de edad). El valor de \(\delta\) y la cascada son universales, pero \(r_\infty\) depende de la función; el exponente de Lyapunov numérico converge lentamente (error \(\sim1/\sqrt N\) en el caso caótico).</l>
+</limits>
+<explore sim="caos-logistico" title="Mapa logístico: punto fijo, estabilidad y exponente de Lyapunov"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (\(r=3.9\)): \(x^*=0.74359\), \(f'(x^*)=-1.9\), estabilidad 0 y \(\lambda=0.479845\).</li>
+<li>Con \(r\) en el eje: \(\lambda<0\) hasta \(r_\infty\approx3.57\); después oscila entre valores positivos (caos) y negativos (ventanas periódicas).</li>
+</ul></div>
+</deriv>
+
+<deriv id="lorenz" title="El sistema de Lorenz: puntos de convección, divergencia y umbral del caos" tags="Caos, Lorenz">
+<goal>Los equilibrios del modelo de convección de Lorenz, el valor del número de Rayleigh en que dejan de ser estables y la contracción del volumen en el espacio de fases.</goal>
+<given>
+<g>Ecuaciones de Lorenz (1963): \(\dot x=\sigma(y-x)\), \(\dot y=rx-y-xz\), \(\dot z=xy-bz\); parámetros clásicos \(\sigma=10\), \(b=8/3\).</g>
+</given>
+<step op="Divergencia del campo: tasa de variación de un volumen de condiciones iniciales">
+\[\nabla\cdot\mathbf F=-\sigma-1-b=-(\sigma+b+1)<0.\]
+<why>Todo volumen se contrae como \(e^{-(\sigma+b+1)t}\): el atractor tiene volumen cero (es un conjunto de dimensión fraccionaria).</why>
+</step>
+<step op="Puntos fijos">
+\[O=(0,0,0)\quad\text{y}\quad C_\pm=\left(\pm\sqrt{b(r-1)},\pm\sqrt{b(r-1)},\,r-1\right)\quad(r>1).\]
+</step>
+<step op="Linealización en \(C_\pm\): polinomio característico de la matriz jacobiana">
+\[\lambda^3+(\sigma+b+1)\lambda^2+b(\sigma+r)\lambda+2\sigma b(r-1)=0.\]
+</step>
+<step op="Pérdida de estabilidad: dos raíces imaginarias puras \(\lambda=\pm i\omega\) cuando el término de \(\lambda^2\) por el de \(\lambda\) iguala al independiente">
+\[(\sigma+b+1)\,b(\sigma+r)=2\sigma b(r-1)\ \Longrightarrow\ r_H=\frac{\sigma(\sigma+b+3)}{\sigma-b-1},\qquad\omega^2=\frac{2\sigma b(\sigma+1)}{\sigma-b-1}.\]
+</step>
+<step op="Para \(r>r_H\) los dos puntos son inestables (espirales que se alejan) y la trayectoria salta entre ellos de forma caótica">
+\[\lambda_1\approx0.906,\qquad\lambda_2=0,\qquad\lambda_3\approx-14.57.\]
+</step>
+<result name="Umbral de Lorenz">\[r_H=\frac{\sigma(\sigma+b+3)}{\sigma-b-1},\qquad\nabla\cdot\mathbf F=-(\sigma+b+1).\]</result>
+<vars>
+<v s="\sigma" n="número de Prandtl" u="1"/>
+<v s="b" n="razón de aspecto geométrica" u="1"/>
+<v s="r" n="número de Rayleigh reducido" u="1"/>
+<v s="r_H" n="valor crítico de Hopf" u="1"/>
+<v s="\lambda_i" n="exponentes de Lyapunov (en unidades de tiempo adimensional)" u="1"/>
+<v s="\omega" n="frecuencia en el umbral" u="1"/>
+</vars>
+<effects>
+<e>Con \(\sigma=10\), \(b=8/3\): \(r_H=24.7368\) (el caos clásico a \(r=28\) está por encima); \(C_\pm=(\pm8.485,\pm8.485,27)\); divergencia \(-13.667\): el volumen se reduce por un factor \(e^{-13.667}=1.2\times10^{-6}\) cada unidad de tiempo. En \(r=28\) los autovalores en \(C_\pm\) son \(-13.855\) y \(0.0940\pm10.195\,i\).</e>
+<e>La suma de los tres exponentes de Lyapunov es la divergencia: \(0.906+0-14.572=-13.667\). El valor positivo \(\lambda_1\) da una pérdida de predictibilidad en \(\ln(10^{3})/0.906\approx7.6\) unidades de tiempo para un error inicial \(10^{-3}\).</e>
+</effects>
+<limits>
+<l>Todo es adimensional. ✓</l>
+<l>El sistema es un truncamiento drástico (tres modos) de las ecuaciones de la convección; la bifurcación en \(r_H\) es subcrítica: hay histéresis y caos transitorio ya a \(r\approx24.06\). La fórmula \(r_H\) vale para \(\sigma>b+1\).</l>
+</limits>
+<explore sim="caos-lorenz" title="Sistema de Lorenz: puntos de equilibrio y umbral de Hopf"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (\(\sigma=10\), \(b=8/3\), \(r=28\)): \(x^*=8.48528\), \(z^*=27\), \(r_H=24.7368\) y divergencia \(-13.6667\).</li>
+<li>Con \(r\) en el eje (log–log): \(x^*\propto\sqrt{r-1}\) y \(r_H\) no depende de \(r\).</li>
+</ul></div>
+</deriv>
+
+<deriv id="van-der-pol" title="El oscilador de Van der Pol y los ciclos límite" tags="Caos, Oscilaciones">
+<goal>La amplitud y el período de una oscilación autosostenida: el ciclo límite al que tienden todas las trayectorias.</goal>
+<given>
+<g>\(\ddot x-\mu(1-x^2)\dot x+x=0\): amortiguamiento negativo para \(|x|<1\) (aporta energía) y positivo para \(|x|>1\) (la disipa).</g>
+</given>
+<step op="Para \(\mu\ll1\) la solución es casi armónica: \(x=A\cos\theta\), \(\dot x=-A\sin\theta\), con \(\theta=t+\varphi\)">
+\[\dot A=\mu A\sin^2\theta\left(1-A^2\cos^2\theta\right).\]
+</step>
+<step op="Promediar sobre un período, con \(\langle\sin^2\theta\rangle=\tfrac12\) y \(\langle\sin^2\theta\cos^2\theta\rangle=\tfrac18\)">
+\[\dot A=\frac{\mu A}2\left(1-\frac{A^2}4\right).\]
+</step>
+<step op="Puntos de equilibrio y estabilidad">
+\[A=0\ (\text{inestable}),\qquad A=2\ (\text{estable}):\quad\frac{\mathrm d\dot A}{\mathrm dA}\Big|_{A=2}=-\mu<0.\]
+</step>
+<step op="Corrección de la frecuencia a segundo orden: \(\omega=1-\mu^2/16\)">
+\[T\simeq2\pi\left(1+\frac{\mu^2}{16}\right)\qquad(\mu\ll1).\]
+</step>
+<step op="Oscilaciones de relajación (\(\mu\gg1\)): cambio de variable de Liénard \(y=\dot x/\mu-x+x^3/3\), con ramas lentas \(y=x^3/3-x\)">
+\[T\simeq(3-2\ln2)\,\mu\;+\;3\alpha\,\mu^{-1/3},\qquad\alpha=2.338.\]
+<why>Durante las ramas lentas, \(\dot y=-x/\mu\); el tiempo es \(\mu\int(x^2-1)/x\,\mathrm dx\) entre \(x=2\) y \(x=1\), es decir \(\mu(3/2-\ln2)\) por rama.</why>
+</step>
+<result name="Ciclo límite de Van der Pol">\[A\to2,\qquad T\simeq2\pi\left(1+\frac{\mu^2}{16}\right)\ (\mu\ll1),\qquad T\simeq(3-2\ln2)\mu\ (\mu\gg1).\]</result>
+<vars>
+<v s="x" n="variable adimensional" u="1"/>
+<v s="\mu" n="parámetro de no linealidad" u="1"/>
+<v s="A" n="amplitud" u="1"/>
+<v s="\theta" n="fase" u="rad"/>
+<v s="T" n="período adimensional" u="1"/>
+</vars>
+<effects>
+<e>Para \(\mu=0.1\): \(A=2.0001\), \(T=6.2871\) (la fórmula da 6.2871); \(\mu=0.5\): \(T=6.3807\) (6.3814); \(\mu=1\): \(A=2.0086\) y \(T=6.6633\) (6.6759, error 0.2 %).</e>
+<e>Para \(\mu=5\): \(T=11.612\) (la fórmula de relajación da 12.171, 4.8 % más); \(\mu=10\): \(T=19.078\) (19.393, 1.6 %). La amplitud sigue siendo casi 2 (2.02 y 2.01) aunque la forma de onda es de dientes de sierra.</e>
+<e>El mismo ciclo se alcanza desde cualquier condición inicial: es un atractor, no una órbita cerrada dependiente de la energía inicial como en el oscilador armónico.</e>
+</effects>
+<limits>
+<l>Variables adimensionales. ✓</l>
+<l>El promedio de primer orden da la amplitud \(A=2\) pero no sus correcciones en \(\mu\) (el máximo de \(x\) supera ligeramente 2, por ejemplo 2.0086 en \(\mu=1\)); el período para valores intermedios de \(\mu\) (1–3) no lo describe bien ninguna de las dos fórmulas y requiere integración numérica.</l>
+</limits>
+<explore sim="caos-vdp" title="Oscilador de Van der Pol: amplitud y período del ciclo límite"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (\(\mu=1\)): \(T=6.66329\), \(A=2.00862\), fórmula de \(\mu\) pequeño 6.67588 y de \(\mu\) grande 8.62803.</li>
+<li>Con \(\mu\) en el eje (log–log): \(T\) es casi constante para \(\mu\ll1\) y proporcional a \(\mu\) para \(\mu\gg1\) (pendiente 1).</li>
+</ul></div>
+</deriv>
+
+<deriv id="dimension-fractal" title="La dimensión fractal de los conjuntos autosemejantes" tags="Fractales, Geometría">
+<goal>La dimensión (no entera) de un conjunto formado por \(N\) copias reducidas de sí mismo, y qué pasa con su longitud, área y volumen al refinar la construcción.</goal>
+<given>
+<g>Un conjunto es autosemejante si está formado por \(N\) copias de sí mismo, cada una reducida por un factor \(s<1\) en todas las direcciones.</g>
+<g>Una medida de dimensión \(D\) escala como \(M(s\,\ell)=s^{D}M(\ell)\): un segmento (\(D=1\)) a escala \(s\) tiene \(s\) veces su longitud; un cuadrado (\(D=2\)), \(s^2\) veces su área.</g>
+</given>
+<step op="La medida del conjunto es la suma de las medidas de las copias">
+\[M=N\,s^{D}M\ \Longrightarrow\ N\,s^{D}=1.\]
+</step>
+<step op="Despejar \(D\)">
+\[D=\frac{\ln N}{\ln(1/s)}.\]
+</step>
+<step op="Ejemplos con \(E\)=1 o 2 dimensiones de espacio">
+\[\text{Cantor}\ (N=2,\ 1/s=3):\ D=0.6309;\quad\text{Koch}\ (4,3):\ D=1.2619;\quad\text{Sierpinski}\ (3,2):\ D=1.5850.\]
+</step>
+<step op="Medida \(E\)-dimensional en el nivel \(n\) de la construcción (\(N^n\) piezas de tamaño \(s^n\))">
+\[M_n=\left(\frac N{(1/s)^E}\right)^{\!n}\ \Longrightarrow\ \begin{cases}D<E:\ M_n\to0\\D=E:\ M_n=1\\D>E:\ M_n\to\infty\end{cases}\]
+<why>La curva de Koch tiene longitud infinita (\(D>1\)) y área nula (\(D<2\)); el triángulo de Sierpinski tiene área nula y longitud infinita; el conjunto de Cantor tiene longitud nula.</why>
+</step>
+<step op="Cuenta de cajas: el número de cajas de lado \(\varepsilon\) necesarias para cubrir el conjunto sigue">
+\[N(\varepsilon)\propto\varepsilon^{-D}\ \Longrightarrow\ D=-\lim_{\varepsilon\to0}\frac{\ln N(\varepsilon)}{\ln\varepsilon}.\]
+</step>
+<result name="Dimensión de similitud">\[D=\frac{\ln N}{\ln(1/s)},\qquad M_n=\left(N\,s^E\right)^n.\]</result>
+<vars>
+<v s="D" n="dimensión de similitud" u="1"/>
+<v s="N" n="número de copias" u="1"/>
+<v s="s" n="factor de reducción" u="1"/>
+<v s="E" n="dimensión del espacio" u="1"/>
+<v s="M_n" n="medida relativa en el nivel \(n\)" u="1"/>
+<v s="\varepsilon" n="tamaño de las cajas (en unidades del conjunto)" u="1"/>
+</vars>
+<effects>
+<e>Conjunto de Cantor: longitud relativa \((2/3)^n\); tras 10 pasos queda el 1.7 % y \(D=0.6309\). Curva de Koch: la longitud se multiplica por 4/3 en cada paso (\(\times1.333^{10}=17.76\) tras 10) y \(D=1.2619\). Triángulo de Sierpinski: área \((3/4)^n\) y \(D=1.5850\).</e>
+<e>Costas y otros objetos naturales: la longitud medida con una regla de tamaño \(\varepsilon\) crece como \(\varepsilon^{1-D}\) (Richardson, Mandelbrot); la costa de Gran Bretaña tiene \(D\approx1.25\).</e>
+</effects>
+<limits>
+<l>Todo es adimensional. ✓</l>
+<l>La dimensión de similitud solo vale para conjuntos exactamente autosemejantes con copias que no se solapan demasiado; la dimensión de Hausdorff o de cajas se define en general y en los objetos reales solo es válida en un intervalo finito de escalas.</l>
+</limits>
+<explore sim="caos-fractal" title="Dimensión fractal: copias, escala y medida en cada nivel"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (Koch: \(N=4\), \(1/s=3\), \(E=1\), \(n=5\)): \(D=1.26186\), codimensión \(-0.26186\), 1024 piezas y longitud relativa 4.21399 (= (4/3)⁵).</li>
+<li>Con \(n\) en el eje: la medida crece o decrece exponencialmente según \(D\) sea mayor o menor que \(E\).</li>
+</ul></div>
+</deriv>
+
+<deriv id="kuramoto" title="La sincronización de Kuramoto" tags="Caos, Sincronización">
+<goal>Cuándo un conjunto de osciladores con frecuencias distintas y acoplamiento global se sincroniza, y cuánto.</goal>
+<given>
+<g>\(N\) osciladores de fase \(\theta_i\): \(\dot\theta_i=\omega_i+\dfrac KN\sum_j\sin(\theta_j-\theta_i)\), con frecuencias naturales \(\omega_i\) de distribución \(g(\omega)\) simétrica y unimodal.</g>
+<g>Parámetro de orden de campo medio \(re^{i\psi}=\dfrac1N\sum_je^{i\theta_j}\); \(r=0\) es la fase incoherente y \(r=1\) la sincronía total.</g>
+</given>
+<step op="Escribir la ecuación con el campo medio">
+\[\dot\theta_i=\omega_i-Kr\sin(\theta_i-\psi).\]
+</step>
+<step op="Osciladores sincronizados (\(|\omega|\le Kr\)): fase estacionaria \(\sin\theta=\omega/(Kr)\); los demás derivan y no contribuyen a \(r\) por simetría">
+\[r=\int_{-Kr}^{Kr}\cos\theta(\omega)\,g(\omega)\,\mathrm d\omega=Kr\int_{-\pi/2}^{\pi/2}\cos^2\theta\;g(Kr\sin\theta)\,\mathrm d\theta.\]
+</step>
+<step op="Solución trivial \(r=0\) o autoconsistencia: dividir por \(r\) y hacer \(r\to0^+\)">
+\[1=K\,g(0)\int_{-\pi/2}^{\pi/2}\cos^2\theta\,\mathrm d\theta=\frac{\pi}2Kg(0)\ \Longrightarrow\ K_c=\frac2{\pi g(0)}.\]
+</step>
+<step op="Distribución lorentziana \(g(\omega)=\dfrac{\gamma}{\pi(\omega^2+\gamma^2)}\): \(g(0)=1/(\pi\gamma)\) y la integral se hace en forma cerrada">
+\[K_c=2\gamma,\qquad r=\sqrt{1-\frac{K_c}K}\quad(K>K_c).\]
+</step>
+<step op="Fracción de osciladores sincronizados (los que cumplen \(|\omega|\le Kr\))">
+\[f_\text{sinc}=\int_{-Kr}^{Kr}g\,\mathrm d\omega=\frac2\pi\arctan\frac{Kr}\gamma.\]
+</step>
+<result name="Transición de Kuramoto">\[K_c=\frac{2}{\pi g(0)},\qquad r=\sqrt{1-K_c/K}\quad(K>K_c,\ \text{Lorentz}).\]</result>
+<vars>
+<v s="\theta_i" n="fase del oscilador \(i\)" u="rad"/>
+<v s="\omega_i" n="frecuencia natural" u="rad s^-1"/>
+<v s="K" n="intensidad del acoplamiento" u="s^-1"/>
+<v s="r" n="parámetro de orden" u="1"/>
+<v s="g" n="densidad de frecuencias naturales" u="s"/>
+<v s="\gamma" n="semianchura lorentziana" u="rad s^-1"/>
+<v s="K_c" n="acoplamiento crítico" u="s^-1"/>
+</vars>
+<effects>
+<e>Con \(\gamma=0.5\) (\(K_c=1\)): \(K=1.5\), \(r=0.5774\); \(K=2\), \(r=0.7071\); \(K=3\), \(r=0.8165\). La simulación de 4000 osciladores coincide con la teoría con diferencias menores que 0.01 para esos tres valores, y para \(K=0.8<K_c\) da un valor muy pequeño (menos de 0.05; ruido de tamaño finito \(\sim1/\sqrt N\)).</e>
+<e>La transición es continua y de tipo campo medio: \(r\propto(K-K_c)^{1/2}\) cerca del umbral. A \(K=2K_c\) el 71 % de los osciladores están sincronizados: \((2/\pi)\arctan(Kr/\gamma)=0.8\).</e>
+</effects>
+<limits>
+<l>Dimensiones: \(g(0)\) es un tiempo y \(K_c=2/(\pi g(0))\) una frecuencia. ✓</l>
+<l>Acoplamiento global y frecuencias estáticas; en redes con estructura, con retrasos o con inercia la transición cambia (primer orden, histéresis). La sincronización de luciérnagas, neuronas del marcapasos, redes eléctricas y péndulos acoplados se describe con modelos de este tipo.</l>
+</limits>
+<explore sim="caos-kuramoto" title="Transición de sincronización de Kuramoto: acoplamiento crítico y parámetro de orden"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (\(K=2\), \(\gamma=0.5\)): \(K_c=1\), \(r=0.707107\) y fracción sincronizada 0.8.</li>
+<li>Con \(K\) en el eje (log–log): \(r=0\) bajo \(K_c\), crecimiento de raíz cuadrada justo por encima y saturación en 1 para \(K\gg K_c\).</li>
+</ul></div>
+</deriv>
+
+<section>
+<h2>Fuentes y lecturas</h2>
+<ul class="refs">
+<li>S. H. Strogatz, <em>Nonlinear Dynamics and Chaos</em>, 2.ª ed., Westview Press (2015): caps. 3 (bifurcaciones), 7 (ciclos límite), 9 (Lorenz), 10 (mapas), 11 (fractales) y 8 (Kuramoto en el cap. 4 de <em>Sync</em>, Hyperion, 2003).</li>
+<li>E. N. Lorenz, <em>Journal of the Atmospheric Sciences</em> 20 (1963) 130; R. M. May, <em>Nature</em> 261 (1976) 459; M. J. Feigenbaum, <em>Journal of Statistical Physics</em> 19 (1978) 25.</li>
+<li>B. van der Pol, <em>Philosophical Magazine</em> 2 (1926) 978; Y. Kuramoto, <em>Chemical Oscillations, Waves, and Turbulence</em>, Springer (1984).</li>
+<li>B. B. Mandelbrot, <em>Science</em> 156 (1967) 636 y <em>The Fractal Geometry of Nature</em>, W. H. Freeman (1982).</li>
+<li>T. Y. Li y J. A. Yorke, <em>American Mathematical Monthly</em> 82 (1975) 985.</li>
+</ul>
+</section>
+</template>

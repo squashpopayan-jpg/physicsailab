@@ -1,0 +1,101 @@
+<template class="chapter-src" data-id="wsd" data-num="22" data-title="Desambiguación del sentido de las palabras" data-part="Parte V · El significado" data-short="La tarea (lexical sample y all-words); línea de base del sentido más frecuente; métodos supervisados y rasgos; algoritmos basados en conocimiento (Lesk, Lesk con IDF); un sentido por discurso; evaluación">
+<p class="lead">«El banco cerró a las tres» y «el banco del parque estaba mojado»: la misma palabra, dos mundos. Una persona resuelve esto sin darse cuenta, pero un programa que traduce, busca o responde preguntas necesita decidir qué sentido se usa. La <b>desambiguación del sentido de las palabras</b> (<i>word sense disambiguation</i>, WSD) es esa decisión: dada una palabra en contexto y un inventario de sentidos, elegir uno.</p>
+
+<section>
+<h2>La tarea y cómo se evalúa</h2>
+<p>Es un problema de <b>clasificación</b> donde las clases son los sentidos de la palabra en un inventario (los synsets de WordNet, o los de un diccionario). Hay dos versiones:</p>
+<ul>
+<li><b>Muestra léxica</b> (<i>lexical sample</i>): un conjunto pequeño de palabras ambiguas elegidas de antemano, con muchos ejemplos etiquetados de cada una. Permite entrenar un clasificador por palabra.</li>
+<li><b>Todas las palabras</b> (<i>all-words</i>): se desambiguan todas las palabras de contenido de un texto. Hay mucho menos material por palabra, así que se necesitan métodos que generalicen.</li>
+</ul>
+<p>La evaluación compara con sentidos asignados por humanos (corpus como SemCor, y las campañas Senseval/SemEval). La <b>línea de base</b> fuerte es la del <b>sentido más frecuente</b> (MFS): elegir siempre el primer sentido del inventario, que suele ser el más común. En los bancos de pruebas en inglés ronda el 65 % de aciertos, y no es fácil superarla sin ejemplos etiquetados.</p>
+<p>El conjunto del curso es mucho más pequeño y se construyó a propósito: 10 palabras ambiguas del español (banco, cabo, radio, planta, mina, capital, hoja, cuerda, gato, ratón) con 26 sentidos descritos con definiciones y ejemplos propios, y 43 oraciones de prueba originales. Sirve para ver cómo funcionan los algoritmos, no para medir su calidad real.</p>
+</section>
+
+<section>
+<h2>Métodos supervisados</h2>
+<p>Con un corpus etiquetado se entrena un clasificador por palabra a partir de <b>rasgos</b> del contexto. Dos familias clásicas:</p>
+<ul>
+<li><b>Rasgos colocacionales</b>: las palabras (y etiquetas gramaticales) en posiciones concretas cerca de la ambigua; por ejemplo, <i>la palabra a la derecha</i> es «de» o «del». Capturan la sintaxis cercana.</li>
+<li><b>Bolsa de palabras</b>: qué palabras de contenido aparecen en una ventana, sin posición. Capturan el tema («dinero», «préstamo»).</li>
+</ul>
+<p>El clasificador más sencillo es el <b>Bayes ingenuo</b>: se elige el sentido que maximiza la probabilidad conjunta de sentido y rasgos, suponiendo que los rasgos son independientes dado el sentido:</p>
+<div class="eq key" data-name="Bayes ingenuo para WSD">\[\hat s=\arg\max_{s\in S(w)}\ P(s)\prod_{j}P(f_j\mid s),\qquad P(f\mid s)=\frac{C(f,s)+1}{\sum_{f'}C(f',s)+|V|}\]</div>
+<p>La suma de 1 en el numerador es el <b>suavizado de Laplace</b>, necesario para que un rasgo no visto con un sentido no anule todo el producto. La desventaja de la supervisión es el coste de etiquetar: cada palabra ambigua necesita cientos de ejemplos y el inventario es enorme.</p>
+</section>
+
+<section>
+<h2>Métodos basados en conocimiento: Lesk</h2>
+<p>Si no hay corpus etiquetado se aprovecha el diccionario. La idea de <b>Lesk</b> (1986): el sentido correcto es aquel cuya definición comparte más palabras con el contexto. En su versión <b>simplificada</b> (Kilgarriff y Rosenzweig, 2000):</p>
+<ol>
+<li>La <b>firma</b> de cada sentido es el conjunto de raíces de su definición (y, opcionalmente, de sus ejemplos), sin palabras vacías.</li>
+<li>El <b>contexto</b> son las raíces de las palabras de la oración, sin la propia palabra ambigua.</li>
+<li>Se elige el sentido con mayor <b>solapamiento</b> entre firma y contexto; con empate (o con cero), el primero.</li>
+</ol>
+<p>Las variantes se diferencian en qué cuentan: <b>Lesk con IDF</b> pondera cada coincidencia con \(\mathrm{idf}(w)=\log(N/n_w)\), de modo que las palabras presentes en muchas definiciones valgan menos que las raras. Otra mejora es ampliar la firma con las oraciones de un corpus etiquetado (<i>Corpus Lesk</i>), o con las definiciones de los hiperónimos del synset.</p>
+<div class="sim" data-sim="lesk-oracion" data-title="Lesk simplificado en una oración: solapes y puntos de cada sentido"></div>
+<div class="sim-guide"><ul>
+<li>La primera oración usa «banco» con el sentido financiero: comparte «crédito» y «cuenta» con la firma del sentido 1. Observe las raíces coincidentes (en verde) y la columna de puntos.</li>
+<li>Elija «radio: El médico vio en la radiografía que el radio del brazo estaba roto». No hay ninguna raíz en común con la firma del hueso y el algoritmo devuelve el primer sentido, equivocado: es la limitación típica de Lesk.</li>
+<li>Elija «banco: Me senté a esperar el autobús en el banco» y desactive «incluye las oraciones de ejemplo»: sin ellas ya no hay coincidencia con «sentamos» y falla.</li>
+<li>Escriba su propia oración con la misma palabra, por ejemplo «El banco de peces seguía al barco».</li>
+</ul></div>
+<div class="sim" data-sim="wsd-evaluacion" data-title="Comparar métodos en las 43 oraciones de prueba"></div>
+<div class="sim-guide"><ul>
+<li>El primer sentido acierta en el 44,2 % de las oraciones (19 de 43): es la línea de base.</li>
+<li>Lesk con ejemplos y con IDF aciertan 40 de 43 (93,0 %). Con solo la definición baja a 37 de 43 (86,0 %): los ejemplos ayudan.</li>
+<li>El Bayes ingenuo, entrenado con las mismas definiciones y ejemplos, acierta también 40 de 43. Los tres errores son los mismos: oraciones sin ninguna palabra conocida, donde ninguno puede apoyarse en nada.</li>
+<li>No lo tome como medida de calidad: las oraciones de prueba las escribimos nosotros para este curso, y es más fácil que el texto real. Sobre corpus reales el Lesk simplificado queda claramente por debajo de los sistemas neuronales.</li>
+</ul></div>
+<div class="box py"><p>El programa implementa el Lesk simplificado del español con las tres variantes (con ejemplos, solo definición, con IDF), el Bayes ingenuo con <code>scikit-learn</code> y el <code>lesk</code> de NLTK sobre WordNet en inglés.</p>
+<div class="py" data-py="22-wsd"></div></div>
+<div class="box read"><ul>
+<li><b>Línea de base</b>: 44,2 % (el primer sentido). <b>Lesk</b>: 93,0 % con ejemplos y 86,0 % solo con la definición; el IDF no cambia el resultado (93,0 %) en un conjunto tan pequeño. <b>Bayes ingenuo</b>: 93,0 %.</li>
+<li><b>Los fallos</b> son los de «radio» (hueso), «mina» (explosivo) y «cuerda» (instrumento): en las tres el contexto no comparte ninguna raíz con la firma. Todos los métodos basados en solapamiento exacto fallan igual.</li>
+<li><b>Con NLTK y WordNet</b>, para «I went to the bank to deposit my money» elige <code>depository_financial_institution.n.01</code>, el sentido financiero.</li>
+<li>Este código es el que se valida en el apéndice: el curso compara su Lesk y su Bayes ingenuo con la implementación independiente (stemmer Snowball de NLTK, MultinomialNB de scikit-learn).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Otras ideas y el estado actual</h2>
+<ul>
+<li><b>Un sentido por discurso</b> (Gale y otros, 1992): una palabra ambigua que se repite en un texto suele conservar el sentido. Es una restricción útil para desambiguar de forma consistente, mejor con homonimia que con polisemia.</li>
+<li><b>Métodos basados en grafos</b>: se construye el grafo de WordNet con los sentidos de las palabras del texto y se elige la combinación mejor conectada (Navigli y Lapata, 2010; Agirre y otros, 2014).</li>
+<li><b>Aprendizaje semisupervisado</b>: partir de unas pocas semillas y ampliar el corpus etiquetado automáticamente (algoritmo de Yarowsky, 1995).</li>
+<li><b>Modelos contextuales</b>: con <i>embeddings</i> contextuales (capítulo 31) cada ocurrencia tiene un vector y se compara con el vector de cada sentido; los mejores sistemas pasan del 80 % de F1 en los bancos de pruebas en inglés. La ambigüedad se resuelve a menudo de manera implícita, dentro del modelo, sin un inventario explícito.</li>
+</ul>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>WSD: elegir el sentido de una palabra en contexto; muestra léxica frente a todas las palabras.</li>
+<li>Base de comparación: el sentido más frecuente.</li>
+<li>Supervisado: clasificadores (Bayes ingenuo) con rasgos colocacionales y de bolsa de palabras.</li>
+<li>Basado en conocimiento: Lesk compara definiciones con el contexto; con IDF pondera las coincidencias.</li>
+<li>Un sentido por discurso; grafos; modelos contextuales actuales.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Para «hoja» en «Arrancó una hoja del cuaderno» ¿qué palabra del contexto conecta con la definición del sentido «papel»?
+<details><summary>Respuesta</summary><p>«Cuaderno» (la definición del sentido de papel menciona «un libro o de un cuaderno»). Con los ejemplos en la firma se suma además «arrancó», porque aparece en el ejemplo del sentido.</p></details></li>
+<li><span class="lvl">Básico</span>Un clasificador contesta siempre el primer sentido y acierta 19 de 43 oraciones. ¿Qué exactitud tiene?
+<details><summary>Respuesta</summary><p>19/43 = 44,2 %.</p></details></li>
+<li><span class="lvl">Intermedio</span>Con dos sentidos de firmas {dinero, crédito, cuenta} y {madera, parque, plaza} y el contexto {sentamos, parque, plaza, banco}, ¿qué elige Lesk y cuántos puntos da a cada uno?
+<details><summary>Respuesta</summary><p>Sentido 2, con 2 puntos (parque, plaza); el sentido 1 recibe 0.</p></details></li>
+<li><span class="lvl">Intermedio</span>Con 26 firmas, la raíz «agu» aparece en 5 y «afil» en 1. ¿Qué peso IDF recibe cada una?
+<details><summary>Respuesta</summary><p>idf(agu) = ln(26/5) = 1,65; idf(afil) = ln(26/1) = 3,26. La rara pesa casi el doble.</p></details></li>
+<li><span class="lvl">Avanzado</span>Explique por qué un Bayes ingenuo con suavizado de Laplace puede acertar donde Lesk falla cuando una palabra del contexto aparece en las firmas de varios sentidos.
+<details><summary>Respuesta</summary><p>Lesk cuenta coincidencias sin importar cuántas veces aparece la raíz en cada sentido. El Bayes ingenuo pesa la raíz por la frecuencia relativa con que aparece en la descripción de cada sentido (\(P(f\mid s)\)) y por el tamaño de cada descripción, de modo que decide por frecuencias, no solo por presencia, y combina evidencias de varias raíces de forma multiplicativa.</p></details></li>
+</ol>
+<h3>Autoevaluación</h3>
+<div class="sim" data-sim="quiz" data-cap="wsd" data-title="Autoevaluación del capítulo 22"></div>
+<div class="box links"><ul>
+<li><a href="https://aclanthology.org/E17-1010/">Raganato, Camacho-Collados y Navigli (2017) — Word sense disambiguation: a unified evaluation framework and empirical comparison</a><small>Marco común para comparar sistemas de WSD y línea de base del sentido más frecuente.</small></li>
+<li><a href="https://en.wikipedia.org/wiki/Word-sense_disambiguation">Wikipedia — Word-sense disambiguation</a><small>Panorama de métodos supervisados, basados en conocimiento y semisupervisados, con referencias.</small></li>
+<li><a href="https://www.nltk.org/api/nltk.wsd.html">NLTK — módulo wsd (algoritmo de Lesk)</a><small>Implementación de Lesk con WordNet usada en el programa.</small></li>
+<li><a href="https://aclanthology.org/P95-1026/">Yarowsky (1995) — Unsupervised word sense disambiguation rivaling supervised methods</a><small>Arranque a partir de semillas y heurística de un sentido por colocación.</small></li>
+<li><a href="https://web.stanford.edu/~jurafsky/slp3/">Jurafsky y Martin — Speech and Language Processing (3.ª ed.)</a><small>Capítulos sobre desambiguación del sentido y léxicos.</small></li>
+</ul></div>
+</section>
+</template>

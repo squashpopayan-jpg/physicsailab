@@ -1,0 +1,80 @@
+<template class="chapter-src" data-id="chatbots" data-num="37" data-title="Diseño de chatbots" data-part="Parte VIII · Recursos y agentes" data-short="Del caso de uso al diálogo; intenciones y huecos; clasificador con umbral; máquina de estados; manejo de errores; evaluación; seguridad y modelos grandes">
+<p class="lead">Un chatbot útil se diseña antes de programarse: qué problema resuelve, qué dice y qué hace cuando no entiende. Este capítulo recorre el método con un ejemplo completo y funcional, un bot de reservas de restaurante con intenciones, huecos y estados, construido con las piezas de capítulos anteriores (clasificación de texto, extracción de datos) y evaluado con criterio.</p>
+
+<section>
+<h2>El método de diseño</h2>
+<ol>
+<li><b>Caso de uso y alcance</b>: qué tareas resuelve (y cuáles no). Un bot que hace pocas cosas bien supera a uno que promete todo.</li>
+<li><b>Datos reales</b>: registros de chat o llamadas, preguntas frecuentes, correos. Muestran cómo habla la gente, que no es como se imagina.</li>
+<li><b>Intenciones y huecos</b>: una lista cerrada de lo que el usuario quiere hacer (<i>reservar</i>, <i>cancelar</i>, <i>horario</i>, <i>menú</i>…) y los datos de cada una (<i>personas</i>, <i>día</i>, <i>hora</i>).</li>
+<li><b>Guion de diálogo</b>: flujos felices y alternativos, confirmaciones, correcciones («no, para seis») y salidas («quiero hablar con una persona»).</li>
+<li><b>Personalidad y tono</b>: formal o cercano, siempre honesto sobre que es un bot.</li>
+<li><b>Prueba y mejora continuas</b>: con usuarios reales y registros, no con la imaginación de quien lo diseñó.</li>
+</ol>
+<h3>Las tres piezas</h3>
+<ul>
+<li><b>Comprensión</b>: un clasificador de intenciones con un <b>umbral de confianza</b> (si la probabilidad máxima es baja, el bot lo reconoce) y extractores de huecos (expresiones regulares para números, días y horas; modelos de entidades para nombres).</li>
+<li><b>Gestor de diálogo</b>: una <b>máquina de estados</b>: mientras falten huecos se pregunta por ellos; cuando están todos, se ejecuta la acción y se vuelve al inicio. Cada estado define qué entradas espera.</li>
+<li><b>Respuestas</b>: plantillas con los datos rellenados, o un modelo de lenguaje con instrucciones y restricciones.</li>
+</ul>
+<div class="sim" data-sim="chatbot-reservas" data-title="Un bot de reservas con intenciones, huecos, umbral de confianza y máquina de estados"></div>
+<div class="sim-guide"><ul>
+<li>Escriba «Quiero una mesa»: el bot reconoce la intención de reservar y pregunta por las personas; conteste «cuatro» y luego «el viernes»: se rellenan los huecos de uno en uno y se confirma. Observe en la línea de abajo la intención, las probabilidades, los huecos y el estado.</li>
+<li>Diga «mesa para dos personas el sábado» en un solo mensaje: se rellenan los dos huecos a la vez y no hace falta preguntar nada.</li>
+<li>Pruebe «hasta qué hora cierran», «anula mi reserva» y «qué platos tienen». Para «Quisiera comer pizza en Marte» el bot dice que no lo entiende (la confianza queda por debajo del umbral).</li>
+<li>Suba el umbral a 0,9: el bot se vuelve muy prudente y rechaza frases correctas; bájelo a 0,2: responde siempre, con más errores. Un umbral es un compromiso entre dos tipos de error.</li>
+</ul></div>
+<div class="box py"><p>El programa entrena un clasificador de intenciones con 48 frases (seis intenciones), mide su exactitud con validación cruzada, extrae huecos con expresiones regulares y aplica un umbral de confianza.</p>
+<div class="py" data-py="37-chatbots"></div></div>
+<div class="box read"><ul>
+<li><b>Validación cruzada</b> (4 bloques): 0,812 de exactitud con solo 48 frases; con unos cientos de frases reales por intención se supera el 95 %.</li>
+<li>«Hola» → saludo (0,86); «Quiero una mesa para cuatro personas el viernes» → reservar (0,87), con los huecos <code>personas = cuatro</code> y <code>dia = viernes</code>; «Hasta qué hora está abierto» → horario (0,77); «Anula mi reserva por favor» → cancelar (0,79); «Cuánto cuesta el menú» → menú (0,74).</li>
+<li>«Quisiera comer pizza en Marte» → reservar con solo 0,31: fuera del dominio. Con un umbral de 0,5, el bot responde «no lo he entendido». Sin umbral, reservaría una mesa por equivocación.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Cuando algo sale mal</h2>
+<ul>
+<li><b>No entiende</b>: reconocerlo, ofrecer las opciones disponibles y, tras dos fallos seguidos, pasar a una persona. Nunca repetir la misma pregunta de forma idéntica más de una vez.</li>
+<li><b>Entiende mal</b>: confirmar antes de las acciones que no se pueden deshacer («¿Cancelo la reserva del viernes a las 21:00?»).</li>
+<li><b>Fuera de dominio</b>: decir lo que sí puede hacer.</li>
+<li><b>Correcciones</b>: permitir «no, mejor el sábado» sin reiniciar.</li>
+<li><b>Ambigüedad</b>: preguntar para desambiguar («¿Se refiere a la reserva de hoy o a la de mañana?»).</li>
+</ul>
+<h2>Evaluación</h2>
+<p>La exactitud del clasificador es solo una parte. Para el bot completo se miden la <b>tasa de tareas completadas</b>, los turnos por tarea, la tasa de traspaso a personas, las respuestas «no entendí», la satisfacción del usuario y, con modelos generativos, la veracidad de las respuestas y el respeto a las políticas. Se hacen pruebas con usuarios reales y se revisan los registros para añadir intenciones y frases nuevas.</p>
+<h2>Chatbots con modelos grandes</h2>
+<p>Un modelo de lenguaje (capítulo 32) puede llevar la conversación entera: entiende cualquier formulación y redacta respuestas naturales. A cambio aparecen riesgos nuevos: <b>alucinaciones</b> (inventa un horario), <b>inyección de instrucciones</b> (un texto malicioso le ordena algo), <b>fugas de datos</b> y respuestas fuera de política. Un diseño robusto combina lo mejor de ambos mundos: un modelo para entender y redactar, <i>recuperación</i> de datos fiables (RAG) para los hechos, <i>herramientas</i> con permisos mínimos para actuar, un <i>estado</i> explícito para las reservas, y <i>pruebas automáticas</i> con conversaciones de ejemplo.</p>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Diseño primero: caso de uso, datos reales, intenciones y huecos, guion.</li>
+<li>Piezas: clasificador con umbral, extracción de huecos, máquina de estados, respuestas.</li>
+<li>Manejo de errores: reconocer, ofrecer opciones, confirmar acciones irreversibles, pasar a una persona.</li>
+<li>Evaluación del diálogo completo, no solo del clasificador; con modelos grandes, controlar alucinaciones y seguridad.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Para «Quiero una mesa para tres el domingo», ¿qué intención y qué huecos?
+<details><summary>Respuesta</summary><p>Intención reservar; personas = 3, día = domingo; falta la hora.</p></details></li>
+<li><span class="lvl">Básico</span>El clasificador da probabilidades (0,45; 0,35; 0,20). Con umbral 0,5, ¿qué hace el bot?
+<details><summary>Respuesta</summary><p>Dice que no lo ha entendido (el máximo, 0,45, no llega al umbral) y ofrece opciones.</p></details></li>
+<li><span class="lvl">Intermedio</span>Un bot atiende 1.000 conversaciones; 700 completan la tarea, 200 piden una persona y 100 abandonan. Calcule las tasas.
+<details><summary>Respuesta</summary><p>Completadas 70 %; traspaso a persona 20 %; abandono 10 %.</p></details></li>
+<li><span class="lvl">Intermedio</span>Diseñe el flujo cuando falta el hueco «día».
+<details><summary>Respuesta</summary><p>Estado «esperando_dia»: preguntar «¿Para qué día?», aceptar solo expresiones de día, repreguntar una vez si no se entiende y ofrecer opciones (hoy, mañana, viernes…); al llegar el dato, confirmar la reserva.</p></details></li>
+<li><span class="lvl">Avanzado</span>Un bot con modelo grande dice que el restaurante abre los lunes, y no es cierto. ¿Qué cambios haría?
+<details><summary>Respuesta</summary><p>No dejar que el modelo invente datos del negocio: recuperar el horario de una fuente fiable (base de datos o documento) e incluirlo en el contexto, instruirle para responder solo con ese contexto y decir que no lo sabe en otro caso, y añadir pruebas automáticas con preguntas de horario.</p></details></li>
+</ol>
+<h3>Autoevaluación</h3>
+<div class="sim" data-sim="quiz" data-cap="chatbots" data-title="Autoevaluación del capítulo 37"></div>
+<div class="box links"><ul>
+<li><a href="https://rasa.com/docs/">Rasa — documentación</a><small>Marco de código abierto para chatbots con intenciones, huecos e historias.</small></li>
+<li><a href="https://web.stanford.edu/~jurafsky/slp3/">Jurafsky y Martin — Speech and Language Processing (3.ª ed.)</a><small>Capítulos de diálogo y asistentes.</small></li>
+<li><a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html">scikit-learn — LogisticRegression</a><small>El clasificador usado en el programa.</small></li>
+<li><a href="https://owasp.org/www-project-top-10-for-large-language-model-applications/">OWASP — Top 10 for LLM applications</a><small>Riesgos de seguridad de las aplicaciones con modelos grandes, como la inyección de instrucciones.</small></li>
+</ul></div>
+</section>
+</template>

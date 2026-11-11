@@ -1,0 +1,232 @@
+<template class="chapter-src" data-id="optica-ondulatoria" data-num="26" data-title="Óptica ondulatoria" data-part="Parte VI · Óptica" data-short="La interferencia de Young, la difracción de Fraunhofer en una rendija, el criterio de resolución de Rayleigh con el disco de Airy, la red de difracción y la reflexión en películas delgadas">
+<p class="lead">Cuando los obstáculos y las aberturas son del orden de la longitud de onda, la luz deja de ir en rayos: sus campos se suman con sus fases. Se deducen la interferencia de dos fuentes (Young), la difracción de Fraunhofer como transformada de Fourier de la abertura, el límite de resolución de cualquier instrumento, el poder de resolución de una red de difracción y los colores de las películas delgadas, que son los casos que establecen hasta dónde sirve la óptica geométrica del capítulo 25.</p>
+
+<deriv id="young-doble-rendija" title="La interferencia de dos rendijas (Young)" tags="Ondas, Interferencia">
+<goal>La intensidad en una pantalla lejana al superponer la luz de dos rendijas y la separación de las franjas.</goal>
+<given>
+<g>Principio de superposición para los campos y \(I\propto|E|^2\). Aproximación de Fraunhofer: \(L\gg d\), de modo que la diferencia de camino a un punto de la pantalla a altura \(y\) es \(\Delta=d\sin\theta\simeq dy/L\).</g>
+</given>
+<step op="Diferencia de fase entre las dos ondas">
+\[\varphi=\frac{2\pi}\lambda\,\Delta=\frac{2\pi d\,y}{\lambda L}.\]
+</step>
+<step op="Suma de los campos (cada rendija aporta la amplitud \(E_1\))">
+\[E=E_1\left(1+e^{i\varphi}\right)=2E_1\cos\frac\varphi2\,e^{i\varphi/2}.\]
+</step>
+<step op="Intensidad">
+\[I=|E|^2=4I_1\cos^2\frac\varphi2=I_0\cos^2\!\left(\frac{\pi d\,y}{\lambda L}\right),\qquad I_0=4I_1.\]
+<why>Con rendijas de anchura \(a\), cada una difracta la luz y la intensidad se multiplica por la envolvente \(\mathrm{sinc}^2(\pi ay/\lambda L)\) (siguiente deducción).</why>
+</step>
+<step op="Máximos y separación entre franjas">
+\[\frac{dy}L=m\lambda\ \Longrightarrow\ y_m=\frac{m\lambda L}d,\qquad\Delta y=\frac{\lambda L}d.\]
+</step>
+<result name="Interferencia de Young">\[I=I_0\cos^2\!\left(\frac{\pi dy}{\lambda L}\right),\qquad\Delta y=\frac{\lambda L}d.\]</result>
+<vars>
+<v s="\lambda" n="longitud de onda" u="m"/>
+<v s="d" n="separación entre rendijas" u="m"/>
+<v s="a" n="anchura de cada rendija" u="m"/>
+<v s="L" n="distancia a la pantalla" u="m"/>
+<v s="y" n="posición en la pantalla" u="m"/>
+<v s="\varphi" n="diferencia de fase" u="rad"/>
+<v s="\Delta y" n="separación entre franjas" u="m"/>
+<v s="I_0" n="intensidad máxima de las franjas" u="W m^-2"/>
+</vars>
+<effects>
+<e>Con λ = 550 nm, \(d=200\) µm y \(L=1.5\) m, la interfranja es \(\Delta y=4.125\) mm. Para \(d=100\) µm es el doble (8.25 mm) y con luz azul (450 nm), 3.375 mm: \(\Delta y\propto\lambda/d\). En \(y=2\) mm (casi un mínimo) la intensidad relativa es 0.0022, y en el primer máximo (4.125 mm), 0.875 por el efecto de la envolvente de rendijas de 40 µm.</e>
+<e>Con rendijas de 40 µm el máximo central de difracción contiene \(2d/a=10\) franjas; con rendijas de 20 µm, 20 franjas. El experimento (Young, 1801) probó el carácter ondulatorio de la luz; con electrones, átomos o moléculas grandes, el mismo patrón evidencia su naturaleza ondulatoria (capítulo 29).</e>
+<e>Duplicar \(L\) duplica la interfranja (8.25 mm) con la misma pantalla de 2 mm y \(I/I_0=0.52\); a mayor distancia el patrón se ensancha, pero su aspecto (la razón con la envolvente) no cambia.</e>
+</effects>
+<limits>
+<l>Dimensiones: \(\pi dy/(\lambda L)\) es adimensional; \(\lambda L/d\) es una longitud. ✓</l>
+<l>Luz monocromática y coherente, \(L\gg d\) (aproximación de Fraunhofer); la fuente extensa o policromática reduce el contraste (coherencia espacial y temporal). Para ángulos grandes hay que sustituir \(dy/L\) por \(d\sin\theta\).</l>
+</limits>
+<explore sim="young" title="Doble rendija de Young: interfranja, intensidad y envolvente de difracción"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (550 nm, 200 µm, 40 µm, 1.5 m, \(y=2\) mm): \(\Delta y=4.125\) mm, \(I/I_0=0.00219486\), envolvente 0.969445 y 10 franjas.</li>
+<li>Seleccione \(y\) en el eje: la intensidad oscila con periodo \(\Delta y\), dentro de la envolvente sinc² que decae hasta 0 en \(y=\lambda L/a=20.6\) mm.</li>
+</ul></div>
+</deriv>
+
+<deriv id="rendija-fraunhofer" title="La difracción de Fraunhofer en una rendija" tags="Ondas, Difracción">
+<goal>El patrón de intensidad de la luz que atraviesa una rendija de anchura \(a\) y la posición de sus mínimos.</goal>
+<given>
+<g>Principio de Huygens–Fresnel: cada punto de la abertura emite una onda secundaria; en el campo lejano la contribución de un elemento en \(x\) tiene fase \(kx\sin\theta\) respecto del centro.</g>
+</given>
+<step op="Sumar las contribuciones de la rendija (campo uniforme en la abertura)">
+\[E(\theta)=\frac{E_0}a\int_{-a/2}^{a/2}e^{ikx\sin\theta}\,\mathrm dx.\]
+</step>
+<step op="Integrar">
+\[E(\theta)=E_0\,\frac{\sin\beta}{\beta},\qquad\beta=\frac{\pi a\sin\theta}\lambda.\]
+</step>
+<step op="Intensidad y mínimos">
+\[I=I_0\,\mathrm{sinc}^2\beta=I_0\frac{\sin^2\beta}{\beta^2},\qquad I=0\ \text{si}\ \beta=m\pi\ \Longleftrightarrow\ a\sin\theta=m\lambda.\]
+</step>
+<step op="Máximos secundarios: \(\mathrm d(\sin^2\beta/\beta^2)/\mathrm d\beta=0\)">
+\[\tan\beta=\beta\ \Longrightarrow\ \beta=4.4934,\ \ I/I_0=0.0472.\]
+</step>
+<result name="Rendija de Fraunhofer">\[I=I_0\left(\frac{\sin\beta}\beta\right)^2,\qquad a\sin\theta_m=m\lambda,\qquad\text{anchura central }\frac{2\lambda L}a.\]</result>
+<vars>
+<v s="E" n="amplitud del campo" u="V m^-1"/>
+<v s="a" n="anchura de la rendija" u="m"/>
+<v s="\beta" n="parámetro \(\pi a\sin\theta/\lambda\)" u="1"/>
+<v s="\theta" n="ángulo de observación" u="rad"/>
+<v s="k" n="número de onda" u="m^-1"/>
+<v s="\lambda" n="longitud de onda" u="m"/>
+<v s="L" n="distancia a la pantalla" u="m"/>
+<v s="y" n="posición en la pantalla" u="m"/>
+</vars>
+<effects>
+<e>Rendija de 50 µm con luz de 550 nm y pantalla a 2 m: primer mínimo en 11.00 mrad, es decir, un máximo central de 44 mm de ancho; en \(y=10\) mm, \(I/I_0=0.4805\) y en 22 mm (primer mínimo) cae a cero. Con 100 µm, el patrón se estrecha a la mitad (22 mm) y a \(y=10\) mm la intensidad baja a 0.0097.</e>
+<e>La luz roja (650 nm) se difracta más: la anchura central es 52 mm (frente a 44 mm); la pantalla al doble de distancia duplica el patrón (88 mm). Con 10 µm y 1 m, el máximo central de 110 mm ya ocupa un ángulo de 55 mrad: cuanto más pequeña la rendija, más abierto el haz. Los máximos secundarios tienen solo el 4.72 % de la intensidad central.</e>
+<e>La relación \(\Delta y\,\Delta p\sim h\) (principio de incertidumbre) es este mismo hecho: un haz estrechado en \(a\) adquiere una dispersión angular \(\lambda/a\) (capítulo 29).</e>
+</effects>
+<limits>
+<l>Dimensiones: \(\beta\) es adimensional. ✓</l>
+<l>Difracción de campo lejano (Fraunhofer): requiere \(L\gg a^2/\lambda\); en caso contrario se aplica la difracción de Fresnel. La iluminación uniforme y la rendija infinitamente larga simplifican el cálculo a una dimensión; una abertura real tiene bordes con efecto de polarización.</l>
+</limits>
+<explore sim="rendija" title="Difracción en una rendija: ángulo del mínimo, anchura central e intensidad"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (50 µm, 550 nm, 2 m, \(y=10\) mm): \(\theta_1=11.0002\) mrad, anchura 44 mm, \(I/I_0=0.480462\) y \(\beta=1.42800\).</li>
+<li>Seleccione \(a\) en el eje (log–log): el ángulo y la anchura del máximo central caen con pendiente −1.</li>
+</ul></div>
+</deriv>
+
+<deriv id="airy-rayleigh" title="El disco de Airy y el criterio de resolución de Rayleigh" tags="Ondas, Instrumentos">
+<goal>El ángulo mínimo con que una abertura circular de diámetro \(D\) puede separar dos fuentes puntuales.</goal>
+<given>
+<g>Difracción de Fraunhofer en una abertura circular: el campo es la transformada de Fourier bidimensional de un disco, \(E\propto2J_1(x)/x\) con \(x=\pi D\sin\theta/\lambda\) (\(J_1\) es la función de Bessel de orden 1).</g>
+<g>Criterio de Rayleigh: dos fuentes se resuelven si el máximo de una cae sobre el primer mínimo de la otra.</g>
+</given>
+<step op="Intensidad (disco de Airy)">
+\[I(\theta)=I_0\left[\frac{2J_1(x)}x\right]^2,\qquad x=\frac{\pi D\sin\theta}\lambda.\]
+</step>
+<step op="Primer cero de \(J_1\): \(x=j_{1,1}=3.8317\)">
+\[\sin\theta_1=\frac{j_{1,1}}\pi\frac\lambda D=1.2197\frac\lambda D.\]
+</step>
+<step op="Resolución angular y lineal a la distancia \(Z\)">
+\[\theta_\min\simeq1.22\,\frac\lambda D,\qquad\Delta x=\theta_\min Z.\]
+</step>
+<result name="Criterio de Rayleigh">\[\theta_\min=\frac{j_{1,1}}\pi\frac\lambda D=1.2197\,\frac\lambda D.\]</result>
+<vars>
+<v s="D" n="diámetro de la abertura" u="m"/>
+<v s="\lambda" n="longitud de onda" u="m"/>
+<v s="\theta_\min" n="ángulo mínimo resoluble" u="rad"/>
+<v s="Z" n="distancia al objeto" u="m"/>
+<v s="\Delta x" n="separación mínima resoluble" u="m"/>
+<v s="x" n="argumento \(\pi D\sin\theta/\lambda\)" u="1"/>
+<v s="I_0" n="intensidad central" u="W m^-2"/>
+</vars>
+<effects>
+<e>El ojo (pupila de 6 mm, 550 nm): \(\theta=111.8\) µrad = 23.1″ (el ojo real llega a ≈ 60″ por las aberraciones); a 1 km distinguiría dos puntos a 11 cm. Un telescopio de 100 mm: 6.71 µrad (1.38″). El Hubble (2.4 m): 0.280 µrad (0.0577″), que en la Luna (384 400 km) resuelve 107 m, mientras que el ojo solo 43 km.</e>
+<e>\(\theta\propto\lambda/D\): con luz infrarroja de 2 µm el límite se multiplica por 3.6; un telescopio de 10 m (Keck) a 550 nm: 0.0138″, solo alcanzable con óptica adaptativa porque la atmósfera limita a ≈ 1″. Un microscopio con \(D\) del orden del objetivo y λ ≈ 500 nm resuelve ≈ 0.2 µm (no puede ver los virus individuales).</e>
+<e>Radiotelescopios de 300 m a 21 cm: 0.00085 rad = 2.9′; por eso se emplean interferómetros de miles de kilómetros (VLBI) que sintetizan una abertura gigante y alcanzan microsegundos de arco.</e>
+</effects>
+<limits>
+<l>Dimensiones: \(\lambda/D\) es un ángulo (rad). ✓</l>
+<l>Criterio convencional (Rayleigh), con fuentes incoherentes e iguales; los métodos de deconvolución y las técnicas de superresolución (STED, localización) rebasan este límite. Con abertura obstruida (secundario de un telescopio) el patrón cambia ligeramente.</l>
+</limits>
+<explore sim="airy" title="Límite de difracción: resolución angular de una abertura circular"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (\(D=6\) mm, 550 nm, 1 km): \(\theta=111.803\) µrad, 23.0610″ y \(\Delta x=0.111803\) m.</li>
+<li>Seleccione \(D\) en el eje (log–log): \(\theta\) y \(\Delta x\) caen con pendiente −1; con λ crecen con pendiente +1.</li>
+</ul></div>
+</deriv>
+
+<deriv id="red-difraccion" title="La red de difracción: máximos, dispersión y poder de resolución" tags="Ondas, Espectroscopía">
+<goal>Las direcciones en que una red de \(N\) rendijas concentra la luz y su capacidad de separar longitudes de onda próximas.</goal>
+<given>
+<g>Suma de \(N\) campos con fase progresiva \(\varphi=2\pi d\sin\theta/\lambda\) entre rendijas contiguas.</g>
+</given>
+<step op="Serie geométrica">
+\[E=E_1\sum_{j=0}^{N-1}e^{ij\varphi}=E_1\frac{1-e^{iN\varphi}}{1-e^{i\varphi}}\ \Longrightarrow\ I=I_1\frac{\sin^2(N\varphi/2)}{\sin^2(\varphi/2)}.\]
+</step>
+<step op="Máximos principales (\(\varphi=2\pi m\)): ecuación de la red">
+\[d\sin\theta_m=m\lambda,\qquad I_\max=N^2I_1.\]
+</step>
+<step op="Anchura del máximo: primer cero a \(N\varphi/2=\pi\) del máximo, es decir, \(\Delta\varphi=2\pi/N\)">
+\[\delta\theta=\frac{\lambda}{Nd\cos\theta_m}.\]
+</step>
+<step op="Dispersión angular (derivando la ecuación de la red) y criterio de resolución (Rayleigh: \(\Delta\theta=\delta\theta\))">
+\[\frac{\mathrm d\theta}{\mathrm d\lambda}=\frac m{d\cos\theta_m},\qquad\frac\lambda{\Delta\lambda}=mN.\]
+</step>
+<result name="Red de difracción">\[d\sin\theta_m=m\lambda,\qquad\frac{\mathrm d\theta}{\mathrm d\lambda}=\frac m{d\cos\theta},\qquad R=\frac\lambda{\Delta\lambda}=mN.\]</result>
+<vars>
+<v s="d" n="paso de la red" u="m"/>
+<v s="N" n="número de líneas iluminadas" u="1"/>
+<v s="m" n="orden" u="1"/>
+<v s="\theta_m" n="ángulo del orden \(m\)" u="rad"/>
+<v s="\lambda" n="longitud de onda" u="m"/>
+<v s="\varphi" n="diferencia de fase entre rendijas" u="rad"/>
+<v s="\mathrm d\theta/\mathrm d\lambda" n="dispersión angular" u="m^-1"/>
+<v s="R" n="poder de resolución" u="1"/>
+<v s="\Delta\lambda" n="diferencia mínima de longitudes de onda" u="m"/>
+</vars>
+<effects>
+<e>Una red de 600 líneas/mm (\(d=1.667\) µm) con 10 000 líneas iluminadas y la línea D del sodio (589 nm): el primer orden aparece a 20.70°, la dispersión es 0.641 mrad/nm, \(R=10\,000\) y \(\Delta\lambda_\min=0.0589\) nm; resuelve fácilmente el doblete del sodio (0.597 nm, que exigiría \(R\ge987\)). En segundo orden: 44.98°, 1.696 mrad/nm y \(R=20\,000\).</e>
+<e>Con 300 líneas/mm el ángulo baja a 10.18° y la dispersión a 0.305 mrad/nm; con el doble de líneas iluminadas (20 000) la resolución se duplica (0.0295 nm). A 450 nm, primer orden a 15.66°; a 700 nm en segundo orden, 57.14° y 2.212 mrad/nm.</e>
+<e>Cuanto más fino el paso, mayor la dispersión; cuanto mayor el ancho iluminado, mayor la resolución. Las redes holográficas de miles de líneas/mm y 10 cm de ancho alcanzan \(R\sim10^5\)–\(10^6\) en los espectrógrafos astronómicos.</e>
+</effects>
+<limits>
+<l>Dimensiones: \(m/(d\cos\theta)\) es m⁻¹ (ángulo por longitud de onda). ✓</l>
+<l>Orden \(m\) solo mientras \(m\lambda/d<1\); los órdenes se solapan (rango espectral libre \(\lambda/m\)). Para ángulos de incidencia oblicuos, \(d(\sin\theta_m-\sin\theta_i)=m\lambda\). Las rendijas con anchura \(a\) modulan las intensidades con el factor sinc² de la deducción anterior.</l>
+</limits>
+<explore sim="red" title="Red de difracción: ángulo, dispersión y poder de resolución"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (600 líneas/mm, \(N=10^4\), 589 nm, orden 1): \(\theta=20.6954^\circ\), \(\mathrm d\theta/\mathrm d\lambda=0.641387\) mrad/nm, \(R=10000\) y \(\Delta\lambda=0.0589\) nm.</li>
+<li>Seleccione λ en el eje: el ángulo y la dispersión crecen con λ (más lentamente para ángulos pequeños) y la resolución en λ/Δλ no cambia.</li>
+</ul></div>
+</deriv>
+
+<deriv id="pelicula-delgada" title="Los colores de las películas delgadas: reflexiones múltiples (Airy)" tags="Ondas, Interferencia">
+<goal>La reflectancia de una película transparente de espesor \(d\) e índice \(n\) (pompa de jabón, aceite sobre agua) en función de la longitud de onda.</goal>
+<given>
+<g>Coeficiente de reflexión de Fresnel en incidencia normal en la cara superior \(r=(1-n)/(1+n)\); en la inferior (película → aire) vale \(-r\); los de transmisión cumplen \(tt'=1-r^2\).</g>
+<g>Desfase por un viaje de ida y vuelta: \(\delta=\dfrac{4\pi nd\cos\theta_t}{\lambda}\).</g>
+</given>
+<step op="Suma de todas las reflexiones (serie geométrica de razón \(r^2e^{i\delta}\))">
+\[r_\text{tot}=r-\frac{(1-r^2)\,r\,e^{i\delta}}{1-r^2e^{i\delta}}=\frac{r\left(1-e^{i\delta}\right)}{1-r^2e^{i\delta}}.\]
+<why>Se suma \(r+tt'(-r)e^{i\delta}\sum_j(r^2e^{i\delta})^j\) con \(tt'=1-r^2\).</why>
+</step>
+<step op="Módulo al cuadrado">
+\[R=|r_\text{tot}|^2=\frac{4r^2\sin^2(\delta/2)}{(1-r^2)^2+4r^2\sin^2(\delta/2)}.\]
+</step>
+<step op="Máximos y mínimos de reflexión">
+\[\delta=(2m+1)\pi:\ R_\max=\left(\frac{2r}{1+r^2}\right)^2,\quad\lambda_m=\frac{4nd\cos\theta_t}{2m+1};\qquad\delta=2m\pi:\ R=0.\]
+</step>
+<result name="Película delgada">\[R=\frac{4r^2\sin^2(\delta/2)}{(1-r^2)^2+4r^2\sin^2(\delta/2)},\qquad\lambda_m=\frac{4nd\cos\theta_t}{2m+1}.\]</result>
+<vars>
+<v s="R" n="reflectancia" u="1"/>
+<v s="r" n="coeficiente de reflexión de Fresnel" u="1"/>
+<v s="n" n="índice de la película" u="1"/>
+<v s="d" n="espesor" u="m"/>
+<v s="\lambda" n="longitud de onda en el vacío" u="m"/>
+<v s="\theta_t" n="ángulo dentro de la película" u="rad"/>
+<v s="\delta" n="desfase de ida y vuelta" u="rad"/>
+<v s="\lambda_m" n="longitud de onda del máximo de orden \(m\)" u="m"/>
+</vars>
+<effects>
+<e>Pompa de jabón (\(n=1.33\), \(r=-0.1416\)) de 300 nm: a 550 nm, \(R=0.0754\) y \(\delta/\pi=2.902\) (cerca del máximo: 0.0771); los máximos están en 532 nm (verde) y 319 nm (ultravioleta). A 400 nm la reflexión es mínima (\(2\times10^{-5}\)) y a 700 nm, 0.0149: la película se ve verde.</e>
+<e>Si el espesor tiende a cero, \(\delta\to0\) y \(R\to0\): la película negra del final de la vida de una pompa. Con 100 nm, a 550 nm, \(R=0.0769\) (blanquecina-azulada); con un ángulo de 45°, \(R=0.0350\) y los colores se desplazan hacia el azul (\(\cos\theta_t\) disminuye). Para \(n=1.5\), el máximo es 0.1479 y \(R(550)=0.1256\).</e>
+<e>Para películas de 1 µm (\(\delta/\pi\) de decenas) los máximos se vuelven tan numerosos que se superponen y el color desaparece (blanco de orden superior): solo las películas de menos de unos 2 µm tienen colores vivos.</e>
+</effects>
+<limits>
+<l>Dimensiones: \(\delta\) y \(R\) son adimensionales; \(\lambda_m\) es una longitud. ✓</l>
+<l>Película plana y homogénea, luz monocromática (no incluye coherencia parcial) y medios sin absorción. Para varias capas se emplea el método de matrices de transferencia (capítulo 23); con películas sobre un sustrato se cambian los coeficientes de Fresnel.</l>
+</limits>
+<explore sim="pelicula" title="Película delgada: reflectancia, desfase y longitudes de onda de los máximos"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (\(n=1.33\), 300 nm, 550 nm, incidencia normal): \(R=0.0754302\), \(\delta/\pi=2.90182\), \(\lambda_1=532\) nm, \(\lambda_2=319.2\) nm y \(R_\max=0.0771126\).</li>
+<li>Seleccione \(d\) en el eje (log–log): \(R\) oscila entre 0 y \(R_\max\); para \(d\to0\) la película se vuelve negra.</li>
+</ul></div>
+</deriv>
+
+<section>
+<h2>Fuentes y lecturas</h2>
+<ul class="refs">
+<li>E. Hecht, <em>Optics</em>, 5.ª ed., Pearson (2017): caps. 9 (interferencia), 10 (difracción) y 7 (superposición).</li>
+<li>M. Born y E. Wolf, <em>Principles of Optics</em>, 7.ª ed., Cambridge University Press (1999): caps. 7 (difracción) y 8 (óptica de cristales y rejillas).</li>
+<li>J. W. Goodman, <em>Introduction to Fourier Optics</em>, 4.ª ed., W. H. Freeman (2017): cap. 4 (difracción de Fraunhofer, abertura circular).</li>
+<li>T. Young, <em>Philosophical Transactions</em> 94 (1804) 1; A. Fresnel (1818–1819); G. B. Airy, <em>Transactions of the Cambridge Philosophical Society</em> 5 (1835) 283; Lord Rayleigh, <em>Philosophical Magazine</em> 8 (1879) 261.</li>
+<li>Abramowitz y Stegun, <em>Handbook of Mathematical Functions</em> (1964): ceros de las funciones de Bessel (\(j_{1,1}=3.8317\)); datos de redes: catálogos estándar de espectrógrafos.</li>
+</ul>
+</section>
+</template>

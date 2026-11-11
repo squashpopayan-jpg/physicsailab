@@ -1,0 +1,249 @@
+<template class="chapter-src" data-id="calor-difusion" data-num="19" data-title="Calor y difusión" data-part="Parte IV · Física térmica" data-short="La ecuación de difusión y su solución gaussiana, la relación de Stokes–Einstein, la conducción en un cilindro con el radio crítico del aislante, el enfriamiento de Newton y la ley de Stefan–Boltzmann con el equilibrio radiativo de la Tierra">
+<p class="lead">Hay tres maneras de transportar calor: por difusión (conducción), por movimiento del fluido (convección) y por radiación. La difusión, que describe también el esparcimiento de moléculas, se explica con una ley local (la corriente es proporcional al gradiente) y una ley de conservación. De allí salen una ecuación en derivadas parciales, su solución gaussiana, la relación de Einstein entre difusión y viscosidad (que conecta con la ley de Stokes del capítulo 15 y con el movimiento browniano), el aislamiento de tuberías y el enfriamiento de un cuerpo. El capítulo termina con la radiación: la ley de Stefan–Boltzmann se deduce de la termodinámica, sin conocer la ley de Planck, y se aplica a la temperatura de equilibrio de un planeta.</p>
+
+<deriv id="difusion-gauss" title="La ecuación de difusión y su solución gaussiana" tags="Difusión, Calor">
+<goal>La evolución de una concentración (o de una temperatura) que se esparce por difusión a partir de una distribución inicial concentrada, y su escala de longitud.</goal>
+<given>
+<g>Ley de Fick (o de Fourier para el calor): la corriente es proporcional al gradiente, \(J=-D\,\partial c/\partial x\).</g>
+<g>Conservación de lo que difunde (moléculas o energía): en una rebanada \([x,x+\mathrm dx]\), \(\partial_tc\,\mathrm dx=J(x)-J(x+\mathrm dx)\).</g>
+</given>
+<step op="Combinar las dos leyes">
+\[\frac{\partial c}{\partial t}=-\frac{\partial J}{\partial x}=D\,\frac{\partial^2c}{\partial x^2}.\]
+<why>Para el calor, \(\rho c_p\,\partial_tT=\partial_x(k\,\partial_xT)\), que equivale a esa ecuación con \(D=\alpha=k/\rho c_p\) (difusividad térmica).</why>
+</step>
+<step op="Transformada de Fourier en \(x\) (\(\hat c(q,t)=\int c\,e^{-iqx}\mathrm dx\))">
+\[\frac{\partial\hat c}{\partial t}=-Dq^2\hat c\ \Longrightarrow\ \hat c(q,t)=\hat c(q,0)\,e^{-Dq^2t}=N\,e^{-Dq^2t}\quad\text{(inicial: }c(x,0)=N\delta(x)\text{)}.\]
+</step>
+<step op="Antitransformada (integral gaussiana)">
+\[c(x,t)=\frac1{2\pi}\int N\,e^{-Dq^2t+iqx}\,\mathrm dq=\frac N{\sqrt{4\pi Dt}}\,\exp\!\left(-\frac{x^2}{4Dt}\right).\]
+</step>
+<step op="Momentos de la solución">
+\[\int c\,\mathrm dx=N,\qquad\langle x^2\rangle=2Dt,\qquad\sigma=\sqrt{2Dt},\qquad L=\sqrt{4Dt}.\]
+</step>
+<result name="Solución de la difusión">\[c(x,t)=\frac N{\sqrt{4\pi Dt}}\,e^{-x^2/4Dt},\qquad\langle x^2\rangle=2Dt.\]</result>
+<vars>
+<v s="c" n="concentración (por unidad de longitud en 1D)" u="m^-3"/>
+<v s="N" n="cantidad inicial por unidad de área" u="m^-2"/>
+<v s="D" n="coeficiente de difusión (o difusividad térmica)" u="m^2 s^-1"/>
+<v s="J" n="corriente de difusión" u="m^-2 s^-1"/>
+<v s="x" n="posición" u="m"/>
+<v s="t" n="tiempo" u="s"/>
+<v s="q" n="número de onda de Fourier" u="m^-1"/>
+<v s="\sigma,\,L" n="desviación típica y longitud de difusión" u="m"/>
+</vars>
+<effects>
+<e>Un pulso de calor en cobre (\(\alpha=1.11\times10^{-4}\) m²/s) se ensancha en 1 s hasta \(\sigma=14.90\) mm (\(L=21.07\) mm) y en 10 s hasta 47.12 mm; el calor tarda en llegar a 1 cm unos 0.225 s. Acero inoxidable (\(\alpha\approx4\times10^{-6}\)): 2.83 mm en 1 s. Agua (\(1.43\times10^{-7}\)): 4.14 mm en 1 min, y 175 s en alcanzar 1 cm.</e>
+<e>Una molécula en agua (\(D=10^{-9}\) m²/s) se esparce 44.7 µm en 1 s pero solo 2.68 mm en una hora: \(\sigma\propto\sqrt t\), de modo que la difusión es eficaz para distancias celulares y lentísima para las macroscópicas (cruzar 1 mm tarda 250 s; 1 cm, 7 h). En el aire (\(D=2\times10^{-5}\)) 6.32 mm en 1 s.</e>
+<e>Cuadruplicar el tiempo duplica el ancho; el máximo cae a la mitad (\(c_\max\propto t^{-1/2}\)). En \(x=10\) mm y \(t=1\) s en el cobre, la concentración es el 79.8 % del máximo.</e>
+</effects>
+<limits>
+<l>Dimensiones: \([D]=\mathrm{m^2s^{-1}}\) y \(x^2/(Dt)\) es adimensional; \(N/\sqrt{Dt}\) es una concentración por longitud. ✓</l>
+<l>Es un medio homogéneo e ilimitado y la ley de Fick lineal. Con fronteras, la solución se construye con imágenes o con series de Fourier; a escalas menores que el camino libre medio la difusión se vuelve balística (la propagación del calor tiene velocidad finita, ecuación de Cattaneo).</l>
+</limits>
+<explore sim="difusion" title="Difusión de un pulso: perfil gaussiano, ancho y tiempo de difusión"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (\(D=1.11\times10^{-4}\) m²/s, \(t=1\) s, \(x=10\) mm): \(c_\max/N=26.7753\) m⁻¹, \(c(x)/N=21.3757\) m⁻¹, \(\sigma=14.8997\) mm, \(L=21.0713\) mm y \(t_x=0.225225\) s.</li>
+<li>Seleccione \(t\) en el eje (log–log): \(\sigma\) y \(L\) suben con pendiente 0.5 y \(c_\max\) baja con pendiente −0.5.</li>
+</ul></div>
+</deriv>
+
+<deriv id="stokes-einstein" title="La relación de Einstein y la difusión de Stokes–Einstein" tags="Difusión, Movimiento browniano">
+<goal>El coeficiente de difusión de una partícula esférica de radio \(a\) en un fluido de viscosidad \(\eta\) a temperatura \(T\).</goal>
+<given>
+<g>Movimiento browniano: la partícula recibe choques aleatorios; su desplazamiento sigue un camino aleatorio de pasos \(\pm\ell\) cada intervalo \(\tau\).</g>
+<g>En un campo de fuerza \(F=-\mathrm dU/\mathrm dx\), el equilibrio es de Boltzmann: \(n(x)\propto e^{-U/kT}\). Ley de Stokes (capítulo 15): \(F=6\pi\eta a\,v\).</g>
+</given>
+<step op="Desplazamiento cuadrático medio de un camino aleatorio">
+\[\langle x^2\rangle=\frac t\tau\,\ell^2\equiv2Dt,\qquad D=\frac{\ell^2}{2\tau}.\]
+<why>Cada paso añade \(\pm\ell\) y los términos cruzados se anulan en promedio: la varianza crece linealmente con el número de pasos (coincide con el resultado de la ecuación de difusión).</why>
+</step>
+<step op="Equilibrio: la corriente de difusión equilibra a la de arrastre">
+\[J_\text{dif}=-D\frac{\mathrm dn}{\mathrm dx},\qquad J_\text{arr}=n\,\mu F,\qquad J_\text{dif}+J_\text{arr}=0.\]
+<why>\(\mu\) es la movilidad (velocidad de arrastre por unidad de fuerza).</why>
+</step>
+<step op="Gradiente de Boltzmann \(n\propto e^{-U/kT}\)">
+\[\frac{\mathrm dn}{\mathrm dx}=-\frac{n}{kT}\frac{\mathrm dU}{\mathrm dx}=\frac{nF}{kT}\ \Longrightarrow\ -D\frac{nF}{kT}+n\mu F=0\ \Longrightarrow\ D=\mu kT.\]
+</step>
+<step op="Movilidad de Stokes: \(v=F/(6\pi\eta a)\)">
+\[\mu=\frac1{6\pi\eta a}\ \Longrightarrow\ D=\frac{kT}{6\pi\eta a}.\]
+</step>
+<result name="Stokes–Einstein">\[D=\mu kT=\frac{kT}{6\pi\eta a},\qquad\langle x^2\rangle=2Dt.\]</result>
+<vars>
+<v s="D" n="coeficiente de difusión" u="m^2 s^-1"/>
+<v s="\mu" n="movilidad" u="m N^-1 s^-1"/>
+<v s="k" n="constante de Boltzmann" u="J K^-1"/>
+<v s="T" n="temperatura absoluta" u="K"/>
+<v s="\eta" n="viscosidad dinámica" u="Pa s"/>
+<v s="a" n="radio de la partícula" u="m"/>
+<v s="F" n="fuerza" u="N"/>
+<v s="n" n="densidad numérica" u="m^-3"/>
+<v s="\langle x^2\rangle" n="desplazamiento cuadrático medio" u="m^2"/>
+<v s="\ell" n="longitud del paso" u="m"/>
+<v s="\tau_p" n="tiempo entre pasos" u="s"/>
+</vars>
+<effects>
+<e>Una esfera de 1 µm de radio en agua a 293 K (\(\eta=1.002\) mPa·s): \(D=2.142\times10^{-13}\) m²/s, un desplazamiento rms de 0.654 µm en 1 s y 233 s para recorrer 10 µm. Una proteína de 2 nm: \(D=1.071\times10^{-10}\) m²/s (el valor medido para lisozima, ≈ 1.1×10⁻¹⁰), con 14.6 µm en 1 s y 0.467 s para 10 µm: la difusión basta para el transporte dentro de una célula.</e>
+<e>\(D\propto1/a\): un virus de 50 nm de radio tiene \(D=4.28\times10^{-12}\) m²/s y tarda 11.7 s en recorrer 10 µm. Calentar el agua hasta 373 K (\(\eta=0.282\) mPa·s) aumenta \(D\) 4.5 veces para la esfera de 1 µm (9.69×10⁻¹³). En un medio mil veces más viscoso (≈ glicerol), la proteína difunde mil veces menos (1.07×10⁻¹³).</e>
+<e>Perrin (1909) midió \(\langle x^2\rangle\) de partículas de resina al microscopio y de \(D=kT/6\pi\eta a=RT/(N_A6\pi\eta a)\) obtuvo el número de Avogadro: la primera medición directa de la realidad de las moléculas.</e>
+</effects>
+<limits>
+<l>Dimensiones: \([kT/(\eta a)]=\mathrm{J/(Pa\,s\,m)}=\mathrm{m^2s^{-1}}\). ✓</l>
+<l>Supone una esfera grande frente a las moléculas del fluido y flujo de Stokes (\(\mathrm{Re}\ll1\)); para moléculas pequeñas el coeficiente \(6\pi\) pasa a \(4\pi\) (deslizamiento) y en fluidos viscoelásticos o confinados falla. El tiempo de relajación de la velocidad (\(m/6\pi\eta a\)) debe ser mucho menor que el tiempo de observación.</l>
+</limits>
+<explore sim="stokes-einstein" title="Difusión browniana según el radio, la viscosidad y la temperatura"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (293 K, 1.002 mPa·s, \(a=1000\) nm): \(D=2.14182\times10^{-13}\) m²/s, \(\mu=5.29458\times10^{7}\) m/(N·s), 0.654495 µm en 1 s y 233.447 s para 10 µm.</li>
+<li>Seleccione \(a\) en el eje (log–log): \(D\) cae con pendiente −1 y el tiempo para recorrer 10 µm sube con pendiente +1.</li>
+</ul></div>
+</deriv>
+
+<deriv id="cilindro-aislante" title="Conducción en un cilindro: el radio crítico del aislante" tags="Conducción, Aislamiento">
+<goal>El calor perdido por metro de un conductor cilíndrico recubierto de aislante de radio exterior \(r_2\), y el radio que maximiza la pérdida.</goal>
+<given>
+<g>Ley de Fourier: \(q=-k\,\mathrm dT/\mathrm dr\) (flujo por área); régimen estacionario: el calor por metro \(q'\) es el mismo a través de todos los radios.</g>
+<g>Convección en la superficie exterior (ley de Newton): \(q'=2\pi r_2h\,(T_2-T_\infty)\).</g>
+</given>
+<step op="Calor por metro, constante en todo \(r\)">
+\[q'=-k\,2\pi r\,\frac{\mathrm dT}{\mathrm dr}\ \Longrightarrow\ \frac{\mathrm dT}{\mathrm dr}=-\frac{q'}{2\pi k}\frac1r.\]
+</step>
+<step op="Integrar entre \(r_1\) y \(r_2\)">
+\[T_1-T_2=\frac{q'}{2\pi k}\ln\frac{r_2}{r_1}.\]
+</step>
+<step op="Sumar la caída convectiva exterior">
+\[T_2-T_\infty=\frac{q'}{2\pi r_2h}\ \Longrightarrow\ q'=\frac{T_1-T_\infty}{R'},\quad R'=\frac{\ln(r_2/r_1)}{2\pi k}+\frac1{2\pi r_2h}.\]
+<why>Las resistencias térmicas en serie se suman, igual que en un circuito eléctrico.</why>
+</step>
+<step op="Minimizar \(R'\) respecto de \(r_2\) (máxima pérdida)">
+\[\frac{\mathrm dR'}{\mathrm dr_2}=\frac1{2\pi kr_2}-\frac1{2\pi hr_2^2}=0\ \Longrightarrow\ r_c=\frac kh.\]
+</step>
+<result name="Aislante cilíndrico">\[q'=\frac{2\pi\,\Delta T}{\dfrac1k\ln\dfrac{r_2}{r_1}+\dfrac1{hr_2}},\qquad r_c=\frac kh.\]</result>
+<vars>
+<v s="q'" n="calor perdido por unidad de longitud" u="W m^-1"/>
+<v s="\Delta T" n="diferencia de temperatura \(T_1-T_\infty\)" u="K"/>
+<v s="k" n="conductividad térmica del aislante" u="W m^-1 K^-1"/>
+<v s="h" n="coeficiente de convección" u="W m^-2 K^-1"/>
+<v s="r_1,\,r_2" n="radios del conductor y exterior" u="m"/>
+<v s="R'" n="resistencia térmica por unidad de longitud" u="m K W^-1"/>
+<v s="r_c" n="radio crítico" u="m"/>
+</vars>
+<effects>
+<e>Un cable de 1 mm de radio a 60 K sobre el ambiente, con aislante de \(k=0.2\) W/(m·K) y \(h=10\) W/(m²·K): sin aislante pierde 3.770 W/m; con un aislante hasta \(r_2=5\) mm (\(r_2/r_1=5\)), 13.44 W/m, 3.57 veces más; el máximo está en \(r_c=k/h=20\) mm, con 18.87 W/m (5.0 veces). Con 50 mm baja a 17.49 W/m. Un aislante delgado (menor que \(r_c\)) aumenta la pérdida, y mejora la refrigeración de un cable eléctrico.</e>
+<e>Si \(h=100\) W/(m²·K) (aire forzado), \(r_c=2\) mm y casi cualquier aislante reduce la pérdida: con \(r_2/r_1=20\), 24.36 W/m frente a 37.70 W/m desnudo (0.646). Un aislante mejor (\(k=0.04\), espuma) reduce \(r_c\) a 4 mm; con \(r_2=20\) mm el cable pierde 4.72 W/m (cerca del desnudo 3.77) y con más espesor ya aísla.</e>
+<e>Una tubería gruesa (\(r_1>r_c\)) siempre se aísla bien con cualquier espesor; el problema aparece con conductores delgados (cables, termómetros): el máximo es un resultado típico en que añadir material no ayuda.</e>
+</effects>
+<limits>
+<l>Dimensiones: \([2\pi\Delta T\,k]=\mathrm{W\,m^{-1}}\) y \(kh^{-1}\) tiene unidades de longitud. ✓</l>
+<l>Estacionario, conducción radial pura, propiedades constantes y un coeficiente \(h\) uniforme. No se incluye la radiación (que aumenta el \(h\) efectivo) ni la conducción axial por los extremos.</l>
+</limits>
+<explore sim="cilindro" title="Aislante de un cable: pérdida de calor y radio crítico"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (60 K, \(k=0.2\), \(h=10\), \(r_1=1\) mm, \(r_2/r_1=5\)): \(q'=13.4413\) W/m, \(r_c=20\) mm, \(R'=4.46385\) m·K/W y cociente 3.56542.</li>
+<li>Seleccione la razón \(r_2/r_1\) en el eje: la pérdida sube hasta 18.87 W/m en \(r_2/r_1=20\) y luego baja.</li>
+</ul></div>
+</deriv>
+
+<deriv id="newton-enfriamiento" title="El enfriamiento de Newton y el número de Biot" tags="Convección, Transitorios">
+<goal>La temperatura de un cuerpo que se enfría en un fluido, y la condición para tratarlo como si su temperatura fuese uniforme.</goal>
+<given>
+<g>Ley de enfriamiento de Newton: la potencia perdida por la superficie es \(hA\,(T-T_\infty)\), con \(h\) el coeficiente de convección y \(T_\infty\) la temperatura del entorno.</g>
+<g>Capacidad concentrada: el cuerpo tiene una temperatura \(T(t)\) uniforme, de modo que \(U=\rho Vc\,T\).</g>
+</given>
+<step op="Balance de energía">
+\[\rho Vc\,\frac{\mathrm dT}{\mathrm dt}=-hA\,(T-T_\infty).\]
+</step>
+<step op="Separar variables e integrar">
+\[\frac{\mathrm d(T-T_\infty)}{T-T_\infty}=-\frac{hA}{\rho Vc}\,\mathrm dt\ \Longrightarrow\ T-T_\infty=(T_0-T_\infty)\,e^{-t/\tau},\quad\tau=\frac{\rho Vc}{hA}.\]
+</step>
+<step op="Cuándo vale la hipótesis de uniformidad: cociente de resistencias interna y externa">
+\[\mathrm{Bi}=\frac{hL_c}{k}=\frac{L_c/k}{1/h},\qquad L_c=\frac VA\ \ (\text{esfera: }r/3),\qquad\text{válido para }\mathrm{Bi}\lesssim0.1.\]
+<why>Si la resistencia interna \(L_c/k\) es mucho menor que la externa \(1/h\), la temperatura dentro se uniformiza mucho más rápido que lo que cambia la superficie.</why>
+</step>
+<result name="Enfriamiento de Newton">\[T(t)=T_\infty+(T_0-T_\infty)e^{-t/\tau},\qquad\tau=\frac{\rho Vc}{hA},\qquad\mathrm{Bi}=\frac{hL_c}k.\]</result>
+<vars>
+<v s="T,\,T_0,\,T_\infty" n="temperaturas del cuerpo, inicial y del entorno" u="K"/>
+<v s="\rho" n="densidad" u="kg m^-3"/>
+<v s="V" n="volumen" u="m^3"/>
+<v s="A" n="área superficial" u="m^2"/>
+<v s="c" n="calor específico" u="J kg^-1 K^-1"/>
+<v s="h" n="coeficiente de convección" u="W m^-2 K^-1"/>
+<v s="\tau" n="constante de tiempo" u="s"/>
+<v s="k" n="conductividad térmica" u="W m^-1 K^-1"/>
+<v s="L_c" n="longitud característica" u="m"/>
+<v s="\mathrm{Bi}" n="número de Biot" u="1"/>
+</vars>
+<effects>
+<e>Una bola de acero de 10 mm de radio en aire (\(h=10\) W/(m²·K), \(\rho=7800\), \(c=490\), \(k=50\)): \(\tau=1274\) s (21 min), \(\mathrm{Bi}=6.7\times10^{-4}\) (la hipótesis vale), y 2933 s para eliminar el 90 % de la diferencia. En agua en movimiento (\(h=1000\)) \(\tau=12.74\) s (\(\mathrm{Bi}=0.067\)). \(\tau\propto r\): con 1 mm, 127.4 s.</e>
+<e>Una bola de aluminio de igual tamaño en aire: \(\tau=810\) s (más pequeña que el acero por su menor \(\rho c\)). Una bola de agua de 10 mm (\(k=0.6\)): \(\tau=1395\) s con \(\mathrm{Bi}=0.056\); si es de 30 mm, \(\mathrm{Bi}=0.167>0.1\) y ya no vale la capacidad concentrada (el interior se enfría más despacio que la superficie).</e>
+<e>La constante de tiempo es el tiempo que tardaría en llegar a \(T_\infty\) si el ritmo inicial se mantuviera; tras \(3\tau\) quedan el 5 % de la diferencia y tras \(\tau\ln10\) el 10 %.</e>
+</effects>
+<limits>
+<l>Dimensiones: \([\rho Vc/(hA)]=\mathrm{kg\,m^{-3}\,m^3\,J\,kg^{-1}K^{-1}/(W\,m^{-2}K^{-1}\,m^2)}=\mathrm s\). ✓</l>
+<l>Solo con \(\mathrm{Bi}\lesssim0.1\) y \(h\) constante; \(h\) real depende de \(T\) (convección natural: \(h\propto\Delta T^{1/4}\)) y de la radiación. El error de la constante de tiempo es ≈ \(0.6\,\mathrm{Bi}\) (≈ 6 % con \(\mathrm{Bi}=0.1\)). Para \(\mathrm{Bi}\) mayor hay que resolver la ecuación de difusión con condición de contorno convectiva (series de Fourier–Bessel).</l>
+</limits>
+<explore sim="newton" title="Enfriamiento de una esfera: constante de tiempo y número de Biot"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (10 mm, 7800, 490, \(h=10\), \(k=50\)): \(\tau=1274\) s, \(\mathrm{Bi}=6.66667\times10^{-4}\), \(t_{90}=2933.49\) s y \(L_c=3.33333\) mm.</li>
+<li>Seleccione \(h\) en el eje (log–log): \(\tau\) cae con pendiente −1 y \(\mathrm{Bi}\) sube con pendiente +1; con \(h=1000\), \(\mathrm{Bi}=0.0666667\).</li>
+</ul></div>
+</deriv>
+
+<deriv id="stefan-boltzmann" title="La ley de Stefan–Boltzmann y el equilibrio radiativo de un planeta" tags="Radiación, Termodinámica">
+<goal>La energía radiante en una cavidad en función de la temperatura, el flujo emitido por un cuerpo negro, y la temperatura de equilibrio de un planeta.</goal>
+<given>
+<g>Termodinámica: \(\mathrm dU=T\,\mathrm dS-p\,\mathrm dV\), con la relación de Maxwell \((\partial S/\partial V)_T=(\partial p/\partial T)_V\) (de \(\mathrm dF=-S\,\mathrm dT-p\,\mathrm dV\)).</g>
+<g>Para el gas de fotones: \(U=u(T)V\) (la densidad de energía solo depende de \(T\)) y \(p=u/3\) (misma deducción que la presión cinética, con \(pv=\varepsilon\) para partículas sin masa).</g>
+</given>
+<step op="Ecuación de estado térmica">
+\[\left(\frac{\partial U}{\partial V}\right)_T=T\left(\frac{\partial p}{\partial T}\right)_V-p.\]
+</step>
+<step op="Sustituir \(U=uV\) y \(p=u/3\)">
+\[u=\frac T3\frac{\mathrm du}{\mathrm dT}-\frac u3\ \Longrightarrow\ \frac{\mathrm du}{\mathrm dT}=\frac{4u}T\ \Longrightarrow\ u=aT^4.\]
+</step>
+<step op="Flujo emitido por un orificio (misma geometría que la efusión, con \(c\) en lugar de \(\bar v\))">
+\[\Phi_E=\frac c4\,u=\sigma T^4,\qquad\sigma=\frac{ac}4.\]
+<why>De la efusión (capítulo 17): el flujo por área es \(\tfrac14\) de la densidad por la velocidad de las partículas.</why>
+</step>
+<step op="Planeta que absorbe \((1-A)S\pi R^2\) y emite \(4\pi R^2\,\varepsilon\sigma T^4\)">
+\[(1-A)\,S\,\pi R^2=4\pi R^2\varepsilon\sigma T^4\ \Longrightarrow\ T=\left[\frac{(1-A)\,S}{4\,\varepsilon\sigma}\right]^{1/4}.\]
+</step>
+<result name="Stefan–Boltzmann y equilibrio radiativo">\[u=aT^4,\quad\sigma=\frac{ac}4,\quad T_\text{eq}=\left[\frac{(1-A)S}{4\varepsilon\sigma}\right]^{1/4}.\]</result>
+<vars>
+<v s="u" n="densidad de energía de la radiación" u="J m^-3"/>
+<v s="a" n="constante de radiación" u="J m^-3 K^-4"/>
+<v s="\sigma" n="constante de Stefan–Boltzmann" u="W m^-2 K^-4"/>
+<v s="c" n="velocidad de la luz" u="m s^-1"/>
+<v s="S" n="flujo de radiación incidente (constante solar)" u="W m^-2"/>
+<v s="A" n="albedo" u="1"/>
+<v s="\varepsilon" n="emisividad efectiva" u="1"/>
+<v s="T" n="temperatura" u="K"/>
+<v s="p" n="presión" u="Pa"/>
+<v s="U" n="energía interna" u="J"/>
+<v s="V" n="volumen" u="m^3"/>
+</vars>
+<effects>
+<e>Tierra (\(S=1361\) W/m², \(A=0.30\), \(\varepsilon=1\)): \(T=254.58\) K (−18.57 °C), emite 238.18 W/m². La temperatura media observada es 288 K; la diferencia (33 K) es el efecto invernadero. Con \(\varepsilon_\text{ef}=0.612\) el modelo da 287.83 K, y harían falta \(\varepsilon=0.609\) para 288.15 K. Sin albedo, 278.32 K.</e>
+<e>Si \(S\) aumentara un 1 %, \(T\) subiría 0.634 K (a 255.21 K): \(T\propto S^{1/4}\). Con \(S\) doble (2722 W/m²), \(T=302.75\) K, un +48.2 K. Venus (2601 W/m², \(A=0.77\)): 226.6 K, mientras su superficie está a 737 K; Marte (586.2 W/m², 0.25): 209.8 K.</e>
+<e>La constante \(a=4\sigma/c=7.566\times10^{-16}\) J m⁻³ K⁻⁴ da una densidad de energía de la radiación a 300 K de solo \(6.13\times10^{-6}\) J/m³. Con \(L_\odot=3.828\times10^{26}\) W y \(R_\odot=6.957\times10^{8}\) m, \(T_\text{ef}=(L/4\pi R^2\sigma)^{1/4}=5772\) K.</e>
+</effects>
+<limits>
+<l>Dimensiones: \([\sigma T^4]=\mathrm{W\,m^{-2}}\), \([aT^4]=\mathrm{J\,m^{-3}}\). ✓</l>
+<l>La termodinámica da la dependencia \(T^4\) pero no el valor de \(\sigma\): \(\sigma=\pi^2k^4/(60\hbar^3c^2)=5.670374\times10^{-8}\) W m⁻² K⁻⁴ solo sale de la ley de Planck (capítulo 29). El modelo de «una capa» ignora la dinámica atmosférica; es un cuerpo gris de temperatura uniforme.</l>
+</limits>
+<explore sim="balance" title="Equilibrio radiativo de un planeta: temperatura según la insolación y el albedo"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (\(S=1361\) W/m², \(A=0.3\), \(\varepsilon=1\)): \(T=254.578\) K, −18.5719 °C, \(\sigma T^4=238.175\) W/m² y 255.212 K con \(S+1\) %.</li>
+<li>Seleccione \(S\) en el eje (log–log): pendiente 0.25; disminuir ε (más invernadero) sube \(T\) con \(\varepsilon^{-1/4}\).</li>
+</ul></div>
+</deriv>
+
+<section>
+<h2>Fuentes y lecturas</h2>
+<ul class="refs">
+<li>H. S. Carslaw y J. C. Jaeger, <em>Conduction of Heat in Solids</em>, 2.ª ed., Oxford University Press (1959): caps. 2, 10 (difusión, soluciones de fuente puntual).</li>
+<li>F. P. Incropera, D. P. DeWitt et al., <em>Fundamentals of Heat and Mass Transfer</em>, Wiley: cap. 3 (radio crítico, conducción radial) y cap. 5 (capacidad concentrada, número de Biot).</li>
+<li>A. Einstein, «Über die von der molekularkinetischen Theorie der Wärme geforderte Bewegung von in ruhenden Flüssigkeiten suspendierten Teilchen», <em>Annalen der Physik</em> 17 (1905) 549; J. Perrin, <em>Les atomes</em> (1913); R. Brown (1828).</li>
+<li>J. Stefan, <em>Sitzungsberichte der Akademie der Wissenschaften Wien</em> 79 (1879) 391; L. Boltzmann, <em>Annalen der Physik</em> 22 (1884) 291.</li>
+<li>K. Huang, <em>Statistical Mechanics</em>, 2.ª ed., Wiley (1987): § 12.1 (radiación de cavidad); NASA Planetary Fact Sheets (constantes solares y albedos); Kopp y Lean, <em>Geophys. Res. Lett.</em> 38 (2011) L01706 (constante solar).</li>
+</ul>
+</section>
+</template>

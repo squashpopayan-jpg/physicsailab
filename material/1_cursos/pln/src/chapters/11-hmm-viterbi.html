@@ -1,0 +1,105 @@
+<template class="chapter-src" data-id="hmm-viterbi" data-num="11" data-title="Modelos ocultos de Markov y Viterbi" data-part="Parte III · Etiquetado morfosintáctico" data-short="Etiquetar como decodificación bayesiana; probabilidades de transición y de emisión; la matriz de Viterbi paso a paso; suavizado y palabras desconocidas; taller guiado de la Actividad 1">
+<p class="lead">Un modelo oculto de Markov (HMM) trata el texto como la salida de una máquina de estados que no vemos: las etiquetas son los estados ocultos y las palabras, lo que emiten. Etiquetar es adivinar la secuencia de estados que más probablemente produjo las palabras. El algoritmo de Viterbi lo hace sin enumerar millones de secuencias. Este capítulo reúne la teoría del tema 3, la práctica de la Actividad 1 y las simulaciones para ver el algoritmo funcionar.</p>
+
+<section>
+<h2>Etiquetar es decodificar</h2>
+<p>El objetivo es elegir, dada la secuencia de palabras \(w_{1:n}\), la secuencia de etiquetas \(t_{1:n}\) más probable. Con la regla de Bayes, y descartando el denominador (que no depende de las etiquetas):</p>
+<div class="eq key" data-name="Decodificación bayesiana">\[\hat t_{1:n}=\argmax_{t_{1:n}}P(t_{1:n}\mid w_{1:n})=\argmax_{t_{1:n}}\ \underbrace{P(w_{1:n}\mid t_{1:n})}_{\text{verosimilitud}}\ \underbrace{P(t_{1:n})}_{\text{a priori}}\]</div>
+<p>Dos suposiciones simplificadoras convierten esto en un cálculo manejable:</p>
+<ol>
+<li><b>Independencia de la emisión</b>: la palabra solo depende de su propia etiqueta, \(P(w_{1:n}\mid t_{1:n})\approx\prod_iP(w_i\mid t_i)\).</li>
+<li><b>Suposición bigrama (Markov de orden uno)</b>: la etiqueta solo depende de la anterior, \(P(t_{1:n})\approx\prod_iP(t_i\mid t_{i-1})\).</li>
+</ol>
+<div class="eq key" data-name="Etiquetador HMM bigrama">\[\hat t_{1:n}=\argmax_{t_{1:n}}\ \prod_{i=1}^{n}\underbrace{P(w_i\mid t_i)}_{\text{emisión } B}\ \underbrace{P(t_i\mid t_{i-1})}_{\text{transición } A}\ ,\qquad t_0=\langle s\rangle,\ \ P(\langle/s\rangle\mid t_n)\ \text{al final}\]</div>
+<p>Un HMM así queda definido por dos tablas, la de <b>transición</b> \(A\) y la de <b>emisión</b> \(B\), que se estiman <b>por conteo</b> en un corpus etiquetado (máxima verosimilitud):</p>
+<div class="eq" data-name="Estimación por conteo">\[P(t_i\mid t_{i-1})=\frac{C(t_{i-1},t_i)}{C(t_{i-1})},\qquad P(w_i\mid t_i)=\frac{C(t_i,w_i)}{C(t_i)}.\]</div>
+<div class="box ex"><p>Con el corpus WSJ del tema 3, el verbo modal MD aparece 13.124 veces y lo sigue un verbo en forma base VB en 10.471: \(P(\text{VB}\mid\text{MD})=10471/13124=0{,}798\). De los 13.124 MD, «will» es la palabra en 4.046: \(P(\text{will}\mid\text{MD})=4046/13124=0{,}308\). Esta última <i>no</i> es «la etiqueta más probable de “will”»: responde a «si voy a generar un MD, ¿cuántas veces será “will”?».</p></div>
+<div class="sim" data-sim="hmm-parametros" data-title="Las tablas A y B de un HMM entrenado con CESS-ESP"></div>
+<div class="sim-guide"><ul>
+<li>El mapa de calor muestra la tabla de transición \(A\) del modelo entrenado con 240 oraciones y 13 etiquetas gruesas. Cada fila suma 1 (con la columna de fin de oración fuera del dibujo).</li>
+<li>Elija DET: casi toda la masa va a sustantivos y adjetivos, como dice la gramática («el + sustantivo»). Elija ADP: sigue sustantivo o determinante.</li>
+<li>Consulte una palabra. «Vino» se emite con probabilidades parecidas desde sustantivo y desde verbo: por sí sola no decide; son las transiciones las que desempatan.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El algoritmo de Viterbi</h2>
+<p>Probar todas las secuencias es inviable: con 13 etiquetas y 7 palabras habría \(13^7=62{,}7\) millones. Viterbi usa <b>programación dinámica</b>: llena una matriz con una fila por etiqueta y una columna por palabra, donde cada celda guarda la probabilidad de la mejor ruta que llega a esa etiqueta en esa posición.</p>
+<div class="eq key" data-name="Recurrencia de Viterbi">\[v_1(j)=P(j\mid\langle s\rangle)\,P(w_1\mid j),\qquad v_t(j)=\max_{i}\ v_{t-1}(i)\,P(j\mid i)\,P(w_t\mid j),\qquad \text{fin: }\max_j v_n(j)\,P(\langle/s\rangle\mid j).\]</div>
+<p>Cada celda también guarda de qué etiqueta de la columna anterior viene el máximo (<i>backpointer</i>). Al terminar se parte de la mejor celda de la última columna y se retrocede siguiendo esos punteros: así se reconstruye la secuencia. El costo es \(O(n\,T^2)\): para 7 palabras y 13 etiquetas, 1.183 operaciones en vez de 62,7 millones. Como los productos de muchas probabilidades pequeñas se desbordan por abajo, se trabaja con <b>logaritmos</b> y los productos se vuelven sumas.</p>
+<div class="sim" data-sim="viterbi" data-title="La matriz de Viterbi columna por columna"></div>
+<div class="sim-guide"><ul>
+<li>Deslice «Columnas calculadas» para ver cómo se llena la matriz de izquierda a derecha. Cada celda muestra el log de la mejor ruta y, debajo, la etiqueta de la que viene. El camino óptimo se resalta.</li>
+<li>Compare «bebo un vaso de vino tinto» con «vino de un lugar lejano»: «vino» pasa de sustantivo (tras la preposición «de») a verbo (al inicio de la oración, donde un verbo es más probable que un sustantivo).</li>
+<li>Pruebe una oración con una palabra inventada: con «Sin tratamiento» y sin suavizado todas las celdas se vuelven −∞ y no hay camino.</li>
+<li>Estos resultados se compararon con una enumeración exhaustiva de todas las secuencias posibles (14 oraciones de 5 palabras) y con una segunda implementación en Python: coinciden hasta el último decimal (apéndice de validación).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Suavizado y palabras desconocidas</h2>
+<p>Un HMM por máxima verosimilitud asigna probabilidad 0 a todo lo que no vio. En una oración de prueba basta <b>una</b> palabra nueva o <b>una</b> transición no vista para que todas las rutas valgan cero. Dos arreglos estándar:</p>
+<ul>
+<li><b>Suavizado add-k</b> (Laplace con \(k=1\)): suma \(k\) a cada conteo y reparte la masa: \(P(j\mid i)=\frac{C(i,j)+k}{C(i)+k(T+1)}\). Es sencillo pero, con \(k=1\), quita demasiada probabilidad a lo visto cuando hay muchas etiquetas.</li>
+<li><b>Símbolo UNK</b>: se reemplazan en el entrenamiento las palabras vistas una sola vez (<i>hápax</i>) por «&lt;UNK&gt;» y las desconocidas de la prueba se tratan como «&lt;UNK&gt;». El modelo aprende a qué categorías pertenecen típicamente las palabras raras.</li>
+</ul>
+<p>Con las 13 etiquetas gruesas y 5.427 oraciones, el HMM de este capítulo acierta el 90,5 % sin suavizado y con UNK, 90,2 % con \(k=0{,}1\) y 87,9 % con Laplace (\(k=1\)): suavizar demasiado empeora. Con 240 oraciones y etiquetas EAGLES completas (170 etiquetas), sin suavizar solo se acierta el 24,6 % y con \(k=0{,}1\), el 67,2 % (apéndice de validación).</p>
+</section>
+
+<section>
+<h2>Taller guiado: la Actividad 1</h2>
+<p>La actividad del laboratorio pide etiquetar con un HMM la oración «<i>Habla con el enfermo grave de trasplantes.</i>» (referencia: VMIP3S0 SP DA NCMS000 AQ0CS00 SP NCMN000 Fp) con el script <code>morfos5</code>, en cuatro partes y un reto. El simulador siguiente reproduce sus decisiones con un corpus reducido de 20 oraciones de CESS-ESP (no el de la actividad, que no forma parte de este material), para entender por qué las funciones del script deben modificarse.</p>
+<div class="sim" data-sim="taller-hmm" data-title="HMM con un corpus reducido y etiquetas EAGLES completas"></div>
+<div class="sim-guide"><ul>
+<li><b>Parte 1 · construir el HMM</b>: con 20 oraciones hay unos cuantos cientos de palabras y decenas de etiquetas; casi todas las parejas (etiqueta, etiqueta) y (etiqueta, palabra) valen 0.</li>
+<li><b>Parte 2 · Viterbi</b>: con la configuración inicial (sin suavizado, sin UNK) la oración queda sin camino porque contiene palabras no vistas.</li>
+<li><b>Parte 3 · analizar</b>: active «Laplace» y «Hápax como UNK» y compare. Pruebe otras oraciones. Cuando se obtiene una secuencia, ¿es correcta? ¿Qué etiquetas fallan y por qué (palabras desconocidas, etiquetas poco vistas)?</li>
+<li><b>Reto</b>: las modificaciones sugeridas (minúsculas, Laplace, logaritmos, columna de fin de oración, estados útiles) son exactamente las opciones de esta página y del código de <code>py/11-hmm.py</code>. Registre en una tabla qué cambió en cada caso.</li>
+</ul></div>
+<div class="box note"><p><b>Parte 4 · HMM frente a un LLM</b>: pida a un asistente que etiquete la misma oración con etiquetas EAGLES y compare. El modelo grande no tiene tablas A y B explícitas, pero resuelve ambigüedades con un contexto mucho mayor y no sufre las palabras desconocidas (trabaja con subpalabras, capítulo 31). Contraste además lo que cada uno puede explicar: de un HMM se pueden leer las probabilidades que justifican cada etiqueta.</p></div>
+</section>
+
+<section>
+<h2>Práctica en Python</h2>
+<div class="box py"><p>El programa implementa el HMM y Viterbi desde cero (sin bibliotecas), entrena con el 90 % de CESS-ESP, evalúa con el 10 % y etiqueta tres oraciones mostrando las tablas A y B relevantes.</p>
+<div class="py" data-py="11-hmm"></div></div>
+<div class="box read"><ul>
+<li><b>Exactitud</b>: 90,5 % sin suavizado, 90,2 % con \(k=0{,}1\) y 87,9 % con Laplace. El HMM supera al mejor etiquetador por retroceso de NLTK (89,9 %) por muy poco: en inglés se obtienen 95-97 % con HMM y más con modelos neuronales.</li>
+<li><b>Palabras desconocidas</b>: 63,4 % de acierto, frente a 94,6 % en las conocidas, con 1.901 palabras desconocidas en 603 oraciones. Ahí se concentra el error.</li>
+<li><b>«Vino»</b>: en «bebo un vaso de vino tinto» es sustantivo y en «vino de un lugar lejano», verbo. Los números lo explican: \(P(\text{vino}\mid\text{NOUN})=0{,}00006\) y \(P(\text{vino}\mid\text{VERB})=0{,}00011\) (casi iguales), pero \(P(\text{NOUN}\mid\text{ADP})=0{,}234\) y \(P(\text{VERB}\mid\langle s\rangle)=0{,}064\) frente a \(P(\text{NOUN}\mid\langle s\rangle)=0{,}018\).</li>
+<li><b>Errores</b>: «lejano» y «medida» salen como signos de puntuación. Son palabras raras que el modelo trata como «UNK», y entre los hápax del entrenamiento abundan los signos y símbolos raros. Es un defecto real del truco del hápax, que se corrige añadiendo rasgos de sufijo o usando modelos discriminativos (capítulo 12).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>El etiquetado HMM es decodificación bayesiana: \(\argmax\prod P(w_i\mid t_i)P(t_i\mid t_{i-1})\).</li>
+<li>Las tablas A (transición) y B (emisión) se estiman por conteo en un corpus anotado.</li>
+<li>Viterbi llena una matriz en \(O(nT^2)\) y reconstruye la secuencia por retroceso; se trabaja con logaritmos.</li>
+<li>Sin suavizado ni UNK, una sola palabra o transición no vista anula todas las rutas.</li>
+<li>El contexto resuelve la ambigüedad: la emisión de «vino» es casi igual para sustantivo y verbo; la transición decide.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Con \(C(\text{DET})=100\) y \(C(\text{DET},\text{NOUN})=70\), ¿cuánto vale \(P(\text{NOUN}\mid\text{DET})\)?
+<details><summary>Respuesta</summary><p>0,70.</p></details></li>
+<li><span class="lvl">Básico</span>¿Cuántas secuencias de etiquetas hay para una oración de 4 palabras con 5 etiquetas, y cuántas operaciones hace Viterbi?
+<details><summary>Respuesta</summary><p>\(5^4=625\) secuencias; Viterbi, \(4\cdot5^2=100\) operaciones de producto-máximo.</p></details></li>
+<li><span class="lvl">Intermedio</span>Con dos etiquetas A y B, \(v_1(A)=0{,}2\), \(v_1(B)=0{,}1\), \(P(A\mid A)=0{,}5\), \(P(A\mid B)=0{,}4\), \(P(w_2\mid A)=0{,}3\). Calcule \(v_2(A)\) y el backpointer.
+<details><summary>Respuesta</summary><p>\(v_2(A)=\max(0{,}2\cdot0{,}5,\ 0{,}1\cdot0{,}4)\cdot0{,}3=0{,}1\cdot0{,}3=0{,}03\); el backpointer es A.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué el suavizado de Laplace con \(k=1\) puede empeorar un etiquetador con muchas etiquetas?
+<details><summary>Respuesta</summary><p>Porque suma 1 a cada una de las \(T+1\) transiciones posibles, y si hay muchas etiquetas esa masa desplazada a eventos nunca vistos es enorme comparada con los conteos reales, lo que diluye las probabilidades de lo observado.</p></details></li>
+<li><span class="lvl">Avanzado</span>Demuestre que la matriz de Viterbi hallada con logaritmos da la misma ruta que con probabilidades.
+<details><summary>Respuesta</summary><p>El logaritmo es una función estrictamente creciente, luego \(\argmax\prod_ip_i=\argmax\sum_i\log p_i\); la recurrencia con máximos y sumas explora las mismas rutas y elige la misma.</p></details></li>
+</ol>
+<h3>Autoevaluación</h3>
+<div class="sim" data-sim="quiz" data-cap="hmm-viterbi" data-title="Autoevaluación del capítulo 11"></div>
+<div class="box links"><ul>
+<li><a href="https://web.stanford.edu/~jurafsky/slp3/A.pdf">Jurafsky y Martin — Apéndice A: Hidden Markov Models</a><small>Viterbi, algoritmo hacia delante y Baum-Welch con el ejemplo «Janet will back the bill».</small></li>
+<li><a href="https://doi.org/10.1109/5.18626">Rabiner (1989) — A tutorial on hidden Markov models</a><small>El tutorial clásico, con los tres problemas de los HMM.</small></li>
+<li><a href="https://doi.org/10.1109/TIT.1973.1055066">Forney (1973) — The Viterbi algorithm</a><small>La descripción original del algoritmo como decodificador de canal.</small></li>
+<li><a href="https://aclanthology.org/A00-1031/">Brants (2000) — TnT: a statistical part-of-speech tagger</a><small>Un HMM de trigramas con suavizado por interpolación y manejo de palabras desconocidas por sufijos; muy competitivo.</small></li>
+<li><a href="https://hmmlearn.readthedocs.io/">hmmlearn</a><small>Biblioteca de HMM para Python (aprendizaje no supervisado con Baum-Welch).</small></li>
+</ul></div>
+</section>
+</template>

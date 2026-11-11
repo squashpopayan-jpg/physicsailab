@@ -1,0 +1,85 @@
+<template class="chapter-src" data-id="herramientas" data-num="35" data-title="Herramientas, bibliotecas y servicios en la nube" data-part="Parte VIII · Recursos y agentes" data-short="NLTK, spaCy, Stanza, Gensim, scikit-learn, PyTorch y Hugging Face; servicios de nube y APIs de modelos; cómo elegir; coste, privacidad y reproducibilidad">
+<p class="lead">Nadie construye un sistema de PLN desde cero: se combinan bibliotecas, modelos preentrenados y, a veces, servicios en la nube. Este capítulo ordena el panorama y da criterios para elegir. La regla general: empezar por lo más sencillo que pueda funcionar, medirlo con los propios datos y complicar solo si hace falta.</p>
+
+<section>
+<h2>Bibliotecas de código abierto</h2>
+<table class="mx" style="text-align:left"><thead><tr><th style="text-align:left">Herramienta</th><th style="text-align:left">Para qué sirve</th><th style="text-align:left">Cuándo</th></tr></thead><tbody>
+<tr><td style="text-align:left"><b>NLTK</b></td><td style="text-align:left;white-space:normal">Corpus, tokenización, etiquetado, análisis sintáctico, WordNet, lógica, medidas</td><td style="text-align:left;white-space:normal">Aprender y explorar; prototipos</td></tr>
+<tr><td style="text-align:left"><b>spaCy</b></td><td style="text-align:left;white-space:normal">Canalizaciones rápidas: tokenización, lemas, etiquetas, dependencias, entidades; modelos en español</td><td style="text-align:left;white-space:normal">Producción y volumen medio</td></tr>
+<tr><td style="text-align:left"><b>Stanza</b> (Stanford)</td><td style="text-align:left;white-space:normal">Análisis lingüístico con redes neuronales en más de 60 idiomas</td><td style="text-align:left;white-space:normal">Investigación, análisis de calidad</td></tr>
+<tr><td style="text-align:left"><b>Gensim</b></td><td style="text-align:left;white-space:normal">Word2Vec, FastText, modelos de temas, similitud de documentos</td><td style="text-align:left;white-space:normal">Embeddings clásicos y temas</td></tr>
+<tr><td style="text-align:left"><b>scikit-learn</b></td><td style="text-align:left;white-space:normal">Vectorizadores, TF-IDF, clasificadores, validación cruzada, métricas</td><td style="text-align:left;white-space:normal">Líneas de base y clasificación tradicional</td></tr>
+<tr><td style="text-align:left"><b>PyTorch</b>, JAX, TensorFlow</td><td style="text-align:left;white-space:normal">Redes neuronales con diferenciación automática</td><td style="text-align:left;white-space:normal">Modelos propios</td></tr>
+<tr><td style="text-align:left"><b>Hugging Face</b> (transformers, datasets, tokenizers)</td><td style="text-align:left;white-space:normal">Miles de modelos preentrenados, ajuste fino, evaluación, conjuntos de datos</td><td style="text-align:left;white-space:normal">Transformers y modelos grandes</td></tr>
+<tr><td style="text-align:left"><b>sentence-transformers</b>, FAISS</td><td style="text-align:left;white-space:normal">Embeddings de frases y búsqueda vectorial</td><td style="text-align:left;white-space:normal">Búsqueda semántica y RAG</td></tr>
+<tr><td style="text-align:left"><b>Elasticsearch / OpenSearch</b>, Lucene</td><td style="text-align:left;white-space:normal">Indexación y búsqueda con BM25</td><td style="text-align:left;white-space:normal">Búsqueda a gran escala</td></tr>
+</tbody></table>
+<p>La velocidad también importa. Con el mismo texto (113.937 palabras), la tokenización más sencilla es 100 veces más rápida que la más completa de NLTK, pero no equivalente: separar por espacios no distingue la puntuación.</p>
+</section>
+
+<section>
+<h2>Servicios en la nube</h2>
+<p>Los proveedores ofrecen el PLN «como servicio»: se envía el texto por una API y se recibe el resultado, sin entrenar ni alojar nada.</p>
+<ul>
+<li><b>Servicios especializados</b>: traducción, análisis de sentimiento, extracción de entidades y frases clave, clasificación de documentos, reconocimiento y síntesis de voz (Google Cloud, Amazon Comprehend y Translate, Microsoft Azure AI Language, IBM Watson).</li>
+<li><b>APIs de modelos grandes</b>: generación, resumen, extracción y conversación con modelos de lenguaje alojados por un proveedor, cobrados por token.</li>
+<li><b>Plataformas de modelos abiertos</b>: alojar un modelo de pesos abiertos en infraestructura propia o alquilada.</li>
+</ul>
+<p>Ventajas: arranque rápido, calidad alta sin datos propios, nada que mantener. Inconvenientes: los datos salen de la organización (privacidad, regulación como el RGPD), el coste crece con el volumen, dependencia del proveedor (precios, versiones, cierres) y menos control del comportamiento.</p>
+<div class="sim" data-sim="elegir-herramienta" data-title="Orientación para elegir herramienta según tarea, datos, privacidad y volumen"></div>
+<div class="sim-guide"><ul>
+<li>Cambie la tarea a «Clasificar textos» con «Ninguno» de datos etiquetados: la recomendación es empezar con aprendizaje en contexto, y etiquetar 200 ejemplos para poder evaluar. Sin evaluación no hay forma de saber si funciona.</li>
+<li>Con «Cientos» y privacidad estricta: ajuste fino en local, con TF-IDF más regresión logística como línea de base; las API quedan descartadas.</li>
+<li>Con «Generar o resumir» y volumen alto: aparece la comparación de costes entre API y modelo propio más pequeño.</li>
+</ul></div>
+<div class="box py"><p>El programa lista las versiones de las bibliotecas disponibles en el entorno del curso y mide la velocidad de cuatro maneras de tokenizar el mismo texto.</p>
+<div class="py" data-py="35-herramientas"></div></div>
+<div class="box read"><ul>
+<li>Instaladas: NLTK 3.10.4, scikit-learn 1.7.1, Gensim 4.4.0, PyTorch 2.7.1, tiktoken 0.14.0, sacrebleu 2.6.0 y rdflib 7.6.0. spaCy, Stanza y transformers no lo están en este entorno: se instalarían con <code>pip</code>.</li>
+<li><b>Velocidad</b> (666.137 caracteres, 113.937 palabras): <code>split()</code> en 10,6 ms (10,7 millones de tokens/s); expresión regular, 62,6 ms (1,96 M/s); <code>wordpunct_tokenize</code>, 105,2 ms (1,16 M/s); <code>word_tokenize</code>, 1.013 ms (0,12 M/s). La mejor calidad cuesta casi cien veces más tiempo.</li>
+<li>El número de tokens también difiere (113.937, 122.452, 122.422 y 117.891) porque cada método decide de forma distinta qué es un token (capítulo 7).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Buenas prácticas</h2>
+<ul>
+<li><b>Línea de base primero</b>: un TF-IDF con regresión logística (capítulo 27) en media hora.</li>
+<li><b>Evaluación propia</b>: un conjunto de prueba etiquetado de sus datos, no solo los resultados publicados.</li>
+<li><b>Reproducibilidad</b>: fijar versiones de bibliotecas y de modelos, semillas y datos; anotar la fecha de la API.</li>
+<li><b>Coste y latencia</b>: medir tokens, tiempo por petición y coste por mil textos antes de escalar.</li>
+<li><b>Privacidad y seguridad</b>: no enviar datos personales a servicios no autorizados; revisar contratos de uso de datos.</li>
+</ul>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>NLTK para aprender; spaCy/Stanza para análisis; scikit-learn para líneas de base; PyTorch y Hugging Face para redes y Transformers.</li>
+<li>La nube ofrece rapidez y calidad a cambio de privacidad, coste variable y dependencia.</li>
+<li>Empezar por la línea de base más sencilla, medir con datos propios, y documentar versiones.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Qué biblioteca elegiría para clasificar opiniones con TF-IDF y regresión logística?
+<details><summary>Respuesta</summary><p>scikit-learn (TfidfVectorizer y LogisticRegression, con Pipeline y validación cruzada).</p></details></li>
+<li><span class="lvl">Básico</span>Un hospital quiere extraer entidades de historias clínicas. ¿Puede usar una API pública de nube?
+<details><summary>Respuesta</summary><p>En general no: son datos sensibles y la regulación exige control; debe usarse un modelo en local (o un servicio contratado con garantías específicas).</p></details></li>
+<li><span class="lvl">Intermedio</span>Una API cobra 0,50 € por millón de tokens. Un texto de 500 palabras en español usa unos 850 tokens (1,70 por palabra). ¿Cuánto cuestan 2 millones de textos?
+<details><summary>Respuesta</summary><p>2·10⁶ · 850 = 1,7·10⁹ tokens → 1.700 millones/1 millón · 0,50 € = 850 €. (Más lo que cuesten las respuestas.)</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué <code>word_tokenize</code> es mucho más lento que <code>split()</code> y cuándo compensa?
+<details><summary>Respuesta</summary><p>Aplica reglas (separación de puntuación, contracciones, abreviaturas) con modelos y expresiones regulares. Compensa cuando la calidad de los tokens afecta al resultado, como en análisis sintáctico, y no en búsquedas sencillas.</p></details></li>
+<li><span class="lvl">Avanzado</span>Describa cómo decidiría entre ajustar un modelo propio y usar una API para clasificar 10 millones de correos al año.
+<details><summary>Respuesta</summary><p>Medir exactitud con 500 ejemplos propios en ambos; calcular el coste anual (tokens × precio frente a servidor y mantenimiento); considerar privacidad y latencia. Con ese volumen suele compensar un modelo pequeño propio si la exactitud es comparable; la API, si la tarea cambia a menudo o hay pocos datos.</p></details></li>
+</ol>
+<h3>Autoevaluación</h3>
+<div class="sim" data-sim="quiz" data-cap="herramientas" data-title="Autoevaluación del capítulo 35"></div>
+<div class="box links"><ul>
+<li><a href="https://www.nltk.org/">NLTK</a><small>Documentación y libro en línea.</small></li>
+<li><a href="https://spacy.io/">spaCy</a><small>Biblioteca de PLN industrial con modelos en español.</small></li>
+<li><a href="https://stanfordnlp.github.io/stanza/">Stanza</a><small>Análisis lingüístico neuronal multilingüe.</small></li>
+<li><a href="https://huggingface.co/docs/transformers">Hugging Face — transformers</a><small>Modelos preentrenados y ajuste fino.</small></li>
+<li><a href="https://scikit-learn.org/">scikit-learn</a><small>Aprendizaje automático clásico en Python.</small></li>
+<li><a href="https://radimrehurek.com/gensim/">Gensim</a><small>Embeddings y modelos de temas.</small></li>
+</ul></div>
+</section>
+</template>

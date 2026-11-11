@@ -87,35 +87,32 @@ MS.Top = (function () {
     }
   }
 
-  /* figura vista desde arriba a partir del esqueleto 3D */
-  function figure(ctx, L, pl, t, sel) {
-    const { s, X, Y } = L;
-    const sk = Player.skeleton(pl, t);
+  /* figura vista desde arriba: la misma malla 3D del atleta en proyección cenital */
+  const LTOP = U.n3({ x: -0.35, y: -0.45, z: 0.8 });
+  function figure(ctx, L, pl, t, sel, ball, opts) {
+    const { s, X, Y } = L, A = MS.Athlete;
+    const M0 = A.forPlayer(pl, t, ball, 1, !!(opts && opts.musculos)), sk = M0.sk;
+    const g = ctx.createRadialGradient(X(sk.P.x), Y(sk.P.y), 0, X(sk.P.x), Y(sk.P.y), 0.5 * s);
+    g.addColorStop(0, 'rgba(0,0,0,.28)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(X(sk.P.x), Y(sk.P.y), 0.5 * s, 0, Math.PI * 2); ctx.fill();
+    if (sel) { ctx.strokeStyle = pl.color; ctx.lineWidth = 2; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.arc(X(sk.P.x), Y(sk.P.y), 0.62 * s, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]); }
+    const V = { proj: (p) => ({ x: X(p.x), y: Y(p.y), z: -p.z }), facing: (n) => n.z > 0.02 };
+    const style = opts && opts.musculos ? { anat: { colors: A.actColors(MS.Muscles.activation(pl, t).act), base: A.ANAT.musc, none: A.ANAT.none }, line: 'rgba(110,60,45,.45)' } : { kit: pl._kit || (pl._kit = A.kit(pl.color, pl.idx)) };
+    const vis = A.visible(M0.Q, V, []);
+    /* raqueta, por altura */
     const P = (q) => [X(q.x), Y(q.y)];
-    const seg = (a, b, w, col) => { ctx.strokeStyle = col; ctx.lineWidth = Math.max(1.2, w * s); ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(...P(a)); ctx.lineTo(...P(b)); ctx.stroke(); };
-    /* sombra */
-    ctx.fillStyle = 'rgba(0,0,0,.16)'; ctx.beginPath(); ctx.ellipse(X(sk.P.x), Y(sk.P.y), 0.32 * s, 0.24 * s, sk.yaw, 0, Math.PI * 2); ctx.fill();
-    if (sel) { ctx.strokeStyle = pl.color; ctx.lineWidth = 2; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.arc(X(sk.P.x), Y(sk.P.y), 0.5 * s, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]); }
-    for (const f of ['I', 'D']) {
-      const lg = sk.legs[f];
-      seg(lg.hip, lg.knee, 0.13, '#2a3340');
-      seg(lg.knee, lg.ankle, 0.1, '#d9b9a2');
-      seg(lg.heel, lg.toe, 0.09, f === 'I' ? '#f7f7f7' : '#e8e8e8');
-    }
-    seg(sk.shL, sk.shR, 0.2, pl.color);
-    seg(sk.legs.I.hip, sk.legs.D.hip, 0.2, '#2a3340');
-    seg(sk.shO, sk.elbowO, 0.08, pl.color); seg(sk.elbowO, sk.handO, 0.065, '#d9b9a2');
-    seg(sk.shA, sk.elbowA, 0.08, pl.color); seg(sk.elbowA, sk.wristA, 0.065, '#d9b9a2');
-    seg(sk.wristA, sk.racketHead, 0.03, '#222');
-    ctx.save(); ctx.translate(X(sk.racketHead.x + (sk.racketTip.x - sk.racketHead.x) * 0.5), Y(sk.racketHead.y + (sk.racketTip.y - sk.racketHead.y) * 0.5));
-    ctx.rotate(Math.atan2(sk.racketTip.y - sk.racketHead.y, sk.racketTip.x - sk.racketHead.x));
-    const rl = Math.max(0.05, Math.hypot(sk.racketTip.x - sk.racketHead.x, sk.racketTip.y - sk.racketHead.y)) * s * 0.75;
-    ctx.strokeStyle = '#222'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.ellipse(0, 0, Math.max(2, rl), 0.1 * s, 0, 0, Math.PI * 2); ctx.stroke();
-    ctx.restore();
-    /* cabeza con nariz para la orientación */
-    ctx.fillStyle = '#3a2a22'; ctx.beginPath(); ctx.arc(X(sk.head.x), Y(sk.head.y), 0.11 * s, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = '#f3dcc8'; ctx.lineWidth = Math.max(1.5, 0.04 * s);
-    ctx.beginPath(); ctx.moveTo(X(sk.head.x), Y(sk.head.y)); ctx.lineTo(X(sk.head.x + Math.cos(sk.yaw) * 0.15), Y(sk.head.y + Math.sin(sk.yaw) * 0.15)); ctx.stroke();
+    vis.push({ z: -Math.max(sk.wristA.z, sk.racketTip.z) - 0.02, draw: () => {
+      ctx.strokeStyle = '#15181c'; ctx.lineCap = 'round'; ctx.lineWidth = Math.max(1.5, 0.03 * s); ctx.beginPath(); ctx.moveTo(...P(sk.wristA)); ctx.lineTo(...P(sk.racketHead)); ctx.stroke();
+      const mx = (sk.racketHead.x + sk.racketTip.x) / 2, my = (sk.racketHead.y + sk.racketTip.y) / 2;
+      const len = Math.hypot(sk.racketTip.x - sk.racketHead.x, sk.racketTip.y - sk.racketHead.y);
+      ctx.save(); ctx.translate(X(mx), Y(my)); ctx.rotate(Math.atan2(sk.racketTip.y - sk.racketHead.y, sk.racketTip.x - sk.racketHead.x));
+      ctx.fillStyle = 'rgba(255,255,255,.3)'; ctx.strokeStyle = '#15181c'; ctx.lineWidth = Math.max(1.2, 0.022 * s);
+      ctx.beginPath(); ctx.ellipse(0, 0, Math.max(2, (len / 2 + 0.03) * s), Math.max(1.5, 0.09 * s * Math.max(0.25, Math.abs(sk.racketDir.z) < 0.9 ? 1 : 0.4)), 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.restore();
+    } });
+    vis.sort((a, b2) => b2.z - a.z);
+    ctx.lineJoin = 'round';
+    for (const e of vis) { if (e.draw) e.draw(); else A.paint(ctx, e, style, LTOP); }
     return sk;
   }
 
@@ -193,7 +190,7 @@ MS.Top = (function () {
     }
     /* figuras */
     const order = tl.players.slice().sort((a, b2) => Player.keyAt(a, t).y - Player.keyAt(b2, t).y);
-    for (const pl of order) figure(ctx, L, pl, t, focus === pl.id);
+    for (const pl of order) figure(ctx, L, pl, t, focus === pl.id, b, opts);
     /* bola */
     if (b) {
       ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.arc(X(b.x), Y(b.y), 0.05 * s + 1, 0, Math.PI * 2); ctx.fill();

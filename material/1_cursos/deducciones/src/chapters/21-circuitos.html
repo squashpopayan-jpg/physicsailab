@@ -1,0 +1,258 @@
+<template class="chapter-src" data-id="circuitos" data-num="21" data-title="Circuitos" data-part="Parte V · Electromagnetismo" data-short="La conductividad de Drude y la ley de Ohm, el transitorio RC, la resonancia del circuito RLC, el teorema de Thévenin con la transferencia máxima de potencia y la impedancia de una línea coaxial">
+<p class="lead">Un circuito es un modelo del campo electromagnético en el que la corriente circula por conductores y el campo está concentrado en elementos: la resistencia disipa, el condensador almacena energía eléctrica y la bobina almacena energía magnética. Se parte del movimiento de un electrón en un metal para deducir la ley de Ohm, se analizan los transitorios y la respuesta en frecuencia con las leyes de Kirchhoff, y se llega a la línea de transmisión, donde los elementos están distribuidos y aparecen ondas. La inductancia, aquí tomada como dato, se deduce de la ley de Faraday en el capítulo 22.</p>
+
+<deriv id="drude-ohm" title="La conductividad de Drude y la ley de Ohm" tags="Conducción, Circuitos">
+<goal>La relación entre el campo en un metal y la corriente, \(\mathbf J=\sigma\mathbf E\), con \(\sigma\) en función de la densidad de electrones y el tiempo entre colisiones; y su forma \(V=IR\).</goal>
+<given>
+<g>Segunda ley de Newton para un electrón libre sometido al campo \(\mathbf E\) y a colisiones: la cantidad de movimiento se pierde con una tasa \(m\mathbf v/\tau\), donde \(\tau\) es el tiempo medio entre colisiones.</g>
+<g>Densidad de corriente \(\mathbf J=-ne\,\mathbf v_d\) (con \(n\) electrones por unidad de volumen).</g>
+</given>
+<step op="Ecuación de movimiento">
+\[m\frac{\mathrm d\mathbf v}{\mathrm dt}=-e\mathbf E-\frac{m\mathbf v}\tau.\]
+</step>
+<step op="Solución con \(\mathbf v(0)=0\)">
+\[\mathbf v(t)=-\frac{e\tau}m\mathbf E\left(1-e^{-t/\tau}\right)\ \Longrightarrow\ \mathbf v_d=-\frac{e\tau}m\mathbf E=-\mu\mathbf E.\]
+<why>En un tiempo del orden de \(\tau\) (decenas de femtosegundos) se alcanza la velocidad de arrastre; a partir de entonces la fuerza eléctrica equilibra el rozamiento.</why>
+</step>
+<step op="Densidad de corriente">
+\[\mathbf J=-ne\,\mathbf v_d=\frac{ne^2\tau}m\,\mathbf E\ \Longrightarrow\ \sigma=\frac{ne^2\tau}m,\qquad\rho=\frac1\sigma.\]
+</step>
+<step op="Hilo de longitud \(L\) y sección \(A\): \(E=V/L\), \(I=JA\)">
+\[V=EL=\frac{J}{\sigma}L=\frac{I}{A}\frac{\rho L}{1}\ \Longrightarrow\ V=IR,\qquad R=\frac{\rho L}A.\]
+</step>
+<step op="Camino libre medio con la velocidad de Fermi (capítulo 18)">
+\[\ell=v_F\,\tau=\frac{\hbar(3\pi^2n)^{1/3}}m\,\tau.\]
+</step>
+<result name="Conductividad de Drude">\[\sigma=\frac{ne^2\tau}m,\qquad\mu=\frac{e\tau}m,\qquad R=\frac{\rho L}A.\]</result>
+<vars>
+<v s="\sigma" n="conductividad" u="S m^-1"/>
+<v s="n" n="densidad de electrones de conducción" u="m^-3"/>
+<v s="e" n="carga del electrón" u="C"/>
+<v s="\tau" n="tiempo entre colisiones" u="s"/>
+<v s="m" n="masa del electrón" u="kg"/>
+<v s="\mu" n="movilidad" u="m^2 V^-1 s^-1"/>
+<v s="E" n="campo eléctrico" u="V m^-1"/>
+<v s="v_d" n="velocidad de arrastre" u="m s^-1"/>
+<v s="J" n="densidad de corriente" u="A m^-2"/>
+<v s="R" n="resistencia" u="Ohm"/>
+<v s="\rho" n="resistividad" u="Ohm m"/>
+<v s="L" n="longitud del hilo" u="m"/>
+<v s="A" n="sección del hilo" u="m^2"/>
+<v s="\ell" n="camino libre medio" u="m"/>
+<v s="\hbar" n="constante de Planck reducida" u="J s"/>
+</vars>
+<effects>
+<e>Cobre (\(n=8.47\times10^{28}\) m⁻³, \(\tau=25\) fs): \(\sigma=59.67\) MS/m (\(\rho=16.76\) nΩ·m, valor medido 16.8), \(\mu=43.97\) cm²/(V·s) y \(\ell=39.3\) nm (≈ 100 espacios atómicos). Con \(\tau\) doble, \(\sigma\) y \(\ell\) se duplican; con \(n\) doble y el mismo \(\tau\), \(\sigma\) se duplica pero \(\mu\) no cambia.</e>
+<e>Con 1 A en un hilo de 1 mm² (\(J=10^6\) A/m², \(E=0.0168\) V/m), la velocidad de arrastre es solo 0.0739 mm/s: los electrones avanzan 1 mm cada 13.5 s y la luz de una lámpara no se enciende porque lleguen los electrones del interruptor, sino porque el campo se propaga. Con \(E=1\) V/m, \(v_d=4.397\) mm/s.</e>
+<e>A partir de la resistividad medida (16.8 nΩ·m) se obtiene \(\tau=m/(ne^2\rho)=24.9\) fs: el tiempo de relajación se determina así. Con \(\tau=0.5\) fs (aleación desordenada) \(\rho=838\) nΩ·m y \(\ell=0.79\) nm.</e>
+</effects>
+<limits>
+<l>Dimensiones: \([ne^2\tau/m]=\mathrm{m^{-3}\,C^2\,s/kg}=\mathrm{S\,m^{-1}}\). ✓</l>
+<l>Drude usaba estadística clásica; con la velocidad de Fermi, \(\ell\) cambia por un factor 10–100 pero \(\sigma\) sigue siendo \(ne^2\tau/m\) (Sommerfeld). Para campos alternos \(\sigma(\omega)=\sigma_0/(1-i\omega\tau)\), con corte hacia 10 THz. Falla en semiconductores (cargas de signos opuestos) y a bajas temperaturas, donde aparece la superconductividad (capítulo 35).</l>
+</limits>
+<explore sim="drude" title="Conductividad de Drude: resistividad, movilidad, velocidad de arrastre y camino libre"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (Cu, \(\tau=25\) fs, \(E=0.0168\) V/m): \(\sigma=59.6699\) MS/m, \(\rho=16.7589\) nΩ·m, \(\mu=43.9705\) cm²/(V·s), \(v_d=0.0738704\) mm/s y \(\ell=39.3214\) nm.</li>
+<li>Seleccione τ en el eje (log–log): \(\sigma\), \(\mu\), \(v_d\) y \(\ell\) suben con pendiente +1 y \(\rho\) cae con pendiente −1.</li>
+</ul></div>
+</deriv>
+
+<deriv id="rc-transitorio" title="El transitorio de carga de un circuito RC" tags="Circuitos, Transitorios">
+<goal>La carga, la corriente y el balance de energía de un condensador que se carga a través de una resistencia.</goal>
+<given>
+<g>Ley de las mallas de Kirchhoff: \(V=Ri+q/C\), con \(i=\mathrm dq/\mathrm dt\). Condensador inicialmente descargado.</g>
+</given>
+<step op="Ecuación diferencial para la carga">
+\[R\frac{\mathrm dq}{\mathrm dt}+\frac qC=V.\]
+</step>
+<step op="Solución (equilibrio \(q_\infty=CV\) más exponencial homogénea)">
+\[q(t)=CV\left(1-e^{-t/RC}\right),\qquad i(t)=\frac VR\,e^{-t/RC}.\]
+<why>La condición \(q(0)=0\) fija la constante; \(\tau=RC\) es el tiempo para llegar al 63.2 % de la carga final.</why>
+</step>
+<step op="Energía: la batería entrega \(QV\), el condensador guarda ½ de ella">
+\[E_\text{bat}=\int_0^\infty Vi\,\mathrm dt=CV^2,\qquad U_C=\tfrac12CV^2,\qquad E_R=\int_0^\infty Ri^2\,\mathrm dt=\tfrac12CV^2.\]
+<why>La energía disipada no depende de \(R\): una resistencia pequeña da una corriente grande durante poco tiempo, y una grande, lo contrario.</why>
+</step>
+<result name="Carga de un RC">\[v_C=V\left(1-e^{-t/RC}\right),\qquad i=\frac VRe^{-t/RC},\qquad E_R=\tfrac12CV^2.\]</result>
+<vars>
+<v s="q" n="carga del condensador" u="C"/>
+<v s="C" n="capacidad" u="F"/>
+<v s="R" n="resistencia" u="Ohm"/>
+<v s="V" n="tensión de la fuente" u="V"/>
+<v s="i" n="corriente" u="A"/>
+<v s="\tau" n="constante de tiempo \(RC\)" u="s"/>
+<v s="t" n="tiempo" u="s"/>
+<v s="E_R" n="energía disipada en la resistencia" u="J"/>
+</vars>
+<effects>
+<e>\(R=10\) kΩ, \(C=1\) µF y \(V=5\) V: \(\tau=10\) ms. A \(t=10\) ms, \(v_C=3.161\) V (63.2 %) e \(i=0.1839\) mA; a 30 ms, \(v_C=4.751\) V (95 %); el tiempo para llegar a la mitad es \(\tau\ln2=6.931\) ms. La energía disipada es 12.5 µJ.</e>
+<e>Con \(R=20\) kΩ, \(\tau=20\) ms y a 10 ms solo se alcanza 1.967 V; con \(C=2\) µF, \(\tau=20\) ms, \(v_C=1.967\) V y la energía se duplica (25 µJ). Duplicar \(V\) a 10 V multiplica por cuatro la energía (50 µJ) y \(v_C\) a 10 ms vale 6.321 V.</e>
+<e>La energía disipada es independiente de \(R\): con cualquier \(R\), \(E_R=12.5\) µJ para 1 µF y 5 V. Es la razón del calentamiento inevitable al cargar un condensador a tensión constante (la carga adiabática con rampa de tensión reduce las pérdidas).</e>
+</effects>
+<limits>
+<l>Dimensiones: \([RC]=\mathrm{\Omega\,F}=\mathrm s\); \(\tfrac12CV^2\) es una energía. ✓</l>
+<l>Componentes ideales (sin inductancia parásita ni fugas del condensador). Si hay inductancia, el circuito oscila (siguiente deducción). Los mismos resultados valen para la descarga (\(q=Q_0e^{-t/RC}\)) y para circuitos RL con \(\tau=L/R\).</l>
+</limits>
+<explore sim="rc" title="Carga de un condensador por una resistencia: tensión, corriente y energía"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (10 kΩ, 1 µF, 5 V, \(t=10\) ms): \(\tau=10\) ms, \(v_C=3.16060\) V, \(i=0.183940\) mA, \(E_R=12.5\) µJ y \(t_{1/2}=6.93147\) ms.</li>
+<li>Seleccione \(t\) en el eje: \(v_C\) crece exponencialmente hacia 5 V y la corriente decae hacia 0; con \(t=\tau\) la tensión es el 63.2 % de \(V\).</li>
+</ul></div>
+</deriv>
+
+<deriv id="rlc-resonancia" title="El circuito RLC serie: impedancia, resonancia y factor de calidad" tags="Circuitos, Resonancia">
+<goal>La corriente y la potencia en un circuito RLC alimentado con una tensión sinusoidal, la frecuencia de resonancia y la anchura de la resonancia.</goal>
+<given>
+<g>Ley de mallas: \(L\,\mathrm di/\mathrm dt+Ri+q/C=v(t)\), con \(v=V_0\cos\omega t=\mathrm{Re}(V_0e^{j\omega t})\); régimen estacionario: \(i=\mathrm{Re}(Ie^{j\omega t})\).</g>
+</given>
+<step op="Sustituir la forma compleja (\(\mathrm d/\mathrm dt\to j\omega\), \(\int\mathrm dt\to1/j\omega\))">
+\[\left[R+j\omega L+\frac1{j\omega C}\right]I=V_0\ \Longrightarrow\ Z=R+j\left(\omega L-\frac1{\omega C}\right).\]
+</step>
+<step op="Módulo y fase">
+\[|Z|=\sqrt{R^2+\left(\omega L-\frac1{\omega C}\right)^2},\qquad\tan\varphi=\frac{\omega L-1/\omega C}R,\qquad I_0=\frac{V_0}{|Z|}.\]
+</step>
+<step op="Potencia media (valores eficaces)">
+\[P=V_\text{rms}I_\text{rms}\cos\varphi=\frac{V_\text{rms}^2R}{|Z|^2}.\]
+</step>
+<step op="Resonancia: reactancia nula">
+\[\omega L=\frac1{\omega C}\ \Longrightarrow\ \omega_0=\frac1{\sqrt{LC}},\qquad|Z|=R,\qquad P_\max=\frac{V_\text{rms}^2}R.\]
+</step>
+<step op="Anchura: puntos de media potencia \(|X|=R\)">
+\[\omega_\pm=\pm\frac R{2L}+\sqrt{\left(\frac R{2L}\right)^2+\omega_0^2},\qquad\Delta\omega=\omega_+-\omega_-=\frac RL=\frac{\omega_0}Q,\quad Q=\frac{\omega_0L}R.\]
+</step>
+<result name="Resonancia RLC">\[\omega_0=\frac1{\sqrt{LC}},\qquad Q=\frac{\omega_0L}R,\qquad\Delta\omega=\frac RL.\]</result>
+<vars>
+<v s="R" n="resistencia" u="Ohm"/>
+<v s="L" n="inductancia" u="H"/>
+<v s="C" n="capacidad" u="F"/>
+<v s="\omega" n="frecuencia angular de la fuente" u="rad s^-1"/>
+<v s="\omega_0" n="frecuencia angular de resonancia" u="rad s^-1"/>
+<v s="Z" n="impedancia" u="Ohm"/>
+<v s="X" n="reactancia" u="Ohm"/>
+<v s="\varphi" n="desfase" u="rad"/>
+<v s="P" n="potencia media" u="W"/>
+<v s="V_\text{rms}" n="tensión eficaz" u="V"/>
+<v s="Q" n="factor de calidad" u="1"/>
+<v s="\Delta\omega" n="anchura de la resonancia" u="rad s^-1"/>
+</vars>
+<effects>
+<e>Con \(R=10\) Ω, \(L=10\) mH, \(C=1\) µF y 10 V eficaces: \(f_0=1591.5\) Hz y \(Q=10\). A 1000 Hz la reactancia es \(-96.32\) Ω, \(|Z|=96.84\) Ω, \(\varphi=-84.07^\circ\) (capacitivo) y \(P=0.1066\) W; en resonancia \(P=10\) W (casi 100 veces más) y a 2500 Hz, \(|Z|=93.95\) Ω, \(\varphi=+83.89^\circ\) (inductivo), \(P=0.1133\) W.</e>
+<e>\(Q=\omega_0L/R\): con \(R=1\) Ω, \(Q=100\) y la anchura es 15.9 Hz (resonancia muy aguda); con \(R=100\) Ω, \(Q=1\), la anchura es 1591.5 Hz (sin resonancia notable) y a 1000 Hz \(P=0.5187\) W. La anchura relativa \(\Delta f/f_0=1/Q\).</e>
+<e>Es el principio del sintonizador de radio: se varía \(C\) para que \(f_0\) coincida con la emisora; con \(Q\) alto se rechazan las emisoras vecinas. En resonancia las tensiones en \(L\) y \(C\) son \(Q\) veces la de la fuente (100 V en el ejemplo).</e>
+</effects>
+<limits>
+<l>Dimensiones: \(\omega L\), \(1/\omega C\) y \(R\) se miden en ohmios; \(\omega_0L/R\) es adimensional. ✓</l>
+<l>Componentes lineales e ideales (la resistencia de la bobina real, las pérdidas dieléctricas y el efecto pelicular reducen \(Q\)); válido hasta frecuencias cuya longitud de onda sea mucho mayor que el circuito, a partir de las cuales son líneas de transmisión (última deducción).</l>
+</limits>
+<explore sim="rlc" title="Circuito RLC serie: resonancia, impedancia, desfase y potencia"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (10 Ω, 10 mH, 1 µF, 1000 Hz, 10 V): \(f_0=1591.55\) Hz, \(Q=10\), \(|Z|=96.8408\) Ω, \(\varphi=-84.0729^\circ\) y \(P=0.106631\) W.</li>
+<li>Seleccione \(f\) en el eje: \(P\) tiene un máximo agudo de 10 W en \(f_0\); \(\varphi\) pasa de −90° a +90° atravesando 0°.</li>
+</ul></div>
+</deriv>
+
+<deriv id="thevenin-potencia" title="El teorema de Thévenin y la transferencia máxima de potencia" tags="Circuitos, Potencia">
+<goal>El circuito equivalente de una red lineal vista desde dos terminales, y la resistencia de carga que recibe la mayor potencia.</goal>
+<given>
+<g>Linealidad y superposición: cualquier red lineal de fuentes y resistencias se comporta, vista desde dos terminales, como una fuente \(V_\text{th}\) en serie con una resistencia \(R_\text{th}\). \(V_\text{th}\) es la tensión en circuito abierto y \(R_\text{th}\) la resistencia vista con las fuentes anuladas.</g>
+</given>
+<step op="Ejemplo: fuente \(V_0\) con \(R_1\) en serie y \(R_2\) en paralelo con los terminales (divisor)">
+\[V_\text{th}=V_0\frac{R_2}{R_1+R_2},\qquad R_\text{th}=\frac{R_1R_2}{R_1+R_2}.\]
+</step>
+<step op="Carga \(R_L\) conectada: corriente y potencia">
+\[I=\frac{V_\text{th}}{R_\text{th}+R_L},\qquad P=I^2R_L=\frac{V_\text{th}^2R_L}{(R_\text{th}+R_L)^2}.\]
+</step>
+<step op="Máximo respecto de \(R_L\)">
+\[\frac{\mathrm dP}{\mathrm dR_L}=V_\text{th}^2\frac{R_\text{th}-R_L}{(R_\text{th}+R_L)^3}=0\ \Longrightarrow\ R_L=R_\text{th},\qquad P_\max=\frac{V_\text{th}^2}{4R_\text{th}}.\]
+</step>
+<step op="Rendimiento (potencia útil sobre potencia de la fuente)">
+\[\eta=\frac{R_L}{R_\text{th}+R_L}\ \xrightarrow{R_L=R_\text{th}}\ \tfrac12.\]
+</step>
+<result name="Transferencia máxima">\[P_L=\frac{V_\text{th}^2R_L}{(R_\text{th}+R_L)^2},\qquad R_L=R_\text{th}\Rightarrow P_\max=\frac{V_\text{th}^2}{4R_\text{th}}.\]</result>
+<vars>
+<v s="V_\text{th}" n="tensión de Thévenin" u="V"/>
+<v s="R_\text{th}" n="resistencia de Thévenin" u="Ohm"/>
+<v s="R_L" n="resistencia de carga" u="Ohm"/>
+<v s="I" n="corriente en la carga" u="A"/>
+<v s="P" n="potencia en la carga" u="W"/>
+<v s="\eta" n="rendimiento" u="1"/>
+<v s="V_0" n="tensión de la fuente original" u="V"/>
+<v s="R_1,\,R_2" n="resistencias del divisor" u="Ohm"/>
+</vars>
+<effects>
+<e>Un divisor con \(V_0=24\) V y \(R_1=R_2=10\) Ω equivale a \(V_\text{th}=12\) V y \(R_\text{th}=5\) Ω. Con una fuente de 12 V y \(R_\text{th}=2\) Ω: con \(R_L=2\) Ω, \(I=3\) A, \(V_L=6\) V, \(P=18\) W (el máximo) y \(\eta=50\) %; con 8 Ω, \(P=11.52\) W y \(\eta=0.8\); con 20 Ω, \(P=5.950\) W y \(\eta=0.909\).</e>
+<e>La potencia es simétrica en \(R_L\leftrightarrow R_\text{th}^2/R_L\): con 0.5 Ω se obtiene también 11.52 W, pero con \(\eta=0.2\). Con \(V_\text{th}=24\) V el máximo es cuatro veces mayor (72 W, \(\propto V^2\)); con \(R_\text{th}=4\) Ω, 9 W.</e>
+<e>En potencia (red eléctrica) interesa un rendimiento alto, así que se usa \(R_L\gg R_\text{th}\); en señal débil (antena, micrófono, altavoz) interesa la potencia máxima y se «adaptan» las impedancias, \(R_L=R_\text{th}\), aceptando 50 % de rendimiento.</e>
+</effects>
+<limits>
+<l>Dimensiones: \(V^2/R\) tiene unidades de vatios. ✓</l>
+<l>Solo vale para redes lineales; con componentes no lineales (diodos, transistores) se linealiza alrededor del punto de operación. En corriente alterna la condición es \(Z_L=Z_\text{th}^*\) (conjugada).</l>
+</limits>
+<explore sim="thevenin" title="Transferencia de potencia: potencia, corriente, tensión y rendimiento según la carga"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (12 V, \(R_\text{th}=2\) Ω, \(R_L=2\) Ω): \(P=18\) W, \(I=3\) A, \(V_L=6\) V, \(\eta=0.5\) y \(P_\max=18\) W.</li>
+<li>Seleccione \(R_L\) en el eje (log–log): \(P\) sube con pendiente +1, alcanza el máximo en \(R_L=R_\text{th}\) y baja con pendiente −1.</li>
+</ul></div>
+</deriv>
+
+<deriv id="linea-coaxial" title="La línea de transmisión: ecuación del telegrafista e impedancia del cable coaxial" tags="Circuitos, Ondas">
+<goal>La velocidad de las señales y la impedancia característica de una línea, con el cable coaxial como ejemplo.</goal>
+<given>
+<g>Una línea con inductancia \(L'\) y capacidad \(C'\) por unidad de longitud: en un tramo \(\mathrm dz\), la caída de tensión es \(L'\mathrm dz\,\partial_ti\) y la corriente que se pierde por la capacidad es \(C'\mathrm dz\,\partial_tv\).</g>
+<g>Coaxial de radios \(a\) (interior) y \(b\) (exterior) con dieléctrico \(\varepsilon=\varepsilon_r\varepsilon_0\): campo radial por la ley de Gauss; campo magnético azimutal \(B=\mu_0I/2\pi r\) por la ley de Ampère.</g>
+</given>
+<step op="Ecuaciones del telegrafista (sin pérdidas)">
+\[\frac{\partial v}{\partial z}=-L'\frac{\partial i}{\partial t},\qquad\frac{\partial i}{\partial z}=-C'\frac{\partial v}{\partial t}.\]
+</step>
+<step op="Eliminar \(i\)">
+\[\frac{\partial^2v}{\partial z^2}=L'C'\frac{\partial^2v}{\partial t^2}\ \Longrightarrow\ v_f=\frac1{\sqrt{L'C'}}.\]
+<why>Es la ecuación de ondas de los capítulos 13 y siguientes.</why>
+</step>
+<step op="Onda progresiva \(v=f(t-z/v_f)\) y relación tensión–corriente">
+\[i=\frac{v}{Z_0},\qquad Z_0=\sqrt{\frac{L'}{C'}}.\]
+</step>
+<step op="Coaxial: capacidad por la ley de Gauss; inductancia por el flujo magnético entre conductores">
+\[C'=\frac{2\pi\varepsilon}{\ln(b/a)},\qquad L'=\frac{\mu_0}{2\pi}\ln\frac ba.\]
+</step>
+<step op="Impedancia y velocidad del coaxial">
+\[Z_0=\frac{\ln(b/a)}{2\pi}\sqrt{\frac{\mu_0}{\varepsilon}}=\frac{59.96\ \Omega}{\sqrt{\varepsilon_r}}\ln\frac ba,\qquad v_f=\frac c{\sqrt{\varepsilon_r}}.\]
+</step>
+<result name="Línea coaxial">\[Z_0=\sqrt{\frac{L'}{C'}}=\frac{\ln(b/a)}{2\pi}\sqrt{\frac{\mu_0}{\varepsilon}},\qquad v_f=\frac1{\sqrt{L'C'}}=\frac c{\sqrt{\varepsilon_r}}.\]</result>
+<vars>
+<v s="L'" n="inductancia por unidad de longitud" u="H m^-1"/>
+<v s="C'" n="capacidad por unidad de longitud" u="F m^-1"/>
+<v s="Z_0" n="impedancia característica" u="Ohm"/>
+<v s="v_f" n="velocidad de propagación" u="m s^-1"/>
+<v s="a,\,b" n="radios interior y exterior" u="m"/>
+<v s="\varepsilon" n="permitividad del dieléctrico" u="F m^-1"/>
+<v s="\mu_0" n="permeabilidad del vacío" u="H m^-1"/>
+<v s="c" n="velocidad de la luz" u="m s^-1"/>
+<v s="\varepsilon_r" n="constante dieléctrica relativa" u="1"/>
+</vars>
+<effects>
+<e>Un coaxial con conductor interior de 0.405 mm de radio, exterior de 1.475 mm de radio (\(b/a=3.642\)) y polietileno (\(\varepsilon_r=2.25\)): \(C'=96.84\) pF/m, \(L'=258.5\) nH/m, \(Z_0=51.67\) Ω (el cable de 50 Ω) y \(v_f=0.6667\,c\), con un retardo de 5.003 ns/m.</e>
+<e>La impedancia solo depende de \(b/a\) y de \(\varepsilon_r\): con aire, \(Z_0=77.50\) Ω y la señal viaja a \(c\) (3.336 ns/m); con \(\varepsilon_r=4\), \(Z_0=38.75\) Ω y \(v_f=0.5c\). Con \(b=2.0\) mm, \(Z_0=63.84\) Ω. La impedancia del vacío, \(\sqrt{\mu_0/\varepsilon_0}=376.73\) Ω, relaciona \(Z_0\) con la geometría.</e>
+<e>Una antena de 75 Ω (televisión) con un cable de 50 Ω refleja parte de la señal: el coeficiente de reflexión \((Z_L-Z_0)/(Z_L+Z_0)=0.2\) (4 % de la potencia): la razón de las adaptaciones de impedancia que ya vimos en el teorema de Thévenin.</e>
+</effects>
+<limits>
+<l>Dimensiones: \([L'/C']=\mathrm{H\,F^{-1}}=\Omega^2\) y \([L'C']=\mathrm{s^2m^{-2}}\). ✓</l>
+<l>Línea sin pérdidas y sin dispersión (\(R'=G'=0\)); los cables reales atenúan (efecto pelicular, pérdidas dieléctricas). Vale cuando la longitud de onda es grande frente a la sección transversal (modo TEM).</l>
+</limits>
+<explore sim="coax" title="Cable coaxial: impedancia, capacidad, inductancia y velocidad según la geometría"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (\(b/a=3.642\), \(\varepsilon_r=2.25\)): \(Z_0=51.6653\) Ω, \(C'=96.8438\) pF/m, \(L'=258.505\) nH/m, \(v/c=0.666667\) y retardo 5.00346 ns/m.</li>
+<li>Seleccione \(b/a\) en el eje (log–log): \(Z_0\) y \(L'\) suben como \(\ln(b/a)\); \(C'\) baja como \(1/\ln(b/a)\); \(v/c\) no cambia.</li>
+</ul></div>
+</deriv>
+
+<section>
+<h2>Fuentes y lecturas</h2>
+<ul class="refs">
+<li>N. W. Ashcroft y N. D. Mermin, <em>Solid State Physics</em>, Holt, Rinehart and Winston (1976): cap. 1 (modelo de Drude); P. Drude, <em>Annalen der Physik</em> 1 (1900) 566 y 3 (1900) 369.</li>
+<li>E. M. Purcell y D. J. Morin, <em>Electricity and Magnetism</em>, 3.ª ed., Cambridge University Press (2013): caps. 4 y 8 (corriente, circuitos de corriente alterna).</li>
+<li>P. Horowitz y W. Hill, <em>The Art of Electronics</em>, 3.ª ed., Cambridge University Press (2015): cap. 1 (Thévenin, RC, RLC) y § 1.7 (líneas de transmisión).</li>
+<li>D. M. Pozar, <em>Microwave Engineering</em>, 4.ª ed., Wiley (2012): cap. 2 (teoría de líneas de transmisión, coaxial).</li>
+<li>M. S. Thévenin (1883), <em>Annales télégraphiques</em> 10 (1883) 222; O. Heaviside (ecuación del telegrafista); datos de cables: hojas técnicas estándar (RG-58).</li>
+</ul>
+</section>
+</template>

@@ -200,8 +200,14 @@ MS.Compile = (function () {
     /* pequeño salto con apertura de pies; cae justo cuando el rival impacta */
     const k0 = Player.keyAt(pl, t0);
     if (t0 < (pl.keys[pl.keys.length - 1].t) - 0.01) return;  // en pleno movimiento: no se fuerza
-    pl.keys.push({ t: t0 + (t1 - t0) * 0.45, x: k0.x, y: k0.y, h: k0.h + 0.05, yaw: k0.yaw, lean: k0.lean });
-    pl.keys.push({ t: t1, x: k0.x, y: k0.y, h: k0.h - 0.05, yaw: k0.yaw, lean: k0.lean + 0.05 });
+    pl.keys.push({ t: t0 + (t1 - t0) * 0.45, x: k0.x, y: k0.y, h: k0.h + 0.06, yaw: k0.yaw, lean: k0.lean });
+    pl.keys.push({ t: t1, x: k0.x, y: k0.y, h: k0.h - 0.07, yaw: k0.yaw, lean: k0.lean + 0.08 });
+    for (const f of ['I', 'D']) {
+      const c = Player.footAt(pl, f, t0), sg = f === 'I' ? 1 : -1;
+      const L = { x: Math.sin(k0.yaw), y: -Math.cos(k0.yaw) };
+      const wide = Math.abs((c.x - k0.x) * L.x + (c.y - k0.y) * L.y) < 0.3 ? 0.07 : 0;
+      pl.feet[f].push({ tLift: t0, tLand: t1 - 0.01, from: { x: c.x, y: c.y, a: c.a }, to: { x: c.x + L.x * sg * wide, y: c.y + L.y * sg * wide, a: c.a }, kind: 'split' });
+    }
   }
   function golpePhases(pl, ts, te, st, late) {
     const T = te - ts;
@@ -230,7 +236,7 @@ MS.Compile = (function () {
         const dt = b.t - a.t;
         if (dt > 0.01) vmax = Math.max(vmax, d / dt);
       }
-      let steps = 0; for (const f of ['I', 'D']) steps += pl.feet[f].length;
+      let steps = 0; for (const f of ['I', 'D']) steps += pl.feet[f].filter((e) => e.kind !== 'split').length;
       const lungI = pl.lunges.filter((l) => l.pie === 'I').length, lungD = pl.lunges.filter((l) => l.pie === 'D').length;
       /* distancia a la T cuando golpea otro jugador (dominio de la T) */
       const others = tl.shots.filter((s) => s.j !== pl.id && s.golpe !== 'fantasma');

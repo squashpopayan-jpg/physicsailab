@@ -1,0 +1,353 @@
+<template class="chapter-src" data-id="aproximaciones" data-num="2" data-title="Cálculo para físicos: series, integrales y aproximaciones" data-part="Parte I · Herramientas" data-short="La serie de Taylor y su resto, el desarrollo binomial, la integral gaussiana, la fórmula de Stirling, la serie geométrica, la propagación de errores y la función gamma, cada una deducida y aplicada a un resultado físico">
+<p class="lead">Casi toda deducción de la física termina en una aproximación: se desarrolla una función en serie para ver su límite clásico, se integra una gaussiana, se estima \(N!\) para un número de Avogadro de partículas, se suma una serie de rebotes. Este capítulo deduce esas herramientas una sola vez, con sus condiciones de validez y el tamaño del error, para poder usarlas después sin ambigüedad. Cada una se presenta con una aplicación física y un explorador que muestra cuándo la aproximación funciona y cuándo falla.</p>
+
+<section>
+<h2>Serie de Taylor con resto integral</h2>
+<p>Se parte del teorema fundamental del cálculo para una función con derivadas continuas: \(f(x)=f(0)+\int_0^x f'(t)\,\mathrm dt\). Se integra por partes con \(u=f'(t)\) y \(\mathrm dv=\mathrm dt\), tomando \(v=-(x-t)\) (cualquier primitiva vale, y esta anula el término de la cota superior):</p>
+\[\int_0^xf'(t)\,\mathrm dt=\Big[-(x-t)f'(t)\Big]_0^x+\int_0^x(x-t)f''(t)\,\mathrm dt=x\,f'(0)+\int_0^x(x-t)f''(t)\,\mathrm dt.\]
+<p>Repetir el procedimiento (con \(v=-(x-t)^2/2\), luego \(-(x-t)^3/3!\), …) añade un término por vuelta y deja siempre una integral de la misma forma:</p>
+<div class="eq key" data-name="Teorema de Taylor">\[f(x)=\sum_{k=0}^{n}\frac{f^{(k)}(0)}{k!}\,x^k+R_n(x),\qquad R_n(x)=\int_0^x\frac{(x-t)^n}{n!}\,f^{(n+1)}(t)\,\mathrm dt=\frac{f^{(n+1)}(\xi)}{(n+1)!}\,x^{n+1},\ \ \xi\in(0,x).\]</div>
+<p>La segunda forma del resto (Lagrange) sale del teorema del valor medio para integrales, porque \((x-t)^n\) no cambia de signo. Dice lo importante: <strong>el error de truncar en el orden \(n\) es del orden del primer término que se omite</strong>, \(\sim f^{(n+1)}x^{n+1}/(n+1)!\). Las series que más se usan en física, todas obtenidas de esta fórmula derivando una vez por término:</p>
+<div class="tablewrap narrow"><table><tr><th>Función</th><th>Serie</th><th>Converge para</th><th>Uso típico</th></tr>
+<tr><td>\(\mathrm e^x\)</td><td>\(1+x+\tfrac{x^2}{2}+\tfrac{x^3}{6}+\cdots\)</td><td>todo \(x\)</td><td>decaimiento, Boltzmann</td></tr>
+<tr><td>\(\sin x\)</td><td>\(x-\tfrac{x^3}{6}+\tfrac{x^5}{120}-\cdots\)</td><td>todo \(x\)</td><td>péndulo, ángulos pequeños</td></tr>
+<tr><td>\(\cos x\)</td><td>\(1-\tfrac{x^2}{2}+\tfrac{x^4}{24}-\cdots\)</td><td>todo \(x\)</td><td>energía de un oscilador</td></tr>
+<tr><td>\(\ln(1+x)\)</td><td>\(x-\tfrac{x^2}{2}+\tfrac{x^3}{3}-\cdots\)</td><td>\(-1\lt x\le1\)</td><td>entropía, óptica</td></tr>
+<tr><td>\((1+x)^\alpha\)</td><td>\(1+\alpha x+\tfrac{\alpha(\alpha-1)}{2}x^2+\cdots\)</td><td>\(\abs{x}\lt1\)</td><td>relatividad, multipolos</td></tr>
+</table></div>
+<div class="box warn"><h4>Cuándo no sirve</h4><p>Una serie de Taylor solo converge dentro de un radio fijado por la singularidad más cercana en el plano complejo (para \((1+x)^\alpha\) es \(x=-1\)); fuera de él los términos crecen. Y «aproximar al primer orden» exige que el siguiente término sea pequeño <em>frente al primero</em>, no solo que \(x\) sea pequeño: si el coeficiente del primer término se anula, el orden cambia (como pasa con \(1-\cos x\simeq x^2/2\)).</p></div>
+</section>
+
+<deriv id="binomial-rel" title="Del factor de Lorentz a la energía cinética newtoniana: el desarrollo binomial" tags="Series, Relatividad">
+<goal>La serie de \(\gamma-1\) en potencias de \(\beta=v/c\) y el tamaño de la corrección relativista a la energía cinética \(\tfrac12mv^2\).</goal>
+<given>
+<g>Energía cinética relativista \(K=(\gamma-1)mc^2\), con \(\gamma=(1-\beta^2)^{-1/2}\) (se deduce en el capítulo 27).</g>
+<g>Teorema de Taylor aplicado a \(f(u)=(1+u)^\alpha\) en \(u=0\).</g>
+</given>
+<step op="Derivar \(k\) veces \((1+u)^\alpha\) y evaluar en \(u=0\)">
+\[f^{(k)}(u)=\alpha(\alpha-1)\cdots(\alpha-k+1)\,(1+u)^{\alpha-k}\ \Longrightarrow\ f^{(k)}(0)=\alpha(\alpha-1)\cdots(\alpha-k+1).\]
+<why>Cada derivada baja el exponente en 1 y deja el factor correspondiente delante.</why>
+</step>
+<step op="Insertar en la fórmula de Taylor">
+\[(1+u)^\alpha=1+\alpha u+\frac{\alpha(\alpha-1)}{2!}u^2+\frac{\alpha(\alpha-1)(\alpha-2)}{3!}u^3+\cdots=\sum_{k=0}^\infty\binom\alpha k u^k,\qquad |u|\lt1.\]
+<why>Para \(\alpha\) entero positivo la serie termina y es el binomio de Newton; para otros \(\alpha\) es infinita.</why>
+</step>
+<step op="Sustituir \(\alpha=-\tfrac12\) y \(u=-\beta^2\)">
+\[\gamma=(1-\beta^2)^{-1/2}=1+\tfrac12\beta^2+\frac{(-\frac12)(-\frac32)}{2}\beta^4+\frac{(-\frac12)(-\frac32)(-\frac52)}{6}(-1)^3\beta^6+\cdots\]
+<why>Los signos negativos de \(\alpha(\alpha-1)\cdots\) se compensan con los de \((-\beta^2)^k\): todos los términos son positivos.</why>
+</step>
+<step op="Calcular los coeficientes y restar 1">
+\[\gamma-1=\frac12\beta^2+\frac38\beta^4+\frac5{16}\beta^6+\frac{35}{128}\beta^8+\cdots=\sum_{k=1}^\infty\binom{2k}{k}\frac{\beta^{2k}}{4^k}.\]
+<why>\(\binom{-1/2}{k}(-1)^k=\binom{2k}{k}/4^k\): 1/2, 3/8, 5/16, 35/128.</why>
+</step>
+<step op="Multiplicar por \(mc^2\) y reconocer \(v=\beta c\)">
+\[K=(\gamma-1)mc^2=\frac12mv^2\left(1+\frac34\frac{v^2}{c^2}+\frac58\frac{v^4}{c^4}+\cdots\right).\]
+<why>El primer término es la energía cinética de Newton; lo que sigue es la corrección relativista, fraccionalmente \(\tfrac34\beta^2\).</why>
+</step>
+<result name="Desarrollo de la energía cinética relativista">\[\gamma-1=\frac{\beta^2}2+\frac{3\beta^4}8+\frac{5\beta^6}{16}+\cdots,\qquad K\simeq\frac12mv^2\left(1+\frac{3v^2}{4c^2}\right).\]</result>
+<vars>
+<v s="\gamma" n="factor de Lorentz" u="1"/>
+<v s="\beta" n="velocidad en unidades de \(c\)" u="1"/>
+<v s="K" n="energía cinética" u="kg m^2 s^-2"/>
+<v s="m" n="masa" u="kg"/>
+<v s="v" n="velocidad" u="m s^-1"/>
+<v s="c" n="velocidad de la luz" u="m s^-1"/>
+</vars>
+<effects>
+<e>Como el primer término es \(\propto\beta^2\), duplicar \(\beta\) cuadruplica \(\gamma-1\) a velocidades pequeñas (\(n=2\)); el exponente local crece sin límite cerca de \(\beta=1\) (\(\gamma\to\infty\)).</e>
+<e>Error de la fórmula newtoniana \(\tfrac12mv^2\): 0.756 % a \(\beta=0.1\) (3×10⁷ m/s), 7.30 % a \(\beta=0.3\), 23.8 % a \(\beta=0.5\) y 219.5 % a \(\beta=0.9\). Un error de 1 % se alcanza en \(\beta=0.115\).</e>
+<e>Cada orden añadido ayuda dentro del radio de convergencia: a \(\beta=0.5\) (\(\gamma-1=0.15470\)) el orden 1 da 0.12500, el 2 da 0.14844 (−4.0 %) y el 3 da 0.15332 (−0.9 %).</e>
+</effects>
+<limits>
+<l>Dimensiones: \([mc^2]=\mathsf M\mathsf L^2\mathsf T^{-2}\), y \(\gamma-1\) no tiene dimensión. ✓ El argumento de la serie, \(\beta^2\), es adimensional.</l>
+<l>Límite \(\beta\to0\): \(K\to\tfrac12mv^2\). Radio de convergencia: \(\beta\lt1\); la serie converge cada vez más despacio al acercarse a 1 y no es útil para partículas ultrarrelativistas.</l>
+</limits>
+<explore sim="binomial-rel" title="γ − 1 exacta y sus aproximaciones de orden 1, 2 y 3"/>
+<div class="sim-guide"><ul>
+<li>Con \(\beta=0.1\): \(\gamma-1=5.0378\times10^{-3}\), orden 1 \(=5.0000\times10^{-3}\) y error de la fórmula newtoniana 0.7563 %. En log–log la tabla marca \(n=2.00\) para \(\gamma-1\): es el comportamiento \(\beta^2\).</li>
+<li>Suba a \(\beta=0.9\): \(\gamma-1=1.2942\), mientras que los tres órdenes dan 0.405, 0.6510 y 0.8171 (el tercero, solo el 63 % del valor exacto): fuera de la región donde la serie es útil. El error de la fórmula newtoniana llega a 219.5 %.</li>
+<li>Con \(\beta=0.01\) el error de \(\beta^2/2\) es \(7.5\times10^{-5}\) (0.0075 %), igual que \(\tfrac34\beta^2\): el siguiente término de la serie predice el error de este.</li>
+</ul></div>
+</deriv>
+
+<deriv id="gauss" title="La integral gaussiana y sus momentos" tags="Integrales, Estadística">
+<goal>El valor de \(\int_{-\infty}^{\infty}\mathrm e^{-ax^2}\mathrm dx\), el de los momentos \(\int x^{2n}\mathrm e^{-ax^2}\mathrm dx\) y su significado como anchura.</goal>
+<given>
+<g>La función \(\mathrm e^{-ax^2}\) no tiene primitiva elemental: hay que evitar integrarla directamente.</g>
+<g>Teorema de Fubini (una integral doble de una función positiva puede hacerse en cualquier orden) y cambio a coordenadas polares con \(\mathrm dx\,\mathrm dy=r\,\mathrm dr\,\mathrm d\varphi\).</g>
+</given>
+<step op="Elevar la integral al cuadrado y escribirla como doble">
+\[I^2=\int_{-\infty}^\infty\mathrm e^{-ax^2}\mathrm dx\int_{-\infty}^\infty\mathrm e^{-ay^2}\mathrm dy=\iint_{\mathbb R^2}\mathrm e^{-a(x^2+y^2)}\mathrm dx\,\mathrm dy.\]
+<why>Una variable muda es la misma; y el producto de dos integrales independientes es la integral doble del producto.</why>
+</step>
+<step op="Pasar a coordenadas polares">
+\[x^2+y^2=r^2,\quad \mathrm dx\,\mathrm dy=r\,\mathrm dr\,\mathrm d\varphi\ \Longrightarrow\ I^2=\int_0^{2\pi}\mathrm d\varphi\int_0^\infty r\,\mathrm e^{-ar^2}\mathrm dr.\]
+<why>El factor \(r\) del jacobiano es justo lo que faltaba para que el integrando tenga primitiva.</why>
+</step>
+<step op="Integrar en \(\varphi\) y sustituir \(u=r^2\)">
+\[\int_0^{2\pi}\mathrm d\varphi=2\pi,\qquad \int_0^\infty r\,\mathrm e^{-ar^2}\mathrm dr=\frac12\int_0^\infty\mathrm e^{-au}\mathrm du=\frac1{2a}.\]
+<why>Con \(u=r^2\), \(\mathrm du=2r\,\mathrm dr\).</why>
+</step>
+<step op="Despejar \(I\)">
+\[I^2=2\pi\cdot\frac1{2a}=\frac\pi a\ \Longrightarrow\ I(a)=\int_{-\infty}^\infty\mathrm e^{-ax^2}\mathrm dx=\sqrt{\frac\pi a}.\]
+<why>\(I\gt0\), así que se toma la raíz positiva.</why>
+</step>
+<step op="Derivar respecto del parámetro para obtener los momentos">
+\[\int x^{2}\mathrm e^{-ax^2}\mathrm dx=-\frac{\mathrm dI}{\mathrm da}=\frac{\sqrt\pi}{2a^{3/2}},\qquad \int x^{2n}\mathrm e^{-ax^2}\mathrm dx=(-1)^n\frac{\mathrm d^nI}{\mathrm da^n}=\frac{(2n-1)!!\,\sqrt\pi}{2^n\,a^{n+1/2}}.\]
+<why>Derivar bajo el signo integral respecto de \(a\) trae un factor \(-x^2\) y está permitido porque la convergencia es uniforme para \(a\ge a_0\gt0\). Los momentos impares son nulos por simetría.</why>
+</step>
+<step op="Normalizar: interpretar como una distribución">
+\[\langle x^{2n}\rangle=\frac{\int x^{2n}\mathrm e^{-ax^2}\mathrm dx}{\int\mathrm e^{-ax^2}\mathrm dx}=\frac{(2n-1)!!}{(2a)^n},\qquad \sigma^2=\langle x^2\rangle=\frac1{2a}.\]
+<why>Con \(a=1/(2\sigma^2)\) es la distribución normal de media 0 y desviación típica \(\sigma\); además \(\langle x^4\rangle=3\sigma^4\).</why>
+</step>
+<result name="Integral gaussiana">\[\int_{-\infty}^\infty\mathrm e^{-ax^2}\mathrm dx=\sqrt{\frac\pi a},\qquad \langle x^{2n}\rangle=\frac{(2n-1)!!}{(2a)^n},\qquad \sigma=\frac1{\sqrt{2a}}.\]</result>
+<vars>
+<v s="a" n="coeficiente del exponente" u="m^-2"/>
+<v s="x" n="variable (longitud)" u="m"/>
+<v s="I" n="integral \(\int\mathrm e^{-ax^2}\mathrm dx\)" u="m"/>
+<v s="M_4" n="momento \(\int x^4\mathrm e^{-ax^2}\mathrm dx\)" u="m^5"/>
+<v s="\sigma" n="desviación típica" u="m"/>
+</vars>
+<effects>
+<e>\(I\propto a^{-1/2}\) y \(\sigma\propto a^{-1/2}\): cuadruplicar \(a\) estrecha la campana a la mitad. Para \(a=1\): \(I=1.77245\), \(\sigma=0.70711\), \(\int x^4\mathrm e^{-x^2}\mathrm dx=1.32934\) y \(\langle x^4\rangle=0.75=3\sigma^4\).</e>
+<e>El momento de orden \(2n\) crece con la potencia \(a^{-(n+1/2)}\): para \(n=2\) la tabla da \(n_a=-2.5\); el promedio \(\langle x^{2n}\rangle\) va como \(a^{-n}\).</e>
+<e>Aplicación (capítulo 17): la distribución de cada componente de la velocidad en un gas es una gaussiana con \(a=m/2k_BT\); para N₂ a 300 K, \(\sigma_v=\sqrt{k_BT/m}=298.4\) m/s.</e>
+</effects>
+<limits>
+<l>Dimensiones (\(n=2\)): \([x^4\,\mathrm dx]=\mathsf L^5\) y \([a^{-5/2}]=\mathsf L^5\). ✓ El exponente \(ax^2\) es adimensional, así que \([a]=\mathsf L^{-2}\).</l>
+<l>Límite \(a\to0\): la campana se ensancha sin límite y la integral diverge como \(a^{-1/2}\); \(a\to\infty\): tiende a \(\sqrt{\pi/a}\,\delta(x)\), una delta de Dirac.</l>
+</limits>
+<explore sim="gauss" title="Integral gaussiana, anchura y momentos en función de a y n"/>
+<div class="sim-guide"><ul>
+<li>Con \(a=1\) y \(n=2\): \(I=1.7725\), \(\sigma=0.7071\), momento 1.3293, promedio 0.75. Suba \(n\) a 3: promedio \(15/8=1.875\) (\(=15\sigma^6\)).</li>
+<li>Con \(a=100\) (campana muy estrecha): \(I=0.17725\), \(\sigma=0.07071\); la tabla de sensibilidad confirma \(n_a=-0.5\) en la integral y en \(\sigma\).</li>
+</ul></div>
+</deriv>
+
+<deriv id="stirling" title="La fórmula de Stirling para \(N!\)" tags="Series, Estadística">
+<goal>Una expresión manejable de \(\ln N!\) para \(N\) grande, con la primera corrección, y el tamaño de su error.</goal>
+<given>
+<g>\(N!=\int_0^\infty t^N\mathrm e^{-t}\mathrm dt\). (Se prueba por inducción: integrando por partes, \(\int t^N\mathrm e^{-t}\mathrm dt=N\int t^{N-1}\mathrm e^{-t}\mathrm dt\), y la integral con \(N=0\) vale 1; se desarrolla en la deducción de la función gamma.)</g>
+<g>Método de Laplace: una integral \(\int\mathrm e^{\varphi(t)}\mathrm dt\) con \(\varphi\) muy picuda se aproxima con el desarrollo de segundo orden de \(\varphi\) alrededor de su máximo, que da una gaussiana.</g>
+</given>
+<step op="Reescribir el integrando como una exponencial">
+\[N!=\int_0^\infty\mathrm e^{\varphi(t)}\mathrm dt,\qquad \varphi(t)=N\ln t-t.\]
+<why>\(t^N=\mathrm e^{N\ln t}\). Para \(N\) grande, \(N\ln t\) crece rápido y \(-t\) lo frena: hay un máximo muy marcado.</why>
+</step>
+<step op="Buscar el máximo de \(\varphi\)">
+\[\varphi'(t)=\frac Nt-1=0\ \Rightarrow\ t=N,\qquad \varphi(N)=N\ln N-N,\qquad \varphi''(N)=-\frac N{t^2}\Big|_{t=N}=-\frac1N.\]
+<why>\(\varphi''\lt0\): es un máximo. Su curvatura, \(1/N\), da la anchura del pico: \(\sqrt N\), pequeña frente a la posición del máximo, \(N\).</why>
+</step>
+<step op="Desarrollar \(\varphi\) hasta segundo orden alrededor de \(t=N\)">
+\[\varphi(t)\simeq\varphi(N)+\tfrac12\varphi''(N)(t-N)^2=N\ln N-N-\frac{(t-N)^2}{2N}.\]
+<why>El término lineal se anula por ser punto crítico. El de tercer orden, \(\varphi'''/6\,(t-N)^3\sim(t-N)^3/N^2\), es de orden \(N^{-1/2}\) en el pico: da las correcciones de orden \(1/N\) del resultado.</why>
+</step>
+<step op="Extender los límites a \(\pm\infty\) e integrar la gaussiana">
+\[N!\simeq\mathrm e^{N\ln N-N}\int_{-\infty}^{\infty}\mathrm e^{-(t-N)^2/2N}\mathrm dt=\mathrm e^{N\ln N-N}\sqrt{2\pi N}.\]
+<why>Con \(a=1/2N\), la integral gaussiana vale \(\sqrt{\pi/a}=\sqrt{2\pi N}\) (deducción anterior). Lo que se añade al extender los límites (\(t\lt0\)) está a \(\sqrt N\) desviaciones típicas del pico y es exponencialmente pequeño.</why>
+</step>
+<step op="Tomar logaritmo">
+\[N!\simeq\sqrt{2\pi N}\left(\frac Ne\right)^N,\qquad \ln N!\simeq N\ln N-N+\tfrac12\ln(2\pi N).\]
+<why>Para la mayor parte de la física estadística basta el primer par de términos: el resto, \(\tfrac12\ln 2\pi N\), es \(\sim10^{-24}\) del total cuando \(N\sim10^{23}\).</why>
+</step>
+<step op="Añadir la corrección siguiente (serie asintótica)">
+\[\ln N!=N\ln N-N+\tfrac12\ln(2\pi N)+\frac1{12N}-\frac1{360N^3}+\cdots\]
+<why>Los términos extra vienen de incluir el cubo y la cuarta potencia de \((t-N)\) en el desarrollo; la serie es asintótica (no convergente), pero para \(N\ge10\) su error es menor que el primer término omitido.</why>
+</step>
+<result name="Fórmula de Stirling">\[\ln N!\simeq N\ln N-N+\tfrac12\ln(2\pi N)+\frac1{12N},\qquad N!\simeq\sqrt{2\pi N}\,(N/e)^N.\]</result>
+<vars>
+<v s="N" n="número entero grande" u="1"/>
+<v s="t" n="variable de integración" u="1"/>
+<v s="\varphi" n="exponente \(N\ln t-t\)" u="1"/>
+</vars>
+<effects>
+<e>\(N=10\): \(\ln N!=15.104413\); \(N\ln N-N=13.025851\) (error 2.0786), con \(\tfrac12\ln2\pi N\) se llega a 15.096082 (error \(8.331\times10^{-3}\approx1/12N\)) y con \(1/12N\) a 15.104415 (error \(-2.77\times10^{-6}\)).</e>
+<e>\(N=100\): errores 3.2224, \(8.3333\times10^{-4}\) y \(-2.78\times10^{-9}\); \(N=1000\): \(\ln N!=5912.1282\), error de la aproximación 2: \(8.3333\times10^{-5}\). Cada aumento de \(N\) en un factor 10 reduce 10 veces el error de la aproximación 2.</e>
+<e>Error relativo de \(N\ln N-N\): 13.8 % para \(N=10\); 0.074 % para \(N=1000\); alrededor de \(10^{-24}\) para \(N=6\times10^{23}\), un mol: por eso la termodinámica estadística usa solo ese término.</e>
+</effects>
+<limits>
+<l>Dimensiones: todos los términos son números puros (\(N\), \(\ln N\)); el argumento del logaritmo es adimensional. ✓</l>
+<l>Para \(N=1\) da \(\ln1!\simeq-0.081\) (exacto 0): el método supone \(N\gg1\), pero el error absoluto de la aproximación 2 ya es 0.081 y el de la 3, 0.0023 incluso ahí.</l>
+</limits>
+<explore sim="stirling" title="ln N! y las aproximaciones de Stirling con sus errores"/>
+<div class="sim-guide"><ul>
+<li>Con \(N=10\) (valor inicial): las cuatro lecturas dan 15.104413, 13.025851, 15.096082 y 15.104415; los errores son 2.0786 y \(8.3306\times10^{-3}\).</li>
+<li>Con \(N=1000\): el error 1 es 4.3729 (crece como \(\tfrac12\ln N\)) y el error 2 es \(8.3333\times10^{-5}\): cae como \(1/N\), y su exponente local es −1.00.</li>
+</ul></div>
+</deriv>
+
+<deriv id="rebote" title="La pelota que rebota: serie geométrica" tags="Series, Mecánica">
+<goal>El tiempo total y la distancia total recorrida por una pelota que se suelta desde una altura \(h\) y rebota infinitas veces con coeficiente de restitución \(e\).</goal>
+<given>
+<g>Caída libre con aceleración constante \(g\). Resistencia del aire despreciable.</g>
+<g>Coeficiente de restitución: la rapidez justo después del choque con el suelo es \(e\) veces la de justo antes (\(0\lt e\lt1\)).</g>
+</given>
+<step op="Calcular la primera caída">
+\[h=\tfrac12gt_0^2\ \Longrightarrow\ t_0=\sqrt{\frac{2h}g},\qquad v_0=gt_0=\sqrt{2gh}.\]
+</step>
+<step op="Aplicar la restitución en cada rebote">
+\[v_n=e^n\,v_0\quad(\text{rapidez al despegar tras el }n\text{-ésimo choque}).\]
+<why>Cada choque multiplica la rapidez por \(e\): una progresión geométrica de razón \(e\).</why>
+</step>
+<step op="Tiempo de vuelo entre dos choques sucesivos">
+\[t_n=\frac{2v_n}g=2e^n\,t_0,\qquad n=1,2,3,\dots\]
+<why>Sube durante \(v_n/g\) y baja durante el mismo tiempo (simetría de la parábola).</why>
+</step>
+<step op="Sumar los tiempos">
+\[T=t_0+\sum_{n=1}^\infty2e^nt_0=t_0\left(1+2\sum_{n=1}^\infty e^n\right).\]
+</step>
+<step op="Sumar la serie geométrica">
+\[S_N=\sum_{n=0}^Nr^n\ \Rightarrow\ (1-r)S_N=1-r^{N+1}\ \Rightarrow\ \sum_{n=0}^\infty r^n=\frac1{1-r}\ \ (|r|\lt1),\qquad \sum_{n=1}^\infty e^n=\frac e{1-e}.\]
+<why>Al multiplicar \(S_N\) por \(r\) y restar, casi todos los términos se cancelan (serie telescópica). Para \(|r|\lt1\), \(r^{N+1}\to0\).</why>
+</step>
+<step op="Resultado del tiempo y la altura de cada vuelo">
+\[T=t_0\left(1+\frac{2e}{1-e}\right)=t_0\,\frac{1+e}{1-e},\qquad h_n=\frac{v_n^2}{2g}=e^{2n}h.\]
+</step>
+<step op="Sumar las distancias (razón \(e^2\))">
+\[D=h+2\sum_{n=1}^\infty h\,e^{2n}=h\left(1+\frac{2e^2}{1-e^2}\right)=h\,\frac{1+e^2}{1-e^2}.\]
+<why>Cada altura \(h_n\) se recorre dos veces (subida y bajada), salvo la caída inicial, que se recorre una vez.</why>
+</step>
+<result name="Rebotes">\[T=\sqrt{\frac{2h}g}\;\frac{1+e}{1-e},\qquad D=h\,\frac{1+e^2}{1-e^2}.\]</result>
+<vars>
+<v s="h" n="altura inicial" u="m"/>
+<v s="e" n="coeficiente de restitución" u="1"/>
+<v s="g" n="aceleración de la gravedad" u="m s^-2"/>
+<v s="t_0" n="tiempo de la primera caída" u="s"/>
+<v s="T" n="tiempo total hasta el reposo" u="s"/>
+<v s="D" n="distancia total recorrida" u="m"/>
+</vars>
+<effects>
+<e>\(T\propto h^{1/2}g^{-1/2}\) (\(n_h=0.5\)) y \(D\propto h\) (\(n_h=1\)), independiente de \(g\). Con \(h=1\) m, \(e=0.8\) y \(g=9.81\): \(t_0=0.4515\) s, \(T=4.064\) s y \(D=4.556\) m.</e>
+<e>La dependencia de \(e\) es muy fuerte cerca de 1: \(n_e=2e/(1-e^2)\) para \(T\): vale 4.44 a \(e=0.8\); \(T\) pasa de 1.355 s (\(e=0.5\)) a 17.61 s (\(e=0.95\)), y \(D\) de 1.667 m a 19.51 m.</e>
+<e>La pelota da infinitos rebotes en un tiempo finito (paradoja de Zenón resuelta por la suma de la serie). Para \(e=0.8\) la altura baja de 1 mm tras 15.5 rebotes; con \(e=0.95\), tras 67.3.</e>
+</effects>
+<limits>
+<l>Dimensiones: \([\sqrt{2h/g}]=\mathsf T\) y \((1+e)/(1-e)\) es adimensional; \([h(1+e^2)/(1-e^2)]=\mathsf L\). ✓</l>
+<l>Límites: \(e\to0\) da \(T=t_0\) y \(D=h\) (la pelota se queda); \(e\to1\) hace \(T\to\infty\) y \(D\to\infty\) (rebote perfecto). En una pelota real \(e\) depende de la rapidez y los últimos rebotes no son puntuales.</l>
+</limits>
+<explore sim="rebote" title="Tiempo y distancia totales de una pelota que rebota con coeficiente e"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales: \(T=4.0637\) s, \(D=4.5556\) m, \(t_0=0.45152\) s y 15.48 rebotes hasta 1 mm. Seleccione <em>e</em> en el eje horizontal: la gráfica diverge en \(e\to1\).</li>
+<li>Pase \(g\) a 1.62 (Luna): \(T\) se multiplica por 2.46 (\(n_g=-0.5\)) y \(D\) no cambia (\(n_g=0\)).</li>
+</ul></div>
+</deriv>
+
+<deriv id="errores" title="Propagación de incertidumbres: \(\delta f=\sqrt{\sum(\partial_if\,\delta_i)^2}\)" tags="Estadística, Laboratorio">
+<goal>La incertidumbre de una cantidad \(f(x_1,\dots,x_k)\) calculada a partir de medidas con incertidumbres \(\delta_i\), y su aplicación a la medida de \(g\) con un péndulo.</goal>
+<given>
+<g>Cada medida es \(x_i=\bar x_i+\Delta_i\), con error aleatorio \(\Delta_i\) de media cero, varianza \(\delta_i^2\), e independiente de los demás: \(\langle\Delta_i\Delta_j\rangle=\delta_i^2\,\delta_{ij}\).</g>
+<g>Los errores son pequeños, de modo que basta el desarrollo de Taylor a primer orden.</g>
+</given>
+<step op="Desarrollar \(f\) a primer orden alrededor de los valores medios">
+\[f(\bar x+\Delta)\simeq f(\bar x)+\sum_{i=1}^k\frac{\partial f}{\partial x_i}\Big|_{\bar x}\Delta_i.\]
+</step>
+<step op="Calcular la varianza de \(f\)">
+\[\delta f^2=\big\langle(f-\bar f)^2\big\rangle=\sum_{i,j}\frac{\partial f}{\partial x_i}\frac{\partial f}{\partial x_j}\langle\Delta_i\Delta_j\rangle.\]
+<why>Se eleva al cuadrado la suma y se toma el valor medio término a término.</why>
+</step>
+<step op="Usar la independencia">
+\[\langle\Delta_i\Delta_j\rangle=\delta_i^2\delta_{ij}\ \Longrightarrow\ \delta f=\sqrt{\sum_{i=1}^k\left(\frac{\partial f}{\partial x_i}\,\delta_i\right)^2}.\]
+<why>Los términos cruzados \(i\ne j\) se anulan en promedio: los errores independientes se suman «en cuadratura», no en línea recta.</why>
+</step>
+<step op="Caso de un monomio \(f=C\prod x_i^{n_i}\)">
+\[\frac{\partial f}{\partial x_i}=n_i\frac f{x_i}\ \Longrightarrow\ \left(\frac{\delta f}f\right)^2=\sum_in_i^2\left(\frac{\delta_i}{x_i}\right)^2.\]
+<why>El exponente \(n_i\) es justamente el exponente local \(\partial\ln f/\partial\ln x_i\) de la tabla de sensibilidad de los exploradores: una magnitud con exponente grande pesa más en la incertidumbre.</why>
+</step>
+<step op="Aplicar a \(g=4\pi^2L/T^2\)">
+\[n_L=1,\quad n_T=-2\ \Longrightarrow\ \frac{\delta g}g=\sqrt{\left(\frac{\delta L}L\right)^2+4\left(\frac{\delta T}T\right)^2}.\]
+<why>El periodo entra al cuadrado en el denominador, por eso su incertidumbre relativa pesa el doble.</why>
+</step>
+<step op="Decidir dónde mejorar la medida">
+\[\frac{(\delta L/L)^2}{(\delta g/g)^2}\ \text{y}\ \frac{4(\delta T/T)^2}{(\delta g/g)^2}\ \text{son las fracciones de la varianza debidas a cada medida.}\]
+<why>Reducir la incertidumbre de la magnitud que domina ahorra más esfuerzo que mejorar la otra.</why>
+</step>
+<result name="Propagación de incertidumbres">\[\delta f=\sqrt{\sum_i\left(\frac{\partial f}{\partial x_i}\delta_i\right)^2},\qquad \frac{\delta g}g=\sqrt{\left(\frac{\delta L}L\right)^2+4\left(\frac{\delta T}T\right)^2}.\]</result>
+<vars>
+<v s="g" n="gravedad calculada" u="m s^-2"/>
+<v s="L" n="longitud medida" u="m"/>
+<v s="T" n="periodo medido" u="s"/>
+<v s="\delta L" n="incertidumbre de \(L\)" u="m"/>
+<v s="\delta T" n="incertidumbre de \(T\)" u="s"/>
+<v s="\delta g/g" n="incertidumbre relativa de \(g\)" u="1"/>
+</vars>
+<effects>
+<e>Con \(L=1.000\) m (\(\delta L=1\) mm) y \(T=2.006\) s (\(\delta T=10\) ms): \(g=9.8107\) m/s², \(\delta g/g=1.002\) % y \(\delta g=0.098\) m/s². La contribución de \(L\) a la varianza es \(10^{-6}\) y la de \(T\), \(9.94\times10^{-5}\): el 99 % viene del periodo.</e>
+<e>Reducir \(\delta T\) a 1 ms baja \(\delta g/g\) a 0.14 %; reducir \(\delta L\) a 0.1 mm casi no la cambia.</e>
+<e>Si se mide el tiempo de 10 oscilaciones en lugar de una, \(\delta T\) del periodo se divide por 10 (la incertidumbre del cronometraje se reparte), con la misma regla.</e>
+</effects>
+<limits>
+<l>Dimensiones: \(\delta g/g\) es adimensional; \([4\pi^2L/T^2]=\mathsf L\mathsf T^{-2}\). ✓</l>
+<l>Si los errores están correlacionados aparecen los términos cruzados; si son grandes (\(\delta_i/x_i\gtrsim0.1\)) falla el primer orden. Una simulación de Monte Carlo con \(10^6\) muestras reproduce \(\delta g/g=1.00\) %.</l>
+</limits>
+<explore sim="errores" title="Incertidumbre de g medida con un péndulo en función de δL y δT"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales: \(g=9.8107\), \(\delta g/g=1.002\times10^{-2}\), \(\delta g=0.0983\) m/s². La tabla de sensibilidad de \(\delta g/g\) muestra el peso de cada incertidumbre: \(n_{\delta T}\approx0.99\) y \(n_{\delta L}\approx0.01\).</li>
+<li>Baje \(\delta T\) hasta \(10^{-4}\) s: \(\delta g/g\) se acerca al piso fijado por \(\delta L/L=10^{-3}\).</li>
+</ul></div>
+</deriv>
+
+<deriv id="gamma-int" title="La función gamma: ∫xˢe^{−bx}dx" tags="Integrales, Estadística">
+<goal>El valor de \(\int_0^\infty x^s\mathrm e^{-bx}\mathrm dx\) para \(s\) real, sus consecuencias para el valor medio y la moda, y la relación con el factorial.</goal>
+<given>
+<g>Definición de Euler: \(\Gamma(z)=\int_0^\infty t^{z-1}\mathrm e^{-t}\mathrm dt\) para \(z\gt0\).</g>
+<g>La integral gaussiana de la deducción anterior.</g>
+</given>
+<step op="Integrar por partes para obtener la ecuación funcional">
+\[\Gamma(z+1)=\int_0^\infty t^z\mathrm e^{-t}\mathrm dt=\Big[-t^z\mathrm e^{-t}\Big]_0^\infty+z\int_0^\infty t^{z-1}\mathrm e^{-t}\mathrm dt=z\,\Gamma(z).\]
+<why>Con \(u=t^z\), \(\mathrm dv=\mathrm e^{-t}\mathrm dt\). El término de borde se anula en 0 (si \(z\gt0\)) y en \(\infty\) (la exponencial gana a cualquier potencia).</why>
+</step>
+<step op="Calcular \(\Gamma(1)\) y deducir el factorial">
+\[\Gamma(1)=\int_0^\infty\mathrm e^{-t}\mathrm dt=1\ \Longrightarrow\ \Gamma(n+1)=n\,\Gamma(n)=\cdots=n!\]
+<why>Aplicar \(n\) veces la ecuación funcional deja \(n(n-1)\cdots1\cdot\Gamma(1)\). Así \(\Gamma\) extiende el factorial a los reales.</why>
+</step>
+<step op="Calcular \(\Gamma(\tfrac12)\) con el cambio \(t=x^2\)">
+\[\Gamma(\tfrac12)=\int_0^\infty t^{-1/2}\mathrm e^{-t}\mathrm dt=2\int_0^\infty\mathrm e^{-x^2}\mathrm dx=\int_{-\infty}^\infty\mathrm e^{-x^2}\mathrm dx=\sqrt\pi.\]
+<why>\(\mathrm dt=2x\,\mathrm dx\) y \(t^{-1/2}=1/x\). La última igualdad es la integral gaussiana con \(a=1\). Entonces \(\Gamma(\tfrac32)=\tfrac12\sqrt\pi\), etc.</why>
+</step>
+<step op="Escalar con \(u=bx\)">
+\[\int_0^\infty x^s\mathrm e^{-bx}\mathrm dx=\frac1{b^{s+1}}\int_0^\infty u^s\mathrm e^{-u}\mathrm du=\frac{\Gamma(s+1)}{b^{s+1}}.\]
+<why>\(x=u/b\) y \(\mathrm dx=\mathrm du/b\).</why>
+</step>
+<step op="Valor medio de la distribución \(x^s\mathrm e^{-bx}\)">
+\[\langle x\rangle=\frac{\Gamma(s+2)/b^{s+2}}{\Gamma(s+1)/b^{s+1}}=\frac{s+1}b.\]
+<why>Se usa \(\Gamma(s+2)=(s+1)\Gamma(s+1)\).</why>
+</step>
+<step op="Moda (máximo) de la distribución">
+\[\frac{\mathrm d}{\mathrm dx}\left(x^s\mathrm e^{-bx}\right)=x^{s-1}\mathrm e^{-bx}(s-bx)=0\ \Rightarrow\ x_\text{moda}=\frac sb.\]
+</step>
+<result name="Integral gamma">\[\int_0^\infty x^s\mathrm e^{-bx}\mathrm dx=\frac{\Gamma(s+1)}{b^{s+1}},\qquad \Gamma(n+1)=n!,\ \ \Gamma(\tfrac12)=\sqrt\pi,\qquad \langle x\rangle=\frac{s+1}b.\]</result>
+<vars>
+<v s="s" n="exponente" u="1"/>
+<v s="b" n="parámetro de decaimiento" u="m^-1"/>
+<v s="x" n="variable (longitud)" u="m"/>
+<v s="\Gamma" n="función gamma" u="1"/>
+<v s="I_1" n="integral \(\int_0^\infty x\,\mathrm e^{-bx}\mathrm dx\) (caso \(s=1\))" u="m^2"/>
+</vars>
+<effects>
+<e>\(\langle x\rangle\propto1/b\) (\(n_b=-1\)) y la integral \(\propto b^{-(s+1)}\): con \(s=0.5\), \(n_b=-1.5\). Valores iniciales (\(s=0.5\), \(b=1\)): \(I=\Gamma(1.5)=0.886227\), \(\langle x\rangle=1.5\), moda 0.5.</e>
+<e>Los valores enteros: \(\Gamma(1)=1\), \(\Gamma(3)=2\), \(\Gamma(6)=120\), \(\Gamma(11)=3\,628\,800\): \(\Gamma(s+1)\) crece más rápido que cualquier exponencial.</e>
+<e>Aplicación: la energía de una partícula en un gas ideal 3D se distribuye como \(E^{1/2}\mathrm e^{-E/k_BT}\), es decir \(s=\tfrac12\) y \(b=1/k_BT\): \(\langle E\rangle=\tfrac32k_BT\). En 2D, \(s=0\) y \(\langle E\rangle=k_BT\).</e>
+</effects>
+<limits>
+<l>Dimensiones (\(s=1\)): \(\int x\,\mathrm e^{-bx}\mathrm dx=\Gamma(2)/b^2\); \([x\,\mathrm dx]=\mathsf L^2\) y \([b^{-2}]=\mathsf L^2\). ✓</l>
+<l>Límites: \(s\to-1^+\) hace divergir la integral (\(\Gamma(0)=\infty\)); para \(s\to\infty\) la distribución se vuelve una campana estrecha centrada en \(s/b\).</l>
+</limits>
+<explore sim="gamma-int" title="Integral gamma, valor medio y moda de la distribución xˢe^{−bx}"/>
+<div class="sim-guide"><ul>
+<li>Con \(s=0.5\) y \(b=1\): integral 0.886227, \(\Gamma(1.5)=0.886227\), \(\langle x\rangle=1.5\) y moda 0.5. Suba \(s\) a 5: \(\Gamma(6)=120\) y la media 6.</li>
+<li>Con \(s=10\) y \(b=1\): \(\Gamma(11)=3.6288\times10^6\); la integral es la misma. Ahora ponga \(b=2\): la integral baja por \(2^{11}=2048\).</li>
+</ul></div>
+</deriv>
+
+<section>
+<h2>Fuentes y lecturas</h2>
+<ul class="refs">
+<li>M. L. Boas, <em>Mathematical Methods in the Physical Sciences</em>, 3.ª ed., Wiley (2005): series (cap. 1), integrales múltiples (cap. 5), función gamma (cap. 11).</li>
+<li>G. B. Arfken, H. J. Weber, F. E. Harris, <em>Mathematical Methods for Physicists</em>, 7.ª ed., Academic Press (2013): serie de Taylor (§ 1.2), función gamma (cap. 13), fórmula de Stirling (§ 13.4).</li>
+<li>F. W. J. Olver <em>et al.</em> (eds.), <em>NIST Digital Library of Mathematical Functions</em>, <a href="https://dlmf.nist.gov/5.11">dlmf.nist.gov/5.11</a>: expansión asintótica de \(\ln\Gamma\) con sus coeficientes de Bernoulli y cotas de error.</li>
+<li>J. R. Taylor, <em>An Introduction to Error Analysis</em>, 2.ª ed., University Science Books (1997): cap. 3 (propagación de incertidumbres en cuadratura).</li>
+<li>JCGM 100:2008, <em>Evaluation of measurement data — Guide to the expression of uncertainty in measurement</em> (GUM), § 5 (incertidumbre típica combinada).</li>
+<li>W. Rudin, <em>Principles of Mathematical Analysis</em>, 3.ª ed., McGraw-Hill (1976), teorema 5.15 (Taylor con resto) y cap. 8 (función gamma).</li>
+</ul>
+</section>
+</template>

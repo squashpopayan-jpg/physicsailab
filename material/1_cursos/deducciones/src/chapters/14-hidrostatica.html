@@ -1,0 +1,293 @@
+<template class="chapter-src" data-id="hidrostatica" data-num="14" data-title="Hidrostática y capilaridad" data-part="Parte III · Ondas y fluidos" data-short="La presión en un fluido en reposo y la atmósfera isoterma, el principio de Arquímedes deducido con el teorema de Gauss, la ley de Laplace de la presión en superficies curvas, la ley de Jurin y la fuerza sobre una presa">
+<p class="lead">Un fluido en reposo solo puede ejercer fuerza perpendicular a las superficies: no resiste el corte. Esa sola propiedad, junto con el equilibrio de un elemento de volumen, da la ecuación fundamental de la hidrostática, \(\nabla p=\rho\mathbf g\), y de ella salen la presión con la profundidad, la fórmula barométrica de la atmósfera y el principio de Arquímedes (que aquí se demuestra con el teorema de Gauss del capítulo 3). En las interfaces aparece además la tensión superficial: una energía por unidad de área que explica por qué las gotas son esféricas, por qué la presión dentro de una burbuja pequeña es mayor y por qué el agua sube por un tubo fino.</p>
+
+<deriv id="presion-hidro" title="La presión en un fluido en reposo" tags="Hidrostática, Presión">
+<goal>La variación de la presión con la profundidad en un líquido en equilibrio y sus consecuencias (principio de Pascal, vasos comunicantes).</goal>
+<given>
+<g>En reposo, un fluido solo ejerce fuerzas normales sobre cualquier superficie: la presión es isótropa (igual en todas las direcciones en un punto).</g>
+<g>Equilibrio de fuerzas de un elemento de fluido bajo la presión de sus alrededores y su peso.</g>
+</given>
+<step op="Aplicar el equilibrio a una columna de área \(A\) y altura \(\mathrm dz\)">
+\[p(z)\,A-p(z+\mathrm dz)\,A-\rho gA\,\mathrm dz=0.\]
+<why>Con \(z\) hacia arriba: la presión de abajo empuja hacia arriba; la de arriba y el peso empujan hacia abajo. Las presiones laterales se cancelan por simetría.</why>
+</step>
+<step op="Dividir por \(A\,\mathrm dz\)">
+\[\frac{\mathrm dp}{\mathrm dz}=-\rho g\qquad(\text{en forma vectorial: }\nabla p=\rho\mathbf g).\]
+</step>
+<step op="Integrar en un líquido incompresible (\(\rho\) constante)">
+\[p(h)=p_0+\rho gh,\qquad h=\text{profundidad bajo la superficie.}\]
+</step>
+<step op="Consecuencias: Pascal y vasos comunicantes">
+\[\Delta p_0\ \Rightarrow\ \Delta p(h)=\Delta p_0\ \text{en todo el fluido};\qquad p\ \text{depende solo de }h\Rightarrow\text{mismo nivel en vasos comunicantes.}\]
+<why>El aumento de presión en la superficie se transmite íntegro (principio de Pascal): es el fundamento de la prensa hidráulica. Como \(p\) solo depende de la profundidad, no de la forma del recipiente, dos ramas comunicadas tienen el mismo nivel.</why>
+</step>
+<result name="Presión hidrostática">\[\frac{\mathrm dp}{\mathrm dz}=-\rho g,\qquad p=p_0+\rho gh.\]</result>
+<vars>
+<v s="p" n="presión absoluta" u="Pa"/>
+<v s="p_0" n="presión en la superficie" u="Pa"/>
+<v s="\rho" n="densidad del líquido" u="kg m^-3"/>
+<v s="g" n="aceleración de la gravedad" u="m s^-2"/>
+<v s="h" n="profundidad" u="m"/>
+<v s="\mathrm dp/\mathrm dz" n="gradiente de presión" u="Pa m^-1"/>
+</vars>
+<effects>
+<e>Agua (998 kg/m³) a 10 m: presión manométrica 97 870 Pa (0.966 atm) y absoluta 199 195 Pa (1.966 atm); a 100 m, 9.66 atm manométricas; cada 10.35 m de profundidad se añade una atmósfera. En mercurio, 0.760 m (760 mm Hg) añaden una atmósfera: de ahí el barómetro de Torricelli.</e>
+<e>\(p_\text{man}\propto\rho\) y \(\propto h\) (\(n=1\) en cada uno): doblar la profundidad dobla la presión adicional. Con agua de mar (1025 kg/m³ uniforme) hasta 10 935 m (fosa de las Marianas): 109.9 MPa (≈ 1085 atm manométricas); el valor real difiere unos pocos por ciento por la compresibilidad del agua y la variación de \(g\).</e>
+<e>Pascal: una fuerza de 100 N sobre un émbolo de 1 cm² genera \(10^6\) Pa; una prensa con émbolo de 100 cm² produce 10 kN.</e>
+</effects>
+<limits>
+<l>Dimensiones: \([\rho gh]=\mathsf M\mathsf L^{-3}\mathsf L\mathsf T^{-2}\mathsf L=\mathsf M\mathsf L^{-1}\mathsf T^{-2}=[p]\). ✓</l>
+<l>Supone \(\rho\) constante (líquido) y \(g\) uniforme; en gases o en profundidades muy grandes, la compresibilidad exige integrar con \(\rho(p)\) (siguiente deducción).</l>
+</limits>
+<explore sim="presion-fluido" title="Presión hidrostática: manométrica y absoluta según densidad y profundidad"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (agua, 10 m): presión manométrica \(97\,870.4\) Pa, absoluta \(199\,195\) Pa (1.9659 atm) y 10.353 m por atmósfera.</li>
+<li>Con ρ = 13 595 (mercurio) y 0.76 m: la presión manométrica es ≈ 101 325 Pa: 1 atm. Seleccione \(h\) en el eje (log–log): la presión manométrica es una recta de pendiente 1.</li>
+</ul></div>
+</deriv>
+
+<deriv id="barometrica" title="La atmósfera isoterma: la fórmula barométrica" tags="Hidrostática, Atmósfera">
+<goal>La presión de un gas ideal en reposo en un campo gravitatorio uniforme a temperatura uniforme, en función de la altitud, y su altura de escala.</goal>
+<given>
+<g>\(\mathrm dp/\mathrm dz=-\rho g\) (deducción anterior) y gas ideal \(\rho=pM/RT\).</g>
+<g>Temperatura \(T\) constante en toda la altura considerada.</g>
+</given>
+<step op="Sustituir la densidad del gas ideal">
+\[\frac{\mathrm dp}{\mathrm dz}=-\frac{Mg}{RT}\,p.\]
+</step>
+<step op="Separar variables e integrar de \(0\) a \(z\)">
+\[\int_{p_0}^{p}\frac{\mathrm dp}p=-\frac{Mg}{RT}\int_0^z\mathrm dz\ \Longrightarrow\ \ln\frac p{p_0}=-\frac{Mgz}{RT}.\]
+</step>
+<step op="Exponenciar">
+\[p(z)=p_0\,\mathrm e^{-z/H},\qquad H=\frac{RT}{Mg}.\]
+<why>\(H\) es la altura de escala: la presión baja un factor \(\mathrm e\) cada \(H\). Es la misma ley de Boltzmann \(\mathrm e^{-mgz/k_BT}\) de la mecánica estadística (capítulo 18): \(R/M=k_B/m\).</why>
+</step>
+<step op="Altitud a la que la presión se reduce a la mitad">
+\[z_{1/2}=H\ln2.\]
+</step>
+<result name="Fórmula barométrica">\[p=p_0\,\mathrm e^{-Mgz/RT},\qquad H=\frac{RT}{Mg},\qquad z_{1/2}=H\ln2.\]</result>
+<vars>
+<v s="p" n="presión a la altitud \(z\)" u="Pa"/>
+<v s="p_0" n="presión a nivel de referencia" u="Pa"/>
+<v s="M" n="masa molar" u="kg mol^-1"/>
+<v s="g" n="aceleración de la gravedad" u="m s^-2"/>
+<v s="R" n="constante de los gases" u="kg m^2 s^-2 mol^-1 K^-1"/>
+<v s="T" n="temperatura absoluta" u="K"/>
+<v s="z" n="altitud" u="m"/>
+<v s="H" n="altura de escala" u="m"/>
+</vars>
+<effects>
+<e>Aire a 288.15 K: \(H=8436\) m, \(z_{1/2}=5847\) m. A 1 km, \(p=90.0\) kPa (0.888 \(p_0\)); a 5.5 km, 52.8 kPa (0.521 \(p_0\)); a 8848 m (Everest), 35.5 kPa (el valor real, 33.7 kPa, es menor porque el aire de altura es más frío).</e>
+<e>\(H\propto T\) (\(n_T=1\)) y \(\propto1/M\): a 250 K, \(H=7319\) m; un gas ligero (\(M=4\) g/mol) tendría \(H=61\) km, y por eso los gases ligeros se extienden a alturas mucho mayores. A 5.5 km, \(p/p_0=0.4717\) a 250 K y 0.9139 para el helio.</e>
+<e>Un altímetro de presión lee la altitud al invertir la fórmula: \(z=H\ln(p_0/p)\).</e>
+</effects>
+<limits>
+<l>Dimensiones: \([Mgz/RT]=\mathsf{kg\,mol^{-1}}\,\mathsf L\mathsf T^{-2}\mathsf L/(\mathsf{kg}\,\mathsf L^2\mathsf T^{-2}\mathsf{mol^{-1}})=1\). ✓</l>
+<l>Una atmósfera real no es isoterma: la temperatura baja unos 6.5 K/km en la troposfera, y la presión a 5.5 km es 50.5 kPa (un 4 % menor que la isoterma); a 30 km la isoterma da 2.9 kPa y el valor real es 1.2 kPa. La estratosfera es casi isoterma.</l>
+</limits>
+<explore sim="barometrica" title="Presión atmosférica en función de la altitud, la temperatura y la masa molar"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (5.5 km, 288.15 K, aire): \(p/p_0=0.52102\), \(p=52\,792\) Pa, \(H=8435.9\) m y mitad de la presión a 5847.3 m.</li>
+<li>Seleccione la altitud en el eje: la presión cae como una exponencial; en log–log la pendiente local es \(-z/H\) y crece con la altura.</li>
+</ul></div>
+</deriv>
+
+<deriv id="arquimedes" title="El principio de Arquímedes y la flotación" tags="Hidrostática, Teorema de Gauss">
+<goal>La fuerza neta que un fluido en reposo ejerce sobre un cuerpo sumergido, y la fracción sumergida de un cuerpo que flota.</goal>
+<given>
+<g>Presión hidrostática \(p=p_0-\rho_fgz\) (con \(z\) hacia arriba), que ejerce en cada punto de la superficie del cuerpo una fuerza \(-p\,\hat n\,\mathrm dA\), con \(\hat n\) normal hacia afuera.</g>
+<g>Teorema del gradiente (consecuencia del de Gauss, capítulo 3): \(\oint p\,\hat n\,\mathrm dA=\int\nabla p\,\mathrm dV\).</g>
+</given>
+<step op="Escribir la fuerza total de la presión sobre la superficie del cuerpo">
+\[\mathbf F=-\oint p\,\hat n\,\mathrm dA.\]
+</step>
+<step op="Convertir la integral de superficie en una de volumen">
+\[\mathbf F=-\int_V\nabla p\,\mathrm dV=-\int_V(-\rho_fg\,\hat z)\,\mathrm dV=\rho_fgV\,\hat z.\]
+<why>\(\nabla p=-\rho_fg\hat z\) (ecuación de la hidrostática). La fuerza sobre la superficie es la misma que si el volumen estuviera lleno de fluido: es el <em>peso del fluido desalojado</em>, dirigido hacia arriba.</why>
+</step>
+<step op="Cuerpo parcialmente sumergido: volumen \(V_\text{sum}\)">
+\[F_b=\rho_fgV_\text{sum}.\]
+</step>
+<step op="Equilibrio de flotación: empuje igual al peso">
+\[\rho_fgV_\text{sum}=\rho_ogV\ \Longrightarrow\ \frac{V_\text{sum}}V=\frac{\rho_o}{\rho_f}.\]
+</step>
+<step op="Masa extra que hundiría el cuerpo">
+\[\Delta m=(\rho_f-\rho_o)\,V.\]
+<why>Con carga adicional, el cuerpo queda totalmente sumergido cuando el peso total iguala \(\rho_fgV\).</why>
+</step>
+<result name="Principio de Arquímedes">\[F_b=\rho_f\,g\,V_\text{sum},\qquad \frac{V_\text{sum}}V=\frac{\rho_o}{\rho_f}.\]</result>
+<vars>
+<v s="F_b" n="empuje" u="N"/>
+<v s="\rho_f" n="densidad del fluido" u="kg m^-3"/>
+<v s="\rho_o" n="densidad del objeto" u="kg m^-3"/>
+<v s="V" n="volumen del objeto" u="m^3"/>
+<v s="V_\text{sum}" n="volumen sumergido" u="m^3"/>
+<v s="g" n="aceleración de la gravedad" u="m s^-2"/>
+<v s="\Delta m" n="masa extra necesaria para hundirlo" u="kg"/>
+</vars>
+<effects>
+<e>Iceberg de hielo (917 kg/m³) en agua de mar (1025 kg/m³): 89.46 % sumergido; en agua dulce (1000 kg/m³), 91.7 %. Para \(V=10^5\) m³, emergen 10 537 m³, el empuje es \(8.993\times10^8\) N y haría falta una carga extra de \(1.08\times10^7\) kg para hundirlo.</e>
+<e>Si el cuerpo es más denso que el fluido (\(\rho_o\gt\rho_f\)) se hunde, y el empuje máximo es \(\rho_fgV\); un objeto de densidad 400 kg/m³ en agua (1000) tiene solo el 40 % sumergido. Fracciones muy cercanas a 1 (990 en 1010 kg/m³: 98.0 %) indican flotación casi neutra: la fracción emergente es muy sensible a la densidad del fluido (\(n_{\rho_f}=-1\)).</e>
+<e>El empuje no depende de la profundidad ni de la forma del cuerpo, solo del volumen sumergido y la densidad del fluido: por eso un submarino regula su flotabilidad variando su volumen efectivo o su lastre.</e>
+</effects>
+<limits>
+<l>Dimensiones: \([\rho_fgV]=\mathsf M\mathsf L\mathsf T^{-2}\). ✓</l>
+<l>Supone un fluido en reposo con \(\rho_f\) uniforme (la variación de la densidad con la altura añade correcciones); la estabilidad (que el cuerpo no vuelque) requiere además que el metacentro esté sobre el centro de masas.</l>
+</limits>
+<explore sim="iceberg" title="Flotación: fracción sumergida, volumen emergente y empuje"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (hielo 917, agua de mar 1025, \(V=10^5\) m³): fracción 0.89463, volumen emergente 10 537 m³, empuje \(8.9927\times10^8\) N y masa para hundirlo \(1.08\times10^7\) kg.</li>
+<li>Seleccione \(\rho_f\) en el eje: la fracción sumergida baja como \(1/\rho_f\) (pendiente −1 en log–log).</li>
+</ul></div>
+</deriv>
+
+<deriv id="laplace" title="La ley de Laplace: presión en una superficie curva" tags="Capilaridad, Energía superficial">
+<goal>El exceso de presión dentro de una gota o una burbuja de radio \(R\) y tensión superficial \(\sigma\).</goal>
+<given>
+<g>La tensión superficial \(\sigma\) es la energía por unidad de área de la interfaz: crear un área \(\mathrm dA\) cuesta \(\sigma\,\mathrm dA\).</g>
+<g>Principio de los trabajos virtuales: en equilibrio, el trabajo de la presión sobre una variación virtual del volumen compensa el cambio de energía superficial.</g>
+</given>
+<step op="Variar virtualmente el radio de una gota esférica">
+\[\mathrm dV=4\pi R^2\,\mathrm dR,\qquad \mathrm dA=8\pi R\,\mathrm dR.\]
+</step>
+<step op="Igualar el trabajo de la presión con el aumento de energía superficial">
+\[\Delta p\,\mathrm dV=\sigma\,\mathrm dA\ \Longrightarrow\ \Delta p\cdot4\pi R^2\,\mathrm dR=\sigma\cdot8\pi R\,\mathrm dR.\]
+</step>
+<step op="Despejar">
+\[\Delta p=\frac{2\sigma}R\qquad(\text{gota}).\]
+</step>
+<step op="Pompa de jabón: dos superficies">
+\[\Delta p=\frac{4\sigma}R.\]
+<why>La película tiene una superficie interior y otra exterior, cada una con tensión \(\sigma\), y su espesor es despreciable frente a \(R\).</why>
+</step>
+<step op="Caso general (radios de curvatura principales \(R_1\), \(R_2\))">
+\[\Delta p=\sigma\left(\frac1{R_1}+\frac1{R_2}\right);\qquad\text{cilindro: }R_2\to\infty\Rightarrow\Delta p=\frac\sigma R.\]
+</step>
+<result name="Ley de Laplace">\[\Delta p=\sigma\left(\frac1{R_1}+\frac1{R_2}\right)\ \Rightarrow\ \frac{2\sigma}R\ (\text{gota}),\ \ \frac{4\sigma}R\ (\text{pompa}).\]</result>
+<vars>
+<v s="\Delta p" n="exceso de presión en el lado cóncavo" u="Pa"/>
+<v s="\sigma" n="tensión superficial" u="N m^-1"/>
+<v s="R" n="radio de curvatura" u="m"/>
+<v s="R_1,\,R_2" n="radios principales de curvatura" u="m"/>
+</vars>
+<effects>
+<e>Gota de agua (\(\sigma=0.0728\) N/m): 145.6 Pa con \(R=1\) mm; 14.56 kPa con 10 µm; 145.6 kPa (1.437 atm) con 1 µm. La pompa de agua, 291.2 Pa con 1 mm; el chorro cilíndrico, 72.8 Pa. Pompa de jabón (\(\sigma\approx0.025\) N/m, \(R=1\) cm): 10 Pa.</e>
+<e>\(\Delta p\propto1/R\) (\(n_R=-1\)): una gota diez veces menor soporta una presión diez veces mayor. Por eso dos burbujas de distinto tamaño unidas por un tubo no se equilibran: la pequeña se vacía en la grande (maduración de Ostwald, coarsening de espumas).</e>
+<e>La gran presión interna de las microburbujas explica por qué es difícil hervir un líquido sin impurezas (se necesita nucleación) y por qué los alvéolos pulmonares requieren un surfactante.</e>
+</effects>
+<limits>
+<l>Dimensiones: \([\sigma/R]=\mathsf M\mathsf T^{-2}/\mathsf L=\mathsf M\mathsf L^{-1}\mathsf T^{-2}=[p]\). ✓</l>
+<l>Vale en equilibrio y con \(\sigma\) uniforme; no incluye la gravedad (válido para \(R\ll\ell_c=\sqrt{\sigma/\rho g}=2.7\) mm en agua). Para superficies que no son esferas, \(1/R_1+1/R_2\) es el doble de la curvatura media.</l>
+</limits>
+<explore sim="laplace" title="Presión en gotas, pompas y chorros según el radio y la tensión superficial"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (σ = 0.0728 N/m, \(R=1\) mm): gota 145.6 Pa, pompa 291.2 Pa, chorro 72.8 Pa y \(1.437\times10^{-3}\) atm.</li>
+<li>Seleccione \(R\) en el eje (log–log): recta de pendiente −1; a \(R=1\ \mu\)m la gota ya alcanza 1.44 atm.</li>
+</ul></div>
+</deriv>
+
+<deriv id="jurin" title="La ley de Jurin: ascenso capilar" tags="Capilaridad, Equilibrio">
+<goal>La altura a la que sube (o baja) un líquido en un tubo fino de radio \(r\) en equilibrio con la gravedad.</goal>
+<given>
+<g>El líquido forma un ángulo de contacto \(\theta\) con la pared (\(\theta\lt90^\circ\): moja; \(\theta\gt90^\circ\): no moja).</g>
+<g>La tensión superficial \(\sigma\) actúa a lo largo de la línea de contacto, de perímetro \(2\pi r\), con la componente vertical \(\sigma\cos\theta\).</g>
+</given>
+<step op="Calcular la fuerza vertical de la tensión superficial">
+\[F_\sigma=2\pi r\,\sigma\cos\theta.\]
+</step>
+<step op="Calcular el peso de la columna levantada">
+\[W=\rho g\,\pi r^2\,h.\]
+</step>
+<step op="Igualar en equilibrio y despejar \(h\)">
+\[2\pi r\sigma\cos\theta=\rho g\pi r^2h\ \Longrightarrow\ h=\frac{2\sigma\cos\theta}{\rho g\,r}.\]
+</step>
+<step op="Comprobar con la ley de Laplace">
+\[\Delta p=\frac{2\sigma\cos\theta}r=\rho gh.\]
+<why>El menisco tiene radio de curvatura \(R=r/\cos\theta\); la presión justo debajo es \(p_0-2\sigma/R\), y la diferencia con \(p_0\) en el nivel libre se equilibra con la presión hidrostática de la columna.</why>
+</step>
+<step op="Interpretar el signo y el producto \(hr\)">
+\[hr=\frac{2\sigma\cos\theta}{\rho g}=\text{constante del líquido},\qquad h\lt0\ \text{si }\theta\gt90^\circ.\]
+</step>
+<result name="Ley de Jurin">\[h=\frac{2\sigma\cos\theta}{\rho\,g\,r}.\]</result>
+<vars>
+<v s="h" n="altura de ascenso" u="m"/>
+<v s="\sigma" n="tensión superficial" u="kg s^-2"/>
+<v s="\theta" n="ángulo de contacto" u="rad"/>
+<v s="\rho" n="densidad del líquido" u="kg m^-3"/>
+<v s="g" n="aceleración de la gravedad" u="m s^-2"/>
+<v s="r" n="radio del tubo" u="m"/>
+<v s="hr" n="producto \(h\cdot r\) (constante del líquido)" u="m^2"/>
+</vars>
+<effects>
+<e>Agua (\(\sigma=0.0728\) N/m, \(\theta=0\)): \(h=2.975\) cm en un tubo de 0.5 mm de radio y 29.75 cm con 50 µm. Con \(\theta=20^\circ\), 2.796 cm. Mercurio (0.485 N/m, 13 534 kg/m³, \(\theta=140^\circ\)) en 0.5 mm: \(h=-11.2\) mm (desciende).</e>
+<e>\(hr=1.488\times10^{-5}\) m² para el agua: para llegar a 10 m haría falta un tubo de 1.49 µm de radio, mucho más fino que los vasos del xilema (≈ 20 µm). La capilaridad no basta para subir la savia en un árbol alto: interviene la tensión del agua (teoría de cohesión-tensión).</e>
+<e>\(h\propto1/r\) (\(n_r=-1\)) y \(\propto\sigma\) (\(n_\sigma=1\)); a \(\theta=90^\circ\), \(h=0\). La escala natural es la longitud capilar \(\ell_c=\sqrt{\sigma/\rho g}=2.727\) mm.</e>
+</effects>
+<limits>
+<l>Dimensiones: \([\sigma/(\rho gr)]=\mathsf M\mathsf T^{-2}/(\mathsf M\mathsf L^{-3}\mathsf L\mathsf T^{-2}\mathsf L)=\mathsf L\). ✓</l>
+<l>Vale para \(r\ll\ell_c\) (menisco esférico y altura mucho mayor que el menisco); para tubos anchos hay que resolver la ecuación completa del menisco. Se asume un ángulo de contacto de equilibrio (histéresis real).</l>
+</limits>
+<explore sim="jurin" title="Ascenso capilar: altura según tensión, ángulo de contacto, densidad y radio"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (agua, θ = 0, \(r=0.5\) mm): \(h=2.9754\times10^{-2}\) m, longitud capilar \(2.7273\) mm y \(hr=1.4877\times10^{-5}\) m².</li>
+<li>Ponga σ = 0.485, ρ = 13 534 y θ = 140°: \(h=-1.1197\times10^{-2}\) m (depresión del mercurio). Seleccione θ en el eje: \(h\) se anula en 90°.</li>
+</ul></div>
+</deriv>
+
+<deriv id="presa" title="La fuerza del agua sobre una presa" tags="Hidrostática, Ingeniería">
+<goal>La fuerza total y el momento que el agua de altura \(H\) ejerce sobre un muro vertical de ancho \(w\), y el punto de aplicación (centro de presión).</goal>
+<given>
+<g>Presión manométrica a la profundidad \(z\): \(p=\rho gz\); la presión atmosférica actúa en ambos lados del muro y se cancela.</g>
+</given>
+<step op="Fuerza sobre una franja horizontal de altura \(\mathrm dz\)">
+\[\mathrm dF=p\,w\,\mathrm dz=\rho gz\,w\,\mathrm dz.\]
+</step>
+<step op="Sumar sobre toda la altura">
+\[F=\int_0^H\rho gwz\,\mathrm dz=\tfrac12\rho g\,w\,H^2.\]
+<why>Es el área del triángulo de presiones, \(\tfrac12(\rho gH)H\), por el ancho.</why>
+</step>
+<step op="Momento respecto de la base (brazo \(H-z\))">
+\[M=\int_0^H\rho gwz\,(H-z)\,\mathrm dz=\rho gw\Big(\frac{H^3}2-\frac{H^3}3\Big)=\frac{\rho gwH^3}6.\]
+</step>
+<step op="Hallar el centro de presión">
+\[z_{cp}=\frac{\int\rho gwz^2\mathrm dz}{F}=\frac{\tfrac13\rho gwH^3}{\tfrac12\rho gwH^2}=\frac23H,\qquad \text{brazo respecto de la base}=\frac M F=\frac H3.\]
+<why>La fuerza total se aplica a dos tercios de la profundidad (un tercio de la altura sobre la base), porque la presión crece linealmente.</why>
+</step>
+<result name="Fuerza sobre una presa">\[F=\tfrac12\rho g\,wH^2,\qquad M_\text{base}=\tfrac16\rho g\,wH^3,\qquad z_{cp}=\tfrac23H.\]</result>
+<vars>
+<v s="F" n="fuerza total" u="N"/>
+<v s="M" n="momento respecto de la base" u="N m"/>
+<v s="\rho" n="densidad del agua" u="kg m^-3"/>
+<v s="g" n="aceleración de la gravedad" u="m s^-2"/>
+<v s="w" n="ancho del muro" u="m"/>
+<v s="H" n="altura del agua" u="m"/>
+<v s="z_{cp}" n="profundidad del centro de presión" u="m"/>
+<v s="p_b" n="presión en el fondo" u="Pa"/>
+</vars>
+<effects>
+<e>Muro de 100 m de ancho con 10 m de agua: \(F=4.903\times10^7\) N (unas 5000 toneladas-fuerza), \(M=1.634\times10^8\) N·m, presión en el fondo 98.07 kPa y centro de presión a 6.667 m de profundidad.</e>
+<e>\(F\propto H^2\) (\(n_H=2\)) y \(M\propto H^3\) (\(n_H=3\)): con el doble de altura (20 m), la fuerza se cuadruplica (\(1.961\times10^8\) N) y el momento se multiplica por 8. Por eso las presas son mucho más gruesas en la base.</e>
+<e>La fuerza no depende de la longitud del embalse: un lago enorme y un depósito del mismo ancho y altura ejercen la misma fuerza (paradoja hidrostática).</e>
+</effects>
+<limits>
+<l>Dimensiones: \([\rho gwH^2]=\mathsf M\mathsf L^{-3}\mathsf L\mathsf T^{-2}\mathsf L\mathsf L^2=\mathsf M\mathsf L\mathsf T^{-2}\). ✓</l>
+<l>Para un muro inclinado, el cálculo es igual con \(z\) medida a lo largo de la pendiente y la proyección horizontal de la fuerza; la subpresión bajo la presa y las cargas sísmicas añaden esfuerzos.</l>
+</limits>
+<explore sim="presa" title="Fuerza y momento del agua sobre un muro vertical"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (1000 kg/m³, 100 m, 10 m): \(F=4.9033\times10^7\) N, \(M=1.6344\times10^8\) N·m, \(p=9.8067\times10^4\) Pa y centro de presión 6.6667 m.</li>
+<li>Seleccione \(H\) en el eje (log–log): \(F\) con pendiente 2 y el momento con pendiente 3.</li>
+</ul></div>
+</deriv>
+
+<section>
+<h2>Fuentes y lecturas</h2>
+<ul class="refs">
+<li>L. D. Landau y E. M. Lifshitz, <em>Fluid Mechanics</em>, 2.ª ed., Pergamon (1987): cap. I § 2 (equilibrio de un fluido en un campo gravitatorio) y cap. VII § 61 (efectos capilares).</li>
+<li>G. K. Batchelor, <em>An Introduction to Fluid Dynamics</em>, Cambridge University Press (1967): § 1.4 (hidrostática).</li>
+<li>P.-G. de Gennes, F. Brochard-Wyart y D. Quéré, <em>Capillarity and Wetting Phenomena</em>, Springer (2004): cap. 1 (ley de Laplace) y cap. 2 (ley de Jurin).</li>
+<li>Arquímedes, <em>Sobre los cuerpos flotantes</em> (c. 250 a. C.); J. Jurin, <em>Philosophical Transactions</em> 30 (1718) 739–747; P.-S. Laplace, <em>Supplément au livre X de la Mécanique céleste</em> (1806).</li>
+<li>F. M. White, <em>Fluid Mechanics</em>, McGraw-Hill: fuerzas hidrostáticas sobre superficies planas.</li>
+</ul>
+</section>
+</template>

@@ -1,0 +1,307 @@
+<template class="chapter-src" data-id="dimensional" data-num="1" data-title="Análisis dimensional y escalamiento" data-part="Parte I · Herramientas" data-short="El teorema Π de Buckingham y cómo las dimensiones fijan la forma de una ley: el periodo del péndulo, la onda de choque de una explosión, las unidades de Planck, las ondas en el agua y el arrastre sobre una esfera">
+<p class="lead">Antes de deducir una fórmula con las leyes de la dinámica conviene preguntar cuánto de ella ya está decidido por las <em>unidades</em>. Una ley física no puede depender del sistema de unidades que escojamos, y esa sola exigencia obliga a que las magnitudes se combinen en grupos sin dimensión. El resultado es una herramienta de deducción que no necesita ecuaciones diferenciales: fija la dependencia con casi todos los parámetros, deja una función de una o dos variables adimensionales por determinar y avisa cuándo una fórmula no puede ser correcta. En este capítulo se demuestra el teorema, se aplica a cinco problemas (del péndulo a la longitud de Planck) y, en cada uno, se muestra con un explorador qué ocurre al variar los parámetros.</p>
+
+<section>
+<h2>Una ley no puede depender de las unidades: el teorema Π</h2>
+<p>Sea una relación entre \(n\) magnitudes físicas \(q_1,\dots,q_n\), por ejemplo \(T=f(L,m,g,\theta_0)\). Cada \(q_i\) tiene dimensiones \([q_i]=\mathsf M^{a_i}\mathsf L^{b_i}\mathsf T^{c_i}\cdots\), y los exponentes forman la <span class="term">matriz dimensional</span> \(A\) (una fila por cada dimensión fundamental, una columna por cada magnitud). Sea \(r\) el rango de \(A\). El teorema se deduce en cuatro pasos.</p>
+<ol>
+<li><strong>Cambio de unidades.</strong> Si se cambian las unidades fundamentales, cada magnitud se multiplica por un factor \(q_i\to q_i\prod_k\lambda_k^{A_{ki}}\), con un \(\lambda_k&gt;0\) por cada dimensión. La ley, que es un hecho de la naturaleza, debe seguir siendo cierta: \(f(q_1,\dots,q_n)=0\) equivale a \(f(\tilde q_1,\dots,\tilde q_n)=0\) para todo \(\lambda\).</li>
+<li><strong>Cantidades invariantes.</strong> Un monomio \(\Pi=\prod_iq_i^{x_i}\) es invariante ante todo cambio de unidades si y solo si \(\sum_iA_{ki}x_i=0\) para cada \(k\), es decir, si el vector de exponentes \(x\) está en el núcleo de \(A\). Ese núcleo tiene dimensión \(n-r\), así que hay exactamente \(n-r\) grupos adimensionales independientes \(\Pi_1,\dots,\Pi_{n-r}\).</li>
+<li><strong>Reducción.</strong> Se eligen \(r\) magnitudes cuyas dimensiones sean independientes (la «base»). Con ellas se pueden fijar las \(r\) escalas de unidades de modo que valgan 1; entonces cada una de las \(n-r\) restantes, medida con esas escalas, es igual a un \(\Pi\). La ley, que no puede notar la elección de escalas, se escribe sin pérdida como relación entre los \(\Pi\) únicamente.</li>
+<li><strong>Resultado.</strong> \(f(q_1,\dots,q_n)=0\iff\Phi(\Pi_1,\dots,\Pi_{n-r})=0\). El número de variables baja de \(n\) a \(n-r\). Si queda un solo grupo, \(\Pi=\text{constante}\), y la ley queda determinada salvo un número.</li>
+</ol>
+<div class="box note"><h4>Lo que el teorema no da</h4><p>No dice qué magnitudes son relevantes (eso lo decide la física: si se omite una, la fórmula sale mal; si se agrega una de más, aparecen grupos que luego resultan no hacer falta), ni calcula la función \(\Phi\) ni la constante. Para ello hacen falta las leyes de la dinámica, que se desarrollan en los capítulos siguientes. Lo que sí da es una <em>comprobación</em> que se aplicará a cada fórmula del curso: ambos miembros deben tener las mismas dimensiones, y los argumentos de seno, exponencial o logaritmo deben ser adimensionales.</p></div>
+<p>En cada deducción de este curso se verá la misma estructura: <strong>Se busca</strong> (qué resultado se quiere), <strong>Se parte de</strong> (principios e hipótesis), una lista de <strong>pasos numerados</strong> con la operación matemática de cada uno y su justificación, el <strong>resultado</strong>, la tabla de <strong>variables y unidades</strong>, un resumen de <strong>qué ocurre si se modifican los parámetros</strong> y las <strong>comprobaciones</strong> de dimensiones y límites. Debajo, un explorador permite variar cada parámetro y muestra la <em>sensibilidad</em>: el exponente local \(n=\partial\ln f/\partial\ln p\) (si el parámetro crece 1 %, el resultado cambia aproximadamente \(n\) %).</p>
+</section>
+
+<deriv id="pendulo-pi" title="Periodo del péndulo: lo que dicen las dimensiones" tags="Dimensional, Mecánica">
+<goal>Cómo depende el periodo \(T\) de un péndulo de su longitud \(L\), de la gravedad \(g\), de la masa \(m\) y de la amplitud \(\theta_0\), sin resolver ninguna ecuación de movimiento.</goal>
+<given>
+<g>El periodo es una propiedad del sistema: depende de las magnitudes que lo definen (hilo, bola, gravedad, amplitud inicial). No depende de la resistencia del aire ni de la rigidez del hilo (se desprecian).</g>
+<g>El teorema Π: toda ley entre \(n\) magnitudes con matriz dimensional de rango \(r\) se reduce a \(n-r\) grupos adimensionales.</g>
+</given>
+<step op="Hacer la lista de magnitudes relevantes y sus dimensiones">
+\[T=f(L,\;m,\;g,\;\theta_0),\qquad [T]=\mathsf T,\;\; [L]=\mathsf L,\;\; [m]=\mathsf M,\;\; [g]=\mathsf L\,\mathsf T^{-2},\;\; [\theta_0]=1.\]
+<why>Un ángulo es cociente de longitudes (arco/radio), así que es adimensional: es por sí mismo un grupo \(\Pi\).</why>
+</step>
+<step op="Escribir la matriz dimensional (filas M, L, T)">
+\[\begin{array}{c|cccc} &T&L&m&g\\\hline \mathsf M&0&0&1&0\\ \mathsf L&0&1&0&1\\ \mathsf T&1&0&0&-2\end{array}\qquad n=4,\; r=3\ \Rightarrow\ n-r=1\ \text{grupo con dimensión (más }\theta_0).\]
+<why>El rango es 3 porque las filas M, L, T son independientes; hay 4 columnas, luego el núcleo tiene dimensión 1.</why>
+</step>
+<step op="Imponer que el producto \(T^aL^bm^cg^d\) no tenga dimensión">
+\[T^aL^bm^cg^d=\mathsf T^{a}\,\mathsf L^{b}\,\mathsf M^{c}\,(\mathsf L\mathsf T^{-2})^{d}=\mathsf M^{c}\,\mathsf L^{b+d}\,\mathsf T^{a-2d}=1.\]
+<why>Para que sea 1 deben anularse los tres exponentes: uno por cada dimensión fundamental.</why>
+</step>
+<step op="Resolver el sistema lineal de exponentes">
+\[c=0,\qquad b+d=0,\qquad a-2d=0\ \Longrightarrow\ a=2d,\; b=-d,\; c=0.\]
+<why>Queda un parámetro libre \(d\), como anunciaba \(n-r=1\). Con \(d=1\): \(\Pi_1=T^2g/L\). Cualquier potencia de \(\Pi_1\) es otra solución.</why>
+</step>
+<step op="Aplicar el teorema Π: relacionar los dos grupos">
+\[\frac{T^2g}{L}=\Phi(\theta_0)\quad\Longrightarrow\quad T=\sqrt{\frac Lg}\;F(\theta_0),\qquad F=\sqrt\Phi.\]
+<why>La ley solo puede conectar \(\Pi_1\) con el otro grupo adimensional, \(\theta_0\). La función \(F\) queda sin determinar.</why>
+</step>
+<step op="Leer lo que no aparece: la masa">
+\[c=0\ \Longrightarrow\ T\ \text{no depende de}\ m.\]
+<why>No hay manera de combinar kilogramos con \(L\), \(g\) y \(T\) para formar un grupo adimensional, porque \(m\) es la única magnitud con \(\mathsf M\) (hecho que refleja la igualdad entre masa inercial y gravitatoria).</why>
+</step>
+<step op="Fijar \(F\) con el cálculo exacto (capítulo 8) y desarrollarla">
+\[F(\theta_0)=4K\!\left(\sin^2\tfrac{\theta_0}{2}\right)=2\pi\left(1+\frac{\theta_0^2}{16}+\frac{11\,\theta_0^4}{3072}+\cdots\right),\qquad T=2\pi\sqrt{\frac Lg}\ \ (\theta_0\to0).\]
+<why>\(K\) es la integral elíptica completa de primera especie. El desarrollo se obtiene de \(K(m)=\tfrac\pi2(1+\tfrac m4+\tfrac{9m^2}{64}+\cdots)\) con \(m=\sin^2(\theta_0/2)\).</why>
+</step>
+<result name="Periodo del péndulo">\[T=\sqrt{\frac Lg}\;F(\theta_0),\qquad F(\theta_0)=4K\!\left(\sin^2\tfrac{\theta_0}{2}\right)\ \xrightarrow{\ \theta_0\to0\ }\ 2\pi.\]</result>
+<vars>
+<v s="T" n="periodo de oscilación" u="s"/>
+<v s="L" n="longitud del hilo" u="m"/>
+<v s="g" n="aceleración de la gravedad" u="m s^-2"/>
+<v s="m" n="masa de la bola (no interviene)" u="kg"/>
+<v s="\theta_0" n="amplitud angular inicial" u="rad"/>
+</vars>
+<effects>
+<e>Si \(L\) se duplica, \(T\) se multiplica por \(\sqrt2=1.414\) (exponente \(n=+\tfrac12\)); si \(g\) se cuadruplica, \(T\) se reduce a la mitad (\(n=-\tfrac12\)). Con \(L=1\) m y \(g=9.81\) m/s², \(T_0=2.006\) s.</e>
+<e>La masa no tiene efecto alguno, y tampoco en el explorador: ni aparece como parámetro.</e>
+<e>La amplitud rompe la ley de potencias solo cuando es grande: el factor \(F/2\pi\) vale 1.002 a 10°, 1.017 a 30°, 1.073 a 60° (el periodo es 7.3 % mayor: 2.153 s frente a 2.006 s), 1.180 a 90° y 2.44 a 170°, donde el péndulo apenas se despega del equilibrio inestable.</e>
+</effects>
+<limits>
+<l>Dimensiones: \([\sqrt{L/g}]=\sqrt{\mathsf L/(\mathsf L\mathsf T^{-2})}=\mathsf T\). ✓</l>
+<l>Límite \(\theta_0\to0\): \(F\to2\pi\) y \(T\) deja de depender de la amplitud (isocronismo, Galileo). Límite \(\theta_0\to\pi\): \(K\to\infty\), \(T\to\infty\).</l>
+</limits>
+<explore sim="pendulo-pi" title="Periodo del péndulo: ley de potencias en L y g, corrección por amplitud"/>
+<div class="sim-guide"><ul>
+<li>Con los valores iniciales (\(L=1\) m, \(g=9.81\), \(\theta_0=10^\circ\)): \(T=2.010\) s, \(T_0=2.006\) s y \(F=6.2952\). Seleccione <em>L</em> en el eje horizontal: la gráfica es una recta de pendiente \(\tfrac12\) en log–log y la tabla marca \(n=0.500\) para \(L\) y \(-0.500\) para \(g\).</li>
+<li>Suba la amplitud a 60°: \(T=2.153\) s y \(F=6.7430\). Ahora seleccione θ₀ en el eje horizontal: el exponente respecto de θ₀ ya no es constante, y la curva sube sin límite al acercarse a 180°.</li>
+<li>Cambie \(g\) a 1.62 m/s² (la Luna): \(T_0\) pasa a 4.94 s, exactamente \(\sqrt{9.81/1.62}=2.46\) veces mayor, como predice \(n=-\tfrac12\).</li>
+</ul></div>
+</deriv>
+
+<deriv id="sedov" title="La onda de choque de una explosión (Taylor–Sedov)" tags="Dimensional, Fluidos">
+<goal>Cómo crece el radio \(R\) del frente de choque de una explosión puntual de energía \(E\) en un gas de densidad \(\rho\), en función del tiempo \(t\).</goal>
+<given>
+<g>La energía \(E\) se libera en un punto y en un instante, y el choque es tan fuerte que la presión del aire ambiente es despreciable frente a la del frente.</g>
+<g>Las únicas magnitudes del problema son \(R\), \(E\), \(\rho\) y \(t\) (la composición del gas entra por un número adimensional \(\gamma\)).</g>
+</given>
+<step op="Listar las magnitudes y sus dimensiones">
+\[R=f(E,\rho,t),\qquad [R]=\mathsf L,\;\;[E]=\mathsf M\mathsf L^2\mathsf T^{-2},\;\;[\rho]=\mathsf M\mathsf L^{-3},\;\;[t]=\mathsf T.\]
+<why>Se dejan fuera \(p_0\) y la velocidad del sonido ambiente porque el choque fuerte las vuelve irrelevantes: si se incluyeran, aparecerían grupos que solo importan en la etapa tardía.</why>
+</step>
+<step op="Imponer que \(R^aE^b\rho^ct^d\) sea adimensional">
+\[R^aE^b\rho^ct^d=\mathsf M^{\,b+c}\,\mathsf L^{\,a+2b-3c}\,\mathsf T^{\,-2b+d}=1.\]
+<why>Cuatro magnitudes y tres dimensiones independientes: un único grupo \(\Pi\).</why>
+</step>
+<step op="Resolver el sistema de exponentes">
+\[b+c=0,\quad a+2b-3c=0,\quad -2b+d=0\ \Longrightarrow\ c=-b,\; a=-5b,\; d=2b.\]
+<why>Con \(b=1\): \(\Pi=E\,t^2/(\rho R^5)\).</why>
+</step>
+<step op="Igualar el grupo a una constante y despejar \(R\)">
+\[\frac{E\,t^2}{\rho\,R^5}=\frac1{\xi^5}\ \Longrightarrow\ R=\xi\left(\frac{E\,t^2}{\rho}\right)^{1/5}.\]
+<why>Al no haber otro grupo, \(\Pi\) es un número que depende solo de \(\gamma\). Su valor requiere resolver las ecuaciones de la dinámica de gases (Sedov): \(\xi\approx1.033\) para \(\gamma=1.4\).</why>
+</step>
+<step op="Derivar respecto de \(t\) para la velocidad del frente">
+\[\dot R=\frac{\mathrm dR}{\mathrm dt}=\frac25\,\xi\left(\frac E\rho\right)^{1/5}t^{-3/5}=\frac{2R}{5t}.\]
+<why>El frente se frena: \(\dot R\propto t^{-3/5}\) y \(R\propto t^{2/5}\); la pendiente 2/5 en una gráfica log–log de \(R\) contra \(t\) es la comprobación experimental de la ley.</why>
+</step>
+<step op="Invertir la relación para estimar la energía a partir de una fotografía">
+\[E=\frac{\rho\,R^5}{\xi^5\,t^2}.\]
+<why>Con un solo par \((R,t)\) medido se obtiene \(E\): es el método con el que G. I. Taylor estimó en 1950 la energía de la prueba Trinity a partir de las fotografías publicadas del radio de la bola de fuego.</why>
+</step>
+<result name="Radio de la onda de choque">\[R=\xi\left(\frac{E\,t^2}{\rho}\right)^{1/5},\qquad \dot R=\frac{2R}{5t},\qquad E=\frac{\rho R^5}{\xi^5t^2}.\]</result>
+<vars>
+<v s="R" n="radio del frente de choque" u="m"/>
+<v s="E" n="energía liberada" u="kg m^2 s^-2"/>
+<v s="\rho" n="densidad del gas ambiente" u="kg m^-3"/>
+<v s="t" n="tiempo desde la explosión" u="s"/>
+<v s="\xi" n="constante adimensional (depende de γ)" u="1"/>
+</vars>
+<effects>
+<e>\(R\propto E^{1/5}\): duplicar la energía solo aumenta el radio un 14.9 % (\(2^{1/5}=1.149\)). Por eso el radio de destrucción de un arma crece lentamente con su potencia.</e>
+<e>\(R\propto t^{2/5}\): al duplicar el tiempo el radio crece 32 % (\(2^{2/5}=1.320\)); \(R\propto\rho^{-1/5}\): en un gas el doble de denso el frente llega un 12.9 % menos lejos (\(2^{-1/5}=0.871\)).</e>
+<e>Para 10 kilotones de TNT (\(4.184\times10^{13}\) J) en aire (1.2 kg/m³): \(R=83.7\) m a 10 ms, 159.3 m a 50 ms y 277.3 m a 200 ms; la velocidad del frente baja de 3347 a 555 m/s.</e>
+<e>Ejemplo de inversión: \(R=100\) m a \(t=16\) ms da \(E=3.99\times10^{13}\) J \(\approx9.5\) kt, con el mismo \(\xi=1.033\).</e>
+</effects>
+<limits>
+<l>Dimensiones: \([(Et^2/\rho)^{1/5}]=(\mathsf M\mathsf L^2\mathsf T^{-2}\mathsf T^2\mathsf M^{-1}\mathsf L^3)^{1/5}=\mathsf L\). ✓</l>
+<l>Validez: solo mientras la presión del frente supere mucho la del aire (para tiempos tardíos la onda se vuelve acústica) y mientras la energía no se haya radiado; el modelo ignora el radio inicial de la bola.</l>
+</limits>
+<explore sim="sedov" title="Radio y velocidad del frente de choque en función de E, ρ y t"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (10 kt, aire, 50 ms): \(R=159.3\) m y \(\dot R=1274\) m/s. Seleccione <em>t</em> en el eje horizontal: la recta tiene pendiente local 0.400; con <em>E</em> es 0.200 y con ρ, −0.200.</li>
+<li>Reduzca ρ a 0.01 kg/m³ (aire muy enrarecido, como a unos 34 km de altura): \(R\) pasa de 159.3 m a 415.0 m, porque \(R\propto\rho^{-1/5}\) y \(120^{1/5}=2.605\).</li>
+<li>Una energía de \(10^{3}\) J (un petardo grande) a 1 ms da \(R\approx0.25\) m; la escala de tiempo y radio de un fenómeno se lee del grupo \(R^5\rho/(Et^2)\sim1\).</li>
+</ul></div>
+</deriv>
+
+<deriv id="planck" title="Las unidades de Planck: construir una longitud con ħ, G y c" tags="Dimensional, Unidades">
+<goal>Combinar las constantes fundamentales de la mecánica cuántica (\(\hbar\)), la gravitación (\(G\)) y la relatividad (\(c\)) para obtener una longitud, un tiempo y una masa, y ver cómo cambiarían si las constantes fueran otras.</goal>
+<given>
+<g>Las dimensiones de las tres constantes: \([\hbar]=\mathsf M\mathsf L^2\mathsf T^{-1}\), \([G]=\mathsf M^{-1}\mathsf L^3\mathsf T^{-2}\), \([c]=\mathsf L\mathsf T^{-1}\).</g>
+<g>Son tres magnitudes con dimensiones independientes, así que cualquier otra magnitud con dimensiones M, L o T se puede escribir de un único modo como producto de potencias de ellas.</g>
+</given>
+<step op="Plantear un producto de potencias que tenga dimensión de longitud">
+\[\ell=\hbar^{a}\,G^{b}\,c^{d}\ \Rightarrow\ \mathsf M^{\,a-b}\;\mathsf L^{\,2a+3b+d}\;\mathsf T^{\,-a-2b-d}=\mathsf L.\]
+<why>Para ser una longitud, el exponente de M y el de T deben ser 0 y el de L debe ser 1.</why>
+</step>
+<step op="Escribir las tres ecuaciones lineales">
+\[a-b=0,\qquad 2a+3b+d=1,\qquad -a-2b-d=0.\]
+</step>
+<step op="Resolver por sustitución">
+\[b=a,\;\; d=-3a\ \Rightarrow\ 2a+3a-3a=1\ \Rightarrow\ a=\tfrac12,\;\; b=\tfrac12,\;\; d=-\tfrac32.\]
+<why>De la primera, \(b=a\); de la tercera, \(d=-3a\); al sustituir en la segunda queda \(2a=1\).</why>
+</step>
+<step op="Repetir con el tiempo y la masa">
+\[t_P=\hbar^{1/2}G^{1/2}c^{-5/2},\qquad m_P=\hbar^{1/2}c^{1/2}G^{-1/2}.\]
+<why>Mismo sistema con segundos miembros \((0,0,1)\) para el tiempo y \((1,0,0)\) para la masa; la solución es única.</why>
+</step>
+<step op="Evaluar con los valores CODATA">
+\[\ell_P=\sqrt{\frac{\hbar G}{c^3}}=1.6163\times10^{-35}\ \mathrm{m},\quad t_P=\frac{\ell_P}{c}=5.3912\times10^{-44}\ \mathrm s,\quad m_P=\sqrt{\frac{\hbar c}{G}}=2.1764\times10^{-8}\ \mathrm{kg}.\]
+<why>\(t_P=\ell_P/c\) y \(m_P=\hbar/(\ell_Pc)\) se siguen de las expresiones anteriores.</why>
+</step>
+<result name="Unidades de Planck">\[\ell_P=\sqrt{\frac{\hbar G}{c^{3}}},\qquad t_P=\sqrt{\frac{\hbar G}{c^{5}}},\qquad m_P=\sqrt{\frac{\hbar c}{G}}.\]</result>
+<vars>
+<v s="\hbar" n="constante de Planck reducida" u="kg m^2 s^-1"/>
+<v s="G" n="constante de gravitación universal" u="kg^-1 m^3 s^-2"/>
+<v s="c" n="velocidad de la luz en el vacío" u="m s^-1"/>
+<v s="\ell_P" n="longitud de Planck" u="m"/>
+<v s="t_P" n="tiempo de Planck" u="s"/>
+<v s="m_P" n="masa de Planck" u="kg"/>
+</vars>
+<effects>
+<e>Duplicar \(G\) multiplica \(\ell_P\) y \(t_P\) por \(\sqrt2=1.414\) y divide \(m_P\) por \(\sqrt2\). Duplicar \(c\) multiplica \(\ell_P\) por \(2^{-3/2}=0.354\), \(t_P\) por \(2^{-5/2}=0.177\) y \(m_P\) por \(\sqrt2\).</e>
+<e>La masa de Planck, 21.8 µg, es la de una mota de polvo apenas visible: la única de las tres escalas que es «macroscópica». La longitud es unas \(5\times10^{19}\) veces menor que el radio de un protón.</e>
+</effects>
+<limits>
+<l>Dimensiones de \(\ell_P\): \((\mathsf M\mathsf L^2\mathsf T^{-1}\cdot\mathsf M^{-1}\mathsf L^3\mathsf T^{-2}\cdot\mathsf L^{-3}\mathsf T^3)^{1/2}=\mathsf L\). ✓</l>
+<l>El análisis dimensional da la <em>escala</em> y no garantiza que exista un efecto físico ahí; se espera que sea la escala donde la gravedad cuántica es imprescindible, pero eso es una hipótesis, no un resultado.</l>
+</limits>
+<explore sim="planck" title="Unidades de Planck con constantes reescalables: qué pasaría si G, ħ o c fueran distintas"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales: \(\ell_P=1.6163\times10^{-35}\) m, \(t_P=5.3912\times10^{-44}\) s, \(m_P=2.1764\times10^{-8}\) kg. Los exponentes de la tabla (±0.5, ±1.5, ±2.5) son justamente los \(a,b,d\) de los pasos.</li>
+<li>Con ħ multiplicado por 100, \(\ell_P\) y \(t_P\) crecen 10 veces; \(m_P\) también.</li>
+</ul></div>
+</deriv>
+
+<deriv id="ondas-agua" title="Ondas en la superficie del agua: gravedad frente a capilaridad" tags="Dimensional, Ondas">
+<goal>Cómo depende la velocidad \(v\) de una onda superficial de su longitud de onda \(\lambda\), de la gravedad \(g\), de la tensión superficial \(\sigma\) y de la densidad \(\rho\) del líquido; y en qué escala de longitudes cambia el régimen.</goal>
+<given>
+<g>En agua profunda, la profundidad no interviene. Se desprecian la viscosidad y la altura de la onda (amplitud pequeña).</g>
+</given>
+<step op="Listar magnitudes y dimensiones">
+\[v=f(\lambda,g,\sigma,\rho),\quad [v]=\mathsf L\mathsf T^{-1},\;\;[\lambda]=\mathsf L,\;\;[g]=\mathsf L\mathsf T^{-2},\;\;[\sigma]=\mathsf M\mathsf T^{-2},\;\;[\rho]=\mathsf M\mathsf L^{-3}.\]
+<why>\(\sigma\) es energía por unidad de superficie (N/m = kg s⁻²).</why>
+</step>
+<step op="Contar grupos: \(n-r=5-3=2\)">
+\[\text{base}=\{\lambda,g,\rho\}\ (\text{dimensiones independientes}),\quad \Pi_1=\frac{v^2}{g\lambda},\quad\Pi_2=\frac{\sigma}{\rho g\lambda^2}.\]
+<why>Para \(\Pi_2=\sigma\lambda^a g^b\rho^c\): \(\mathsf M^{1+c}\mathsf L^{a+b-3c}\mathsf T^{-2-2b}=1\) da \(c=-1\), \(b=-1\), \(a=-2\). Para \(\Pi_1\), el mismo método da \(v^2\lambda^{-1}g^{-1}\).</why>
+</step>
+<step op="Aplicar el teorema Π">
+\[v^2=g\lambda\;\Phi\!\left(\frac{\sigma}{\rho g\lambda^2}\right)=g\lambda\;\Phi\!\left(\frac{\ell_c^2}{\lambda^2}\right),\qquad \ell_c=\sqrt{\frac{\sigma}{\rho g}}.\]
+<why>\(\ell_c\) es la <span class="term">longitud capilar</span>: 2.73 mm para el agua. Separa dos regímenes: \(\lambda\gg\ell_c\) (\(\Pi_2\to0\)) y \(\lambda\ll\ell_c\) (\(\Pi_2\to\infty\)).</why>
+</step>
+<step op="Régimen de ondas largas (\(\Pi_2\to0\)): domina la gravedad">
+\[\Phi\to\Phi_0\ \ \Longrightarrow\ \ v^2=\Phi_0\,g\lambda.\]
+<why>Si la tensión superficial es irrelevante, \(\sigma\) no puede aparecer y \(\Phi\) tiende a una constante.</why>
+</step>
+<step op="Régimen de ondas cortas (\(\Pi_2\to\infty\)): domina la capilaridad">
+\[\Phi\simeq\Phi_1\,\Pi_2\ \ \Longrightarrow\ \ v^2=\Phi_1\frac{\sigma}{\rho\lambda}.\]
+<why>Ahora es la gravedad la que no debe aparecer: \(g\) se cancela solo si \(\Phi\) es proporcional a \(\Pi_2\). Con ambas, \(\Phi\approx\Phi_0+\Phi_1\Pi_2\).</why>
+</step>
+<step op="Insertar las constantes de la teoría lineal (capítulo 15) y minimizar">
+\[\Phi_0=\frac1{2\pi},\ \Phi_1=2\pi:\quad v^2=\frac{g\lambda}{2\pi}+\frac{2\pi\sigma}{\rho\lambda};\qquad \frac{\mathrm d(v^2)}{\mathrm d\lambda}=\frac g{2\pi}-\frac{2\pi\sigma}{\rho\lambda^2}=0\ \Rightarrow\ \lambda_m=2\pi\sqrt{\frac{\sigma}{\rho g}}.\]
+<why>La velocidad de fase tiene un mínimo: a la izquierda del mínimo mandan los efectos capilares (ondas más cortas son más rápidas), a la derecha la gravedad (ondas más largas son más rápidas).</why>
+</step>
+<step op="Evaluar el mínimo">
+\[v_{\min}^2=2\cdot\frac{g\lambda_m}{2\pi}=2\sqrt{\frac{g\sigma}{\rho}}\ \Longrightarrow\ v_{\min}=\left(\frac{4g\sigma}{\rho}\right)^{1/4}.\]
+<why>En el mínimo los dos términos son iguales, por eso la suma es el doble de uno de ellos.</why>
+</step>
+<result name="Velocidad de fase de ondas en agua profunda">\[v=\sqrt{\frac{g\lambda}{2\pi}+\frac{2\pi\sigma}{\rho\lambda}},\qquad \lambda_m=2\pi\sqrt{\frac{\sigma}{\rho g}},\qquad v_{\min}=\left(\frac{4g\sigma}{\rho}\right)^{1/4}.\]</result>
+<vars>
+<v s="v" n="velocidad de fase" u="m s^-1"/>
+<v s="\lambda" n="longitud de onda" u="m"/>
+<v s="g" n="aceleración de la gravedad" u="m s^-2"/>
+<v s="\sigma" n="tensión superficial" u="kg s^-2"/>
+<v s="\rho" n="densidad del líquido" u="kg m^-3"/>
+<v s="\lambda_m" n="longitud de onda de velocidad mínima" u="m"/>
+</vars>
+<effects>
+<e>Agua a 20 °C (\(\sigma=0.0728\) N/m, \(\rho=998\) kg/m³): \(\lambda_m=1.71\) cm y \(v_{\min}=23.1\) cm/s; una onda de 10 cm viaja a 40.1 cm/s, una de 1 m a 1.250 m/s y una de 10 m a 3.951 m/s. Una de 5 mm, a 31.5 cm/s: las más cortas son <em>más rápidas</em>.</e>
+<e>El exponente respecto de \(\lambda\) pasa de \(-\tfrac12\) (capilaridad) a \(+\tfrac12\) (gravedad) pasando por 0 en el mínimo, lo que se ve en la tabla de sensibilidad.</e>
+<e>En la Luna (\(g=1.62\) m/s²) el mínimo está en \(\lambda_m=4.22\) cm: la gravedad menor ensancha la zona capilar (\(\lambda_m\propto g^{-1/2}\)).</e>
+</effects>
+<limits>
+<l>Dimensiones de cada término: \([g\lambda]=\mathsf L^2\mathsf T^{-2}\) y \([\sigma/(\rho\lambda)]=\mathsf M\mathsf T^{-2}/(\mathsf M\mathsf L^{-3}\mathsf L)=\mathsf L^2\mathsf T^{-2}\). ✓</l>
+<l>Para \(\lambda\) grande, \(v\to\sqrt{g\lambda/2\pi}\); para \(\lambda\) pequeño, \(v\to\sqrt{2\pi\sigma/(\rho\lambda)}\). La profundidad finita (olas en playas) y la viscosidad (que amortigua las ondas cortas) quedan fuera.</l>
+</limits>
+<explore sim="ondas-agua" title="Velocidad de fase de ondas en agua profunda: gravedad, capilaridad y el mínimo"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (λ = 10 cm): \(v=0.4009\) m/s. Con λ en el eje horizontal, la curva en log–log es una «V» suave con mínimo en λ = 1.713 cm, \(v_{\min}=0.2313\) m/s.</li>
+<li>Ponga λ = 10 m: \(v=3.951\) m/s y el exponente respecto de \(g\) es \(\approx0.5\), el de σ es \(\approx0\): domina la gravedad. Con λ = 5 mm, el exponente de σ sube a 0.461 y el de \(g\) baja a 0.039.</li>
+<li>Ponga σ = 0.01 N/m y vea cómo λₘ baja a 6.4 mm: un líquido con menos tensión superficial pasa antes a régimen gravitatorio.</li>
+</ul></div>
+</deriv>
+
+<deriv id="arrastre" title="Arrastre sobre una esfera: el número de Reynolds" tags="Dimensional, Fluidos">
+<goal>Qué forma tiene la fuerza de arrastre \(F\) que un fluido de densidad \(\rho\) y viscosidad \(\eta\) ejerce sobre una esfera de diámetro \(d\) que se mueve con velocidad \(v\), y cómo cambia su dependencia con \(v\) entre dos regímenes.</goal>
+<given>
+<g>El fluido es incompresible y la esfera avanza con velocidad constante, lejos de paredes.</g>
+</given>
+<step op="Listar magnitudes y dimensiones">
+\[F=f(d,v,\rho,\eta),\quad [F]=\mathsf M\mathsf L\mathsf T^{-2},\;[d]=\mathsf L,\;[v]=\mathsf L\mathsf T^{-1},\;[\rho]=\mathsf M\mathsf L^{-3},\;[\eta]=\mathsf M\mathsf L^{-1}\mathsf T^{-1}.\]
+<why>La viscosidad dinámica es fuerza por unidad de área dividida por gradiente de velocidad: Pa·s.</why>
+</step>
+<step op="Contar grupos: cinco magnitudes, rango 3, dos grupos">
+\[\Pi_1=\frac{F}{\rho v^2d^2},\qquad \Pi_2=\mathrm{Re}=\frac{\rho vd}{\eta}.\]
+<why>Con la base \(\{d,v,\rho\}\), cada una de las dos magnitudes restantes (\(F\) y \(\eta\)) da un grupo: para \(F\), \(\mathsf M^{1+c}\mathsf L^{1+a+b-3c}\mathsf T^{-2-b}=1\) da \(b=-2\), \(c=-1\), \(a=-2\).</why>
+</step>
+<step op="Aplicar el teorema Π">
+\[F=\rho v^2d^2\,f(\mathrm{Re}).\]
+<why>Toda la física del arrastre sobre esferas lisas queda en una función de una variable, \(f(\mathrm{Re})\), común a cualquier fluido, tamaño y velocidad con el mismo Re.</why>
+</step>
+<step op="Régimen viscoso (Re ≪ 1): la inercia no interviene">
+\[f=\frac{C}{\mathrm{Re}}\ \Longrightarrow\ F=\rho v^2d^2\cdot\frac{C\eta}{\rho vd}=C\,\eta\,v\,d.\]
+<why>Si ρ no debe aparecer, ρ debe cancelarse; eso fija \(f\propto1/\mathrm{Re}\). La fuerza es lineal en \(v\). El valor \(C=3\pi\) lo da la ley de Stokes (capítulo 15).</why>
+</step>
+<step op="Régimen inercial (Re ≫ 1): la viscosidad no interviene">
+\[f\to\text{constante}\ \Longrightarrow\ F=\tfrac12C_{\mathrm D}\,\rho v^2\,\tfrac\pi4d^2.\]
+<why>Si η no debe aparecer, \(f\) no depende de Re; se expresa con el coeficiente de arrastre \(C_{\mathrm D}\) y el área frontal. La fuerza es cuadrática en \(v\).</why>
+</step>
+<step op="Unir los dos regímenes con una correlación empírica">
+\[C_{\mathrm D}(\mathrm{Re})=\frac{24}{\mathrm{Re}}(1+0.27\,\mathrm{Re})^{0.43}+0.47\left[1-\mathrm e^{-0.04\,\mathrm{Re}^{0.38}}\right],\qquad F=C_{\mathrm D}\,\tfrac\pi8\rho v^2d^2.\]
+<why>Ajuste de datos de Cheng (2009), válido hasta Re ≈ \(2\times10^5\) (antes de la «crisis de arrastre»). Reproduce los dos límites: \(C_{\mathrm D}\to24/\mathrm{Re}\) (Stokes: \(F=3\pi\eta vd\)) y \(C_{\mathrm D}\to0.47\)-0.4 a Re grande.</why>
+</step>
+<result name="Forma de la fuerza de arrastre">\[F=\rho v^2d^2\,f\!\left(\frac{\rho vd}{\eta}\right)\ \longrightarrow\ \begin{cases}F=3\pi\,\eta\,v\,d &\mathrm{Re}\ll1\ F=\tfrac\pi8C_{\mathrm D}\,\rho v^2d^2&\mathrm{Re}\gg1\end{cases}\]</result>
+<vars>
+<v s="F" n="fuerza de arrastre" u="N"/>
+<v s="d" n="diámetro de la esfera" u="m"/>
+<v s="v" n="velocidad relativa" u="m s^-1"/>
+<v s="\rho" n="densidad del fluido" u="kg m^-3"/>
+<v s="\eta" n="viscosidad dinámica" u="Pa s"/>
+<v s="\mathrm{Re}" n="número de Reynolds" u="1"/>
+</vars>
+<effects>
+<e>En Stokes, \(F\propto v\): duplicar \(v\) duplica \(F\) (\(n=1.00\)). En régimen inercial, \(F\propto v^2\) (\(n\to2\)). Entre ambos, el exponente local pasa de 1 a 2: con Re = 663 es 1.73 y con Re = 6630, 2.03.</e>
+<e>Esfera de 1 cm en aire (\(\rho=1.2\), \(\eta=1.81\times10^{-5}\)) a 10 m/s: Re = 6630, \(C_{\mathrm D}=0.409\), \(F=1.93\) mN. A Re = 1 la correlación da \(C_{\mathrm D}=26.6\), un 10.9 % por encima de \(24/\mathrm{Re}\).</e>
+<e>La viscosidad pesa solo a Re bajo: multiplicar \(\eta\) por 2 a Re = 6630 cambia \(F\) menos del 1 % (\(n_\eta=-0.033\)), pero a Re ≪ 1 (\(n_\eta=1\)) duplica la fuerza.</e>
+</effects>
+<limits>
+<l>Dimensiones: \([\eta vd]=\mathsf M\mathsf L^{-1}\mathsf T^{-1}\cdot\mathsf L\mathsf T^{-1}\cdot\mathsf L=\mathsf M\mathsf L\mathsf T^{-2}\). ✓ \([\rho v^2d^2]=\mathsf M\mathsf L^{-3}\mathsf L^2\mathsf T^{-2}\mathsf L^2\). ✓</l>
+<l>Límites: para Re → 0, \(F/(3\pi\eta vd)\to1\); para Re grande, \(C_{\mathrm D}\to0.47\) con una dependencia lenta. Entre \(\mathrm{Re}\approx3\times10^5\) la capa límite se vuelve turbulenta y \(C_{\mathrm D}\) cae a ≈ 0.1 (esa «crisis» no la recoge este ajuste).</l>
+</limits>
+<explore sim="arrastre" title="Fuerza de arrastre sobre una esfera: de Stokes a régimen inercial"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (1 cm, 1 m/s, aire): Re = 663, \(C_{\mathrm D}=0.515\), exponente respecto de \(v\) = 1.727. Mueva <em>v</em> en el eje horizontal: la pendiente en log–log pasa de 1 (a la izquierda) a ≈ 2 (a la derecha).</li>
+<li>Pase a agua (\(\rho=1000\), \(\eta=10^{-3}\)) con \(d=0.1\) mm y \(v=10\) mm/s: Re = 1; la fuerza es 10.45 nN frente a 9.42 nN de Stokes: +10.9 %.</li>
+<li>Una gota de niebla (\(d=10\,\mu\)m) en aire a 1 cm/s: Re ≈ 0.007, \(F\) coincide con Stokes dentro de 0.08 %. Para una bacteria, el régimen es siempre de Stokes: su movimiento es «reversible».</li>
+</ul></div>
+</deriv>
+
+<section>
+<h2>Fuentes y lecturas</h2>
+<ul class="refs">
+<li>E. Buckingham, «On physically similar systems; illustrations of the use of dimensional equations», <em>Physical Review</em> 4 (1914) 345–376. El enunciado original del teorema.</li>
+<li>P. W. Bridgman, <em>Dimensional Analysis</em>, Yale University Press (1922). Tratamiento clásico y crítico.</li>
+<li>G. I. Taylor, «The formation of a blast wave by a very intense explosion», <em>Proceedings of the Royal Society A</em> 201 (1950) 159–186; L. I. Sedov, <em>Similarity and Dimensional Methods in Mechanics</em>, Academic Press (1959): la solución exacta y \(\xi\approx1.033\) para \(\gamma=1.4\).</li>
+<li>G. I. Barenblatt, <em>Scaling, Self-similarity, and Intermediate Asymptotics</em>, Cambridge University Press (1996): el capítulo sobre análisis dimensional y las «asíntotas intermedias».</li>
+<li>L. D. Landau y E. M. Lifshitz, <em>Fluid Mechanics</em>, 2.ª ed., Pergamon (1987), §§ 18–19 (semejanza, número de Reynolds) y § 62 (ondas de gravedad y capilares).</li>
+<li>M. Planck, «Über irreversible Strahlungsvorgänge», <em>Sitzungsberichte der Preussischen Akademie der Wissenschaften</em> (1899): origen de las unidades naturales. Valores de las constantes: CODATA 2018, E. Tiesinga <em>et al.</em>, <em>Reviews of Modern Physics</em> 93 (2021) 025010.</li>
+<li>N. Cheng, «Comparison of formulas for drag coefficient and settling velocity of spherical particles», <em>Powder Technology</em> 189 (2009) 395–398: la correlación de \(C_{\mathrm D}\) usada arriba.</li>
+</ul>
+</section>
+</template>

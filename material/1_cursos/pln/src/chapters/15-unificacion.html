@@ -1,0 +1,90 @@
+<template class="chapter-src" data-id="unificacion" data-num="15" data-title="Gramáticas con rasgos y unificación" data-part="Parte IV · Sintaxis" data-short="Categorías complejas; estructuras de rasgos; unificación y variables; concordancia de género, número y persona; subcategorización; más conocimiento en el léxico">
+<p class="lead">«Las niña lee» es una oración estructuralmente impecable para una gramática libre de contexto: SN seguido de SV. Lo que la hace incorrecta es que los rasgos no concuerdan. Las gramáticas con categorías complejas añaden a cada símbolo un paquete de rasgos y obligan, mediante la operación de unificación, a que los rasgos de los constituyentes sean compatibles. Así la concordancia deja de requerir una explosión de reglas.</p>
+
+<section>
+<h2>El problema: la concordancia</h2>
+<p>En español el artículo concuerda en género y número con el nombre («la niña», «las niñas»), y el verbo con el sujeto en número y persona («yo leo», «ellos leen»). Con una GLC sin rasgos solo se puede expresar multiplicando categorías: SN-fem-sg, SN-fem-pl, SN-masc-sg, SN-masc-pl, y lo mismo para determinantes, nombres, adjetivos y verbos. Si se añaden persona y caso, el número de reglas crece como el producto de los valores de cada rasgo. Una <span class="term">gramática con categorías complejas</span>, o <span class="term">gramática de unificación</span>, resuelve el problema añadiendo rasgos a las categorías.</p>
+</section>
+
+<section>
+<h2>Estructuras de rasgos y unificación</h2>
+<p>Una <b>estructura de rasgos</b> es un conjunto de pares atributo-valor, donde el valor es un átomo (<i>fem</i>, <i>sg</i>) o, a su vez, otra estructura. Se escribe en matrices:</p>
+<div class="mono-box">Det «la»      Nombre «niña»     SN
+[cat = Det]    [cat = N]         [cat = SN
+[agr = [gen=f, [agr = [gen=f,     agr = [gen=f, num=s, per=3]]
+        num=s]]        num=s]]</div>
+<p>La operación clave es la <span class="term">unificación</span> (\(\sqcup\)): combina la información de dos estructuras en una sola si son compatibles, y falla (\(\bot\)) si se contradicen. Reglas:</p>
+<ul>
+<li>Un rasgo que solo aparece en una estructura se conserva: \([\text{gen}=f]\sqcup[\text{num}=s]=[\text{gen}=f,\ \text{num}=s]\).</li>
+<li>Si aparece en las dos, los valores deben unificar: iguales sí, átomos distintos no: \([\text{num}=s]\sqcup[\text{num}=p]=\bot\).</li>
+<li>Los valores estructurados se unifican recursivamente.</li>
+<li>Una <b>variable</b> (\(?x\)) se liga al valor con el que se encuentra, en <i>todas</i> sus apariciones: \([a=?x,\ b=?x]\sqcup[a=1]=[a=1,\ b=1]\), pero \(\sqcup[a=1,\ b=2]=\bot\).</li>
+</ul>
+<div class="sim" data-sim="unificar" data-title="Unificar dos estructuras de rasgos"></div>
+<div class="sim-guide"><ul>
+<li>Pruebe los casos predefinidos y después escriba los suyos con el formato <code>[rasgo=valor, sub=[x=y], v=?variable]</code>.</li>
+<li>El caso de la variable compartida es la clave de la concordancia: <code>[num=?n]</code> en dos lugares obliga a los dos valores a ser el mismo.</li>
+<li>Las dieciocho unificaciones de prueba de la biblioteca coinciden con las de <code>nltk.featstruct</code> (apéndice de validación).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Una gramática con concordancia</h2>
+<p>Con rasgos, la concordancia se escribe una sola vez, con variables compartidas. Las reglas de la gramática del curso (versión con unificación):</p>
+<div class="mono-box">S  → SN[num=?n, per=?p]  SV[num=?n, per=?p]            sujeto y verbo concuerdan
+SN[num=?n, gen=?g] → Det[num=?n, gen=?g]  N[num=?n, gen=?g]   determinante y nombre concuerdan
+SN[num=s, per=?p] → Pron[per=?p]
+SV[num=?n, per=?p] → V[num=?n, per=?p, tr=no]            verbo intransitivo
+SV[num=?n, per=?p] → V[num=?n, per=?p, tr=sí]  SN         verbo transitivo: exige objeto</div>
+<p>Cada palabra del léxico aporta sus rasgos: «las» = Det[gen=f, num=p]; «niña» = N[gen=f, num=s]. Al intentar el SN «las niña», la unificación del número (\(p\sqcup s\)) falla y no se construye el constituyente. Además, el rasgo <i>tr</i> codifica la <b>subcategorización</b>: «duerme» (<i>tr=no</i>) no puede llevar objeto y «lee» (<i>tr=sí</i>) lo exige. Es lo que UNIR resume así: las gramáticas de unificación permiten <b>codificar más información en el léxico que en la gramática</b>, con lo que la gramática se simplifica y el análisis mejora.</p>
+<div class="sim" data-sim="concordancia" data-title="Concordancia de género, número y persona por unificación"></div>
+<div class="sim-guide"><ul>
+<li>Compare «la niña lee un libro» (se acepta) con «las niña lee un libro» (se rechaza con rasgos, aunque la estructura sea correcta).</li>
+<li>«Yo lee un libro» falla en persona: «yo» es 1.ª y «lee» es 3.ª. «Los gatos duerme» falla en número. «El niño duerme un libro» falla por subcategorización: un verbo intransitivo con objeto.</li>
+<li>Esta gramática no cubre la concordancia del atributo («la casa es rojas»), un ejercicio abierto.</li>
+</ul></div>
+<div class="box py"><p>El programa unifica estructuras con NLTK y analiza ocho oraciones con una gramática de rasgos (<code>FeatureChartParser</code>).</p>
+<div class="py" data-py="15-unificacion"></div></div>
+<div class="box read"><ul>
+<li><b>Unificación</b>: <code>[gen=fem, num=?n] ⊔ [num=sg]</code> da <code>[gen=fem, num=sg]</code>; <code>[num=sg] ⊔ [num=pl]</code> da <code>None</code> (falla); y <code>[a=?x, b=?x] ⊔ [a=1, b=2]</code> también falla.</li>
+<li><b>Concordancia</b>: acepta «la niña lee un libro», «los gatos duermen» y «yo leo un libro»; rechaza «las niña lee un libro» (género y número), «los gatos duerme» (número), «yo lee un libro» (persona), «el gato duerme un libro» (subcategorización) y «los niñas leen los libros» (género).</li>
+<li>Los juicios son los mismos que los del analizador JavaScript del curso (8 casos comprobados con juicios fijados a mano).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Más allá: gramáticas léxicas</h2>
+<p>La tendencia lleva a gramáticas con pocas reglas y léxicos muy ricos: <i>HPSG</i> (gramática de estructura sintagmática dirigida por el núcleo), <i>LFG</i> (gramática léxico-funcional, Bresnan y Kaplan, 1982, citada en la historia del capítulo 2), las gramáticas categoriales (CCG) y las de adjunción de árboles (TAG). Todas se apoyan en estructuras de rasgos y unificación, y tienen un poder de expresión algo mayor que las libres de contexto («ligeramente sensibles al contexto»). Fueron la base de los analizadores de alta precisión antes de la era neuronal y siguen empleándose para generar datos y validar estructuras.</p>
+<div class="box when"><p>El análisis con rasgos es excelente para <b>generar</b> texto correcto (concordancia garantizada) y para sistemas con vocabulario controlado. Sobre texto libre es frágil: un solo rasgo mal anotado hace fallar la oración entera, por lo que para texto real se prefieren los modelos estadísticos y neuronales.</p></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Las categorías complejas llevan rasgos (género, número, persona, subcategorización) y evitan multiplicar las reglas.</li>
+<li>La unificación combina estructuras compatibles y falla si se contradicen; las variables compartidas fuerzan la igualdad.</li>
+<li>La concordancia se expresa con una variable compartida en la regla; el léxico aporta los valores.</li>
+<li>La subcategorización se codifica con un rasgo del verbo.</li>
+<li>Las gramáticas de unificación llevan más información al léxico y simplifican la gramática.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Unifique \([\text{gen}=m,\ \text{num}=?n]\) con \([\text{num}=p]\).
+<details><summary>Respuesta</summary><p>\([\text{gen}=m,\ \text{num}=p]\).</p></details></li>
+<li><span class="lvl">Básico</span>¿Falla \([\text{per}=1]\sqcup[\text{per}=3]\)? ¿Qué oración rechazaría?
+<details><summary>Respuesta</summary><p>Sí, falla; rechazaría «yo lee» (sujeto de 1.ª persona con verbo de 3.ª).</p></details></li>
+<li><span class="lvl">Intermedio</span>Escriba la regla para que un adjetivo prenominal concuerde con su nombre.
+<details><summary>Respuesta</summary><p>SN[gen=?g, num=?n] → Adj[gen=?g, num=?n] N[gen=?g, num=?n] (con adjetivos invariables en género, como «grande», el rasgo gen del adjetivo queda sin especificar y unifica con cualquiera).</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué «grande» unifica con «niña» y con «niño» pero «roja» solo con «niña»?
+<details><summary>Respuesta</summary><p>«Grande» no tiene rasgo de género (\([\text{num}=s]\)), que unifica con \(f\) y con \(m\); «roja» tiene \([\text{gen}=f]\), que falla ante \(m\).</p></details></li>
+<li><span class="lvl">Avanzado</span>La unificación es asociativa y conmutativa. Explique por qué importa para analizar.
+<details><summary>Respuesta</summary><p>Porque el resultado de combinar los rasgos de varios constituyentes no depende del orden en que se unifiquen, de modo que el analizador (CKY, Earley) puede combinar los hijos de cualquier regla en el orden más conveniente y obtener la misma estructura o el mismo fallo.</p></details></li>
+</ol>
+<h3>Autoevaluación</h3>
+<div class="sim" data-sim="quiz" data-cap="unificacion" data-title="Autoevaluación del capítulo 15"></div>
+<div class="box links"><ul>
+<li><a href="https://www.nltk.org/book/ch09.html">Bird, Klein y Loper — NLTK Book, cap. 9 «Building feature-based grammars»</a><small>Estructuras de rasgos, unificación y gramáticas de rasgos con código ejecutable.</small></li>
+<li><a href="https://web.stanford.edu/~jurafsky/slp3/">Jurafsky y Martin — Speech and Language Processing, capítulo sobre gramáticas de rasgos</a><small>Tratamiento en la 2.ª edición (cap. 15 «Features and unification»).</small></li>
+<li><a href="https://langsci-press.org/catalog/book/255">Müller — Grammatical Theory (libro de acceso abierto)</a><small>Compara HPSG, LFG, CCG y otras gramáticas basadas en rasgos y unificación.</small></li>
+</ul></div>
+</section>
+</template>

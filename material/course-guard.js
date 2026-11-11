@@ -62,7 +62,9 @@
         "kids": ["KIDS-2026", "FISICA-KIDS-26", "EXPLORADORES-26", "OBANDO-KIDS-26"],
         "historia": ["HISTORIA-2026", "CIENCIA-HIST-26", "OBANDO-HISTORIA-26", "SABER-2026", "BIENVENIDA-2026"],
         "resultados": ["INGFISICA2026", "RESULTADOS-2026", "RA-INGFISICA-26", "RES-IF-26"],
-        "pec": ["LIBRE", "PEC-NOVIRAO", "NOVIRAO-2026"]
+        "pec": ["LIBRE", "PEC-NOVIRAO", "NOVIRAO-2026"],
+        "deducciones": ["DEDUCCIONES-2026", "FORMULA-26", "OBANDO-DED-26", "DED-F42M-26"],
+        "pln": ["PLN-2026", "MAQUINAS-LEEN-26", "NLP-IA-26", "PLN-L37N-26"]
     };
 
     function getCurrentCourseId() {
@@ -80,9 +82,13 @@
             if (raw === 'kids') return 'kids';
             if (raw === 'resultados' || raw === 'resultado') return 'resultados';
             if (raw === 'pec' || raw === 'novirao') return 'pec';
+            if (raw === 'deducciones' || raw === 'formula-por-dentro') return 'deducciones';
+            if (raw === 'pln' || raw === 'maquinas-que-leen') return 'pln';
             return raw;
         }
 
+        if (p.includes('deducciones') || p.includes('formula-por-dentro')) return 'deducciones';
+        if (/(?:^|\/)pln(?:\/|\.|$)/.test(p) || p.includes('maquinas-que-leen')) return 'pln';
         if (p.includes('historia') || p.includes('saber')) return 'historia';
         if (p.includes('solido') || p.includes('estado-solido')) return 'solido';
         if (p.includes('arbitraje') || p.includes('manu_squash_arbitraje')) return 'squash_arbitraje';
@@ -119,6 +125,8 @@
         if (p.includes('/pec/') || p.includes('tejiendo-pec') || p.includes('pec')) return 'pec';
 
         const t = (document.title || '').toLowerCase();
+        if (t.includes('la fórmula por dentro') || t.includes('la formula por dentro')) return 'deducciones';
+        if (t.includes('máquinas que leen') || t.includes('maquinas que leen')) return 'pln';
         if (t.includes('historia') || t.includes('llegamos a saber') || t.includes('saber')) return 'historia';
         if ((t.includes('resultado') && t.includes('aprendizaje')) || t.includes('resultados de aprendizaje')) return 'resultados';
         if (t.includes('tejiendo el pec') || (t.includes('pec') && t.includes('novirao')) || t.includes('proceso educativo comunitario')) return 'pec';
@@ -1751,14 +1759,15 @@
     function handleSquashClick(e) {
         if (isUnlocked()) return;
 
-        const navBtn = e.target.closest('.nav button[data-go]');
+        const navBtn = e.target.closest('[data-go]');
         if (navBtn) {
             const goTarget = navBtn.getAttribute('data-go');
             const lockedNavs = ['editor', 'anatomia', 'fisiologia', 'biomecanica', 'lesiones', 'fundamentos'];
             if (lockedNavs.includes(goTarget)) {
                 e.preventDefault();
                 e.stopPropagation();
-                const name = navBtn.textContent.replace('🔒', '').trim();
+                const heading = navBtn.querySelector('h3');
+                const name = (heading ? heading.textContent : navBtn.textContent).replace('🔒', '').trim();
                 openPaywall(name);
                 return;
             }

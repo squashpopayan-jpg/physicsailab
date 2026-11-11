@@ -1,0 +1,252 @@
+<template class="chapter-src" data-id="electrostatica" data-num="20" data-title="Electrostática" data-part="Parte V · Electromagnetismo" data-short="El campo de un anillo y de un disco cargados, la ley de Gauss en la esfera con su energía, el condensador de placas, el campo del dipolo y el método de las imágenes">
+<p class="lead">La electrostática se resume en dos ideas: la ley de Coulomb (o, equivalentemente, la ley de Gauss) y el principio de superposición. Con ellas se calculan campos integrando sobre las cargas, o aprovechando la simetría con la ley de Gauss; el potencial \(V\) con \(\mathbf E=-\nabla V\) convierte el problema vectorial en uno escalar, y la energía del campo \(\tfrac12\varepsilon_0E^2\) permite calcular la energía almacenada. Para los conductores, la unicidad de las soluciones de la ecuación de Laplace abre el método de las imágenes. Los resultados alimentan el capítulo 21 (circuitos) y el 24 (dieléctricos).</p>
+
+<deriv id="campo-anillo-disco" title="El campo de un anillo y de un disco cargados" tags="Electrostática, Superposición">
+<goal>El campo eléctrico sobre el eje de un anillo de radio \(R\) y carga \(Q\), y el de un disco uniformemente cargado, junto con sus límites.</goal>
+<given>
+<g>Ley de Coulomb y superposición: \(\mathrm d\mathbf E=\dfrac{1}{4\pi\varepsilon_0}\dfrac{\mathrm dq}{r'^2}\,\hat{\mathbf r}'\), con \(r'\) la distancia del elemento de carga al punto de observación.</g>
+</given>
+<step op="Anillo: distancia de cada elemento al punto del eje a altura \(z\)">
+\[r'=\sqrt{z^2+R^2},\qquad\mathrm dE_z=\frac{\mathrm dq}{4\pi\varepsilon_0r'^2}\cos\alpha,\quad\cos\alpha=\frac z{r'}.\]
+<why>Las componentes perpendiculares al eje se cancelan por simetría entre elementos diametralmente opuestos.</why>
+</step>
+<step op="Sumar sobre todo el anillo (\(\int\mathrm dq=Q\))">
+\[E_\text{anillo}=\frac{1}{4\pi\varepsilon_0}\frac{Qz}{(z^2+R^2)^{3/2}}.\]
+</step>
+<step op="Disco: anillos de radio \(s\) y carga \(\mathrm dq=\sigma\,2\pi s\,\mathrm ds\), con \(\sigma=Q/\pi R^2\)">
+\[E_\text{disco}=\frac{\sigma z}{2\varepsilon_0}\int_0^R\frac{s\,\mathrm ds}{(z^2+s^2)^{3/2}}.\]
+</step>
+<step op="Integral elemental">
+\[\int_0^R\frac{s\,\mathrm ds}{(z^2+s^2)^{3/2}}=\frac1z-\frac1{\sqrt{z^2+R^2}}\ \Longrightarrow\ E_\text{disco}=\frac\sigma{2\varepsilon_0}\left(1-\frac z{\sqrt{z^2+R^2}}\right).\]
+</step>
+<step op="Límites">
+\[R\to\infty:\ E=\frac\sigma{2\varepsilon_0}\ \text{(plano infinito)};\qquad z\gg R:\ E\to\frac{Q}{4\pi\varepsilon_0z^2}\ \text{(carga puntual)}.\]
+</step>
+<result name="Campo sobre el eje">\[E_\text{anillo}=\frac{kQz}{(z^2+R^2)^{3/2}},\qquad E_\text{disco}=\frac\sigma{2\varepsilon_0}\left(1-\frac z{\sqrt{z^2+R^2}}\right).\]</result>
+<vars>
+<v s="E" n="campo eléctrico sobre el eje" u="V m^-1"/>
+<v s="Q" n="carga total" u="C"/>
+<v s="R" n="radio" u="m"/>
+<v s="z" n="distancia al centro" u="m"/>
+<v s="\sigma" n="densidad superficial de carga" u="C m^-2"/>
+<v s="\varepsilon_0" n="permitividad del vacío" u="F m^-1"/>
+<v s="k" n="constante de Coulomb \(1/4\pi\varepsilon_0\)" u="N m^2 C^-2"/>
+</vars>
+<effects>
+<e>Un anillo de 5 cm de radio con 10 nC: a \(z=5\) cm, \(E=12\,710\) V/m; el campo es nulo en el centro, alcanza un máximo de 13 837 V/m en \(z=R/\sqrt2=3.54\) cm y decae como \(1/z^2\): a 50 cm es 354.2 V/m, muy cerca de la carga puntual (359.5 V/m, 1.5 % más).</e>
+<e>El disco de la misma carga y radio, a 5 cm: 21 059 V/m (el campo de un plano sería 71 900 V/m); acercándose a \(z=0.1\) cm, 70 463 V/m (98 % del plano) y a \(z=1\) cm, 57 800 V/m. El campo es lineal en \(Q\) (20 nC: el doble) y con un radio doble (\(\sigma\) cuatro veces menor) a 5 cm el disco da 9936 V/m.</e>
+<e>La discontinuidad del campo al atravesar una superficie cargada vale \(\sigma/\varepsilon_0\): cruza el plano de un lado (\(+\sigma/2\varepsilon_0\)) al otro (\(-\sigma/2\varepsilon_0\)).</e>
+</effects>
+<limits>
+<l>Dimensiones: \([kQz/(z^2+R^2)^{3/2}]=\mathrm{N\,m^2C^{-2}\cdot C\,m/m^3}=\mathrm{N\,C^{-1}}=\mathrm{V\,m^{-1}}\). ✓</l>
+<l>Solo sobre el eje (fuera de él las integrales son elípticas). La densidad se supone uniforme y las cargas fijas (electrostática).</l>
+</limits>
+<explore sim="anillo-disco" title="Campo sobre el eje de un anillo y un disco cargados"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (10 nC, \(R=5\) cm, \(z=5\) cm): anillo 12710.3 V/m, disco 21059.1 V/m, plano 71900.4 V/m y carga puntual 35950.2 V/m.</li>
+<li>Seleccione \(z\) en el eje (log–log): para \(z\gg R\) todos tienden a la pendiente −2 del campo de una carga puntual; para \(z\ll R\) el disco se acerca al plano.</li>
+</ul></div>
+</deriv>
+
+<deriv id="gauss-esfera" title="La ley de Gauss: campo, potencial y energía de una esfera cargada" tags="Electrostática, Gauss">
+<goal>El campo y el potencial de una esfera con carga uniforme en su volumen, y su energía electrostática total.</goal>
+<given>
+<g>Ley de Gauss: \(\oint\mathbf E\cdot\mathrm d\mathbf A=Q_\text{enc}/\varepsilon_0\). Potencial: \(V(r)=-\int_\infty^r E\,\mathrm dr'\) con \(V(\infty)=0\).</g>
+<g>Densidad de energía del campo: \(u=\tfrac12\varepsilon_0E^2\) (se justifica en la deducción del condensador).</g>
+</given>
+<step op="Simetría esférica: \(\mathbf E=E(r)\hat r\), superficie gaussiana de radio \(r\)">
+\[E(r)\,4\pi r^2=\frac{Q_\text{enc}(r)}{\varepsilon_0}.\]
+</step>
+<step op="Carga encerrada: dentro (\(r<R\)) crece como el volumen; fuera es toda la carga">
+\[Q_\text{enc}=Q\frac{r^3}{R^3}\ (r<R),\qquad Q_\text{enc}=Q\ (r\ge R)\ \Longrightarrow\ E=\begin{cases}\dfrac{kQ\,r}{R^3}&r<R\\\\dfrac{kQ}{r^2}&r\ge R\end{cases}\]
+</step>
+<step op="Potencial (continuo en \(r=R\))">
+\[V(r\ge R)=\frac{kQ}r,\qquad V(r<R)=\frac{kQ}R+\int_r^R\frac{kQr'}{R^3}\mathrm dr'=\frac{kQ\,(3R^2-r^2)}{2R^3}.\]
+</step>
+<step op="Energía como integral de la densidad de energía del campo">
+\[U=\int\tfrac12\varepsilon_0E^2\,\mathrm dV=\underbrace{\frac{kQ^2}{10R}}_{r<R}+\underbrace{\frac{kQ^2}{2R}}_{r>R}=\frac{3kQ^2}{5R}.\]
+</step>
+<result name="Esfera con carga uniforme">\[E=\frac{kQr}{R^3}\ (r<R),\ \ \frac{kQ}{r^2}\ (r>R);\qquad V(0)=\frac{3kQ}{2R};\qquad U=\frac{3kQ^2}{5R}.\]</result>
+<vars>
+<v s="E" n="campo eléctrico" u="V m^-1"/>
+<v s="V" n="potencial" u="V"/>
+<v s="Q" n="carga total" u="C"/>
+<v s="R" n="radio de la esfera" u="m"/>
+<v s="r" n="distancia al centro" u="m"/>
+<v s="k" n="constante de Coulomb" u="N m^2 C^-2"/>
+<v s="U" n="energía electrostática" u="J"/>
+<v s="\varepsilon_0" n="permitividad del vacío" u="F m^-1"/>
+</vars>
+<effects>
+<e>Esfera de \(R=5\) cm con \(Q=10\) nC: en \(r=2\) cm, \(E=14\,380\) V/m y \(V=2552\) V; el campo es máximo en la superficie (35 950 V/m, con \(V_s=1797.5\) V), cae a 8988 V/m en \(r=10\) cm; el potencial del centro es \(3kQ/2R=2696.3\) V (1.5 veces el de la superficie). La energía es 10.79 µJ.</e>
+<e>\(U\propto Q^2/R\): con el doble de carga, 43.14 µJ (cuatro veces mayor); con un radio doble, 5.39 µJ. A \(R=10\) cm el campo en \(r=5\) cm es 4494 V/m.</e>
+<e>Si la energía en reposo del electrón fuera solo la del campo de una esfera uniforme, \(mc^2=3ke^2/5R\) daría \(R=1.69\) fm; el radio clásico habitual \(r_e=ke^2/mc^2=2.82\) fm elimina el factor 3/5. Para una carga puntual \(U\to\infty\): la autoenergía clásica diverge.</e>
+</effects>
+<limits>
+<l>Dimensiones: \([kQ^2/R]=\mathrm{N\,m^2C^{-2}C^2/m}=\mathrm J\). ✓</l>
+<l>Distribución uniforme en el volumen (un conductor tendría toda la carga en la superficie, con \(E=0\) adentro y \(U=kQ^2/2R\)). La ley de Gauss vale siempre, pero solo da \(E\) con simetría esférica, cilíndrica o plana.</l>
+</limits>
+<explore sim="esfera-gauss" title="Esfera cargada: campo, potencial y energía según el radio"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (10 nC, \(R=5\) cm, \(r=2\) cm): \(E=14380.1\) V/m, \(V=2552.46\) V, \(V_s=1797.51\) V y \(U=1.07851\times10^{-5}\) J.</li>
+<li>Seleccione \(r\) en el eje (log–log): \(E\) sube con pendiente +1 hasta \(R\) y baja con pendiente −2; el potencial decae como \(1/r\) fuera.</li>
+</ul></div>
+</deriv>
+
+<deriv id="condensador" title="El condensador de placas paralelas y la energía del campo" tags="Electrostática, Condensadores">
+<goal>La capacidad de dos placas paralelas, la energía que almacenan y la densidad de energía del campo.</goal>
+<given>
+<g>Ley de Gauss para una placa grande: \(E=\sigma/2\varepsilon_0\) a cada lado; los campos de las dos placas con cargas opuestas se suman entre ellas y se anulan fuera.</g>
+<g>Potencial entre placas separadas \(d\): \(V=\int E\,\mathrm dx\). Trabajo para mover una carga \(\mathrm dq\) con tensión \(V\): \(\mathrm dW=V\,\mathrm dq\).</g>
+</given>
+<step op="Campo entre las placas">
+\[E=\frac\sigma{2\varepsilon_0}+\frac\sigma{2\varepsilon_0}=\frac\sigma{\varepsilon_0}=\frac Q{\varepsilon_0A}.\]
+</step>
+<step op="Tensión y capacidad">
+\[V=Ed=\frac{Qd}{\varepsilon_0A}\ \Longrightarrow\ C=\frac QV=\frac{\varepsilon_0A}d.\]
+</step>
+<step op="Energía de carga: llevar \(Q\) cargando de 0 a \(Q\), con \(V=q/C\)">
+\[U=\int_0^Q\frac qC\,\mathrm dq=\frac{Q^2}{2C}=\tfrac12CV^2.\]
+</step>
+<step op="Densidad de energía (volumen \(Ad\), \(V=Ed\))">
+\[u=\frac UAd=\frac{\tfrac12(\varepsilon_0A/d)\,E^2d^2}{Ad}=\tfrac12\varepsilon_0E^2.\]
+<why>Resultado general: la energía está en el campo, con densidad \(\tfrac12\varepsilon_0E^2\) en cualquier configuración. Con un dieléctrico lineal de constante \(\varepsilon_r\), \(C\) y \(u\) se multiplican por \(\varepsilon_r\) (capítulo 24).</why>
+</step>
+<result name="Condensador de placas">\[C=\frac{\varepsilon_0A}d,\qquad U=\tfrac12CV^2,\qquad u=\tfrac12\varepsilon_0E^2.\]</result>
+<vars>
+<v s="C" n="capacidad" u="F"/>
+<v s="A" n="área de las placas" u="m^2"/>
+<v s="d" n="separación" u="m"/>
+<v s="Q" n="carga" u="C"/>
+<v s="V" n="tensión" u="V"/>
+<v s="U" n="energía almacenada" u="J"/>
+<v s="u" n="densidad de energía" u="J m^-3"/>
+<v s="E" n="campo entre placas" u="V m^-1"/>
+<v s="\sigma" n="densidad superficial de carga" u="C m^-2"/>
+<v s="\varepsilon_0" n="permitividad del vacío" u="F m^-1"/>
+</vars>
+<effects>
+<e>Placas de 100 cm² separadas 1 mm con 100 V: \(C=88.54\) pF, \(Q=8.854\) nC, \(E=10^5\) V/m, \(U=0.4427\) µJ y \(u=0.04427\) J/m³. Con \(d=0.1\) mm: \(C=885.4\) pF (diez veces mayor), \(E=10^6\) V/m, \(U=4.427\) µJ y \(u=4.427\) J/m³ (cien veces mayor, \(\propto E^2\)).</e>
+<e>Con el área doble, \(C\) y \(U\) se duplican (177.1 pF y 0.8854 µJ); con la tensión doble, \(Q\) se duplica y \(U\) se cuadruplica (1.771 µJ). A 3000 V y 1 mm, \(E=3\times10^6\) V/m, el campo de ruptura del aire: \(U=0.3984\) mJ, \(u=39.84\) J/m³.</e>
+<e>Con un dieléctrico de \(\varepsilon_r=5\) a tensión fija: \(C=442.7\) pF y \(U=2.214\) µJ. Un condensador de 1 cm² con 0.01 mm de agua (\(\varepsilon_r=80\)) y 1 V: \(C=7.083\) nF.</e>
+</effects>
+<limits>
+<l>Dimensiones: \([\varepsilon_0A/d]=\mathrm{F\,m^{-1}\,m^2/m}=\mathrm F\); \(\tfrac12CV^2\) es una energía. ✓</l>
+<l>Placas grandes frente a \(d\) (se ignoran los efectos de borde); el aire se ioniza por encima de ≈ 3 MV/m (chispa), lo que limita \(U/\text{volumen}\) a unos 40 J/m³. Los condensadores comerciales usan dieléctricos de gran \(\varepsilon_r\) y láminas muy delgadas.</l>
+</limits>
+<explore sim="capacitor" title="Condensador de placas: capacidad, carga, energía y campo"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (100 cm², 1 mm, 100 V, \(\varepsilon_r=1\)): \(C=8.85419\times10^{-11}\) F, \(Q=8.85419\times10^{-9}\) C, \(U=4.42709\times10^{-7}\) J, \(E=10^5\) V/m y \(u=0.0442709\) J/m³.</li>
+<li>Seleccione \(d\) en el eje (log–log): \(C\) cae con pendiente −1, \(U\) también y \(u\) con pendiente −2 (a \(V\) fijo).</li>
+</ul></div>
+</deriv>
+
+<deriv id="dipolo" title="El campo de un dipolo eléctrico" tags="Electrostática, Multipolos">
+<goal>El potencial y el campo lejanos de dos cargas opuestas \(\pm q\) separadas una distancia \(a\), en función del momento dipolar \(p=qa\).</goal>
+<given>
+<g>Potencial de una carga puntual \(kq/|\mathbf r-\mathbf r'|\) y superposición. Desarrollo de Legendre: \(\dfrac1{|\mathbf r-\mathbf r'|}=\sum_{n=0}^\infty\dfrac{r'^n}{r^{n+1}}P_n(\cos\gamma)\) para \(r>r'\).</g>
+</given>
+<step op="Cargas \(+q\) en \(+a/2\) y \(-q\) en \(-a/2\) sobre el eje \(z\)">
+\[V=kq\left[\frac1{|\mathbf r-\tfrac a2\hat z|}-\frac1{|\mathbf r+\tfrac a2\hat z|}\right].\]
+</step>
+<step op="Usar el desarrollo con \(r'=a/2\) y \(P_1(\cos\theta)=\cos\theta\) (los términos pares se cancelan)">
+\[V=kq\left[\frac{a\cos\theta}{r^2}+O\!\left(\frac{a^3}{r^4}\right)\right]\ \Longrightarrow\ V=\frac{kp\cos\theta}{r^2}.\]
+</step>
+<step op="Campo \(\mathbf E=-\nabla V\) en coordenadas polares">
+\[E_r=-\frac{\partial V}{\partial r}=\frac{2kp\cos\theta}{r^3},\qquad E_\theta=-\frac1r\frac{\partial V}{\partial\theta}=\frac{kp\sin\theta}{r^3}.\]
+</step>
+<step op="Módulo del campo, y par y energía en un campo externo \(\mathbf E_0\)">
+\[|\mathbf E|=\frac{kp}{r^3}\sqrt{1+3\cos^2\theta},\qquad\boldsymbol\tau=\mathbf p\times\mathbf E_0,\qquad U=-\mathbf p\cdot\mathbf E_0.\]
+</step>
+<result name="Dipolo eléctrico">\[V=\frac{kp\cos\theta}{r^2},\quad E_r=\frac{2kp\cos\theta}{r^3},\quad E_\theta=\frac{kp\sin\theta}{r^3}.\]</result>
+<vars>
+<v s="p" n="momento dipolar \(qa\)" u="C m"/>
+<v s="V" n="potencial" u="V"/>
+<v s="E_r,\,E_\theta" n="componentes del campo" u="V m^-1"/>
+<v s="r" n="distancia" u="m"/>
+<v s="\theta" n="ángulo respecto del eje" u="rad"/>
+<v s="k" n="constante de Coulomb" u="N m^2 C^-2"/>
+<v s="q" n="carga" u="C"/>
+<v s="a" n="separación entre cargas" u="m"/>
+<v s="E_0" n="campo externo" u="V m^-1"/>
+<v s="\tau" n="par de fuerzas" u="N m"/>
+<v s="U" n="energía de orientación" u="J"/>
+</vars>
+<effects>
+<e>La molécula de agua (\(p=6.17\times10^{-30}\) C·m): a 1 nm sobre el eje (\(\theta=0\)), \(E=1.109\times10^{8}\) V/m y \(V=0.0555\) V; en el plano ecuatorial (\(\theta=90^\circ\)) el campo es la mitad (5.545×10⁷ V/m) y \(V=0\). A 45°, \(E_r=7.842\times10^7\), \(E_\theta=3.921\times10^7\) y \(|E|=8.768\times10^7\) V/m.</e>
+<e>Decae como \(1/r^3\): a 2 nm el campo axial es 8 veces menor (\(1.386\times10^7\) V/m) y a 0.1 nm, mil veces mayor (\(1.109\times10^{11}\) V/m), del orden del campo intramolecular. Un dipolo cae más rápido que una carga (\(1/r^2\)) porque las dos cargas se compensan casi por completo.</e>
+<e>La energía de orientación en un campo de \(10^6\) V/m es \(pE_0=3.85\times10^{-5}\) eV, mil veces menor que \(kT=0.0259\) eV a 300 K: la agitación térmica orienta muy poco las moléculas (capítulo 24).</e>
+</effects>
+<limits>
+<l>Dimensiones: \([kp/r^3]=\mathrm{N\,m^2C^{-2}\,C\,m/m^3}=\mathrm{N\,C^{-1}}\). ✓</l>
+<l>Vale para \(r\gg a\) (error relativo \(\sim(a/r)^2\)); a distancias comparables el dipolo es una aproximación y hay que sumar los cuadrupolos y términos superiores. El campo cerca del dipolo (\(r\lesssim a\)) tiene además un término de contacto \(-\mathbf p\delta(\mathbf r)/3\varepsilon_0\).</l>
+</limits>
+<explore sim="dipolo" title="Campo y potencial de un dipolo: dependencia con la distancia y el ángulo"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (\(p=6.17\times10^{-30}\) C·m, 1 nm, 45°): \(E_r=7.84227\times10^7\) V/m, \(E_\theta=3.92113\times10^7\) V/m, \(|E|=8.76792\times10^7\) V/m y \(V=0.0392113\) V.</li>
+<li>Seleccione θ en el eje: \(E_r\) es máximo en 0° y nulo en 90°; \(E_\theta\) es máximo en 90°.</li>
+</ul></div>
+</deriv>
+
+<deriv id="imagenes" title="El método de las imágenes: una carga frente a un plano conductor" tags="Electrostática, Laplace">
+<goal>La fuerza sobre una carga \(q\) a distancia \(d\) de un plano conductor a tierra, y la carga inducida en el plano.</goal>
+<given>
+<g>Teorema de unicidad: una solución de \(\nabla^2V=0\) que cumpla las condiciones de contorno (aquí \(V=0\) sobre el plano) es la solución. El conductor tiene \(V=\text{cte}\) y \(E_\perp=\sigma/\varepsilon_0\) en la superficie.</g>
+</given>
+<step op="Sustituir el plano por una carga imagen \(-q\) a distancia \(d\) al otro lado">
+\[V(\rho,z)=kq\left[\frac1{\sqrt{\rho^2+(z-d)^2}}-\frac1{\sqrt{\rho^2+(z+d)^2}}\right],\quad V(\rho,0)=0.\]
+<why>En \(z>0\) este potencial cumple Laplace salvo en la carga real y satisface \(V=0\) en el plano: por unicidad es la solución.</why>
+</step>
+<step op="Fuerza sobre \(q\): atracción de la imagen a distancia \(2d\)">
+\[F=\frac{kq^2}{(2d)^2}=\frac{kq^2}{4d^2}.\]
+</step>
+<step op="Densidad de carga inducida \(\sigma=-\varepsilon_0\,\partial V/\partial z|_{z=0}\)">
+\[\sigma(\rho)=-\frac{q\,d}{2\pi\,(\rho^2+d^2)^{3/2}}.\]
+</step>
+<step op="Carga total inducida">
+\[Q_\text{ind}=\int_0^\infty\sigma\,2\pi\rho\,\mathrm d\rho=-qd\int_0^\infty\frac{\rho\,\mathrm d\rho}{(\rho^2+d^2)^{3/2}}=-q.\]
+</step>
+<step op="Trabajo para llevar \(q\) hasta el infinito">
+\[W=\int_d^\infty\frac{kq^2}{4z^2}\,\mathrm dz=\frac{kq^2}{4d}.\]
+<why>Es la mitad de la energía de dos cargas \(\pm q\) separadas \(2d\), porque el campo solo existe en un semiespacio.</why>
+</step>
+<result name="Método de las imágenes">\[F=\frac{kq^2}{4d^2},\qquad\sigma(\rho)=-\frac{qd}{2\pi(\rho^2+d^2)^{3/2}},\qquad Q_\text{ind}=-q.\]</result>
+<vars>
+<v s="q" n="carga" u="C"/>
+<v s="d" n="distancia al plano" u="m"/>
+<v s="\rho" n="distancia al pie de la perpendicular" u="m"/>
+<v s="F" n="fuerza de atracción" u="N"/>
+<v s="\sigma" n="densidad de carga inducida" u="C m^-2"/>
+<v s="W" n="trabajo para retirar la carga" u="J"/>
+<v s="k" n="constante de Coulomb" u="N m^2 C^-2"/>
+<v s="V" n="potencial" u="V"/>
+<v s="Q_\text{ind}" n="carga inducida total" u="C"/>
+</vars>
+<effects>
+<e>Con \(q=10\) nC a \(d=5\) cm: \(F=89.88\) µN, \(\sigma(0)=-0.6366\) µC/m² y \(W=4.494\) µJ; a \(\rho=5\) cm (igual que \(d\)), \(\sigma=-0.2251\) µC/m² (35.4 % del máximo, \(2^{-3/2}\)). La mitad de la carga inducida está dentro de \(\rho=\sqrt3\,d=8.66\) cm.</e>
+<e>\(F\propto q^2/d^2\): con \(q=20\) nC o con \(d=2.5\) cm, la fuerza se cuadruplica (359.5 µN). Con \(d=10\) cm, \(F=22.47\) µN y \(\sigma(0)=-0.159\) µC/m² (cuatro veces menor, \(\propto1/d^2\)).</e>
+<e>Un electrón a 1 nm de un metal es atraído por la imagen con una energía \(W=ke^2/4d=0.360\) eV (el potencial imagen de Schottky), que baja la barrera de emisión en emisión de campo y fotoemisión.</e>
+</effects>
+<limits>
+<l>Dimensiones: \([kq^2/d^2]=\mathrm N\) y \(qd/\rho^3\) es una carga por área. ✓</l>
+<l>Conductor ideal conectado a tierra (o sin carga neta, o con carga fija si se añade una carga imagen centrada); el método funciona sólo con geometrías de alta simetría (planos, esferas, cilindros). La fuerza de imagen no es la interacción con una carga real: la energía es la mitad.</l>
+</limits>
+<explore sim="imagenes" title="Carga frente a un plano conductor: fuerza, carga inducida y trabajo"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (10 nC, \(d=5\) cm, \(\rho=0\)): \(F=8.98755\times10^{-5}\) N, \(\sigma=-6.36620\times10^{-7}\) C/m², \(W=4.49378\times10^{-6}\) J y \(\rho_{1/2}=8.66025\) cm.</li>
+<li>Seleccione \(d\) en el eje (log–log): \(F\) cae con pendiente −2, \(W\) con pendiente −1 y \(\sigma(0)\) con pendiente −2.</li>
+</ul></div>
+</deriv>
+
+<section>
+<h2>Fuentes y lecturas</h2>
+<ul class="refs">
+<li>D. J. Griffiths, <em>Introduction to Electrodynamics</em>, 4.ª ed., Cambridge University Press (2017): caps. 2 y 3 (campo, Gauss, potencial, imágenes) y § 4.1 (dipolos).</li>
+<li>J. D. Jackson, <em>Classical Electrodynamics</em>, 3.ª ed., Wiley (1999): caps. 1 y 2 (electrostática, problemas de contorno, método de las imágenes).</li>
+<li>E. M. Purcell y D. J. Morin, <em>Electricity and Magnetism</em>, 3.ª ed., Cambridge University Press (2013): caps. 1–3.</li>
+<li>R. P. Feynman, R. B. Leighton y M. Sands, <em>The Feynman Lectures on Physics</em>, vol. II, caps. 4–8.</li>
+<li>C. A. Coulomb, <em>Mémoires de l'Académie Royale des Sciences</em> (1785–1789); C. F. Gauss (1835); W. Schottky, <em>Zeitschrift für Physik</em> 14 (1923) 63 (potencial imagen).</li>
+<li>Datos: CODATA 2018 (\(\varepsilon_0\), \(e\), \(m_e\)); NIST (momentos dipolares).</li>
+</ul>
+</section>
+</template>

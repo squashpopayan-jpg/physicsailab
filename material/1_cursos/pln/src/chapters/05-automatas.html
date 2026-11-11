@@ -1,0 +1,101 @@
+<template class="chapter-src" data-id="automatas" data-num="5" data-title="Autómatas finitos y expresiones regulares" data-part="Parte II · Las palabras" data-short="Reconocer cadenas con estados y transiciones; AFN y AFD; construcción de subconjuntos; equivalencia con las expresiones regulares; morfotáctica; lo que un autómata finito no puede contar">
+<p class="lead">Un autómata finito es la máquina más sencilla que decide si una cadena pertenece a un lenguaje: lee símbolo a símbolo, cambia de estado y al final dice sí o no. Con tan poco se reconocen palabras bien formadas, se escriben las expresiones regulares y se modela cómo se pegan los morfemas. Y su límite, no poder contar, es justo lo que obliga a inventar las gramáticas de la parte IV.</p>
+
+<section>
+<h2>Máquinas de estados finitos</h2>
+<p>Una <span class="term">máquina de estados finitos</span> o autómata finito es un modelo de computación que produce una salida a partir de una entrada mediante transiciones entre estados. Sus estados son los vértices de un grafo; las aristas se etiquetan con el símbolo que provoca el cambio. El estado inicial se llama \(q_0\) y los estados finales se dibujan con doble círculo. Formalmente:</p>
+<div class="eq key" data-name="Autómata finito determinista">\[A=(Q,\Sigma,\delta,q_0,F),\qquad \delta:Q\times\Sigma\to Q,\qquad \text{acepta } w=c_1\dots c_n \iff \delta(\dots\delta(\delta(q_0,c_1),c_2)\dots,c_n)\in F .\]</div>
+<p>El ejemplo clásico es el balido de una oveja: «ba!», «baa!», «baaa!»… Se reconoce con cuatro estados: \(q_0\xrightarrow{b}q_1\xrightarrow{a}q_2\), un bucle \(q_2\xrightarrow{a}q_2\) y la salida \(q_2\xrightarrow{!}q_3\). Cualquier otra transición lleva a un estado de error, que se omite del dibujo.</p>
+<div class="sim" data-sim="automata" data-title="Dibujar un autómata y recorrerlo con una cadena"></div>
+<div class="sim-guide"><ul>
+<li>Elija una expresión; el curso la convierte en un autómata no determinista de Thompson, después en uno determinista y por último lo minimiza. Se dibuja el mínimo.</li>
+<li>Escriba una cadena y mueva el deslizador de paso: el estado activo se resalta. Si no hay transición, la cadena se rechaza.</li>
+<li>Compare los tamaños: el AFN tiene decenas de estados, pero el AFD mínimo es mucho menor.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Autómatas deterministas y no deterministas</h2>
+<p>En un autómata <b>determinista</b> (AFD) cada estado tiene a lo sumo una transición por símbolo. En uno <b>no determinista</b> (AFN) puede haber varias, y también transiciones \(\varepsilon\), que ocurren sin leer nada. Un AFN acepta si <i>alguno</i> de sus caminos llega a un estado final; para simularlo basta llevar el <i>conjunto</i> de estados posibles.</p>
+<div class="box law"><p>Todo AFN tiene un AFD equivalente (<b>construcción de subconjuntos</b>): cada estado del AFD es un conjunto de estados del AFN. El precio es el tamaño: un AFN de \(n\) estados puede exigir hasta \(2^n\) estados en el AFD. El lenguaje «el tercer símbolo desde el final es una <i>a</i>», con \(\texttt{(a|b)*a(a|b)(a|b)}\), da un AFD mínimo de 8 estados, \(2^3\), porque debe recordar los tres últimos símbolos.</p></div>
+<p>Un AFD de \(k\) estados se puede <b>minimizar</b>: se fusionan los estados que ningún sufijo puede distinguir (algoritmo de Moore, refinamiento de particiones). El AFD mínimo es único salvo el nombre de los estados.</p>
+</section>
+
+<section>
+<h2>Expresiones regulares y autómatas son lo mismo</h2>
+<p>Kleene (1951) demostró que una expresión regular describe exactamente los lenguajes que reconoce un autómata finito. Las tres operaciones básicas son <b>concatenación</b> (<code>ab</code>), <b>unión</b> (<code>a|b</code>) y <b>estrella de Kleene</b> (<code>a*</code>, cero o más repeticiones); <code>a+</code> y <code>a?</code> son abreviaturas. La construcción de Thompson convierte cada operador en un fragmento de AFN con transiciones \(\varepsilon\), y se pegan los fragmentos.</p>
+<table>
+<thead><tr><th>Expresión</th><th>Reconoce</th></tr></thead>
+<tbody>
+<tr><td><code>ba+!</code></td><td>«ba!», «baa!», «baaa!»…</td></tr>
+<tr><td><code>(a|b)*abb</code></td><td>Cadenas de a y b que terminan en «abb»</td></tr>
+<tr><td><code>[0-9]+(,[0-9]+)?</code></td><td>Números con coma decimal: «3», «14,5»</td></tr>
+<tr><td><code>(gat|libr|cas)(o|a)s?</code></td><td>«gato», «gatas», «casa», «libros»…</td></tr>
+</tbody></table>
+<div class="box warn"><p>La última fila es una <b>morfotáctica</b>: raíz, vocal de género, plural opcional. Sirve para reconocer si una cadena está bien formada, pero sobregenera: acepta «libras», que no es el plural de «libro» con cambio de género, porque el autómata no sabe que «libro» es masculino. Los rasgos y las reglas ortográficas exigen más que un reconocedor; es el tema del capítulo siguiente.</p></div>
+</section>
+
+<section>
+<h2>Lo que un autómata finito no puede hacer</h2>
+<p>Un autómata finito solo recuerda en cuál de sus estados está: su memoria es acotada. No puede comparar cuántas veces apareció algo con cuántas aparecerá. El ejemplo canónico es el lenguaje \(\{a^nb^n\}\): para aceptar «aaabbb» tiene que haber contado tres «a». Para cada \(n\) fijo hay un AFD, pero necesita más estados cuanto mayor sea \(n\); no existe un AFD para todos los \(n\) a la vez.</p>
+<div class="sim" data-sim="contador" data-title="Estados necesarios para contar hasta k"></div>
+<div class="sim-guide"><ul>
+<li>El lenguaje \(\{a^nb^n:n\le k\}\) necesita \(2k+2\) estados: crece sin cota con \(k\). Se calculó con las mismas funciones del capítulo y coincide con la fórmula exacta.</li>
+<li>Esto no es un detalle teórico: en español hay estructuras anidadas («La rata que el gato que el perro persiguió mordió huyó») que exigen recordar cuántos sujetos esperan verbo.</li>
+</ul></div>
+<p>La jerarquía de Chomsky (1956) ordena las gramáticas por su poder:</p>
+<table>
+<thead><tr><th>Clase</th><th>Se reconoce con</th><th>Ejemplo</th><th>Capítulo</th></tr></thead>
+<tbody>
+<tr><td>Regulares (tipo 3)</td><td>Autómata finito</td><td>morfología, tokenización, \(\texttt{ba+!}\)</td><td>5 y 6</td></tr>
+<tr><td>Libres de contexto (tipo 2)</td><td>Autómata con pila</td><td>sintaxis: \(a^nb^n\), paréntesis</td><td>13 y 14</td></tr>
+<tr><td>Sensibles al contexto (tipo 1)</td><td>Autómata acotado linealmente</td><td>algunas dependencias cruzadas</td><td>—</td></tr>
+<tr><td>Recursivamente enumerables (tipo 0)</td><td>Máquina de Turing</td><td>cualquier cálculo</td><td>—</td></tr>
+</tbody></table>
+<div class="box explain"><p>Un autómata finito es como un guardia con una libreta de una sola hoja: puede apuntar «estoy en el estado 2», pero no cuántas personas han pasado. Para contar hace falta una pila de hojas, que es lo que añade la gramática libre de contexto.</p></div>
+</section>
+
+<section>
+<h2>Práctica en Python</h2>
+<div class="box py"><p>El programa define el autómata de la oveja como tabla de transiciones, comprueba que equivale a la expresión regular <code>ba+!</code>, prueba la morfotáctica nominal con un lexicón y muestra el límite de \(a^nb^n\).</p>
+<div class="py" data-py="05-automatas"></div></div>
+<div class="box read"><ul>
+<li><b>Equivalencia</b>: el AFD tabular y <code>re.fullmatch</code> dan el mismo veredicto en las seis cadenas. «baa!!» y «abaa!» se rechazan por una transición inexistente (estado de error).</li>
+<li><b>Morfotáctica</b>: acepta «gatos», «gatas», «perro» y «casas», rechaza «gatoss» y «gat». Pero también acepta «libras» (sobregeneración) y rechaza «mesas» porque «mes-» no está en el lexicón. El autómata solo sabe lo que se le pone.</li>
+<li><b>a<sup>n</sup>b<sup>n</sup></b>: la expresión finita con \(n\le3\) acepta «aaabbb» y rechaza «aaaabbbb», que el contador (memoria ilimitada) sí acepta.</li>
+<li><b>Tamaños</b> (cálculo del curso): <code>ba+!</code> pasa de 10 estados en el AFN a 5 en el AFD mínimo (con error); <code>(a|b)*abb</code>, de 16 a 4; <code>(a|b)*a(a|b)(a|b)</code>, de 24 a 8; la morfotáctica nominal, de 40 a 12.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Un AFD es \((Q,\Sigma,\delta,q_0,F)\); acepta una cadena si termina en un estado final.</li>
+<li>Los AFN (con varias transiciones y \(\varepsilon\)) reconocen los mismos lenguajes que los AFD; la construcción de subconjuntos puede multiplicar los estados hasta \(2^n\).</li>
+<li>Las expresiones regulares y los autómatas finitos describen exactamente los lenguajes regulares (Kleene).</li>
+<li>La morfotáctica se puede modelar como autómata, pero sobregenera sin rasgos ni reglas.</li>
+<li>Un autómata finito no cuenta: \(\{a^nb^n\}\) no es regular. Hace falta una pila (gramáticas libres de contexto).</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Acepta el autómata de <code>ba+!</code> la cadena «baaa»?
+<details><summary>Respuesta</summary><p>No: termina en \(q_2\), que no es final. Le falta el «!».</p></details></li>
+<li><span class="lvl">Básico</span>Escriba una expresión regular para cadenas de «a» y «b» con un número par de «a» seguidas de una «b».
+<details><summary>Respuesta</summary><p><code>(aa)*b</code>.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Cuántos estados tiene como mínimo el AFD de «el penúltimo símbolo es una a» sobre {a, b}?
+<details><summary>Respuesta</summary><p>4: debe recordar los dos últimos símbolos (\(2^2\)).</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué <code>(gat|libr|cas)(o|a)s?</code> acepta «libras»?
+<details><summary>Respuesta</summary><p>Porque el autómata solo conoce raíces y terminaciones, no el género de cada raíz: «libr» + «a» + «s» es una cadena válida del lenguaje aunque no sea una palabra del español.</p></details></li>
+<li><span class="lvl">Avanzado</span>Demuestre con el lema del bombeo que \(\{a^nb^n\}\) no es regular.
+<details><summary>Respuesta</summary><p>Si fuera regular, existiría una longitud \(p\) tal que \(a^pb^p=xyz\) con \(|xy|\le p\), \(|y|\ge1\) y \(xy^iz\) en el lenguaje para todo \(i\). Como \(|xy|\le p\), \(y\) solo contiene «a»; con \(i=2\) hay más «a» que «b»: contradicción.</p></details></li>
+</ol>
+<h3>Autoevaluación</h3>
+<div class="sim" data-sim="quiz" data-cap="automatas" data-title="Autoevaluación del capítulo 5"></div>
+<div class="box links"><ul>
+<li><a href="https://doi.org/10.1145/363347.363387">Thompson (1968) — Regular expression search algorithm</a><small>El artículo original de la construcción que usa la simulación.</small></li>
+<li><a href="https://swtch.com/~rsc/regexp/regexp1.html">Russ Cox — Regular expression matching can be simple and fast</a><small>Por qué muchos motores de expresiones regulares son lentos y cómo lo evita el enfoque con autómatas.</small></li>
+<li><a href="https://doi.org/10.1109/TIT.1956.1056813">Chomsky (1956) — Three models for the description of language</a><small>El origen de la jerarquía.</small></li>
+<li><a href="https://web.stanford.edu/~jurafsky/slp3/2.pdf">Jurafsky y Martin — Regular expressions (cap. 2)</a><small>Expresiones regulares con ejemplos de texto.</small></li>
+<li><a href="https://regexper.com/">Regexper</a><small>Dibuja una expresión regular como diagrama de ferrocarril: otra forma de ver el autómata.</small></li>
+</ul></div>
+</section>
+</template>

@@ -1,0 +1,94 @@
+<template class="chapter-src" data-id="redes" data-num="28" data-title="Redes neuronales para texto: perceptrón, CNN, RNN y LSTM" data-part="Parte VII · Redes y modelos grandes" data-short="Neurona y perceptrón multicapa; no linealidad; retropropagación y optimización; capa de embeddings; redes convolucionales y recurrentes; LSTM y gradiente que se desvanece">
+<p class="lead">Hasta aquí, los clasificadores eran lineales sobre rasgos que alguien eligió: conteos, TF-IDF. Una red neuronal aprende también los rasgos. Se alimenta con las palabras (como vectores, capítulo 26), pasa por varias capas de transformaciones y produce la respuesta; todo el conjunto se entrena de una vez con descenso de gradiente. Este capítulo presenta las piezas —perceptrón multicapa, convolución, recurrencia— y la razón por la que la recurrencia empujó a inventar la atención (capítulo 29).</p>
+
+<section>
+<h2>La neurona y la red de capas</h2>
+<p>Una <b>neurona artificial</b> calcula una suma ponderada de sus entradas y le aplica una función no lineal, la <b>activación</b>: \(a=f(\mathbf w\cdot\mathbf x+b)\). Las más usadas: la <i>sigmoide</i> \(\sigma(z)=1/(1+e^{-z})\) (salida entre 0 y 1), la <i>tangente hiperbólica</i> (entre −1 y 1) y la <i>ReLU</i> \(\max(0,z)\), que domina en redes profundas porque no satura para valores positivos. Un <b>perceptrón multicapa</b> (MLP) apila capas de neuronas, cada una con la salida de la anterior como entrada:</p>
+<div class="eq key" data-name="Perceptrón multicapa">\[\mathbf h^{(1)}=f\bigl(W^{(1)}\mathbf x+\mathbf b^{(1)}\bigr),\quad \mathbf h^{(2)}=f\bigl(W^{(2)}\mathbf h^{(1)}+\mathbf b^{(2)}\bigr),\quad \hat y=\sigma\bigl(\mathbf w^{(3)}\!\cdot\mathbf h^{(2)}+b^{(3)}\bigr)\]</div>
+<p>Sin la no linealidad \(f\), varias capas se reducirían a una sola transformación lineal. Con ella, basta una capa oculta con suficientes neuronas para aproximar cualquier función continua (teorema de aproximación universal), y las capas profundas lo hacen con muchas menos. Cada capa transforma el espacio de modo que lo que no era separable pasa a serlo.</p>
+</section>
+
+<section>
+<h2>Aprender: pérdida, gradiente y retropropagación</h2>
+<p>Se define una <b>pérdida</b> que mide el error; para clasificación binaria, la entropía cruzada \(\mathcal L=-\,y\log\hat y-(1-y)\log(1-\hat y)\). Se ajustan los pesos para disminuirla por <b>descenso de gradiente</b>: \(\theta\leftarrow\theta-\eta\,\nabla_\theta\mathcal L\), con \(\eta\) el ritmo de aprendizaje. El gradiente respecto de los pesos de todas las capas se calcula con la <b>retropropagación</b>, que es la regla de la cadena aplicada de la salida hacia la entrada: el error de una capa, \(\boldsymbol\delta^{(l)}\), se obtiene del de la siguiente:</p>
+<div class="eq key" data-name="Retropropagación (salida sigmoide con entropía cruzada)">\[\boldsymbol\delta^{(L)}=\hat y-y,\qquad\boldsymbol\delta^{(l)}=\bigl(W^{(l+1)\top}\boldsymbol\delta^{(l+1)}\bigr)\odot f'\bigl(\mathbf z^{(l)}\bigr),\qquad\frac{\partial\mathcal L}{\partial W^{(l)}}=\boldsymbol\delta^{(l)}\,\mathbf h^{(l-1)\top},\qquad\frac{\partial\mathcal L}{\partial\mathbf b^{(l)}}=\boldsymbol\delta^{(l)}\]</div>
+<p>Los programas actuales no escriben esas fórmulas a mano: bibliotecas como PyTorch derivan automáticamente (<i>autograd</i>). El curso, sin embargo, las implementa y las valida contra PyTorch a precisión de máquina. En la práctica se usan <b>minilotes</b> (el gradiente de un puñado de ejemplos) y variantes como <b>Adam</b>, que adapta el ritmo de aprendizaje de cada parámetro con estimaciones de los momentos del gradiente. La <b>regularización</b> evita el sobreajuste: penalización L2, <i>dropout</i> (apagar neuronas al azar al entrenar), parada temprana.</p>
+<div class="sim" data-sim="red-mlp" data-title="Entrenar un perceptrón multicapa y ver su frontera de decisión"></div>
+<div class="sim-guide"><ul>
+<li>Con «Dos lunas», 8 neuronas ocultas, tanh y Adam (0,03), pulse «Entrenar 50 pasos» dos veces (o «Reproducir»): en unos 100 pasos la frontera se curva y separa las lunas (97 % de aciertos). La pérdida cae por debajo de 0,69 (la línea gris es ln 2, la de adivinar).</li>
+<li>Pruebe «XOR» con 1 neurona oculta: se queda en el 73,5 % de aciertos, porque una neurona oculta solo da una frontera casi lineal. Con 2 neuronas (suficientes en teoría) el entrenamiento de esta semilla se atasca en un mínimo local, con el 74 %; con 4 llega al 100 %. Sobredimensionar ayuda a optimizar.</li>
+<li>Elija «Dos espirales» (casi dos vueltas): con 8 neuronas se queda en torno al 82 % tras 500 pasos; con 16 neuronas, o con 16 + 16, llega al 100 %. Fíjese en el número de parámetros: la capacidad crece con la anchura y la profundidad.</li>
+<li>Cambie el algoritmo a «Descenso de gradiente»: con ritmo 0,01 avanza muy despacio (85,5 % tras 300 pasos en las lunas); con 0,5 funciona aquí, pero en problemas más difíciles diverge. Adam es menos sensible al ritmo elegido.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Redes para texto</h2>
+<p>Un texto es una secuencia de longitud variable. Para pasarlo por una red se empieza por una <b>capa de embeddings</b>: una tabla que convierte cada identificador de palabra en su vector (se puede inicializar con los del capítulo 26 o aprender con la tarea). Después hay tres familias:</p>
+<ul>
+<li><b>Bolsa de embeddings</b> (como fastText): se promedian los vectores de las palabras y se pasa por una capa lineal o un MLP. Es rapidísima y una línea de base fuerte, pero ignora el orden.</li>
+<li><b>Redes convolucionales</b> (CNN; Kim, 2014): un filtro de ancho \(k\) se desliza por la secuencia y calcula una puntuación para cada ventana de \(k\) palabras, como un detector de n-gramas aprendido; el <i>max-pooling</i> conserva el valor máximo de cada filtro en toda la frase, de forma que no importa dónde aparezca el patrón. Se calculan en paralelo, pero su campo de visión es local.</li>
+<li><b>Redes recurrentes</b> (RNN): procesan la frase paso a paso manteniendo un <b>estado oculto</b> \(\mathbf h_t\) que resume lo visto hasta ahora: \(\mathbf h_t=\tanh(W_x\mathbf x_t+W_h\mathbf h_{t-1}+\mathbf b)\). El último estado (o todos) alimenta al clasificador. Una RNN <i>bidireccional</i> lee también de derecha a izquierda, lo que es muy útil para etiquetar palabras (capítulo 12).</li>
+</ul>
+<h3>El gradiente que se desvanece y la LSTM</h3>
+<p>Para aprender dependencias de largo alcance («el libro que Marta compró en la librería… <i>está</i>») el error debe viajar muchos pasos hacia atrás. En una RNN, \(\partial\mathbf h_T/\partial\mathbf h_t\) es un producto de \(T-t\) matrices \(\mathrm{diag}(1-\mathbf h_k^2)\,W_h\). Si su norma es menor que 1, el gradiente decae exponencialmente (se desvanece); si es mayor, explota. La <b>LSTM</b> (Hochreiter y Schmidhuber, 1997) añade un estado de celda \(\mathbf c_t\) controlado por puertas, que se actualiza <i>de forma aditiva</i>:</p>
+<div class="eq key" data-name="LSTM">\[\mathbf i_t=\sigma(\cdot),\ \mathbf f_t=\sigma(\cdot),\ \mathbf o_t=\sigma(\cdot),\ \mathbf g_t=\tanh(\cdot);\qquad\mathbf c_t=\mathbf f_t\odot\mathbf c_{t-1}+\mathbf i_t\odot\mathbf g_t,\qquad\mathbf h_t=\mathbf o_t\odot\tanh(\mathbf c_t)\]</div>
+<p>Con la puerta de olvido \(\mathbf f_t\) cercana a 1, el estado de celda y su gradiente atraviesan muchos pasos casi intactos: una «autopista» para la información. La GRU simplifica la LSTM con dos puertas.</p>
+<div class="sim" data-sim="rec-gradiente" data-title="Cuánto gradiente llega desde el final de la secuencia hasta el paso t"></div>
+<div class="sim-guide"><ul>
+<li>Con la norma espectral de la matriz recurrente en 0,9 y T = 50, el gradiente de la RNN a 20 pasos es de 4·10<sup>−9</sup>: se perdió. Aunque se suba a 1,6 (2·10<sup>−4</sup>) o a 2,2 (0,09), no llega a explotar porque tanh se satura y su derivada se acerca a 0; con ReLU sí podría explotar.</li>
+<li>La curva de la LSTM depende del sesgo de la puerta de olvido: con sesgo 1 queda en 0,013 a 20 pasos (mucho mejor que 10<sup>−9</sup>); con sesgo 4 es de 2,5 (casi sin pérdida: el máximo de la norma es 4 = √16 unidades); con sesgo −2 olvida enseguida (10<sup>−16</sup>). Inicializar ese sesgo en 1 es una práctica habitual por esta razón.</li>
+<li>Este es solo el camino de la celda; el entrenamiento real también usa otros caminos, pero explica por qué las LSTM aprenden dependencias que las RNN simples no.</li>
+</ul></div>
+<div class="box py"><p>El programa entrena con PyTorch un perceptrón en dos espirales (frente a una regresión logística) y compara tres arquitecturas de texto con las mismas 80 opiniones de entrenamiento y 72 de prueba: bolsa de embeddings, CNN y LSTM.</p>
+<div class="py" data-py="28-redes"></div></div>
+<div class="box read"><ul>
+<li><b>Espirales</b>: la regresión logística (lineal) llega al 65 %; el perceptrón 2-2-2-1 (15 parámetros), al 75 %; el 2-8-8-1 (105 parámetros) y el 2-32-32-1 (1.185), al 100 %. Más capacidad, hasta cierto punto, resuelve el problema.</li>
+<li><b>Opiniones con 80 ejemplos</b>: bolsa de embeddings 0,903 (2.065 parámetros), CNN de ancho 3 0,944 (2.849) y LSTM 0,819 (4.241). Con pocos datos gana la CNN; la LSTM, con más parámetros y un entrenamiento más difícil, generaliza peor. Recuerde que la regresión logística con TF-IDF alcanzaba el 100 % con 288 ejemplos (capítulo 27): una red no es mejor por ser una red.</li>
+<li>El curso valida su retropropagación (pérdida y gradientes de un MLP, con tanh y con ReLU), la RNN, la LSTM y la convolución con max-pooling contra PyTorch a 10<sup>−12</sup> (apéndice de validación).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Qué falla en las redes recurrentes</h2>
+<ul>
+<li><b>Procesamiento secuencial</b>: el paso \(t\) necesita el estado del \(t-1\), así que no se pueden paralelizar los pasos; entrenar con corpus enormes es lento.</li>
+<li><b>Cuello de botella</b>: todo lo visto hasta ahora se comprime en un vector de tamaño fijo. En traducción (capítulo 29), la frase de entrada completa debe caber en él.</li>
+<li><b>Dependencias largas</b>: las LSTM las manejan mejor que las RNN simples, pero siguen limitadas.</li>
+</ul>
+<p>La <b>atención</b> resuelve los tres a la vez: cada paso mira directamente a cualquier otro. Es la pieza central de los Transformer (capítulo 30), que han sustituido casi por completo a las redes recurrentes.</p>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Neurona: f(w·x + b). MLP: capas apiladas con no linealidad; aprende rasgos.</li>
+<li>Retropropagación = regla de la cadena para calcular gradientes; se optimiza con SGD o Adam.</li>
+<li>Para texto: capa de embeddings + bolsa, CNN (detector de n-gramas + max-pooling) o RNN/LSTM (estado oculto).</li>
+<li>El gradiente se desvanece en las RNN simples; la LSTM lo evita con su celda aditiva y sus puertas.</li>
+<li>Las redes recurrentes son secuenciales y tienen cuello de botella: de ahí la atención.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Calcule la salida de una neurona sigmoide con w = (2, −1), b = 0,5 y x = (1, 3).
+<details><summary>Respuesta</summary><p>z = 2·1 − 1·3 + 0,5 = −0,5; σ(−0,5) = 1/(1 + e^{0,5}) = 0,378.</p></details></li>
+<li><span class="lvl">Básico</span>¿Cuántos parámetros tiene un MLP con entrada de 300 dimensiones, una capa oculta de 100 neuronas y una salida?
+<details><summary>Respuesta</summary><p>300·100 + 100 + 100·1 + 1 = 30.201.</p></details></li>
+<li><span class="lvl">Intermedio</span>Una salida sigmoide con entropía cruzada tiene ŷ = 0,8 y la etiqueta es y = 1. Calcule la pérdida y δ de la salida.
+<details><summary>Respuesta</summary><p>Pérdida = −ln 0,8 = 0,223. δ = ŷ − y = −0,2 (el gradiente tira de la preactivación hacia arriba).</p></details></li>
+<li><span class="lvl">Intermedio</span>Si el jacobiano de cada paso de una RNN tiene norma 0,8, ¿cuánto se atenúa el gradiente tras 20 pasos? ¿Y si la norma fuera 1,2?
+<details><summary>Respuesta</summary><p>0,8²⁰ = 0,0115 (se pierde el 99 %). 1,2²⁰ = 38,3: explota. Con 100 pasos serían 2·10⁻¹⁰ y 8·10⁷.</p></details></li>
+<li><span class="lvl">Avanzado</span>Una CNN usa filtros de ancho 2, 3 y 4 con 100 filtros de cada ancho sobre embeddings de 300 dimensiones. ¿Cuántos parámetros hay en las convoluciones (con sesgos)?
+<details><summary>Respuesta</summary><p>Ancho k: 100·(k·300 + 1). Ancho 2: 60.100; ancho 3: 90.100; ancho 4: 120.100. Total 270.300.</p></details></li>
+</ol>
+<h3>Autoevaluación</h3>
+<div class="sim" data-sim="quiz" data-cap="redes" data-title="Autoevaluación del capítulo 28"></div>
+<div class="box links"><ul>
+<li><a href="https://pytorch.org/tutorials/beginner/basics/intro.html">PyTorch — Learn the basics</a><small>Tensores, autograd, entrenamiento de redes.</small></li>
+<li><a href="https://aclanthology.org/D14-1181/">Kim (2014) — Convolutional neural networks for sentence classification</a><small>La CNN de filtros de varios anchos con max-pooling.</small></li>
+<li><a href="https://colah.github.io/posts/2015-08-Understanding-LSTMs/">Olah — Understanding LSTM networks</a><small>Explicación ilustrada de las puertas de la LSTM.</small></li>
+<li><a href="https://www.deeplearningbook.org/">Goodfellow, Bengio y Courville — Deep Learning</a><small>Libro de referencia, gratuito en línea.</small></li>
+<li><a href="https://aclanthology.org/E17-2068/">Joulin y otros (2017) — Bag of tricks for efficient text classification (fastText)</a><small>La bolsa de embeddings como línea de base muy rápida.</small></li>
+<li><a href="https://web.stanford.edu/~jurafsky/slp3/">Jurafsky y Martin — Speech and Language Processing (3.ª ed.)</a><small>Capítulos de redes neuronales y redes recurrentes.</small></li>
+</ul></div>
+</section>
+</template>

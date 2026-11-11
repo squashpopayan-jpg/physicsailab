@@ -1,0 +1,99 @@
+<template class="chapter-src" data-id="categorias" data-num="9" data-title="Categorías gramaticales y juegos de etiquetas" data-part="Parte III · Etiquetado morfosintáctico" data-short="Las nueve categorías de la RAE; clases abiertas y cerradas; para qué sirve etiquetar; Penn Treebank, Universal POS y EAGLES; cuánta ambigüedad hay realmente en español (CESS-ESP)">
+<p class="lead">«Vino» es un sustantivo en «bebo un vaso de vino» y un verbo en «vino de un lugar lejano». Asignar a cada palabra su categoría gramatical según el contexto se llama etiquetado morfosintáctico (POS tagging) y es el primer análisis que mira más allá de la palabra aislada. Este capítulo explica qué se etiqueta, con qué conjuntos de etiquetas y cuánta ambigüedad hay que resolver.</p>
+
+<section>
+<h2>Las categorías gramaticales</h2>
+<p>La <span class="term">morfosintaxis</span> reúne la morfología y la sintaxis para determinar las partes de la oración, llamadas <i>part-of-speech</i> (POS) en inglés. Según la clasificación clásica de la RAE hay nueve categorías: <b>sustantivo</b>, <b>determinante</b>, <b>adjetivo</b>, <b>pronombre</b>, <b>verbo</b>, <b>adverbio</b>, <b>preposición</b>, <b>conjunción</b> e <b>interjección</b>. Se dividen en dos grandes familias:</p>
+<table>
+<thead><tr><th></th><th>Clases abiertas</th><th>Clases cerradas</th></tr></thead>
+<tbody>
+<tr><td>Categorías</td><td>Sustantivos, verbos, adjetivos, adverbios</td><td>Determinantes, pronombres, preposiciones, conjunciones</td></tr>
+<tr><td>Palabras nuevas</td><td>Aparecen todo el tiempo («tuitear», «escanear»)</td><td>Casi nunca</td></tr>
+<tr><td>Número de formas</td><td>Decenas de miles</td><td>Pocas docenas, muy frecuentes</td></tr>
+<tr><td>Papel</td><td>Contenido léxico</td><td>Estructura gramatical</td></tr>
+</tbody></table>
+<p>Saber la categoría de una palabra informa mucho sobre sus vecinas y sobre la estructura de la oración: un sustantivo puede ir precedido de un determinante y seguido de un adjetivo, y suele formar parte de un sintagma nominal. Por eso el etiquetado es un componente central del análisis sintáctico (parte IV), de la extracción de entidades y de la desambiguación del sentido (capítulo 22).</p>
+</section>
+
+<section>
+<h2>Qué hace un etiquetador</h2>
+<p>El <span class="term">etiquetado morfosintáctico</span> toma una secuencia de palabras y devuelve una secuencia de pares palabra/etiqueta. Antes de etiquetar se tokeniza (capítulo 7): las contracciones como «del» se separan en «de» y «el».</p>
+<div class="mono-box">bebo/VERB un/DET vaso/NOUN de/ADP vino/NOUN tinto/ADJ
+vino/VERB de/ADP un/DET lugar/NOUN lejano/ADJ</div>
+<p>Observe que «vino» recibe etiquetas distintas: el etiquetador realiza una <b>desambiguación</b>, eligiendo entre las categorías posibles de una palabra la que corresponde al contexto. Un etiquetador no solo mira la palabra: mira lo que la rodea.</p>
+</section>
+
+<section>
+<h2>Juegos de etiquetas</h2>
+<p>No hay un único inventario. Cuanto más fino, más información, pero más difícil de predecir y más escaso por etiqueta:</p>
+<table>
+<thead><tr><th>Juego</th><th>Tamaño</th><th>Lengua</th><th>Rasgos</th></tr></thead>
+<tbody>
+<tr><td><b>Penn Treebank</b> (Marcus y otros, 1993)</td><td>45 etiquetas</td><td>Inglés</td><td>Categoría y pocos rasgos (NN, NNS, VBD, VBZ, MD, DT, IN, JJ…)</td></tr>
+<tr><td><b>Universal POS</b> (UPOS)</td><td>17 etiquetas</td><td>Todas las lenguas</td><td>Solo categoría (NOUN, VERB, ADJ, ADP, DET, PRON, AUX, PROPN, PUNCT…); los rasgos van aparte</td></tr>
+<tr><td><b>EAGLES / PAROLE</b> (CESS-ESP)</td><td>282 etiquetas en el corpus</td><td>Español</td><td>Código posicional: categoría, tipo, género, número, persona, tiempo…</td></tr>
+</tbody></table>
+<p>Las etiquetas EAGLES son <b>posicionales</b>: cada posición de la cadena tiene un significado según la categoría. Por ejemplo, <code>ncms000</code> es sustantivo (n), común (c), masculino (m), singular (s), y <code>vmip3s0</code> es verbo (v), principal (m), indicativo (i), presente (p), tercera persona (3), singular (s). El curso trabaja con estas etiquetas finas (como la Actividad 1 del laboratorio) y con una versión gruesa de 13 clases, parecida a UPOS, para medir con más claridad.</p>
+<div class="sim" data-sim="etiquetas" data-title="Decodificar una etiqueta EAGLES de CESS-ESP"></div>
+<div class="sim-guide"><ul>
+<li>Elija una de las 60 etiquetas más frecuentes del corpus completo o escriba una; se muestra cada posición y su significado, y la etiqueta gruesa a la que se reduce.</li>
+<li>Note que casi la mitad de las etiquetas más usadas son de sustantivos, determinantes y signos de puntuación: el corpus es de prensa.</li>
+<li>Con etiquetas finas aparecen muchas combinaciones raras: hay 282 etiquetas distintas en el corpus, y las 15 más frecuentes cubren gran parte de los tokens.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>La ambigüedad en cifras (CESS-ESP)</h2>
+<p>CESS-ESP es un corpus de prensa en español con 6.030 oraciones y 188.803 palabras, anotado a mano con etiquetas EAGLES (tras quitar las huellas sintácticas). La ambigüedad se puede medir de dos maneras muy diferentes:</p>
+<ul>
+<li><b>Por tipos</b>: solo el 5,3 % de las palabras distintas aparece con más de una categoría gruesa.</li>
+<li><b>Por tokens</b>: el 36,9 % de todas las palabras del texto son de uno de esos tipos ambiguos.</li>
+</ul>
+<p>La razón es la ley de Zipf (capítulo 3): las palabras más frecuentes son justamente funcionales y ambiguas. «La» es determinante y también pronombre (<i>la vi</i>); «que» es pronombre relativo o conjunción; «como» es conjunción, preposición o pronombre.</p>
+<div class="sim" data-sim="ambiguas-cess" data-title="Las palabras ambiguas más frecuentes de CESS-ESP"></div>
+<div class="sim-guide"><ul>
+<li>Cada barra reparte las apariciones de una palabra entre sus categorías. «Que» es casi un empate entre pronombre (3.014) y conjunción (2.556): ninguna regla de palabra aislada sirve, hace falta el contexto.</li>
+<li>«Gobierno» muestra otro tipo de ambigüedad: 167 veces es propio («el Gobierno», como institución) y 55 veces común. Parte de la «ambigüedad» es ruido o criterio de anotación.</li>
+</ul></div>
+<div class="box py"><p>El programa mide las categorías, la ambigüedad por tipos y por tokens y el techo de un etiquetador que solo conociera la palabra.</p>
+<div class="py" data-py="09-categorias"></div></div>
+<div class="box read"><ul>
+<li><b>Distribución</b>: sustantivos 17,9 %, preposiciones 15,2 %, determinantes 14,5 %, puntuación 12,8 % y verbos 10,8 %. Una oración típica de prensa está hecha, en su mayoría, de piezas funcionales.</li>
+<li><b>Ambigüedad</b>: 1.293 de 24.496 tipos (5,3 %) son ambiguos, pero concentran el 36,9 % de los tokens.</li>
+<li><b>Techo de una línea de base</b>: si se pudiera elegir, para cada palabra, su categoría más frecuente (con oráculo, usando los mismos datos), se acertaría el 96,3 %. Es el límite superior de un etiquetador que solo mire la palabra; el 3,7 % restante exige contexto.</li>
+<li><b>Vino</b>: aparece pocas veces (2 como verbo y 2 como sustantivo), lo que anticipa la dificultad de las palabras raras.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Nueve categorías clásicas; las clases abiertas aportan contenido y las cerradas, estructura.</li>
+<li>Etiquetar es asignar la categoría que corresponde al contexto: es desambiguar.</li>
+<li>Los juegos de etiquetas van de 17 (UPOS) a cientos (EAGLES); lo fino informa más pero se predice peor.</li>
+<li>La ambigüedad es rara por tipos (5,3 %) y común por tokens (36,9 %).</li>
+<li>Elegir la categoría más frecuente de cada palabra ya acierta casi el 96 % en CESS-ESP: el reto está en el resto.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Decodifique la etiqueta <code>vmis3s0</code>.
+<details><summary>Respuesta</summary><p>Verbo (v), principal (m), indicativo (i), pretérito perfecto simple (s), tercera persona (3), singular (s).</p></details></li>
+<li><span class="lvl">Básico</span>¿Cuáles de estas son clases abiertas: preposición, sustantivo, determinante, verbo?
+<details><summary>Respuesta</summary><p>Sustantivo y verbo.</p></details></li>
+<li><span class="lvl">Intermedio</span>«Que» aparece 5.570 veces: 3.014 como pronombre y 2.556 como conjunción. ¿Qué exactitud tiene un etiquetador que siempre elige pronombre?
+<details><summary>Respuesta</summary><p>3.014/5.570 = 54,1 %: apenas mejor que el azar entre dos opciones.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué la ambigüedad por tokens (36,9 %) es tan superior a la ambigüedad por tipos (5,3 %)?
+<details><summary>Respuesta</summary><p>Porque las palabras más frecuentes (de, la, que, el, y…) son las funcionales, que son ambiguas; son pocas en número de tipos pero ocupan una gran parte del texto (ley de Zipf).</p></details></li>
+<li><span class="lvl">Avanzado</span>Con 282 etiquetas finas y 188.803 tokens, ¿cuál es el número medio de ejemplos por etiqueta y por qué importa?
+<details><summary>Respuesta</summary><p>188.803 / 282 ≈ 670, pero la distribución es muy desigual (unas pocas etiquetas tienen decenas de miles y muchas, menos de diez). Las etiquetas raras se estiman con muy pocos datos, lo que degrada los modelos probabilísticos (capítulo 11).</p></details></li>
+</ol>
+<h3>Autoevaluación</h3>
+<div class="sim" data-sim="quiz" data-cap="categorias" data-title="Autoevaluación del capítulo 9"></div>
+<div class="box links"><ul>
+<li><a href="https://universaldependencies.org/u/pos/index.html">Universal Dependencies — etiquetas UPOS</a><small>Definición y ejemplos de las 17 categorías universales.</small></li>
+<li><a href="https://aclanthology.org/J93-2004/">Marcus, Santorini y Marcinkiewicz (1993) — Building a large annotated corpus of English: the Penn Treebank</a><small>El origen del juego de 45 etiquetas.</small></li>
+<li><a href="https://freeling-user-manual.readthedocs.io/en/latest/tagsets/tagset-es/">FreeLing — conjunto de etiquetas del español (EAGLES)</a><small>Tabla de posiciones y valores de las etiquetas EAGLES para el español, la misma convención de CESS-ESP.</small></li>
+<li><a href="https://www.nltk.org/book/ch05.html">Bird, Klein y Loper — NLTK Book, cap. 5 «Categorizing and tagging words»</a><small>Etiquetado con ejemplos ejecutables.</small></li>
+<li><a href="https://dle.rae.es/">RAE — Diccionario de la lengua española</a><small>Definiciones de las categorías gramaticales.</small></li>
+</ul></div>
+</section>
+</template>

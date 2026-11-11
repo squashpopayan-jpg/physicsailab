@@ -121,11 +121,13 @@ MS.Player = (function () {
     const E = pl.feet[f];
     let last = null;
     for (let i = 0; i < E.length; i++) { if (E[i].tLift <= t) last = E[i]; else break; }
-    if (!last) return Object.assign({ z: 0 }, pl.footInit[f]);
-    if (t >= last.tLand) return Object.assign({ z: 0 }, last.to);
+    if (!last) return Object.assign({ z: 0, pitch: 0 }, pl.footInit[f]);
+    if (t >= last.tLand) return Object.assign({ z: 0, pitch: 0 }, last.to);
     const k = (t - last.tLift) / Math.max(1e-6, last.tLand - last.tLift);
     const e = U.smooth(k);
-    return { x: U.lerp(last.from.x, last.to.x, e), y: U.lerp(last.from.y, last.to.y, e), a: U.lerpAng(last.from.a, last.to.a, e), z: Math.sin(Math.PI * k) * Math.min(0.13, 0.05 + U.dist(last.from, last.to) * 0.07) };
+    return { x: U.lerp(last.from.x, last.to.x, e), y: U.lerp(last.from.y, last.to.y, e), a: U.lerpAng(last.from.a, last.to.a, e), z: Math.sin(Math.PI * k) * Math.min(0.15, 0.05 + U.dist(last.from, last.to) * 0.08),
+      /* despega de punta (talón arriba) y aterriza de talón: así entra el pie en la estocada */
+      pitch: last.kind === 'split' ? 0 : -Math.sin(2 * Math.PI * k) * Math.min(0.6, 0.2 + U.dist(last.from, last.to) * 0.45) };
   }
 
   /* Corta el plan en ts (antes de un nuevo desplazamiento) */
@@ -200,7 +202,7 @@ MS.Player = (function () {
       else {
         /* tiempo en que el centro de masa pasa por la fracción correspondiente del recorrido */
         const frac = ((i + 1) / (N - 1)) * 0.88;
-        land.push(ts + T * Math.min(prof.inv(frac) + 0.06, 0.95));
+        land.push(ts + T * Math.min(prof.inv(frac), 0.95));
       }
     }
     for (let i = 1; i < N; i++) if (land[i] < land[i - 1] + 0.09) land[i] = Math.min(te - (N - 1 - i) * 0.06, land[i - 1] + 0.09);
@@ -211,7 +213,8 @@ MS.Player = (function () {
       if (i === N - 1) to = st.feet[lastFoot];
       else if (i === N - 2) to = st.feet[other(lastFoot)];
       else {
-        const frac = ((i + 1) / (N - 1)) * 0.9;
+        /* el pie cae por delante del centro de masa (unos 0,3 m), como en la carrera real */
+        const frac = Math.min(0.97, ((i + 1) / (N - 1)) * 0.88 + 0.32 / Math.max(d, 0.5));
         const p = bez(frac);
         const L = leftOf(moveDir);
         const sgn = f === 'I' ? 1 : -1;
@@ -267,39 +270,65 @@ MS.Player = (function () {
     return { st: 'return', k: U.smooth((t - tE) / (tR - tE)), sw };
   }
 
+  const slerpV = (a, b, k) => {
+    const la = U.l3(a), lb = U.l3(b); if (la < 1e-6 || lb < 1e-6) return U.lerp3(a, b, k);
+    const ua = U.m3(a, 1 / la), ub = U.m3(b, 1 / lb), c = U.clamp(U.d3(ua, ub), -1, 1), om = Math.acos(c), L = U.lerp(la, lb, k);
+    if (om < 1e-3 || om > 3.1) return U.m3(U.n3(U.lerp3(ua, ub, k)), L);
+    const so = Math.sin(om);
+    return U.m3(U.a3(U.m3(ua, Math.sin((1 - k) * om) / so), U.m3(ub, Math.sin(k * om) / so)), L);
+  };
+
   function skeleton(pl, t, ballNow) {
     const k = keyAt(pl, t);
-    const yaw = k.yaw, f = { x: Math.cos(yaw), y: Math.sin(yaw), z: 0 }, r = { x: -Math.sin(yaw), y: Math.cos(yaw), z: 0 }, z = { x: 0, y: 0, z: 1 };
+    const kA = keyAt(pl, t - 0.05), kB = keyAt(pl, t + 0.05);
+    const speed = Math.hypot(kB.x - kA.x, kB.y - kA.y) / 0.1, run = U.clamp(speed / 2.6, 0, 1);
+    const yaw = k.yaw, f0 = { x: Math.cos(yaw), y: Math.sin(yaw), z: 0 }, r0 = { x: -Math.sin(yaw), y: Math.cos(yaw), z: 0 }, z = { x: 0, y: 0, z: 1 };
     const S = U.a3, M = U.m3;
-    const P = { x: k.x, y: k.y, z: k.h };
-    const lean = k.lean;
-    const up = U.n3(S(M(f, Math.sin(lean)), M(z, Math.cos(lean))));
+    const ftI = footAt(pl, 'I', t), ftD = footAt(pl, 'D', t);
+    /* zancada: >0 si el pie izquierdo va adelante. Mueve cadera y brazos en contrafase */
+    const gait = U.clamp(((ftI.x - ftD.x) * f0.x + (ftI.y - ftD.y) * f0.y) / 0.8, -1, 1);
     const sw = swingAt(pl, t);
+    const swinging = sw.st !== 'ready';
+    const hipTw = gait * 0.22 * (swinging ? 0.5 : 1);
+    const r = U.n3({ x: r0.x - f0.x * hipTw, y: r0.y - f0.y * hipTw, z: 0 }), f = { x: -r.y, y: r.x, z: 0 };
+    const idle = (1 - run) * (k.h > 0.8 ? 1 : 0.3);
+    const P = { x: k.x, y: k.y, z: k.h + 0.006 * idle * Math.sin(t * 5.2 + pl.idx * 1.7) - 0.012 * run * Math.abs(gait) };
+    const lean = k.lean + 0.06 * run;
+    const up = U.n3(S(M(f0, Math.sin(lean)), M(z, Math.cos(lean))));
     const sigma = pl.mano === 'D' ? 1 : -1;
     const fh = sw.sw ? sw.sw.fh : true;
     const b = sigma * (fh ? 1 : -1);
     /* giro de hombros: leve (el manual insiste en minimizar la rotación del tronco) */
-    let twist = 0;
-    if (sw.st === 'toPrep') twist = 0.28 * b * sw.k; else if (sw.st === 'prep') twist = 0.28 * b; else if (sw.st === 'fwd') twist = U.lerp(0.28, -0.25, sw.k) * b; else if (sw.st === 'finish') twist = U.lerp(-0.25, -0.35, sw.k) * b; else if (sw.st === 'return') twist = U.lerp(-0.35, 0, sw.k) * b;
+    let twist = -gait * 0.16 * run * (swinging ? 0.3 : 1);
+    if (sw.st === 'toPrep') twist += 0.3 * b * sw.k; else if (sw.st === 'prep') twist += 0.3 * b; else if (sw.st === 'fwd') twist += U.lerp(0.3, -0.25, sw.k) * b; else if (sw.st === 'finish') twist += U.lerp(-0.25, -0.38, sw.k) * b; else if (sw.st === 'return') twist += U.lerp(-0.38, 0, sw.k) * b;
     if (pl.tecnica === 'cambiada' && sw.sw) twist *= 1.8;
-    const ry = { x: Math.cos(twist) * r.x - Math.sin(twist) * f.x, y: Math.cos(twist) * r.y - Math.sin(twist) * f.y, z: 0 };
+    const ry = { x: Math.cos(twist) * r0.x - Math.sin(twist) * f0.x, y: Math.cos(twist) * r0.y - Math.sin(twist) * f0.y, z: 0 };
     const fy = { x: -ry.y, y: ry.x, z: 0 };
     const hipL = S(P, M(r, -0.1)), hipR = S(P, M(r, 0.1));
     const chest = S(P, M(up, 0.36));
     const neck = S(P, M(up, 0.56));
-    const head = S(neck, S(M(z, 0.12), M(f, 0.03)));
-    const shL = S(S(P, M(up, 0.52)), M(ry, -0.19)), shR = S(S(P, M(up, 0.52)), M(ry, 0.19));
+    /* la cabeza sigue la bola (hasta ~75° respecto del pecho) y se mantiene erguida */
+    let look = fy;
+    const tgt = ballNow || (sw.sw && sw.sw.ball) || null;
+    if (tgt) {
+      const d = U.norm({ x: tgt.x - k.x, y: tgt.y - k.y });
+      const a0 = Math.atan2(fy.y, fy.x), da = U.clamp(U.angDiff(a0, Math.atan2(d.y, d.x)), -1.3, 1.3);
+      look = { x: Math.cos(a0 + da), y: Math.sin(a0 + da), z: 0 };
+    }
+    const head = S(neck, S(M(z, 0.118), S(M(up, 0.012), M(look, 0.02))));
+    const shL = S(S(P, M(up, 0.515)), M(ry, -0.195)), shR = S(S(P, M(up, 0.515)), M(ry, 0.195));
     /* piernas */
     const legs = {};
     for (const side of ['I', 'D']) {
-      const ft = footAt(pl, side, t);
+      const ft = side === 'I' ? ftI : ftD;
       const ff = { x: Math.cos(ft.a), y: Math.sin(ft.a), z: 0 };
-      const ankle = { x: ft.x - ff.x * 0.03, y: ft.y - ff.y * 0.03, z: LEN.ankle + ft.z };
+      const pt = ft.pitch || 0, cp = Math.cos(pt), sp = Math.sin(pt);
+      const ankle = { x: ft.x - ff.x * 0.03, y: ft.y - ff.y * 0.03, z: LEN.ankle + ft.z + Math.max(0, -sp) * 0.07 };
       const hip = side === 'I' ? hipL : hipR;
-      const hint = S(M(ff, 1), M(f, 0.6));
+      const hint = S(M(ff, 1), M(f0, 0.6));
       const knee = ik(hip, ankle, LEN.thigh, LEN.shank, hint);
-      const toe = S(ankle, S(M(ff, 0.17), { x: 0, y: 0, z: -0.05 }));
-      const heel = S(ankle, S(M(ff, -0.07), { x: 0, y: 0, z: -0.05 }));
+      const toe = { x: ankle.x + ff.x * 0.17 * cp, y: ankle.y + ff.y * 0.17 * cp, z: Math.max(0.012, ankle.z - 0.05 + 0.17 * sp) };
+      const heel = { x: ankle.x - ff.x * 0.07 * cp, y: ankle.y - ff.y * 0.07 * cp, z: Math.max(0.012, ankle.z - 0.05 - 0.07 * sp) };
       const v1 = U.s3(hip, knee), v2 = U.s3(ankle, knee);
       const kneeAng = U.deg(Math.acos(U.clamp(U.d3(v1, v2) / (U.l3(v1) * U.l3(v2)), -1, 1)));
       const overToe = U.d3(U.s3(knee, toe), ff);
@@ -308,42 +337,49 @@ MS.Player = (function () {
     /* brazos */
     const shA = sigma > 0 ? shR : shL, shO = sigma > 0 ? shL : shR;
     const W = (o, a, bb, c) => S(S(S(o, M(fy, a)), M(ry, bb)), M(z, c));
-    const READY = { w: W(shA, 0.42, -sigma * 0.16, -0.34), d: U.n3(S(S(M(fy, 0.45), M(z, 0.85)), M(ry, sigma * 0.1))) };
-    const PREP = { w: W(shA, 0.02, b * 0.36, 0.12), d: U.n3(S(S(M(z, 0.85), M(ry, b * 0.45)), M(fy, -0.2))) };
-    const FIN = { w: W(shA, 0.25, -b * 0.47, 0.26), d: U.n3(S(M(z, 0.9), M(ry, -b * 0.45))) };
+    /* braceo al correr: cada brazo va adelante con la pierna contraria */
+    const swA = sigma * gait * 0.2 * run, swO = -sigma * gait * 0.24 * run;
+    const READY = { w: W(shA, 0.4 + swA, -sigma * 0.14, -0.3 + Math.abs(swA) * 0.3), d: U.n3(S(S(M(fy, 0.4), M(z, 0.9)), M(ry, -sigma * 0.12))) };
+    const PREP = { w: W(shA, -0.02, b * 0.34, 0.16), d: U.n3(S(S(M(z, 0.8), M(ry, b * 0.3)), M(fy, -0.5))) };
+    const FIN = { w: W(shA, 0.22, -b * 0.42, 0.3), d: U.n3(S(S(M(z, 0.85), M(ry, -b * 0.5)), M(fy, -0.2))) };
     let IMP;
     const ballP = sw.sw && sw.sw.ball ? sw.sw.ball : null;
     if (ballP) {
       const dir = U.n3(U.s3(ballP, shA));
-      const w = S(shA, M(dir, 0.56));
+      const reachA = Math.min(0.56, Math.max(0.3, U.l3(U.s3(ballP, shA)) - 0.5));
+      const w = S(shA, M(dir, reachA));
       IMP = { w, d: U.n3(U.s3(ballP, w)) };
     } else IMP = { w: W(shA, 0.5, b * -0.05, -0.32), d: U.n3(S(M(fy, 0.8), M(z, -0.4))) };
-    const mix = (A, B, kk) => ({ w: U.lerp3(A.w, B.w, kk), d: U.n3(U.lerp3(A.d, B.d, kk)) });
+    /* la mano describe un arco alrededor del hombro; la cabeza de la raqueta se retrasa (kd) y entra al final */
+    const mix = (A, B, kk, kd) => ({ w: S(shA, slerpV(U.s3(A.w, shA), U.s3(B.w, shA), kk)), d: U.n3(slerpV(A.d, B.d, kd == null ? kk : kd)) });
     let arm;
     switch (sw.st) {
       case 'toPrep': arm = mix(READY, PREP, sw.k); break;
       case 'prep': arm = PREP; break;
-      case 'fwd': arm = mix(PREP, IMP, sw.k); break;
-      case 'finish': arm = mix(IMP, FIN, sw.k); break;
+      case 'fwd': arm = mix(PREP, IMP, sw.k, Math.pow(sw.k, 2.2)); break;
+      case 'finish': arm = mix(IMP, FIN, sw.k, Math.pow(sw.k, 0.7)); break;
       case 'return': arm = mix(FIN, READY, sw.k); break;
       default: arm = READY;
     }
-    const elbowA = ik(shA, arm.w, LEN.upper, LEN.fore, S(M(z, -1), M(ry, sigma * 0.5)));
+    const elbowA = ik(shA, arm.w, LEN.upper, LEN.fore, S(S(M(z, -1), M(ry, sigma * 0.55)), M(fy, -0.35)));
     const wristA = arm.w;
     const racketHead = S(wristA, M(arm.d, 0.5));
     const racketTip = S(wristA, M(arm.d, LEN.racket));
     /* brazo libre: equilibrio y «tijera» de escápulas en el revés */
+    const REST = W(shO, 0.22 + swO, -sigma * 0.07, -0.42 + Math.abs(swO) * 0.35);
     let hand;
-    if (!sw.sw || sw.st === 'ready') hand = W(shO, 0.3, sigma * 0.05, -0.38);
+    if (!sw.sw || sw.st === 'ready') hand = REST;
     else if (fh) {
-      const prepH = W(shO, 0.45, -sigma * 0.05, -0.08), impH = W(shO, 0.18, -sigma * 0.28, -0.22), finH = W(shO, 0.05, -sigma * 0.32, -0.12);
-      hand = sw.st === 'toPrep' ? U.lerp3(W(shO, 0.3, sigma * 0.05, -0.38), prepH, sw.k) : sw.st === 'prep' ? prepH : sw.st === 'fwd' ? U.lerp3(prepH, impH, sw.k) : sw.st === 'finish' ? U.lerp3(impH, finH, sw.k) : U.lerp3(finH, W(shO, 0.3, sigma * 0.05, -0.38), sw.k);
+      const prepH = W(shO, 0.42, -sigma * 0.08, -0.1), impH = W(shO, 0.14, -sigma * 0.32, -0.2), finH = W(shO, 0.0, -sigma * 0.36, -0.14);
+      hand = sw.st === 'toPrep' ? U.lerp3(REST, prepH, sw.k) : sw.st === 'prep' ? prepH : sw.st === 'fwd' ? U.lerp3(prepH, impH, sw.k) : sw.st === 'finish' ? U.lerp3(impH, finH, sw.k) : U.lerp3(finH, REST, sw.k);
     } else {
-      const prepH = S(chest, S(M(fy, 0.26), M(z, -0.2))), impH = W(shO, -0.12, -sigma * 0.3, -0.05), finH = W(shO, -0.22, -sigma * 0.36, 0.08);
-      hand = sw.st === 'toPrep' ? U.lerp3(W(shO, 0.3, sigma * 0.05, -0.38), prepH, sw.k) : sw.st === 'prep' ? prepH : sw.st === 'fwd' ? U.lerp3(prepH, impH, sw.k) : sw.st === 'finish' ? U.lerp3(impH, finH, sw.k) : U.lerp3(finH, W(shO, 0.3, sigma * 0.05, -0.38), sw.k);
+      const prepH = S(chest, S(M(fy, 0.24), M(z, -0.18))), impH = W(shO, -0.14, -sigma * 0.32, -0.06), finH = W(shO, -0.26, -sigma * 0.38, 0.1);
+      hand = sw.st === 'toPrep' ? U.lerp3(REST, prepH, sw.k) : sw.st === 'prep' ? prepH : sw.st === 'fwd' ? U.lerp3(prepH, impH, sw.k) : sw.st === 'finish' ? U.lerp3(impH, finH, sw.k) : U.lerp3(finH, REST, sw.k);
     }
-    const elbowO = ik(shO, hand, LEN.upper, LEN.fore, S(M(z, -1), M(ry, -sigma * 0.5)));
-    return { P, chest, neck, head, shL, shR, shA, shO, legs, elbowA, wristA, racketHead, racketTip, racketDir: arm.d, elbowO, handO: hand, yaw, swing: sw, k };
+    const elbowO = ik(shO, hand, LEN.upper, LEN.fore, S(S(M(z, -1), M(ry, -sigma * 0.55)), M(fy, -0.35)));
+    const armA = { sh: shA, el: elbowA, wr: wristA, front: fy, hd: arm.d }, armO = { sh: shO, el: elbowO, wr: hand, front: fy };
+    const arms = sigma > 0 ? { D: armA, I: armO } : { I: armA, D: armO };
+    return { P, up, r, f, ry, fy, look, chest, neck, head, shL, shR, shA, shO, arms, legs, elbowA, wristA, racketHead, racketTip, racketDir: arm.d, elbowO, handO: hand, yaw, swing: sw, k, speed };
   }
 
   return { LEVELS, tMin, profile, create, readyStance, stance, keyAt, footAt, move, truncate, addPhase, phasesAt, swingAt, skeleton, other, FRONT, H_READY };

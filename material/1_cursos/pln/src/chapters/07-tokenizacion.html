@@ -1,0 +1,116 @@
+<template class="chapter-src" data-id="tokenizacion" data-num="7" data-title="Tokenización, stemming y lematización" data-part="Parte II · Las palabras" data-short="Qué es un token; casos difíciles del español; segmentar oraciones; raíces con el stemmer Snowball (regiones R1, R2, RV y pasos); lemas con diccionario; errores de sobreagrupación (laboratorio 2)">
+<p class="lead">Antes de analizar una palabra hay que decidir dónde empieza y dónde termina. «Del» es una palabra al escribirla y dos («de» + «el») al analizarla; «$1.234,50» es una cifra, no cuatro números. Y después de dividir viene reducir: llevar «cantábamos», «cantaré» y «cantó» a una forma común. Este capítulo corresponde al laboratorio 2 del curso.</p>
+
+<section>
+<h2>Tokenización: ¿qué es una palabra?</h2>
+<p>Un <span class="term">token</span> es la unidad mínima con que trabaja un sistema: normalmente una palabra, un número o un signo de puntuación. Un <span class="term">tipo</span> es cada token distinto; un <span class="term">lema</span> es la forma canónica de una palabra. En «el gato y el perro» hay 5 tokens, 4 tipos («el» se repite) y 4 lemas. Separar por espacios parece bastar, pero el español plantea muchos casos:</p>
+<table>
+<thead><tr><th>Caso</th><th>Ejemplo</th><th>Qué conviene</th></tr></thead>
+<tbody>
+<tr><td>Contracciones</td><td>del, al</td><td>Separar en «de + el», «a + el» (la sintaxis lo necesita)</td></tr>
+<tr><td>Clíticos</td><td>dámelo, piénsalo</td><td>Separar en verbo y pronombres: requiere morfología (capítulos 4 y 6)</td></tr>
+<tr><td>Abreviaturas</td><td>Sr., Dra., etc.</td><td>El punto no termina la oración</td></tr>
+<tr><td>Números</td><td>$1.234,50; 3,14; 08/11/2026</td><td>Un solo token; en español «.» y «,» se usan al revés que en inglés</td></tr>
+<tr><td>Direcciones</td><td>ana@uni.edu.co, https://…</td><td>Un solo token, o reemplazarlas por «URL»</td></tr>
+<tr><td>Signos dobles</td><td>¿ ? ¡ !</td><td>Tokens independientes: marcan inicio y fin</td></tr>
+<tr><td>Palabras con guion</td><td>teórico-práctico</td><td>Depende de la tarea</td></tr>
+</tbody></table>
+<div class="sim" data-sim="tokenizador" data-title="Cuatro tokenizadores sobre el mismo texto"></div>
+<div class="sim-guide"><ul>
+<li>Elija un texto y compare cuántos tokens produce cada estrategia: separar por espacios, la clase <code>\w</code> de JavaScript (solo letras ASCII: parte «Pérez» en dos), letras Unicode y el tokenizador completo.</li>
+<li>Active «separar contracciones» para dividir «del» y «al».</li>
+<li>Observe la cifra «$1.234,50»: dividirla por <code>\w</code> destruye el número; el tokenizador completo la conserva como un solo token y separa el «$».</li>
+</ul></div>
+<p>La <b>segmentación de oraciones</b> es el mismo problema a mayor escala: el punto no siempre termina una oración («Sr. Pérez», «p. ej.», «3.5»). Los segmentadores usan reglas con una lista de abreviaturas o un modelo entrenado; con un texto limpio y pocas abreviaturas, una regla sencilla acierta casi siempre.</p>
+</section>
+
+<section>
+<h2>Stemming: cortar hasta la raíz</h2>
+<p>El <span class="term">stemming</span> (extracción de raíces) aplica reglas en cascada que recortan terminaciones. No devuelve necesariamente una palabra: «universidad» → <i>univers</i>. Es rápido, no necesita diccionario y sirve en recuperación de información: una búsqueda de «cantar» encuentra «cantábamos». El primero fue el de Porter (1980) para inglés. Para español se usa el <b>stemmer Snowball</b> (Porter, Boetticher y Rojas), el mismo que traen los cuadernos de Colab. Su diseño:</p>
+<ol>
+<li><b>Regiones.</b> Define tres zonas del final de la palabra. <b>R1</b>: lo que sigue a la primera consonante que va después de una vocal. <b>R2</b>: lo mismo dentro de R1. <b>RV</b>: región de la vocal, según las dos primeras letras. Un sufijo solo se quita si está dentro de su región; así «-idad» no se corta de «ciudad», porque la región R2 de esa palabra está vacía.</li>
+<li><b>Paso 0</b>: quita pronombres enclíticos tras gerundio, infinitivo (estudiándolo → estudiando). </li>
+<li><b>Paso 1</b>: sufijos estándar (-mente, -ación, -idad, -osa…), con arreglos (-ación → raíz; -encia → -ente).</li>
+<li><b>Paso 2</b>: si el paso 1 no quitó nada, sufijos verbales (-aron, -ábamos, -ería…).</li>
+<li><b>Paso 3</b>: sufijo residual (-os, -a, -e, -o, tildes), y finalmente se quitan las tildes.</li>
+</ol>
+<div class="sim" data-sim="stemmer" data-title="Stemmer Snowball del español con regiones y pasos"></div>
+<div class="sim-guide"><ul>
+<li>Escriba una palabra o elija un ejemplo: se marcan las regiones y se detalla qué sufijo se quitó en cada paso.</li>
+<li>Pruebe «universidad», «universal» y «universo». El stemmer da <i>univers</i>, <i>universal</i> y <i>univers</i>: agrupa dos palabras de significado distinto y separa dos de la misma familia.</li>
+<li>Esta implementación se comparó con la de NLTK en 2.519 palabras reales del corpus CESS-ESP y casos especiales, sin ningún desacuerdo (apéndice de validación).</li>
+</ul></div>
+<div class="box warn"><p>Todo stemmer comete dos errores. <b>Sobreagrupación</b> (<i>overstemming</i>): juntar palabras distintas («universidad» y «universo» → <i>univers</i>). <b>Subagrupación</b> (<i>understemming</i>): no juntar formas del mismo lema («universidad» y «universal»; «vine» y «venimos»).</p></div>
+</section>
+
+<section>
+<h2>Lematización: volver al diccionario</h2>
+<p>La <span class="term">lematización</span> devuelve el <b>lema</b>, una palabra real: «cantábamos» → «cantar», «gatas» → «gato». Exige un diccionario o un analizador morfológico, como el de los capítulos 4 y 6, y desambiguar con la categoría gramatical: «vino» es «venir» si es verbo y «vino» si es sustantivo. En el laboratorio se usa spaCy con el modelo <code>es_core_news_sm</code>, que lematiza con un diccionario y reglas aprendidas.</p>
+<div class="sim" data-sim="lematizacion" data-title="Raíz Snowball frente a lemas por diccionario"></div>
+<div class="sim-guide"><ul>
+<li>Elija una oración: para cada palabra se muestra la raíz del stemmer y los lemas del analizador morfológico del curso.</li>
+<li>Las palabras con más de un lema («vino», «canto», «fue») necesitan el contexto; sin él, un lematizador por diccionario debe elegir una o devolver todas.</li>
+<li>El panel de lecturas mide los errores del stemmer sobre las formas del lexicón con lema conocido.</li>
+</ul></div>
+<table>
+<thead><tr><th></th><th>Stemming</th><th>Lematización</th></tr></thead>
+<tbody>
+<tr><td>Resultado</td><td>Raíz (a veces no es una palabra)</td><td>Lema (palabra real)</td></tr>
+<tr><td>Recursos</td><td>Solo reglas</td><td>Diccionario o analizador morfológico</td></tr>
+<tr><td>Velocidad</td><td>Muy alta</td><td>Menor</td></tr>
+<tr><td>Ambigüedad</td><td>No la ve</td><td>Exige la categoría gramatical</td></tr>
+<tr><td>Irregulares</td><td>Falla («vine» ≠ «venimos»)</td><td>Los lista</td></tr>
+<tr><td>Uso típico</td><td>Búsqueda, indexación</td><td>Análisis lingüístico, generación</td></tr>
+</tbody></table>
+<div class="box py"><p>El programa compara cuatro tokenizadores, muestra las raíces de cinco familias de palabras con el stemmer de NLTK y las contrasta con los lemas esperados.</p>
+<div class="py" data-py="07-tokenizacion"></div></div>
+<div class="box read"><ul>
+<li><b>Tokenizadores</b>: el mismo texto da 17 tokens con <code>split()</code>, 22 con <code>\w+</code> (rompe «$1.234,50» en «1», «234», «50»), 19 con <code>\p{L}+</code> (pierde las cifras y los signos) y 25 con el tokenizador de palabras y signos, que conserva «1.234,50» como un número.</li>
+<li><b>Familias</b>: «cantar» y «comer» se reducen a <i>cant</i> y <i>com</i> en todas sus formas, un buen resultado. «Gatito» queda como <i>gatit</i>, separado de <i>gat</i>: subagrupación por el diminutivo.</li>
+<li><b>Errores</b>: «universidad» y «universidades» → <i>univers</i>, igual que «universo» (sobreagrupación), pero «universal» y «universitario» quedan aparte (subagrupación). Con «nación» sucede algo parecido: <i>nacion</i> frente a <i>nacional</i>.</li>
+<li><b>Irregulares</b>: «vino» da <i>vin</i> aunque su lema sea «venir»; «fue» queda como <i>fue</i>. El stemmer no conoce los verbos irregulares.</li>
+<li><b>Medida</b> (lexicón del curso, 1.038 formas de verbos y sustantivos): el 6,2 % de los pares con el mismo lema reciben raíces distintas, casi todos por verbos irregulares, y el 0,01 % de los pares de lemas distintos comparten raíz. En un lexicón regular el stemmer rara vez agrupa de más; el problema son las irregularidades y la derivación.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Cuál usar y cuándo</h2>
+<div class="box when"><ul>
+<li><b>Búsqueda e indexación</b>: stemming; la pérdida de precisión se compensa con el recuerdo.</li>
+<li><b>Clasificación de textos con modelos clásicos</b>: stemming o lematización; compare ambos con validación cruzada.</li>
+<li><b>Modelos neuronales preentrenados</b>: ninguno de los dos. Usan su propio tokenizador de subpalabras (capítulo 31) y preferir el texto sin procesar suele funcionar mejor.</li>
+<li><b>Generación, análisis sintáctico, lingüística</b>: lematización con categoría gramatical.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Token, tipo y lema son cosas distintas; tokenizar bien en español exige tratar contracciones, números con coma, abreviaturas y signos dobles.</li>
+<li>El stemmer Snowball recorta sufijos según las regiones R1, R2 y RV en cuatro pasos y devuelve raíces, no palabras.</li>
+<li>Los errores típicos son la sobreagrupación y la subagrupación; los irregulares escapan al stemmer.</li>
+<li>La lematización devuelve palabras reales con un diccionario y suele necesitar la categoría gramatical.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Cuántos tokens, tipos y lemas tiene «El gato duerme y el perro duerme»?
+<details><summary>Respuesta</summary><p>7 tokens (El, gato, duerme, y, el, perro, duerme), 5 tipos (el, gato, duerme, y, perro: «el» y «duerme» se repiten) y 5 lemas (el, gato, dormir, y, perro).</p></details></li>
+<li><span class="lvl">Básico</span>¿Por qué <code>\w+</code> es mala idea para tokenizar español en JavaScript?
+<details><summary>Respuesta</summary><p>Porque <code>\w</code> solo reconoce letras ASCII: parte «Pérez» en «P» y «rez», y «niño» en «ni» y «o». Hay que usar <code>\p{L}</code> con la bandera <code>u</code>.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué «ciudad» no pierde «-idad» con el stemmer Snowball?
+<details><summary>Respuesta</summary><p>El sufijo «idad» solo se elimina si está dentro de R2; en «ciudad» la región R2 está vacía o es demasiado corta, de modo que se conserva la palabra casi entera.</p></details></li>
+<li><span class="lvl">Intermedio</span>Clasifique como sobre o subagrupación: universidad/universo → <i>univers</i>; universidad/universal.
+<details><summary>Respuesta</summary><p>La primera es sobreagrupación (palabras de significado distinto con la misma raíz); la segunda, subagrupación (palabras emparentadas con raíces distintas).</p></details></li>
+<li><span class="lvl">Avanzado</span>Con el 6,2 % de pares del mismo lema con raíz distinta en el lexicón del curso, ¿qué errores esperaría en un texto real, que tiene más irregulares y derivados?
+<details><summary>Respuesta</summary><p>Más subagrupación que en el lexicón del curso: más formas irregulares (ser, ir, tener, venir) y palabras derivadas con sufijos que el stemmer conserva. Las cifras reales dependen de la frecuencia de uso: las irregulares son poco numerosas pero muy frecuentes, por lo que pesan mucho en un texto.</p></details></li>
+</ol>
+<h3>Autoevaluación</h3>
+<div class="sim" data-sim="quiz" data-cap="tokenizacion" data-title="Autoevaluación del capítulo 7"></div>
+<div class="box links"><ul>
+<li><a href="https://snowballstem.org/algorithms/spanish/stemmer.html">Snowball — algoritmo de stemming del español</a><small>Descripción oficial en la que se basa la implementación del capítulo.</small></li>
+<li><a href="https://doi.org/10.1108/eb046814">Porter (1980) — An algorithm for suffix stripping</a><small>El artículo original del stemmer de Porter para inglés.</small></li>
+<li><a href="https://www.nltk.org/api/nltk.stem.snowball.html">NLTK — módulo nltk.stem.snowball</a><small>La implementación con la que se validó este capítulo.</small></li>
+<li><a href="https://spacy.io/models/es">spaCy — modelos para español</a><small>Tokenización, lematización y etiquetado listos para usar (es_core_news_sm, _md, _lg).</small></li>
+<li><a href="https://www.nltk.org/book/ch03.html">Bird, Klein y Loper — NLTK Book, cap. 3 «Processing raw text»</a><small>Tokenización, stemming y lematización con ejemplos ejecutables (en inglés).</small></li>
+</ul></div>
+</section>
+</template>

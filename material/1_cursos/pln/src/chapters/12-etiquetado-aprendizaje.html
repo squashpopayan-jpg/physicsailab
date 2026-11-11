@@ -1,0 +1,97 @@
+<template class="chapter-src" data-id="etiquetado-aprendizaje" data-num="12" data-title="Etiquetado con aprendizaje automático y cómo evaluarlo" data-part="Parte III · Etiquetado morfosintáctico" data-short="Perceptrón, máxima entropía, SVM y CRF; rasgos de palabra y contexto; decodificación voraz o global; precisión, cobertura y F1 por etiqueta; matriz de confusión; techos humanos">
+<p class="lead">El HMM solo conoce la palabra y la etiqueta anterior. Un clasificador con rasgos puede mirar el sufijo, la mayúscula inicial, la palabra de al lado, y aprender cuánto pesa cada pista. Eso sube el acierto en las palabras nuevas de un 64 % a un 88 %. Este capítulo presenta esa familia de modelos, la que usan hoy casi todos los etiquetadores, y las métricas con las que se comparan.</p>
+
+<section>
+<h2>Del modelo generativo al discriminativo</h2>
+<p>El HMM es <b>generativo</b>: modela \(P(w,t)\) y para etiquetar invierte con Bayes. Obliga a que cada pista sea una variable con su tabla de probabilidades, y no admite rasgos solapados (por ejemplo, la palabra completa <i>y</i> sus sufijos). Un modelo <b>discriminativo</b> aprende directamente la frontera: \(P(t\mid\text{contexto})\), o simplemente una puntuación lineal por etiqueta, con los rasgos que se quiera. Los modelos supervisados del tema 3 de la asignatura son de este tipo: el perceptrón (Collins, 2002), el modelo log-lineal bidireccional (Toutanova y otros, 2003) y las máquinas de vectores de soporte (Giménez y Márquez, 2004).</p>
+<div class="eq key" data-name="Modelo log-lineal (máxima entropía)">\[P(t\mid x)=\frac{\exp\big(\vb w\cdot\vb f(x,t)\big)}{\sum_{t'}\exp\big(\vb w\cdot\vb f(x,t')\big)},\qquad \text{perceptrón: }\ \vb w\leftarrow\vb w+\vb f(x,t^{*})-\vb f(x,\hat t)\ \text{ si }\hat t\ne t^{*}.\]</div>
+<p>La <b>regresión logística multinomial</b> es exactamente este modelo (máxima entropía, softmax). El <b>perceptrón</b> no calcula probabilidades: guarda un peso por (rasgo, etiqueta), elige la etiqueta de mayor puntuación y, si se equivoca, suma los rasgos a la etiqueta correcta y los resta a la predicha. Es muy rápido y, <b>promediando</b> los pesos de todas las iteraciones, igual de preciso.</p>
+</section>
+
+<section>
+<h2>Rasgos: el conocimiento del lenguaje en el modelo</h2>
+<p>El trabajo del lingüista computacional se traslada a diseñar los rasgos. Los del perceptrón de este capítulo (los habituales):</p>
+<table>
+<thead><tr><th>Rasgo</th><th>Ejemplo para «medida» en «una nueva medida .»</th><th>Qué captura</th></tr></thead>
+<tbody>
+<tr><td>Palabra</td><td><code>w=medida</code></td><td>Su etiqueta habitual</td></tr>
+<tr><td>Sufijos de 3 y 2 letras</td><td><code>s3=ida</code>, <code>s2=da</code></td><td>Morfología: «-ción», «-mente», «-aron»</td></tr>
+<tr><td>Etiquetas previas</td><td><code>p1=ADJ</code>, <code>p21=DET|ADJ</code></td><td>Estructura local (como el HMM)</td></tr>
+<tr><td>Palabras vecinas</td><td><code>pw=nueva</code>, <code>nw=.</code></td><td>Contexto a ambos lados (el HMM no mira hacia delante)</td></tr>
+<tr><td>Mayúscula inicial, dígitos</td><td><code>cap</code>, <code>dig</code></td><td>Nombres propios, cifras</td></tr>
+</tbody></table>
+<p>La <b>decodificación</b> puede ser <b>voraz</b> (se elige la mejor etiqueta de cada palabra de izquierda a derecha, usando las ya decididas) o <b>global</b> (Viterbi sobre una secuencia entera, como hacen los <i>campos aleatorios condicionales</i>, CRF). Los CRF son el análogo discriminativo del HMM: puntúan la secuencia completa, normalizan sobre todas las secuencias y evitan que un error temprano se propague. Hoy los reemplazan, en las tareas con muchos datos, las redes neuronales (BiLSTM y Transformer, capítulos 28 a 31), que aprenden los rasgos por sí solas.</p>
+<div class="sim" data-sim="perceptron" data-title="Un perceptrón promediado frente al HMM, con los rasgos que más pesan"></div>
+<div class="sim-guide"><ul>
+<li>Cambie las épocas: con una sola pasada se obtiene un modelo aceptable; con 5 a 8 mejora ligeramente y se estabiliza.</li>
+<li>Compare con el HMM sobre los mismos datos: el perceptrón supera a las palabras desconocidas por una diferencia grande.</li>
+<li>Elija una etiqueta para ver sus rasgos de mayor peso: para VERB (con 240 oraciones y 5 épocas) aparecen los sufijos «-mos», «-ar», «-rlo» (infinitivo con pronombre) y «-ió», y la palabra anterior «había»; para PROPN, domina la mayúscula inicial (peso 11,5, muy por encima de cualquier otro rasgo); para NOUN, el sufijo «-ón» y los determinantes anteriores («el», «del», «una»). Es un modelo que se puede leer.</li>
+<li>Se comparó con una implementación independiente del mismo algoritmo en Python: las predicciones coinciden en todas las palabras (apéndice de validación).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Cómo se evalúa un etiquetador</h2>
+<p>La métrica principal es la <b>exactitud</b> (<i>accuracy</i>): fracción de palabras bien etiquetadas, en un conjunto de prueba que no se usó para entrenar. Conviene desglosarla:</p>
+<ul>
+<li><b>Palabras conocidas y desconocidas</b>: la exactitud global las mezcla y esconde dónde está el error.</li>
+<li><b>Por etiqueta</b>: la <i>precisión</i> (de lo que el modelo llamó «ADJ», cuánto lo era), la <i>cobertura</i> (<i>recall</i>; de lo que era «ADJ», cuánto encontró) y su media armónica, el \(F_1\):</li>
+</ul>
+<div class="eq key" data-name="Precisión, cobertura y F1 por etiqueta">\[P=\frac{VP}{VP+FP},\qquad R=\frac{VP}{VP+FN},\qquad F_1=\frac{2PR}{P+R}.\]</div>
+<ul>
+<li><b>Matriz de confusión</b>: filas = etiqueta real, columnas = predicha. Muestra qué pares se confunden (adjetivo/sustantivo, pronombre/determinante).</li>
+<li><b>Promedios</b>: el \(F_1\) <i>macro</i> promedia las etiquetas por igual; el <i>ponderado</i>, por su frecuencia. Una exactitud alta con un macro bajo indica que las etiquetas raras fallan.</li>
+</ul>
+<div class="sim" data-sim="metricas-tags" data-title="Métricas por etiqueta y matriz de confusión de tres modelos"></div>
+<div class="sim-guide"><ul>
+<li>Alterne los tres modelos: la línea de base falla en casi todas las etiquetas de contenido; el HMM y el perceptrón se parecen en las frecuentes (DET, ADP, PUNCT) y se separan en ADJ y PROPN.</li>
+<li>Las celdas resaltadas fuera de la diagonal son las confusiones más frecuentes. Casi todo el error está en adjetivo/sustantivo, nombre propio/sustantivo y verbo/sustantivo.</li>
+<li>Con 60 oraciones de prueba, las etiquetas con menos de 20 ejemplos no se muestran: su F1 sería muy inestable.</li>
+</ul></div>
+<div class="box warn"><p>Un buen resultado depende tanto de los datos como del modelo. El rendimiento cae cuando el texto de prueba es de otro dominio (prensa frente a redes sociales), y los propios anotadores humanos coinciden entre sí en torno al 97 % en etiquetado clásico: un modelo no puede, ni debe, superar de manera sostenida ese techo con datos anotados por humanos.</p></div>
+</section>
+
+<section>
+<h2>Práctica con scikit-learn y NLTK sobre el corpus completo</h2>
+<div class="box py"><p>El programa compara, sobre CESS-ESP completo (5.427 oraciones de entrenamiento, 603 de prueba), el perceptrón promediado de NLTK con una regresión logística (máxima entropía) con los mismos tipos de rasgos, y calcula las métricas por etiqueta.</p>
+<div class="py" data-py="12-aprendizaje"></div></div>
+<div class="box read"><ul>
+<li><b>Exactitud</b>: perceptrón promediado de NLTK 95,0 % y regresión logística 94,2 %, frente al 90,5 % del HMM del capítulo anterior y al 89,9 % del mejor etiquetador por retroceso.</li>
+<li><b>Desconocidas</b>: 88,1 % (perceptrón) y 86,3 % (logística) frente al 63,6 % del HMM. Los sufijos y las mayúsculas generalizan; el HMM solo tenía el símbolo UNK. Las palabras conocidas se acercan entre modelos (96,1 %, 95,5 %, 94,9 %).</li>
+<li><b>Tamaño</b>: la logística usa 71.897 rasgos; entrenó en 104 segundos frente a 22 del perceptrón, que es mucho más rápido.</li>
+<li><b>Por etiqueta</b>: PUNCT (F1 1,000), ADP (0,990) y DET (0,968) son casi perfectas; ADJ es la peor (0,811), por la confusión con los sustantivos (136 adjetivos etiquetados como sustantivo y 95 al revés). El F1 macro es 0,837 y el ponderado, 0,942: el promedio sin ponderar delata el peso de las etiquetas raras mal resueltas.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Los modelos discriminativos (máxima entropía, perceptrón, SVM, CRF) aprenden pesos para rasgos arbitrarios; son hoy el estándar tradicional del etiquetado.</li>
+<li>El perceptrón corrige sus pesos solo cuando se equivoca; el promedio de pesos estabiliza.</li>
+<li>Los rasgos de sufijo y capitalización explican la gran mejora en palabras desconocidas.</li>
+<li>Se evalúa con exactitud (global, en conocidas y desconocidas) y con precisión, cobertura y F1 por etiqueta.</li>
+<li>La matriz de confusión muestra qué categorías se confunden; el F1 macro revela las etiquetas raras mal resueltas.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un modelo etiquetó 50 palabras como ADJ, de las cuales 40 lo eran, y había 80 adjetivos en total. Calcule precisión y cobertura.
+<details><summary>Respuesta</summary><p>Precisión 40/50 = 0,80; cobertura 40/80 = 0,50.</p></details></li>
+<li><span class="lvl">Básico</span>Con esos datos, ¿cuánto vale F1?
+<details><summary>Respuesta</summary><p>2·0,8·0,5/(0,8+0,5) = 0,8/1,3 = 0,615.</p></details></li>
+<li><span class="lvl">Intermedio</span>Un perceptrón tiene un peso 0 en todas las etiquetas y ve «canta» (VERB) con rasgos {w=canta, s2=ta}. Predice NOUN (por desempate). ¿Cómo se actualizan los pesos?
+<details><summary>Respuesta</summary><p>Se suma 1 al peso de cada rasgo para VERB y se resta 1 para NOUN. Tras la actualización, «w=canta» y «s2=ta» puntúan más para VERB que para NOUN.</p></details></li>
+<li><span class="lvl">Intermedio</span>Dos modelos tienen la misma exactitud (95 %), pero uno tiene F1 macro 0,90 y el otro 0,80. ¿Qué diferencia hay?
+<details><summary>Respuesta</summary><p>El de 0,80 falla mucho más en las etiquetas de poco soporte (raras): la exactitud la dominan las frecuentes. Si importan las raras (por ejemplo, entidades), el primero es mejor.</p></details></li>
+<li><span class="lvl">Avanzado</span>¿Por qué la matriz de confusión normalizada por filas y la por columnas cuentan historias distintas?
+<details><summary>Respuesta</summary><p>Por filas (dividiendo por la etiqueta real) cada celda es una cobertura: «de los ADJ reales, ¿qué fracción se etiquetó como NOUN?». Por columnas (dividiendo por la predicha) es una precisión: «de lo que se etiquetó NOUN, ¿qué fracción eran ADJ?». Una etiqueta frecuente puede ser un destino de muchas confusiones sin que su cobertura sufra.</p></details></li>
+</ol>
+<h3>Autoevaluación</h3>
+<div class="sim" data-sim="quiz" data-cap="etiquetado-aprendizaje" data-title="Autoevaluación del capítulo 12"></div>
+<div class="box links"><ul>
+<li><a href="https://aclanthology.org/W02-1001/">Collins (2002) — Discriminative training methods for hidden Markov models</a><small>El artículo del perceptrón estructurado para etiquetado, citado en el tema 3.</small></li>
+<li><a href="https://aclanthology.org/N03-1033/">Toutanova y otros (2003) — Feature-rich part-of-speech tagging with a cyclic dependency network</a><small>El modelo log-lineal bidireccional del tema 3, con 97 % en inglés.</small></li>
+<li><a href="https://explosion.ai/blog/part-of-speech-pos-tagger-in-python">Honnibal (2013) — A good POS tagger in about 200 lines of Python</a><small>La implementación del perceptrón promediado que usa NLTK.</small></li>
+<li><a href="https://sklearn-crfsuite.readthedocs.io/">sklearn-crfsuite</a><small>CRF para etiquetado de secuencias con una interfaz tipo scikit-learn.</small></li>
+<li><a href="https://doi.org/10.1007/978-3-642-19400-9_14">Manning (2011) — Part-of-speech tagging from 97 % to 100 %: is it time for some linguistics?</a><small>Análisis de qué errores quedan cuando el etiquetador ya acierta el 97 %.</small></li>
+</ul></div>
+</section>
+</template>

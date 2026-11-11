@@ -1,0 +1,273 @@
+<template class="chapter-src" data-id="analitica" data-num="11" data-title="Mecánica analítica" data-part="Parte II · Mecánica clásica" data-short="Las ecuaciones de Euler–Lagrange desde el principio de Hamilton, la braquistócrona, coordenadas cíclicas y el péndulo cónico, las ecuaciones de Hamilton con el espacio de fases del oscilador y los modos del péndulo doble">
+<p class="lead">La mecánica de Newton escribe una ecuación vectorial para cada partícula; la de Lagrange y Hamilton escribe <em>una sola función</em>, \(L=T-V\), y todo el movimiento sale de pedir que la acción \(S=\int L\,\mathrm dt\) sea estacionaria. La ventaja es doble: las coordenadas pueden ser cualesquiera (ángulos, distancias, amplitudes) y las leyes de conservación aparecen como consecuencia de simetrías. Este capítulo deduce las ecuaciones de Euler–Lagrange, las usa para la braquistócrona, el aro giratorio, el péndulo cónico y el péndulo doble, y pasa al formalismo de Hamilton, de donde nacen la cuantización de Bohr–Sommerfeld y la mecánica cuántica.</p>
+
+<deriv id="euler-lagrange" title="Principio de Hamilton y ecuaciones de Euler–Lagrange: el aro giratorio" tags="Lagrange, Cálculo de variaciones">
+<goal>Las ecuaciones de movimiento que hacen estacionaria la acción \(S=\int L\,\mathrm dt\), y su aplicación a una cuenta que desliza por un aro vertical que gira.</goal>
+<given>
+<g>Principio de Hamilton: la trayectoria real entre \(t_1\) y \(t_2\) hace estacionaria \(S[q]=\int_{t_1}^{t_2}L(q,\dot q,t)\,\mathrm dt\) con \(L=T-V\), con los extremos fijos.</g>
+<g>Integración por partes y el lema fundamental del cálculo de variaciones: si \(\int f(t)\,\eta(t)\,\mathrm dt=0\) para toda \(\eta\) que se anula en los extremos, entonces \(f=0\).</g>
+</given>
+<step op="Variar la trayectoria \(q\to q+\delta q\) con \(\delta q(t_1)=\delta q(t_2)=0\)">
+\[\delta S=\int_{t_1}^{t_2}\left(\frac{\partial L}{\partial q}\,\delta q+\frac{\partial L}{\partial\dot q}\,\delta\dot q\right)\mathrm dt,\qquad \delta\dot q=\frac{\mathrm d}{\mathrm dt}\delta q.\]
+</step>
+<step op="Integrar por partes el segundo término">
+\[\int\frac{\partial L}{\partial\dot q}\frac{\mathrm d\,\delta q}{\mathrm dt}\,\mathrm dt=\left[\frac{\partial L}{\partial\dot q}\delta q\right]_{t_1}^{t_2}-\int\frac{\mathrm d}{\mathrm dt}\!\left(\frac{\partial L}{\partial\dot q}\right)\delta q\,\mathrm dt.\]
+<why>El término de borde es nulo porque \(\delta q=0\) en los extremos.</why>
+</step>
+<step op="Exigir \(\delta S=0\) para toda variación">
+\[\delta S=\int\left[\frac{\partial L}{\partial q}-\frac{\mathrm d}{\mathrm dt}\frac{\partial L}{\partial\dot q}\right]\delta q\,\mathrm dt=0\ \Longrightarrow\ \frac{\mathrm d}{\mathrm dt}\frac{\partial L}{\partial\dot q}-\frac{\partial L}{\partial q}=0.\]
+<why>Lema fundamental: como \(\delta q\) es arbitraria, el corchete debe ser cero en cada instante. Hay una ecuación por cada coordenada generalizada.</why>
+</step>
+<step op="Comprobar con una partícula en un potencial">
+\[L=\tfrac12m\dot x^2-V(x)\ \Longrightarrow\ \frac{\mathrm d}{\mathrm dt}(m\dot x)=-\frac{\mathrm dV}{\mathrm dx}\ \Longrightarrow\ m\ddot x=F.\]
+<why>Se recupera la segunda ley de Newton.</why>
+</step>
+<step op="Aro vertical de radio \(R\) que gira con velocidad angular \(\omega\) alrededor del eje vertical: Lagrangiano de la cuenta">
+\[L=\tfrac12mR^2\big(\dot\theta^2+\omega^2\sin^2\theta\big)+mgR\cos\theta,\qquad \theta=\text{ángulo desde el punto más bajo}.\]
+<why>La velocidad tiene una componente a lo largo del aro, \(R\dot\theta\), y otra horizontal, \(\omega R\sin\theta\); la energía potencial es \(-mgR\cos\theta\) (la coordenada \(\theta\) se mide desde el punto más bajo).</why>
+</step>
+<step op="Ecuación de Euler–Lagrange para \(\theta\)">
+\[mR^2\ddot\theta=mR^2\omega^2\sin\theta\cos\theta-mgR\sin\theta\ \Longrightarrow\ \ddot\theta=\sin\theta\left(\omega^2\cos\theta-\frac gR\right).\]
+</step>
+<step op="Equilibrios y oscilaciones">
+\[\theta=0\ \text{(estable si }\omega\lt\omega_c=\sqrt{g/R}\text{)};\quad \cos\theta_0=\frac g{\omega^2R}\ (\omega\gt\omega_c),\quad \Omega_\text{osc}=\omega\sin\theta_0.\]
+<why>Linealizando alrededor de \(\theta_0\): \(\delta\ddot\theta=-\omega^2\sin^2\theta_0\,\delta\theta\) (el término con \(\omega^2\cos\theta_0-g/R\) se anula en el equilibrio). A \(\omega=\omega_c\) el equilibrio bajo pierde su estabilidad (bifurcación).</why>
+</step>
+<result name="Euler–Lagrange">\[\frac{\mathrm d}{\mathrm dt}\frac{\partial L}{\partial\dot q_i}-\frac{\partial L}{\partial q_i}=0;\qquad \cos\theta_0=\frac{g}{\omega^2R}.\]</result>
+<vars>
+<v s="L" n="lagrangiano \(T-V\)" u="kg m^2 s^-2"/>
+<v s="m" n="masa de la cuenta" u="kg"/>
+<v s="\theta" n="ángulo de la cuenta" u="rad"/>
+<v s="\omega" n="velocidad angular del aro" u="rad s^-1"/>
+<v s="R" n="radio del aro" u="m"/>
+<v s="g" n="aceleración de la gravedad" u="m s^-2"/>
+<v s="\omega_c" n="velocidad crítica \(\sqrt{g/R}\)" u="rad s^-1"/>
+<v s="\theta_0" n="ángulo de equilibrio" u="rad"/>
+</vars>
+<effects>
+<e>Con \(R=0.5\) m y \(g=9.81\): \(\omega_c=4.429\) rad/s. Con \(\omega=1.5\,\omega_c=6.644\) rad/s la cuenta se estabiliza en \(\theta_0=63.61^\circ\) y oscila a 5.952 rad/s; con \(\omega=2\omega_c\): 75.52° y 8.578 rad/s; cerca del umbral (\(r=1.01\)): 11.39° y 0.884 rad/s (oscilación lentísima).</e>
+<e>Para velocidades muy altas la cuenta se pega al ecuador (\(\theta_0\to90^\circ\)): a \(r=5\), 87.71°. El comportamiento es el mismo de una transición de fase de segundo orden (el ángulo crece como \(\sqrt{\omega-\omega_c}\) al pasar el umbral).</e>
+<e>La masa de la cuenta no aparece: el resultado solo depende de \(g/R\) y de \(\omega\).</e>
+</effects>
+<limits>
+<l>Dimensiones: \([g/R]=\mathsf T^{-2}\), igual que \([\omega^2]\), de modo que \(g/(\omega^2R)\) es adimensional. ✓</l>
+<l>El Lagrangiano requiere fuerzas de ligadura que no hagan trabajo (aquí, la reacción del aro es perpendicular al desplazamiento virtual), y para un aro con rozamiento hay que añadir fuerzas generalizadas no conservativas.</l>
+</limits>
+<explore sim="aro" title="Cuenta en un aro que gira: ángulo de equilibrio y frecuencia de oscilación"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (\(R=0.5\), \(r=\omega/\omega_c=1.5\)): \(\omega_c=4.4294\) rad/s, \(\theta_0=63.612^\circ\) y oscilación a 5.9519 rad/s.</li>
+<li>Seleccione \(r\) en el eje: \(\theta_0\) arranca en 0° para \(r=1\) y sube como \(\sqrt{r-1}\); la frecuencia de oscilación comienza en cero.</li>
+</ul></div>
+</deriv>
+
+<deriv id="braquistocrona" title="La braquistócrona: la curva de descenso más rápido" tags="Lagrange, Cálculo de variaciones">
+<goal>La curva que une dos puntos sobre la cual una partícula, soltada del reposo, desciende en el menor tiempo, y ese tiempo.</goal>
+<given>
+<g>Conservación de la energía: a una profundidad \(y\) (hacia abajo, partiendo del reposo en el origen), \(v=\sqrt{2gy}\).</g>
+<g>La ecuación de Euler–Lagrange para un funcional \(\int F(y,y')\,\mathrm dx\) cuya integrando no depende explícitamente de \(x\) tiene la integral primera de Beltrami \(F-y'\,\partial F/\partial y'=C\).</g>
+</given>
+<step op="Escribir el tiempo de descenso como un funcional">
+\[T=\int\frac{\mathrm ds}v=\int_0^{x_B}\sqrt{\frac{1+y'^2}{2gy}}\ \mathrm dx.\]
+<why>\(\mathrm ds=\sqrt{1+y'^2}\,\mathrm dx\) y \(v=\sqrt{2gy}\).</why>
+</step>
+<step op="Aplicar la identidad de Beltrami a \(F=\sqrt{(1+y'^2)/y}\)">
+\[F-y'\frac{\partial F}{\partial y'}=\sqrt{\frac{1+y'^2}y}-\frac{y'^2}{\sqrt{y(1+y'^2)}}=\frac1{\sqrt{y(1+y'^2)}}=C.\]
+</step>
+<step op="Despejar la ecuación diferencial">
+\[y\,(1+y'^2)=\frac1{C^2}\equiv2R\qquad(\text{constante}).\]
+</step>
+<step op="Parametrizar con \(y'=\cot(\varphi/2)\)">
+\[y=\frac{2R}{1+\cot^2(\varphi/2)}=2R\sin^2\tfrac\varphi2=R(1-\cos\varphi).\]
+<why>Con \(1+\cot^2=1/\sin^2\). Es una sustitución que simplifica la ecuación y deja \(y\) explícita.</why>
+</step>
+<step op="Integrar para \(x\)">
+\[\mathrm dx=\frac{\mathrm dy}{y'}=\frac{R\sin\varphi\,\mathrm d\varphi}{\cot(\varphi/2)}=R(1-\cos\varphi)\,\mathrm d\varphi\ \Longrightarrow\ x=R(\varphi-\sin\varphi).\]
+<why>\(\sin\varphi=2\sin\tfrac\varphi2\cos\tfrac\varphi2\) y el cociente por \(\cot(\varphi/2)\) da \(2\sin^2(\varphi/2)=1-\cos\varphi\). Es la ecuación de una <span class="term">cicloide</span>: la trayectoria de un punto del borde de una rueda de radio \(R\) que rueda sin deslizar.</why>
+</step>
+<step op="Calcular el tiempo de descenso">
+\[\mathrm ds=2R\sin\tfrac\varphi2\,\mathrm d\varphi,\quad v=2\sqrt{gR}\sin\tfrac\varphi2\ \Longrightarrow\ \mathrm dt=\sqrt{\frac Rg}\,\mathrm d\varphi\ \Longrightarrow\ T=\varphi_B\sqrt{\frac Rg}.\]
+</step>
+<result name="Braquistócrona">\[x=R(\varphi-\sin\varphi),\quad y=R(1-\cos\varphi),\quad T=\varphi_B\sqrt{R/g}.\]</result>
+<vars>
+<v s="x" n="coordenada horizontal" u="m"/>
+<v s="y" n="profundidad" u="m"/>
+<v s="R" n="radio del círculo generador" u="m"/>
+<v s="\varphi" n="ángulo de rodadura" u="rad"/>
+<v s="g" n="aceleración de la gravedad" u="m s^-2"/>
+<v s="T" n="tiempo de descenso" u="s"/>
+</vars>
+<effects>
+<e>Hasta el punto más bajo de la cicloide (\(\varphi_B=\pi\), \(x_B=\pi R\), \(y_B=2R\)) con \(R=1\) m: \(T=1.0030\) s, frente a 1.1890 s por la recta que une los mismos puntos: la cicloide es 15.6 % más rápida (cociente 0.8436). Cuanto más pronunciado el descenso, mayor la ventaja: con \(\varphi_B=5\), 0.499; con \(\varphi_B=2\), 0.942; con \(\varphi_B=0.5\), 0.9965.</e>
+<e>\(T\propto\sqrt R\) a ángulo fijo (\(n_R=0.5\)) y \(\propto g^{-1/2}\). La cicloide es también <em>tautócrona</em>: desde cualquier punto de partida el tiempo hasta el fondo es el mismo, \(\pi\sqrt{R/g}\), independiente de la amplitud: es el péndulo isócrono de Huygens.</e>
+</effects>
+<limits>
+<l>Dimensiones: \([\sqrt{R/g}]=\mathsf T\). ✓</l>
+<l>Para \(\varphi_B\gt\pi\) la partícula pasa por debajo del punto final y sube (cicloide completa si \(\varphi_B=2\pi\)); el resultado asume que el punto de llegada está dentro de la primera arcada, \(0\lt\varphi_B\lt2\pi\). Fue el problema que lanzó Johann Bernoulli en 1696.</l>
+</limits>
+<explore sim="braquistocrona" title="La cicloide: tiempo de descenso comparado con la línea recta"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (\(R=1\), \(\varphi_B=\pi\)): \(T=1.00303\) s, recta 1.18904 s, \(x_B=3.14159\) m, \(y_B=2\) m y cociente 0.84356.</li>
+<li>Seleccione φ_B en el eje: el cociente baja de 1 (descenso casi recto) a 0.5 cerca de 5 rad.</li>
+</ul></div>
+</deriv>
+
+<deriv id="pendulo-conico" title="Coordenadas cíclicas y el péndulo cónico" tags="Lagrange, Conservación">
+<goal>El periodo, la rapidez y la tensión de una masa que gira describiendo un cono, como ejemplo de una coordenada cíclica (ausente del Lagrangiano) que genera una cantidad conservada.</goal>
+<given>
+<g>Si \(L\) no depende de \(q_i\) (coordenada cíclica), la ecuación de Euler–Lagrange da \(\mathrm d p_i/\mathrm dt=0\) con \(p_i=\partial L/\partial\dot q_i\): el momento conjugado se conserva (caso particular del teorema de Noether).</g>
+<g>Péndulo esférico: masa \(m\) en el extremo de un hilo de longitud \(L\), con coordenadas \(\theta\) (desde la vertical) y \(\varphi\) (azimut).</g>
+</given>
+<step op="Escribir el Lagrangiano del péndulo esférico">
+\[L=\tfrac12mL^2\big(\dot\theta^2+\sin^2\theta\,\dot\varphi^2\big)+mgL\cos\theta.\]
+</step>
+<step op="Identificar la coordenada cíclica y su cantidad conservada">
+\[\frac{\partial L}{\partial\varphi}=0\ \Longrightarrow\ p_\varphi=mL^2\sin^2\theta\,\dot\varphi=\text{constante}\ \ (\text{momento angular vertical}).\]
+</step>
+<step op="Ecuación en \(\theta\)">
+\[mL^2\ddot\theta=mL^2\sin\theta\cos\theta\,\dot\varphi^2-mgL\sin\theta.\]
+</step>
+<step op="Movimiento con \(\theta\) constante (\(\ddot\theta=0\)): órbita cónica">
+\[\dot\varphi^2\cos\theta=\frac gL\ \Longrightarrow\ \omega=\sqrt{\frac g{L\cos\theta}},\quad T=2\pi\sqrt{\frac{L\cos\theta}g}.\]
+<why>Se divide la ecuación por \(\sin\theta\) (\(\theta\ne0\)).</why>
+</step>
+<step op="Rapidez y tensión">
+\[v=\omega L\sin\theta=\sqrt{gL\sin\theta\tan\theta},\qquad T_\text{hilo}\cos\theta=mg\ \Rightarrow\ \frac{T_\text{hilo}}{mg}=\frac1{\cos\theta}.\]
+<why>La componente vertical de la tensión equilibra el peso; la horizontal es la fuerza centrípeta \(m\omega^2L\sin\theta\).</why>
+</step>
+<result name="Péndulo cónico">\[\omega=\sqrt{\frac g{L\cos\theta}},\qquad T=2\pi\sqrt{\frac{L\cos\theta}g},\qquad \frac{T_\text{hilo}}{mg}=\frac1{\cos\theta}.\]</result>
+<vars>
+<v s="L" n="longitud del hilo" u="m"/>
+<v s="\theta" n="ángulo con la vertical" u="rad"/>
+<v s="\omega" n="velocidad angular del giro" u="rad s^-1"/>
+<v s="T" n="periodo de giro" u="s"/>
+<v s="g" n="aceleración de la gravedad" u="m s^-2"/>
+<v s="v" n="rapidez" u="m s^-1"/>
+<v s="p_\varphi" n="momento angular vertical por unidad de \(mL^2\)" u="rad s^-1"/>
+</vars>
+<effects>
+<e>Con \(L=1\) m y \(\theta=30^\circ\): \(\omega=3.366\) rad/s, \(T=1.867\) s, \(v=1.683\) m/s y tensión \(1.155\,mg\). A 60°: \(T=1.419\) s, \(v=3.836\) m/s y tensión \(2\,mg\); a 80°: \(\omega=7.516\) rad/s, \(v=7.402\) m/s y tensión \(5.76\,mg\).</e>
+<e>El periodo no depende de la masa; baja al aumentar \(\theta\) (a ángulos pequeños tiende a \(2\pi\sqrt{L/g}\), el periodo del péndulo simple). La tensión diverge cuando \(\theta\to90^\circ\): no se puede girar un hilo horizontal con una masa colgando.</e>
+<e>Exponentes: \(T\propto\sqrt{L\cos\theta}\); \(n_L=0.5\), y respecto del ángulo \(n_\theta=-\tfrac12\theta\tan\theta\), que crece con el ángulo.</e>
+</effects>
+<limits>
+<l>Dimensiones: \([g/L\cos\theta]=\mathsf T^{-2}\). ✓</l>
+<l>Para \(\theta\to0\) la órbita cónica degenera en el péndulo simple, con \(T\to2\pi\sqrt{L/g}\). La estabilidad de la órbita cónica frente a variaciones de \(\theta\) y el movimiento general (rosetas) son más complicados y se resuelven con el potencial efectivo.</l>
+</limits>
+<explore sim="conico" title="Péndulo cónico: velocidad angular, periodo, rapidez y tensión"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (\(L=1\), 30°): \(\omega=3.36565\) rad/s, \(T=1.86686\) s, \(v=1.68283\) m/s y \(T/mg=1.1547\).</li>
+<li>Seleccione θ en el eje: el periodo cae de 2.002 s (5°) a 0.836 s (80°), y la tensión sube como \(1/\cos\theta\).</li>
+</ul></div>
+</deriv>
+
+<deriv id="hamilton" title="Las ecuaciones de Hamilton y el espacio de fases del oscilador" tags="Hamilton, Espacio de fases">
+<goal>El formalismo de primer orden que sustituye la ecuación de Lagrange, y el área de la órbita de un oscilador armónico en el espacio de fases, que se vuelve el cuanto de acción en mecánica cuántica.</goal>
+<given>
+<g>Momento conjugado \(p=\partial L/\partial\dot q\) y la ecuación de Euler–Lagrange \(\dot p=\partial L/\partial q\).</g>
+<g>Transformada de Legendre: dada \(L(q,\dot q)\), se define \(H(q,p)=p\dot q-L\) eliminando \(\dot q\) en favor de \(p\).</g>
+</given>
+<step op="Definir el hamiltoniano y calcular su diferencial">
+\[H=p\dot q-L\ \Longrightarrow\ \mathrm dH=\dot q\,\mathrm dp+p\,\mathrm d\dot q-\frac{\partial L}{\partial q}\mathrm dq-\frac{\partial L}{\partial\dot q}\mathrm d\dot q=\dot q\,\mathrm dp-\frac{\partial L}{\partial q}\mathrm dq.\]
+<why>Los términos en \(\mathrm d\dot q\) se cancelan porque \(p=\partial L/\partial\dot q\): \(H\) es función de \((q,p)\) solamente.</why>
+</step>
+<step op="Leer las ecuaciones de Hamilton">
+\[\dot q=\frac{\partial H}{\partial p},\qquad \dot p=-\frac{\partial H}{\partial q}.\]
+<why>Comparando \(\mathrm dH=\partial_pH\,\mathrm dp+\partial_qH\,\mathrm dq\) con el resultado anterior y usando \(\partial L/\partial q=\dot p\).</why>
+</step>
+<step op="Conservación de la energía">
+\[\frac{\mathrm dH}{\mathrm dt}=\frac{\partial H}{\partial q}\dot q+\frac{\partial H}{\partial p}\dot p=0.\]
+<why>Si \(H\) no depende explícitamente de \(t\), es constante y, cuando los ligamentos no dependen del tiempo, es la energía \(T+V\).</why>
+</step>
+<step op="Hamiltoniano del oscilador">
+\[L=\tfrac12m\dot q^2-\tfrac12m\omega^2q^2\ \Rightarrow\ p=m\dot q,\quad H=\frac{p^2}{2m}+\tfrac12m\omega^2q^2.\]
+</step>
+<step op="La órbita de energía \(E\) es una elipse">
+\[\frac{q^2}{q_\max^2}+\frac{p^2}{p_\max^2}=1,\qquad q_\max=\sqrt{\frac{2E}{m\omega^2}},\quad p_\max=\sqrt{2mE}.\]
+</step>
+<step op="Calcular el área de la elipse y definir la acción">
+\[\oint p\,\mathrm dq=\pi\,q_\max\,p_\max=\frac{2\pi E}\omega,\qquad J=\frac1{2\pi}\oint p\,\mathrm dq=\frac E\omega.\]
+<why>Área de una elipse \(\pi ab\). \(J\) es la variable de acción: constante cuando \(\omega\) cambia despacio (invariante adiabático \(E/\omega\)).</why>
+</step>
+<result name="Hamilton y el espacio de fases">\[\dot q=\frac{\partial H}{\partial p},\quad \dot p=-\frac{\partial H}{\partial q},\qquad \oint p\,\mathrm dq=\frac{2\pi E}\omega.\]</result>
+<vars>
+<v s="H" n="hamiltoniano (energía)" u="kg m^2 s^-2"/>
+<v s="p" n="momento conjugado" u="kg m s^-1"/>
+<v s="q" n="coordenada" u="m"/>
+<v s="m" n="masa" u="kg"/>
+<v s="\omega" n="frecuencia angular" u="rad s^-1"/>
+<v s="E" n="energía" u="kg m^2 s^-2"/>
+<v s="J" n="variable de acción" u="kg m^2 s^-1"/>
+</vars>
+<effects>
+<e>Con \(m=0.5\) kg, \(\omega=20\) rad/s y \(E=0.25\) J: \(q_\max=0.05\) m, \(p_\max=0.5\) kg·m/s, área \(=0.07854\) J·s y \(J=0.0125\) J·s. En unidades de \(h\) son \(1.185\times10^{32}\) «cuantos»: por eso la cuantización no se ve a escala macroscópica.</e>
+<e>El área solo depende de \(E/\omega\) (\(n_E=1\), \(n_\omega=-1\)), no de la masa. Con la regla de Bohr–Sommerfeld, \(\oint p\,\mathrm dq=nh\), se obtiene \(E_n=n\hbar\omega\) (el valor exacto cuántico es \(E_n=(n+\tfrac12)\hbar\omega\), capítulo 30).</e>
+<e>Si la frecuencia del resorte se reduce lentamente a la mitad (adiabáticamente), \(E/\omega\) se conserva: la energía también cae a la mitad (el análogo clásico de la conservación del número de cuantos).</e>
+</effects>
+<limits>
+<l>Dimensiones: \([pq]=\mathsf M\mathsf L^2\mathsf T^{-1}\), la de la acción (J·s). ✓</l>
+<l>La conservación del volumen del espacio de fases (teorema de Liouville) sigue de las ecuaciones de Hamilton: \(\partial_q\dot q+\partial_p\dot p=\partial_q\partial_pH-\partial_p\partial_qH=0\). El formalismo vale para sistemas con fuerzas derivables de un potencial.</l>
+</limits>
+<explore sim="hamilton" title="Oscilador en el espacio de fases: semiejes, área y número de cuantos"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales: \(q_\max=0.05\) m, \(p_\max=0.5\), área \(7.8540\times10^{-2}\) J·s, \(J=1.25\times10^{-2}\) J·s y \(A/h=1.1853\times10^{32}\).</li>
+<li>Seleccione \(E\) en el eje (log–log): el área es una recta de pendiente 1; los semiejes \(q_\max\) y \(p_\max\) crecen con pendiente 0.5.</li>
+</ul></div>
+</deriv>
+
+<deriv id="doble-pendulo" title="El péndulo doble: modos normales de las pequeñas oscilaciones" tags="Lagrange, Álgebra lineal">
+<goal>Las frecuencias de los dos modos de pequeñas oscilaciones de dos péndulos encadenados (barras de igual longitud \(L\) y masas \(m_1\), \(m_2\)).</goal>
+<given>
+<g>Lagrangiano \(L=T-V\) en las coordenadas \(\theta_1\), \(\theta_2\) (ángulos de cada barra con la vertical) y ecuaciones de Euler–Lagrange.</g>
+<g>Pequeñas oscilaciones: se desarrolla \(T\) y \(V\) hasta segundo orden en los ángulos y sus derivadas.</g>
+</given>
+<step op="Escribir las energías">
+\[T=\tfrac12(m_1+m_2)L^2\dot\theta_1^2+\tfrac12m_2L^2\dot\theta_2^2+m_2L^2\dot\theta_1\dot\theta_2\cos(\theta_1-\theta_2),\quad V=-(m_1+m_2)gL\cos\theta_1-m_2gL\cos\theta_2.\]
+</step>
+<step op="Aproximar a segundo orden (\(\cos x\simeq1-x^2/2\))">
+\[T\simeq\tfrac12\dot{\mathbf q}^{\mathsf T}\mathsf M\dot{\mathbf q},\ \ \mathsf M=L^2\!\begin{pmatrix}m_1+m_2&m_2\\ m_2&m_2\end{pmatrix};\quad V\simeq\tfrac12\mathbf q^{\mathsf T}\mathsf K\mathbf q,\ \ \mathsf K=gL\begin{pmatrix}m_1+m_2&0\\0&m_2\end{pmatrix}.\]
+<why>En la energía cinética basta \(\cos(\theta_1-\theta_2)\simeq1\), pues ya hay dos factores de velocidad.</why>
+</step>
+<step op="Ecuaciones de Euler–Lagrange y ansatz de modo normal">
+\[\mathsf M\ddot{\mathbf q}+\mathsf K\mathbf q=0,\quad \mathbf q=\mathbf a\,\mathrm e^{\mathrm i\omega t}\ \Longrightarrow\ \det(\mathsf K-\omega^2\mathsf M)=0.\]
+</step>
+<step op="Desarrollar el determinante con \(x=\omega^2L/g\)">
+\[(m_1+m_2)(1-x)\cdot m_2(1-x)-m_2^2x^2=0\ \Longrightarrow\ (m_1+m_2)(1-x)^2=m_2x^2.\]
+</step>
+<step op="Resolver">
+\[\frac{1-x}x=\pm\sqrt{\frac{\mu}{1+\mu}}\ \ \Rightarrow\ \ \omega_\pm^2=\frac gL\left(1+\mu\pm\sqrt{\mu(1+\mu)}\right),\qquad \mu=\frac{m_2}{m_1}.\]
+<why>Con \(s=\sqrt{\mu/(1+\mu)}\), \(x=1/(1\mp s)=(1\pm s)(1+\mu)\).</why>
+</step>
+<result name="Modos del péndulo doble">\[\omega_\pm^2=\frac gL\Big(1+\mu\pm\sqrt{\mu(1+\mu)}\Big),\qquad \mu=\frac{m_2}{m_1}.\]</result>
+<vars>
+<v s="g" n="aceleración de la gravedad" u="m s^-2"/>
+<v s="L" n="longitud de cada barra" u="m"/>
+<v s="\mu" n="razón de masas \(m_2/m_1\)" u="1"/>
+<v s="\omega_\pm" n="frecuencias de los modos normales" u="rad s^-1"/>
+</vars>
+<effects>
+<e>Con \(L=1\) m y \(m_1=m_2\) (\(\mu=1\)): \(\omega_-=2.397\) rad/s (periodo 2.621 s, barras en fase) y \(\omega_+=5.787\) rad/s (1.086 s, en oposición); el cociente es \(1+\sqrt2=2.414\). Con \(\mu=0.1\): 2.745 y 3.748 rad/s (cociente 1.365); con \(\mu=10\): 2.241 y 14.519 rad/s (6.479).</e>
+<e>Si la masa inferior es pequeña (\(\mu\to0\)) los dos modos tienden a \(\sqrt{g/L}\) (el péndulo simple, con una barra casi pasiva); si es muy grande (\(\mu\to\infty\)) el modo lento tiende a \(\sqrt{g/2L}\) y el rápido diverge como \(\sqrt{2\mu g/L}\).</e>
+<e>Ambas frecuencias escalan como \(L^{-1/2}\) y \(g^{1/2}\) (\(n_g=\tfrac12\)). Fuera de la zona de pequeñas oscilaciones el movimiento del péndulo doble es caótico (capítulo 40).</e>
+</effects>
+<limits>
+<l>Dimensiones: \([g/L]=\mathsf T^{-2}\) y \(\mu\) es adimensional. ✓</l>
+<l>Solo vale para amplitudes pequeñas. Para amplitudes grandes los términos de acople no lineal (\(\cos(\theta_1-\theta_2)\), \(\sin(\theta_1-\theta_2)\dot\theta^2\)) hacen que no haya modos normales.</l>
+</limits>
+<explore sim="doble" title="Péndulo doble: frecuencias de los dos modos según la razón de masas"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (\(\mu=1\), \(L=1\)): \(\omega_-=2.39720\) rad/s, \(\omega_+=5.78735\) rad/s, cociente 2.41421 y periodo lento 2.6211 s.</li>
+<li>Seleccione \(\mu\) en el eje (log): \(\omega_-\) decrece de \(\sqrt{g/L}=3.132\) a \(\sqrt{g/2L}=2.215\) y \(\omega_+\) crece sin límite.</li>
+</ul></div>
+</deriv>
+
+<section>
+<h2>Fuentes y lecturas</h2>
+<ul class="refs">
+<li>L. D. Landau y E. M. Lifshitz, <em>Mechanics</em>, 3.ª ed., Pergamon (1976): cap. I (ecuaciones de Lagrange, principio de mínima acción, § 1–9), cap. VII (ecuaciones de Hamilton) y cap. V (oscilaciones pequeñas).</li>
+<li>H. Goldstein, C. Poole y J. Safko, <em>Classical Mechanics</em>, 3.ª ed., Addison-Wesley (2002): caps. 2 (principio variacional), 8 (formulación de Hamilton) y 6 (oscilaciones pequeñas).</li>
+<li>J. R. Taylor, <em>Classical Mechanics</em>, University Science Books (2005): caps. 6 (cálculo de variaciones, braquistócrona), 7 (Lagrange) y 13 (Hamilton).</li>
+<li>C. Lanczos, <em>The Variational Principles of Mechanics</em>, 4.ª ed., Dover (1986).</li>
+<li>Johann Bernoulli, <em>Acta Eruditorum</em> (1696), «Problema novum ad cuius solutionem Mathematici invitantur».</li>
+</ul>
+</section>
+</template>

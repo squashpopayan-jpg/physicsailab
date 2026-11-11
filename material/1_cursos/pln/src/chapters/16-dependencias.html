@@ -1,0 +1,114 @@
+<template class="chapter-src" data-id="dependencias" data-num="16" data-title="Gramáticas de dependencias" data-part="Parte IV · Sintaxis" data-short="Cabezas y dependientes; relaciones de Universal Dependencies; proyectividad; análisis por transiciones (arc-standard) y por grafos (Chu-Liu/Edmonds); UAS y LAS">
+<p class="lead">Un árbol de constituyentes agrupa palabras en sintagmas. Un árbol de dependencias renuncia a los nodos intermedios y dice solo quién depende de quién: «gato» depende de «duerme», «el» depende de «gato». Es más económico, se parece más a lo que necesita la semántica (quién hace qué) y se ha vuelto el formato dominante del análisis sintáctico actual, con el proyecto Universal Dependencies y herramientas como spaCy.</p>
+
+<section>
+<h2>Cabezas y dependientes</h2>
+<p>Una <span class="term">gramática de dependencias</span> (o valencial) describe la estructura de una oración en términos de las palabras y de las <b>relaciones gramaticales</b> entre ellas, sin sintagmas. Cada palabra, salvo la <b>raíz</b>, depende de exactamente una <b>cabeza</b>, y el conjunto forma un árbol. Se popularizó en los años noventa; los analizadores aparecieron en varios enfoques: programación dinámica (Eisner, 1996), transiciones deterministas (Covington; Nivre), aprendizaje supervisado (Yamada y Matsumoto) y grafos (McDonald y otros, 2005).</p>
+<p>Las relaciones más comunes del proyecto <b>Universal Dependencies</b> (UD), usadas en este curso:</p>
+<table>
+<thead><tr><th>Relación</th><th>Significado</th><th>Ejemplo</th></tr></thead>
+<tbody>
+<tr><td><code>root</code></td><td>Raíz de la oración (normalmente el verbo principal)</td><td><i>duerme</i></td></tr>
+<tr><td><code>nsubj</code></td><td>Sujeto nominal</td><td>el <i>gato</i> duerme</td></tr>
+<tr><td><code>obj</code></td><td>Objeto directo</td><td>explicó el <i>tema</i></td></tr>
+<tr><td><code>obl</code></td><td>Complemento oblicuo (circunstancial) del verbo</td><td>duerme en la <i>alfombra</i></td></tr>
+<tr><td><code>nmod</code></td><td>Complemento del nombre</td><td>proyecto de <i>investigación</i></td></tr>
+<tr><td><code>det</code></td><td>Determinante</td><td><i>el</i> gato</td></tr>
+<tr><td><code>amod</code></td><td>Modificador adjetival</td><td>alfombra <i>roja</i></td></tr>
+<tr><td><code>case</code></td><td>Preposición que introduce un complemento</td><td><i>en</i> la alfombra</td></tr>
+<tr><td><code>advmod</code>, <code>cc</code>, <code>conj</code>, <code>punct</code></td><td>Adverbio, conjunción coordinante, miembro coordinado, puntuación</td><td></td></tr>
+</tbody></table>
+<div class="sim" data-sim="dependencias" data-title="Árboles de dependencias con etiquetas de Universal Dependencies"></div>
+<div class="sim-guide"><ul>
+<li>La flecha va de la cabeza al dependiente. Elija distintas oraciones y fíjese en que todos los arcos del español de estos ejemplos son proyectivos: no se cruzan.</li>
+<li>Las dos últimas oraciones son iguales y se diferencian en una dependencia: en la penúltima «pijama» cuelga del verbo («yo estaba en pijama») y en la última, del nombre «elefante». La ambigüedad estructural aparece como una cabeza distinta.</li>
+<li>Compare con el árbol de constituyentes del capítulo 13: no hay SN ni SV; la información de agrupación se recupera de las dependencias.</li>
+</ul></div>
+<div class="box note"><p>Las 11 oraciones (10 distintas) del curso se anotaron a mano con las convenciones de UD (la contracción «del» se separa en «de» y «el», como pide UD). Son un material didáctico, no un corpus.</p></div>
+</section>
+
+<section>
+<h2>Análisis por transiciones</h2>
+<p>El análisis <b>por transiciones</b> (Covington, 2001; Nivre y Scholz, 2004) es como un autómata con pila que lee la oración de izquierda a derecha y va construyendo arcos. En el sistema <b>arc-standard</b> el estado tiene una <b>pila</b> (empieza con la raíz), un <b>buffer</b> (las palabras por leer) y el conjunto de arcos hechos. Hay tres transiciones:</p>
+<ul>
+<li><b>SH</b> (<i>shift</i>): pasa la primera palabra del buffer a la pila.</li>
+<li><b>LA</b> (arco a la izquierda): la palabra de la cima es cabeza de la que está debajo; se quita la de abajo.</li>
+<li><b>RA</b> (arco a la derecha): la de debajo es cabeza de la de la cima; se quita la cima.</li>
+</ul>
+<p>Una oración de \(n\) palabras se analiza en exactamente \(2n\) transiciones (\(n\) desplazamientos y \(n\) arcos), de modo que el análisis es <b>lineal</b>. Con un árbol de referencia (proyectivo) se puede obtener la secuencia correcta con un <i>oráculo estático</i>: un clasificador (hoy una red neuronal) aprende a predecir la siguiente transición a partir del estado. Solo produce árboles proyectivos, aunque con modificaciones puede tratar los no proyectivos.</p>
+<div class="sim" data-sim="transiciones" data-title="Análisis por transiciones arc-standard paso a paso"></div>
+<div class="sim-guide"><ul>
+<li>Mueva el deslizador: la pila y el buffer cambian, y cada LA o RA añade un arco.</li>
+<li>La secuencia del oráculo reconstruye el árbol de referencia de las 10 oraciones sin error: es la prueba de que las 2n transiciones bastan para árboles proyectivos (apéndice de validación, también para 60 árboles aleatorios, comparado con una implementación en Python).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Análisis por grafos</h2>
+<p>El enfoque <b>por grafos</b> (McDonald y otros, 2005) puntúa cada arco posible \(h\to d\) (desde la raíz y desde cada palabra a cada otra) y busca el <b>árbol de expansión máximo dirigido</b>: el que maximiza la suma de puntuaciones de sus arcos. El algoritmo de <b>Chu-Liu/Edmonds</b> lo resuelve en \(O(n^2)\): se elige para cada palabra la cabeza de mayor puntuación; si hay ciclos, se contraen en un solo nodo, se ajustan las puntuaciones y se repite. La puntuación suele ser una función aprendida (hoy, una red neuronal sobre vectores de palabras). Admite árboles no proyectivos.</p>
+<div class="sim" data-sim="mst-parser" data-title="Un analizador por grafos entrenado con 9 oraciones y evaluado en la décima"></div>
+<div class="sim-guide"><ul>
+<li>Se entrena una puntuación muy sencilla: \(\log P(\text{etiqueta del dependiente}\mid\text{etiqueta de la cabeza},\text{dirección})\) menos una penalización por distancia, con 9 oraciones, y se analiza la décima. Se repite para cada una (validación «dejar una fuera»).</li>
+<li>Con penalización 0,15 el UAS medio es 89 % (sobre cabezas sin contar la puntuación); sin penalizar por distancia baja a 77 %. Con 0,3 llega a 91 %: los arcos cortos son mucho más probables, un hecho lingüístico bien conocido.</li>
+<li>Los arcos en rojo son errores. Las construcciones con complementos del nombre y las coordinaciones fallan más, porque con un entrenamiento tan pequeño no hay ejemplos suficientes.</li>
+<li>Esta evaluación es de juguete (10 oraciones, mismo estilo); una cifra real exige un corpus grande y un conjunto de prueba aparte.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Evaluación: UAS y LAS</h2>
+<p>El análisis de dependencias se mide palabra a palabra, como el etiquetado: <b>UAS</b> (<i>unlabeled attachment score</i>) es la fracción de palabras con la cabeza correcta; <b>LAS</b> (<i>labeled</i>) exige además la relación correcta. Normalmente se excluye la puntuación. Una cifra de LAS siempre es menor o igual que la de UAS. Los analizadores neuronales actuales obtienen LAS superiores al 90 % en los corpus grandes de UD en inglés o español (consulte los resultados de las tareas compartidas de CoNLL en la bibliografía).</p>
+<div class="box py"><p>El programa obtiene la secuencia de transiciones arc-standard de una oración y decodifica por grafos con NetworkX sobre puntuaciones aleatorias que favorecen (con ruido) el árbol correcto.</p>
+<div class="py" data-py="16-dependencias"></div></div>
+<div class="box read"><ul>
+<li><b>Transiciones</b>: la oración de 8 palabras se analiza en 16 transiciones, 8 desplazamientos (SHIFT), 4 arcos izquierdos (LEFT-ARC: los dependientes que preceden a su cabeza, como los determinantes) y 4 derechos (RIGHT-ARC).</li>
+<li><b>Grafos</b>: con puntuaciones muy ruidosas (ruido uniforme de ±3 frente a una ventaja de 2 para el arco correcto), el árbol de máxima suma acierta 4 de 8 cabezas (UAS 50 %). El decodificador es óptimo respecto de las puntuaciones; lo que falla son las puntuaciones.</li>
+<li>El resultado del grafo puede tener varias palabras colgando de la raíz: el algoritmo básico no obliga a una raíz única; se añade como restricción si se necesita.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Constituyentes o dependencias</h2>
+<table>
+<thead><tr><th></th><th>Constituyentes</th><th>Dependencias</th></tr></thead>
+<tbody>
+<tr><td>Unidad</td><td>Sintagmas (grupos de palabras)</td><td>Palabras y sus relaciones</td></tr>
+<tr><td>Orden de palabras libre</td><td>Difícil: las reglas fijan el orden</td><td>Natural: no se exige contigüidad (árboles no proyectivos)</td></tr>
+<tr><td>Cercanía a la semántica</td><td>Indirecta</td><td>Directa: sujeto, objeto, modificadores</td></tr>
+<tr><td>Tamaño del árbol</td><td>Muchos nodos intermedios</td><td>n nodos y n arcos</td></tr>
+<tr><td>Uso actual</td><td>Resumen, generación, corpus como Penn Treebank</td><td>Estándar de análisis (UD, spaCy, Stanza)</td></tr>
+</tbody></table>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Un árbol de dependencias asigna a cada palabra una cabeza y una relación; la raíz es el verbo principal.</li>
+<li>Universal Dependencies unifica las relaciones entre lenguas (nsubj, obj, obl, det, amod, case…).</li>
+<li>El análisis por transiciones usa pila y buffer y necesita 2n pasos; el análisis por grafos busca el árbol de expansión máximo con Chu-Liu/Edmonds.</li>
+<li>Se evalúa con UAS (cabeza) y LAS (cabeza y relación).</li>
+<li>Las dependencias son más económicas y cercanas a la semántica que los constituyentes.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Cuál es la cabeza de «el» en «el gato duerme»?
+<details><summary>Respuesta</summary><p>«Gato», con la relación det.</p></details></li>
+<li><span class="lvl">Básico</span>Una oración de 10 palabras: ¿cuántas transiciones arc-standard?
+<details><summary>Respuesta</summary><p>20.</p></details></li>
+<li><span class="lvl">Intermedio</span>Si 6 de las 8 cabezas de una oración son correctas y 5 de ellas además tienen la relación correcta, ¿cuánto valen UAS y LAS?
+<details><summary>Respuesta</summary><p>UAS = 6/8 = 75 %; LAS = 5/8 = 62,5 %.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué un árbol con los arcos 1→3 y 2→4 no es proyectivo?
+<details><summary>Respuesta</summary><p>Los arcos (1,3) y (2,4) se cruzan: la palabra 2 queda dentro del primero pero su cabeza (o dependiente) 4 queda fuera.</p></details></li>
+<li><span class="lvl">Avanzado</span>Describa cómo contrae Chu-Liu/Edmonds un ciclo.
+<details><summary>Respuesta</summary><p>Si al elegir la mejor cabeza de cada nodo aparece un ciclo, se sustituye el ciclo por un nodo único; a los arcos que entran se les resta el peso del arco que se quitaría del ciclo; se resuelve el problema reducido y luego se expande el ciclo, quitando el arco del ciclo que apunta al nodo por el que entró el nuevo arco.</p></details></li>
+</ol>
+<h3>Autoevaluación</h3>
+<div class="sim" data-sim="quiz" data-cap="dependencias" data-title="Autoevaluación del capítulo 16"></div>
+<div class="box links"><ul>
+<li><a href="https://universaldependencies.org/">Universal Dependencies</a><small>Corpus de más de cien lenguas (incluido el español, con los corpus AnCora y GSD) y la definición de las relaciones.</small></li>
+<li><a href="https://aclanthology.org/H05-1066/">McDonald y otros (2005) — Non-projective dependency parsing using spanning tree algorithms</a><small>El artículo del análisis por grafos con Chu-Liu/Edmonds.</small></li>
+<li><a href="https://aclanthology.org/J08-4003/">Nivre (2008) — Algorithms for deterministic incremental dependency parsing</a><small>Sistemas de transiciones, incluido arc-standard.</small></li>
+<li><a href="https://web.stanford.edu/~jurafsky/slp3/18.pdf">Jurafsky y Martin — cap. 18: dependency parsing</a><small>Transiciones y grafos con ejemplos.</small></li>
+<li><a href="https://networkx.org/documentation/stable/reference/algorithms/tree.html">NetworkX — árboles de expansión y arborescencias</a><small>Implementación de maximum_spanning_arborescence usada para validar el capítulo.</small></li>
+</ul></div>
+</section>
+</template>

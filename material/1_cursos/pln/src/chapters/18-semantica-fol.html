@@ -1,0 +1,122 @@
+<template class="chapter-src" data-id="semantica-fol" data-num="18" data-title="Representar el significado: lógica de primer orden" data-part="Parte V · El significado" data-short="Requisitos de una representación semántica; proposiciones, predicados y cuantificadores; modelos y verdad; ámbito de los cuantificadores; consecuencia lógica y contramodelos; eventos; otras estrategias">
+<p class="lead">Una oración bien analizada sigue sin «significar» nada para el programa. «Marta lee un libro» es, para él, una cadena de cuatro símbolos con un árbol. Para <i>entenderla</i> hay que traducirla a algo que permita decidir si es verdadera, responder preguntas y sacar conclusiones. La lógica de primer orden es la respuesta clásica: un lenguaje formal sin ambigüedad en el que cada oración se convierte en una fórmula que se evalúa en un mundo.</p>
+
+<section>
+<h2>Qué se le pide a una representación del significado</h2>
+<p>La <b>semántica</b> estudia el significado de las palabras, de las oraciones y de los textos. Se separa lo <i>léxico</i> (qué significa «banco») de lo <i>composicional</i> (cómo el significado de las partes da el del todo, capítulo 20). Las representaciones que se usan en PLN deben cumplir cuatro requisitos:</p>
+<ul>
+<li><b>Verificabilidad</b>: poder contrastar la oración con un conocimiento del mundo y decidir si es verdadera. «¿Sirve el restaurante comida vegetariana?» se convierte en una consulta a una base de datos.</li>
+<li><b>Carencia de ambigüedad</b>: una fórmula tiene un único significado. La oración puede ser ambigua; entonces se obtienen varias fórmulas, una por lectura, y cada una es clara.</li>
+<li><b>Forma canónica</b>: oraciones con el mismo significado («Marta compró un libro a Juan», «Juan vendió un libro a Marta») deberían dar la misma representación.</li>
+<li><b>Inferencia y expresividad</b>: debe permitir sacar conclusiones nuevas y cubrir un conjunto amplio de oraciones (cuantificadores, negación, tiempo, eventos).</li>
+</ul>
+<p>Las estrategias clásicas son la <b>lógica de primer orden</b>, las <b>redes semánticas</b> (nodos y relaciones, como en WordNet, capítulo 21), la <b>dependencia conceptual</b> de Schank (acciones primitivas como «transferir»), los <b>marcos</b> (<i>frames</i>, esquemas con casillas por rellenar) y las <b>lógicas descriptivas</b> (capítulo 19). Las dos últimas son, en esencia, notaciones cómodas de subconjuntos de la lógica de primer orden.</p>
+</section>
+
+<section>
+<h2>El lenguaje: términos, predicados y cuantificadores</h2>
+<p>La lógica de primer orden construye fórmulas con estos ingredientes:</p>
+<ul>
+<li><b>Constantes</b> (<code>marta</code>, <code>juan</code>) que designan individuos; <b>variables</b> (<code>x</code>, <code>y</code>) que recorren individuos.</li>
+<li><b>Predicados</b> con su aridad: <code>estudiante(x)</code> (una propiedad), <code>lee(x, y)</code> (una relación).</li>
+<li><b>Conectivas</b>: \(\neg\) (no), \(\wedge\) (y), \(\vee\) (o), \(\to\) (implica), \(\leftrightarrow\) (si y solo si).</li>
+<li><b>Cuantificadores</b>: \(\forall x\) («para todo») y \(\exists x\) («existe al menos un»).</li>
+</ul>
+<p>La traducción de las oraciones cuantificadas sigue dos patrones que conviene memorizar:</p>
+<div class="eq key" data-name="Patrones de traducción">\[\text{«Todo }A\text{ es }B\text{»}\ \Rightarrow\ \forall x\,(A(x)\to B(x))\qquad\qquad\text{«Algún }A\text{ es }B\text{»}\ \Rightarrow\ \exists x\,(A(x)\wedge B(x))\]</div>
+<p>El error más común es intercambiar la conectiva: \(\forall x\,(A(x)\wedge B(x))\) diría que <i>todo individuo</i> del mundo es A y B (también los libros y las mesas), y \(\exists x\,(A(x)\to B(x))\) es verdadera con solo un individuo que no sea A.</p>
+<p>Para las conectivas, la <b>tabla de verdad</b> da el valor de una fórmula proposicional según el de sus letras. Una fórmula es una <i>tautología</i> si es verdadera en todas las filas, una <i>contradicción</i> si en ninguna y <i>contingente</i> en otro caso. Dos fórmulas son equivalentes si dan la misma columna.</p>
+<div class="sim" data-sim="tabla-verdad" data-title="Tablas de verdad: tautologías, contradicciones y equivalencias"></div>
+<div class="sim-guide"><ul>
+<li>Elija «Ley de De Morgan»: la fórmula es una tautología (4 de 4 filas verdaderas), es decir, \(\neg(p\wedge q)\) y \(\neg p\vee\neg q\) son equivalentes.</li>
+<li>Pruebe «Afirmar el consecuente»: es contingente, no es tautología; es el error lógico de pensar que de «si llueve, hay nubes» y «hay nubes» se sigue «llueve».</li>
+<li>Escriba su propia fórmula (por ejemplo <code>p -> q</code> y <code>-q -> -p</code>, la contrapositiva, que son equivalentes).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Modelos: cuándo una fórmula es verdadera</h2>
+<p>Una fórmula con cuantificadores no es verdadera o falsa «en abstracto»: lo es respecto a un <b>modelo</b> \(\mathcal M=(D,I)\), que fija un <b>dominio</b> \(D\) de individuos y una <b>interpretación</b> \(I\) que asigna a cada constante un individuo y a cada predicado el conjunto de individuos (o de tuplas) que lo cumplen. La verdad se define por recursión sobre la fórmula:</p>
+<div class="eq key" data-name="Verdad en un modelo">\[\mathcal M\models\forall x\,\varphi\iff\text{para todo }d\in D,\ \mathcal M\models\varphi[x\mapsto d]\qquad\qquad\mathcal M\models\exists x\,\varphi\iff\text{para algún }d\in D,\ \mathcal M\models\varphi[x\mapsto d]\]</div>
+<p>Para un predicado, \(\mathcal M\models P(a,b)\iff(I(a),I(b))\in I(P)\). Evaluar es, pues, recorrer el dominio sustituyendo la variable. En la simulación el mundo tiene cinco individuos (tres estudiantes y dos libros) y puede cambiar quién lee qué.</p>
+<div class="sim" data-sim="fol-modelo" data-title="Evaluar una fórmula de primer orden en un mundo pequeño"></div>
+<div class="sim-guide"><ul>
+<li>Con la fórmula «Todo individuo del dominio es estudiante» el resultado es falso en los tres mundos: el cuantificador recorre también los libros.</li>
+<li>Con «Todo estudiante lee algún libro», falla solo en el mundo C. Mire cómo el cuerpo da F justo en Ana.</li>
+<li>Con «Hay un libro que todos los estudiantes leen», solo el mundo B la hace verdadera. Con el mundo A, que todos lean <i>algún</i> libro no es lo mismo que todos lean <i>el mismo</i>.</li>
+<li>Escriba una fórmula suya, por ejemplo <code>exists x.(estudiante(x) &amp; lee(x,libroa) &amp; lee(x,librob))</code>.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Una oración, dos fórmulas: el ámbito de los cuantificadores</h2>
+<p>«Todo estudiante lee un libro» admite dos traducciones, según qué cuantificador abarque al otro (<i>scope ambiguity</i>):</p>
+<div class="eq key" data-name="Ambigüedad de ámbito">\[\underbrace{\forall x\,(\mathrm{est}(x)\to\exists y\,(\mathrm{libro}(y)\wedge\mathrm{lee}(x,y)))}_{\text{cada estudiante lee un libro (quizá distinto)}}\qquad\underbrace{\exists y\,(\mathrm{libro}(y)\wedge\forall x\,(\mathrm{est}(x)\to\mathrm{lee}(x,y)))}_{\text{hay un libro que leen todos}}\]</div>
+<p>La segunda lectura implica la primera, pero no al revés. En el procesamiento del lenguaje se resuelve de dos maneras: dejar que el analizador genere todas las lecturas y escoger por contexto, o mantener una representación <i>infraespecificada</i> que no decide el orden hasta que haga falta. Esta ambigüedad no la resuelve el análisis sintáctico (la oración tiene un solo árbol): es de significado.</p>
+<div class="sim" data-sim="fol-lecturas" data-title="Las dos lecturas de una oración con dos cuantificadores"></div>
+<div class="sim-guide"><ul>
+<li>Con «todo estudiante lee un libro», el mundo A separa las lecturas (la primera es verdadera, la segunda falsa). En el mundo B ambas son verdaderas y en el C ambas falsas.</li>
+<li>Con «ningún estudiante lee un libro», las lecturas se separan en el mundo B: nadie lee el libro B, así que «hay un libro que ningún estudiante lee» es verdadera, pero «ningún estudiante lee algún libro» es falsa.</li>
+<li>Con «marta lee un libro» hay un solo cuantificador y las lecturas coinciden: la ambigüedad nace de tener dos.</li>
+</ul></div>
+<div class="box py"><p>El programa evalúa las dos lecturas en los tres mundos con el evaluador de modelos de NLTK (<code>nltk.sem.Model</code>) y demuestra una consecuencia con el demostrador por resolución.</p>
+<div class="py" data-py="18-logica"></div></div>
+<div class="box read"><ul>
+<li><b>Mundo A</b>: ∀∃ verdadera y ∃∀ falsa. <b>Mundo B</b>: las dos verdaderas. <b>Mundo C</b>: las dos falsas (Ana no lee nada). Es la misma tabla que da la simulación: el evaluador del curso se valida contra el de NLTK (apéndice de validación).</li>
+<li><b>Resolución</b>: de «todo estudiante es persona» y «Marta es estudiante» se demuestra «Marta es persona» y también la conjunción. El demostrador acaba pronto cuando la conclusión se sigue; si no se sigue, puede no terminar, y por eso el programa no lo intenta.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Consecuencia lógica: demostrar y refutar</h2>
+<p>Una conclusión \(\psi\) es <b>consecuencia lógica</b> de unas premisas \(\Gamma\) cuando es verdadera en <i>todo</i> modelo en que lo son las premisas. Un único modelo donde las premisas se cumplan y la conclusión no — un <b>contramodelo</b> — refuta el argumento. Por eso las inferencias inválidas se descubren inventando un mundo. Para demostrar la validez hacen falta reglas de inferencia (modus ponens, instanciación universal) o resolución.</p>
+<div class="eq key" data-name="Consecuencia lógica">\[\Gamma\models\psi\iff\text{no existe un modelo }\mathcal M\text{ con }\mathcal M\models\Gamma\text{ y }\mathcal M\not\models\psi.\]</div>
+<div class="sim" data-sim="fol-consecuencia" data-title="Buscar un contramodelo para un argumento"></div>
+<div class="sim-guide"><ul>
+<li>«De todos leen alguno a alguno lo leen todos» tiene contramodelo con dos individuos: cada uno lee al otro.</li>
+<li>«Todo estudiante es persona ⊢ existe un estudiante» tiene contramodelo con un individuo no estudiante. La lógica de primer orden no supone que los predicados tengan ejemplares; para decirlo hay que añadir la premisa.</li>
+<li>El modus ponens no tiene contramodelo, pero la ausencia hasta tres individuos <b>no demuestra</b> nada: solo la prueba (o la semántica) lo hace. La búsqueda de contramodelos sirve para refutar.</li>
+</ul></div>
+<p>Dos resultados limitan lo que se puede hacer: la lógica proposicional es <i>decidible</i> (basta una tabla), pero la de primer orden es solo <i>semidecidible</i> (Church y Turing, 1936): hay procedimientos que encuentran una prueba cuando existe, pero ninguno que termine siempre al decidir si no existe. En la práctica se usan fragmentos más modestos, como las lógicas descriptivas del capítulo siguiente.</p>
+</section>
+
+<section>
+<h2>Eventos y otras estrategias</h2>
+<p>Con predicados de aridad fija, cada complemento opcional obliga a un predicado nuevo: <code>lee(marta, libro)</code>, <code>lee3(marta, libro, biblioteca)</code>… y la inferencia «si lee en la biblioteca, lee» se pierde. La solución de <b>Davidson</b> (1967) trata el evento como un individuo más y los complementos como condiciones sobre él:</p>
+<div class="eq key" data-name="Representación con eventos">\[\text{«Marta lee un libro en la biblioteca»}\ \Rightarrow\ \exists e\,\exists y\,(\mathrm{lee}(e)\wedge\mathrm{agente}(e,\mathrm{marta})\wedge\mathrm{libro}(y)\wedge\mathrm{tema}(e,y)\wedge\mathrm{lugar}(e,\mathrm{biblioteca}))\]</div>
+<p>Quitar un conjunto da una fórmula que se sigue de la original, sin reglas especiales. Los papeles (<i>agente</i>, <i>tema</i>, <i>lugar</i>) enlazan con la semántica de las frases verbales del capítulo 16 y con los roles semánticos de recursos como PropBank y FrameNet (capítulo 34).</p>
+<p>Otras estrategias complementarias: las <b>redes semánticas</b> y las <b>lógicas descriptivas</b> organizan conceptos en jerarquías con relaciones; la <b>dependencia conceptual</b> reduce los verbos a primitivos (por ejemplo, «comprar» y «vender» comparten el primitivo de transferencia de posesión, lo que da forma canónica); los <b>marcos</b> describen situaciones típicas (una compra, un vuelo) con casillas que el análisis rellena. Hoy se suman las <b>representaciones aprendidas</b> (capítulos 26 y 30), que renuncian a la verificación exacta a cambio de cobertura.</p>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Una representación del significado debe ser verificable, no ambigua, canónica, apta para la inferencia y expresiva.</li>
+<li>«Todo A es B» → ∀(A→B); «Algún A es B» → ∃(A∧B).</li>
+<li>La verdad se define respecto a un modelo (dominio e interpretación); los cuantificadores recorren todo el dominio.</li>
+<li>Dos cuantificadores producen lecturas distintas según su ámbito; ∃∀ implica ∀∃, no al revés.</li>
+<li>Un contramodelo refuta un argumento; la validez en primer orden es semidecidible.</li>
+<li>Los eventos como individuos (Davidson) permiten añadir complementos sin perder inferencias.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Traduzca «todo gato duerme» y «algún gato duerme».
+<details><summary>Respuesta</summary><p>∀x (gato(x) → duerme(x)); ∃x (gato(x) ∧ duerme(x)).</p></details></li>
+<li><span class="lvl">Básico</span>¿Cuántas filas tiene la tabla de verdad de \((p\to q)\wedge(q\to r)\to(p\to r)\) y cuántas son verdaderas?
+<details><summary>Respuesta</summary><p>Tres letras: 8 filas; es el silogismo hipotético, una tautología: las 8 son verdaderas.</p></details></li>
+<li><span class="lvl">Intermedio</span>En el mundo B de la simulación, ¿es verdadera «∃x (libro(x) ∧ ∀y (estudiante(y) → lee(y,x)))»? ¿Y en el A?
+<details><summary>Respuesta</summary><p>En B sí: todos leen el libro A. En A no: Marta y Ana leen el A, pero Juan lee el B; ningún libro lo leen los tres.</p></details></li>
+<li><span class="lvl">Intermedio</span>Explique por qué «∀x (estudiante(x) ∧ persona(x))» es una mala traducción de «todo estudiante es persona».
+<details><summary>Respuesta</summary><p>Afirma que todos los individuos del dominio son estudiantes y personas, incluidos los libros; es falsa en cualquier mundo que tenga un objeto que no sea estudiante. La traducción correcta usa implicación: ∀x (estudiante(x) → persona(x)).</p></details></li>
+<li><span class="lvl">Avanzado</span>Dé un contramodelo de «∀x ∃y lee(x,y) ⊢ ∃y ∀x lee(x,y)».
+<details><summary>Respuesta</summary><p>Dominio {a, b}, lee = {(a,b), (b,a)}: todo individuo lee a alguien, pero nadie es leído por todos (nadie se lee a sí mismo). La simulación encuentra uno de este estilo.</p></details></li>
+</ol>
+<h3>Autoevaluación</h3>
+<div class="sim" data-sim="quiz" data-cap="semantica-fol" data-title="Autoevaluación del capítulo 18"></div>
+<div class="box links"><ul>
+<li><a href="https://www.nltk.org/book/ch10.html">NLTK Book — cap. 10: Analyzing the Meaning of Sentences</a><small>Lógica de primer orden, modelos y λ-cálculo con el código que usa el programa.</small></li>
+<li><a href="https://plato.stanford.edu/entries/logic-classical/">Stanford Encyclopedia of Philosophy — Classical Logic</a><small>Sintaxis, semántica y deducción de la lógica proposicional y de primer orden.</small></li>
+<li><a href="https://web.stanford.edu/~jurafsky/slp3/">Jurafsky y Martin — Speech and Language Processing (3.ª ed.)</a><small>Capítulos de representación del significado de las oraciones.</small></li>
+<li><a href="https://www.nltk.org/api/nltk.sem.evaluate.html">NLTK — nltk.sem.evaluate</a><small>Valuation, Model y Assignment, usados en el programa.</small></li>
+</ul></div>
+</section>
+</template>

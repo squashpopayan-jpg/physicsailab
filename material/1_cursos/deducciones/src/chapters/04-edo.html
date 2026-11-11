@@ -1,0 +1,373 @@
+<template class="chapter-src" data-id="edo" data-num="4" data-title="Ecuaciones diferenciales y funciones especiales" data-part="Parte I · Herramientas" data-short="La relajación de primer orden, el oscilador amortiguado y forzado por el método fasorial, las series de Fourier con el fenómeno de Gibbs, los polinomios de Legendre y las funciones de Bessel con los modos de un tambor">
+<p class="lead">Una ecuación diferencial es la forma en que la física expresa una ley local: cómo cambia una magnitud en función de su valor actual. Resolverla es pasar de la ley local al comportamiento global. Este capítulo deduce los métodos que se usarán en el resto del curso: separación de variables y factor integrante (primer orden), la exponencial compleja (segundo orden con coeficientes constantes, libre y forzado), las series de Fourier (para funciones periódicas) y las soluciones en serie de Frobenius que dan los polinomios de Legendre (simetría esférica) y las funciones de Bessel (simetría cilíndrica). Cada método se aplica a un problema físico y se explora con parámetros.</p>
+
+<section>
+<h2>Linealidad, superposición y por qué funciona la exponencial</h2>
+<p>Una ecuación es <span class="term">lineal</span> si la incógnita y sus derivadas aparecen solo a la primera potencia, como en \(a_2(t)\,\ddot x+a_1(t)\,\dot x+a_0(t)\,x=g(t)\). Dos consecuencias organizan todo lo que sigue.</p>
+<ol>
+<li><strong>Superposición.</strong> Si \(x_1\) y \(x_2\) resuelven la ecuación homogénea (\(g=0\)), también la resuelve \(c_1x_1+c_2x_2\), porque la derivación es lineal. El conjunto de soluciones es un espacio vectorial de dimensión igual al orden de la ecuación: una de segundo orden necesita dos constantes, que se fijan con dos condiciones iniciales.</li>
+<li><strong>Solución general.</strong> La solución de la ecuación completa es una solución particular más la general de la homogénea: \(x=x_p+x_h\), pues la diferencia de dos soluciones de la completa resuelve la homogénea.</li>
+</ol>
+<p>Cuando los coeficientes son constantes se prueba \(x=\mathrm e^{rt}\): cada derivada solo multiplica por \(r\), y la ecuación diferencial se vuelve un polinomio en \(r\) (la <span class="term">ecuación característica</span>). Por eso exponenciales y senoides aparecen en toda la física de sistemas lineales.</p>
+</section>
+
+<deriv id="relax" title="Relajación de primer orden: enfriamiento de Newton" tags="EDO, Térmica">
+<goal>La temperatura \(T(t)\) de un cuerpo que se enfría (o calienta) hacia la del ambiente, y el significado del tiempo de relajación \(\tau\).</goal>
+<given>
+<g>Ley de Newton: el ritmo de cambio de la temperatura es proporcional a la diferencia con el ambiente, \(\mathrm dT/\mathrm dt=-(T-T_e)/\tau\) (el valor de \(\tau\) depende de la capacidad calorífica y de la conductancia de la superficie; se calcula en el capítulo 19).</g>
+<g>La temperatura ambiente \(T_e\) es constante y el cuerpo es lo bastante pequeño o conductor para tener una sola temperatura.</g>
+</given>
+<step op="Desplazar la variable al equilibrio">
+\[u(t)=T(t)-T_e\ \Longrightarrow\ \frac{\mathrm du}{\mathrm dt}=-\frac u\tau.\]
+<why>\(T_e\) es constante, así que \(\mathrm dT/\mathrm dt=\mathrm du/\mathrm dt\). Ahora la ecuación es homogénea.</why>
+</step>
+<step op="Separar variables">
+\[\frac{\mathrm du}u=-\frac{\mathrm dt}\tau.\]
+<why>Se agrupa todo lo que depende de \(u\) a un lado y todo lo que depende de \(t\) al otro (con \(u\ne0\)).</why>
+</step>
+<step op="Integrar ambos miembros">
+\[\ln|u|=-\frac t\tau+C.\]
+<why>Las primitivas de \(1/u\) y de una constante son \(\ln|u|\) y \(-t/\tau\).</why>
+</step>
+<step op="Exponenciar y aplicar la condición inicial \(u(0)=T_0-T_e\)">
+\[u=\mathrm e^{C}\,\mathrm e^{-t/\tau}=(T_0-T_e)\,\mathrm e^{-t/\tau}.\]
+<why>\(\mathrm e^C\) es una constante positiva; su signo (si \(u\) es positivo o negativo) lo recoge la condición inicial.</why>
+</step>
+<step op="Volver a la temperatura">
+\[T(t)=T_e+(T_0-T_e)\,\mathrm e^{-t/\tau}.\]
+</step>
+<step op="Comprobar con el método general del factor integrante">
+\[\dot y+p\,y=q\ \Rightarrow\ \mu=\mathrm e^{\int p\,\mathrm dt},\ (\mu y)^\cdot=\mu q;\qquad p=\tfrac1\tau,\ q=\tfrac{T_e}\tau:\ \ \mathrm e^{t/\tau}T=T_e\,\mathrm e^{t/\tau}+C.\]
+<why>Multiplicar por \(\mu\) convierte el primer miembro en la derivada de un producto. Con \(p\) y \(q\) constantes se integra de inmediato y se recupera el mismo resultado.</why>
+</step>
+<step op="Calcular los tiempos característicos">
+\[\text{mitad: }\mathrm e^{-t_{1/2}/\tau}=\tfrac12\Rightarrow t_{1/2}=\tau\ln2;\qquad \text{1 \%: }t_{99}=\tau\ln100.\]
+</step>
+<result name="Relajación exponencial">\[T(t)=T_e+(T_0-T_e)\,\mathrm e^{-t/\tau},\qquad t_{1/2}=\tau\ln2,\qquad \dot T=-\frac{T-T_e}\tau.\]</result>
+<vars>
+<v s="T" n="temperatura del cuerpo" u="K"/>
+<v s="T_0" n="temperatura inicial" u="K"/>
+<v s="T_e" n="temperatura del ambiente" u="K"/>
+<v s="\tau" n="tiempo de relajación" u="s"/>
+<v s="t" n="tiempo" u="s"/>
+<v s="\dot T" n="ritmo de cambio de la temperatura" u="K s^-1"/>
+</vars>
+<effects>
+<e>Con \(T_0=90\,^\circ\)C, \(T_e=20\,^\circ\)C y \(\tau=10\) min: a \(t=10\) min (un \(\tau\)) queda el 36.8 % de la diferencia (\(T=45.75\,^\circ\)C); a 30 min (\(3\tau\)), el 5.0 % (\(23.49\,^\circ\)C); a 15 min, 35.62 °C, con \(\dot T=-1.562\,^\circ\)C/min.</e>
+<e>\(t_{1/2}=6.931\) min y \(t_{99}=46.05\) min: duplicar \(\tau\) duplica los dos (\(n_\tau=1\)). Con \(\tau=20\) min, a los 15 min la temperatura es 53.07 °C, no 35.62 °C.</e>
+<e>La misma ecuación describe la descarga de un condensador (\(\tau=RC\)), la desintegración radiactiva (\(\tau=1/\lambda\)) y la aproximación a la velocidad terminal con rozamiento lineal (\(\tau=m/b\)).</e>
+</effects>
+<limits>
+<l>Dimensiones: \(t/\tau\) es adimensional (obligatorio dentro de la exponencial) y \([\dot T]=\mathsf\Theta\,\mathsf T^{-1}\). ✓</l>
+<l>Límites: \(t\to0\) da \(T_0\); \(t\to\infty\), \(T_e\). El enfriamiento real se aparta de la ley cuando incluye radiación (\(\propto T^4\)) o cuando el cuerpo no es isotermo (número de Biot grande).</l>
+</limits>
+<explore sim="relax" title="Enfriamiento de Newton: temperatura, ritmo y tiempos característicos"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales: \(T(15\ \text{min})=35.619\,^\circ\)C, \(\dot T=-1.5619\,^\circ\)C/min, \(t_{1/2}=6.9315\) min y \(t_{99}=46.052\) min.</li>
+<li>Ponga \(t=46.05\) min: \(T=20.70\,^\circ\)C, a menos de 1 % de la diferencia inicial. Con \(T_0<T_e\) el cuerpo se calienta con la misma ley.</li>
+</ul></div>
+</deriv>
+
+<deriv id="oscilador-edo2" title="El oscilador amortiguado: ecuación característica y tres regímenes" tags="EDO, Oscilaciones">
+<goal>La solución general de \(\ddot x+2\gamma\dot x+\omega_0^2x=0\), con sus tres regímenes, y las magnitudes que describen el amortiguamiento (\(Q\), decremento logarítmico).</goal>
+<given>
+<g>Masa \(m\) con resorte (\(-kx\)) y fuerza viscosa (\(-b\dot x\)): \(m\ddot x=-kx-b\dot x\). Se define \(\omega_0^2=k/m\) y \(2\gamma=b/m\).</g>
+<g>Superposición e identidad de Euler \(\mathrm e^{\mathrm i\theta}=\cos\theta+\mathrm i\sin\theta\).</g>
+</given>
+<step op="Proponer \(x=\mathrm e^{rt}\) y sustituir">
+\[(r^2+2\gamma r+\omega_0^2)\,\mathrm e^{rt}=0\ \Longrightarrow\ r^2+2\gamma r+\omega_0^2=0.\]
+<why>\(\mathrm e^{rt}\) nunca se anula, así que el factor entre paréntesis debe anularse.</why>
+</step>
+<step op="Resolver la ecuación característica">
+\[r_\pm=-\gamma\pm\sqrt{\gamma^2-\omega_0^2}.\]
+<why>Fórmula cuadrática. El signo del radicando decide el régimen.</why>
+</step>
+<step op="Subamortiguado (\(\gamma\lt\omega_0\)): raíces complejas">
+\[r_\pm=-\gamma\pm\mathrm i\omega_d,\quad \omega_d=\sqrt{\omega_0^2-\gamma^2}\ \Rightarrow\ x=\mathrm e^{-\gamma t}\big(C_1\cos\omega_dt+C_2\sin\omega_dt\big).\]
+<why>La combinación \(\mathrm e^{(-\gamma+\mathrm i\omega_d)t}=\mathrm e^{-\gamma t}(\cos\omega_dt+\mathrm i\sin\omega_dt)\); su parte real y su parte imaginaria son, por separado, soluciones reales.</why>
+</step>
+<step op="Amortiguamiento crítico (\(\gamma=\omega_0\)): raíz doble">
+\[r=-\gamma\ \Rightarrow\ x=(C_1+C_2t)\,\mathrm e^{-\gamma t}.\]
+<why>Solo hay una exponencial; la segunda solución, \(t\,\mathrm e^{-\gamma t}\), se comprueba por sustitución: \(\ddot x+2\gamma\dot x+\gamma^2x=0\) con \(x=t\mathrm e^{-\gamma t}\).</why>
+</step>
+<step op="Sobreamortiguado (\(\gamma\gt\omega_0\)): dos raíces reales negativas">
+\[x=C_+\,\mathrm e^{r_+t}+C_-\,\mathrm e^{r_-t},\qquad r_\pm=-\gamma\pm\sqrt{\gamma^2-\omega_0^2}\lt0.\]
+<why>Dos decaimientos exponenciales; el más lento (\(r_+\), de módulo menor) domina para tiempos largos.</why>
+</step>
+<step op="Fijar las constantes con \(x(0)=x_0\), \(\dot x(0)=v_0\) (subamortiguado)">
+\[C_1=x_0,\qquad -\gamma C_1+\omega_dC_2=v_0\ \Rightarrow\ C_2=\frac{v_0+\gamma x_0}{\omega_d}.\]
+<why>Se deriva la solución y se evalúa en \(t=0\).</why>
+</step>
+<step op="Medidas del amortiguamiento">
+\[\frac{x(t+T_d)}{x(t)}=\mathrm e^{-\gamma T_d},\ \ \delta=\gamma T_d=\frac{2\pi\gamma}{\omega_d};\qquad E\propto\mathrm e^{-2\gamma t},\ \ Q=\frac{\omega_0}{2\gamma}.\]
+<why>\(T_d=2\pi/\omega_d\) es el periodo; la energía va como el cuadrado de la amplitud. \(Q\) es \(2\pi\) veces la energía almacenada dividida por la perdida en un ciclo (para amortiguamiento débil).</why>
+</step>
+<result name="Oscilador subamortiguado">\[x(t)=\mathrm e^{-\gamma t}\left[x_0\cos\omega_dt+\frac{v_0+\gamma x_0}{\omega_d}\sin\omega_dt\right],\qquad \omega_d=\sqrt{\omega_0^2-\gamma^2}.\]</result>
+<vars>
+<v s="x" n="desplazamiento" u="m"/>
+<v s="x_0" n="desplazamiento inicial" u="m"/>
+<v s="v_0" n="velocidad inicial" u="m s^-1"/>
+<v s="\omega_0" n="frecuencia natural \(\sqrt{k/m}\)" u="rad s^-1"/>
+<v s="\gamma" n="coeficiente de amortiguamiento \(b/2m\)" u="s^-1"/>
+<v s="\omega_d" n="frecuencia amortiguada" u="rad s^-1"/>
+<v s="t" n="tiempo" u="s"/>
+<v s="Q" n="factor de calidad" u="1"/>
+</vars>
+<effects>
+<e>\(\omega_0=10\) rad/s, \(\zeta=\gamma/\omega_0=0.1\) (\(\gamma=1\) s⁻¹): \(\omega_d=9.950\) rad/s (0.5 % menor que \(\omega_0\)), \(Q=5\), periodo \(0.6315\) s y decremento \(\delta=0.6315\): cada máximo es 0.5318 del anterior. Partiendo del reposo en \(x_0=1\): \(x(0.5\,\text{s})=0.0986\), \(x(1\,\text{s})=-0.3369\).</e>
+<e>\(\zeta=0.01\): \(Q=50\) y \(\omega_d=9.9995\). \(\zeta=0.3\): \(\omega_d=9.539\), \(Q=1.667\). \(\zeta=0.7\): \(\omega_d=7.141\), \(\delta=6.159\) (cada máximo es 0.2 % del anterior). \(\zeta=0.95\): \(\omega_d=3.122\) y \(\delta=19.1\).</e>
+<e>Crítico (\(\gamma=\omega_0=10\), partiendo del reposo): \(x=x_0(1+\gamma t)\mathrm e^{-\gamma t}\), de valor \(0.4060\,x_0\) en 0.2 s, sin oscilar y decayendo más rápido que cualquier otro régimen. Sobreamortiguado con \(\gamma=20\): raíces −2.679 y −37.32 s⁻¹: tras unos 0.1 s solo queda el modo lento, de tiempo 0.373 s.</e>
+</effects>
+<limits>
+<l>Dimensiones: \([\gamma]=[\omega_0]=\mathsf T^{-1}\), \(\gamma t\) y \(\omega_dt\) son adimensionales y \([v_0/\omega_d]=\mathsf L\). ✓</l>
+<l>Límites: \(\gamma\to0\) da el oscilador armónico simple \(x=x_0\cos\omega_0t+(v_0/\omega_0)\sin\omega_0t\); \(\gamma\to\omega_0\), \(\omega_d\to0\) y el periodo diverge, que es la transición al régimen sin oscilación.</l>
+</limits>
+<explore sim="amort" title="Oscilador subamortiguado: x(t), frecuencia amortiguada, Q y decremento"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales: \(\omega_d=9.9499\), \(Q=5.000\), \(\delta=0.63148\), \(1/\gamma=1\) s y \(x(1\,\text{s})=-0.33685\). En la tabla, el exponente local de \(\omega_d\) respecto de \(\omega_0\) vale 1 (escala con la frecuencia natural) y su dependencia de ζ es débil mientras ζ sea pequeño.</li>
+<li>Suba ζ a 0.7: \(\omega_d=7.141\), \(Q=0.714\), \(\delta=6.159\). A ζ = 0.95 el segundo máximo es casi invisible.</li>
+</ul></div>
+</deriv>
+
+<deriv id="forzado-fasorial" title="El oscilador forzado: método fasorial y resonancia" tags="EDO, Oscilaciones">
+<goal>La respuesta estacionaria de \(\ddot x+2\gamma\dot x+\omega_0^2x=F_0\cos\omega t\): amplitud y fase en función de la frecuencia, y la frecuencia de resonancia.</goal>
+<given>
+<g>La solución general es \(x=x_h+x_p\); \(x_h\) decae como \(\mathrm e^{-\gamma t}\) (deducción anterior), así que el comportamiento duradero es el de una solución particular \(x_p\).</g>
+<g>Números complejos: la parte real de una solución compleja de una ecuación lineal real es solución de la ecuación con la parte real de la fuerza.</g>
+</given>
+<step op="Complejificar la fuerza">
+\[\ddot z+2\gamma\dot z+\omega_0^2z=F_0\,\mathrm e^{\mathrm i\omega t},\qquad x=\operatorname{Re}z.\]
+<why>\(\cos\omega t=\operatorname{Re}\,\mathrm e^{\mathrm i\omega t}\), y derivar es lineal, así que tomar la parte real conmuta con la ecuación.</why>
+</step>
+<step op="Proponer la misma frecuencia con una amplitud compleja \(\hat C\)">
+\[z=\hat C\,\mathrm e^{\mathrm i\omega t}\ \Longrightarrow\ \big(\omega_0^2-\omega^2+2\mathrm i\gamma\omega\big)\hat C=F_0.\]
+<why>Cada derivada multiplica por \(\mathrm i\omega\): \(\dot z=\mathrm i\omega z\), \(\ddot z=-\omega^2z\). La ecuación diferencial queda convertida en una ecuación algebraica.</why>
+</step>
+<step op="Despejar \(\hat C\)">
+\[\hat C=\frac{F_0}{\omega_0^2-\omega^2+2\mathrm i\gamma\omega}=A\,\mathrm e^{-\mathrm i\delta}.\]
+</step>
+<step op="Módulo y fase">
+\[A=\frac{F_0}{\sqrt{(\omega_0^2-\omega^2)^2+4\gamma^2\omega^2}},\qquad \tan\delta=\frac{2\gamma\omega}{\omega_0^2-\omega^2}\ \ (0\le\delta\le\pi).\]
+<why>El módulo de un cociente es el cociente de los módulos; el argumento del denominador es \(\delta\), y se toma con signo menos en \(\hat C\).</why>
+</step>
+<step op="Volver a la parte real">
+\[x_p(t)=\operatorname{Re}\big(A\,\mathrm e^{\mathrm i(\omega t-\delta)}\big)=A\cos(\omega t-\delta).\]
+<why>El oscilador responde a la frecuencia de la fuerza, con retraso \(\delta\); el transitorio \(x_h\) se amortigua y deja solo \(x_p\).</why>
+</step>
+<step op="Hallar el máximo de la amplitud respecto de \(\omega\)">
+\[\frac{\mathrm d}{\mathrm d\omega}\Big[(\omega_0^2-\omega^2)^2+4\gamma^2\omega^2\Big]=-4\omega(\omega_0^2-\omega^2)+8\gamma^2\omega=0\ \Rightarrow\ \omega_r^2=\omega_0^2-2\gamma^2.\]
+<why>Maximizar \(A\) equivale a minimizar el denominador. Existe máximo en \(\omega\gt0\) solo si \(\gamma\lt\omega_0/\sqrt2\).</why>
+</step>
+<step op="Evaluar los extremos y el máximo">
+\[A(0)=\frac{F_0}{\omega_0^2},\quad A(\omega\to\infty)\to\frac{F_0}{\omega^2},\quad A_{\max}=\frac{F_0}{2\gamma\sqrt{\omega_0^2-\gamma^2}}\approx Q\,A(0).\]
+<why>En \(\omega_r\) el denominador vale \(4\gamma^2(\omega_0^2-\gamma^2)\). Para \(\gamma\ll\omega_0\), \(A_{\max}/A(0)\approx\omega_0/2\gamma=Q\).</why>
+</step>
+<result name="Respuesta del oscilador forzado">\[A(\omega)=\frac{F_0}{\sqrt{(\omega_0^2-\omega^2)^2+4\gamma^2\omega^2}},\quad \delta=\arctan\frac{2\gamma\omega}{\omega_0^2-\omega^2},\quad \omega_r=\sqrt{\omega_0^2-2\gamma^2}.\]</result>
+<vars>
+<v s="A" n="amplitud estacionaria" u="m"/>
+<v s="F_0" n="amplitud de la fuerza por unidad de masa" u="m s^-2"/>
+<v s="\omega" n="frecuencia de la fuerza" u="rad s^-1"/>
+<v s="\omega_0" n="frecuencia natural" u="rad s^-1"/>
+<v s="\gamma" n="coeficiente de amortiguamiento" u="s^-1"/>
+<v s="\delta" n="retraso de fase" u="rad"/>
+<v s="\omega_r" n="frecuencia de resonancia" u="rad s^-1"/>
+</vars>
+<effects>
+<e>Con \(\omega_0=10\) rad/s, \(\zeta=0.1\) y \(F_0=1\) m/s²: \(A(0)=0.01\) m; \(A(\omega_0)=0.05\) m con fase \(90^\circ\) exactamente; \(\omega_r=9.8995\) rad/s y \(A_{\max}=0.050252\) m, unas \(Q=5\) veces la respuesta estática. A \(\omega=5\): \(A=0.013216\), \(\delta=7.59^\circ\); a \(\omega=20\): \(A=0.0033041\), \(\delta=172.4^\circ\).</e>
+<e>En \(\omega=\omega_0\), \(A=F_0/(2\gamma\omega_0)\): la amplitud es inversamente proporcional al amortiguamiento (\(n_\zeta=-1\)) y proporcional a la fuerza (\(n_{F_0}=1\)). Con \(\zeta=0.3\), \(A(\omega_0)=0.016667\); con \(\zeta=0.7\), 0.0071429, y la resonancia desaparece (\(\omega_r=1.41\) rad/s, \(A_{\max}\) apenas supera \(A(0)\)).</e>
+<e>La fase pasa de 0° (por debajo de la resonancia, la masa sigue a la fuerza), a 90° en \(\omega_0\), a 180° (por encima, en oposición). Un amortiguamiento menor hace ese cambio más brusco.</e>
+</effects>
+<limits>
+<l>Dimensiones: \([F_0]=\mathsf L\mathsf T^{-2}\), \([(\omega_0^2-\omega^2)^2+4\gamma^2\omega^2]^{1/2}=\mathsf T^{-2}\), luego \([A]=\mathsf L\). ✓</l>
+<l>Límite \(\gamma\to0\): \(A\to F_0/|\omega_0^2-\omega^2|\), que diverge en \(\omega=\omega_0\): sin disipación la amplitud crece sin límite (la solución es entonces \(\propto t\sin\omega_0t\)). Es la base del análisis de Fourier de cualquier fuerza periódica sobre un sistema lineal.</l>
+</limits>
+<explore sim="forzado" title="Respuesta estacionaria del oscilador forzado: amplitud, fase y resonancia"/>
+<div class="sim-guide"><ul>
+<li>Con \(\omega=\omega_0=10\) y ζ = 0.1: \(A=0.05\), \(\delta=90^\circ\), \(\omega_r=9.8995\), \(A_{\max}=0.050252\), \(Q=5\). Seleccione <em>ω</em> en el eje: la curva en log–log tiene un pico de anchura \(\approx2\gamma\) alrededor de 10 rad/s.</li>
+<li>Con ω = 5 (mitad de la resonancia): \(A=0.013216\), casi insensible a ζ (\(|n_\zeta|\) menor que 0.1), porque lejos de la resonancia el amortiguamiento no importa.</li>
+</ul></div>
+</deriv>
+
+<deriv id="fourier" title="Series de Fourier: coeficientes por ortogonalidad, onda cuadrada y fenómeno de Gibbs" tags="Series, Ondas">
+<goal>Representar una función periódica como suma de senos y cosenos, calcular sus coeficientes, y ver cómo converge una onda cuadrada (incluido el sobreimpulso de Gibbs).</goal>
+<given>
+<g>Una función \(f(x)\) de periodo \(2\pi\) puede escribirse como \(\tfrac12a_0+\sum_{n\ge1}(a_n\cos nx+b_n\sin nx)\) y se puede integrar término a término.</g>
+<g>Identidades del producto: \(\cos nx\cos mx=\tfrac12[\cos(n-m)x+\cos(n+m)x]\), y análogas para \(\sin\sin\) y \(\sin\cos\).</g>
+</given>
+<step op="Verificar la ortogonalidad de la base">
+\[\int_{-\pi}^{\pi}\cos nx\cos mx\,\mathrm dx=\pi\,\delta_{nm},\quad \int_{-\pi}^{\pi}\sin nx\sin mx\,\mathrm dx=\pi\,\delta_{nm},\quad \int_{-\pi}^{\pi}\sin nx\cos mx\,\mathrm dx=0\quad(n,m\ge1).\]
+<why>Con las identidades del producto, la integral de cada coseno \(\cos kx\) con \(k\ne0\) sobre un periodo completo es 0; solo sobrevive el término con \(k=0\), cuando \(n=m\).</why>
+</step>
+<step op="Proyectar sobre cada función de la base">
+\[a_m=\frac1\pi\int_{-\pi}^{\pi}f(x)\cos mx\,\mathrm dx,\qquad b_m=\frac1\pi\int_{-\pi}^{\pi}f(x)\sin mx\,\mathrm dx.\]
+<why>Se multiplica la serie por \(\cos mx\) (o \(\sin mx\)) y se integra: por la ortogonalidad, todos los términos se anulan salvo el de índice \(m\), que da \(\pi a_m\) (o \(\pi b_m\)).</why>
+</step>
+<step op="Aplicar a la onda cuadrada \(f=+A\) en \((0,\pi)\), \(-A\) en \((-\pi,0)\)">
+\[a_n=0\ \ (f\ \text{impar}),\qquad b_n=\frac2\pi\int_0^\pi A\sin nx\,\mathrm dx=\frac{2A}{n\pi}\big(1-\cos n\pi\big)=\begin{cases}\dfrac{4A}{n\pi}&n\ \text{impar}\\ 0&n\ \text{par}\end{cases}\]
+<why>El integrando \(f\cos mx\) es impar y su integral sobre un intervalo simétrico es nula; \(f\sin mx\) es par y basta duplicar la integral en \((0,\pi)\).</why>
+</step>
+<step op="Escribir la serie">
+\[f(x)=\frac{4A}\pi\left(\sin x+\frac{\sin3x}3+\frac{\sin5x}5+\cdots\right).\]
+</step>
+<step op="Evaluar en \(x=\pi/2\)">
+\[A=\frac{4A}\pi\left(1-\frac13+\frac15-\frac17+\cdots\right)\ \Longrightarrow\ \frac\pi4=1-\frac13+\frac15-\cdots\]
+<why>\(\sin(k\pi/2)=\pm1\) alternando para \(k\) impar. Es la serie de Leibniz para \(\pi\).</why>
+</step>
+<step op="Igualdad de Parseval y error cuadrático medio">
+\[\frac1{2\pi}\int_{-\pi}^\pi f^2\,\mathrm dx=A^2=\frac12\sum_nb_n^2=\frac{8A^2}{\pi^2}\sum_{n\ \text{impar}}\frac1{n^2}\ \Rightarrow\ \sum_{n\ \text{impar}}\frac1{n^2}=\frac{\pi^2}8;\qquad \varepsilon_N^2=A^2\Big(1-\frac8{\pi^2}\sum_{n\le N}\frac1{n^2}\Big).\]
+<why>Al elevar al cuadrado la serie, los productos cruzados se anulan por ortogonalidad. El resto \(\varepsilon_N^2=A^2-\tfrac12\sum_{n\le N}b_n^2\) es la energía que queda en los armónicos descartados.</why>
+</step>
+<step op="Fenómeno de Gibbs: forma integral de la suma parcial">
+\[S_{2M-1}(x)=\frac{4A}\pi\sum_{j=1}^M\frac{\sin(2j-1)x}{2j-1}=\frac{2A}\pi\int_0^x\frac{\sin 2Mt}{\sin t}\,\mathrm dt\ \Longrightarrow\ \text{máximo en }x=\frac\pi{2M},\ \ S\to\frac{2A}\pi\,\mathrm{Si}(\pi)=1.1790\,A.\]
+<why>\(\sum_{j=1}^M\cos(2j-1)t=\sin2Mt/(2\sin t)\) y se integra término a término. El primer máximo está donde \(\sin 2Mt\) alcanza su primer cero en \(2Mt=\pi\); con \(u=2Mt\) y \(\sin t\approx t\), el integrando es \(\sin u/u\): \(\int_0^\pi\sin u/u\,\mathrm du=\mathrm{Si}(\pi)=1.8519\).</why>
+</step>
+<result name="Serie de Fourier de la onda cuadrada">\[f(x)=\frac{4A}\pi\sum_{k=1,3,5,\dots}\frac{\sin kx}k,\qquad \varepsilon_N^2=A^2\Big(1-\frac8{\pi^2}\sum_{k\le N\ \text{impar}}\frac1{k^2}\Big).\]</result>
+<vars>
+<v s="f" n="función periódica (p. ej., desplazamiento de una cuerda)" u="m"/>
+<v s="A" n="amplitud de la onda cuadrada" u="m"/>
+<v s="b_n" n="coeficiente del seno de orden \(n\)" u="m"/>
+<v s="x" n="variable de periodo \(2\pi\)" u="rad"/>
+<v s="n" n="número de armónico" u="1"/>
+<v s="\varepsilon_N" n="error cuadrático medio tras \(N\) armónicos" u="m"/>
+</vars>
+<effects>
+<e>Convergencia lenta: la amplitud de cada armónico decae como \(1/n\) porque \(f\) tiene saltos. El error rms es \(0.4352A\) con \(N=1\), \(0.3152A\) con 3, \(0.2010A\) con 9, \(0.0637A\) con 99 y \(0.0201A\) con 999: baja como \(1/\sqrt N\).</e>
+<e>Sobreimpulso de Gibbs: el pico de \(S_N\) vale 1.2732\(A\) (\(N=1\)), 1.2004 (3), 1.1823 (9), 1.1798 (19), 1.1790 (99) y \(1.17898\) (999), sin tender a \(A\): excede el salto de valor \(A\) en un 17.9 % de \(A\) (8.95 % del salto total \(2A\)). Más términos estrechan el pico, que se acerca al salto, pero no lo reducen.</e>
+<e>En \(x=\pi/2\) la suma parcial con \(N=9\) vale \(1.0631\,A\) y con 99, \(0.9936\,A\): converge en los puntos regulares con error \(\sim1/N\).</e>
+</effects>
+<limits>
+<l>Dimensiones: \(f\), \(A\) y \(b_n\) tienen las mismas; \(nx\) es un ángulo, adimensional. ✓</l>
+<l>Para periodo \(L\) basta reemplazar \(x\to2\pi x/L\). Las funciones continuas con derivada continua tienen coeficientes que decaen al menos como \(1/n^2\) y no muestran Gibbs; solo los saltos generan oscilación persistente. En el punto de discontinuidad la serie converge al promedio de los dos lados (aquí 0).</l>
+</limits>
+<explore sim="fourier-onda" title="Suma parcial de la onda cuadrada, error rms y pico de Gibbs"/>
+<div class="sim-guide"><ul>
+<li>Con \(N=9\), \(x=\pi/4\), \(A=1\): \(S_9(\pi/4)=0.9918\), error rms 0.2010 y pico 1.1823. Seleccione <em>N</em> en la lista con los valores 1, 3, 9, 19, 99: el pico baja hacia 1.1790 y el rms como \(N^{-1/2}\).</li>
+<li>En \(x/\pi=0.5\) (\(x=\pi/2\)) la suma con \(N=9\) vale 1.0631 y con \(N=99\), 0.9936.</li>
+</ul></div>
+</deriv>
+
+<deriv id="legendre-pl" title="Los polinomios de Legendre: solución en serie y ortogonalidad" tags="EDO, Funciones especiales">
+<goal>Las soluciones de \((1-x^2)y''-2xy'+l(l+1)y=0\) regulares en \(x=\pm1\), que son las partes angulares de los problemas con simetría esférica.</goal>
+<given>
+<g>De la deducción del laplaciano en esféricas: la parte angular de \(\nabla^2f=0\) con simetría azimutal obedece \(\frac1{\sin\theta}\frac{\mathrm d}{\mathrm d\theta}\!\big(\sin\theta\,\frac{\mathrm dP}{\mathrm d\theta}\big)=-l(l+1)P\); con \(x=\cos\theta\) se vuelve la ecuación de Legendre.</g>
+<g>Se busca una solución finita en los polos \(x=\pm1\) (\(\theta=0,\pi\)), como exige la física.</g>
+</given>
+<step op="Proponer una serie de potencias \(y=\sum_ka_kx^k\) y sustituir">
+\[\sum_k\Big[(k+2)(k+1)a_{k+2}-k(k-1)a_k-2k\,a_k+l(l+1)a_k\Big]x^k=0.\]
+<why>\(y''=\sum k(k-1)a_kx^{k-2}\); \((1-x^2)y''\) aporta \((k+2)(k+1)a_{k+2}-k(k-1)a_k\) a la potencia \(x^k\), y \(-2xy'\) aporta \(-2ka_k\).</why>
+</step>
+<step op="Anular el coeficiente de cada potencia: relación de recurrencia">
+\[a_{k+2}=\frac{k(k+1)-l(l+1)}{(k+1)(k+2)}\,a_k.\]
+<why>\(-k(k-1)-2k=-k(k+1)\). Los coeficientes pares dependen de \(a_0\) y los impares de \(a_1\): dos soluciones independientes.</why>
+</step>
+<step op="Exigir finitud en \(x=\pm1\)">
+\[\frac{a_{k+2}}{a_k}\to1\ \ (k\to\infty)\ \Longrightarrow\ \sum a_kx^k\sim\sum x^k\ \text{diverge en }|x|=1,\ \text{salvo que la serie termine.}\]
+<why>La serie termina si el numerador se anula para algún \(k\): \(k(k+1)=l(l+1)\), es decir, cuando \(l\) es un entero no negativo (\(k=l\)). Entonces solo uno de los dos conjuntos de coeficientes (pares si \(l\) es par, impares si \(l\) es impar) es un polinomio de grado \(l\).</why>
+</step>
+<step op="Normalizar con \(P_l(1)=1\) y calcular los primeros">
+\[P_0=1,\quad P_1=x,\quad P_2=\tfrac12(3x^2-1),\quad P_3=\tfrac12(5x^3-3x),\quad P_4=\tfrac18(35x^4-30x^2+3).\]
+<why>Para \(l=2\): \(a_2=\frac{0-6}{2}a_0=-3a_0\), así que \(P_2\propto1-3x^2\); normalizando a \(P_2(1)=1\) queda \(\tfrac12(3x^2-1)\).</why>
+</step>
+<step op="Forma compacta de Rodrigues y recurrencia de tres términos">
+\[P_l(x)=\frac1{2^l\,l!}\frac{\mathrm d^l}{\mathrm dx^l}(x^2-1)^l,\qquad (l+1)P_{l+1}=(2l+1)\,x\,P_l-l\,P_{l-1}.\]
+<why>Ambas son identidades de los polinomios obtenidos (se verifican con la recurrencia en serie); la segunda permite calcular \(P_l\) de forma estable.</why>
+</step>
+<step op="Demostrar la ortogonalidad">
+\[\big[(1-x^2)P_l'\big]'+l(l+1)P_l=0\ \Rightarrow\ \big[l(l+1)-m(m+1)\big]\!\int_{-1}^{1}P_lP_m\,\mathrm dx=\Big[(1-x^2)(P_lP_m'-P_mP_l')\Big]_{-1}^{1}=0.\]
+<why>Se multiplica la ecuación de \(P_l\) por \(P_m\), la de \(P_m\) por \(P_l\), se restan y se integra por partes: el término de borde se anula porque \((1-x^2)\) vale 0 en \(\pm1\). Para \(l\ne m\) el factor \(l(l+1)-m(m+1)\ne0\) obliga a que la integral sea 0.</why>
+</step>
+<step op="Norma">
+\[\int_{-1}^1P_lP_m\,\mathrm dx=\frac2{2l+1}\,\delta_{lm}.\]
+<why>Con Rodrigues, \(l\) integraciones por partes dan \(\int P_l^2=\frac{(2l)!}{2^{2l}(l!)^2}\int_{-1}^{1}(1-x^2)^l\mathrm dx=\frac2{2l+1}\) (se verifica caso por caso).</why>
+</step>
+<result name="Polinomios de Legendre">\[P_l(x)=\frac1{2^ll!}\frac{\mathrm d^l}{\mathrm dx^l}(x^2-1)^l,\qquad \int_{-1}^1P_lP_m\,\mathrm dx=\frac{2}{2l+1}\delta_{lm},\qquad (l+1)P_{l+1}=(2l+1)xP_l-lP_{l-1}.\]</result>
+<vars>
+<v s="x" n="\(\cos\theta\)" u="1"/>
+<v s="l" n="orden (entero \(\ge0\))" u="1"/>
+<v s="P_l" n="polinomio de Legendre" u="1"/>
+<v s="a_k" n="coeficientes de la serie" u="1"/>
+</vars>
+<effects>
+<e>Valores en \(x=0.5\): \(P_0=1\), \(P_1=0.5\), \(P_2=-0.125\), \(P_3=-0.4375\), \(P_4=-0.2891\), \(P_5=0.0898\), \(P_6=0.3232\). En \(x=0.9\), \(P_3=0.4725\) y \(P_5=-0.0411\). Todos cumplen \(|P_l|\le1\).</e>
+<e>\(P_l\) tiene exactamente \(l\) ceros en \((-1,1)\) y paridad \((-1)^l\). La derivada en \(x=0.5\): \(P_3'=0.375\).</e>
+<e>Uso: el desarrollo multipolar \(1/|\mathbf r-\mathbf r'|=\sum_lr'^l\,r^{-l-1}P_l(\cos\gamma)\) (capítulo 19) y los armónicos esféricos de la mecánica cuántica (capítulo 31) se construyen con ellos.</e>
+</effects>
+<limits>
+<l>Todo es adimensional: \(x=\cos\theta\) y los \(a_k\) son números. ✓</l>
+<l>Para \(l\) no entero la serie diverge en \(x=\pm1\) (singular en un polo) y se descarta; por eso \(l\) está cuantizado (en cuántica, el momento angular es \(\sqrt{l(l+1)}\hbar\)).</l>
+</limits>
+<explore sim="legendre-pl" title="Polinomios de Legendre: valor, derivada y norma"/>
+<div class="sim-guide"><ul>
+<li>Con \(l=3\), \(x=0.5\): \(P_3=-0.4375\), \(P_3'=0.375\), norma \(2/7=0.285714\). Pase \(l\) a 6 y \(x\) a 0.9: \(P_6=-0.241164\).</li>
+<li>Con \(x=1\): \(P_l(1)=1\) para todo \(l\). Con \(x=0\): se anulan los impares y \(P_2(0)=-0.5\).</li>
+</ul></div>
+</deriv>
+
+<deriv id="bessel-tambor" title="Funciones de Bessel y los modos de un tambor circular" tags="EDO, Funciones especiales, Ondas">
+<goal>Las soluciones regulares de \(x^2y''+xy'+(x^2-m^2)y=0\) y su uso para obtener las frecuencias de una membrana circular fija en el borde.</goal>
+<given>
+<g>Ecuación de Helmholtz \(\nabla^2u+k^2u=0\) en una membrana circular; en polares, \(u=R(r)\,\mathrm e^{\mathrm im\varphi}\) y la separación de variables da \(R''+R'/r+(k^2-m^2/r^2)R=0\), que con \(x=kr\) es la ecuación de Bessel de orden \(m\).</g>
+<g>Se busca la solución finita en el centro \(x=0\). El borde \(r=a\) está fijo: \(u(a)=0\).</g>
+</given>
+<step op="Proponer una serie de Frobenius \(y=\sum_ja_jx^{j+s}\) y sustituir">
+\[\sum_ja_j\big[(j+s)^2-m^2\big]x^{j+s}+\sum_ja_jx^{j+s+2}=0.\]
+<why>\(x^2y''+xy'\) da \((j+s)(j+s-1)+(j+s)=(j+s)^2\) por término; \(x^2y\) agrega \(a_jx^{j+s+2}\).</why>
+</step>
+<step op="Ecuación indicial con la potencia más baja">
+\[a_0\,(s^2-m^2)=0\ \Longrightarrow\ s=\pm m;\ \text{ la solución regular usa }s=m.\]
+<why>Con \(s=-m\) la solución diverge en el origen para \(m\ge1\) (y tiene un logaritmo para \(m=0\)).</why>
+</step>
+<step op="Coeficientes: recurrencia">
+\[a_1\big[(1+m)^2-m^2\big]=0\Rightarrow a_1=0;\qquad a_j\,j\,(j+2m)=-a_{j-2}.\]
+<why>Se anula el coeficiente de \(x^{j+m}\) con \(j\ge2\): \(a_j[(j+m)^2-m^2]+a_{j-2}=0\) y \((j+m)^2-m^2=j(j+2m)\). Solo sobreviven los índices pares.</why>
+</step>
+<step op="Resolver la recurrencia y normalizar \(a_0=1/(2^mm!)\)">
+\[a_{2k}=\frac{(-1)^k}{2^{2k+m}\,k!\,(k+m)!}\ \Longrightarrow\ J_m(x)=\sum_{k=0}^\infty\frac{(-1)^k}{k!\,(k+m)!}\left(\frac x2\right)^{2k+m}.\]
+<why>Iterando \(a_{2k}=-a_{2k-2}/(4k(k+m))\) aparecen \(k!\) y \((k+m)!/m!\).</why>
+</step>
+<step op="Comportamiento">
+\[J_m(x)\simeq\frac1{m!}\Big(\frac x2\Big)^m\ \ (x\to0),\qquad J_m(x)\simeq\sqrt{\frac2{\pi x}}\cos\!\Big(x-\frac{m\pi}2-\frac\pi4\Big)\ \ (x\to\infty).\]
+<why>El primer término de la serie da el límite pequeño. El comportamiento asintótico (oscilación con amplitud \(x^{-1/2}\)) se deduce con el método de la fase estacionaria; resulta que \(J_m\) se parece a un coseno que se amortigua lentamente.</why>
+</step>
+<step op="Aplicar la condición de borde y despejar las frecuencias">
+\[J_m(ka)=0\ \Longrightarrow\ k_{mn}=\frac{j_{mn}}a,\qquad \omega_{mn}=c\,k_{mn}\ \Longrightarrow\ f_{mn}=\frac{c\,j_{mn}}{2\pi a}.\]
+<why>\(j_{mn}\) es el \(n\)-ésimo cero positivo de \(J_m\). La velocidad \(c=\sqrt{\mathcal T/\sigma}\) (tensión por unidad de longitud entre densidad superficial) sale de la ecuación de ondas de la membrana (capítulo 13).</why>
+</step>
+<result name="Funciones de Bessel y frecuencias del tambor">\[J_m(x)=\sum_{k=0}^\infty\frac{(-1)^k}{k!\,(k+m)!}\Big(\frac x2\Big)^{2k+m},\qquad f_{mn}=\frac{c\,j_{mn}}{2\pi a}.\]</result>
+<vars>
+<v s="J_m" n="función de Bessel de orden \(m\)" u="1"/>
+<v s="x" n="argumento \(kr\)" u="1"/>
+<v s="a" n="radio de la membrana" u="m"/>
+<v s="c" n="velocidad de las ondas" u="m s^-1"/>
+<v s="j_{mn}" n="n-ésimo cero de \(J_m\)" u="1"/>
+<v s="f_{mn}" n="frecuencia del modo \((m,n)\)" u="Hz"/>
+<v s="k" n="número de onda" u="m^-1"/>
+</vars>
+<effects>
+<e>Primeros ceros: \(j_{01}=2.4048\), \(j_{11}=3.8317\), \(j_{21}=5.1356\), \(j_{02}=5.5201\). Los cocientes con la fundamental son \(1,\ 1.593,\ 2.136,\ 2.295\): los modos de un tambor no son armónicos, por eso no tiene una altura definida como una cuerda (cociente 1, 2, 3, …).</e>
+<e>Con \(a=0.15\) m y \(c=100\) m/s: \(f_{01}=255.16\) Hz y \(f_{11}=406.6\) Hz. \(f\propto1/a\) (\(n_a=-1\)) y \(\propto c\) (\(n_c=1\)): duplicar el radio baja la frecuencia a 127.58 Hz; duplicar la tensión multiplica por \(\sqrt2\) a \(c\) y a \(f\) por 1.414.</e>
+<e>Valores de las funciones: \(J_0(2)=0.22389\), \(J_1(2)=0.57672\), \(J_2(2)=0.35283\); \(J_0(5)=-0.17760\), \(J_1(5)=-0.32758\), \(J_2(5)=0.04657\).</e>
+</effects>
+<limits>
+<l>Dimensiones: \(kr\) es adimensional, \([k]=\mathsf L^{-1}\) y \([c/a]=\mathsf T^{-1}\) (Hz). ✓</l>
+<l>La serie converge siempre pero para \(x\gg10\) pierde cifras por cancelación (los términos crecen hasta \(\sim\mathrm e^x\)); el explorador la limita a \(x\le12\). Los ceros se acercan a una separación \(\pi\) para \(x\) grande, como las de \(\cos x\).</l>
+</limits>
+<explore sim="bessel-tambor" title="Funciones de Bessel y frecuencia fundamental de una membrana circular"/>
+<div class="sim-guide"><ul>
+<li>Con \(m=0\), \(x=2\), \(a=0.15\), \(c=100\): \(J_0(2)=0.22389\), \(j_{01}=2.404826\) y \(f_{01}=255.16\) Hz.</li>
+<li>Con \(m=1\): \(j_{11}=3.831706\) y \(f=406.6\) Hz; con \(m=3\): \(j_{31}=6.380162\) y \(f=677.0\) Hz. Seleccione <em>a</em> en el eje y vea la recta de pendiente −1 en log–log.</li>
+</ul></div>
+</deriv>
+
+<section>
+<h2>Fuentes y lecturas</h2>
+<ul class="refs">
+<li>M. L. Boas, <em>Mathematical Methods in the Physical Sciences</em>, 3.ª ed., Wiley (2005): ecuaciones diferenciales (cap. 8), series de Fourier (cap. 7), funciones de Legendre y de Bessel (cap. 12).</li>
+<li>G. B. Arfken, H. J. Weber, F. E. Harris, <em>Mathematical Methods for Physicists</em>, 7.ª ed., Academic Press (2013): series de Fourier (cap. 19), Legendre (cap. 15), Bessel (cap. 14), método de Frobenius (§ 7.5).</li>
+<li>W. E. Boyce y R. C. DiPrima, <em>Elementary Differential Equations and Boundary Value Problems</em>, Wiley: ecuaciones lineales con coeficientes constantes y método del factor integrante.</li>
+<li>J. P. Den Hartog, <em>Mechanical Vibrations</em>, Dover (1985): oscilador forzado amortiguado, resonancia y factor \(Q\).</li>
+<li>F. W. J. Olver <em>et al.</em> (eds.), <em>NIST Digital Library of Mathematical Functions</em>: § 14 (Legendre), § 10 (Bessel, incluido el cero \(j_{mn}\) y sus tablas), § 6.16 (la integral seno); y para el fenómeno de Gibbs, H. S. Carslaw, <em>Introduction to the Theory of Fourier's Series and Integrals</em>, Dover (1930), cap. IX.</li>
+<li>N. H. Fletcher y T. D. Rossing, <em>The Physics of Musical Instruments</em>, 2.ª ed., Springer (1998), cap. 18: modos de una membrana circular.</li>
+</ul>
+</section>
+</template>

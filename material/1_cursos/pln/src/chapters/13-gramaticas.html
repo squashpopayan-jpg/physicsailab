@@ -1,0 +1,98 @@
+<template class="chapter-src" data-id="gramaticas" data-num="13" data-title="Gramáticas libres de contexto y estructura sintagmática" data-part="Parte IV · Sintaxis" data-short="Constituyentes y sintagmas; reglas de reescritura; árboles y derivaciones; recursión; gramática del curso; tipos de gramáticas formales; límites de lo libre de contexto">
+<p class="lead">Un autómata finito reconoce palabras; para reconocer oraciones hace falta describir cómo se agrupan: «la niña» forma una unidad, «lee un libro» otra, y la oración es la unión de ambas. Una gramática libre de contexto escribe esas agrupaciones como reglas de reescritura y un árbol sintáctico las muestra. Este capítulo presenta el formalismo; el siguiente, los algoritmos que lo aplican.</p>
+
+<section>
+<h2>Sintaxis, constituyentes y sintagmas</h2>
+<p>La <span class="term">sintaxis</span> estudia el modo en que se combinan las palabras y los grupos que estas forman para expresar significados, y las relaciones entre esas unidades. Su resultado es un <span class="term">árbol sintáctico</span>: los nodos son los <b>constituyentes</b> (una palabra o una secuencia de palabras que funciona como unidad) y las hojas, las palabras de la oración. Un constituyente de dos o más elementos se llama <b>sintagma</b> (en la <i>Nueva gramática</i> de la RAE, <i>grupo sintáctico</i>). Los principales en español:</p>
+<table>
+<thead><tr><th>Sintagma</th><th>Núcleo</th><th>Ejemplo</th></tr></thead>
+<tbody>
+<tr><td>Nominal (SN)</td><td>Nombre</td><td>[la niña], [un libro muy largo]</td></tr>
+<tr><td>Verbal (SV)</td><td>Verbo</td><td>[lee un libro], [duerme en la alfombra]</td></tr>
+<tr><td>Preposicional (SP)</td><td>Preposición</td><td>[en la alfombra], [con un telescopio]</td></tr>
+<tr><td>Adjetival (SAdj)</td><td>Adjetivo</td><td>[muy grande]</td></tr>
+<tr><td>Adverbial (SAdv)</td><td>Adverbio</td><td>[muy rápidamente]</td></tr>
+</tbody></table>
+<p>Saber que una palabra es de cierta categoría (capítulo 9) dice qué sintagma puede formar; saber la estructura permite, después, determinar las relaciones semánticas: quién hace qué a quién. Además, la información sintáctica de cada palabra importa: un verbo <i>transitivo</i> exige un objeto directo, uno intransitivo no lo admite. La estructura del lenguaje debe modelarse formalmente para que el análisis sea posible.</p>
+</section>
+
+<section>
+<h2>Gramáticas de estructura sintagmática</h2>
+<p>Una <span class="term">gramática libre de contexto</span> (GLC) es un cuarteto \(G=(N,\Sigma,R,S)\): símbolos no terminales \(N\) (categorías y sintagmas), terminales \(\Sigma\) (palabras), reglas \(R\) de la forma \(A\to\alpha\) (un solo no terminal a la izquierda, cualquier secuencia a la derecha) y un símbolo inicial \(S\). Se llama «libre de contexto» porque la regla se aplica a \(A\) sin importar lo que la rodea. Una <b>derivación</b> parte de \(S\) y reescribe un símbolo cada vez hasta quedarse solo con palabras; el árbol es el registro de la derivación.</p>
+<div class="mono-box">S  → SN SV                         Det → 'el' | 'la' | 'un' | …
+SN → Det N | N | Pron | SN SP      N   → 'niña' | 'libro' | …
+SV → V | V SN | SV SP              V   → 'lee' | 've' | …
+SP → P SN                          P   → 'con' | 'en' | …</div>
+<p>Dos propiedades importan. La <b>recursión</b> (\(\text{SN}\to\text{SN SP}\), \(\text{SP}\to\text{P SN}\)) permite oraciones de longitud ilimitada («el gato de la casa del barrio de…») con un número finito de reglas: es lo que un autómata finito no puede. Y la <b>ambigüedad</b>: una oración puede tener varios árboles, lo que se vio en el capítulo 1 con los números de Catalan y se resuelve en el 17.</p>
+<div class="sim" data-sim="generador" data-title="Generar oraciones al azar con la gramática del curso"></div>
+<div class="sim-guide"><ul>
+<li>Cambie la semilla: la gramática produce oraciones distintas, todas bien formadas aunque algunas sean absurdas («el gato de la casa lee un libro»). La sintaxis no garantiza el sentido.</li>
+<li>Con profundidad 3 salen oraciones mínimas; con 9, estructuras anidadas con sintagmas preposicionales y adjetivos.</li>
+<li>El árbol y la notación de corchetes son dos formas de escribir lo mismo.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El árbol de una oración</h2>
+<p>La gramática funciona en los dos sentidos: genera oraciones y analiza (<i>parsing</i>) las que se le dan. Analizar es hallar los árboles que la gramática asigna a una oración; si no hay ninguno, la oración no pertenece al lenguaje que describe. El analizador del curso (que se explica en el capítulo 14) construye el árbol de una oración dada:</p>
+<div class="sim" data-sim="arbol" data-title="Árbol sintáctico de una oración con la gramática del curso"></div>
+<div class="sim-guide"><ul>
+<li>Elija «yo vi un elefante en mi pijama»: tiene dos análisis. En uno el sintagma «en mi pijama» cuelga del verbo (yo estaba en pijama), en otro, del nombre (el elefante estaba en pijama). Es el chiste de Groucho Marx.</li>
+<li>Con «hombres y mujeres mayores», también dos análisis: [[hombres y mujeres] mayores] (todos mayores) o [hombres y [mujeres mayores]].</li>
+<li>Escriba una oración con una palabra desconocida o desordenada («libro la niña un lee»): no hay análisis.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Tipos de gramáticas formales</h2>
+<p>Las gramáticas de estructura sintagmática se clasifican según las restricciones de sus reglas (jerarquía de Chomsky, capítulo 5):</p>
+<table>
+<thead><tr><th>Tipo</th><th>Forma de las reglas</th><th>Reconocedor</th><th>Uso en PLN</th></tr></thead>
+<tbody>
+<tr><td>3 · De estados finitos (regulares)</td><td>\(A\to aB\), \(A\to a\)</td><td>Autómata finito</td><td>Morfología, tokenización</td></tr>
+<tr><td>2 · Libres de contexto</td><td>\(A\to\alpha\)</td><td>Autómata con pila</td><td>Sintaxis</td></tr>
+<tr><td>1 · Sensibles al contexto</td><td>\(\alpha A\beta\to\alpha\gamma\beta\)</td><td>Autómata acotado linealmente</td><td>Algunas dependencias (poco usadas)</td></tr>
+<tr><td>0 · Recursivamente enumerables</td><td>Sin restricción</td><td>Máquina de Turing</td><td>—</td></tr>
+</tbody></table>
+<p>También existen las <i>gramáticas generativas transformacionales</i> de Chomsky, que añaden transformaciones sobre los árboles. Para el análisis automático se usan casi siempre gramáticas libres de contexto, extendidas con rasgos (capítulo 15) o con probabilidades (capítulo 17), porque hay algoritmos eficientes de análisis (capítulo 14).</p>
+<div class="box warn"><p>Una GLC básica no expresa la <b>concordancia</b>: «las niña lee» le parece tan correcta como «las niñas leen» porque las reglas solo mencionan categorías. Para impedirlo habría que multiplicar los símbolos (SN-fem-sg, SN-fem-pl, SN-masc-sg…), con lo que la gramática crece explosivamente; la solución elegante son las gramáticas de unificación. Tampoco recoge la <b>subcategorización</b> (qué verbos exigen objeto) ni el significado.</p></div>
+<div class="box py"><p>El programa define la gramática del curso con NLTK, cuenta sus producciones y analiza cinco oraciones.</p>
+<div class="py" data-py="13-gramaticas"></div></div>
+<div class="box read"><ul>
+<li><b>Tamaño</b>: 53 producciones y 11 símbolos con reglas; solo 12 son estructurales (S 1, SN 6, SV 4, SP 1) y el resto es el léxico (41 reglas). Una gramática real de cobertura amplia tiene miles de reglas.</li>
+<li><b>Ambigüedad</b>: «la niña lee un libro» tiene 1 análisis; «yo vi un elefante en mi pijama», 2; «hombres y mujeres mayores leen», 2; y «el niño ve un gato grande con un telescopio en el parque», 5. Los números siguen la serie de Catalan del capítulo 1, matizada por los adjetivos.</li>
+<li><b>Orden</b>: «libro la niña un lee» no tiene ningún análisis: una oración mal formada no pertenece al lenguaje de la gramática.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Un árbol sintáctico agrupa las palabras en constituyentes; los sintagmas son constituyentes de dos o más palabras.</li>
+<li>Una GLC se define con no terminales, terminales, reglas \(A\to\alpha\) y un símbolo inicial.</li>
+<li>La recursión permite oraciones ilimitadas con reglas finitas; la ambigüedad aparece cuando una oración tiene varios árboles.</li>
+<li>La jerarquía de Chomsky: regulares ⊂ libres de contexto ⊂ sensibles al contexto ⊂ recursivamente enumerables.</li>
+<li>Una GLC básica no expresa concordancia ni subcategorización: hacen falta rasgos.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Con la gramática del curso, ¿es «un gato» un sintagma nominal? ¿Y «gato un»?
+<details><summary>Respuesta</summary><p>«Un gato» sí (SN → Det N); «gato un» no.</p></details></li>
+<li><span class="lvl">Básico</span>Escriba la derivación de «la niña duerme».
+<details><summary>Respuesta</summary><p>S ⇒ SN SV ⇒ Det N SV ⇒ la N SV ⇒ la niña SV ⇒ la niña V ⇒ la niña duerme.</p></details></li>
+<li><span class="lvl">Intermedio</span>Escriba las reglas de una gramática mínima que genere «a<sup>n</sup>b<sup>n</sup>».
+<details><summary>Respuesta</summary><p>S → a S b | ab (o S → a S b | ε). Es libre de contexto pero no regular.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Qué ventaja y qué riesgo trae la regla recursiva SN → SN SP?
+<details><summary>Respuesta</summary><p>Ventaja: describe SN anidados de longitud ilimitada. Riesgo: ambigüedad estructural (los números de Catalan) y recursión por la izquierda, que hace entrar en bucle a los analizadores descendentes (capítulo 14).</p></details></li>
+<li><span class="lvl">Avanzado</span>Con las 4 combinaciones de género y número (fem. sg, fem. pl, masc. sg, masc. pl), ¿cuántas reglas SN → Det N necesitaría una GLC sin rasgos para expresar la concordancia, y cuántas con rasgos?
+<details><summary>Respuesta</summary><p>Sin rasgos habría que duplicar los símbolos: 4 reglas (SN-fs → Det-fs N-fs, etc.) y los léxicos de determinantes y nombres divididos en 4 clases cada uno; con rasgos basta una regla, SN[gen=?g, num=?n] → Det[gen=?g, num=?n] N[gen=?g, num=?n].</p></details></li>
+</ol>
+<h3>Autoevaluación</h3>
+<div class="sim" data-sim="quiz" data-cap="gramaticas" data-title="Autoevaluación del capítulo 13"></div>
+<div class="box links"><ul>
+<li><a href="https://web.stanford.edu/~jurafsky/slp3/17.pdf">Jurafsky y Martin — cap. 17: context-free grammars and constituency parsing</a><small>Gramáticas, treebanks y análisis con ejemplos en inglés.</small></li>
+<li><a href="https://www.nltk.org/book/ch08.html">Bird, Klein y Loper — NLTK Book, cap. 8 «Analyzing sentence structure»</a><small>Gramáticas libres de contexto y analizadores con código ejecutable.</small></li>
+<li><a href="https://doi.org/10.1109/TIT.1956.1056813">Chomsky (1956) — Three models for the description of language</a><small>Origen de la jerarquía de gramáticas.</small></li>
+<li><a href="https://www.rae.es/gramática/nueva-gramática">RAE — Nueva gramática de la lengua española</a><small>Descripción de los grupos sintácticos del español.</small></li>
+</ul></div>
+</section>
+</template>

@@ -908,11 +908,11 @@
                     </button>
                 </div>
 
-                <!-- Configuración de Claves Vigentes para TODOS los 24 Cursos -->
+                <!-- Configuración de Claves Vigentes para TODOS los 38 Cursos -->
                 <div class="adm-card">
                     <div class="adm-card-header">
                         <div>
-                            <h3 class="adm-card-title">🔑 Claves Vigentes de Acceso a Simuladores & Cursos (25 Materias)</h3>
+                            <h3 class="adm-card-title">🔑 Claves Vigentes de Acceso a Simuladores & Cursos (38 Materias)</h3>
                             <p class="adm-card-desc">
                                 Asigna o personaliza la contraseña vigente de este mes para cada una de tus materias y simuladores. Se sincronizan en la nube en tiempo real.
                             </p>
@@ -938,13 +938,13 @@
                                     style="position:absolute; right:0.75rem; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--adm-muted); cursor:pointer; font-size:1.1rem; display:none;" title="Limpiar búsqueda">✕</button>
                         </div>
                         <div style="font-size:0.84rem; color:var(--adm-muted);">
-                            Mostrando <strong id="adm-courses-keys-count" style="color:#fff;">27</strong> materias configuradas
+                            Mostrando <strong id="adm-courses-keys-count" style="color:#fff;">38</strong> materias configuradas
                         </div>
                     </div>
 
-                    <!-- Grid Dinámico de las 24 Materias -->
+                    <!-- Grid Dinámico de las 38 Materias -->
                     <div id="adm-courses-keys-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:1rem;">
-                        <!-- Se llena dinámicamente con los 25 cursos -->
+                        <!-- Se llena dinámicamente con los 38 cursos -->
                     </div>
                 </div>
 
@@ -1283,18 +1283,20 @@
         const FIREBASE_BASE = 'https://squashpopayan-65e33-default-rtdb.firebaseio.com/physicsailab';
         const ADMIN_MASTER_KEY = 'OBANDO-ADMIN-2026';
 
-        // 32 cursos y Laboratorios Virtuales de la Plataforma
+        // 38 cursos y Laboratorios Virtuales de la Plataforma (36 públicos + 2 privados)
         const ALL_COURSES = [
             { id: 'mecanica', name: 'Mecánica Clásica', icon: '⚙️', defaultKey: 'MECANICA-2026', cat: 'Física Fundamental', desc: '19 capítulos, 83 simulaciones numéricas y formulario interactivo.' },
+            { id: 'deducciones', name: 'La Fórmula por Dentro: Todas las Deducciones', icon: '📐', defaultKey: 'DEDUCCIONES-2026', cat: 'Física Fundamental & Matemática', desc: '42 capítulos (12 partes), 216 deducciones paso a paso, 218 simulaciones y 8.836 pruebas SymPy/SciPy.' },
             { id: 'materiales', name: 'Ciencia e Ingeniería de Materiales', icon: '🧱', defaultKey: 'MATERIALES-2026', cat: 'Materiales & Sólidos', desc: 'Estructuras cristalinas, defectos, diagramas de fase y tratamientos térmicos.' },
             { id: 'transformadores', name: 'Transformadores de Potencia & Modelado', icon: '⚡', defaultKey: 'TRANSFO-2026', cat: 'Ingeniería Eléctrica', desc: 'Circuitos equivalentes, pruebas en vacío/cortocircuito y rendimiento.' },
             { id: 'ondas', name: 'Ondas y Acústica', icon: '🌊', defaultKey: 'ONDAS-2026', cat: 'Física Fundamental', desc: 'Ecuación de onda, efecto Doppler, resonancia y acústica física.' },
             { id: 'neuro', name: 'Neuroplasticidad & Física de Redes', icon: '🧠', defaultKey: 'RECABLEAR-2026', cat: 'Biofísica & Neurociencias', desc: 'Modelos de Hodgkin-Huxley, sinapsis y plasticidad neuronal.' },
             { id: 'electromagnetismo', name: 'Atlas Interactivo de Electromagnetismo', icon: '🧲', defaultKey: 'ELECTRO-2026', cat: 'Física Fundamental', desc: 'Ecuaciones de Maxwell, ley de Gauss, Ampère y ondas EM.' },
             { id: 'ml', name: 'Machine Learning & Ciencia de Datos', icon: '🤖', defaultKey: 'DATOS-IA-2026', cat: 'Inteligencia Artificial', desc: 'Regresión, clasificación, redes neuronales y optimización matemática.' },
+            { id: 'pln', name: 'Máquinas que Leen: PLN & Modelos de Lenguaje', icon: '🗣️', defaultKey: 'PLN-2026', cat: 'IA & Procesamiento del Lenguaje', desc: '37 capítulos (8 partes), 89 simulaciones en vivo, 37 programas Python, Transformers/LLMs y 689 pruebas.' },
             { id: 'cuantica', name: 'Física Cuántica y Atómica', icon: '⚛️', defaultKey: 'CUANTICA-2026', cat: 'Física Moderna', desc: 'Ecuación de Schrödinger, efecto fotoeléctrico y barreras de potencial.' },
             { id: 'retie', name: 'Normativa RETIE & Seguridad Eléctrica', icon: '📋', defaultKey: 'RETIE-2026', cat: 'Normativa Profesional', desc: 'Reglamento técnico de instalaciones eléctricas, puestas a tierra y distancias.' },
-            { id: 'squash_sim', name: 'Simulador Manu Squash (Biomecánica & Táctica)', icon: '🎾', defaultKey: 'SQUASH-PRO-2026', cat: 'Física del Deporte', desc: 'Cinemática de desplazamientos, rebotes, T y editor de rutinas.' },
+            { id: 'squash_sim', name: 'Física del Deporte: Simulador 3D de Squash & Biomecánica', icon: '🎾', defaultKey: 'SQUASH-PRO-2026', cat: 'Física del Deporte', desc: '22 rutinas, atleta volumétrico 3D articulado, anatomía funcional 3D giratoria (26 músculos), ball temp/altitud y editor.' },
             { id: 'finanzas', name: 'Cuentas Claras: Psicología & Matemática Financiera', icon: '📈', defaultKey: 'FINANZAS-2026', cat: 'Finanzas Cuantitativas', desc: 'Interés compuesto, valor del dinero en el tiempo y presupuesto base cero.' },
             { id: 'kids', name: 'Física KIDS (Niños & Familias)', icon: '🧒', defaultKey: 'KIDS-2026', cat: 'Física KIDS (Cortesía Libre)', desc: '10 mundos, 47 capítulos interactivos, 126 juegos, 71 experimentos caseros, pasaporte y diploma oficial.' },
             { id: 'mcuantica', name: 'Tratado de Mecánica Cuántica', icon: '🌌', defaultKey: 'MCUANTICA-2026', cat: 'Física Cuántica Moderna', desc: '36 capítulos formales, notación Dirac, perturbaciones, dispersión, qubits y problemas resueltos paso a paso.' },
@@ -1307,6 +1309,7 @@
             { id: 'fluidos', name: 'Física de Fluidos: del Continuo a la Turbulencia', icon: '💧', defaultKey: 'FLUIDOS-2026', cat: 'Medios Continuos', desc: '27 capítulos, Navier-Stokes, capa límite, Moody y CFD.' },
             { id: 'venturi', name: 'Laboratorio Virtual: Tubo de Venturi & Bernoulli', icon: '🧪', defaultKey: 'VENTURI-2026', cat: 'Laboratorio Liberado (100% Libre)', desc: 'Banco hidráulico con 24 puestos de trabajo independientes y purga. Acceso 100% libre para todos.' },
             { id: 'pendulo', name: 'Laboratorio Virtual: Péndulo Simple & Gravedad', icon: '⏱️', defaultKey: 'PENDULO-2026', cat: 'Laboratorio Liberado (100% Libre)', desc: '24 puestos, medición de g, incertidumbres GUM y Legendre. Acceso 100% libre para todos.' },
+            { id: 'riel', name: 'Laboratorio Virtual: Riel de Aire 3D & Fotocompuertas', icon: '🏎️', defaultKey: 'RIEL-2026', cat: 'Laboratorio Liberado (100% Libre)', desc: 'Laboratorio virtual 3D en tiempo real de cinemática, dinámica de Newton y colisiones. Acceso 100% libre.' },
             { id: 'guias', name: 'Guías y Montajes de Laboratorio de Física', icon: '📑', defaultKey: 'GUIAS-2026', cat: 'Didáctica & Maker', desc: '46 prácticas experimentales, generador en Word y NTC 4595.' },
             { id: 'ingles', name: 'Quantum Leap English: Inglés Técnico & Científico', icon: '🇬🇧', defaultKey: 'INGLES-2026', cat: 'Habilidades Profesionales', desc: 'Niveles cuánticos A1 a C1, fonética IPA, voz pasiva y papers.' },
             { id: 'recorrido', name: 'Recorrido Virtual 3D: Depto. de Física', icon: '🏛️', defaultKey: 'RECORRIDO-2026', cat: 'Gemelo Digital 3D', desc: 'Gemelo digital tridimensional interactivo de los laboratorios Unicauca.' },
@@ -1786,7 +1789,7 @@
             }).join('');
         }
 
-        // 4. Claves Mensuales de Acceso a Todos los 32 cursos
+        // 4. Claves Mensuales de Acceso a Todos los 38 cursos
         function normalizeSearchText(str) {
             if (!str) return '';
             return str
@@ -1848,7 +1851,7 @@
                             Puedes buscar por nombre (ej: <em>mecanica</em>, <em>optica</em>, <em>solido</em>), categoría o por la contraseña activa.
                         </p>
                         <button type="button" class="adm-btn adm-btn-secondary" onclick="clearCourseKeySearch()" style="margin:0 auto;">
-                            Mostrar todas las 32 materias
+                            Mostrar todas las 38 materias
                         </button>
                     </div>
                 `;
@@ -1857,7 +1860,7 @@
 
             grid.innerHTML = list.map(c => {
                 const currentVal = loadedCourseKeys[c.id] || c.defaultKey;
-                const isFree = c.id === 'recorrido' || c.id === 'historia' || c.id === 'kids' || c.id === 'venturi' || c.id === 'pendulo';
+                const isFree = c.id === 'recorrido' || c.id === 'historia' || c.id === 'kids' || c.id === 'venturi' || c.id === 'pendulo' || c.id === 'riel';
                 return `
                     <div id="card-${c.id}" style="background:#0b1120; border:1px solid rgba(99,102,241,0.25); border-radius:12px; padding:1.15rem; display:flex; flex-direction:column; justify-content:space-between; transition:all 0.25s ease;">
                         <div>

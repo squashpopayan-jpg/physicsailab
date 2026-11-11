@@ -1,0 +1,95 @@
+<template class="chapter-src" data-id="bow-tfidf" data-num="24" data-title="Bolsa de palabras, n-gramas y TF-IDF" data-part="Parte VI · Texto como números" data-short="Vocabulario y matriz documento–término; n-gramas; ponderación TF-IDF; normalización y coseno; búsqueda de documentos; BM25; límites de la bolsa de palabras">
+<p class="lead">Los algoritmos de aprendizaje trabajan con números, y el texto son cadenas. El primer puente entre ambos mundos es sorprendentemente simple: contar. Se elige un vocabulario, se cuenta cuántas veces aparece cada palabra en cada documento y cada documento pasa a ser un vector. Con una ponderación inteligente (TF-IDF) y la similitud coseno ya se puede construir un buscador, clasificar opiniones o agrupar documentos. Es la base sobre la que se entiende todo lo que viene después.</p>
+
+<section>
+<h2>La bolsa de palabras</h2>
+<p>En la <b>bolsa de palabras</b> (<i>bag of words</i>, BoW) cada documento se representa como un vector con una componente por cada término del <b>vocabulario</b>, cuyo valor es el número de veces que el término aparece. Se llama «bolsa» porque se tira el orden: «el perro muerde al niño» y «el niño muerde al perro» dan el mismo vector. El conjunto de los vectores de una colección es la <b>matriz documento–término</b>, con una fila por documento y una columna por término.</p>
+<p>Antes de contar hay que decidir qué es una palabra (capítulos 3 y 7): pasar a minúsculas, qué hacer con las tildes y los números, si se quitan las <b>palabras vacías</b> («de», «la», «que») y si se usan raíces o lemas. Cada decisión cambia el vocabulario. Por convención se descartan los términos de un solo carácter y, para quitar ruido, a veces los que aparecen en muy pocos documentos (<code>min_df</code>).</p>
+<p>La matriz es <b>dispersa</b>: un documento usa unas decenas de los miles de términos posibles, así que casi todo son ceros, y se almacena solo lo no nulo. Un valor alternativo al conteo es el <b>binario</b> (la palabra está o no está), que suele bastar para textos cortos como los de las redes sociales.</p>
+<div class="sim" data-sim="bow-matriz" data-title="De textos a una matriz documento–término"></div>
+<div class="sim-guide"><ul>
+<li>Con los cuatro documentos de ejemplo hay 12 palabras distintas: «el» aparece en todos los documentos y no ayuda a distinguirlos; «caza» o «huye» aparecen en uno solo.</li>
+<li>Active «Quitar palabras vacías»: el vocabulario se reduce y quedan las palabras de contenido.</li>
+<li>Pase a «Palabras y pares»: aparecen «el gato», «gato duerme»… El vocabulario crece mucho y la matriz es más dispersa: es el precio de recuperar algo del orden.</li>
+<li>Elija «TF-IDF»: las palabras presentes en todos los documentos («el») reciben el mínimo y las raras el máximo. Escriba sus propios textos, uno por línea.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>N-gramas</h2>
+<p>Un <b>n-grama</b> es una secuencia de \(n\) palabras consecutivas: bigramas («no gusta», «muy bueno»), trigramas… Añadirlos al vocabulario recupera un poco del orden local y capta expresiones como la negación. Una oración de \(m\) palabras tiene \(m-n+1\) n-gramas de longitud \(n\). El inconveniente es la explosión del vocabulario y de la dispersión: la mayoría de los n-gramas aparecen una sola vez. En las 360 opiniones del laboratorio, el vocabulario pasa de 124 rasgos con palabras a 498 con bigramas y a 1.235 con trigramas, mientras la proporción de celdas no nulas cae del 7,1 % al 2,0 %.</p>
+</section>
+
+<section>
+<h2>TF-IDF: no todas las palabras valen lo mismo</h2>
+<p>Contar palabras tiene un problema: las más frecuentes («de», «que», «el») dominan el vector y no dicen nada del tema. La idea de <b>TF-IDF</b> (Spärck Jones, 1972) es pesar cada término por dos factores:</p>
+<ul>
+<li>La <b>frecuencia del término</b> (\(\mathrm{tf}\)): cuánto aparece en el documento. Cuanto más, más importante para ese documento. A menudo se usa la versión sublineal \(1+\ln \mathrm{tf}\), porque diez apariciones no hacen diez veces más relevante la palabra.</li>
+<li>La <b>frecuencia inversa de documento</b> (\(\mathrm{idf}\)): cuán rara es en la colección. Un término que está en casi todos los documentos no discrimina.</li>
+</ul>
+<div class="eq key" data-name="TF-IDF">\[\mathrm{idf}(t)=\ln\frac{N}{\mathrm{df}(t)}\ \ \text{(clásico)},\qquad \mathrm{idf}(t)=\ln\frac{1+N}{1+\mathrm{df}(t)}+1\ \ \text{(suavizado, scikit-learn)},\qquad \text{tf-idf}(t,d)=\mathrm{tf}(t,d)\cdot\mathrm{idf}(t)\]</div>
+<p>donde \(N\) es el número de documentos y \(\mathrm{df}(t)\), el de documentos que contienen el término. El suavizado evita dividir por cero y que un término presente en todos los documentos valga cero. Después los vectores se <b>normalizan</b> a longitud 1 (norma L2), de manera que los documentos largos no tengan ventaja.</p>
+<h3>Similitud coseno</h3>
+<p>La cercanía entre dos documentos se mide por el ángulo entre sus vectores. Con vectores unitarios, es simplemente su producto escalar:</p>
+<div class="eq key" data-name="Coseno">\[\cos(\mathbf a,\mathbf b)=\frac{\mathbf a\cdot\mathbf b}{\lVert\mathbf a\rVert\,\lVert\mathbf b\rVert}\in[0,1]\ \ \text{(valores no negativos)}\]</div>
+<p>Un buscador es entonces directo: la consulta se convierte en un vector con el mismo vocabulario y se ordenan los documentos por coseno. La variante BM25, que usan Lucene y Elasticsearch, corrige dos defectos de TF-IDF —la saturación de \(\mathrm{tf}\) y el efecto de la longitud del documento—:</p>
+<div class="eq" data-name="BM25">\[\mathrm{BM25}(q,d)=\sum_{t\in q}\mathrm{idf}(t)\,\frac{\mathrm{tf}(t,d)\,(k_1+1)}{\mathrm{tf}(t,d)+k_1\bigl(1-b+b\,|d|/\overline{|d|}\bigr)},\qquad k_1\approx1{,}2,\ b\approx0{,}75\]</div>
+<div class="sim" data-sim="tfidf-busqueda" data-title="Un buscador de opiniones con TF-IDF y coseno"></div>
+<div class="sim-guide"><ul>
+<li>La consulta «la guía es confusa y difícil» encuentra primero las opiniones sobre guías confusas, con coseno 0,816, y las de la clase negativa. Los términos que más pesan son los raros: «confusa», «difícil».</li>
+<li>Cambie a «Solo conteos»: los cosenos bajan (0,674 en el primero, frente a 0,816) porque «la» y «es» pesan lo mismo que «confusa». En este corpus tan regular el orden de los primeros no cambia; con colecciones reales y consultas cortas, sí. Active «Quitar palabras vacías» para comparar.</li>
+<li>Pruebe «excelente taller de tokenización»: los primeros resultados mezclan opiniones positivas («superó mis expectativas») y una negativa («estuvo por debajo de mis expectativas») porque comparten «taller», «tokenización» y «expectativas». La bolsa de palabras no entiende la negación ni el sentido.</li>
+</ul></div>
+<div class="box py"><p>El programa usa <code>CountVectorizer</code> y <code>TfidfVectorizer</code> de scikit-learn sobre las 360 opiniones: mide el tamaño y la dispersión de la matriz con y sin n-gramas, muestra los términos más característicos de cada clase y hace una búsqueda por coseno.</p>
+<div class="py" data-py="24-bow-tfidf"></div></div>
+<div class="box read"><ul>
+<li><b>Tamaño</b>: 124 rasgos con palabras, 498 con bigramas y 1.235 con trigramas; la matriz tiene 360 filas y solo el 7,1 %, el 3,4 % y el 2,0 % de celdas distintas de cero. La dispersión crece con los n-gramas.</li>
+<li><b>Términos característicos</b>: con todas las palabras, los primeros de cada clase son vacías («de», «la», «no»); al quitarlas, «poco», «confusa» y «difícil» caracterizan la clase negativa, y «ejemplos» y «aprendí», la positiva. Es decir, quitar palabras vacías es parte del trabajo.</li>
+<li><b>IDF</b>: va de 1,199 («de», en casi todos los documentos) a 4,491 («agotadora», la más rara).</li>
+<li><b>Búsqueda</b>: «la guía es confusa y difícil» recupera «La guía de lematización es confusa y difícil de seguir.» con 0,816.</li>
+<li>El curso compara su vocabulario, su matriz, el TF-IDF (también con tf sublineal) y el ranking de búsqueda con los de scikit-learn en cuatro configuraciones (apéndice de validación).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Qué se pierde y qué viene después</h2>
+<ul>
+<li><b>El orden</b>: «no me gustó» y «me gustó, no» casi coinciden. Los n-gramas lo mitigan.</li>
+<li><b>El significado</b>: «bueno» y «excelente» son columnas independientes; un documento que usa solo sinónimos del término de la consulta no se recupera. Los <i>embeddings</i> (capítulo 26) arreglan esto representando las palabras en un espacio donde las parecidas están cerca.</li>
+<li><b>El tamaño</b>: con vocabularios de cientos de miles de palabras, las matrices son enormes. El «truco del hash» asigna cada término a una columna con una función de hash, sin guardar el vocabulario.</li>
+</ul>
+<p>A pesar de todo, un clasificador lineal sobre TF-IDF es una línea de base excelente y muchas veces difícil de superar en clasificación de documentos (capítulo 27).</p>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>BoW: cada documento es un vector de conteos sobre el vocabulario; la matriz es dispersa y pierde el orden.</li>
+<li>Los n-gramas recuperan algo de orden con vocabularios mucho mayores.</li>
+<li>TF-IDF = tf · idf; el idf da más peso a los términos raros. Se normaliza a longitud 1.</li>
+<li>El coseno mide la cercanía entre documentos; permite buscar. BM25 es la variante de referencia.</li>
+<li>Limitaciones: orden, sinónimos y tamaño.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Construya la bolsa de palabras de «el gato ve al gato» (vocabulario: al, el, gato, ve).
+<details><summary>Respuesta</summary><p>(al, el, gato, ve) = (1, 1, 2, 1).</p></details></li>
+<li><span class="lvl">Básico</span>¿Cuántos bigramas y trigramas tiene una oración de 8 palabras?
+<details><summary>Respuesta</summary><p>7 bigramas y 6 trigramas (n − k + 1).</p></details></li>
+<li><span class="lvl">Intermedio</span>Con N = 100 documentos, df = 10 y tf = 3, calcule el TF-IDF con el idf clásico y con el suavizado de scikit-learn.
+<details><summary>Respuesta</summary><p>Clásico: 3 · ln(100/10) = 3 · 2,303 = 6,91. Suavizado: 3 · (ln(101/11) + 1) = 3 · 3,217 = 9,65.</p></details></li>
+<li><span class="lvl">Intermedio</span>Calcule el coseno de a = (1, 1, 0) y b = (1, 0, 1).
+<details><summary>Respuesta</summary><p>a · b = 1; |a| = |b| = √2; cos = 1/2 = 0,5.</p></details></li>
+<li><span class="lvl">Avanzado</span>Explique por qué un término que aparece en todos los documentos tiene idf clásico 0 y qué consecuencia tiene sobre la búsqueda.
+<details><summary>Respuesta</summary><p>df = N, así que ln(N/N) = 0: el término no aporta nada al vector, y una consulta formada solo por él daría coseno 0 con todo. Es deseable porque no discrimina entre documentos; por eso scikit-learn suma 1 al idf, para no anular del todo esos términos.</p></details></li>
+</ol>
+<h3>Autoevaluación</h3>
+<div class="sim" data-sim="quiz" data-cap="bow-tfidf" data-title="Autoevaluación del capítulo 24"></div>
+<div class="box links"><ul>
+<li><a href="https://scikit-learn.org/stable/modules/feature_extraction.html#text-feature-extraction">scikit-learn — Extracción de rasgos de texto</a><small>CountVectorizer, TfidfVectorizer, HashingVectorizer y sus fórmulas.</small></li>
+<li><a href="https://web.stanford.edu/~jurafsky/slp3/">Jurafsky y Martin — Speech and Language Processing (3.ª ed.)</a><small>TF-IDF, coseno y recuperación de información.</small></li>
+<li><a href="https://nlp.stanford.edu/IR-book/">Manning, Raghavan y Schütze — Introduction to Information Retrieval</a><small>Libro libre sobre indexación, ponderación TF-IDF y BM25.</small></li>
+<li><a href="https://en.wikipedia.org/wiki/Okapi_BM25">Wikipedia — Okapi BM25</a><small>Definición y variantes de la función de ranking.</small></li>
+<li><a href="https://numpy.org/doc/stable/">NumPy — documentación</a><small>Cálculo de matrices y normas.</small></li>
+</ul></div>
+</section>
+</template>

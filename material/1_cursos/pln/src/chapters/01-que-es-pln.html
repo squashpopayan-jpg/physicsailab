@@ -1,0 +1,126 @@
+<template class="chapter-src" data-id="que-es-pln" data-num="1" data-title="Qué es el procesamiento del lenguaje natural" data-part="Parte I · El lenguaje como problema" data-short="Definición del campo; aplicaciones; los seis conocimientos del lenguaje; ambigüedad y por qué crece tan rápido; el flujo clásico de un sistema de PLN">
+<p class="lead">El procesamiento del lenguaje natural (PLN) busca que una máquina haga con el lenguaje humano algo que requiere comprenderlo: traducir, responder, resumir, corregir, conversar. Lo difícil no es que el lenguaje sea complicado, es que es ambiguo. Este capítulo define el campo, muestra qué conocimiento necesita cada aplicación y mide cuánta ambigüedad hay que resolver.</p>
+
+<section>
+<h2>Qué es y qué no es PLN</h2>
+<p>El lenguaje natural es el que hablan las personas (español, inglés, quechua), por oposición a los lenguajes formales (Python, SQL, la notación matemática), que se diseñaron sin ambigüedad. El <span class="term">procesamiento del lenguaje natural</span> es el campo de la inteligencia artificial que busca que las máquinas realicen tareas que involucran lenguaje humano: comunicarse con personas, mejorar la comunicación entre ellas, o simplemente procesar texto y habla.</p>
+<div class="box def"><p>Un programa es de <b>PLN</b> cuando, para hacer su trabajo, necesita <b>conocimiento del lenguaje</b>. Contar bytes, palabras separadas por espacios y líneas de un archivo es procesamiento de datos ordinario. Contar cuántos <i>pronombres</i> hay ya exige saber qué es una palabra y qué es un pronombre: es PLN, aunque sea el más elemental.</p></div>
+<p>El campo es interdisciplinario y por eso tiene varios nombres: <i>lingüística computacional</i>, <i>tecnología del lenguaje</i>, <i>procesamiento del lenguaje y del habla</i>, <i>reconocimiento y síntesis del habla</i>. Cada tradición aporta algo distinto:</p>
+<table>
+<thead><tr><th>Disciplina</th><th>Aporta</th></tr></thead>
+<tbody>
+<tr><td>Ingeniería electrónica y de telecomunicaciones</td><td>Procesamiento de la señal: reconocimiento y síntesis del habla</td></tr>
+<tr><td>Informática</td><td>Análisis sintáctico, interpretación semántica, algoritmos y aprendizaje automático</td></tr>
+<tr><td>Lingüística (computacional)</td><td>Morfología, fonología, pragmática; los datos anotados</td></tr>
+<tr><td>Psicolingüística y sociolingüística</td><td>Cómo se adquiere el lenguaje y cómo la sociedad influye en su uso</td></tr>
+</tbody></table>
+<div class="box py"><p>El programa siguiente cuenta bytes, palabras y líneas de un texto, y después intenta contar pronombres. Observe que la segunda tarea ya necesita una lista de pronombres y deja casos dudosos.</p>
+<div class="py" data-py="01-datos-vs-pln"></div></div>
+<div class="box read"><ul>
+<li><b>Datos ordinarios</b>: el texto tiene 225 bytes, 45 «palabras» según los espacios y 4 líneas. Esa cuenta no sabe nada de español.</li>
+<li><b>Pronombres</b>: la lista da 15 candidatos, pero 3 de ellos están mal contados. «La» de «<i>La</i> casa» es artículo y no pronombre, igual que «los» de «<i>los</i> libros»; «tu» de «tu hermano» es un posesivo. En cambio «<i>la</i> felicitó» sí es un pronombre. Decidir cuál es cuál depende de la oración, es decir, de la sintaxis (parte IV).</li>
+<li>Este ejemplo mínimo ya muestra el patrón de todo el curso: cada vez que una tarea exige más comprensión, hace falta un nivel más de conocimiento del lenguaje.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Aplicaciones</h2>
+<p>Las aplicaciones de PLN se agrupan en unas pocas familias. Las dos más exigentes son los agentes conversacionales y la traducción; las más extendidas, la búsqueda y la corrección.</p>
+<ul>
+<li><b>Agentes conversacionales</b> (sistemas de diálogo, <i>chatbots</i>): conversan por voz, por texto o por ambos. Toman turnos, mantienen el estado de la conversación y generan frases nuevas (capítulos 36 y 37).</li>
+<li><b>Traducción automática</b>: de un idioma a otro, de texto o de habla. Hoy domina el aprendizaje automático sobre grandes corpus paralelos (capítulos 29 y 33).</li>
+<li><b>Búsqueda de respuestas</b> (<i>question answering</i>): una búsqueda con preguntas completas. Para respuestas complejas hay que extraer un fragmento, inferir a partir de hechos o sintetizar varias fuentes.</li>
+<li><b>Corrección ortográfica y verificación gramatical</b>: detectar y proponer correcciones (capítulo 8).</li>
+<li><b>Extracción de información, resumen automático, análisis de opiniones, clasificación de textos, recuperación de información, generación de lenguaje</b> (capítulos 24 a 33).</li>
+</ul>
+<p>Ninguna aplicación usa un solo tipo de conocimiento. La simulación siguiente muestra qué niveles del lenguaje exige cada una y por qué.</p>
+<div class="sim" data-sim="conocimientos" data-title="Qué conocimiento del lenguaje necesita cada aplicación"></div>
+<div class="sim-guide"><ul>
+<li>Elija una aplicación y mire cuántos niveles se encienden y con qué intensidad.</li>
+<li>Compare un corrector ortográfico (sobre todo morfología y léxico) con un agente conversacional (todos los niveles).</li>
+<li>Las intensidades son una valoración didáctica, no una medida: dependen de qué tan ambiciosa sea la implementación.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Los seis conocimientos del lenguaje</h2>
+<p>Para que un sistema realice tareas complejas de lenguaje necesita conocimiento de seis tipos. Se ordenan de lo más cercano al sonido hasta lo más cercano al uso:</p>
+<table>
+<thead><tr><th>Conocimiento</th><th>Qué estudia</th><th>Ejemplo en español</th></tr></thead>
+<tbody>
+<tr><td><b>Fonética y fonología</b></td><td>Los sonidos y cómo se organizan en una lengua</td><td>«casa» y «caza» suenan igual en América; en España no</td></tr>
+<tr><td><b>Morfología</b></td><td>Las partes con significado que forman una palabra</td><td>«puertas» = <i>puert-</i> (raíz) + <i>-a</i> (femenino) + <i>-s</i> (plural)</td></tr>
+<tr><td><b>Sintaxis</b></td><td>Cómo se ordenan y agrupan las palabras</td><td>«El perro muerde al niño» ≠ «El niño muerde al perro»</td></tr>
+<tr><td><b>Semántica</b></td><td>El significado de las palabras (léxica) y de sus combinaciones (composicional)</td><td>«banco»: asiento o entidad financiera</td></tr>
+<tr><td><b>Pragmática</b></td><td>Cómo las intenciones y el contexto cambian lo que se quiere decir</td><td>«¿Puede pasar la sal?» no pregunta por capacidad: pide la sal</td></tr>
+<tr><td><b>Discurso</b></td><td>Unidades mayores que una oración; referencias entre enunciados</td><td>«Ana llamó a María. <i>Ella</i> estaba ocupada»: ¿quién?</td></tr>
+</tbody></table>
+<div class="box warn"><p>Los niveles no son etapas independientes que se ejecutan una tras otra. Cada nivel resuelve ambigüedades del anterior y las crea en el siguiente. La sintaxis ayuda a decidir si «la» es artículo o pronombre; el significado ayuda a decidir qué estructura sintáctica es la correcta. Por eso los sistemas modernos aprenden varios niveles a la vez.</p></div>
+</section>
+
+<section>
+<h2>La ambigüedad: el problema central</h2>
+<p>Los lenguajes formales son deterministas: una expresión tiene una sola interpretación. El lenguaje natural no. Una misma cadena admite varias lecturas, y las personas las resuelven sin darse cuenta con conocimiento del mundo. Se distinguen varios tipos:</p>
+<ul>
+<li><b>Léxica</b>: una palabra con varios sentidos («banco»).</li>
+<li><b>Morfosintáctica</b>: una palabra con varias categorías («<i>vino</i>» es sustantivo y verbo).</li>
+<li><b>Estructural</b>: una oración con varios árboles («vi al hombre con el telescopio»).</li>
+<li><b>Referencial</b>: un pronombre con varios antecedentes posibles.</li>
+<li><b>Pragmática</b>: lo literal difiere de lo que se quiere decir.</li>
+</ul>
+<div class="sim" data-sim="ambiguedad" data-title="Cuatro oraciones, varias lecturas cada una"></div>
+<div class="sim-guide"><ul>
+<li>Cambie de oración y de tipo de ambigüedad; cada lectura viene con un contexto que la haría la más probable.</li>
+<li>Note que ninguna lectura es «incorrecta» en abstracto: el contexto decide, y la máquina necesita un modo de representar ese contexto.</li>
+</ul></div>
+<h3>Cómo crece la ambigüedad estructural</h3>
+<p>La ambigüedad estructural se acumula de forma explosiva. Sea una oración «verbo + sintagma nominal + <i>n</i> sintagmas preposicionales» (<i>vi al hombre en el parque con el telescopio…</i>). Cada preposición puede colgar del nombre más cercano, de un nombre anterior o del verbo. El número de análisis posibles es un número de Catalan:</p>
+<div class="eq key" data-name="Análisis posibles">\[\#\text{árboles}(n)=C_{n+1}=\frac{1}{n+2}\binom{2(n+1)}{n+1},\qquad C_1,C_2,\dots=1,\,2,\,5,\,14,\,42,\,132,\,429,\dots\]</div>
+<div class="sim" data-sim="catalan" data-title="Ambigüedad estructural frente al número de sintagmas preposicionales"></div>
+<div class="sim-guide"><ul>
+<li>Con 2 sintagmas preposicionales hay 5 análisis; con 5, 132; con 8, 1.430. Cada uno es una oración perfectamente gramatical.</li>
+<li>El conteo por programación dinámica (curva) coincide con la fórmula cerrada de Catalan. Se validó contra el analizador de gráfico de NLTK (apéndice de validación).</li>
+<li>Consecuencia: enumerar todos los análisis y elegir uno no escala; hacen falta algoritmos que los representen compartidos (capítulo 14) y modelos que prefieran unos sobre otros (capítulo 17).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El flujo clásico de un sistema de PLN</h2>
+<p>Durante décadas los sistemas se construyeron como una cadena de módulos, cada uno con su conocimiento del lenguaje. La entrada es texto bruto; la salida, una representación del significado o una acción:</p>
+<div class="mono-box">texto → limpieza → tokenización → análisis morfológico → etiquetado (POS)
+      → análisis sintáctico → análisis semántico → pragmática y discurso → acción / respuesta</div>
+<p>Cada módulo es un capítulo de este curso, y cada uno hereda los errores del anterior: si el etiquetador confunde «vino» (verbo) con «vino» (bebida), el analizador sintáctico construye un árbol equivocado y la interpretación falla. Los modelos neuronales de las partes VI y VII reemplazan buena parte de la cadena por una sola red entrenada de extremo a extremo, pero entender la cadena clásica sigue siendo necesario: explica qué errores esperar, cómo evaluar y qué datos anotados existen.</p>
+<div class="box explain"><p>Piense en leer una frase en un idioma que apenas conoce: primero reconoce palabras, luego les busca su categoría, luego intenta ver quién hace qué, y por último decide qué quiso decir la persona. Las máquinas hacen lo mismo, con la diferencia de que cada paso se tuvo que enseñar a mano o aprender de ejemplos.</p></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>PLN = tareas con lenguaje humano que requieren conocimiento del lenguaje; es interdisciplinario.</li>
+<li>Seis conocimientos: fonética y fonología, morfología, sintaxis, semántica, pragmática y discurso.</li>
+<li>La ambigüedad (léxica, morfosintáctica, estructural, referencial, pragmática) es el problema central.</li>
+<li>La ambigüedad estructural crece como los números de Catalan: 1, 2, 5, 14, 42…</li>
+<li>El flujo clásico es una cadena de módulos; los modelos modernos aprenden varias capas juntas.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Es un programa que cuenta cuántas veces aparece la cadena «de» en un archivo un sistema de PLN? ¿Y uno que cuenta cuántas veces aparece la preposición «de»?
+<details><summary>Respuesta</summary><p>El primero es procesamiento de datos: busca una cadena. El segundo exige saber qué es una palabra y que «de» es preposición: no cuenta «de» dentro de «desde» ni distingue la preposición de la forma verbal «dé». Es PLN elemental.</p></details></li>
+<li><span class="lvl">Básico</span>Clasifique la ambigüedad de «Juan vio a Pedro y le saludó»: ¿a quién saludó?
+<details><summary>Respuesta</summary><p>Referencial: «le» puede referirse a Pedro o, menos probablemente, a un tercero. Se resuelve con conocimiento del discurso.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Cuántos análisis estructurales tiene «Vi a la niña con el telescopio en el parque con mi amigo»? Cuente los sintagmas preposicionales después del sintagma nominal «a la niña».
+<details><summary>Respuesta</summary><p>Hay tres sintagmas preposicionales (con el telescopio, en el parque, con mi amigo): \(C_4=14\) análisis.</p></details></li>
+<li><span class="lvl">Intermedio</span>«¿Tiene hora?» dicha a un desconocido: ¿qué conocimiento hace falta para responder «las tres» y no «sí»?
+<details><summary>Respuesta</summary><p>Pragmático: la pregunta es literalmente de sí o no, pero su fin es pedir la hora (acto de habla indirecto).</p></details></li>
+<li><span class="lvl">Avanzado</span>Demuestre que \(C_{n+1}=\sum_{k=0}^{n}C_kC_{n-k}\) cuenta los análisis: ¿qué representa cada sumando?
+<details><summary>Respuesta</summary><p>Se elige cuál es la raíz de la estructura: si el último sintagma preposicional cuelga de un nombre o del verbo, la secuencia se parte en dos bloques independientes, uno de \(k\) y otro de \(n-k\) sintagmas, con \(C_kC_{n-k}\) análisis. Sumando sobre todas las particiones se obtiene la recurrencia de Catalan.</p></details></li>
+</ol>
+<h3>Autoevaluación</h3>
+<div class="sim" data-sim="quiz" data-cap="que-es-pln" data-title="Autoevaluación del capítulo 1"></div>
+<div class="box links"><ul>
+<li><a href="https://web.stanford.edu/~jurafsky/slp3/">Jurafsky y Martin — Speech and Language Processing (3.ª ed. borrador)</a><small>El texto de referencia del campo; el capítulo 1 corresponde a este y a los dos siguientes.</small></li>
+<li><a href="https://www.nltk.org/book/ch01.html">Bird, Klein y Loper — Natural Language Processing with Python, cap. 1</a><small>Introducción práctica con NLTK; gratis en línea, en inglés.</small></li>
+<li><a href="https://doi.org/10.1016/S0004-3702(97)00055-3">Church y Patil (1982) — Coping with syntactic ambiguity</a><small>Origen del resultado de los números de Catalan para sintagmas preposicionales encadenados.</small></li>
+<li><a href="https://aclanthology.org/">ACL Anthology</a><small>Archivo abierto de casi toda la investigación en PLN; sirve para rastrear cualquier técnica a su artículo original.</small></li>
+</ul></div>
+</section>
+</template>

@@ -1,0 +1,235 @@
+<template class="chapter-src" data-id="relatividad-general" data-num="28" data-title="Relatividad general" data-part="Parte VII · Relatividad" data-short="El corrimiento gravitacional de los relojes del GPS, el radio de Schwarzschild, la deflexión de la luz por el Sol, el avance del perihelio de Mercurio y la radiación de ondas gravitacionales de una binaria">
+<p class="lead">En la relatividad general la gravedad es la curvatura del espaciotiempo: una masa \(M\) determina la métrica y los cuerpos libres siguen geodésicas. La solución de las ecuaciones de Einstein en el vacío con simetría esférica, la métrica de Schwarzschild, contiene, en su límite de campo débil, el retraso de los relojes en un potencial gravitatorio y, a segundo orden, las correcciones relativistas a las órbitas y a la luz que hicieron famosa a la teoría: el perihelio de Mercurio y la deflexión de 1.75″. Las ondas gravitacionales, emitidas por sistemas cuyo cuadrupolo varía, completan el cuadro y se miden en LIGO desde 2015.</p>
+
+<deriv id="reloj-gps" title="El tiempo propio en un campo gravitatorio: los relojes del GPS" tags="Relatividad general, Gravitación">
+<goal>La diferencia de ritmo entre un reloj en órbita y uno en la superficie terrestre, debida a la gravedad y a la velocidad.</goal>
+<given>
+<g>Métrica de Schwarzschild en el límite de campo débil: \(\mathrm d\tau^2=\left(1-\dfrac{2GM}{rc^2}\right)\mathrm dt^2-\dfrac{\mathrm d\mathbf x^2}{c^2}\) con \(\mathrm d\tau\) el tiempo propio y \(t\) el tiempo coordenado.</g>
+</given>
+<step op="Reloj en reposo a distancia \(r\): ritmo respecto del tiempo coordenado (\(GM/rc^2\ll1\))">
+\[\frac{\mathrm d\tau}{\mathrm dt}=\sqrt{1-\frac{2GM}{rc^2}}\simeq1-\frac{GM}{rc^2}.\]
+</step>
+<step op="Reloj que además se mueve con velocidad \(v\)">
+\[\frac{\mathrm d\tau}{\mathrm dt}\simeq1-\frac{GM}{rc^2}-\frac{v^2}{2c^2}.\]
+<why>El segundo término es la dilatación temporal de la relatividad especial (capítulo 27).</why>
+</step>
+<step op="Cociente entre el reloj orbital (radio \(r\), \(v^2=GM/r\)) y el terrestre (radio \(R\), ignorando su rotación)">
+\[\frac{\Delta\tau}{\tau}=\frac{GM}{c^2}\left(\frac1R-\frac1r\right)-\frac{GM}{2rc^2}.\]
+</step>
+<step op="Desviación acumulada en un día (\(86\,400\) s)">
+\[\Delta T=\frac{\Delta\tau}{\tau}\times86\,400\ \mathrm s.\]
+</step>
+<result name="Corrimiento de relojes">\[\frac{\Delta\tau}\tau=\frac{GM}{c^2}\left(\frac1R-\frac1r\right)-\frac{v^2}{2c^2}.\]</result>
+<vars>
+<v s="G" n="constante de gravitación" u="N m^2 kg^-2"/>
+<v s="M" n="masa de la Tierra" u="kg"/>
+<v s="R" n="radio terrestre" u="m"/>
+<v s="r" n="radio de la órbita" u="m"/>
+<v s="v" n="velocidad orbital" u="m s^-1"/>
+<v s="c" n="velocidad de la luz" u="m s^-1"/>
+<v s="\tau" n="tiempo propio" u="s"/>
+<v s="\Delta T" n="desviación acumulada" u="s"/>
+</vars>
+<effects>
+<e>Satélites GPS (\(r=26\,571\) km, \(v=3.873\) km/s): el efecto gravitacional adelanta el reloj 45.72 µs/día; el de la velocidad lo atrasa 7.21 µs/día; el neto es +38.51 µs/día. Sin corregirlo, la posición se desplazaría 11.5 km por día (\(c\times38.5\) µs). Los relojes de los satélites se ajustan en tierra con un desplazamiento relativo de frecuencia de \(-4.458\times10^{-10}\).</e>
+<e>A la altura de la ISS (6778 km) predominan el efecto de la velocidad (−28.27 µs/día) y el neto es −24.66 µs/día (atrasa); en órbita geoestacionaria (42 164 km), +46.51 µs/día y en la órbita de la Luna (384 400 km), +58.65 µs/día. El cruce (neto nulo) se da a \(r=1.5R\approx9557\) km.</e>
+<e>Un reloj atómico óptico detecta hoy diferencias de altura de 1 cm (\(\Delta\tau/\tau=1.1\times10^{-18}\)): es un altímetro relativista. Experimento de Pound–Rebka (1959): un fotón que asciende 22.5 m pierde \(2.5\times10^{-15}\) de su frecuencia, de acuerdo con \(gh/c^2\).</e>
+</effects>
+<limits>
+<l>Dimensiones: \(GM/rc^2\) y \(v^2/c^2\) son adimensionales. ✓</l>
+<l>Campo débil (\(GM/rc^2\sim10^{-9}\)), órbita circular y sin la rotación, la excentricidad ni el achatamiento terrestre (\(J_2\)), que también se corrigen en el GPS real (una excentricidad de 0.01 → ± 23 ns). La deducción exacta usa el tiempo propio a lo largo de la geodésica.</l>
+</limits>
+<explore sim="gps" title="Corrimiento de relojes en órbita: gravedad y velocidad"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (GPS, 26 571 km): gravitacional +45.7242 µs/día, velocidad −7.21061 µs/día, neta +38.5136 µs/día y 11.5461 km/día.</li>
+<li>Seleccione \(r\) en el eje (log–x): el efecto neto cambia de signo (negativo en órbitas bajas, positivo en altas) y crece lentamente hacia los 59 µs/día de la Luna.</li>
+</ul></div>
+</deriv>
+
+<deriv id="schwarzschild" title="La métrica de Schwarzschild y el horizonte de sucesos" tags="Relatividad general, Agujeros negros">
+<goal>Verificar que la métrica de una masa esférica resuelve las ecuaciones de Einstein en el vacío, y obtener el radio del horizonte y las órbitas circulares especiales.</goal>
+<given>
+<g>Ecuaciones de Einstein en el vacío: \(R_{\mu\nu}=0\) (tensor de Ricci nulo). Métrica de Schwarzschild: \(\mathrm ds^2=\left(1-\dfrac{r_s}r\right)c^2\mathrm dt^2-\dfrac{\mathrm dr^2}{1-r_s/r}-r^2\mathrm d\Omega^2\).</g>
+</given>
+<step op="Calcular los símbolos de Christoffel y el tensor de Ricci de la métrica">
+\[R_{\mu\nu}=\partial_\lambda\Gamma^\lambda_{\mu\nu}-\partial_\nu\Gamma^\lambda_{\mu\lambda}+\Gamma^\lambda_{\lambda\sigma}\Gamma^\sigma_{\mu\nu}-\Gamma^\lambda_{\nu\sigma}\Gamma^\sigma_{\mu\lambda}=0\quad(\text{para cualquier }r_s).\]
+<why>La verificación simbólica (SymPy) de las 16 componentes da cero; la constante \(r_s\) queda libre y se fija con el límite newtoniano: \(g_{tt}\simeq1-2GM/rc^2\).</why>
+</step>
+<step op="Radio de Schwarzschild: el límite newtoniano identifica la constante">
+\[r_s=\frac{2GM}{c^2}.\]
+</step>
+<step op="Horizonte: en \(r=r_s\) el coeficiente \(g_{tt}\) se anula (un reloj estático se detiene y la luz no escapa)">
+\[g_{tt}(r_s)=0.\]
+</step>
+<step op="Órbitas circulares de la luz y de las partículas: el potencial efectivo da la esfera de fotones y la última órbita estable">
+\[r_\text{ph}=\frac32r_s,\qquad r_\text{ISCO}=3r_s=\frac{6GM}{c^2}.\]
+</step>
+<step op="Densidad media dentro del horizonte">
+\[\bar\rho=\frac{3M}{4\pi r_s^3}=\frac{3c^6}{32\pi G^3M^2}.\]
+</step>
+<result name="Horizonte de Schwarzschild">\[r_s=\frac{2GM}{c^2},\qquad r_\text{ph}=\tfrac32r_s,\qquad r_\text{ISCO}=3r_s.\]</result>
+<vars>
+<v s="r_s" n="radio de Schwarzschild" u="m"/>
+<v s="G" n="constante de gravitación" u="N m^2 kg^-2"/>
+<v s="M" n="masa" u="kg"/>
+<v s="c" n="velocidad de la luz" u="m s^-1"/>
+<v s="\bar\rho" n="densidad media dentro del horizonte" u="kg m^-3"/>
+<v s="r" n="coordenada radial" u="m"/>
+</vars>
+<effects>
+<e>El Sol tendría \(r_s=2.953\) km (esfera de fotones 4.430 km, ISCO 8.860 km, densidad \(1.84\times10^{19}\) kg/m³); la Tierra, 8.87 mm; una estrella de 30 \(M_\odot\), 88.6 km. El agujero negro central de la Vía Láctea (4.3×10⁶ \(M_\odot\)): \(1.27\times10^{7}\) km (18 radios solares) con una densidad media de \(9.97\times10^5\) kg/m³ (mil veces la del agua).</e>
+<e>\(r_s\propto M\) y \(\bar\rho\propto M^{-2}\): el agujero supermasivo de M87 (6.5×10⁹ \(M_\odot\)) tiene \(r_s=1.92\times10^{10}\) km (128 UA) y una densidad de solo 0.436 kg/m³, menor que la del aire. El «horizonte» no es una superficie material.</e>
+<e>La temperatura de Hawking \(T_H=\hbar c^3/(8\pi GMk)\) (resultado semiclásico, no deducido aquí) es 6.17×10⁻⁸ K para 1 \(M_\odot\), menor que la del fondo cósmico (2.7 K): los agujeros estelares absorben más de lo que emiten.</e>
+</effects>
+<limits>
+<l>Dimensiones: \(GM/c^2\) es una longitud; \(c^6/(G^3M^2)\) tiene unidades de densidad. ✓</l>
+<l>Masa esférica sin rotación ni carga (la solución de Kerr incluye el giro); válido en el exterior de la masa: dentro de una estrella se usa la solución interior. La coordenada \(r\) es la de «circunferencia» (la longitud radial propia es mayor).</l>
+</limits>
+<explore sim="schwarzschild" title="Radio de Schwarzschild, esfera de fotones, ISCO, densidad y temperatura de Hawking"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (1 \(M_\odot\)): \(r_s=2.95325\) km, \(\bar\rho=1.84302\times10^{19}\) kg/m³, esfera de fotones 4.42988 km, ISCO 8.85975 km y \(T_H=6.17007\times10^{-8}\) K.</li>
+<li>Seleccione \(M\) en el eje (log–log): \(r_s\), r_ph y ISCO suben con pendiente +1, la densidad baja con pendiente −2 y \(T_H\) con pendiente −1.</li>
+</ul></div>
+</deriv>
+
+<deriv id="deflexion-luz" title="La deflexión de la luz por una masa" tags="Relatividad general, Lentes gravitacionales">
+<goal>El ángulo con que una masa \(M\) desvía un rayo de luz que pasa a una distancia \(b\).</goal>
+<given>
+<g>Los rayos de luz siguen geodésicas nulas de la métrica de Schwarzschild. Con \(u=1/r\) y la conservación del momento angular, la trayectoria cumple \(\left(\dfrac{\mathrm du}{\mathrm d\varphi}\right)^2=\dfrac1{b^2}-u^2+\dfrac{2GM}{c^2}u^3\).</g>
+</given>
+<step op="Derivar respecto de \(\varphi\) y dividir por \(2\,\mathrm du/\mathrm d\varphi\)">
+\[\frac{\mathrm d^2u}{\mathrm d\varphi^2}+u=\frac{3GM}{c^2}u^2.\]
+</step>
+<step op="Orden cero (recta con distancia mínima \(b\)): \(u_0=\sin\varphi/b\). Orden uno: \(u=u_0+u_1\) con">
+\[u_1''+u_1=\frac{3GM}{c^2b^2}\sin^2\varphi\ \Longrightarrow\ u_1=\frac{GM}{c^2b^2}\left(1+\cos^2\varphi\right).\]
+<why>Con \(u_1=A+B\cos^2\varphi\): \(u_1''+u_1=A+2B-3B\cos^2\varphi\), que iguala \(\tfrac{3GM}{c^2b^2}(1-\cos^2\varphi)\) si \(A=B=GM/c^2b^2\).</why>
+</step>
+<step op="Direcciones asintóticas: la luz llega al infinito (\(u=0\)) en \(\varphi=-\delta\) y \(\pi+\delta\), con deflexión total \(\alpha=2\delta\)">
+\[\frac{\sin\delta}b\simeq\frac{2GM}{c^2b^2}\ \Longrightarrow\ \delta=\frac{2GM}{c^2b},\qquad\alpha=\frac{4GM}{c^2b}.\]
+</step>
+<result name="Deflexión gravitacional">\[\alpha=\frac{4GM}{c^2b}=\frac{2r_s}b.\]</result>
+<vars>
+<v s="\alpha" n="ángulo de deflexión" u="rad"/>
+<v s="G" n="constante de gravitación" u="N m^2 kg^-2"/>
+<v s="M" n="masa deflectora" u="kg"/>
+<v s="b" n="parámetro de impacto" u="m"/>
+<v s="c" n="velocidad de la luz" u="m s^-1"/>
+<v s="u" n="inverso de la distancia \(1/r\)" u="m^-1"/>
+<v s="\varphi" n="ángulo polar" u="rad"/>
+<v s="r_s" n="radio de Schwarzschild" u="m"/>
+</vars>
+<effects>
+<e>Un rayo que roza el Sol (\(b=R_\odot=6.957\times10^8\) m) se desvía \(\alpha=1.7512''\), el doble de la predicción newtoniana (0.8756″). Eddington lo midió en el eclipse de 1919 (1.98″ ± 0.12 y 1.61″ ± 0.40), el primer éxito público de la teoría. A 2 \(R_\odot\) la mitad (0.876″) y a 10 \(R_\odot\), 0.175″.</e>
+<e>Júpiter (\(M=9.54\times10^{-4}M_\odot\)) en su borde desvía 16.3 mas (milisegundos de arco), medido con VLBI (2002); para 0.5 \(R_\odot\) del Sol la deflexión sería 3.50″. La deflexión de una galaxia o un cúmulo (10¹²–10¹⁴ \(M_\odot\)) a decenas de kiloparsec produce arcos y anillos de Einstein.</e>
+<e>La mitad de la deflexión es «newtoniana» (el término de energía) y la otra mitad es el efecto de la curvatura espacial: el factor 2 distingue la relatividad general de una teoría escalar de la gravedad.</e>
+</effects>
+<limits>
+<l>Dimensiones: \(GM/(c^2b)\) es adimensional (rad). ✓</l>
+<l>Campo débil (\(r_s/b\ll1\)) y perturbación de primer orden; cerca de la esfera de fotones (\(b\to\frac{3\sqrt3}2r_s\)) la deflexión diverge y la luz orbita. Para varias lentes o masas extensas se integra la deflexión sobre la distribución de masa.</l>
+</limits>
+<explore sim="luz" title="Deflexión gravitacional de la luz: relativista frente a newtoniana"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (1 \(M_\odot\), \(b=1\,R_\odot\)): \(\alpha=1.75119''\), newtoniana 0.875595″ y \(r_s/b=4.24501\times10^{-6}\).</li>
+<li>Seleccione \(b\) en el eje (log–log): \(\alpha\) cae con pendiente −1; con la masa crece con pendiente +1.</li>
+</ul></div>
+</deriv>
+
+<deriv id="perihelio" title="El avance del perihelio de Mercurio" tags="Relatividad general, Órbitas">
+<goal>El ángulo extra que gira, en cada vuelta, el eje mayor de una órbita bajo la gravedad relativista.</goal>
+<given>
+<g>Geodésica temporal de Schwarzschild con \(u=1/r\) y momento angular específico \(h\): \(\left(\dfrac{\mathrm du}{\mathrm d\varphi}\right)^2=\dfrac{E^2-c^4}{h^2c^2}+\dfrac{2GM}{h^2}u-u^2+\dfrac{2GM}{c^2}u^3\).</g>
+</given>
+<step op="Derivar y simplificar">
+\[\frac{\mathrm d^2u}{\mathrm d\varphi^2}+u=\frac{GM}{h^2}+\frac{3GM}{c^2}u^2.\]
+<why>El primer término es la ecuación de Kepler (cónicas); el último es la corrección relativista, pequeña.</why>
+</step>
+<step op="Órbita casi circular: perturbación \(u=u_0+\delta u\), con \(u_0=\dfrac1p\), \(p=a(1-e^2)\) y \(\varepsilon=\dfrac{3GM}{c^2p}\)">
+\[\delta u''+(1-2\varepsilon)\,\delta u=0\ \Longrightarrow\ \omega=\sqrt{1-2\varepsilon}\simeq1-\varepsilon.\]
+</step>
+<step op="Entre dos perihelios el ángulo recorrido es \(2\pi/\omega\); avance por vuelta">
+\[\Delta\varphi=2\pi\left(\frac1\omega-1\right)\simeq2\pi\varepsilon=\frac{6\pi GM}{c^2a(1-e^2)}.\]
+</step>
+<result name="Avance del perihelio">\[\Delta\varphi=\frac{6\pi GM}{c^2\,a(1-e^2)}\quad\text{por órbita}.\]</result>
+<vars>
+<v s="\Delta\varphi" n="avance del perihelio por órbita" u="rad"/>
+<v s="G" n="constante de gravitación" u="N m^2 kg^-2"/>
+<v s="M" n="masa central" u="kg"/>
+<v s="c" n="velocidad de la luz" u="m s^-1"/>
+<v s="a" n="semieje mayor" u="m"/>
+<v s="e" n="excentricidad" u="1"/>
+<v s="h" n="momento angular específico" u="m^2 s^-1"/>
+<v s="u" n="inverso de la distancia" u="m^-1"/>
+</vars>
+<effects>
+<e>Mercurio (\(a=0.387098\) UA, \(e=0.2056\), periodo 87.97 días): \(\Delta\varphi=0.1035''\) por órbita, es decir, 42.98″ por siglo, justo el avance anómalo que Le Verrier había encontrado en 1859 (43″) sin explicación hasta Einstein (1915). Venus: 8.62″/siglo, la Tierra, 3.84″/siglo y Júpiter, 0.062″/siglo.</e>
+<e>Depende de \(a(1-e^2)\): con órbita circular (\(e=0\)) Mercurio avanzaría 41.16″/siglo; con \(a=0.2\) UA y la misma excentricidad, 224″/siglo. El púlsar binario PSR B1913+16 (\(M=2.828\,M_\odot\), \(a=0.0130\) UA, \(e=0.617\), P = 7.75 h): 13.4″ por órbita, 4.21° por año, medido 4.226° por año.</e>
+<e>Este avance es solo la parte relativista; el total observado de Mercurio (5600″/siglo respecto del equinoccio) incluye 5025″ de precesión de los equinoccios, 532″ de perturbaciones planetarias newtonianas y 43″ que solo la relatividad explica.</e>
+</effects>
+<limits>
+<l>Dimensiones: \(GM/(c^2a)\) es adimensional (rad). ✓</l>
+<l>Primer orden en \(GM/c^2p\) (órbita débilmente relativista); para órbitas más cerradas (estrellas cerca de Sgr A*) la fórmula se complementa con términos de orden superior. No incluye el achatamiento solar ni los efectos de rotación (Lense–Thirring).</l>
+</limits>
+<explore sim="perihelio" title="Avance relativista del perihelio según el semieje y la excentricidad"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (Sol, \(a=0.387098\) UA, \(e=0.20563\)): \(\Delta\varphi=0.103517''\) por órbita, periodo 87.9690 días y 42.9807″ por siglo.</li>
+<li>Seleccione \(a\) en el eje (log–log): el avance por órbita cae con pendiente −1 y por siglo con pendiente −5/2 (\(\propto a^{-5/2}\)).</li>
+</ul></div>
+</deriv>
+
+<deriv id="ondas-gravitacionales" title="La radiación gravitacional de una binaria y la fusión de agujeros negros" tags="Relatividad general, Ondas gravitacionales">
+<goal>La potencia que emite una binaria circular en ondas gravitacionales y el tiempo que falta para su fusión.</goal>
+<given>
+<g>Fórmula del cuadrupolo de Einstein: \(P=\dfrac G{5c^5}\left\langle\dddot Q_{ij}\dddot Q_{ij}\right\rangle\) (\(Q_{ij}\) es el cuadrupolo reducido de la distribución de masa).</g>
+<g>Dos masas \(m_1,m_2\) en órbita circular de radio relativo \(a\) y frecuencia orbital \(\Omega\) (tercera ley de Kepler: \(\Omega^2=GM/a^3\), \(M=m_1+m_2\)).</g>
+</given>
+<step op="Cuadrupolo de la binaria (masa reducida \(\mu=m_1m_2/M\)): \(Q_{ij}\) oscila a \(2\Omega\) con amplitud \(\mu a^2\) y, evaluando la fórmula">
+\[P=\frac{32}{5}\frac{G}{c^5}\mu^2a^4\Omega^6=\frac{32}5\frac{G^4m_1^2m_2^2M}{c^5a^5}.\]
+</step>
+<step op="Energía orbital \(E=-Gm_1m_2/2a\); perderla por radiación acorta \(a\)">
+\[\frac{\mathrm dE}{\mathrm dt}=\frac{Gm_1m_2}{2a^2}\frac{\mathrm da}{\mathrm dt}=-P\ \Longrightarrow\ a^3\,\mathrm da=-\frac{64}5\frac{G^3m_1m_2M}{c^5}\,\mathrm dt.\]
+</step>
+<step op="Integrar hasta \(a=0\): tiempo de fusión (Peters, 1964)">
+\[\tau=\frac5{256}\frac{c^5a^4}{G^3m_1m_2M}.\]
+</step>
+<step op="La onda tiene el doble de la frecuencia orbital: \(f=\Omega/\pi\), de modo que \(a=[GM/(\pi f)^2]^{1/3}\) y la masa de chirp es">
+\[\mathcal M=\frac{(m_1m_2)^{3/5}}{M^{1/5}}.\]
+</step>
+<result name="Radiación de una binaria">\[P=\frac{32}5\frac{G^4m_1^2m_2^2M}{c^5a^5},\qquad\tau=\frac5{256}\frac{c^5a^4}{G^3m_1m_2M}.\]</result>
+<vars>
+<v s="P" n="potencia radiada" u="W"/>
+<v s="G" n="constante de gravitación" u="N m^2 kg^-2"/>
+<v s="m_1,\,m_2" n="masas de las componentes" u="kg"/>
+<v s="M" n="masa total" u="kg"/>
+<v s="a" n="separación orbital" u="m"/>
+<v s="c" n="velocidad de la luz" u="m s^-1"/>
+<v s="\tau" n="tiempo hasta la fusión" u="s"/>
+<v s="f" n="frecuencia de la onda gravitacional" u="Hz"/>
+<v s="\mathcal M" n="masa de chirp" u="kg"/>
+</vars>
+<effects>
+<e>GW150914 (36 y 29 \(M_\odot\)) cuando la onda cruzó 35 Hz: \(a=893.6\) km, \(P=2.03\times10^{47}\) W y 0.190 s hasta la fusión (el pico real, en la fusión, alcanzó \(3.6\times10^{49}\) W y se emitieron ≈ 3 \(M_\odot c^2\)). A 100 Hz: 6.71×10⁴⁸ W y 11.6 ms. La masa de chirp es 28.1 \(M_\odot\).</e>
+<e>Una binaria de estrellas de neutrones de 1.4 + 1.4 \(M_\odot\) (GW170817): a 100 Hz, \(a=155.6\) km, \(P=1.92\times10^{44}\) W y 2.16 s hasta la fusión; a 10 Hz entra en la banda de LIGO unos 1002 s (17 min) antes de fundirse. Dos agujeros de 10 \(M_\odot\) a 50 Hz: 0.518 s.</e>
+<e>\(\tau\propto a^4\) o \(f^{-8/3}\): el sistema se acelera hacia la fusión, el «chirp» (frecuencia creciente) por el que se reconocen las señales. Estas ondas llegan con una deformación \(h\sim10^{-21}\) (la altura de la señal): un cambio de 10⁻¹⁸ m en los 4 km de LIGO.</e>
+</effects>
+<limits>
+<l>Dimensiones: \([G^4m^5/(c^5a^5)]=\mathrm W\) y \([c^5a^4/(G^3m^3)]=\mathrm s\). ✓</l>
+<l>Órbita circular newtoniana y radiación de baja velocidad (\(v\ll c\)); cerca de la fusión (\(a\sim few\,r_s\)) hay que usar la relatividad numérica. En órbitas elípticas se multiplica por una función de la excentricidad (PSR B1913+16: el periodo decrece 76.5 µs/año, de acuerdo con la teoría al 0.2 %).</l>
+</limits>
+<explore sim="ondasgrav" title="Binaria compacta: separación, potencia gravitacional y tiempo hasta la fusión"/>
+<div class="sim-guide"><ul>
+<li>Valores iniciales (36 + 29 \(M_\odot\), 35 Hz): \(a=893.581\) km, \(P=2.02740\times10^{47}\) W, \(\tau=0.190100\) s y masa de chirp 28.0956 \(M_\odot\).</li>
+<li>Seleccione \(f\) en el eje (log–log): \(a\) cae con pendiente −2/3, \(P\) sube con pendiente +10/3 y \(\tau\) cae con pendiente −8/3.</li>
+</ul></div>
+</deriv>
+
+<section>
+<h2>Fuentes y lecturas</h2>
+<ul class="refs">
+<li>C. W. Misner, K. S. Thorne y J. A. Wheeler, <em>Gravitation</em>, W. H. Freeman (1973): caps. 25 (Schwarzschild), 40 (órbitas), 36 (radiación gravitacional).</li>
+<li>S. M. Carroll, <em>Spacetime and Geometry</em>, Addison-Wesley (2004): caps. 5–7; B. Schutz, <em>A First Course in General Relativity</em>, 2.ª ed., Cambridge University Press (2009): caps. 11–12.</li>
+<li>N. Ashby, «Relativity in the Global Positioning System», <em>Living Reviews in Relativity</em> 6 (2003) 1.</li>
+<li>A. Einstein, <em>Sitzungsberichte der Preussischen Akademie</em> (1915) 831 (perihelio) y (1916) 688 (ondas); K. Schwarzschild (1916); P. C. Peters, <em>Physical Review</em> 136 (1964) B1224; F. W. Dyson, A. S. Eddington y C. Davidson, <em>Philosophical Transactions</em> A 220 (1920) 291.</li>
+<li>B. P. Abbott et al. (LIGO–Virgo), <em>Physical Review Letters</em> 116 (2016) 061102; J. M. Weisberg y J. H. Taylor, <em>The Astrophysical Journal</em> 722 (2010) 1030 (púlsar binario); NASA/JPL, efemérides planetarias.</li>
+</ul>
+</section>
+</template>
