@@ -3,7 +3,7 @@
  * - Los datos (/data, /sync, /auth...) NUNCA se guardan aquí: son privados y la app ya
  *   los guarda en localStorage para verlos sin conexión.
  */
-const CACHE = 'msq-shell-v1';
+const CACHE = 'msq-shell-v2';
 const SHELL = ['./', 'index.html', 'config.js', 'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png'];
 const API = /\/(data|sync|generate|auth|cron|healthz)(\/|\?|$)/;
 

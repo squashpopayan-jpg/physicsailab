@@ -18,7 +18,7 @@
 })();
 // Auto cache-bust: si esta versión no coincide con el servidor, recargar
 (function(){
-  var CURRENT = 'v5.4-clean-data';
+  var CURRENT = 'v6.0-garmin-pro';
   var stored = sessionStorage.getItem('msq_html_version');
   if (stored && stored !== CURRENT) {
     sessionStorage.setItem('msq_html_version', CURRENT);
@@ -97,52 +97,176 @@
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
 <script id="manusquash-chart-engine-native">
-/* ManuSquash Native Chart Engine Motor local sin CDN: evita gráficas en blanco cuando Chart.js no carga o cuando el canvas fue creado oculto. */
+/* ManuSquash Native Chart Engine v2 — motor Canvas local sin CDN:
+   soporta barras apiladas, eje Y dual/invertido, gradientes/bandas, donas dinámicas,
+   tooltips interactivos (hover/touch) y ResizeObserver para tabs/acordeones. */
 (function(){
   'use strict';
-  function isNum(v){ v=Number(v); return isFinite(v); }
-  function toNum(v){ if(v==null || v==='') return null; if(typeof v==='object'){ if(isNum(v.y)) return Number(v.y); if(isNum(v.value)) return Number(v.value); } return isNum(v)?Number(v):null; }
+  var PALETTE = ['#22d3ee','#a78bfa','#4ade80','#fbbf24','#fb923c','#f87171','#3b82f6'];
+  var CSS_FALLBACK = {
+    'var(--cyan)':'#22d3ee','var(--purple)':'#a78bfa','var(--green)':'#4ade80',
+    'var(--yellow)':'#fbbf24','var(--orange)':'#fb923c','var(--red)':'#f87171',
+    'var(--blue)':'#3b82f6','var(--gray)':'#6e7681','var(--bg2)':'#161b22',
+    'var(--text2)':'#8b949e','var(--text3)':'#6e7681'
+  };
+  function isNum(v){ if(v===null||v===undefined||v===''||typeof v==='boolean') return false; var n=Number(v); return isFinite(n); }
+  function toNum(v){ if(v==null||v==='') return null; if(typeof v==='object'){ if(isNum(v.y)) return Number(v.y); if(isNum(v.value)) return Number(v.value); } return isNum(v)?Number(v):null; }
   function toX(v,i){ if(v && typeof v==='object' && isNum(v.x)) return Number(v.x); return i; }
   function arr(v){ return Array.isArray(v)?v:[]; }
-  function color(c,i,fb){ if(Array.isArray(c)) return c[i % c.length] || fb; return c || fb; }
-  function cssVar(v){ return String(v||'').indexOf('var(')===0 ? '#8b949e' : v; }
-  function nice(v){ if(!isFinite(v)) return '0'; var a=Math.abs(v); if(a>=1000) return Math.round(v).toLocaleString('es-CO'); if(a>=100) return Math.round(v); if(a>=10) return (Math.round(v*10)/10).toString(); return (Math.round(v*100)/100).toString(); }
-  function deepGet(o,path,fb){ try{ return path.split('.').reduce(function(a,k){return a&&a[k];},o) ?? fb; }catch(e){ return fb; } }
+  function color(c,i,fb){ if(Array.isArray(c)) return c[i]!=null ? c[i] : (c[i%c.length]||fb); return c||fb; }
+  function cssVar(v){ var s=String(v||'').trim(); return CSS_FALLBACK[s] || (s.indexOf('var(')===0 ? '#8b949e' : s); }
+  function withAlpha(col,a){
+    col=cssVar(col);
+    if(!col) return 'rgba(34,211,238,'+a+')';
+    if(col[0]==='#'){
+      var h=col.slice(1);
+      if(h.length===3) h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+      if(h.length===6){
+        return 'rgba('+parseInt(h.slice(0,2),16)+','+parseInt(h.slice(2,4),16)+','+parseInt(h.slice(4,6),16)+','+a+')';
+      }
+    }
+    var m=col.match(/^rgba?\(([^)]+)\)$/i);
+    if(m){ var p=m[1].split(','); if(p.length>=3) return 'rgba('+p[0].trim()+','+p[1].trim()+','+p[2].trim()+','+a+')'; }
+    return col;
+  }
+  function nice(v){
+    if(!isFinite(v)) return '0';
+    var a=Math.abs(v);
+    if(a>=1000) return Math.round(v).toLocaleString('es-CO');
+    if(a>=100) return String(Math.round(v));
+    if(a>=10) return String(Math.round(v*10)/10);
+    return String(Math.round(v*100)/100);
+  }
+  function deepGet(o,path,fb){
+    try{ var cur=o, parts=path.split('.'); for(var i=0;i<parts.length;i++){ if(cur==null) return fb; cur=cur[parts[i]]; } return cur===undefined?fb:cur; }
+    catch(e){ return fb; }
+  }
+  function fmtTick(axisOpt,v){
+    try{
+      var cb = axisOpt && axisOpt.ticks && axisOpt.ticks.callback;
+      if(typeof cb==='function'){ var r=cb(v); if(r!=null) return String(r); }
+    }catch(e){}
+    return nice(v);
+  }
+
+  function ensureTooltipEl(){
+    if(typeof document==='undefined' || !document.body) return null;
+    var el=document.getElementById('msq-chart-tip');
+    if(!el){
+      el=document.createElement('div');
+      el.id='msq-chart-tip';
+      el.style.cssText='position:fixed;left:0;top:0;z-index:9999;pointer-events:none;opacity:0;'+
+        'background:rgba(13,17,23,.96);border:1px solid rgba(34,211,238,.40);border-radius:10px;'+
+        'padding:8px 11px;font-size:11px;line-height:1.45;color:#e6edf3;'+
+        'font-family:"Space Grotesk",sans-serif;box-shadow:0 12px 28px rgba(0,0,0,.55);max-width:250px;'+
+        'transition:opacity .12s ease;white-space:normal;';
+      document.body.appendChild(el);
+    }
+    return el;
+  }
+  function hideTooltip(){
+    var el=(typeof document!=='undefined')?document.getElementById('msq-chart-tip'):null;
+    if(el) el.style.opacity='0';
+  }
+  function showTooltip(clientX,clientY,html){
+    var el=ensureTooltipEl(); if(!el||!html) return;
+    el.innerHTML=html;
+    el.style.opacity='1';
+    var vw=(typeof window!=='undefined'?window.innerWidth:420);
+    var vh=(typeof window!=='undefined'?window.innerHeight:800);
+    var w=Math.min(250, el.offsetWidth||190), h=el.offsetHeight||68;
+    var x=clientX+14; if(x+w+10>vw) x=Math.max(8, clientX-w-14);
+    var y=clientY-h-12; if(y<8) y=Math.min(vh-h-8, clientY+18);
+    el.style.left=Math.round(x)+'px';
+    el.style.top=Math.round(y)+'px';
+  }
+
+  var _sharedResizeObs = null;
+  function observeChartWrap(chart){
+    try{
+      if(typeof ResizeObserver==='undefined' || !chart || !chart.canvas) return;
+      var target = chart.canvas.parentElement || chart.canvas;
+      if(!target) return;
+      if(!_sharedResizeObs){
+        _sharedResizeObs = new ResizeObserver(function(entries){
+          entries.forEach(function(en){
+            var t=en.target;
+            var cv = (t && t.tagName==='CANVAS') ? t : (t && t.querySelector ? t.querySelector('canvas') : null);
+            var ch = cv && cv.__msqChart;
+            if(ch && !ch.$destroyed && en.contentRect && en.contentRect.width>20 && en.contentRect.height>20){
+              ch.resize();
+            }
+          });
+        });
+      }
+      _sharedResizeObs.observe(target);
+    }catch(e){}
+  }
 
   function NativeChart(canvasOrCtx, config){
     this.canvas = canvasOrCtx && canvasOrCtx.canvas ? canvasOrCtx.canvas : canvasOrCtx;
     this.ctx = canvasOrCtx && canvasOrCtx.canvas ? canvasOrCtx : (this.canvas ? this.canvas.getContext('2d') : null);
-    this.config = config || {}; this.data = this.config.data || {}; this.options = this.config.options || {}; this.type = this.config.type || 'line';
-    this.$native = true; this.$destroyed = false; this.draw();
+    this.config = config || {};
+    this.data = this.config.data || {};
+    this.options = this.config.options || {};
+    this.type = this.config.type || 'line';
+    this.$native = true;
+    this.$destroyed = false;
+    this._hoverIdx = null;
+    this._hoverAxis = null;
+    this._hitMeta = null;
+    this._boundEvents = [];
+    if(this.canvas){
+      this.canvas.__msqChart = this;
+      this.canvas._chartInstance = this;
+    }
+    this.draw();
+    this.attachPointerEvents();
+    observeChartWrap(this);
   }
-  NativeChart.version = 'native';
+  NativeChart.version = 'native-v2';
   NativeChart.defaults = { responsive:true, maintainAspectRatio:false };
 
-  NativeChart.prototype.destroy = function(){ this.$destroyed = true; try{ if(this.ctx && this.canvas){ this.ctx.clearRect(0,0,this.canvas.width||0,this.canvas.height||0); } }catch(e){} };
+  NativeChart.prototype.destroy = function(){
+    this.$destroyed = true;
+    hideTooltip();
+    try{
+      (this._boundEvents||[]).forEach(function(b){ b.el.removeEventListener(b.ev, b.fn); });
+      this._boundEvents = [];
+      if(this.canvas && this.canvas.__msqChart === this){ delete this.canvas.__msqChart; }
+      if(this.canvas && this.canvas._chartInstance === this){ delete this.canvas._chartInstance; }
+      if(this.ctx && this.canvas){ this.ctx.clearRect(0,0,this.canvas.width||0,this.canvas.height||0); }
+    }catch(e){}
+  };
   NativeChart.prototype.resize = function(){ if(!this.$destroyed) this.draw(); };
   NativeChart.prototype.update = function(){ if(!this.$destroyed) this.draw(); };
 
   NativeChart.prototype.sizeCanvas = function(){
-    var c=this.canvas, ctx=this.ctx; if(!c || !ctx) return {w:0,h:0,dpr:1};
+    var c=this.canvas, ctx=this.ctx; if(!c||!ctx) return {w:0,h:0,dpr:1};
     var p=c.parentElement, card=c.closest?c.closest('.card'):null;
     var pr=p?p.getBoundingClientRect():{width:0,height:0};
     var cr=card?card.getBoundingClientRect():{width:0,height:0};
     var vw=(typeof window!=='undefined' ? window.innerWidth : 420);
-    var w=Math.max(260, Math.round(pr.width || c.clientWidth || (cr.width?cr.width-36:0) || Math.min(680, vw-48)));
-    var h=Math.max(180, Math.round(pr.height || c.clientHeight || 240));
+    var w=Math.max(240, Math.round(pr.width || c.clientWidth || (cr.width?cr.width-36:0) || Math.min(680, vw-48)));
+    var h=Math.max(170, Math.round(pr.height || c.clientHeight || 220));
     var dpr=Math.max(1, Math.min(2.5, (typeof window!=='undefined' ? (window.devicePixelRatio||1) : 1)));
-    if(c.width !== Math.round(w*dpr) || c.height !== Math.round(h*dpr)){
-      c.width=Math.round(w*dpr); c.height=Math.round(h*dpr); c.style.width=w+'px'; c.style.height=h+'px';
-    }
+    var tw=Math.round(w*dpr), th=Math.round(h*dpr);
+    if(c.width!==tw || c.height!==th){ c.width=tw; c.height=th; }
     ctx.setTransform(dpr,0,0,dpr,0,0);
     return {w:w,h:h,dpr:dpr};
   };
 
   NativeChart.prototype.draw = function(){
-    if(!this.ctx || !this.canvas) return;
+    if(!this.ctx || !this.canvas || this.$destroyed) return;
     var s=this.sizeCanvas(), ctx=this.ctx, w=s.w, h=s.h; if(!w||!h) return;
+    this._lastSize = {w:w,h:h};
+    this.drawFrame(ctx,w,h);
+  };
+
+  NativeChart.prototype.drawFrame = function(ctx,w,h){
     ctx.clearRect(0,0,w,h);
     var type=this.type;
+    if(type==='empty') return this.drawEmpty(ctx,w,h,this.options.emptyTitle,this.options.emptyReason);
     if(type==='doughnut' || type==='pie') return this.drawDoughnut(ctx,w,h);
     if(type==='scatter') return this.drawXY(ctx,w,h,true);
     return this.drawXY(ctx,w,h,false);
@@ -152,83 +276,636 @@
   NativeChart.prototype.hasData = function(){
     return this.getDatasets().some(function(ds){ return arr(ds.data).some(function(v){ return toNum(v)!=null; }); });
   };
-  NativeChart.prototype.drawEmpty = function(ctx,w,h,msg){
-    ctx.save(); ctx.fillStyle='rgba(139,148,158,.78)'; ctx.font='600 14px Space Grotesk, sans-serif'; ctx.textAlign='center';
-    var text=msg||'Sin datos visualizables'; ctx.fillText(text,w/2,h/2-4); ctx.font='11px Space Grotesk, sans-serif'; ctx.fillStyle='rgba(139,148,158,.55)'; ctx.fillText('La carga de datos puede estar OK, pero falta una serie compatible.',w/2,h/2+18); ctx.restore();
+  NativeChart.prototype.drawEmpty = function(ctx,w,h,title,reason){
+    this._hitMeta = null;
+    ctx.save();
+    ctx.strokeStyle='rgba(48,54,61,.55)'; ctx.setLineDash([5,4]);
+    roundRect(ctx,16,18,Math.max(40,w-32),Math.max(40,h-36),12); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle='rgba(230,237,243,.84)'; ctx.font='700 13px Space Grotesk, sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(String(title||'Sin datos visualizables').slice(0,54), w/2, h/2 - 12);
+    ctx.font='11px Space Grotesk, sans-serif'; ctx.fillStyle='rgba(139,148,158,.75)';
+    var r = String(reason||'Sincroniza o registra más sesiones para activar esta gráfica.');
+    var mid=Math.ceil(r.length/2);
+    if(r.length>56){
+      var sp=r.lastIndexOf(' ',54); if(sp<20) sp=54;
+      ctx.fillText(r.slice(0,sp), w/2, h/2 + 8);
+      ctx.fillText(r.slice(sp+1,110), w/2, h/2 + 24);
+    } else {
+      ctx.fillText(r, w/2, h/2 + 12);
+    }
+    ctx.restore();
   };
 
   NativeChart.prototype.drawLegend = function(ctx,area){
-    var ds=this.getDatasets().filter(function(d){ return d && d.label!==undefined; }).slice(0,4);
-    var x=area.l, y=16; ctx.save(); ctx.font='11px Space Grotesk, sans-serif'; ctx.textBaseline='middle';
+    var legOpt = deepGet(this.options,'plugins.legend',{});
+    if(legOpt && legOpt.display === false) return 0;
+    var ds=this.getDatasets().filter(function(d){ return d && d.label!==undefined && d.label!==''; }).slice(0,6);
+    if(!ds.length) return 0;
+    var x=area.l, y=13, rows=1;
+    ctx.save(); ctx.font='600 10px Space Grotesk, sans-serif'; ctx.textBaseline='middle';
     ds.forEach(function(d,idx){
-      var col=cssVar(color(d.borderColor || d.backgroundColor,0,['#22d3ee','#a78bfa','#4ade80','#fbbf24'][idx%4]));
-      ctx.fillStyle=col; ctx.globalAlpha=.9; ctx.fillRect(x,y-5,10,10); ctx.globalAlpha=1; ctx.fillStyle='rgba(139,148,158,.95)';
-      var label=String(d.label||'Serie').slice(0,22); ctx.fillText(label,x+15,y); x += Math.min(180, ctx.measureText(label).width + 34);
-      if(x>area.r-90){ x=area.l; y+=16; }
-    }); ctx.restore();
+      var rawCol = d.borderColor || d.backgroundColor;
+      if (Array.isArray(rawCol)) {
+        rawCol = rawCol.find(function(c){ return c && c !== 'transparent' && c !== 'rgba(0,0,0,0)'; }) || PALETTE[idx%PALETTE.length];
+      }
+      var col=cssVar(rawCol || PALETTE[idx%PALETTE.length]);
+      if (col === 'transparent') col = PALETTE[idx%PALETTE.length];
+      var label=String(d.label||'Serie').slice(0,24);
+      var itemW = Math.min(185, (ctx.measureText?ctx.measureText(label).width:label.length*6) + 28);
+      if(x + itemW > area.r && x > area.l){ x=area.l; y+=15; rows++; }
+      ctx.fillStyle=col; ctx.globalAlpha=.92;
+      roundRect(ctx,x,y-4,9,9,2); ctx.fill();
+      ctx.globalAlpha=1; ctx.fillStyle='rgba(201,209,217,.92)';
+      ctx.fillText(label,x+13,y);
+      x += itemW;
+    });
+    ctx.restore();
+    return rows * 15 + 6;
   };
 
-  NativeChart.prototype.collect = function(scatter){
-    var datasets=this.getDatasets(), vals=[], xs=[];
-    datasets.forEach(function(ds){ arr(ds.data).forEach(function(v,i){ var y=toNum(v); if(y!=null){ vals.push(y); xs.push(scatter?toX(v,i):i); } }); });
-    return {y:vals,x:xs};
-  };
-  NativeChart.prototype.bounds = function(vals, axisOpt){
-    var min=vals.length?Math.min.apply(null,vals):0, max=vals.length?Math.max.apply(null,vals):1;
-    axisOpt=axisOpt||{};
-    if(axisOpt.beginAtZero || min>0) min=Math.min(0,min);
-    if(isNum(axisOpt.min)) min=Number(axisOpt.min); if(isNum(axisOpt.max)) max=Number(axisOpt.max);
-    if(min===max){ min-=1; max+=1; }
-    var pad=(max-min)*0.08; if(!isNum(axisOpt.min)) min-=pad; if(!isNum(axisOpt.max)) max+=pad;
-    if(min===max){max=min+1;} return {min:min,max:max};
+  NativeChart.prototype.collectByAxis = function(scatter){
+    var datasets=this.getDatasets(), labels=arr((this.data||{}).labels), scales=deepGet(this.options,'scales',{});
+    var xStacked=!!(scales.x&&scales.x.stacked), yStacked=!!(scales.y&&scales.y.stacked);
+    var axisVals={}, stackPos={}, stackNeg={}, xs=[];
+    datasets.forEach(function(ds,di){
+      var t = ds.type || (scatter?'scatter':this.type);
+      var aid = ds.yAxisID || 'y';
+      if(!axisVals[aid]) axisVals[aid] = {vals:[], hasLine:false, hasBar:false};
+      if(t==='line'||t==='scatter') axisVals[aid].hasLine = true;
+      else axisVals[aid].hasBar = true;
+      var stk = (t!=='line'&&t!=='scatter') ? (ds.stack || (xStacked||yStacked?'_def':null)) : null;
+      arr(ds.data).forEach(function(v,i){
+        var y=toNum(v);
+        if(y!=null){
+          xs.push(scatter?toX(v,i):i);
+          if(stk){
+            if(y>=0){ stackPos[aid+':'+stk+':'+i]=(stackPos[aid+':'+stk+':'+i]||0)+y; axisVals[aid].vals.push(stackPos[aid+':'+stk+':'+i]); axisVals[aid].vals.push(0); }
+            else { stackNeg[aid+':'+stk+':'+i]=(stackNeg[aid+':'+stk+':'+i]||0)+y; axisVals[aid].vals.push(stackNeg[aid+':'+stk+':'+i]); axisVals[aid].vals.push(0); }
+          } else {
+            axisVals[aid].vals.push(y);
+          }
+        }
+      });
+    },this);
+    if(!axisVals.y){ axisVals.y={vals:[],hasLine:true,hasBar:false}; }
+    return {axisVals:axisVals, x:xs, xCount:Math.max(labels.length, xs.length?Math.max.apply(null,xs)+1:1)};
   };
 
-  NativeChart.prototype.drawGrid = function(ctx,area,yb,xb,scatter){
-    ctx.save(); ctx.strokeStyle='rgba(48,54,61,.46)'; ctx.lineWidth=1; ctx.fillStyle='rgba(110,118,129,.92)'; ctx.font='10px JetBrains Mono, monospace'; ctx.textAlign='right'; ctx.textBaseline='middle';
-    for(var i=0;i<=4;i++){ var y=area.b-(i/4)*(area.b-area.t); ctx.beginPath(); ctx.moveTo(area.l,y); ctx.lineTo(area.r,y); ctx.stroke(); var v=yb.min+(i/4)*(yb.max-yb.min); ctx.fillText(nice(v),area.l-8,y); }
-    ctx.textAlign='center'; ctx.textBaseline='top'; var labels=arr((this.data||{}).labels); var n=scatter?5:labels.length; var maxTicks=Math.min(6,n||0);
-    if(scatter){ for(var j=0;j<maxTicks;j++){ var x=area.l+(j/(Math.max(1,maxTicks-1)))*(area.r-area.l); var xv=xb.min+(j/(Math.max(1,maxTicks-1)))*(xb.max-xb.min); ctx.fillText(nice(xv),x,area.b+9); } }
-    else if(labels.length){ var step=Math.max(1,Math.ceil(labels.length/maxTicks)); for(var k=0;k<labels.length;k+=step){ var xx=area.l+(labels.length===1?.5:k/(labels.length-1))*(area.r-area.l); ctx.fillText(String(labels[k]).slice(0,8),xx,area.b+9); } }
+  NativeChart.prototype.bounds = function(vals, axisOpt, info){
+    axisOpt=axisOpt||{}; info=info||{};
+    var dMin=vals.length?Math.min.apply(null,vals):0, dMax=vals.length?Math.max.apply(null,vals):1;
+    var min=dMin, max=dMax;
+    var onlyBars = info.hasBar && !info.hasLine;
+    if(axisOpt.beginAtZero===true || (onlyBars && min>=0 && axisOpt.min==null && axisOpt.beginAtZero!==false)){
+      min = Math.min(0, min);
+    }
+    if(isNum(axisOpt.min)) min = vals.length ? Math.min(Number(axisOpt.min), dMin) : Number(axisOpt.min);
+    if(isNum(axisOpt.max)) max = vals.length ? Math.max(Number(axisOpt.max), dMax) : Number(axisOpt.max);
+    if(min===max){ var d=Math.abs(min)*0.1 || 1; min-=d; max+=d; }
+    var span = Math.max(1e-6, max-min);
+    if((!isNum(axisOpt.min) || (vals.length && dMin < Number(axisOpt.min))) && !(axisOpt.beginAtZero===true && min===0) && !(onlyBars && min===0)){
+      min -= span*0.10;
+    }
+    if(!isNum(axisOpt.max) || (vals.length && dMax > Number(axisOpt.max))){
+      max += span*(info.hasBar ? 0.12 : 0.10);
+    }
+    if(min>=max) max=min+1;
+    return {min:min, max:max, reverse:!!axisOpt.reverse};
+  };
+
+  NativeChart.prototype.makeScaleY = function(area, b){
+    var mn=b.min, mx=b.max, rev=!!b.reverse;
+    return function(y){
+      var ratio = (y - mn) / Math.max(1e-9, mx - mn);
+      if(rev) return area.t + ratio*(area.b - area.t);
+      return area.b - ratio*(area.b - area.t);
+    };
+  };
+
+  NativeChart.prototype.drawGrid = function(ctx,area,ybMap,xb,scatter,scales){
+    scales=scales||{};
+    var yopt=scales.y||{}, xopt=scales.x||{};
+    var yb=ybMap.y;
+    ctx.save();
+    ctx.strokeStyle='rgba(48,54,61,.45)'; ctx.lineWidth=1;
+    ctx.fillStyle='rgba(139,148,158,.90)'; ctx.font='10px JetBrains Mono, monospace';
+    ctx.textAlign='right'; ctx.textBaseline='middle';
+    for(var i=0;i<=4;i++){
+      var f=i/4, y=area.b - f*(area.b-area.t);
+      ctx.beginPath(); ctx.moveTo(area.l,y); ctx.lineTo(area.r,y); ctx.stroke();
+      var val = yb.reverse ? (yb.max - f*(yb.max-yb.min)) : (yb.min + f*(yb.max-yb.min));
+      ctx.fillText(fmtTick(yopt,val), area.l-7, y);
+    }
+    // Right axis ticks (y1 or y2)
+    var rightId = ybMap.y2 ? 'y2' : (ybMap.y1 ? 'y1' : null);
+    if(rightId && ybMap[rightId]){
+      var rb=ybMap[rightId], ropt=scales[rightId]||{};
+      ctx.textAlign='left';
+      ctx.fillStyle=cssVar(deepGet(ropt,'title.color','#8b949e'));
+      for(var j=0;j<=4;j++){
+        var f2=j/4, y2=area.b - f2*(area.b-area.t);
+        var rv = rb.reverse ? (rb.max - f2*(rb.max-rb.min)) : (rb.min + f2*(rb.max-rb.min));
+        ctx.fillText(fmtTick(ropt,rv), area.r+7, y2);
+      }
+    }
+    // Axis titles
+    ctx.font='600 9px Space Grotesk, sans-serif';
+    var yTitle = deepGet(yopt,'title.text','');
+    if(yTitle){
+      ctx.save(); ctx.translate(11, (area.t+area.b)/2); ctx.rotate(-Math.PI/2);
+      ctx.textAlign='center'; ctx.fillStyle=cssVar(deepGet(yopt,'title.color','#8b949e'));
+      ctx.fillText(String(yTitle), 0, 0); ctx.restore();
+    }
+    if(rightId && deepGet(scales[rightId],'title.text','')){
+      var rt=deepGet(scales[rightId],'title.text','');
+      ctx.save(); ctx.translate(area.w-9, (area.t+area.b)/2); ctx.rotate(Math.PI/2);
+      ctx.textAlign='center'; ctx.fillStyle=cssVar(deepGet(scales[rightId],'title.color','#8b949e'));
+      ctx.fillText(String(rt), 0, 0); ctx.restore();
+    }
+    var xTitle = deepGet(xopt,'title.text','');
+    if(xTitle){
+      ctx.textAlign='center'; ctx.textBaseline='bottom'; ctx.fillStyle=cssVar(deepGet(xopt,'title.color','#6e7681'));
+      ctx.fillText(String(xTitle), (area.l+area.r)/2, area.h-2);
+    }
+    // X ticks
+    ctx.fillStyle='rgba(139,148,158,.90)'; ctx.font='10px JetBrains Mono, monospace';
+    ctx.textAlign='center'; ctx.textBaseline='top';
+    var labels=arr((this.data||{}).labels);
+    var defMax = area.w < 380 ? 5 : 8;
+    var reqMax = Number(deepGet(xopt,'ticks.maxTicksLimit',defMax)) || defMax;
+    var maxTicks = Math.min(reqMax, scatter ? Math.min(reqMax,6) : (labels.length || reqMax));
+    if(scatter){
+      var cnt=Math.max(2,maxTicks);
+      for(var s=0;s<cnt;s++){
+        var xp=area.l+(s/(cnt-1))*(area.r-area.l);
+        var xv=xb.min+(s/(cnt-1))*(xb.max-xb.min);
+        ctx.fillText(fmtTick(xopt, xv), xp, area.b+7);
+      }
+    } else if(labels.length){
+      var step=Math.max(1, Math.ceil(labels.length/maxTicks));
+      for(var k=0;k<labels.length;k+=step){
+        var xx = area.l + (labels.length===1 ? 0.5 : k/(labels.length-1))*(area.r-area.l);
+        ctx.fillText(String(labels[k]).slice(0,9), xx, area.b+7);
+      }
+      var lastIdx=labels.length-1;
+      if(lastIdx>0 && lastIdx%step!==0 && (lastIdx%step)>=step*0.45){
+        ctx.fillText(String(labels[lastIdx]).slice(0,9), area.r-4, area.b+7);
+      }
+    }
     ctx.restore();
   };
 
   NativeChart.prototype.drawXY = function(ctx,w,h,scatter){
-    if(!this.hasData()) return this.drawEmpty(ctx,w,h);
-    var area={l:48,r:w-16,t:38,b:h-34}; if(w<360){ area.l=42; area.r=w-10; }
-    var coll=this.collect(scatter), yopt=deepGet(this.options,'scales.y',{}), xopt=deepGet(this.options,'scales.x',{});
-    var yb=this.bounds(coll.y,yopt), xb=scatter?this.bounds(coll.x,xopt):{min:0,max:Math.max(1, (arr((this.data||{}).labels).length||Math.max.apply(null,coll.x)+1||1)-1)};
-    var sx=function(x){ return area.l + ((x-xb.min)/(xb.max-xb.min))*(area.r-area.l); };
-    var sy=function(y){ return area.b - ((y-yb.min)/(yb.max-yb.min))*(area.b-area.t); };
-    this.drawLegend(ctx,area); this.drawGrid(ctx,area,yb,xb,scatter);
+    if(!this.hasData()) return this.drawEmpty(ctx,w,h,this.options.emptyTitle,this.options.emptyReason);
+    var scales=deepGet(this.options,'scales',{});
+    var hasRight = !!(scales.y1 || scales.y2);
+    var hasLeftTitle = !!deepGet(scales,'y.title.text','');
+    var hasXTitle = !!deepGet(scales,'x.title.text','');
+    var area={
+      l:(w<360 ? (hasLeftTitle?46:38) : (hasLeftTitle?54:46)),
+      r:(hasRight ? (w-(w<360?44:54)) : (w-14)),
+      t:24,
+      b:h-(hasXTitle?38:28),
+      w:w, h:h
+    };
+    var legH = this.drawLegend(ctx, area);
+    area.t = Math.max(18, 12 + legH);
+
+    var coll=this.collectByAxis(scatter);
+    var ybMap={}, syMap={};
+    Object.keys(coll.axisVals).forEach(function(aid){
+      ybMap[aid] = this.bounds(coll.axisVals[aid].vals, scales[aid]||{}, coll.axisVals[aid]);
+      syMap[aid] = this.makeScaleY(area, ybMap[aid]);
+    },this);
+
+    var xb;
+    if(scatter){
+      var xOpt=Object.assign({}, scales.x||{}, {beginAtZero: deepGet(scales,'x.beginAtZero',false)});
+      xb=this.bounds(coll.x, xOpt, {hasLine:true});
+    } else {
+      var labN=arr((this.data||{}).labels).length;
+      xb={min:0, max:Math.max(1,(labN||coll.xCount||2)-1)};
+    }
+    var sx = function(x){ return area.l + ((x-xb.min)/Math.max(1e-9, xb.max-xb.min))*(area.r-area.l); };
+
+    this.drawGrid(ctx,area,ybMap,xb,scatter,scales);
     var datasets=this.getDatasets();
     var lineSets=[], barSets=[];
-    datasets.forEach(function(ds){ var t=ds.type || (scatter?'scatter':(ds.type||this.type)); if(t==='line'||t==='scatter') lineSets.push(ds); else barSets.push(ds); },this);
-    this.drawBars(ctx,area,barSets,sy,scatter,xb); this.drawLines(ctx,area,lineSets,sy,sx,scatter,xb);
+    datasets.forEach(function(ds,idx){
+      var t=ds.type || (scatter?'scatter':this.type);
+      var item={ds:ds, idx:idx, sy:syMap[ds.yAxisID||'y']||syMap.y, yb:ybMap[ds.yAxisID||'y']||ybMap.y};
+      if(t==='line'||t==='scatter') lineSets.push(item); else barSets.push(item);
+    },this);
+
+    var hitMeta = {type:scatter?'scatter':'xy', area:area, points:[], sx:sx, ybMap:ybMap};
+    if(!scatter && barSets.length) this.drawBars(ctx,area,barSets,scales,hitMeta);
+    if(lineSets.length) this.drawLines(ctx,area,lineSets,datasets,syMap,ybMap,sx,scatter,xb,hitMeta);
+
+    // Interactive crosshair + highlight for active hover index
+    if(!scatter && this._hoverIdx!=null){
+      var labels=arr((this.data||{}).labels), n=Math.max(labels.length, coll.xCount||1, 1);
+      var hx = n===1 ? (area.l+area.r)/2 : (barSets.length && !lineSets.length ? (area.l+(this._hoverIdx+0.5)*((area.r-area.l)/n)) : sx(this._hoverIdx));
+      if(hx>=area.l-1 && hx<=area.r+1){
+        ctx.save(); ctx.strokeStyle='rgba(34,211,238,.45)'; ctx.lineWidth=1; ctx.setLineDash([4,3]);
+        ctx.beginPath(); ctx.moveTo(hx,area.t); ctx.lineTo(hx,area.b); ctx.stroke(); ctx.restore();
+      }
+      hitMeta.points.forEach(function(pt){
+        if(pt.idx===this._hoverIdx && pt.px!=null && pt.py!=null){
+          ctx.save(); ctx.strokeStyle='#ffffff'; ctx.fillStyle=pt.col||'#22d3ee'; ctx.lineWidth=2;
+          ctx.beginPath(); ctx.arc(pt.px,pt.py,5.5,0,Math.PI*2); ctx.fill(); ctx.stroke(); ctx.restore();
+        }
+      },this);
+    } else if(scatter && this._hoverPoint){
+      var hp=this._hoverPoint;
+      ctx.save(); ctx.strokeStyle='#ffffff'; ctx.fillStyle=hp.col||'#22d3ee'; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.arc(hp.px,hp.py,7,0,Math.PI*2); ctx.fill(); ctx.stroke(); ctx.restore();
+    }
+    this._hitMeta = hitMeta;
   };
 
-  NativeChart.prototype.drawBars = function(ctx,area,sets,sy,scatter,xb){
-    if(!sets.length || scatter) return; var labels=arr((this.data||{}).labels), n=Math.max(labels.length,1), groups=sets.length; var groupW=(area.r-area.l)/n, barW=Math.max(4, Math.min(28, groupW/(groups+0.8))); var zero=sy(0);
-    sets.forEach(function(ds,di){ arr(ds.data).forEach(function(v,i){ var y=toNum(v); if(y==null) return; var cx=area.l+(i+.5)*groupW + (di-(groups-1)/2)*barW; var yy=sy(y), top=Math.min(yy,zero), bh=Math.max(1,Math.abs(zero-yy)); ctx.fillStyle=cssVar(color(ds.backgroundColor, i, ['rgba(34,211,238,.68)','rgba(167,139,250,.62)','rgba(251,191,36,.68)'][di%3])); ctx.globalAlpha=.95; roundRect(ctx,cx-barW/2,top,barW*.82,bh,4); ctx.fill(); ctx.globalAlpha=1; }); });
+  NativeChart.prototype.drawBars = function(ctx,area,barItems,scales,hitMeta){
+    var labels=arr((this.data||{}).labels), n=Math.max(labels.length,1);
+    var globalStacked = !!(deepGet(scales,'x.stacked',false) || deepGet(scales,'y.stacked',false));
+    var stackGroups=[], stackMap={}, ungrouped=[];
+    barItems.forEach(function(it){
+      var key = it.ds.stack || (globalStacked ? '__s_'+(it.ds.yAxisID||'y') : null);
+      if(key){
+        if(!stackMap[key]){ stackMap[key]=[]; stackGroups.push(stackMap[key]); }
+        stackMap[key].push(it);
+      } else {
+        ungrouped.push([it]);
+      }
+    });
+    var slots = stackGroups.concat(ungrouped);
+    var groupW = (area.r-area.l)/n;
+    var numSlots = Math.max(1, slots.length);
+    var barW = Math.max(4, Math.min(34, (groupW*0.78)/numSlots));
+    var hoverIdx = this._hoverIdx;
+
+    slots.forEach(function(group, si){
+      var posAcc={}, negAcc={};
+      group.forEach(function(it){
+        var ds=it.ds, sy=it.sy, yb=it.yb, clampedZero=Math.max(yb.min, Math.min(yb.max, 0));
+        var isStacked = group.length > 1 || !!(ds.stack || globalStacked);
+        arr(ds.data).forEach(function(v,i){
+          var y=toNum(v); if(y==null) return;
+          var cx = area.l + (i+0.5)*groupW + (si-(numSlots-1)/2)*(barW+1.5);
+          var col = cssVar(color(ds.backgroundColor, i, PALETTE[it.idx%PALETTE.length]));
+          if(y===0){
+            hitMeta.points.push({idx:i, di:it.idx, label:ds.label||'', val:0, px:cx, py:sy(isStacked?(posAcc[i]!=null?posAcc[i]:clampedZero):clampedZero), col:col, axisId:ds.yAxisID||'y'});
+            return;
+          }
+          var baseVal = 0, topVal = y;
+          if(isStacked){
+            if(y>0){ baseVal = posAcc[i]||0; topVal = baseVal + y; posAcc[i] = topVal; }
+            else { baseVal = negAcc[i]||0; topVal = baseVal + y; negAcc[i] = topVal; }
+          } else {
+            baseVal = clampedZero;
+          }
+          var y0 = sy(isStacked ? baseVal : clampedZero), y1 = sy(topVal);
+          var top = Math.min(y0,y1), bh = Math.max(1.5, Math.abs(y1-y0));
+          var bx = cx - barW/2;
+          ctx.save();
+          ctx.fillStyle = col;
+          ctx.globalAlpha = (hoverIdx===i ? 1.0 : 0.90);
+          var rad = (isStacked && bh < 6) ? 0 : Math.min(Number(ds.borderRadius)||4, 6);
+          roundRect(ctx, bx, top, barW*0.86, bh, rad);
+          ctx.fill();
+          if(hoverIdx===i){
+            ctx.strokeStyle='rgba(255,255,255,.55)'; ctx.lineWidth=1; ctx.stroke();
+          }
+          ctx.restore();
+          hitMeta.points.push({idx:i, di:it.idx, label:ds.label||'', val:y, px:cx, py:y1, col:col, axisId:ds.yAxisID||'y'});
+        });
+      });
+    });
   };
 
-  NativeChart.prototype.drawLines = function(ctx,area,sets,sy,sx,scatter,xb){
-    sets.forEach(function(ds,di){ var pts=[]; arr(ds.data).forEach(function(v,i){ var y=toNum(v); if(y==null) return; var x=scatter?toX(v,i):i; if(x<xb.min||x>xb.max) return; pts.push({x:sx(x),y:sy(y)}); }); if(!pts.length) return; var col=cssVar(color(ds.borderColor||ds.backgroundColor,0,['#22d3ee','#a78bfa','#4ade80','#fbbf24'][di%4]));
-      ctx.save(); ctx.strokeStyle=col; ctx.lineWidth=Number(ds.borderWidth)||2; if(ds.borderDash) ctx.setLineDash(ds.borderDash); ctx.beginPath(); pts.forEach(function(p,i){ if(i) ctx.lineTo(p.x,p.y); else ctx.moveTo(p.x,p.y); }); if(!scatter) ctx.stroke();
-      if(scatter){ ctx.fillStyle=cssVar(color(ds.backgroundColor||ds.borderColor,0,col)); pts.forEach(function(p){ ctx.beginPath(); ctx.arc(p.x,p.y,Number(ds.pointRadius)||4,0,Math.PI*2); ctx.fill(); }); }
-      else { ctx.stroke(); ctx.setLineDash([]); ctx.fillStyle=col; pts.forEach(function(p){ ctx.beginPath(); ctx.arc(p.x,p.y,Number(ds.pointRadius)||2.5,0,Math.PI*2); ctx.fill(); }); }
-      ctx.restore(); });
+  NativeChart.prototype.drawLines = function(ctx,area,lineItems,allDatasets,syMap,ybMap,sx,scatter,xb,hitMeta){
+    var labels=arr((this.data||{}).labels), n=Math.max(labels.length,1);
+    var mapIdxToPts={};
+    lineItems.forEach(function(it){
+      var ds=it.ds, sy=it.sy, pts=[];
+      arr(ds.data).forEach(function(v,i){
+        var y=toNum(v);
+        if(y==null){ pts.push(null); return; }
+        var x=scatter?toX(v,i):i;
+        if(x<xb.min-1e-9 || x>xb.max+1e-9){ pts.push(null); return; }
+        pts.push({x:sx(x), y:sy(y), rawX:x, rawY:y, idx:i});
+      });
+      mapIdxToPts[it.idx]={pts:pts, it:it};
+    });
+
+    // Pass 1: Fills & bands (so lines draw crisply on top)
+    lineItems.forEach(function(it){
+      var ds=it.ds, info=mapIdxToPts[it.idx], pts=info.pts;
+      var col=cssVar(color(ds.borderColor||ds.backgroundColor,0,PALETTE[it.idx%PALETTE.length]));
+      var fillSpec=ds.fill;
+      var isScatterDs = ds.type ? (ds.type === 'scatter') : !!scatter;
+      if(!fillSpec || isScatterDs) return;
+
+      var targetIdx = null;
+      if(fillSpec==='-1') targetIdx = it.idx - 1;
+      else if(fillSpec==='+1') targetIdx = it.idx + 1;
+      else if(typeof fillSpec==='number') targetIdx = fillSpec;
+
+      if(targetIdx!=null && mapIdxToPts[targetIdx]){
+        var otherPts = mapIdxToPts[targetIdx].pts;
+        var polyA=[], polyB=[];
+        for(var k=0;k<Math.min(pts.length,otherPts.length);k++){
+          if(pts[k] && otherPts[k]){ polyA.push(pts[k]); polyB.push(otherPts[k]); }
+        }
+        if(polyA.length>=2){
+          ctx.save();
+          ctx.beginPath();
+          ctx.moveTo(polyA[0].x, polyA[0].y);
+          for(var m=1;m<polyA.length;m++) ctx.lineTo(polyA[m].x, polyA[m].y);
+          for(var r=polyB.length-1;r>=0;r--) ctx.lineTo(polyB[r].x, polyB[r].y);
+          ctx.closePath();
+          ctx.fillStyle = ds.backgroundColor ? cssVar(ds.backgroundColor) : withAlpha(col,0.16);
+          ctx.fill();
+          ctx.restore();
+        }
+      } else if(fillSpec===true || fillSpec==='origin'){
+        var segs=[], cur=[];
+        pts.forEach(function(p){ if(p) cur.push(p); else if(cur.length){ segs.push(cur); cur=[]; } });
+        if(cur.length) segs.push(cur);
+        segs.forEach(function(seg){
+          if(seg.length<2) return;
+          ctx.save();
+          ctx.beginPath();
+          traceCurve(ctx,seg,Number(ds.tension)||0);
+          ctx.lineTo(seg[seg.length-1].x, area.b);
+          ctx.lineTo(seg[0].x, area.b);
+          ctx.closePath();
+          if(typeof ctx.createLinearGradient==='function'){
+            var g=ctx.createLinearGradient(0,area.t,0,area.b);
+            g.addColorStop(0, withAlpha(col,0.24));
+            g.addColorStop(1, withAlpha(col,0.02));
+            ctx.fillStyle=g;
+          } else {
+            ctx.fillStyle=withAlpha(col,0.12);
+          }
+          ctx.fill();
+          ctx.restore();
+        });
+      }
+    });
+
+    // Pass 2: Strokes & points
+    lineItems.forEach(function(it){
+      var ds=it.ds, pts=mapIdxToPts[it.idx].pts;
+      var col=cssVar(color(ds.borderColor||ds.backgroundColor,0,PALETTE[it.idx%PALETTE.length]));
+      var ptColArr = ds.pointBackgroundColor;
+      var isScatterDs = ds.type ? (ds.type === 'scatter') : !!scatter;
+      var pr = (ds.pointRadius===0 ? 0 : (isNum(ds.pointRadius) ? Number(ds.pointRadius) : (isScatterDs?5:2.5)));
+
+      ctx.save();
+      if(!isScatterDs){
+        ctx.strokeStyle=col;
+        ctx.lineWidth=Number(ds.borderWidth)||2;
+        if(ds.borderDash) ctx.setLineDash(ds.borderDash);
+        var segs=[], cur=[];
+        pts.forEach(function(p){ if(p) cur.push(p); else if(cur.length){ segs.push(cur); cur=[]; } });
+        if(cur.length) segs.push(cur);
+        segs.forEach(function(seg){
+          ctx.beginPath();
+          if(seg.length===1){ ctx.arc(seg[0].x,seg[0].y,Math.max(2,pr),0,Math.PI*2); }
+          else { traceCurve(ctx,seg,Number(ds.tension)||0); }
+          ctx.stroke();
+        });
+        ctx.setLineDash([]);
+      }
+      if(pr>0){
+        pts.forEach(function(p){
+          if(!p) return;
+          var pc = ptColArr ? cssVar(color(ptColArr, p.idx, col)) : (isScatterDs ? cssVar(color(ds.backgroundColor||ds.borderColor,p.idx,col)) : col);
+          ctx.fillStyle=pc;
+          ctx.beginPath(); ctx.arc(p.x,p.y,pr,0,Math.PI*2); ctx.fill();
+        });
+      }
+      pts.forEach(function(p){
+        if(!p) return;
+        var pc = ptColArr ? cssVar(color(ptColArr, p.idx, col)) : (isScatterDs ? cssVar(color(ds.backgroundColor||ds.borderColor,p.idx,col)) : col);
+        var rawPt = ds.data && ds.data[p.idx];
+        var ptLbl = (rawPt && typeof rawPt==='object' && rawPt.label) ? String(rawPt.label) : null;
+        hitMeta.points.push({idx:p.idx, di:it.idx, label:ds.label||'', ptLabel:ptLbl, val:p.rawY, xVal:p.rawX, px:p.x, py:p.y, col:pc, axisId:ds.yAxisID||'y', noHit:!!ds.noHit});
+      });
+      ctx.restore();
+    });
   };
+
+  function traceCurve(ctx,pts,tension){
+    if(!pts.length) return;
+    ctx.moveTo(pts[0].x, pts[0].y);
+    if(!tension || pts.length<3){
+      for(var i=1;i<pts.length;i++) ctx.lineTo(pts[i].x, pts[i].y);
+      return;
+    }
+    for(var j=0;j<pts.length-1;j++){
+      var p0=pts[j], p1=pts[j+1];
+      var mx=(p0.x+p1.x)/2, my=(p0.y+p1.y)/2;
+      ctx.quadraticCurveTo(p0.x, p0.y, mx, my);
+    }
+    var last=pts[pts.length-1];
+    ctx.lineTo(last.x, last.y);
+  }
 
   NativeChart.prototype.drawDoughnut = function(ctx,w,h){
-    var ds=this.getDatasets()[0]||{}, vals=arr(ds.data).map(function(v){return toNum(v)||0;}), sum=vals.reduce(function(a,b){return a+b;},0); if(!sum) return this.drawEmpty(ctx,w,h);
-    var colors=arr(ds.backgroundColor); var cx=w/2, cy=h/2+8, r=Math.min(w,h)*.28, inner=r*.58, start=-Math.PI/2; ctx.save();
-    vals.forEach(function(v,i){ var a=(v/sum)*Math.PI*2; ctx.beginPath(); ctx.arc(cx,cy,r,start,start+a); ctx.arc(cx,cy,inner,start+a,start,true); ctx.closePath(); ctx.fillStyle=cssVar(colors[i]||['#3b82f6','#f87171','#4ade80','#fbbf24','#a78bfa'][i%5]); ctx.fill(); start+=a; });
-    ctx.fillStyle='rgba(230,237,243,.92)'; ctx.font='700 18px Space Grotesk, sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('80/20',cx,cy); ctx.restore(); this.drawLegend(ctx,{l:18,r:w-18,t:12,b:h-20});
+    var ds=this.getDatasets()[0]||{}, labels=arr((this.data||{}).labels);
+    var vals=arr(ds.data).map(function(v){ return Math.max(0, toNum(v)||0); });
+    var sum=vals.reduce(function(a,b){ return a+b; },0);
+    if(!sum) return this.drawEmpty(ctx,w,h,this.options.emptyTitle,this.options.emptyReason);
+    var colors=arr(ds.backgroundColor);
+
+    // Reserve space for slice legend (bottom)
+    var items=[];
+    vals.forEach(function(v,i){
+      if(v<=0 && vals.length>3) return;
+      items.push({
+        idx:i, val:v, pct:Math.round(v/sum*100),
+        label:String(labels[i]||('Item '+(i+1))),
+        col:cssVar(colors[i]||PALETTE[i%PALETTE.length])
+      });
+    });
+    if(!items.length) items=vals.map(function(v,i){ return {idx:i,val:v,pct:0,label:String(labels[i]||('Item '+(i+1))),col:cssVar(colors[i]||PALETTE[i%PALETTE.length])}; });
+
+    var colsPerRow = w >= 420 ? 3 : 2;
+    var legRows = Math.ceil(items.length / colsPerRow);
+    var legH = (deepGet(this.options,'plugins.legend.display',true)===false) ? 8 : Math.min(h*0.42, legRows * 18 + 10);
+    var chartH = Math.max(100, h - legH);
+    var cx = w/2, cy = chartH/2 + 2;
+    var r = Math.min(w*0.36, chartH*0.42);
+    var cutoutPct = parseFloat(this.options.cutout || '60%') / 100;
+    if(!isFinite(cutoutPct)||cutoutPct<0.2||cutoutPct>0.85) cutoutPct=0.58;
+    var inner = (this.type==='pie') ? 0 : r * cutoutPct;
+
+    var start = -Math.PI/2, slices=[];
+    ctx.save();
+    vals.forEach(function(v,i){
+      if(v<=0){ return; }
+      var a = (v/sum)*Math.PI*2;
+      var mid = start + a/2;
+      var hov = (this._hoverIdx === i);
+      var off = hov ? 5 : 0;
+      var dx = Math.cos(mid)*off, dy = Math.sin(mid)*off;
+      var col = cssVar(colors[i]||PALETTE[i%PALETTE.length]);
+      ctx.beginPath();
+      ctx.arc(cx+dx, cy+dy, r+(hov?2:0), start, start+a);
+      if(inner>0) ctx.arc(cx+dx, cy+dy, inner, start+a, start, true);
+      else ctx.lineTo(cx+dx, cy+dy);
+      ctx.closePath();
+      ctx.fillStyle=col;
+      ctx.fill();
+      ctx.strokeStyle='#161b22'; ctx.lineWidth=2; ctx.stroke();
+      slices.push({idx:i, start:start, end:start+a, val:v, pct:Math.round(v/sum*100), label:String(labels[i]||''), col:col});
+      start += a;
+    }, this);
+
+    // Center label
+    if(inner>0){
+      var centerText = this.options.centerText;
+      var centerSub  = this.options.centerSub;
+      if(centerText == null){
+        var maxIdx=0;
+        for(var k=1;k<vals.length;k++){ if(vals[k]>vals[maxIdx]) maxIdx=k; }
+        centerText = Math.round(vals[maxIdx]/sum*100) + '%';
+        centerSub  = String(labels[maxIdx]||'').replace(/\s*\([^)]*\)/,'').slice(0,14);
+      }
+      ctx.fillStyle='rgba(230,237,243,.95)';
+      ctx.font='800 '+(r>55?16:13)+'px Space Grotesk, sans-serif';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(String(centerText), cx, centerSub ? cy-6 : cy);
+      if(centerSub){
+        ctx.fillStyle='rgba(139,148,158,.90)';
+        ctx.font='600 9px Space Grotesk, sans-serif';
+        ctx.fillText(String(centerSub).slice(0,18), cx, cy+10);
+      }
+    }
+
+    // Bottom slice legend
+    if(deepGet(this.options,'plugins.legend.display',true)!==false){
+      var lx0=12, cw=(w-24)/colsPerRow, ly0=chartH+6;
+      ctx.font='600 10px Space Grotesk, sans-serif'; ctx.textBaseline='middle'; ctx.textAlign='left';
+      items.forEach(function(it,idx){
+        var row=Math.floor(idx/colsPerRow), colI=idx%colsPerRow;
+        var lx=lx0+colI*cw, ly=ly0+row*17;
+        ctx.fillStyle=it.col;
+        roundRect(ctx,lx,ly-4,9,9,2); ctx.fill();
+        ctx.fillStyle='rgba(201,209,217,.92)';
+        var txt = it.label.slice(0,16) + ' ' + it.pct + '%';
+        ctx.fillText(txt, lx+13, ly);
+      });
+    }
+    ctx.restore();
+    this._hitMeta = {type:'doughnut', cx:cx, cy:cy, r:r+8, inner:inner, slices:slices, sum:sum};
   };
 
-  function roundRect(ctx,x,y,w,h,r){ r=Math.min(r||0,Math.abs(w)/2,Math.abs(h)/2); ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+  NativeChart.prototype.attachPointerEvents = function(){
+    var c=this.canvas; if(!c || typeof c.addEventListener!=='function') return;
+    var self=this;
+    function onMove(ev){
+      if(self.$destroyed || !self._hitMeta || !self._lastSize) return;
+      var rect = c.getBoundingClientRect ? c.getBoundingClientRect() : null;
+      if(!rect || !rect.width) return;
+      var p = ev.touches && ev.touches[0] ? ev.touches[0] : ev;
+      var x = (p.clientX - rect.left) * (self._lastSize.w / rect.width);
+      var y = (p.clientY - rect.top)  * (self._lastSize.h / rect.height);
+      var meta = self._hitMeta;
 
-  // Se deja siempre activo para que las gráficas no dependan de CDN ni de red externa.
+      if(meta.type==='doughnut'){
+        var dx=x-meta.cx, dy=y-meta.cy, dist=Math.sqrt(dx*dx+dy*dy);
+        if(dist>=meta.inner && dist<=meta.r){
+          var ang=Math.atan2(dy,dx);
+          if(ang < -Math.PI/2) ang += Math.PI*2;
+          var hit=meta.slices.find(function(s){ return ang>=s.start && ang<=s.end; });
+          if(hit){
+            if(self._hoverIdx!==hit.idx){ self._hoverIdx=hit.idx; self.drawFrame(self.ctx,self._lastSize.w,self._lastSize.h); }
+            showTooltip(p.clientX, p.clientY,
+              '<div style="font-weight:700;margin-bottom:2px">'+hit.label+'</div>'+
+              '<div><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:'+hit.col+';margin-right:6px"></span>'+
+              '<strong>'+nice(hit.val)+'</strong> ('+hit.pct+'%)</div>');
+            return;
+          }
+        }
+        if(self._hoverIdx!=null){ self._hoverIdx=null; self.drawFrame(self.ctx,self._lastSize.w,self._lastSize.h); }
+        hideTooltip();
+        return;
+      }
+
+      if(meta.type==='scatter'){
+        var best=null, bestD=26;
+        meta.points.forEach(function(pt){
+          if(pt.noHit) return;
+          var d=Math.hypot(pt.px-x, pt.py-y);
+          if(d<bestD){ bestD=d; best=pt; }
+        });
+        if(best){
+          self._hoverPoint=best;
+          self.drawFrame(self.ctx,self._lastSize.w,self._lastSize.h);
+          var xTxt = deepGet(self.options,'scales.x.title.text','X');
+          var yTxt = deepGet(self.options,'scales.y.title.text','Y');
+          showTooltip(p.clientX, p.clientY,
+            '<div style="font-weight:700;color:#22d3ee;margin-bottom:2px">'+(best.ptLabel||best.label||'Punto')+'</div>'+
+            '<div>'+xTxt+': <strong>'+nice(best.xVal)+'</strong></div>'+
+            '<div>'+yTxt+': <strong>'+nice(best.val)+'</strong></div>');
+        } else {
+          if(self._hoverPoint){ self._hoverPoint=null; self.drawFrame(self.ctx,self._lastSize.w,self._lastSize.h); }
+          hideTooltip();
+        }
+        return;
+      }
+
+      // XY line / bar
+      var area=meta.area;
+      if(x<area.l-6 || x>area.r+6 || y<area.t-8 || y>area.b+10){
+        if(self._hoverIdx!=null){ self._hoverIdx=null; self.drawFrame(self.ctx,self._lastSize.w,self._lastSize.h); }
+        hideTooltip();
+        return;
+      }
+      var labels=arr((self.data||{}).labels);
+      var nearIdx=null, nearX=1e9;
+      meta.points.forEach(function(pt){
+        var dx2=Math.abs(pt.px-x);
+        if(dx2<nearX){ nearX=dx2; nearIdx=pt.idx; }
+      });
+      if(nearIdx!=null){
+        if(self._hoverIdx!==nearIdx){ self._hoverIdx=nearIdx; self.drawFrame(self.ctx,self._lastSize.w,self._lastSize.h); }
+        var rows=meta.points.filter(function(pt){ return pt.idx===nearIdx; });
+        var html='<div style="font-weight:700;color:#22d3ee;margin-bottom:3px">'+(labels[nearIdx]||'#'+(nearIdx+1))+'</div>';
+        rows.forEach(function(r){
+          html+='<div style="display:flex;align-items:center;justify-content:space-between;gap:10px">'+
+            '<span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:'+r.col+';margin-right:5px"></span>'+
+            (r.label||'Valor')+'</span><strong>'+nice(r.val)+'</strong></div>';
+        });
+        showTooltip(p.clientX, p.clientY, html);
+      }
+    }
+    function onLeave(){
+      if(self._hoverIdx!=null || self._hoverPoint){
+        self._hoverIdx=null; self._hoverPoint=null;
+        if(!self.$destroyed && self._lastSize) self.drawFrame(self.ctx,self._lastSize.w,self._lastSize.h);
+      }
+      hideTooltip();
+    }
+    ['mousemove','touchstart','touchmove'].forEach(function(ev){
+      c.addEventListener(ev, onMove, {passive:true});
+      self._boundEvents.push({el:c, ev:ev, fn:onMove});
+    });
+    ['mouseleave','touchend','touchcancel'].forEach(function(ev){
+      c.addEventListener(ev, onLeave, {passive:true});
+      self._boundEvents.push({el:c, ev:ev, fn:onLeave});
+    });
+  };
+
+  function roundRect(ctx,x,y,w,h,r){
+    r=Math.min(r||0,Math.abs(w)/2,Math.abs(h)/2);
+    ctx.beginPath(); ctx.moveTo(x+r,y);
+    ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r);
+    ctx.closePath();
+  }
+
   window.Chart = NativeChart;
   window.__MANUSQUASH_NATIVE_CHARTS__ = true;
 })();
@@ -454,7 +1131,7 @@ canvas{border-radius:var(--r-sm)}
 .chart-collapsible{
   overflow:hidden;
   transition:max-height .35s ease, opacity .28s ease;
-  max-height:400px;opacity:1;
+  max-height:580px;opacity:1;
 }
 .chart-collapsible.chart-closed{max-height:0;opacity:0}
 .card-title-row{display:flex;align-items:center;gap:6px;margin-bottom:12px}
@@ -625,6 +1302,12 @@ canvas{position:relative;z-index:2}
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+/* Fat zones & empty box */
+.zone-fat-grid{display:flex;flex-direction:column;gap:8px}
+.zone-fat-row{display:grid;grid-template-columns:36px 1fr auto;gap:10px;align-items:center;padding:8px 10px;background:var(--bg3);border-radius:10px}
+.zone-fat-bar{height:7px;background:rgba(48,54,61,.75);border-radius:999px;overflow:hidden;margin-top:5px}
+.zone-fat-fill{height:100%;border-radius:999px;transition:width .5s ease}
+.pro-empty{padding:24px 16px;text-align:center;color:var(--text3);font-size:12px;line-height:1.5;border:1px dashed var(--border);border-radius:12px}
 </style>
 <style id="manusquash-ux-clean-css">
 /* Navegación limpia y paneles estáticos validados */
@@ -995,7 +1678,7 @@ header.msq-header {
 <div class="card-title">🧠 Entrenamiento Adaptativo del Día</div>
 <div id="workout-container"></div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
-<button class="btn btn-primary" onclick="exportWorkoutPDFPro?exportWorkoutPDFPro():exportWorkoutPDF()">📄 Exportar PDF</button>
+<button class="btn btn-primary" onclick="exportWorkoutPDFPro()">📄 Exportar PDF</button>
 <button class="btn btn-outline" onclick="shareDailySummary()">📤 Compartir resumen</button>
 </div>
 <button class="btn btn-outline" onclick="downloadCurrentJSON()" style="width:100%;margin-top:8px;font-size:12px">⬇️ Descargar datos JSON actuales</button>
@@ -1130,6 +1813,10 @@ header.msq-header {
 <div class="chart-wrap" style="height:210px"><canvas id="chart-fat-substrate"></canvas></div>
 <div id="chart-fat-substrate-note"></div>
 </div>
+<div class="card" id="grasa-fat-zones-card">
+<div class="card-title">📊 Oxidación por Zona Karvonen</div>
+<div id="grasa-fat-zones-content"></div>
+</div>
 <div class="card">
 <div class="card-title">📋 Lectura profesional</div>
 <div id="grasa-insights-content"></div>
@@ -1180,7 +1867,7 @@ header.msq-header {
 <div class="grid-3" id="perf-scores" style="margin-bottom:12px"></div>
 <div class="section-divider">🫁 Progreso aeróbico</div>
 <div class="card" id="training-load-static-card">
-<div class="card-title">📈 Carga de entrenamiento</div>
+<div class="card-title">⚖️ Balance de Carga Aeróbica vs Target (Garmin)</div>
 <div class="chart-wrap" style="height:230px"><canvas id="chart-load"></canvas></div>
 <div id="chart-load-note"></div>
 </div>
@@ -1190,6 +1877,11 @@ header.msq-header {
 <div class="data-note info" style="margin-top:8px">
 <strong>Integrado en Rendimiento.</strong> Se conserva la gráfica útil de VO2max sin mantener una pestaña aparte con información repetida.
       </div>
+</div>
+<div class="card" id="analysis-card">
+<div class="card-title">🔎 Hallazgos y Recomendaciones</div>
+<div id="findings-container" style="margin-bottom:10px"></div>
+<div id="recs-container"></div>
 </div>
 <div class="card">
 <div class="card-title">💓 Deriva Cardiaca por Carrera</div>
@@ -1212,7 +1904,7 @@ header.msq-header {
 </div>
 <div class="card" id="card-corr-2">
 <div class="card-title-row">
-<div class="card-title">📊 Readiness vs Training Load</div>
+<div class="card-title">📊 Body Battery Drenado vs HRV</div>
 <button class="card-chart-toggle" onclick="toggleChart('chart-readiness-load','card-corr-2')">Ver <span class="arr">▾</span></button>
 </div>
 <div class="chart-collapsible chart-closed" id="chart-readiness-load-wrap">
@@ -1221,7 +1913,7 @@ header.msq-header {
 </div>
 <div class="card" id="card-corr-3">
 <div class="card-title-row">
-<div class="card-title">📊 Sueño vs Rendimiento siguiente</div>
+<div class="card-title">📊 Sueño vs FC Reposo sig. día</div>
 <button class="card-chart-toggle" onclick="toggleChart('chart-sleep-perf','card-corr-3')">Ver <span class="arr">▾</span></button>
 </div>
 <div class="chart-collapsible chart-closed" id="chart-sleep-perf-wrap">
@@ -1442,14 +2134,14 @@ header.msq-header {
 </div></div><!-- /content -->
 </div><!-- /app -->
 <script>
-const MANUSQUASH_UI_VERSION = "v5.1 · Build limpio";
+const MANUSQUASH_UI_VERSION = "v6.0 · Garmin Pro";
 let LAST_APP_LOAD_AT = null;
 let LAST_SERVER_STATUS = "sin consultar";
 // ═══════════════════════════════════════════════════════
 // ESTADO GLOBAL
 // ═══════════════════════════════════════════════════════
 let G = null; // datos cargados
-const charts = {};
+const charts = window.charts = {};
 
 // ═══════════════════════════════════════════════════════
 // ── Gráficas colapsables ─────────────────────────────────────────────────
@@ -1457,20 +2149,34 @@ var _chartRendered = {};
 function toggleChart(chartId, cardId) {
   var wrap = document.getElementById(chartId + '-wrap');
   if (!wrap) return;
-  var closed = wrap.classList.contains('chart-closed');
-  var card   = cardId ? document.getElementById(cardId) : wrap.closest('.card');
-  var btn    = card ? card.querySelector('.card-chart-toggle') : null;
+  var willOpen = wrap.classList.contains('chart-closed');
+  var card     = cardId ? document.getElementById(cardId) : wrap.closest('.card');
+  var btn      = card ? card.querySelector('.card-chart-toggle') : null;
   wrap.classList.toggle('chart-closed');
   if (btn) {
-    btn.innerHTML = closed
+    btn.innerHTML = willOpen
       ? 'Ocultar <span class="arr" style="transform:rotate(180deg)">▾</span>'
       : 'Ver <span class="arr">▾</span>';
   }
-  if (closed && !_chartRendered[chartId]) {
-    _chartRendered[chartId] = true;
-    setTimeout(function() {
-      try { if (typeof window.renderRendimiento === 'function') window.renderRendimiento(); } catch(e) {}
-    }, 60);
+  if (willOpen) {
+    var redraw = function() {
+      try {
+        if (!_chartRendered[chartId] || !window.charts[chartId]) {
+          _chartRendered[chartId] = true;
+          if (typeof window.renderRendimiento === 'function') window.renderRendimiento();
+        }
+        var ch = window.charts && window.charts[chartId];
+        if (ch && ch.resize) ch.resize();
+      } catch(e) {}
+    };
+    setTimeout(redraw, 60);
+    setTimeout(redraw, 240);
+    setTimeout(redraw, 400);
+    var onTrEnd = function() {
+      wrap.removeEventListener('transitionend', onTrEnd);
+      redraw();
+    };
+    wrap.addEventListener('transitionend', onTrEnd);
   }
 }
 
@@ -1480,18 +2186,21 @@ function hideSkeletons(){document.querySelectorAll('._sk').forEach(function(el){
 
 // Salud hero tiles
 function renderSaludHero(){
-  var hd=((G&&G.health_daily)||[]).slice().reverse();
+  var hd=((G&&G.health_daily)||[]).slice().sort(function(a,b){return String(b.date||'').localeCompare(String(a.date||''));});
   var t=hd[0]||{},p=hd[1]||{};
+  var sleepList=hd.filter(function(x){return (x.sleep_total_h||0)>0;});
+  var sleepCurr=sleepList[0]||t, sleepPrev=sleepList[1]||{};
   var sec=document.getElementById('salud-section');
   if(!sec)return;
   if(!document.getElementById('salud-hero-grid')){var g=document.createElement('div');g.id='salud-hero-grid';g.className='salud-hero-grid';sec.insertBefore(g,sec.firstChild);}
   function tr(curr,prev,unit,inv){if(curr==null||prev==null)return'';var d=Math.round((parseFloat(curr)-parseFloat(prev))*10)/10;if(d===0)return'<div class="trend-badge trend-flat">= igual</div>';var up=d>0,good=inv?!up:up;return'<div class="trend-badge '+(good?'trend-up':'trend-down')+'">'+(up?'↑':'↓')+' '+Math.abs(d)+unit+'</div>';}
   var hrv=t.hrv_night||t.hrv_week,phrvP=p.hrv_night||p.hrv_week;
+  var sleepSub=(sleepCurr.date && sleepCurr.date!==t.date)?sleepCurr.date.slice(5):'anoche';
   var tiles=[
     {lbl:'HRV',val:hrv?Math.round(hrv)+' ms':'--',sub:'variabilidad',color:'var(--purple)',tr:tr(hrv,phrvP,'ms',false)},
     {lbl:'FC Reposo',val:t.rhr?t.rhr+' bpm':'--',sub:'frecuencia basal',color:'var(--red)',tr:tr(t.rhr,p.rhr,'bpm',true)},
     {lbl:'Body Battery',val:t.bb_high!=null?t.bb_high+'/100':'--',sub:'energía',color:'var(--green)',tr:tr(t.bb_high,p.bb_high,'pts',false)},
-    {lbl:'Sueño',val:t.sleep_total_h?t.sleep_total_h+'h':'--',sub:'anoche',color:'var(--cyan)',tr:tr(t.sleep_total_h,p.sleep_total_h,'h',false)},
+    {lbl:'Sueño',val:sleepCurr.sleep_total_h?sleepCurr.sleep_total_h+'h':'--',sub:sleepSub,color:'var(--cyan)',tr:tr(sleepCurr.sleep_total_h,sleepPrev.sleep_total_h,'h',false)},
   ];
   document.getElementById('salud-hero-grid').innerHTML=tiles.map(function(t){return'<div class="salud-hero-tile" style="--tile-accent:'+t.color+'"><div class="sh-label">'+t.lbl+'</div><div class="sh-value">'+t.val+'</div><div class="sh-sub">'+t.sub+'</div>'+t.tr+'</div>';}).join('');
 }
@@ -1535,7 +2244,7 @@ function sciConfidence(containerId, days, maxDays, label) {
 
 // 4. Baseline band SVG sobre gráficas de HRV y FC reposo
 function addBaselineBand(wrapId, pctLo, pctHi, color, label) {
-  var wrap = document.getElementById(wrapId);
+  var wrap = (typeof wrapId === 'string') ? document.getElementById(wrapId) : wrapId;
   if (!wrap || wrap.querySelector('.chart-band-svg')) return;
   var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('class', 'chart-band-svg');
@@ -1568,42 +2277,62 @@ function addBaselineBand(wrapId, pctLo, pctHi, color, label) {
 // 6. Añadir unidades a todas las gráficas existentes (patch post-render)
 function patchChartAxisUnits() {
   var unitMap = {
-    'chart-rhr':     {y:'bpm', x:'días'},
-    'chart-hrv':     {y:'ms',  x:'días'},
-    'chart-bb':      {y:'/100',x:'días'},
-    'chart-sleep':   {y:'h',   x:'días'},
-    'chart-steps':   {y:'pasos',x:'días'},
-    'chart-stress':  {y:'estrés',x:'días'},
-    'chart-spo2':    {y:'%SpO2',x:'días'},
-    'chart-active-min':{y:'min',x:'días'},
-    'chart-cals':    {y:'kcal',x:'días'},
-    'chart-vo2':     {y:'ml/kg/min',x:''},
-    'chart-load':    {y:'carga UA',x:'días'},
-    'chart-fat-daily':{y:'g grasa',x:'días'},
-    'chart-efficiency':{y:'bpm',x:'pace min/km'},
-    'chart-run-hr':  {y:'bpm',x:'carreras'},
-    'chart-last-hr-timeline':{y:'bpm',x:'tiempo min'},
-    'chart-last-stamina':{y:'Stamina %',x:'tiempo min'},
-    'chart-vo2-hrv': {y:'VO2max',x:'HRV ms'},
-    'chart-readiness-load':{y:'Readiness',x:'Carga'},
-    'chart-sleep-perf':{y:'Readiness',x:'Sueño h'},
-    'chart-stress-rhr':{y:'FC rep bpm',x:'Estrés'},
+    'chart-rhr':                  {y:'bpm', x:'días'},
+    'chart-hrv':                  {y:'ms',  x:'días'},
+    'chart-bb':                   {y:'/100',x:'días'},
+    'chart-sleep':                {y:'h',   x:'días'},
+    'chart-steps':                {y:'pasos',x:'días'},
+    'chart-stress':               {y:'estrés',x:'días'},
+    'chart-spo2':                 {y:'%SpO2',x:'días'},
+    'chart-active':               {y:'min',x:'días'},
+    'chart-cals':                 {y:'kcal',x:'días'},
+    'chart-vo2':                  {y:'ml/kg/min',x:''},
+    'chart-load':                 {y:'carga UA',x:'sistema'},
+    'chart-training-load-pro':    {y:'carga 7d',x:'días'},
+    'chart-weight-trend':         {y:'kg',x:'fecha'},
+    'chart-fatox-cumulative':     {y:'g',x:'días'},
+    'chart-fat-cumulative-grasa': {y:'g acum',x:'días'},
+    'chart-fat-daily':            {y:'g grasa',x:'días'},
+    'chart-fat-session':          {y:'g grasa',x:'sesión'},
+    'chart-fat-substrate':        {y:'%',x:'sesión'},
+    'chart-age-functional':       {y:'años',x:'dimensión'},
+    'chart-drift':                {y:'%',x:'carreras'},
+    'chart-economy':              {y:'vel/FC x100',x:'carreras'},
+    'chart-rhr-trend':            {y:'bpm',x:'días'},
+    'chart-efficiency':           {y:'eficiencia',x:'carreras'},
+    'chart-run-hr':               {y:'bpm',x:'carreras'},
+    'chart-last-hr-timeline':     {y:'bpm',x:'tiempo'},
+    'chart-last-stamina':         {y:'Stamina %',x:'tiempo min'},
+    'chart-vo2-hrv':              {y:'VO2max',x:'HRV ms'},
+    'chart-readiness-load':       {y:'HRV (ms)',x:'BB drenado'},
+    'chart-sleep-perf':           {y:'FC rep sig (bpm)',x:'Sueño (h)'},
+    'chart-stress-rhr':           {y:'FC rep bpm',x:'Estrés'},
   };
   Object.keys(unitMap).forEach(function(id) {
     var canvas = document.getElementById(id);
     if (!canvas || !canvas._chartInstance) return;
     var inst = canvas._chartInstance;
+    if (inst.type === 'doughnut' || inst.type === 'pie' || inst.type === 'empty') return;
     var opts = unitMap[id];
     if (!inst.options) inst.options = {};
     if (!inst.options.scales) inst.options.scales = {};
     var sc = inst.options.scales;
-    if (opts.y && sc.y && !sc.y.title) {
-      sc.y.title = {display:true, text:opts.y, color:'#6e7681', font:{size:8}};
+    var dirty = false;
+    if (opts.y) {
+      if (!sc.y) sc.y = {};
+      if (!sc.y.title || !sc.y.title.text) {
+        sc.y.title = {display:true, text:opts.y, color:'#6e7681', font:{size:8}};
+        dirty = true;
+      }
     }
-    if (opts.x && sc.x && !sc.x.title) {
-      sc.x.title = {display:true, text:opts.x, color:'#6e7681', font:{size:8}};
+    if (opts.x) {
+      if (!sc.x) sc.x = {};
+      if (!sc.x.title || !sc.x.title.text) {
+        sc.x.title = {display:true, text:opts.x, color:'#6e7681', font:{size:8}};
+        dirty = true;
+      }
     }
-    try { inst.update && inst.update(); } catch(e) {}
+    if (dirty) { try { inst.update && inst.update(); } catch(e) {} }
   });
 }
 
@@ -1651,66 +2380,10 @@ function applySciDesign() {
     sciConfidence('physiology-content', hdDays, 30, hdDays + '/30 días de datos');
   }
 
-  // ── 4. Banda de baseline en gráficas HRV y FC reposo ─────────────────
-  // HRV baseline: usar hrv_cv del physiology_panel
-  var hcv = ph.hrv_cv || {};
-  // La banda ocupa el rango de baseline conocido (±10% del promedio)
-  // Como no tenemos min/max directamente, usamos la posición relativa del valor actual
-  // en el chart normalizado. Aplicamos banda en zona óptima (35-55% del eje Y visible).
+  // ── 6. Patch unidades en ejes ─────────────────────────────────────────
   setTimeout(function() {
-    // HRV chart — banda de baseline personal (zona verde)
-    var hrvWrap = document.querySelector('#salud-section .chart-wrap:has(#chart-hrv)');
-    if (!hrvWrap) {
-      var c = document.getElementById('chart-hrv');
-      if (c) hrvWrap = c.parentElement;
-    }
-    if (hrvWrap) {
-      addBaselineBand(
-        null,  // usamos el elemento directamente
-        0.35, 0.65,  // 35-65% de altura = zona baseline
-        'rgba(74,222,128,.07)',
-        'Baseline'
-      );
-      // Aplicar al wrapper directamente
-      var wrap = document.getElementById('chart-hrv') ?
-        document.getElementById('chart-hrv').parentElement : null;
-      if (wrap) addBaselineBand(null, 0.35, 0.65, 'rgba(74,222,128,.07)', 'Baseline');
-    }
-    // FC reposo — banda verde = zona saludable (50-70bpm)
-    var rhrCanvas = document.getElementById('chart-rhr');
-    if (rhrCanvas && rhrCanvas.parentElement) {
-      var rhrWrap = rhrCanvas.parentElement;
-      if (!rhrWrap.querySelector('.chart-band-svg')) {
-        rhrWrap.style.position = 'relative';
-        var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        svg.setAttribute('class', 'chart-band-svg');
-        svg.setAttribute('preserveAspectRatio', 'none');
-        svg.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1';
-        // Zona verde: 45-65 bpm = rango atlético/saludable
-        // En el chart el eje Y va de ~40 a ~80bpm → banda 45-65 = 37.5%-62.5% desde arriba
-        var rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        rect.setAttribute('x', '0'); rect.setAttribute('y', '37%');
-        rect.setAttribute('width', '100%'); rect.setAttribute('height', '25%');
-        rect.setAttribute('fill', 'rgba(74,222,128,.06)');
-        var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        line.setAttribute('x1','0'); line.setAttribute('x2','100%');
-        line.setAttribute('y1','62%'); line.setAttribute('y2','62%');
-        line.setAttribute('stroke','rgba(74,222,128,.25)'); line.setAttribute('stroke-width','1');
-        line.setAttribute('stroke-dasharray','4,3');
-        var txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        txt.setAttribute('x','98%'); txt.setAttribute('y','36%');
-        txt.setAttribute('dy','-2'); txt.setAttribute('text-anchor','end');
-        txt.setAttribute('font-size','7'); txt.setAttribute('fill','rgba(74,222,128,.5)');
-        txt.textContent = 'Zona atlética';
-        svg.appendChild(rect); svg.appendChild(line); svg.appendChild(txt);
-        rhrWrap.insertBefore(svg, rhrWrap.firstChild);
-      }
-    }
-
-    // ── 6. Patch unidades en ejes ──────────────────────────────────────
     patchChartAxisUnits();
-
-  }, 800); // Dar tiempo a que las gráficas renderice
+  }, 500);
 
   // ── 7. Interpretaciones científicas en métricas críticas ─────────────
   var acwr = parseFloat(snap.acwr || lc.acwr);
@@ -1906,7 +2579,7 @@ function getStorageMeta() {
 const uz = document.getElementById('upload-zone');
 const fi = document.getElementById('file-input');
 
-fi.addEventListener('change', e => {
+if (fi) fi.addEventListener('change', e => {
   const f = e.target.files[0]; if (!f) return;
   const r = new FileReader();
   r.onload = ev => {
@@ -1919,7 +2592,7 @@ fi.addEventListener('change', e => {
   r.readAsText(f);
 });
 
-['dragover','dragleave','drop'].forEach(evt => {
+if (uz) ['dragover','dragleave','drop'].forEach(evt => {
   uz.addEventListener(evt, e => {
     e.preventDefault();
     if (evt === 'dragover') uz.classList.add('drag');
@@ -1944,8 +2617,8 @@ function loadData(data, persist = false) {
     G = data;
     window.G = data;
     LAST_APP_LOAD_AT = new Date().toISOString();
-    var uz = document.getElementById('upload-zone');
-    if (uz) uz.style.display = 'none';
+    var uzEl = document.getElementById('upload-zone');
+    if (uzEl) uzEl.style.display = 'none';
 
     var hoyEmpty = document.getElementById('hoy-empty');
     if (hoyEmpty) hoyEmpty.style.display = 'none';
@@ -1953,9 +2626,11 @@ function loadData(data, persist = false) {
     if (hoyContent) hoyContent.style.display = 'block';
 
     const meta = data.meta || {};
-    const exportDate = (meta.exported_at || (data.contract && data.contract.generated_at) || new Date().toISOString()).slice(0, 10);
+    const rawExport = String(meta.exported_at || (data.contract && data.contract.generated_at) || new Date().toISOString());
+    const exportDate = rawExport.slice(0, 10);
+    const exportTime = rawExport.length >= 16 ? rawExport.slice(11, 16) : '';
     var sb = document.getElementById('status-badge');
-    if (sb) sb.textContent = '📅 ' + exportDate;
+    if (sb) sb.textContent = '🟢 ' + exportDate + (exportTime ? ' · ' + exportTime : '');
 
     try { saveToStorage(data); } catch(e) {}
 
@@ -2219,18 +2894,20 @@ document.addEventListener('garminDataLoaded', function() {
   // Mostrar panel de generación en tab Hoy
   var gp = _gid('generate-panel');
   if (gp) gp.style.display = 'block';
-  // Consultar si ya se generó hoy y actualizar estado del botón
-  fetch(msqApi('/generate/status'), {cache:'no-store', credentials:'include'})
-    .then(function(r){ return r.json(); })
-    .then(function(s){
-      if (s.done) {
-        var btns = [_gid('generate-btn'), _gid('generate-btn-hoy')];
-        var status = _gid('generate-status');
-        _generateSetDone(btns, status, s);
-        if (status) status.style.display = 'block';
-      }
-    })
-    .catch(function(){}); // silencioso si no hay red
+  // Consultar si ya se generó hoy y actualizar estado del botón (solo si hay backend dinámico)
+  if (!(window.msqStaticMode && window.msqStaticMode())) {
+    fetch(msqApi('/generate/status'), {cache:'no-store', credentials:'include'})
+      .then(function(r){ return r.json(); })
+      .then(function(s){
+        if (s.done) {
+          var btns = [_gid('generate-btn'), _gid('generate-btn-hoy')];
+          var status = _gid('generate-status');
+          _generateSetDone(btns, status, s);
+          if (status) status.style.display = 'block';
+        }
+      })
+      .catch(function(){}); // silencioso si no hay red
+  }
   showActionButtons();
   renderSyncVersion();
   // Renderizar semáforo
@@ -2283,7 +2960,8 @@ window.addEventListener('DOMContentLoaded', function() {
 });
 
 // Click derecho en el badge → recargar datos
-document.getElementById('status-badge').addEventListener('contextmenu', e => {
+var _sbCtx = document.getElementById('status-badge');
+if (_sbCtx) _sbCtx.addEventListener('contextmenu', function(e) {
   e.preventDefault();
   triggerUpdate();
 });
@@ -2424,58 +3102,67 @@ function deepMerge(target, source) {
 // ═══════════════════════════════════════════════════════
 // ── Sueño detallado ──────────────────────────────────────────────────────
 function renderSleepDetail() {
-  var sd  = (G && G.sleep_detail) || [];
-  var hd  = (G && G.health_daily || []).slice().reverse();
-  var hasSleep = hd.some(function(d){ return d.sleep_total_h; });
-  if (!sd.length && !hasSleep) {
-    var card = document.getElementById('card-sleep-detail');
-    if (card) card.style.display = 'none';
-    return;
-  }
+  var sd  = ((G && G.sleep_detail) || []).slice().sort(function(a,b){ return String(b.date||'').localeCompare(String(a.date||'')); });
+  var hd  = ((G && G.health_daily) || []).slice().sort(function(a,b){ return String(b.date||'').localeCompare(String(a.date||'')); });
+  var card = document.getElementById('card-sleep-detail');
 
-  // ── Normalizar: health_daily usa sleep_X_pct, sleep_detail usa X_pct
-  // Construir fuente unificada desde health_daily cuando sleep_detail no existe
   function normalizeDay(h) {
     if (!h) return {};
-    // Si ya tiene formato sleep_detail (keys sin prefijo "sleep_")
     if (h.total_h !== undefined) return h;
-    // Convertir desde health_daily
     return {
-      date:       h.date,
-      total_h:    h.sleep_total_h,
-      deep_pct:   h.sleep_deep_pct,
-      rem_pct:    h.sleep_rem_pct,
-      light_pct:  h.sleep_light_pct,
-      awake_min:  h.sleep_awake_min,
-      hr:         h.sleep_hr,
-      spo2:       h.sleep_spo2,
-      resp:       h.sleep_resp,
-      stress:     h.sleep_stress,
+      date:         h.date,
+      total_h:      h.sleep_total_h,
+      deep_pct:     h.sleep_deep_pct,
+      rem_pct:      h.sleep_rem_pct,
+      light_pct:    h.sleep_light_pct,
+      awake_min:    h.sleep_awake_min,
+      hr:           h.sleep_hr,
+      spo2:         h.sleep_spo2,
+      resp:         h.sleep_resp,
+      stress:       h.sleep_stress,
       bb_recovered: h.sleep_bb_recovered,
-      score:      h.sleep_score_overall || h.sleep_score,
-      feedback:   h.sleep_feedback,
+      score:        h.sleep_score_overall || h.sleep_score,
+      feedback:     h.sleep_feedback,
     };
   }
 
-  // Fuente unificada: preferir sleep_detail, caer en health_daily normalizado
-  var source = sd.length
-    ? sd
-    : hd.filter(function(d){ return d.sleep_total_h; }).map(normalizeDay);
+  var rawSource = sd.length ? sd : hd.map(normalizeDay);
+  var source = rawSource.filter(function(d){ return Number(d && d.total_h || 0) > 0; });
+  if (!source.length) {
+    if (card) card.style.display = 'none';
+    return;
+  }
+  if (card) card.style.display = 'block';
 
-  var today  = source[0]  || {};
-  var hToday = hd[0]      || {};
+  function estimateSleepScore(d) {
+    if (d && d.score != null && Number(d.score) > 0) return { val: Math.round(Number(d.score)), est: false };
+    var h = Number(d && d.total_h || 0);
+    if (h <= 0) return { val: null, est: true };
+    var deep = Number(d.deep_pct || 0);
+    var rem  = Number(d.rem_pct || 0);
+    var aw   = Number(d.awake_min || 0);
+    var str  = Number(d.stress != null ? d.stress : 18);
+    var durPts  = Math.min(50, (h / 8.0) * 50);
+    var deepPts = Math.min(20, (deep / 20) * 20);
+    var remPts  = Math.min(20, (rem / 20) * 20);
+    var restPts = Math.max(0, 10 - Math.max(0, aw - 10) * 0.2 - Math.max(0, str - 15) * 0.2);
+    return { val: Math.max(25, Math.min(100, Math.round(durPts + deepPts + remPts + restPts))), est: true };
+  }
 
-  var totalH    = today.total_h    || 0;
-  var deepPct   = today.deep_pct   || 0;
-  var remPct    = today.rem_pct    || 0;
-  var lightPct  = today.light_pct  || 0;
-  var awakeMn   = today.awake_min  || 0;
+  var today  = source[0] || {};
+  var latestDate = (hd[0] && hd[0].date) || '';
+  var totalH    = Number(today.total_h || 0);
+  var deepPct   = Number(today.deep_pct || 0);
+  var remPct    = Number(today.rem_pct || 0);
+  var lightPct  = Number(today.light_pct || 0);
+  var awakeMn   = today.awake_min;
   var sleepHR   = today.hr;
   var sleepSpo2 = today.spo2;
   var sleepResp = today.resp;
   var sleepStr  = today.stress;
   var bbRec     = today.bb_recovered;
-  var score     = today.score;
+  var scInfo    = estimateSleepScore(today);
+  var score     = scInfo.val;
   var feedback  = today.feedback || '';
 
   function toHM(h) {
@@ -2494,10 +3181,11 @@ function renderSleepDetail() {
     var sleepStatus = totalH >= 7.5 ? {t:'Óptimo', c:'var(--green)'}
       : totalH >= 6.5 ? {t:'Moderado', c:'var(--yellow)'}
       : {t:'Insuficiente', c:'var(--red)'};
+    var dateTag = (today.date && today.date !== latestDate) ? (' (' + today.date.slice(5) + ')') : '';
     var tiles = [
-      {lbl:'Sueño total',   val:toHM(totalH),         sub:sleepStatus.t, col:sleepStatus.c},
-      {lbl:'Tiempo despierto', val:(awakeMn||'--')+'min', sub:'durante la noche', col:'var(--text2)'},
-      {lbl:'BB Recuperada', val:(bbRec!=null?'+'+bbRec+' pts':'--'), sub:'Body Battery', col:'var(--green)'},
+      {lbl:'Sueño total',   val:toHM(totalH),         sub:sleepStatus.t + dateTag, col:sleepStatus.c},
+      {lbl:'Tiempo despierto', val:(awakeMn!=null?awakeMn:'--')+'min', sub:'durante la noche', col:'var(--text2)'},
+      {lbl:'BB Recuperada', val:(bbRec!=null?'+'+bbRec+' pts':'--'), sub:'Body Battery', col:bbRec!=null?'var(--green)':'var(--text3)'},
     ];
     tilesEl.innerHTML = tiles.map(function(t){
       return '<div style="background:var(--bg3);border-radius:10px;padding:12px;text-align:center">'+
@@ -2523,13 +3211,14 @@ function renderSleepDetail() {
     ];
     var stageColors = {ok:'var(--green)',warn:'var(--yellow)',bad:'var(--red)',neutral:'var(--text3)'};
     barsEl.innerHTML = stages.map(function(s){
+      var pctTxt = isFinite(s.pct) ? (Math.round(s.pct*10)/10) : 0;
       return '<div style="margin-bottom:10px">'+
         '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px">'+
-          '<span style="font-size:11px;font-weight:600;color:'+stageColors[s.status]+'">'+(s.pct||0)+'% '+s.lbl+'</span>'+
+          '<span style="font-size:11px;font-weight:600;color:'+stageColors[s.status]+'">'+pctTxt+'% '+s.lbl+'</span>'+
           '<span style="font-size:8px;color:var(--text3);font-style:italic">'+escHtml(s.ref)+'</span>'+
         '</div>'+
         '<div style="height:8px;background:var(--bg3);border-radius:4px;overflow:hidden">'+
-          '<div style="width:'+(s.pct||0)+'%;height:100%;background:'+s.col+';border-radius:4px;transition:.5s"></div>'+
+          '<div style="width:'+Math.min(100, pctTxt)+'%;height:100%;background:'+s.col+';border-radius:4px;transition:.5s"></div>'+
         '</div>'+
       '</div>';
     }).join('');
@@ -2539,10 +3228,10 @@ function renderSleepDetail() {
   var physioEl = document.getElementById('sleep-physio-tiles');
   if (physioEl) {
     var physTiles = [
-      {lbl:'FC nocturna',  val:(sleepHR||'--')+' bpm',  col:'var(--red)'},
-      {lbl:'SpO2 nocturno',val:(sleepSpo2||'--')+'%',   col:'var(--cyan)'},
-      {lbl:'Resp nocturna',val:(sleepResp||'--')+' rpm', col:'var(--purple)'},
-      {lbl:'Estrés sueño', val:(sleepStr||'--'),          col: sleepStr>25?'var(--yellow)':'var(--green)'},
+      {lbl:'FC nocturna',  val:(sleepHR!=null?sleepHR:'--')+' bpm',  col:'var(--red)'},
+      {lbl:'SpO2 nocturno',val:(sleepSpo2!=null?sleepSpo2:'--')+'%',   col:'var(--cyan)'},
+      {lbl:'Resp nocturna',val:(sleepResp!=null?sleepResp:'--')+' rpm', col:'var(--purple)'},
+      {lbl:'Estrés sueño', val:(sleepStr!=null?sleepStr:'--'),          col: sleepStr>25?'var(--yellow)':'var(--green)'},
     ];
     physioEl.innerHTML = physTiles.map(function(t){
       return '<div style="background:var(--bg3);border-radius:10px;padding:10px 8px;text-align:center">'+
@@ -2552,11 +3241,15 @@ function renderSleepDetail() {
     }).join('');
   }
 
-  // ── Score de Garmin ───────────────────────────────────────────────────
+  // ── Score de sueño (Garmin o índice estimado) ─────────────────────────
   var scoreEl = document.getElementById('sleep-score-detail');
   if (scoreEl && score != null) {
-    var sc = parseInt(score);
+    var sc = parseInt(score, 10);
     var feedbackClean = (feedback||'').replace(/_/g,' ').toLowerCase();
+    var titleTxt = scInfo.est ? 'Índice calidad sueño (estimado)' : 'Score de sueño Garmin';
+    var noteTxt  = scInfo.est
+      ? 'Calculado con duración, profundo, REM y estrés · Garmin no envió score'
+      : (sc>=80?'✅ Excelente · Recuperación completa':sc>=60?'🟡 Moderado · Revisar factores de calidad':'⚠️ Insuficiente · Ajustar hábitos de sueño');
     scoreEl.innerHTML =
       '<div style="display:flex;align-items:center;gap:12px;background:var(--bg3);border-radius:12px;padding:12px">'+
         '<div style="width:54px;height:54px;border-radius:50%;border:3px solid '+scoreColor(sc)+';'+
@@ -2564,39 +3257,38 @@ function renderSleepDetail() {
           '<span style="font-size:18px;font-weight:800;color:'+scoreColor(sc)+';font-family:\'JetBrains Mono\'">'+sc+'</span>'+
         '</div>'+
         '<div>'+
-          '<div style="font-size:11px;font-weight:700;color:var(--text)">Score de sueño Garmin</div>'+
-          '<div style="font-size:10px;color:var(--text2);margin-top:3px">'+escHtml(feedbackClean)+'</div>'+
-          '<div style="font-size:9px;color:var(--text3);margin-top:2px;font-style:italic">'+
-            (sc>=80?'✅ Excelente · Recuperación completa':sc>=60?'🟡 Moderado · Revisar factores de calidad':'⚠️ Insuficiente · Ajustar hábitos de sueño')+
-          '</div>'+
+          '<div style="font-size:11px;font-weight:700;color:var(--text)">'+titleTxt+'</div>'+
+          (feedbackClean ? '<div style="font-size:10px;color:var(--text2);margin-top:3px">'+escHtml(feedbackClean)+'</div>' : '')+
+          '<div style="font-size:9px;color:var(--text3);margin-top:2px;font-style:italic">'+escHtml(noteTxt)+'</div>'+
         '</div>'+
       '</div>';
   }
 
   // ── Gráfica scores 7 días ─────────────────────────────────────────────
   var scores7 = source.slice(0, 7).reverse();
-  if (scores7.some(function(d){ return d.score; })) {
+  var scValues = scores7.map(function(d){ return estimateSleepScore(d).val; });
+  if (scValues.some(function(v){ return v != null; })) {
     var scLabels = scores7.map(function(d){ return (d.date||'').slice(5); });
-    var scValues = scores7.map(function(d){ return d.score||null; });
+    var anyNative = scores7.some(function(d){ return d.score != null && Number(d.score) > 0; });
     mkChart('chart-sleep-scores', {
       type:'bar',
       data:{ labels:scLabels, datasets:[{
-        label:'Score Sueño Garmin',
+        label: anyNative ? 'Score Sueño Garmin' : 'Índice calidad (est.)',
         data:scValues,
         backgroundColor: scValues.map(function(v){
           return !v ? 'rgba(110,118,129,.3)'
-            : v>=80 ? 'rgba(74,222,128,.7)'
-            : v>=60 ? 'rgba(251,191,36,.7)' : 'rgba(248,113,113,.7)';
+            : v>=80 ? 'rgba(74,222,128,.75)'
+            : v>=60 ? 'rgba(251,191,36,.75)' : 'rgba(248,113,113,.75)';
         }),
         borderRadius:5,
       }]},
       options:{
         responsive:true, maintainAspectRatio:false,
-        plugins:{legend:{display:false}},
+        plugins:{legend:{display:true, position:'top'}},
         scales:{
           x:{ticks:{font:{size:9},color:'#6e7681'},grid:{color:'rgba(255,255,255,.04)'}},
           y:{min:0,max:100,
-             title:{display:true,text:'Score /100',color:'#6e7681',font:{size:9}},
+             title:{display:true,text:'Calidad /100',color:'#6e7681',font:{size:9}},
              ticks:{font:{size:9},color:'#6e7681'},
              grid:{color:'rgba(255,255,255,.04)'}}
         }
@@ -2614,14 +3306,14 @@ function renderSleepDetail() {
       data:{
         labels: cLabels,
         datasets:[
-          {label:'Profundo',data:cVals('deep_pct'), backgroundColor:'rgba(59,130,246,.75)',  stack:'s'},
-          {label:'REM',     data:cVals('rem_pct'),  backgroundColor:'rgba(167,139,250,.75)', stack:'s'},
+          {label:'Profundo',data:cVals('deep_pct'), backgroundColor:'rgba(59,130,246,.78)',  stack:'s'},
+          {label:'REM',     data:cVals('rem_pct'),  backgroundColor:'rgba(167,139,250,.78)', stack:'s'},
           {label:'Ligero',  data:cVals('light_pct'),backgroundColor:'rgba(34,211,238,.55)', stack:'s'},
           {label:'Despierto',data:comp14.map(function(d){
             var aw = d.awake_min || 0;
             var tot = (d.total_h || 0) * 60 + aw;
             return tot > 0 ? Math.round(aw/tot*100) : 0;
-          }), backgroundColor:'rgba(110,118,129,.4)', stack:'s'},
+          }), backgroundColor:'rgba(110,118,129,.45)', stack:'s'},
         ]
       },
       options:{
@@ -2689,24 +3381,36 @@ function renderSalud() {
   renderSleepDetail();
   renderNaps();
 
-  var h = ((G && G.health_daily) || []).slice().reverse().slice(0, 30);
+  var h = ((G && G.health_daily) || []).slice().sort(function(a,b){
+    return String(a.date||'').localeCompare(String(b.date||''));
+  }).slice(-30);
   var labels = h.map(function(d) { return d.date ? d.date.slice(5) : ''; });
 
   var rhr = h.map(function(d) { return d.rhr || null; });
   var valid_rhr = rhr.filter(Boolean);
   var avg_rhr = valid_rhr.length ? valid_rhr.reduce(function(a,b){return a+b;},0) / valid_rhr.length : 0;
 
-  mkChart('chart-rhr', {type:'line', data:{labels:labels, datasets:[
-    {label:'FC Reposo', data:rhr, borderColor:'#f87171', backgroundColor:'rgba(248,113,113,.1)',
-     fill:true, tension:.3, pointRadius:2, borderWidth:2},
-    {label:'Avg '+avg_rhr.toFixed(0), data:h.map(function(){return avg_rhr;}),
-     borderColor:'#fbbf24', borderDash:[5,5], pointRadius:0, borderWidth:1}
-  ]}, options:{plugins:{legend:{position:'top'}}, scales:{y:{min:40}}}});
+  if (valid_rhr.length >= 2) {
+    mkChart('chart-rhr', {type:'line', data:{labels:labels, datasets:[
+      {label:'FC Reposo', data:rhr, borderColor:'#f87171', backgroundColor:'rgba(248,113,113,.1)',
+       fill:true, tension:.3, pointRadius:2, borderWidth:2},
+      {label:'Avg '+avg_rhr.toFixed(0), data:h.map(function(){return Math.round(avg_rhr*10)/10;}),
+       borderColor:'#fbbf24', borderDash:[5,5], pointRadius:0, borderWidth:1.5}
+    ]}, options:{plugins:{legend:{position:'top'}}, scales:{y:{min:40}}}});
+  } else {
+    emptyChart('chart-rhr', 'Sin datos FC Reposo', 'Faltan registros suficientes en los últimos 30 días.');
+  }
 
   var hrv = h.map(function(d) { return d.hrv_night || null; });
-  mkChart('chart-hrv', {type:'bar', data:{labels:labels, datasets:[
-    {label:'HRV noche', data:hrv, backgroundColor:'rgba(167,139,250,.7)', borderRadius:4}
-  ]}, options:{scales:{y:{min:0}}}});
+  var hrv7 = h.map(function(d) { return d.hrv_week || null; });
+  if (hrv.some(Boolean) || hrv7.some(Boolean)) {
+    mkChart('chart-hrv', {type:'bar', data:{labels:labels, datasets:[
+      {label:'HRV noche', data:hrv, backgroundColor:'rgba(167,139,250,.72)', borderRadius:4},
+      {type:'line', label:'HRV prom 7d', data:hrv7, borderColor:'#22d3ee', borderDash:[5,4], pointRadius:2, borderWidth:1.8, fill:false, tension:.25}
+    ]}, options:{plugins:{legend:{position:'top'}}, scales:{y:{min:0}}}});
+  } else {
+    emptyChart('chart-hrv', 'Sin datos de HRV', 'Sincroniza noches con Garmin para ver HRV.');
+  }
 
   var bb_hi = h.map(function(d) { return d.bb_high || null; });
   var bb_lo = h.map(function(d) { return d.bb_low  || null; });
@@ -2720,81 +3424,122 @@ function renderSalud() {
   var steps = h.map(function(d) { return d.steps || 0; });
   mkChart('chart-steps', {type:'bar', data:{labels:labels, datasets:[
     {label:'Pasos', data:steps,
-     backgroundColor: steps.map(function(s){ return s >= 8000 ? 'rgba(34,211,238,.7)' : 'rgba(110,118,129,.4)'; }),
-     borderRadius:3}
-  ]}, options:{}});
+     backgroundColor: steps.map(function(s){ return s >= 8000 ? 'rgba(34,211,238,.72)' : 'rgba(110,118,129,.45)'; }),
+     borderRadius:3},
+    {type:'line', label:'Meta 8,000', data:h.map(function(){ return 8000; }),
+     borderColor:'rgba(34,211,238,.55)', borderDash:[5,4], pointRadius:0, borderWidth:1.5, fill:false}
+  ]}, options:{plugins:{legend:{position:'top'}}, scales:{y:{beginAtZero:true}}}});
 
   var stress = h.map(function(d) { return d.avg_stress || null; });
   mkChart('chart-stress', {type:'bar', data:{labels:labels, datasets:[
-    {label:'Estres', data:stress,
-     backgroundColor: stress.map(function(s){ return !s ? 'transparent' : s<30 ? 'rgba(74,222,128,.7)' : s<45 ? 'rgba(251,191,36,.7)' : 'rgba(248,113,113,.7)'; }),
+    {label:'Estrés promedio', data:stress,
+     backgroundColor: stress.map(function(s){ return !s ? 'transparent' : s<30 ? 'rgba(74,222,128,.72)' : s<45 ? 'rgba(251,191,36,.72)' : 'rgba(248,113,113,.75)'; }),
      borderRadius:3}
   ]}, options:{scales:{y:{min:0,max:80}}}});
 
-  var sl = ((G && G.sleep_data) || []).slice().reverse().slice(0, 30);
-  var sl_labels = sl.map(function(d) { return d.date ? d.date.slice(5) : ''; });
-  mkChart('chart-sleep', {type:'bar', data:{labels:sl_labels, datasets:[
-    {label:'Sueno (h)', data:sl.map(function(d){return d.total_h||0;}),
-     backgroundColor: sl.map(function(d){ return (d.total_h||0)>=7 ? 'rgba(167,139,250,.7)' : 'rgba(248,113,113,.5)'; }),
-     borderRadius:4}
-  ]}, options:{scales:{y:{min:0,max:10,ticks:{callback:function(v){return v+'h';}}}}}});
+  var slRaw = ((G && G.sleep_data) || []).length
+    ? (G.sleep_data || []).filter(function(d){ return Number(d && d.total_h || 0) > 0; })
+    : h.filter(function(d){ return Number(d && d.sleep_total_h || 0) > 0; })
+       .map(function(d){ return {date:d.date, total_h:d.sleep_total_h}; });
+  var sl = slRaw.slice().sort(function(a,b){ return String(a.date||'').localeCompare(String(b.date||'')); }).slice(-30);
+  if (sl.length >= 2) {
+    var sl_labels = sl.map(function(d) { return d.date ? d.date.slice(5) : ''; });
+    mkChart('chart-sleep', {type:'bar', data:{labels:sl_labels, datasets:[
+      {label:'Sueño (h)', data:sl.map(function(d){return d.total_h||0;}),
+       backgroundColor: sl.map(function(d){ return (d.total_h||0)>=7 ? 'rgba(167,139,250,.75)' : 'rgba(248,113,113,.58)'; }),
+       borderRadius:4},
+      {type:'line', label:'Meta 7.5h', data:sl.map(function(){ return 7.5; }),
+       borderColor:'rgba(74,222,128,.55)', borderDash:[5,4], pointRadius:0, borderWidth:1.5, fill:false}
+    ]}, options:{plugins:{legend:{position:'top'}}, scales:{y:{min:0,max:10,ticks:{callback:function(v){return v+'h';}}}}}});
+  } else {
+    emptyChart('chart-sleep', 'Sin datos de sueño', 'Se necesitan al menos 2 noches registradas.');
+  }
 
   var spo2_vals = h.map(function(d) { return d.spo2_avg || null; });
-  mkChart('chart-spo2', {type:'line', data:{labels:labels, datasets:[
-    {label:'SpO2 %', data:spo2_vals, borderColor:'#22d3ee',
-     backgroundColor:'rgba(34,211,238,.1)', fill:true, tension:.3, pointRadius:2, borderWidth:2}
-  ]}, options:{scales:{y:{min:88,max:100,ticks:{callback:function(v){return v+'%';}}}}}});
+  if (spo2_vals.filter(function(v){ return v != null; }).length >= 2) {
+    mkChart('chart-spo2', {type:'line', data:{labels:labels, datasets:[
+      {label:'SpO2 %', data:spo2_vals, borderColor:'#22d3ee',
+       backgroundColor:'rgba(34,211,238,.1)', fill:true, tension:.3, pointRadius:2, borderWidth:2}
+    ]}, options:{scales:{y:{min:88,max:100,ticks:{callback:function(v){return v+'%';}}}}}});
+  } else {
+    emptyChart('chart-spo2', 'Sin datos de SpO2', 'Activa pulsioxímetro en sueño o todo el día en Garmin.');
+  }
 
   var mod_min = h.map(function(d){ return d.mod_min||0; });
   var vig_min = h.map(function(d){ return d.vig_min||0; });
   mkChart('chart-active', {type:'bar', data:{labels:labels, datasets:[
-    {label:'Min moderados', data:mod_min, backgroundColor:'rgba(59,130,246,.6)', borderRadius:3, stack:'a'},
-    {label:'Min vigorosos', data:vig_min, backgroundColor:'rgba(248,113,113,.7)', borderRadius:3, stack:'a'},
-  ]}, options:{plugins:{legend:{position:'top'}}, scales:{x:{stacked:true},y:{stacked:true}}}});
+    {label:'Min moderados', data:mod_min, backgroundColor:'rgba(59,130,246,.65)', borderRadius:3, stack:'a'},
+    {label:'Min vigorosos', data:vig_min, backgroundColor:'rgba(248,113,113,.75)', borderRadius:3, stack:'a'},
+  ]}, options:{plugins:{legend:{position:'top'}}, scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true}}}});
 
   var cals = h.map(function(d) { return d.cal_active || null; });
   mkChart('chart-cals', {type:'bar', data:{labels:labels, datasets:[
-    {label:'Cal activas', data:cals, backgroundColor:'rgba(251,191,36,.7)', borderRadius:3}
+    {label:'Cal activas', data:cals, backgroundColor:'rgba(251,191,36,.72)', borderRadius:3}
   ]}, options:{scales:{y:{beginAtZero:true}}}});
   applyAllChartExplanations();
 }
 
 function renderVO2() {
   if (!G) return;
-  var vt = (G && G.vo2max_timeline) || [];
+  var vt = ((G && G.vo2max_timeline) || []).slice().sort(function(a,b){
+    return String(a.month||'').localeCompare(String(b.month||''));
+  });
   var labels = vt.map(function(d) { return d.month ? d.month.slice(2) : ''; });
-  var proj_months = ['26-05','26-06','26-07','26-08'];
-  var proj_vals   = [45, 47, 49, 52];
+  var lastMonth = (vt.length && vt[vt.length-1].month) ? String(vt[vt.length-1].month) : new Date().toISOString().slice(0,7);
+  var parts = lastMonth.split('-');
+  var baseY = parseInt(parts[0], 10) || 2026;
+  var baseM = parseInt(parts[1], 10) || 11;
+  var proj_months = [];
+  for (var mi = 1; mi <= 3; mi++) {
+    var totalM = baseM + mi;
+    var yr = baseY + Math.floor((totalM - 1) / 12);
+    var mo = ((totalM - 1) % 12) + 1;
+    proj_months.push(String(yr).slice(2) + '-' + String(mo).padStart(2, '0'));
+  }
+  var projObj = (G && G.adaptive_workout && G.adaptive_workout.vo2max_projection) || {};
+  var lastAvg = vt.length ? Number(vt[vt.length-1].avg || 46) : Number((G.profile && G.profile.vo2max) || 46);
+  var target8w = Number(projObj.from_training_8w || (lastAvg + 4));
+  var proj_vals = [1, 2, 3].map(function(k) {
+    return Math.round((lastAvg + (target8w - lastAvg) * (k / 3)) * 10) / 10;
+  });
 
   var allLabels  = labels.concat(proj_months);
   var realData   = vt.map(function(d){ return d.avg; }).concat(proj_months.map(function(){ return null; }));
-  var projData   = vt.map(function(){ return null; })
-                     .concat(vt.length ? [vt[vt.length-1].avg] : [45])
-                     .concat(proj_vals.slice(1));
-  var goalData   = labels.concat(proj_months).map(function(){ return 55; });
+  var projData   = (vt.length ? vt.slice(0, -1).map(function(){ return null; }).concat([lastAvg]) : [])
+                     .concat(proj_vals);
+  var goalData   = allLabels.map(function(){ return 55; });
+  var allNums    = realData.concat(projData).concat([55]).filter(function(v){ return v != null && isFinite(v); });
+  var yMin       = Math.floor(Math.min.apply(null, allNums.length ? allNums : [42]) - 1.5);
+  var yMax       = Math.ceil(Math.max.apply(null, allNums.length ? allNums : [56]) + 1.5);
 
-  mkChart('chart-vo2', {type:'line', data:{
-    labels: allLabels,
-    datasets:[
-      {label:'VO2max real', data:realData,
-       borderColor:'#22d3ee', backgroundColor:'rgba(34,211,238,.08)',
-       fill:true, tension:.3, pointRadius:4, borderWidth:2.5},
-      {label:'Proyeccion', data:projData,
-       borderColor:'#a78bfa', borderDash:[8,4], pointRadius:3, borderWidth:2},
-      {label:'Meta: 55', data:goalData,
-       borderColor:'rgba(74,222,128,.3)', borderDash:[3,3], pointRadius:0, borderWidth:1}
-    ]}, options:{scales:{y:{min:40,max:58}}, plugins:{legend:{position:'top'}}}});
+  if (allLabels.length) {
+    mkChart('chart-vo2', {type:'line', data:{
+      labels: allLabels,
+      datasets:[
+        {label:'VO2max real', data:realData,
+         borderColor:'#22d3ee', backgroundColor:'rgba(34,211,238,.08)',
+         fill:true, tension:.3, pointRadius:4, borderWidth:2.5},
+        {label:'Proyección 8s', data:projData,
+         borderColor:'#a78bfa', borderDash:[8,4], pointRadius:3, borderWidth:2},
+        {label:'Meta: 55', data:goalData,
+         borderColor:'rgba(74,222,128,.35)', borderDash:[3,3], pointRadius:0, borderWidth:1}
+      ]}, options:{scales:{y:{min:yMin, max:yMax}}, plugins:{legend:{position:'top'}}}});
+  } else {
+    emptyChart('chart-vo2', 'Sin historial VO2max', 'Registra carreras exteriores con GPS para estimar VO2max.');
+  }
 
   var tlb = (G && G.today && G.today.training_load_balance) || {};
   mkChart('chart-load', {type:'bar', data:{
-    labels:['Aerobico Z1-Z2','Aerobico Z3-Z5','Anaerobico Z5'],
+    labels:['Aeróbico Z1-Z2','Aeróbico Z3-Z5','Anaeróbico Z5'],
     datasets:[
-      {label:'Actual', data:[tlb.aer_low||0, tlb.aer_high||0, tlb.anaer||0],
-       backgroundColor:['rgba(59,130,246,.7)','rgba(251,191,36,.7)','rgba(248,113,113,.7)'],
+      {label:'Actual', data:[Math.round(tlb.aer_low||0), Math.round(tlb.aer_high||0), Math.round(tlb.anaer||0)],
+       backgroundColor:['rgba(59,130,246,.78)','rgba(251,191,36,.78)','rgba(248,113,113,.78)'],
        borderRadius:6},
       {label:'Target min', data:[tlb.aer_low_min||0, tlb.aer_high_min||0, 0],
-       backgroundColor:'rgba(110,118,129,.25)', borderRadius:6}
-    ]}, options:{scales:{x:{ticks:{font:{size:8}}}}, plugins:{legend:{position:'top'}}}});
+       backgroundColor:'rgba(110,118,129,.35)', borderRadius:6},
+      {label:'Target max', data:[tlb.aer_low_max||0, tlb.aer_high_max||0, 0],
+       backgroundColor:'rgba(74,222,128,.32)', borderRadius:6}
+    ]}, options:{scales:{x:{ticks:{font:{size:9}}}}, plugins:{legend:{position:'top'}}}});
 
   var an = (G && G.analysis) || {};
   var fc = document.getElementById('findings-container');
@@ -2802,7 +3547,6 @@ function renderVO2() {
     var cls = f.includes('OK') || f.includes('excelente') ? 'green' :
               f.includes('ROJO') || f.includes('rojo') ? 'red' :
               f.includes('amarillo') || f.includes('AMARILLO') ? 'yellow' : 'info';
-    // Use emoji chars to determine class
     if (f.charAt(0) === String.fromCharCode(0x2705)) cls = 'green';
     else if (f.indexOf('\uD83D\uDD34') > -1 || f.indexOf('ROJO') > -1) cls = 'red';
     else if (f.indexOf('AMARILLO') > -1) cls = 'yellow';
@@ -2814,6 +3558,28 @@ function renderVO2() {
     return '<div class="rec">' + r + '</div>';
   }).join('');
   applyAllChartExplanations();
+}
+
+function msqExtractZoneMinutes(act, zones) {
+  var gm = act && act.garmin_extra_metrics;
+  if (gm) {
+    var raw = [
+      Number(gm.hrTimeInZone_1 || 0) / 60,
+      Number(gm.hrTimeInZone_2 || 0) / 60,
+      Number(gm.hrTimeInZone_3 || 0) / 60,
+      Number(gm.hrTimeInZone_4 || 0) / 60,
+      Number(gm.hrTimeInZone_5 || 0) / 60
+    ];
+    if (raw.reduce(function(a,b){return a+b;},0) > 0.5) return raw;
+  }
+  var out = [0, 0, 0, 0, 0];
+  var hr = Number(act && act.avg_hr || 0), dur = Number(act && act.dur_min || 0);
+  if (!hr || !dur) return out;
+  var zIdx = (zones||[]).findIndex(function(z){ return hr >= z.bpm_low && hr <= z.bpm_high; });
+  if (zIdx >= 0) out[zIdx] = dur;
+  else if (zones && zones[4] && hr > zones[4].bpm_low) out[4] = dur;
+  else out[0] = dur;
+  return out;
 }
 
 function renderZonas() {
@@ -2852,22 +3618,53 @@ function renderZonas() {
     '</div>';
   }).join('');
 
-  // Polar donut
-  mkChart('chart-polar', {type:'doughnut', data:{
-    labels:['Z1-Z2 (80%)', 'Z4-Z5 (20%)'],
-    datasets:[{data:[80,20], backgroundColor:['rgba(59,130,246,.7)','rgba(248,113,113,.7)'],
-               borderColor:'#0d1117', borderWidth:4, hoverOffset:6}]
-  }, options:{cutout:'60%', plugins:{legend:{position:'bottom', labels:{padding:12}}}, scales:{x:{display:false},y:{display:false}}}});
+  // Polar donut — distribución real últimos 7 días
+  var refStr = (G.meta && G.meta.exported_at) ? String(G.meta.exported_at).slice(0,10) : new Date(Date.now()-5*3600000).toISOString().slice(0,10);
+  var refDay = new Date(refStr + 'T00:00:00');
+  var zTotals = [0, 0, 0, 0, 0];
+  (G.activities || []).forEach(function(a) {
+    if (!a || !a.date) return;
+    var diff = (refDay - new Date(String(a.date).slice(0,10) + 'T00:00:00')) / 86400000;
+    if (diff < 0 || diff > 7) return;
+    var zm = msqExtractZoneMinutes(a, zones);
+    for (var i = 0; i < 5; i++) zTotals[i] += zm[i];
+  });
+  var z12Min = Math.round(zTotals[0] + zTotals[1]);
+  var z3Min  = Math.round(zTotals[2]);
+  var z45Min = Math.round(zTotals[3] + zTotals[4]);
+  var totPolar = z12Min + z3Min + z45Min;
+  if (totPolar > 0) {
+    var lowPct = Math.round((z12Min / totPolar) * 100);
+    mkChart('chart-polar', {type:'doughnut', data:{
+      labels:['Z1-Z2 (' + z12Min + 'm)', 'Z3 gris (' + z3Min + 'm)', 'Z4-Z5 (' + z45Min + 'm)'],
+      datasets:[{data:[z12Min, z3Min, z45Min], backgroundColor:['rgba(59,130,246,.78)','rgba(251,191,36,.72)','rgba(248,113,113,.78)'],
+                 borderColor:'#161b22', borderWidth:2, hoverOffset:6}]
+    }, options:{cutout:'60%', centerText:lowPct+'%', centerSub:'Z1-Z2 7d', plugins:{legend:{position:'bottom', labels:{padding:12}}}, scales:{x:{display:false},y:{display:false}}}});
+  } else {
+    mkChart('chart-polar', {type:'doughnut', data:{
+      labels:['Z1-Z2 (80%)', 'Z4-Z5 (20%)'],
+      datasets:[{data:[80,20], backgroundColor:['rgba(59,130,246,.7)','rgba(248,113,113,.7)'],
+                 borderColor:'#161b22', borderWidth:2, hoverOffset:6}]
+    }, options:{cutout:'60%', centerText:'80/20', centerSub:'objetivo', plugins:{legend:{position:'bottom', labels:{padding:12}}}, scales:{x:{display:false},y:{display:false}}}});
+  }
 
-  // Runs HR chart
-  const runs = (G.activities||[]).filter(a=>a.type==='running'&&a.avg_hr&&a.dist_km>2).slice(-12);
+  // Runs HR chart — orden cronológico ascendente antes de tomar últimos 12
+  const runs = (G.activities||[])
+    .filter(a => a.type==='running' && a.avg_hr && a.dist_km > 1)
+    .slice()
+    .sort((a,b) => String(a.date||'').localeCompare(String(b.date||'')))
+    .slice(-12);
   const runLabels = runs.map(r=>(r.date||'').slice(5,10));
-  mkChart('chart-run-hr', {type:'line', data:{labels:runLabels, datasets:[
-    {label:'FC prom', data:runs.map(r=>r.avg_hr||null), borderColor:'#22d3ee', fill:false, tension:.3, pointRadius:4, borderWidth:2},
-    {label:'FC máx',  data:runs.map(r=>r.max_hr||null), borderColor:'#f87171', fill:false, tension:.3, pointRadius:3, borderWidth:1.5},
-  ]}, options:{
-    scales:{y:{min:90, title:{display:true, text:'BPM', color:'#6e7681', font:{size:9}}}},
-    plugins:{legend:{position:'top'}}}});
+  if (runs.length >= 2) {
+    mkChart('chart-run-hr', {type:'line', data:{labels:runLabels, datasets:[
+      {label:'FC prom', data:runs.map(r=>r.avg_hr||null), borderColor:'#22d3ee', fill:false, tension:.3, pointRadius:4, borderWidth:2},
+      {label:'FC máx',  data:runs.map(r=>r.max_hr||null), borderColor:'#f87171', fill:false, tension:.3, pointRadius:3, borderWidth:1.5},
+    ]}, options:{
+      scales:{y:{min:90, title:{display:true, text:'BPM', color:'#6e7681', font:{size:9}}}},
+      plugins:{legend:{position:'top'}}}});
+  } else {
+    emptyChart('chart-run-hr', 'Sin carreras suficientes', 'Se necesitan al menos 2 carreras con FC y >1 km.');
+  }
   applyAllChartExplanations();
 }
 
@@ -3736,7 +4533,7 @@ function clampNum(v, lo, hi, def) {
 }
 function getFatOxData() {
   var ap = (G && G.advanced_performance) || {};
-  return (G && (G.fat_oxidation || G.fatOx)) || ap.fat_oxidation || buildFatOxFallback();
+  return (G && (G.fat_metrics || G.fat_oxidation || G.fatOx)) || ap.fat_oxidation || buildFatOxFallback();
 }
 function getFatMax() {
   var p = (G && G.profile) || {};
@@ -3857,17 +4654,23 @@ function renderWeightGoal() {
   var stepVals = h.filter(function(d){ return d.steps > 0; }).map(function(d){ return d.steps; });
   var avgSteps = stepVals.length ? Math.round(stepVals.reduce(function(a,b){return a+b;},0)/stepVals.length) : 0;
 
-  var now = new Date();
+  var refIso = (G && G.meta && G.meta.exported_at) ? String(G.meta.exported_at).slice(0,10) : new Date(Date.now() - 5*3600000).toISOString().slice(0,10);
+  var now = new Date(refIso + 'T00:00:00');
   var zones = (G && G.zones) || [];
   var fatmax = getFatMax();
-  var z2Max = (zones[1] && zones[1].bpm_high) || fatmax.bpm_high || 151;
   var weekActs = acts.filter(function(a) {
-    try { return (now - new Date((a.date||'').slice(0,10))) / 86400000 <= 7; } catch(e){ return false; }
+    try {
+      if (!a || !a.date) return false;
+      var diff = (now - new Date(String(a.date).slice(0,10) + 'T00:00:00')) / 86400000;
+      return diff >= 0 && diff <= 7;
+    } catch(e){ return false; }
   });
-  var z2Mins = weekActs.filter(function(a){ return a.avg_hr && a.avg_hr <= z2Max; })
-                       .reduce(function(s,a){ return s+(a.dur_min||0); }, 0);
-  var hiMins = weekActs.filter(function(a){ return a.avg_hr && a.avg_hr > z2Max; })
-                       .reduce(function(s,a){ return s+(a.dur_min||0); }, 0);
+  var z2Mins = 0, hiMins = 0;
+  weekActs.forEach(function(a) {
+    var zm = msqExtractZoneMinutes(a, zones);
+    z2Mins += zm[0] + zm[1];
+    hiMins += zm[2] + zm[3] + zm[4];
+  });
 
   var fatData = getFatOxData();
   var weeklyFat = (fatData.weekly && fatData.weekly.total_fat_g) || 0;
@@ -3939,26 +4742,32 @@ function calcWeeklyScore() {
   const p      = G.profile || {};
 
   // Colombia: usar exported_at como referencia de hoy, o UTC-5
-  var _colBase = (function(){try{var exp=(G&&G.meta&&G.meta.exported_at)?G.meta.exported_at.slice(0,10):null; return exp?new Date(exp+'T00:00:00'):new Date(Date.now()-5*3600000);}catch(e){return new Date();}})();
+  var _colBase = (function(){try{var exp=(G&&G.meta&&G.meta.exported_at)?String(G.meta.exported_at).slice(0,10):null; return exp?new Date(exp+'T00:00:00'):new Date(Date.now()-5*3600000);}catch(e){return new Date();}})();
   const now = _colBase;
   const weekActs = acts.filter(a => {
-    try { return (now - new Date(String(a.date||'').slice(0,10)+'T00:00:00')) / 86400000 <= 7; } catch(e) { return false; }
+    try {
+      if (!a || !a.date) return false;
+      var diff = (now - new Date(String(a.date||'').slice(0,10)+'T00:00:00')) / 86400000;
+      return diff >= 0 && diff <= 7;
+    } catch(e) { return false; }
   });
-  const weekHealth = health.slice(0, 7);
+  const weekHealth = health.slice().sort((a,b) => String(b.date||'').localeCompare(String(a.date||''))).slice(0, 7);
 
   // 1. Adherencia: sesiones completadas / sesiones esperadas (4/semana)
   const sessions = weekActs.filter(a => a.dur_min > 15).length;
   const adherence = Math.min(100, Math.round(sessions / 4 * 100));
 
   // 2. Minutos Z1-Z2
-  const z2Max = zones[1]?.bpm_high || 151;
-  const z2Mins = weekActs.filter(a => a.avg_hr && a.avg_hr <= z2Max)
-                         .reduce((s,a) => s + (a.dur_min||0), 0);
+  let z2Mins = 0;
+  weekActs.forEach(a => {
+    const zm = msqExtractZoneMinutes(a, zones);
+    z2Mins += zm[0] + zm[1];
+  });
   const z2Score = Math.min(100, Math.round(z2Mins / 180 * 100));
 
   // 3. Recuperación (HRV + sueño + estrés)
   const hrvVals   = weekHealth.filter(d=>d.hrv_night).map(d=>d.hrv_night);
-  const sleepVals = weekHealth.filter(d=>d.sleep_total_h).map(d=>d.sleep_total_h);
+  const sleepVals = weekHealth.filter(d=>d.sleep_total_h > 0).map(d=>d.sleep_total_h);
   const stressVals= weekHealth.filter(d=>d.avg_stress).map(d=>d.avg_stress);
   const avgHRV   = hrvVals.length ? hrvVals.reduce((a,b)=>a+b,0)/hrvVals.length : 43;
   const avgSleep = sleepVals.length ? sleepVals.reduce((a,b)=>a+b,0)/sleepVals.length : 7;
@@ -3974,7 +4783,7 @@ function calcWeeklyScore() {
 
   // 5. Progreso aeróbico (FC reposo bajando o VO2max subiendo)
   const rhrVals = weekHealth.filter(d=>d.rhr).map(d=>d.rhr);
-  const rhrTrend = rhrVals.length >= 3 ? rhrVals[0] - rhrVals[rhrVals.length-1] : 0; // positive = improving
+  const rhrTrend = rhrVals.length >= 3 ? rhrVals[rhrVals.length-1] - rhrVals[0] : 0; // positive = improving (newest lower)
   const progressScore = Math.min(100, Math.round(50 + rhrTrend * 10 + ((p.vo2max||45) - 40) * 2));
 
   const total = Math.round((adherence + z2Score + recovScore + defScore + progressScore) / 5);
@@ -4060,11 +4869,12 @@ function renderAlerts() {
   }
 
   // Alert: sin Z2 hace mucho
-  var now = (function(){try{var exp=(G&&G.meta&&G.meta.exported_at)?G.meta.exported_at.slice(0,10):null; return exp?new Date(exp+'T00:00:00'):new Date(Date.now()-5*3600000);}catch(e){return new Date();}})();
+  var now = (function(){try{var exp=(G&&G.meta&&G.meta.exported_at)?String(G.meta.exported_at).slice(0,10):null; return exp?new Date(exp+'T00:00:00'):new Date(Date.now()-5*3600000);}catch(e){return new Date();}})();
   const recentZ2 = acts.filter(a => {
     try {
-      const days = (now - new Date(String(a.date||'').slice(0,10))) / 86400000;
-      return days <= 3 && a.avg_hr && a.avg_hr >= zones[1]?.bpm_low && a.avg_hr <= z2Max;
+      if (!a || !a.date) return false;
+      const days = (now - new Date(String(a.date||'').slice(0,10)+'T00:00:00')) / 86400000;
+      return days >= 0 && days <= 3 && a.avg_hr && a.avg_hr >= (zones[1]?.bpm_low || 0) && a.avg_hr <= z2Max;
     } catch(e) { return false; }
   });
   if (recentZ2.length === 0 && daysNoRun > 3) {
@@ -4075,8 +4885,9 @@ function renderAlerts() {
   // Alert: semana cumplida Z2
   const weekZ2Mins = acts.filter(a => {
     try {
-      return (now - new Date(String(a.date||'').slice(0,10))) / 86400000 <= 7
-          && a.avg_hr && a.avg_hr <= z2Max && a.dur_min > 10;
+      if (!a || !a.date) return false;
+      const days = (now - new Date(String(a.date||'').slice(0,10)+'T00:00:00')) / 86400000;
+      return days >= 0 && days <= 7 && a.avg_hr && a.avg_hr <= z2Max && a.dur_min > 10;
     } catch(e) { return false; }
   }).reduce((s,a) => s + (a.dur_min||0), 0);
   if (weekZ2Mins >= 180) {
@@ -4164,46 +4975,50 @@ function renderZoneMinutes() {
   const weekActs = acts.filter(function(a) {
     try {
       if (!a || !a.date) return false;
-      var dStr = String(a.date).slice(0,10); // fix: .slice() como método, no como propiedad
+      var dStr = String(a.date).slice(0,10);
       var d = new Date(dStr + 'T00:00:00');
-      return (today - d) / 86400000 <= 7;
+      var diff = (today - d) / 86400000;
+      return diff >= 0 && diff <= 7;
     } catch(e){ return false; }
   });
 
-  // Classify each activity by avg HR
+  // Classify each activity using exact Garmin time-in-zone when available
   const zoneMins = [0,0,0,0,0]; // Z1-Z5
   weekActs.forEach(a => {
-    if (!a.avg_hr || !a.dur_min) return;
-    const zIdx = zones.findIndex(z => a.avg_hr >= z.bpm_low && a.avg_hr <= z.bpm_high);
-    if (zIdx >= 0) zoneMins[zIdx] += a.dur_min;
-    else if (a.avg_hr > (zones[4]?.bpm_low||179)) zoneMins[4] += a.dur_min;
-    else if (a.avg_hr < (zones[0]?.bpm_low||123)) zoneMins[0] += a.dur_min;
+    const zm = msqExtractZoneMinutes(a, zones);
+    for (let i = 0; i < 5; i++) zoneMins[i] += zm[i];
   });
 
-  const total = zoneMins.reduce((a,b)=>a+b,0) || 1;
+  const total = zoneMins.reduce((a,b)=>a+b,0);
   const zoneColors = ['#6e7681','#3b82f6','#4ade80','#fbbf24','#f87171'];
   const zoneNames  = ['Z1 Recup','Z2 Aerob','Z3 Umbral','Z4 Anaer','Z5 VO2'];
 
-  mkChart('chart-zone-minutes', {
-    type: 'doughnut',
-    data: {
-      labels: zoneNames.map((n,i) => (n) + ' (' + (Math.round(zoneMins[i])) + 'min)'),
-      datasets: [{
-        data: zoneMins.map(m => m || 0),
-        backgroundColor: zoneColors,
-        borderColor: '#0d1117',
-        borderWidth: 3,
-        hoverOffset: 6,
-      }]
-    },
-    options: {
-      cutout: '60%',
-      plugins: {
-        legend: { position:'bottom', labels:{ padding:10, font:{size:10}, color:'#8b949e' } }
+  if (total > 0) {
+    mkChart('chart-zone-minutes', {
+      type: 'doughnut',
+      data: {
+        labels: zoneNames.map((n,i) => (n) + ' (' + (Math.round(zoneMins[i])) + 'min)'),
+        datasets: [{
+          data: zoneMins.map(m => Math.round(m) || 0),
+          backgroundColor: zoneColors,
+          borderColor: '#161b22',
+          borderWidth: 2,
+          hoverOffset: 6,
+        }]
       },
-      scales: { x:{display:false}, y:{display:false} }
-    }
-  });
+      options: {
+        cutout: '60%',
+        centerText: Math.round(total) + 'm',
+        centerSub: 'últimos 7d',
+        plugins: {
+          legend: { position:'bottom', labels:{ padding:10, font:{size:10}, color:'#8b949e' } }
+        },
+        scales: { x:{display:false}, y:{display:false} }
+      }
+    });
+  } else {
+    emptyChart('chart-zone-minutes', 'Sin minutos de zona (7d)', 'Registra sesiones con pulso en los últimos 7 días.');
+  }
 }
 
 // ═══════════════════════════════════════════════════════
@@ -4219,8 +5034,7 @@ function renderAerobicEfficiency() {
     .slice(-20);
 
   if (runs.length < 3) {
-    const c = document.getElementById('chart-efficiency');
-    if (c) { const ctx = c.getContext('2d'); ctx.clearRect(0,0,c.width,c.height); }
+    emptyChart('chart-efficiency', 'Sin carreras suficientes', 'Se necesitan al menos 3 carreras (>1 km, >5 min) con FC.');
     return;
   }
 
@@ -4268,15 +5082,13 @@ let currentRunFilter = 'all';
 function filterRuns(type) {
   currentRunFilter = type;
   renderRunsTable();
-  // Update button styles
-  document.querySelectorAll('#carreras-section .btn').forEach(b => {
-    b.classList.remove('btn-primary');
-    b.classList.add('btn-outline');
+  // Update button styles without relying on deprecated window.event
+  document.querySelectorAll('#carreras-section .btn').forEach(function(b) {
+    var oc = b.getAttribute('onclick') || '';
+    var match = oc.indexOf("'" + type + "'") >= 0 || oc.indexOf('"' + type + '"') >= 0;
+    b.classList.toggle('btn-primary', match);
+    b.classList.toggle('btn-outline', !match);
   });
-  if (window.event && window.event.target && window.event.target.classList) {
-    window.event.target.classList.remove('btn-outline');
-    window.event.target.classList.add('btn-primary');
-  }
 }
 
 function gradeRun(act) {
@@ -4446,24 +5258,26 @@ function renderRacePredictor() {
 
 // ── Respiración nocturna ─────────────────────────────────────────────────
 function renderRespiration() {
-  var resp = G && G.respiration_series || [];
+  var raw = (G && G.respiration_series) || [];
   var el = document.getElementById('respiration-content');
+  var cv = document.getElementById('chart-respiration');
   if (!el) return;
-  if (!resp.length) {
+  if (!raw.length) {
     el.innerHTML = '<div class="data-note warn">Datos de respiración nocturna no disponibles. Requiere dispositivo con sensor de respiración (Forerunner 9xx con pulsioxímetro activo en sueño).</div>';
-    if (document.getElementById('chart-respiration')) {
-      document.getElementById('chart-respiration').parentElement.style.display = 'none';
-    }
+    if (cv && cv.parentElement) cv.parentElement.style.display = 'none';
     return;
   }
-  var latest = resp[0];
-  var avg7 = resp.reduce(function(s,r){ return s + (r.avg_brpm||0); }, 0) / resp.length;
+  if (cv && cv.parentElement) cv.parentElement.style.display = '';
+  var respAsc = raw.slice().sort(function(a,b){ return String(a.date||'').localeCompare(String(b.date||'')); });
+  var respDesc = respAsc.slice().reverse();
+  var latest = respDesc[0];
+  var avg7 = respDesc.slice(0,7).reduce(function(s,r){ return s + (r.avg_brpm||0); }, 0) / Math.min(7, respDesc.length);
   var status = avg7 < 12 ? {t:'Baja', c:'var(--yellow)'} :
                avg7 > 20 ? {t:'Elevada', c:'var(--red)'} :
                {t:'Normal', c:'var(--green)'};
   el.innerHTML = '<div style="display:flex;gap:12px;margin-bottom:10px">'+
     '<div style="flex:1;background:var(--bg3);border-radius:10px;padding:12px;text-align:center">'+
-      '<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:4px">Anoche</div>'+
+      '<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:4px">Última noche ('+escHtml((latest.date||'').slice(5))+')</div>'+
       '<div style="font-size:28px;font-weight:800;color:var(--purple);font-family:\'JetBrains Mono\',monospace">'+(latest.avg_brpm||'--')+'</div>'+
       '<div style="font-size:10px;color:var(--text3)">resp/min</div>'+
     '</div>'+
@@ -4473,9 +5287,9 @@ function renderRespiration() {
       '<div style="font-size:10px;color:'+status.c+'">'+status.t+' · Normal: 12-20</div>'+
     '</div>'+
   '</div>';
-  // Gráfica
-  var labels = resp.map(function(r){ return (r.date||'').slice(5); }).reverse();
-  var values = resp.map(function(r){ return r.avg_brpm; }).reverse();
+  // Gráfica cronológica ascendente (antiguo -> reciente)
+  var labels = respAsc.map(function(r){ return (r.date||'').slice(5); });
+  var values = respAsc.map(function(r){ return r.avg_brpm; });
   mkChart('chart-respiration', {
     type:'bar',
     data:{ labels:labels, datasets:[{
@@ -4501,7 +5315,37 @@ function renderRespiration() {
 }
 
 function renderLastActivityHR() {
-  var d = G && G.last_activity_hr;
+  var rawD = G && G.last_activity_hr;
+  var zones = (G && G.zones) || [];
+  var realActs = ((G && G.activities) || []).filter(function(a){
+    return a && ((a.avg_hr||0) >= 95 || (a.max_hr||0) >= 115 || (a.training_load||0) >= 5);
+  }).slice().sort(function(a,b){ return String(b.date||'').localeCompare(String(a.date||'')); });
+
+  var d = rawD;
+  var useSynthesized = !d || !d.available || (!(d.hr_series||[]).length && realActs.length && String(realActs[0].date||'').slice(0,10) > String(d.date||''));
+  if (useSynthesized && realActs.length) {
+    var ra = realActs[0];
+    var zm = msqExtractZoneMinutes(ra, zones);
+    var totZ = zm.reduce(function(a,b){return a+b;},0) || 1;
+    var zNames = ['Z1 Recuperación','Z2 Aeróbico','Z3 Umbral','Z4 Anaeróbico','Z5 VO2max'];
+    d = {
+      available: true,
+      synthesized: true,
+      name: ra.name || ra.type || 'Sesión',
+      type: ra.type || 'activity',
+      date: String(ra.date||'').slice(0,10),
+      dur_min: Math.round((ra.dur_min||0)*10)/10,
+      dist_km: ra.dist_km || 0,
+      avg_hr: ra.avg_hr || 0,
+      max_hr: ra.max_hr || 0,
+      hr_series: [],
+      stamina_series: [],
+      zone_distribution: zm.map(function(m, i){
+        return { zone:i+1, name:zNames[i], minutes:Math.round(m*10)/10, pct:Math.round(m/totZ*100) };
+      })
+    };
+  }
+
   var card = document.getElementById('card-last-activity-hr');
   if (!d || !d.available) { if (card) card.style.display = 'none'; return; }
   if (card) card.style.display = 'block';
@@ -4526,7 +5370,7 @@ function renderLastActivityHR() {
     }).join('');
   }
 
-  // ── FC vs tiempo ──────────────────────────────────────────────────────
+  // ── FC vs tiempo (intradía o últimas 12 sesiones reales) ─────────────
   var series = d.hr_series || [];
   var noteEl = document.getElementById('chart-last-hr-note');
   var zColors = ['#6b7280','#3b82f6','#22d3ee','#fbbf24','#f87171'];
@@ -4567,7 +5411,33 @@ function renderLastActivityHR() {
     if (noteEl) noteEl.innerHTML = '<div class="data-note ok">'+
       (d.hr_series_points||series.length)+' puntos · FC prom '+d.avg_hr+
       ' bpm · FC máx '+d.max_hr+' bpm</div>';
+  } else if (realActs.length >= 2) {
+    var ses12 = realActs.slice(0, 12).reverse();
+    mkChart('chart-last-hr-timeline', {
+      type:'line', data:{
+        labels: ses12.map(function(s){ return String(s.date||'').slice(5,10); }),
+        datasets:[
+          { label:'FC prom (bpm)', data:ses12.map(function(s){ return s.avg_hr||null; }),
+            borderColor:'#22d3ee', backgroundColor:'rgba(34,211,238,.08)', fill:true, tension:.3, pointRadius:4, borderWidth:2 },
+          { label:'FC máx (bpm)', data:ses12.map(function(s){ return s.max_hr||null; }),
+            borderColor:'#f87171', borderDash:[4,3], fill:false, tension:.3, pointRadius:3, borderWidth:1.6 }
+        ]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{position:'top'}},
+        scales:{
+          x:{title:{display:true,text:'Últimas '+ses12.length+' sesiones reales',color:'#6e7681',font:{size:9}},
+             ticks:{font:{size:9},color:'#6e7681'}},
+          y:{min:80, title:{display:true,text:'bpm',color:'#6e7681',font:{size:9}},
+             ticks:{font:{size:9},color:'#6e7681'}}
+        }
+      }
+    });
+    if (noteEl) noteEl.innerHTML = '<div class="data-note info">'+
+      'Mostrando FC prom/máx de las últimas '+ses12.length+' sesiones reales (la curva segundo a segundo requiere GPS exterior activo).</div>';
   } else {
+    emptyChart('chart-last-hr-timeline', 'Sin serie FC de sesión', 'Sincroniza actividades con FC en Garmin Connect.');
     if (noteEl) noteEl.innerHTML = '<div class="data-note warn">'+
       'Sin serie de FC punto a punto. El Forerunner 970 entrega esta serie cuando la actividad tiene GPS activo.</div>';
   }
@@ -4653,25 +5523,29 @@ function renderLastActivityHR() {
   }
 
   // ── Donut de zonas ────────────────────────────────────────────────────
-  if (zdist.length) {
+  var zSum = zdist.reduce(function(s,z){ return s + (Number(z.minutes)||0); }, 0);
+  if (zdist.length && zSum > 0) {
     mkChart('chart-last-hr-zones', {
       type:'doughnut',
       data:{
         labels: zdist.map(function(z){ return z.name; }),
         datasets:[{ data:zdist.map(function(z){ return z.minutes; }),
           backgroundColor:zdist.map(function(z,i){ return zColors[i]; }),
-          borderWidth:1, borderColor:'var(--bg2)' }]
+          borderWidth:2, borderColor:'#161b22' }]
       },
       options:{
-        cutout:'62%', responsive:true, maintainAspectRatio:false,
-        plugins:{legend:{position:'right',
+        cutout:'60%', centerText:Math.round(d.dur_min||zSum)+'m', centerSub:'sesión',
+        responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{position:'bottom',
           labels:{color:'#8b949e',font:{size:9},boxWidth:10}}}
       }
     });
+  } else {
+    emptyChart('chart-last-hr-zones', 'Sin zonas en la sesión', 'La sesión no reporta tiempos por zona FC.');
   }
 
   // ── Laps / Splits ─────────────────────────────────────────────────────
-  var laps = G.last_activity_laps || [];
+  var laps = (!d.synthesized || (rawD && d.date === rawD.date)) ? (G.last_activity_laps || []) : [];
   var lapsTarget = document.getElementById('last-activity-laps-wrap');
   if (lapsTarget) {
     if (laps.length > 0) {
@@ -4711,7 +5585,7 @@ function renderLastActivityHR() {
           '<tbody>'+lapRows+'</tbody>'+
         '</table></div>';
     } else {
-      lapsTarget.innerHTML = '<div class="data-note warn" style="margin-top:10px">Sin datos de laps. Garmin entrega laps cuando la actividad tiene splits automáticos o manuales.</div>';
+      lapsTarget.innerHTML = '<div class="data-note warn" style="margin-top:10px">Sin datos de laps para '+escHtml(d.name||'esta sesión')+'. Garmin entrega laps cuando la actividad tiene splits automáticos o manuales.</div>';
     }
   }
 }
@@ -4720,6 +5594,9 @@ function renderCarreras() {
   if (!G) return;
   renderAerobicEfficiency();
   renderRunsTable();
+  renderLastActivityHR();
+  renderRacePredictor();
+  renderRespiration();
 }
 
 // Hook into tab clicks
@@ -5193,8 +6070,15 @@ function renderComplianceTable(runs, zones) {
 }
 
 function renderRHRTrend(health) {
-  var rhr = health.filter(function(h){ return h.rhr; }).slice(0,30).reverse();
-  if (rhr.length < 5) return;
+  var rhr = (health || [])
+    .filter(function(h){ return h && h.rhr; })
+    .slice()
+    .sort(function(a,b){ return String(a.date||'').localeCompare(String(b.date||'')); })
+    .slice(-30);
+  if (rhr.length < 5) {
+    emptyChart('chart-rhr-trend', 'Sin tendencia FC Reposo', 'Se necesitan al menos 5 días con FC en reposo.');
+    return;
+  }
   var labels = rhr.map(function(h){ return (h.date||'').slice(5,10); });
   var vals   = rhr.map(function(h){ return h.rhr; });
   var n = vals.length;
@@ -5278,28 +6162,75 @@ function saveWeightEntry() {
 
 function renderWeightTrend() {
   var log = loadWeightLog();
+  var garminW = (G && Array.isArray(G.garmin_weight)) ? G.garmin_weight.filter(function(e){ return e && (e.weight || e.weight_kg); }).map(function(e){
+    return { date: String(e.date||'').slice(0,10), weight: Number(e.weight || e.weight_kg), waist: e.waist || null };
+  }).sort(function(a,b){ return a.date.localeCompare(b.date); }) : [];
+  var pts = log.length >= 2 ? log : (garminW.length >= 2 ? garminW : log);
   var p   = (G && G.profile) || {};
   var goal = p.target_weight_kg || 70;
+  var feb  = (G && G.fat_energy_balance) || {};
+  var wp   = feb.weight_projection || {};
 
   // Pre-fill input with last known weight
-  var lastEntry = log.length ? log[log.length-1] : null;
-  if (lastEntry) {
-    var wEl = document.getElementById('input-weight');
-    var waEl = document.getElementById('input-waist');
-    if (wEl && !wEl.value) wEl.value = lastEntry.weight;
-    if (waEl && !waEl.value && lastEntry.waist) waEl.value = lastEntry.waist;
-  }
+  var lastEntry = pts.length ? pts[pts.length-1] : (garminW.length ? garminW[garminW.length-1] : null);
+  var wEl = document.getElementById('input-weight');
+  var waEl = document.getElementById('input-waist');
+  if (wEl && !wEl.value) wEl.value = lastEntry ? lastEntry.weight : (wp.current_kg || p.weight_kg || '');
+  if (lastEntry && waEl && !waEl.value && lastEntry.waist) waEl.value = lastEntry.waist;
 
-  if (log.length < 2) {
+  if (pts.length < 2) {
+    var startW = Number((lastEntry && lastEntry.weight) || wp.current_kg || p.weight_kg || 0);
+    var targetW = Number(wp.target_kg || goal || 70);
+    if (!startW) {
+      emptyChart('chart-weight-trend', 'Sin registros de peso', 'Registra al menos 2 pesajes para ver la tendencia.');
+      var el0 = document.getElementById('weight-trend-summary');
+      if (el0) el0.innerHTML = 'Registra al menos 2 dias para ver la tendencia.';
+      return;
+    }
+    var weeklyDelta = wp.weekly_fat_pressure_g > 0
+      ? -(Number(wp.weekly_fat_pressure_g) / 1000)
+      : (wp.weeks_to_goal > 0 ? (targetW - startW) / Number(wp.weeks_to_goal) : -0.35);
+    var projLabels = [], projWeights = [], goalLine = [];
+    for (var wk = 0; wk <= 12; wk++) {
+      projLabels.push(wk === 0 ? 'Hoy' : '+' + wk + 's');
+      var valW = Number((startW + wk * weeklyDelta).toFixed(1));
+      if (startW > targetW) valW = Math.max(targetW, valW);
+      projWeights.push(valW);
+      goalLine.push(targetW);
+    }
+    mkChart('chart-weight-trend', {
+      type: 'line',
+      data: {
+        labels: projLabels,
+        datasets: [
+          { label:'Proyección FatOx+déficit (kg)', data:projWeights, borderColor:'#fbbf24',
+            backgroundColor:'rgba(251,191,36,.1)', fill:true, tension:.25, pointRadius:3, borderWidth:2, borderDash:[6,3] },
+          { label:'Meta '+targetW+'kg', data:goalLine,
+            borderColor:'rgba(74,222,128,.55)', borderDash:[4,4], pointRadius:0, borderWidth:1.5 }
+        ]
+      },
+      options: {
+        scales: { y: {
+          title:{ display:true, text:'kg', color:'#6e7681', font:{size:9} },
+          min: Math.floor(Math.min(targetW, Math.min.apply(null, projWeights)) - 2),
+          max: Math.ceil(Math.max(startW, Math.max.apply(null, projWeights)) + 1)
+        }},
+        plugins: { legend:{ position:'top', labels:{ font:{size:9} } } }
+      }
+    });
     var el = document.getElementById('weight-trend-summary');
-    if (el) el.innerHTML = 'Registra al menos 2 dias para ver la tendencia.';
+    if (el) {
+      el.innerHTML =
+        'Peso actual: <strong>'+startW+' kg</strong> &nbsp;|&nbsp; Meta: <strong>'+targetW+' kg</strong>' +
+        (wp.weeks_to_goal ? ' &nbsp;|&nbsp; Estimado: <strong>~'+wp.weeks_to_goal+' sem</strong> ('+escHtml(String(wp.estimated_date||'').slice(0,10))+')' : '') +
+        '<br><small style="color:var(--text3)">Mostrando proyección estimada (~'+Math.round(Math.abs(weeklyDelta)*1000)+' g/sem). Guarda ≥2 registros reales arriba para activar la curva histórica personal.</small>';
+    }
     return;
   }
 
-  var labels  = log.map(function(e){ return e.date.slice(5); });
-  var weights = log.map(function(e){ return e.weight; });
-  var waists  = log.map(function(e){ return e.waist; }).filter(Boolean);
-  var goalArr = log.map(function(){ return goal; });
+  var labels  = pts.map(function(e){ return e.date.slice(5); });
+  var weights = pts.map(function(e){ return e.weight; });
+  var goalArr = pts.map(function(){ return goal; });
 
   // Linear regression for trend
   var n = weights.length;
@@ -5417,7 +6348,8 @@ function renderFatOxPanel() {
   if (!G) return;
   var fx = getFatOxData();
   var fm = getFatMax();
-  var latest = fx.latest_session || {};
+  var fxActsDesc = (fx.activities || []).slice().sort(function(a,b){ return String(b.date||'').localeCompare(String(a.date||'')); });
+  var latest = fxActsDesc.find(function(a){ return (Number(a.cal||0) >= 50 || Number(a.avg_hr||0) >= 95); }) || fx.latest_session || {};
   var weekly = fx.weekly || {};
   var el = document.getElementById('fatox-content');
   if (!el) return;
@@ -5441,16 +6373,24 @@ function renderFatOxPanel() {
     '</div>' +
     '<div class="data-note info"><strong>Lectura profesional:</strong> FatOx es una estimación con kcal, duración y FC promedio. Sirve para tendencia semanal; la medición precisa requiere VO₂ y VCO₂.</div>';
 
-  var series = fx.daily_series || [];
+  var series = (fx.daily_series || []).slice().sort(function(a,b){ return String(a.date||'').localeCompare(String(b.date||'')); });
   if (series.length) {
     mkChart('chart-fatox-cumulative', {
       type:'line',
-      data:{ labels:series.map(function(x){return (x.date||'').slice(5,10);}), datasets:[
-        { label:'Grasa acumulada (g)', data:series.map(function(x){return x.cumulative_fat_g || 0;}), borderColor:'#fb923c', backgroundColor:'rgba(251,146,60,.08)', fill:true, tension:.3, pointRadius:3, borderWidth:2 },
-        { label:'Grasa por día (g)', data:series.map(function(x){return x.fat_g || 0;}), borderColor:'#22d3ee', fill:false, tension:.25, pointRadius:2, borderWidth:1.5, borderDash:[4,3] }
+      data:{ labels:series.map(function(x){return String(x.date||'').slice(5,10);}), datasets:[
+        { label:'Grasa acumulada (g)', data:series.map(function(x){return x.cumulative_fat_g || 0;}), borderColor:'#fb923c', backgroundColor:'rgba(251,146,60,.08)', fill:true, tension:.3, pointRadius:2, borderWidth:2, yAxisID:'y' },
+        { label:'Grasa por día (g)', data:series.map(function(x){return x.fat_g || 0;}), borderColor:'#22d3ee', fill:false, tension:.25, pointRadius:2, borderWidth:1.6, borderDash:[4,3], yAxisID:'y1' }
       ]},
-      options:{ plugins:{legend:{position:'top'}}, scales:{ y:{ beginAtZero:true, title:{display:true,text:'gramos',color:'#6e7681',font:{size:9}} } } }
+      options:{
+        plugins:{legend:{position:'top'}},
+        scales:{
+          y:{ beginAtZero:true, position:'left', title:{display:true,text:'Acumulado (g)',color:'#fb923c',font:{size:9}} },
+          y1:{ beginAtZero:true, position:'right', grid:{drawOnChartArea:false}, title:{display:true,text:'Diario (g)',color:'#22d3ee',font:{size:9}} }
+        }
+      }
     });
+  } else {
+    emptyChart('chart-fatox-cumulative', 'Sin serie FatOx', 'Registra actividades con duración y FC promedio.');
   }
 }
 
@@ -5579,7 +6519,7 @@ function renderSyncVersion() {
       '<div class="mini-row"><span>Confianza datos</span><strong>'+escHtml(q.score == null ? '--' : q.score + '/100 · ' + (q.label||''))+'</strong></div>' +
     '</div>' +
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px"><button class="btn btn-outline" onclick="clearLocalAndReloadServer()" style="font-size:12px;border-color:var(--yellow);color:var(--yellow)">Borrar local y recargar</button><button class="btn btn-outline" onclick="downloadCurrentJSON()" style="font-size:12px">Descargar JSON</button></div>'+
-    '<div class="data-note info"><strong>Control de versión:</strong> Si esta tarjeta no aparece en tu celular, estás viendo un HTML viejo o cacheado. Usa Actualizar, borra datos locales o recarga la página con ?v=35.</div>';
+    '<div class="data-note info"><strong>Control de versión:</strong> Si esta tarjeta no aparece en tu celular, estás viendo un HTML viejo o cacheado. Usa Actualizar, borra datos locales o recarga la página con ?v=60.</div>';
 }
 function buildDailySummaryText() {
   var p = (G && G.profile) || {};
@@ -5649,8 +6589,8 @@ function exportWorkoutPDFPro() {
   var fat = G.fat_metrics || G.fat_oxidation || {};
   var feb = G.fat_energy_balance || {};
   var phy = G.physiology_panel || G.physiology || {};
-  var hd  = (G.health_daily || []).slice().reverse().slice(0,30);
-  var acts= (G.activities || []).slice(0,15);
+  var hd  = (G.health_daily || []).slice().sort(function(a,b){ return String(b.date||'').localeCompare(String(a.date||'')); }).slice(0,30);
+  var acts= (G.activities || []).slice().sort(function(a,b){ return String(b.date||'').localeCompare(String(a.date||'')); }).slice(0,15);
   var meta= G.meta || {};
   var snap= wo.profile_snapshot || {};
   var lc  = (G.training || {}).load_curve || {};
@@ -5775,13 +6715,15 @@ function exportWorkoutPDFPro() {
   }
 
   // ── Datos ──────────────────────────────────────────────
+  var hdSleep = hd.find(function(x){ return (x.sleep_total_h||0) > 0; }) || hd[0] || {};
   var hd14 = hd.slice(0,14).reverse();
   var lblHd = hd14.map(function(d){ return (d.date||'').slice(5); });
   var hrvS  = hd14.map(function(d){ return d.hrv_night||d.hrv_week||null; });
   var rhrS  = hd14.map(function(d){ return d.rhr||null; });
-  var sleepS= hd14.map(function(d){ return d.sleep_total_h||null; });
-  var vo2L  = vo2tl.map(function(p){ return (p.month||p.date||'').slice(0,7); });
-  var vo2V  = vo2tl.map(function(p){ return p.vo2max||p.value||null; });
+  var sleepS= hd14.map(function(d){ return d.sleep_total_h > 0 ? d.sleep_total_h : null; });
+  var vo2Sorted = vo2tl.slice().sort(function(a,b){ return String(a.month||a.date||'').localeCompare(String(b.month||b.date||'')); });
+  var vo2L  = vo2Sorted.map(function(p){ return (p.month||p.date||'').slice(0,7); });
+  var vo2V  = vo2Sorted.map(function(p){ return p.vo2max||p.avg||p.value||null; });
   var vo2PV = null;
   if (proj.from_training_8w && vo2V.length) {
     var last=vo2V.filter(Boolean).slice(-1)[0];
@@ -5789,16 +6731,17 @@ function exportWorkoutPDFPro() {
     vo2L.push('+4s'); vo2V.push(null); vo2PV.push(last+(proj.from_training_8w-last)/2);
     vo2L.push('+8s'); vo2V.push(null); vo2PV.push(proj.from_training_8w);
   }
-  var fatD = (fat.daily_series||[]).slice(-14);
+  var fatD = (fat.daily_series||[]).slice().sort(function(a,b){ return String(a.date||'').localeCompare(String(b.date||'')); }).slice(-14);
   var fatL = fatD.map(function(d){return (d.date||'').slice(5);});
   var fatV = fatD.map(function(d){return d.fat_g||0;});
-  var lcP  = (lc.points||[]).slice(-21);
+  var lcP  = (lc.rolling_7d || lc.points || []).slice(-21);
   var lcL  = lcP.map(function(p){return (p.date||'').slice(5);});
-  var lcA  = lcP.map(function(p){return p.acute||p.load_7d||null;});
+  var lcA  = lcP.map(function(p){return p.value!=null?p.value:(p.acute||p.load_7d||null);});
   var zColors = ['#6b7280','#3b82f6','#22d3ee','#fbbf24','#f87171'];
-  var runActs = acts.filter(function(a){return (a.type||'').includes('running')&&a.avg_hr;}).slice(0,10);
+  var runActs = (G.activities||[]).filter(function(a){return (a.type||'').includes('running')&&a.avg_hr&&(a.dist_km||0)>1;}).slice().sort(function(a,b){return String(a.date||'').localeCompare(String(b.date||''));}).slice(-10);
   var runL = runActs.map(function(a){return (a.date||'').slice(5);});
   var runHR= runActs.map(function(a){return a.avg_hr;});
+  var pdfNut = wo.nutrition || G.dynamic_energy || G.energy_plan || {};
 
   // ── Helpers de secciones ──────────────────────────────
   function tile(lbl,val,sub,cls){
@@ -5897,7 +6840,7 @@ function exportWorkoutPDFPro() {
 '<h2><span class="num">2</span> Métricas Fisiológicas</h2>'+
 '<div class="grid-4" style="margin-bottom:10px">'+
   tile('HRV nocturno', esc((hd[0]||{}).hrv_night||(hd[0]||{}).hrv_week||'--')+' ms', 'variabilidad autonómica', 'purple')+
-  tile('Sueño anoche', n((hd[0]||{}).sleep_total_h,1)+' h', n((hd[0]||{}).sleep_deep_pct,0)+'% profundo · '+n((hd[0]||{}).sleep_rem_pct,0)+'% REM', 'blue')+
+  tile('Sueño anoche', n(hdSleep.sleep_total_h,1)+' h', n(hdSleep.sleep_deep_pct,0)+'% profundo · '+n(hdSleep.sleep_rem_pct,0)+'% REM', 'blue')+
   tile('Body Battery', esc((hd[0]||{}).bb_high||'--')+'/100', 'energía disponible', 'orange')+
   tile('Edad física', esc(age.fitness_age_app||age.fitness_age||'--'), 'vs '+esc(age.chronological_age||'37')+' cron. · delta '+esc(age.age_delta||'--'), 'green')+
 '</div>'+
@@ -5919,7 +6862,7 @@ svgLine('Evolución VO2max + proyección conservadora (meta: 55)', vo2L, vo2V, {
 '<h2><span class="num">4</span> Oxidación de Grasa (FatOx)</h2>'+
 '<div class="grid-4" style="margin-bottom:10px">'+
   tile('FatOx semanal', n((fat.weekly||{}).total_fat_g,1)+' g', 'g oxidados esta semana', 'orange')+
-  tile('Mejor sesión', n((fat.best_session||{}).fat_g,1)+' g', esc((fat.best_session||{}).date||'').slice(5), 'orange')+
+  tile('Mejor sesión', n((fat.best_session||{}).fat_grams || (fat.best_session||{}).fat_g,1)+' g', esc((fat.best_session||{}).date||'').slice(5), 'orange')+
   tile('FatMax zone', esc((G.fatmax||{}).bpm_low||snap.bpm_low||'--')+'–'+esc((G.fatmax||{}).bpm_high||snap.bpm_high||'--')+' bpm', '50-60% FCR Karvonen', 'green')+
   tile('Presión grasa/sem', n(feb.combined_fat_pressure_g_week,0)+' g/sem', 'déficit + FatOx', 'blue')+
 '</div>'+
@@ -5969,7 +6912,7 @@ alertRows()+
 '<div class="grid-3">'+
   tile('Hidratación total', esc(hydra.total_l_range||'--'), 'litros recomendados', 'blue')+
   tile('Déficit calórico', n(feb.daily_deficit_kcal,0)+' kcal', 'déficit dinámico', '')+
-  tile('Meta calorías', esc((wo.nutrition||{}).calories||'--'), 'proteína '+(wo.nutrition||{}).protein_g||'--'+'g', 'green')+
+  tile('Meta calorías', esc(pdfNut.target_calories || pdfNut.calories || '--') + ' kcal', 'proteína ' + (pdfNut.protein_g || '--') + 'g', 'green')+
 '</div>'+
 
 // PIE
@@ -5991,7 +6934,7 @@ function clearLocalAndReloadServer() {
   clearStorage();
   try { localStorage.removeItem(DRIVE_ID_KEY); } catch(e) {}
   showToast('Datos locales borrados. Recargando desde servidor...', 2500);
-  setTimeout(function(){ location.href = location.pathname + '?v=35&t=' + Date.now(); }, 400);
+  setTimeout(function(){ location.href = location.pathname + '?v=60&t=' + Date.now(); }, 400);
 }
 
 function initGarminApp() {
@@ -6511,15 +7454,24 @@ function setNote(containerId, html, type){
 }
 function emptyChart(id, title, reason){
   var c = document.getElementById(id); if(!c) return;
-  var wrap = c.parentElement; if(!wrap) return;
-  wrap.innerHTML = '<div class="pro-empty"><div><strong>'+msqEsc(title||'Sin datos')+'</strong><br><span>'+msqEsc(reason||'')+'</span></div></div>';
+  if(typeof mkChart==='function'){
+    mkChart(id, {
+      type:'empty',
+      data:{labels:[], datasets:[]},
+      options:{ emptyTitle:title||'Sin datos', emptyReason:reason||'' }
+    });
+  }
 }
 
 // ── Gráfica por zonas de grasa ────────────────────────
 function renderFatZones(data){
   var zones = msqArr(data.fat_metrics && data.fat_metrics.fat_by_zone);
   var el = document.getElementById('grasa-fat-zones-content');
-  if(!el || !zones.length) return;
+  if(!el) return;
+  if(!zones.length){
+    el.innerHTML = '<div class="pro-empty"><div>Zonas de oxidación pendientes de cálculo.</div></div>';
+    return;
+  }
   var maxFat = Math.max.apply(null, zones.map(function(z){ return msqNum(z.fat_pct,0); })) || 1;
   el.innerHTML = '<div class="zone-fat-grid">' + zones.map(function(z){
     var pct = Math.round(msqNum(z.fat_pct,0)/maxFat*100);
@@ -6546,10 +7498,13 @@ function renderGrasa(){
   msqSetGlobal(data);
   var fx = data.fat_metrics || {}, fm = fx.fatmax || profileFatMax(data.profile);
   var weekly = fx.weekly || {}, monthly = fx.monthly || {}, today = fx.today || {};
-  var best = fx.best_session || {}, latest = fx.latest_session || {};
+  var best = fx.best_session || {};
   var balance = fx.energy_balance || data.fat_energy_balance || {};
   var series = msqArr(fx.daily_series).slice().sort(function(a,b){ return msqD10(a.date).localeCompare(msqD10(b.date)); });
-  var acts = msqArr(fx.activities).slice().sort(function(a,b){ return msqD10(b.date).localeCompare(msqD10(a.date)); }).slice(0,14);
+  var fxActsDesc = msqArr(fx.activities).slice().sort(function(a,b){ return msqD10(b.date).localeCompare(msqD10(a.date)); });
+  var validFxActs = fxActsDesc.filter(function(a){ return msqNum(a.cal,0)>=50 || msqNum(a.avg_hr,0)>=95; });
+  var actsAsc = (validFxActs.length ? validFxActs : fxActsDesc).slice(0,14).reverse();
+  var latest = validFxActs[0] || fx.latest_session || fxActsDesc[0] || {};
 
   var hero = document.getElementById('grasa-hero-content');
   if(hero){
@@ -6575,9 +7530,12 @@ function renderGrasa(){
     emptyChart('chart-fat-cumulative-grasa','Sin grasa acumulada','Necesitas actividades con kcal, duración y FC promedio.');
     emptyChart('chart-fat-daily','Sin grasa por día','Actualiza Garmin y vuelve a generar web_export.json.');
   }
-  if(acts.length){
-    mkChart('chart-fat-session',{type:'bar',data:{labels:acts.map(function(a){return String(a.name||a.type||'Act').slice(0,14);}),datasets:[{label:'Grasa por sesión (g)',data:acts.map(function(a){return msqNum(a.fat_grams,0);}),backgroundColor:'rgba(251,146,60,.72)',borderRadius:5}]},options:{plugins:{legend:{position:'top'}},scales:{y:{beginAtZero:true}}}});
-    mkChart('chart-fat-substrate',{type:'bar',data:{labels:acts.slice(0,8).map(function(a){return String(a.name||'Act').slice(0,10);}),datasets:[{label:'% grasa',data:acts.slice(0,8).map(function(a){return msqNum(a.fat_pct,0);}),backgroundColor:'rgba(251,191,36,.72)',borderRadius:4,stack:'s'},{label:'% carbohidrato',data:acts.slice(0,8).map(function(a){return msqNum(a.cho_pct,0);}),backgroundColor:'rgba(59,130,246,.62)',borderRadius:4,stack:'s'}]},options:{plugins:{legend:{position:'top'}},scales:{x:{stacked:true},y:{stacked:true,min:0,max:100,ticks:{callback:function(v){return v+'%';}}}}}});
+  if(actsAsc.length){
+    var sesLabels = actsAsc.map(function(a){ return msqD10(a.date).slice(5)+' '+String(a.name||a.type||'Act').slice(0,10); });
+    mkChart('chart-fat-session',{type:'bar',data:{labels:sesLabels,datasets:[{label:'Grasa por sesión (g)',data:actsAsc.map(function(a){return msqNum(a.fat_grams,0);}),backgroundColor:'rgba(251,146,60,.72)',borderRadius:5}]},options:{plugins:{legend:{position:'top'}},scales:{y:{beginAtZero:true}}}});
+    var subActs = actsAsc.slice(-8);
+    var subLabels = subActs.map(function(a){ return msqD10(a.date).slice(5)+' '+String(a.name||a.type||'Act').slice(0,8); });
+    mkChart('chart-fat-substrate',{type:'bar',data:{labels:subLabels,datasets:[{label:'% grasa',data:subActs.map(function(a){return msqNum(a.fat_pct,0);}),backgroundColor:'rgba(251,191,36,.72)',borderRadius:4,stack:'s'},{label:'% carbohidrato',data:subActs.map(function(a){return msqNum(a.cho_pct,0);}),backgroundColor:'rgba(59,130,246,.62)',borderRadius:4,stack:'s'}]},options:{plugins:{legend:{position:'top'}},scales:{x:{stacked:true},y:{stacked:true,min:0,max:100,ticks:{callback:function(v){return v+'%';}}}}}});
   } else {
     emptyChart('chart-fat-session','Sin sesiones FatOx','No hay actividades procesadas con grasa estimada.');
     emptyChart('chart-fat-substrate','Sin sustrato estimado','Se requieren sesiones con FC promedio, kcal y duración.');
@@ -6586,15 +7544,210 @@ function renderGrasa(){
   var ins = document.getElementById('grasa-insights-content');
   if(ins){
     ins.innerHTML = '<div class="mini-list">'+
-      '<div class="mini-row"><span>Grasa oxidada hoy</span><strong>'+msqEsc(today.fat_g||0)+' g</strong></div>'+
+      '<div class="mini-row"><span>Grasa oxidada hoy</span><strong>'+msqEsc(today.fat_g!=null?today.fat_g:0)+' g</strong></div>'+
       '<div class="mini-row"><span>Grasa oxidada mensual</span><strong>'+msqEsc(monthly.total_fat_g||0)+' g</strong></div>'+
       '<div class="mini-row"><span>Mejor sesión FatOx</span><strong>'+msqEsc(best.fat_grams||0)+' g</strong></div>'+
-      '<div class="mini-row"><span>Última sesión</span><strong>'+msqEsc(latest.fat_grams||0)+' g · '+msqEsc(latest.confidence||'--')+'</strong></div>'+
+      '<div class="mini-row"><span>Última sesión válida</span><strong>'+msqEsc(latest.name||'--')+' · '+msqEsc(latest.fat_grams||0)+' g ('+msqEsc(latest.confidence||'--')+')</strong></div>'+
       '<div class="mini-row"><span>Déficit equivalente hoy</span><strong>'+msqEsc(balance.deficit_body_fat_equivalent_g_today||0)+' g</strong></div>'+
       '</div><div class="data-note info"><strong>Coach semanal:</strong> '+msqEsc((weekly.recommendation||(data.coach_weekly&&data.coach_weekly.message)||'Mantener consistencia.'))+'</div>';
   }
 }
 window.renderGrasa = renderGrasa;
+
+// ── Edad física definitiva (#edad-section) ────────────
+function renderEdadDefinitiva(){
+  if(!window.G) return;
+  var data = normalizeLatest(msqCurrent());
+  msqSetGlobal(data);
+  var ap = data.advanced_performance || {};
+  var aa = ap.age_analysis || data.age_analysis || {};
+  var fa = (data.profile && data.profile.fitness_age) || data.fitness_age || {};
+
+  var chron = msqNum(aa.chronological_age, msqNum(fa.chronological_age, null));
+  var fit   = msqNum(aa.fitness_age, msqNum(fa.fitness_age_app, null));
+  var rec   = msqNum(aa.recovery_age, msqNum(fa.recovery_age, null));
+  var aer   = msqNum(aa.aerobic_age, msqNum(fa.aerobic_age, null));
+  var met   = msqNum(aa.metabolic_age, msqNum(fa.metabolic_age, null));
+  var delta = aa.age_delta != null ? msqNum(aa.age_delta, 0) : (fa.age_delta != null ? msqNum(fa.age_delta, 0) : (chron!=null&&fit!=null ? chron-fit : 0));
+  var deltaCol = delta >= 2 ? 'var(--green)' : delta >= 0 ? 'var(--cyan)' : 'var(--yellow)';
+  var deltaTxt = delta >= 0 ? ('-' + Math.abs(delta) + ' años vs cronológica') : ('+' + Math.abs(delta) + ' años vs cronológica');
+
+  var mainEl = document.getElementById('edad-main-content');
+  if(mainEl){
+    if(chron == null && fit == null){
+      mainEl.innerHTML = '<div class="pro-empty"><div>Edad física aún no disponible en el JSON.</div></div>';
+    } else {
+      mainEl.innerHTML = '<div class="grid-3" style="margin-bottom:10px">'+
+        metricCard('Edad cronológica', chron!=null?chron:'--', 'años reales', 'var(--text)')+
+        metricCard('Edad física', fit!=null?fit:'--', aa.classification||fa.classification||'estimada', deltaCol)+
+        metricCard('Diferencia', (delta>=0?'-':'+')+Math.abs(delta)+' a', deltaTxt, deltaCol)+
+        '</div><div class="grid-3" style="margin-bottom:10px">'+
+        metricCard('Aeróbica', aer!=null?aer:'--', 'VO2max + FCR', 'var(--cyan)')+
+        metricCard('Recuperación', rec!=null?rec:'--', 'HRV + sueño', 'var(--purple)')+
+        metricCard('Metabólica', met!=null?met:'--', 'IMC + actividad', 'var(--orange)')+
+        '</div><div class="data-note info"><strong>'+msqEsc(aa.status||'Estimación funcional de edad biológica.')+'</strong><br>'+
+        msqEsc(aa.explanation||'Compara edad cronológica con edad física estimada a partir de VO2max, FC reposo, HRV, sueño, estrés e IMC.')+'</div>';
+    }
+  }
+
+  var fEl = document.getElementById('edad-factors-content');
+  if(fEl){
+    var f = aa.factors || fa.factors || {};
+    var offsetLabel = function(v){
+      if(v == null) return '--';
+      var n = Number(v);
+      return (n > 0 ? '+' : '') + n + ' años';
+    };
+    var offsetColor = function(v){
+      var n = Number(v||0);
+      return n < 0 ? 'var(--green)' : n > 0 ? 'var(--yellow)' : 'var(--text2)';
+    };
+    if(!Object.keys(f).length){
+      fEl.innerHTML = '<div class="pro-empty"><div>Factores detallados no disponibles aún.</div></div>';
+    } else {
+      var rows = [
+        ['VO2max observado', (f.vo2max_observed||'--')+' / norm '+(f.vo2max_norms_value||'--'), f.vo2max_offset, 'VO2'],
+        ['FC en reposo', 'ajuste cardiovascular', f.rhr_offset, 'RHR'],
+        ['HRV autonómico', 'recuperación vagal', f.hrv_offset, 'HRV'],
+        ['Sueño nocturno', 'duración y arquitectura', f.sleep_offset, 'Sueño'],
+        ['Estrés diario', 'carga alostática', f.stress_offset, 'Estrés'],
+        ['Composición (IMC)', 'peso / cintura', f.bmi_offset, 'IMC'],
+        ['Actividad semanal', 'Z2: '+(f.z2_min_week||0)+' min · Vig: '+(f.vig_min_week||0)+' min', f.activity_offset, 'Act']
+      ];
+      fEl.innerHTML = '<div class="mini-list">' + rows.map(function(r){
+        var c = offsetColor(r[2]);
+        return '<div class="mini-row"><span>'+msqEsc(r[0])+' <small style="color:var(--text3)">('+msqEsc(r[1])+')</small></span>'+
+          '<strong style="color:'+c+'">'+msqEsc(offsetLabel(r[2]))+'</strong></div>';
+      }).join('') + '</div>';
+    }
+  }
+
+  var ageVals = [chron, fit, aer, rec, met];
+  var validAges = ageVals.filter(function(v){ return v != null && isFinite(v); });
+  if(validAges.length >= 2){
+    var yLo = Math.max(15, Math.floor(Math.min.apply(null, validAges) - 4));
+    var yHi = Math.ceil(Math.max.apply(null, validAges) + 3);
+    var refChron = chron != null ? chron : validAges[0];
+    var ageColors = ageVals.map(function(v, idx){
+      if(idx === 0) return 'rgba(148,163,184,.78)';
+      if(v == null) return 'transparent';
+      return v < refChron ? 'rgba(74,222,128,.78)' : v === refChron ? 'rgba(34,211,238,.78)' : 'rgba(251,146,60,.78)';
+    });
+    mkChart('chart-age-functional', {
+      type:'bar',
+      data:{
+        labels:['Cronológica','Física','Aeróbica','Recuperación','Metabólica'],
+        datasets:[{ label:'Edad (años)', data:ageVals, backgroundColor:ageColors, borderRadius:6 }]
+      },
+      options:{
+        plugins:{legend:{display:false}},
+        scales:{y:{min:yLo, max:yHi, title:{display:true,text:'años',color:'#6e7681',font:{size:9}}}}
+      }
+    });
+  } else {
+    emptyChart('chart-age-functional', 'Sin desglose de edad física', 'Actualiza Garmin para calcular edades aeróbica, de recuperación y metabólica.');
+  }
+
+  var lEl = document.getElementById('edad-levers-content');
+  if(lEl){
+    var levers = msqArr(aa.levers);
+    if(levers.length){
+      lEl.innerHTML = '<div class="mini-list">' + levers.map(function(lv, i){
+        return '<div class="mini-row"><span>Palanca '+(i+1)+'</span><strong style="text-align:right;color:var(--cyan)">'+msqEsc(lv)+'</strong></div>';
+      }).join('') + '</div>';
+    } else {
+      lEl.innerHTML = '<div class="data-note ok">Sigue manteniendo volumen Z1-Z2, sueño &gt;7h y déficit moderado para reducir la edad funcional.</div>';
+    }
+  }
+}
+window.renderEdadDefinitiva = renderEdadDefinitiva;
+
+// ── Datos y diagnóstico definitivo (#datos-section) ───
+function renderDatosDefinitivos(){
+  if(!window.G) return;
+  var data = normalizeLatest(msqCurrent());
+  msqSetGlobal(data);
+  var ap = data.advanced_performance || {};
+  var meta = data.meta || {};
+  var q = ap.data_quality || data.data_quality || {};
+  var cs = ap.chart_status || data.chart_status || {};
+  var gaps = msqArr(ap.data_gaps != null ? ap.data_gaps : data.data_gaps);
+  var fields = meta.fields_available || ap.fields_available || {};
+  var exported = meta.exported_at ? String(meta.exported_at).replace('T',' ').slice(0,19) : '--';
+  var jsonKb = Math.round(JSON.stringify(data).length / 1024);
+
+  var syncEl = document.getElementById('datos-sync-content');
+  if(syncEl){
+    var qRows = msqArr(q.rows);
+    syncEl.innerHTML = '<div class="grid-3" style="margin-bottom:10px">'+
+      metricCard('Calidad datos', (q.score!=null?q.score:(meta.data_quality_score||'--'))+'/100', q.label||'Alta', 'var(--green)')+
+      metricCard('Salud diaria', (fields.health_days||data.health_daily.length)+' d', (fields.hrv_days||'--')+' reg HRV', 'var(--cyan)')+
+      metricCard('Actividades', fields.activities||data.activities.length, (fields.running_activities||0)+' carreras', 'var(--purple)')+
+      '</div><div class="mini-list">'+
+      '<div class="mini-row"><span>Versión JSON / App</span><strong>'+msqEsc(meta.app_version||meta.version||'--')+'</strong></div>'+
+      '<div class="mini-row"><span>Exportado (Garmin)</span><strong>'+msqEsc(exported)+'</strong></div>'+
+      '<div class="mini-row"><span>Dispositivo / Fuente</span><strong>'+msqEsc((meta.device||'Forerunner')+' · '+(meta.source||'server'))+'</strong></div>'+
+      '<div class="mini-row"><span>Privacidad y Tamaño</span><strong>'+msqEsc((meta.privacy||'local')+' · '+jsonKb+' KB')+'</strong></div>'+
+      (qRows.length ? qRows.map(function(r){
+        var col = r.status==='ok' ? 'var(--green)' : r.status==='partial' ? 'var(--yellow)' : 'var(--red)';
+        return '<div class="mini-row"><span>'+msqEsc(r.name)+'</span><strong style="color:'+col+'">'+msqEsc(r.count)+'/'+msqEsc(r.required)+' ('+msqEsc(r.status)+')</strong></div>';
+      }).join('') : '')+
+      '</div>';
+  }
+
+  var csEl = document.getElementById('datos-chart-status-content');
+  if(csEl){
+    var keys = Object.keys(cs);
+    if(!keys.length){
+      csEl.innerHTML = '<div class="pro-empty"><div>Sin inventario chart_status en el JSON.</div></div>';
+    } else {
+      var okCount = keys.filter(function(k){ return cs[k] && cs[k].available; }).length;
+      csEl.innerHTML = '<div class="data-note ok" style="margin-bottom:10px"><strong>'+okCount+'/'+keys.length+' gráficas habilitadas</strong> según umbrales mínimos de datos reales.</div>'+
+        '<div class="mini-list">' + keys.map(function(k){
+          var item = cs[k] || {};
+          var ok = !!item.available;
+          var col = ok ? 'var(--green)' : 'var(--yellow)';
+          return '<div class="mini-row" style="align-items:flex-start;gap:8px">'+
+            '<div><strong style="color:var(--text);font-family:var(--mono);font-size:11px">'+msqEsc(k)+'</strong>'+
+            '<div style="font-size:10px;color:var(--text3)">'+msqEsc(item.reason||'')+'</div></div>'+
+            '<strong style="color:'+col+';white-space:nowrap">'+(ok?'OK':'Pend.')+' ('+msqEsc(item.count!=null?item.count:'-')+'/'+msqEsc(item.required!=null?item.required:'-')+')</strong>'+
+          '</div>';
+        }).join('') + '</div>';
+    }
+  }
+
+  var gapsEl = document.getElementById('datos-gaps-content');
+  if(gapsEl){
+    if(!gaps.length){
+      gapsEl.innerHTML = '<div class="data-note ok"><strong>✅ Sin brechas críticas detectadas.</strong><br>Todas las fuentes esenciales de salud, sueño, HRV, carga y actividades están sincronizando correctamente.</div>';
+    } else {
+      gapsEl.innerHTML = '<div class="mini-list">' + gaps.map(function(g){
+        return '<div class="mini-row" style="flex-direction:column;align-items:flex-start;gap:4px">'+
+          '<strong style="color:var(--yellow)">⚠️ '+msqEsc(g.metric||g.field||'Dato pendiente')+'</strong>'+
+          '<span style="font-size:11px;color:var(--text2)">'+msqEsc(g.action||g.suggestion||g.reason||'')+'</span>'+
+        '</div>';
+      }).join('') + '</div>';
+    }
+  }
+
+  var fieldsEl = document.getElementById('datos-fields-content');
+  if(fieldsEl){
+    var fKeys = Object.keys(fields);
+    if(!fKeys.length){
+      fieldsEl.innerHTML = '<div class="pro-empty"><div>Sin resumen fields_available en el JSON.</div></div>';
+    } else {
+      fieldsEl.innerHTML = '<div class="mini-list">' + fKeys.map(function(k){
+        var v = fields[k];
+        var label = k.replace(/_/g,' ');
+        var ok = typeof v === 'boolean' ? v : Number(v||0) > 0;
+        var valTxt = typeof v === 'boolean' ? (v ? 'Activo' : 'Inactivo') : String(v);
+        return '<div class="mini-row"><span>'+msqEsc(label)+'</span><strong style="color:'+(ok?'var(--green)':'var(--text3)')+'">'+msqEsc(valTxt)+'</strong></div>';
+      }).join('') + '</div>';
+    }
+  }
+}
+window.renderDatosDefinitivos = renderDatosDefinitivos;
+window.renderAuditV48 = renderDatosDefinitivos;
 
 // ── Curva de carga de entrenamiento ───────────────────
 function buildLoadCurve(data){
@@ -6658,33 +7811,154 @@ function renderLoadCurvePro(data){
   if(noteEl) noteEl.innerHTML = '<div class="data-note info"><strong style="color:'+color+'">Estado de carga: '+msqEsc(state)+'.</strong><br>'+
     'Carga 7 días: <strong>'+msqEsc(c.latest_7d_load||0)+'</strong> · Rango ideal: <strong>'+msqEsc(c.ideal_low_value||'--')+'–'+msqEsc(c.ideal_high_value||'--')+'</strong>'+
     '<br><span style="color:var(--text3)">'+msqEsc(c.insight||'')+'</span></div>';
-  // Sync the legacy chart-load canvas if present
-  if(document.getElementById('chart-load')){
-    try { mkChart('chart-load',{type:'bar',data:{labels:labels,datasets:[{type:'line',label:'Carga real 7 días',data:rolling.map(function(x){return msqNum(x.value,0);}),borderColor:'#22d3ee',pointRadius:2,borderWidth:2,fill:false,tension:.28},{type:'bar',label:'Carga diaria',data:daily.map(function(x){return msqNum(x.value,0);}),backgroundColor:'rgba(167,139,250,.45)',borderRadius:4}]},options:{plugins:{legend:{position:'top'}},scales:{y:{beginAtZero:true}}}}); } catch(e){}
-  }
 }
 
-// ── Scatter charts de correlación ─────────────────────
+// ── Regresión lineal OLS y scatter charts de correlación ──
+function linearRegressionLine(pts, color){
+  var valid = msqArr(pts).filter(function(p){ return p && isFinite(Number(p.x)) && isFinite(Number(p.y)); });
+  var n = valid.length;
+  if(n < 3) return null;
+  var sx=0, sy=0, sxy=0, sx2=0, sy2=0, xMin=Infinity, xMax=-Infinity;
+  valid.forEach(function(p){
+    var x=Number(p.x), y=Number(p.y);
+    sx+=x; sy+=y; sxy+=x*y; sx2+=x*x; sy2+=y*y;
+    if(x<xMin) xMin=x;
+    if(x>xMax) xMax=x;
+  });
+  var denom = n*sx2 - sx*sx;
+  if(Math.abs(denom) < 1e-9 || xMax <= xMin) return null;
+  var slope = (n*sxy - sx*sy) / denom;
+  var inter = (sy - slope*sx) / n;
+  var rDen = Math.sqrt(Math.max(0, (n*sx2 - sx*sx)*(n*sy2 - sy*sy)));
+  var r = rDen > 1e-9 ? (n*sxy - sx*sy)/rDen : 0;
+  return {
+    r: r,
+    dataset: {
+      type:'line',
+      label:'Tendencia (r=' + r.toFixed(2) + ')',
+      data:[{x:xMin, y:slope*xMin+inter}, {x:xMax, y:slope*xMax+inter}],
+      borderColor: color || 'rgba(167,139,250,.85)',
+      borderDash:[6,4],
+      pointRadius:0,
+      borderWidth:1.8,
+      fill:false,
+      noHit:true
+    }
+  };
+}
+
 function renderScatterChartsPro(data){
   data = normalizeLatest(data || msqCurrent());
-  var health = msqArr(data.health_daily).slice().reverse();
-  var vt = msqArr(data.vo2max_timeline || (data.charts && data.charts.vo2max_timeline));
-  if(!vt.length && data.profile && data.profile.vo2max) vt=[{month:(new Date()).toISOString().slice(0,7),avg:msqNum(data.profile.vo2max,0)}];
-  var byMonth = {};
-  health.forEach(function(h){ var v=msqNum(h.hrv_night||h.hrv_week,null); var m=msqD10(h.date).slice(0,7); if(v!=null&&m){ (byMonth[m]=byMonth[m]||[]).push(v); } });
-  var vo2hrv = vt.map(function(v){ var a=byMonth[v.month]||[]; if(!a.length) return null; return {x:Math.round((a.reduce(function(x,y){return x+y;},0)/a.length)*10)/10,y:msqNum(v.avg,null)}; }).filter(function(p){return p&&p.y!=null;});
-  if(vo2hrv.length>=2) mkChart('chart-vo2-hrv',{type:'scatter',data:{datasets:[{label:'VO2max vs HRV',data:vo2hrv,backgroundColor:'rgba(167,139,250,.72)',pointRadius:6}]},options:{scales:{x:{title:{display:true,text:'HRV prom (ms)',color:'#6e7681',font:{size:9}}},y:{title:{display:true,text:'VO2max',color:'#6e7681',font:{size:9}}}}}});
-  else emptyChart('chart-vo2-hrv','Relación no visualizable todavía','Faltan al menos 2 meses con VO2max y HRV simultáneos.');
-  var loadCurve = buildLoadCurve(data).rolling;
-  var readiness = msqNum((data.readiness&&data.readiness.score)||(data.today&&data.today.training_readiness&&data.today.training_readiness.score),null);
-  if(loadCurve.length>=5&&readiness!=null){ var pts=loadCurve.slice(-30).map(function(x){return {x:msqNum(x.value,0),y:readiness};}); mkChart('chart-readiness-load',{type:'scatter',data:{datasets:[{label:'Readiness vs carga 7d',data:pts,backgroundColor:'rgba(59,130,246,.65)',pointRadius:5}]},options:{scales:{x:{title:{display:true,text:'Carga 7 días',color:'#6e7681',font:{size:9}}},y:{min:0,max:100,title:{display:true,text:'Readiness',color:'#6e7681',font:{size:9}}}}}});}
-  else emptyChart('chart-readiness-load','Readiness vs carga no visualizable','Se necesita Training Load y score Readiness numérico.');
-  var sleepPts=[]; for(var i=0;i<health.length-1;i++){ var sl=msqNum(health[i].sleep_total_h||health[i].total_h,null),rhr=msqNum(health[i+1].rhr,null); if(sl!=null&&rhr!=null) sleepPts.push({x:Math.round(sl*10)/10,y:rhr}); }
-  if(sleepPts.length>=5) mkChart('chart-sleep-perf',{type:'scatter',data:{datasets:[{label:'Sueño vs FC reposo siguiente',data:sleepPts.slice(-30),backgroundColor:'rgba(167,139,250,.65)',pointRadius:5}]},options:{scales:{x:{min:4,max:10,title:{display:true,text:'Horas de sueño',color:'#6e7681',font:{size:9}}},y:{title:{display:true,text:'FC reposo día siguiente',color:'#6e7681',font:{size:9}}}}}});
-  else emptyChart('chart-sleep-perf','Sueño vs rendimiento no visualizable','Se necesitan al menos 5 pares.');
-  var stressPts=health.map(function(h){var st=msqNum(h.avg_stress,null),r=msqNum(h.rhr,null);return (st!=null&&r!=null)?{x:st,y:r}:null;}).filter(Boolean).slice(-30);
-  if(stressPts.length>=5) mkChart('chart-stress-rhr',{type:'scatter',data:{datasets:[{label:'Estrés vs FC reposo',data:stressPts,backgroundColor:'rgba(251,191,36,.65)',pointRadius:5}]},options:{scales:{x:{title:{display:true,text:'Estrés promedio',color:'#6e7681',font:{size:9}}},y:{title:{display:true,text:'FC reposo',color:'#6e7681',font:{size:9}}}}}});
-  else emptyChart('chart-stress-rhr','Estrés vs FC reposo no visualizable','Se necesitan al menos 5 registros.');
+  var health = msqArr(data.health_daily).slice().sort(function(a,b){
+    return msqD10(a.date).localeCompare(msqD10(b.date));
+  });
+  var acts = msqArr(data.activities).slice().sort(function(a,b){
+    return String(a.date||'').localeCompare(String(b.date||''));
+  });
+
+  // 1. VO2max vs HRV: emparejar cada actividad con VO2max con HRV del mismo día o día anterior (UTC para evitar drift)
+  var hByDate = {};
+  health.forEach(function(h){
+    var hv = msqNum(h.hrv_night, msqNum(h.hrv_week, null));
+    var k = msqD10(h.date);
+    if(hv != null && hv > 0 && k) hByDate[k] = hv;
+  });
+  var vo2hrv = [];
+  acts.forEach(function(a){
+    var vo2 = msqNum(a.vo2max, null);
+    if(vo2 == null || vo2 < 20) return;
+    var actDate = msqD10(a.date);
+    if(!actDate) return;
+    var hrv = hByDate[actDate];
+    if(hrv == null){
+      try{
+        var dt = new Date(actDate + 'T00:00:00Z');
+        dt.setUTCDate(dt.getUTCDate() - 1);
+        hrv = hByDate[dt.toISOString().slice(0,10)];
+      }catch(e){}
+    }
+    if(hrv != null && hrv > 0){
+      vo2hrv.push({
+        x: Math.round(hrv*10)/10,
+        y: Math.round(vo2*10)/10,
+        label: actDate.slice(5) + ' · ' + String(a.name||a.type||'Sesión').slice(0,14)
+      });
+    }
+  });
+  vo2hrv = vo2hrv.slice(-40);
+  if(vo2hrv.length < 3){
+    var vt = msqArr(data.vo2max_timeline || (data.charts && data.charts.vo2max_timeline));
+    if(!vt.length && data.profile && data.profile.vo2max) vt=[{month:msqD10((data.meta&&data.meta.exported_at)||new Date().toISOString()).slice(0,7), avg:msqNum(data.profile.vo2max,0)}];
+    var byMonth = {};
+    health.forEach(function(h){ var v=msqNum(h.hrv_night,msqNum(h.hrv_week,null)); var m=msqD10(h.date).slice(0,7); if(v!=null&&v>0&&m){ (byMonth[m]=byMonth[m]||[]).push(v); } });
+    var monthly = vt.map(function(v){
+      var a=byMonth[v.month]||[];
+      if(!a.length) return null;
+      return {x:Math.round((a.reduce(function(x,y){return x+y;},0)/a.length)*10)/10, y:msqNum(v.avg,null), label:String(v.month||'')};
+    }).filter(function(p){return p&&p.y!=null;});
+    if(monthly.length > vo2hrv.length) vo2hrv = monthly;
+  }
+  if(vo2hrv.length >= 2){
+    var dsV = [{label:'VO2max vs HRV', data:vo2hrv, backgroundColor:'rgba(167,139,250,.75)', pointRadius:6}];
+    var regV = linearRegressionLine(vo2hrv, 'rgba(167,139,250,.85)');
+    if(regV) dsV.push(regV.dataset);
+    mkChart('chart-vo2-hrv',{type:'scatter',data:{datasets:dsV},options:{plugins:{legend:{position:'top'}},scales:{x:{title:{display:true,text:'HRV nocturno (ms)',color:'#6e7681',font:{size:9}}},y:{title:{display:true,text:'VO2max (ml/kg/min)',color:'#6e7681',font:{size:9}}}}}});
+  } else {
+    emptyChart('chart-vo2-hrv','Relación no visualizable todavía','Faltan al menos 2 sesiones con VO2max y HRV simultáneos.');
+  }
+
+  // 2. Body Battery drenado vs HRV
+  var rlPts = health.map(function(h){
+    var bbd = msqNum(h.bb_drained, null);
+    var hrv = msqNum(h.hrv_night, msqNum(h.hrv_week, null));
+    var d = msqD10(h.date);
+    return (bbd!=null && bbd>0 && hrv!=null && hrv>0) ? {x:Math.round(bbd), y:Math.round(hrv*10)/10, label:d?d.slice(5):''} : null;
+  }).filter(Boolean).slice(-30);
+  if(rlPts.length >= 5){
+    var dsRL = [{label:'BB drenado vs HRV', data:rlPts, backgroundColor:'rgba(59,130,246,.70)', pointRadius:5}];
+    var regRL = linearRegressionLine(rlPts, 'rgba(59,130,246,.85)');
+    if(regRL) dsRL.push(regRL.dataset);
+    mkChart('chart-readiness-load',{type:'scatter',data:{datasets:dsRL},options:{plugins:{legend:{position:'top'}},scales:{x:{title:{display:true,text:'Body Battery drenado',color:'#6e7681',font:{size:9}}},y:{title:{display:true,text:'HRV (ms)',color:'#6e7681',font:{size:9}}}}}});
+  } else {
+    emptyChart('chart-readiness-load','Body Battery vs HRV no visualizable','Se necesitan al menos 5 días con Body Battery drenado y HRV.');
+  }
+
+  // 3. Sueño vs FC reposo día siguiente (solo pares consecutivos <=2 días)
+  var sleepPts=[];
+  for(var i=0;i<health.length-1;i++){
+    var dCurr = msqD10(health[i].date), dNext = msqD10(health[i+1].date);
+    var sl = msqNum(health[i].sleep_total_h||health[i].total_h, null);
+    var rhr = msqNum(health[i+1].rhr, null);
+    if(dCurr && dNext && sl!=null && sl>0 && rhr!=null && rhr>0){
+      var dayDiff = (new Date(dNext+'T00:00:00Z') - new Date(dCurr+'T00:00:00Z')) / 86400000;
+      if(dayDiff >= 1 && dayDiff <= 2){
+        sleepPts.push({x:Math.round(sl*10)/10, y:rhr, label:dCurr.slice(5)+'→'+dNext.slice(5)});
+      }
+    }
+  }
+  sleepPts = sleepPts.slice(-30);
+  if(sleepPts.length >= 5){
+    var dsSL = [{label:'Sueño vs FC reposo siguiente', data:sleepPts, backgroundColor:'rgba(167,139,250,.70)', pointRadius:5}];
+    var regSL = linearRegressionLine(sleepPts, 'rgba(167,139,250,.85)');
+    if(regSL) dsSL.push(regSL.dataset);
+    mkChart('chart-sleep-perf',{type:'scatter',data:{datasets:dsSL},options:{plugins:{legend:{position:'top'}},scales:{x:{title:{display:true,text:'Horas de sueño',color:'#6e7681',font:{size:9}}},y:{title:{display:true,text:'FC reposo día siguiente',color:'#6e7681',font:{size:9}}}}}});
+  } else {
+    emptyChart('chart-sleep-perf','Sueño vs FC reposo no visualizable','Se necesitan al menos 5 pares consecutivos de sueño y FC reposo.');
+  }
+
+  // 4. Estrés promedio vs FC reposo
+  var stressPts = health.map(function(h){
+    var st = msqNum(h.avg_stress, null), r = msqNum(h.rhr, null), d = msqD10(h.date);
+    return (st!=null && st>0 && r!=null && r>0) ? {x:st, y:r, label:d?d.slice(5):''} : null;
+  }).filter(Boolean).slice(-30);
+  if(stressPts.length >= 5){
+    var dsST = [{label:'Estrés vs FC reposo', data:stressPts, backgroundColor:'rgba(251,191,36,.72)', pointRadius:5}];
+    var regST = linearRegressionLine(stressPts, 'rgba(251,191,36,.85)');
+    if(regST) dsST.push(regST.dataset);
+    mkChart('chart-stress-rhr',{type:'scatter',data:{datasets:dsST},options:{plugins:{legend:{position:'top'}},scales:{x:{title:{display:true,text:'Estrés promedio',color:'#6e7681',font:{size:9}}},y:{title:{display:true,text:'FC reposo (bpm)',color:'#6e7681',font:{size:9}}}}}});
+  } else {
+    emptyChart('chart-stress-rhr','Estrés vs FC reposo no visualizable','Se necesitan al menos 5 registros.');
+  }
 }
 
 // ── renderRendimiento (canónico) ──────────────────────
@@ -6695,14 +7969,28 @@ function renderRendimiento(){
   msqSetGlobal(data);
   var acts = data.activities || [], health = data.health_daily || [], zones = data.zones || {};
   var pm = (data.profile && data.profile.performance_metrics) || {};
-  var runs = msqArr(acts).filter(function(a){ return a.type==='running' && a.avg_hr && a.dist_km>1; })
-                         .sort(function(a,b){ return (a.date||'').localeCompare(b.date||''); });
-  var z2Max = (zones[1] && zones[1].bpm_high) || 151;
+  var runs = msqArr(acts).filter(function(a){ return a.type==='running' && a.avg_hr && a.dist_km>1 && msqNum(a.dur_min,0)>5; })
+                         .sort(function(a,b){ return String(a.date||'').localeCompare(String(b.date||'')); });
+
+  // Economía aeróbica: validar orden ascendente y frescura vs carreras recientes
+  var ecoRaw = msqArr(pm.economy).filter(function(e){ return e && msqNum(e.economy,null)!=null; })
+    .slice().sort(function(a,b){ return msqD10(a.date).localeCompare(msqD10(b.date)); });
+  var maxEcoMs = ecoRaw.length ? Date.parse(msqD10(ecoRaw[ecoRaw.length-1].date)+'T00:00:00Z') : 0;
+  var maxRunMs = runs.length ? Date.parse(msqD10(runs[runs.length-1].date)+'T00:00:00Z') : 0;
+  var ecoStale = !ecoRaw.length || (maxRunMs && maxEcoMs && (maxRunMs - maxEcoMs) > 14*86400000);
+  var eco = ecoStale
+    ? runs.slice(-15).map(function(r){
+        var spd = r.dist_km / (r.dur_min / 60);
+        return { date: msqD10(r.date), speed_kmh: Number(spd.toFixed(1)), hr: r.avg_hr, economy: Number(((spd / r.avg_hr) * 100).toFixed(2)) };
+      })
+    : ecoRaw;
+
   var injRisk = pm.injury_risk || {}, rhrT = pm.rhr_trend || {};
-  var avgDrift = pm.avg_cardiac_drift, ecoArr = pm.economy || [], ecoLast = ecoArr.length ? ecoArr[ecoArr.length-1].economy : null;
+  var avgDrift = pm.avg_cardiac_drift;
+  var ecoLast = eco.length ? eco[eco.length-1].economy : null;
   var riskColor = injRisk.color || 'var(--green)';
   var driftColor = !avgDrift?'var(--gray)':avgDrift<5?'var(--green)':avgDrift<8?'var(--yellow)':'var(--red)';
-  var ecoColor = !ecoLast?'var(--gray)':ecoLast>1.2?'var(--green)':ecoLast>0.9?'var(--yellow)':'var(--red)';
+  var ecoColor = !ecoLast?'var(--gray)':ecoLast>=5.5?'var(--green)':ecoLast>=4.5?'var(--yellow)':'var(--red)';
   var scoresEl = document.getElementById('perf-scores');
   if(scoresEl){
     scoresEl.innerHTML = [
@@ -6716,10 +8004,19 @@ function renderRendimiento(){
     mkChart('chart-drift',{type:'bar',data:{labels:driftRuns.map(function(r){return (r.date||'').slice(5,10);}),datasets:[{label:'Deriva %',data:driftData,backgroundColor:driftData.map(function(d){return !d?'#6e7681':d<5?'#4ade80':d<8?'#fbbf24':'#f87171';}),borderRadius:4}]},options:{scales:{y:{title:{display:true,text:'%',color:'#6e7681',font:{size:9}}}},plugins:{legend:{display:false}}}});
     var validD=driftData.filter(Boolean), avgD=validD.length?(validD.reduce(function(a,b){return a+b;},0)/validD.length).toFixed(1):'--';
     var dSumEl=document.getElementById('drift-summary'); if(dSumEl) dSumEl.innerHTML='<strong>< 5%:</strong> excelente &nbsp;|&nbsp; <strong>5-8%:</strong> aceptable &nbsp;|&nbsp; <strong>> 8%:</strong> mejorar base<br><strong>Promedio: '+avgD+'%</strong>';
+  } else {
+    emptyChart('chart-drift','Sin carreras suficientes','Se necesitan al menos 3 carreras (>1 km, >5 min) con FC.');
   }
-  var eco = pm.economy || [];
-  if(eco.length>=3) mkChart('chart-economy',{type:'line',data:{labels:eco.map(function(e){return (e.date||'').slice(5);}),datasets:[{label:'Economía',data:eco.map(function(e){return e.economy;}),borderColor:'#22d3ee',backgroundColor:'rgba(34,211,238,.08)',fill:true,tension:.3,pointRadius:4,borderWidth:2}]},options:{scales:{y:{title:{display:true,text:'vel/FC x100',color:'#6e7681',font:{size:9}}}},plugins:{legend:{display:false}}}});
-  setTimeout(function(){ renderLoadCurvePro(data); renderScatterChartsPro(data); }, 80);
+  if(eco.length>=3){
+    mkChart('chart-economy',{type:'line',data:{labels:eco.map(function(e){return msqD10(e.date).slice(5);}),datasets:[{label:'Economía',data:eco.map(function(e){return e.economy;}),borderColor:'#22d3ee',backgroundColor:'rgba(34,211,238,.08)',fill:true,tension:.3,pointRadius:4,borderWidth:2}]},options:{scales:{y:{title:{display:true,text:'vel/FC x100',color:'#6e7681',font:{size:9}}}},plugins:{legend:{display:false}}}});
+  } else {
+    emptyChart('chart-economy','Sin economía aeróbica suficiente','Se necesitan al menos 3 carreras con distancia, duración y FC.');
+  }
+  renderComplianceTable(runs, zones);
+  renderRHRTrend(health);
+  renderLoadCurvePro(data);
+  renderScatterChartsPro(data);
+  if(typeof applyAllChartExplanations==='function') applyAllChartExplanations();
 }
 window.renderRendimiento = renderRendimiento;
 
@@ -6727,7 +8024,7 @@ window.renderRendimiento = renderRendimiento;
 var _renderVO2_orig = window.renderVO2 || (typeof renderVO2 === 'function' ? renderVO2 : null);
 window.renderVO2 = renderVO2 = function(){
   if(_renderVO2_orig) { try{ _renderVO2_orig(); }catch(e){} }
-  setTimeout(function(){ renderLoadCurvePro(normalizeLatest(msqCurrent())); }, 80);
+  renderLoadCurvePro(normalizeLatest(msqCurrent()));
 };
 
 // ── Panel fisiológico V48 ─────────────────────────────
@@ -6958,7 +8255,15 @@ body{background:transparent;}
 }
 @media (min-width:780px){
   #content{padding-top:24px}.section.active{animation:uxFade .22s ease-out}.card{padding:20px}
-  .section.active{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}.section.active>.ux-hero,.section.active>#hoy-empty,.section.active>#hoy-content{grid-column:1/-1}.section.active>.card{margin-bottom:0}.section.active>#hoy-content{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.section.active>#hoy-content>.card{margin-bottom:0}.section.active>#hoy-content>#semaphore-card,.section.active>#hoy-content>#sync-version-card{grid-column:1/-1}
+  #content>.section.active{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+  #content>.section.active>.ux-hero,#content>.section.active>.ux-panel,#content>.section.active>.section-divider,#content>.section.active>.ux-top-note,#content>.section.active>#hoy-empty,#content>.section.active>#hoy-content,#content>.section.active>#perf-scores,#content>.section.active>#training-load-pro-card,#content>.section.active>#salud-hero-grid,#content>.section.active>#card-sleep-detail,#content>.section.active>#card-naps,#content>.section.active>#physiology-card,#content>.section.active>#analysis-card,#content>.section.active>#msq-science-registry,#content>.section.active>#audit-technical-card,#content>.section.active>#chart-engine-card,#ai-section.active>.card{grid-column:1/-1}
+  #content>.section.active>.card{margin-bottom:0}
+  #content>.section.active>#hoy-content:not([style*="none"]){display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+  #content>.section.active>#hoy-content>.card{margin-bottom:0}
+  #content>.section.active>#hoy-content>#quick-stats,#content>.section.active>#hoy-content>.ux-panel,#content>.section.active>#hoy-content>#semaphore-card,#content>.section.active>#hoy-content>#sync-version-card,#content>.section.active>#hoy-content>#msq-coach-decision-card,#content>.section.active>#hoy-content>#msq-top-toolbar,#content>.section.active>#hoy-content>#msq-weekly-report-card{grid-column:1/-1}
+  .ux-panel.open .ux-source-section:not(#plan-section){display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+  .ux-panel.open .ux-source-section:not(#plan-section)>.card{margin-bottom:0}
+  #carreras-section>#card-last-activity-hr{grid-column:1/-1}
 }
 @keyframes uxFade{from{opacity:.75;transform:translateY(4px)}to{opacity:1;transform:none}}
 
@@ -6979,7 +8284,7 @@ body{background:transparent;}
   function metric(label,value,sub,color){return '<div class="ux-metric"><div class="ux-metric-label">'+esc(label)+'</div><div class="ux-metric-value" style="color:'+esc(color||'var(--text)')+'">'+esc(value==null||value===''?'--':value)+'</div><div class="ux-metric-sub">'+esc(sub||'')+'</div></div>';}
   function hero(sectionId,id,kicker,title,sub,metrics,cls){var sec=by(sectionId); if(!sec) return; var el=by(id); if(!el){el=document.createElement('div'); el.id=id; el.className='ux-hero '+(cls||''); sec.insertBefore(el,sec.firstChild);} el.innerHTML='<div class="ux-kicker">'+esc(kicker)+'</div><div class="ux-title">'+esc(title)+'</div><div class="ux-sub">'+esc(sub)+'</div><div class="ux-metrics">'+metrics.join('')+'</div>';}
   function semClass(d){var s=String(((d.adaptive_workout||{}).semaphore)||((d.training||{}).today||{}).semaphore||'GREEN').toUpperCase(); return s.indexOf('RED')>=0?'ux-sem-red':(s.indexOf('YELLOW')>=0?'ux-sem-yellow':'ux-sem-green');}
-  function renderHeroes(){var d=data(); if(!d||!Object.keys(d).length) return; var p=d.profile||{}, h=latestHealth(d), fm=d.fat_metrics||d.fat_oxidation||{}, wk=fm.weekly||{}, mo=fm.monthly||{}, fatmax=fm.fatmax||{}, wo=d.adaptive_workout||(d.training&&d.training.workout)||{}, ph=d.physiology_panel||{}, pr=(d.training||{}).periodization||{}, lc=(d.training||{}).load_curve||{}, r=d.readiness||d.training_readiness||{}; var sem=by('semaphore-card'), hc=by('hoy-content'); if(sem&&hc){sem.classList.add('ux-hero-card'); sem.classList.remove('ux-sem-red','ux-sem-yellow','ux-sem-green'); sem.classList.add(semClass(d)); if(hc.firstElementChild!==sem) hc.insertBefore(sem,hc.firstElementChild);} hero('salud-section','ux-hero-salud','Recuperación','Estado fisiológico','Lectura rápida de tolerancia al entrenamiento y señales corporales.',[metric('HRV',p.hrv_weekly||h.hrv_week||h.hrv_night||'--','ms / estabilidad','var(--purple)'),metric('FC reposo',p.fc_reposo||h.rhr||'--','bpm','var(--red)'),metric('Body Battery',h.bb_high||h.bb_low||'--','último registro','var(--green)'),metric('Sueño',h.sleep_total_h||'--','horas','var(--cyan)')],'ux-green'); hero('grasa-section','ux-hero-grasa','FatOx Pro','Quema de grasa','FatMax, oxidación estimada y acumulado por sesión sin cambiar cálculos.',[metric('Hoy',(fm.today&&fm.today.fat_g)||'--','g grasa','var(--orange)'),metric('Semana',wk.total_fat_g||'--','g grasa','var(--green)'),metric('FatMax',wk.fatmax_minutes||'--','min / meta','var(--cyan)'),metric('Mes',mo.total_fat_g||'--','g acumulados','var(--purple)')],'ux-yellow'); hero('rendimiento-section','ux-hero-rendimiento','Laboratorio','Rendimiento deportivo','VO2max, carga, adaptación, deriva cardíaca y calidad aeróbica.',[metric('VO2max',p.vo2max||((d.training||{}).status||{}).vo2max_precise||'--','ml/kg/min','var(--cyan)'),metric('Readiness',r.score||((d.today||{}).training_readiness||{}).score||'--','/100','var(--green)'),metric('Bloque',pr.block||pr.name||'--','periodización','var(--yellow)'),metric('Strain',lc.training_strain||ph.training_strain||'--','carga × monotonía','var(--purple)')],''); hero('plan-section','ux-hero-plan','Plan diario',wo.name||'Entrenamiento adaptativo','Sesión sugerida según recuperación, carga, zonas y objetivo.',[metric('Rango FC',wo.hr_range||'--','objetivo','var(--red)'),metric('Duración',wo.total_min||wo.duration_min||'--','min','var(--cyan)'),metric('Zona','Z'+(wo.zone_target||wo.zone||'--'),'target','var(--green)'),metric('FatMax',(fatmax.bpm_low||'--')+'–'+(fatmax.bpm_high||'--'),'bpm','var(--orange)')],''); hero('datos-section','ux-hero-datos','Auditoría','Datos y sincronización','Control técnico del JSON, caché, servidor y calidad de campos.',[metric('Salud',arr(d.health_daily).length,'días','var(--cyan)'),metric('Actividades',arr(d.activities).length,'registros','var(--green)'),metric('Calidad',(d.data_quality&&d.data_quality.score)||'--','/100','var(--purple)'),metric('Contrato',(d.contract&&d.contract.schema)||d.version||'--','schema','var(--yellow)')],'');}
+  function renderHeroes(){var d=data(); if(!d||!Object.keys(d).length) return; var p=d.profile||{}, hd=arr(d.health_daily).slice().sort(function(a,b){return String(b.date||'').localeCompare(String(a.date||''));}), h=hd.find(function(x){return Object.keys(x||{}).length>1;})||{}, sleepDay=hd.find(function(x){return (x.sleep_total_h||0)>0;})||h, fm=d.fat_metrics||d.fat_oxidation||{}, wk=fm.weekly||{}, mo=fm.monthly||{}, fatmax=fm.fatmax||{}, wo=d.adaptive_workout||(d.training&&d.training.workout)||{}, ph=d.physiology_panel||{}, pr=(d.training||{}).periodization||{}, lc=(d.training||{}).load_curve||{}, r=d.readiness||d.training_readiness||{}; var sem=by('semaphore-card'), hc=by('hoy-content'); if(sem&&hc){sem.classList.add('ux-hero-card'); sem.classList.remove('ux-sem-red','ux-sem-yellow','ux-sem-green'); sem.classList.add(semClass(d)); if(hc.firstElementChild!==sem) hc.insertBefore(sem,hc.firstElementChild);} hero('salud-section','ux-hero-salud','Recuperación','Estado fisiológico','Lectura rápida de tolerancia al entrenamiento y señales corporales.',[metric('HRV',p.hrv_weekly||h.hrv_week||h.hrv_night||'--','ms / estabilidad','var(--purple)'),metric('FC reposo',p.fc_reposo||h.rhr||'--','bpm','var(--red)'),metric('Body Battery',h.bb_high||h.bb_low||'--','último registro','var(--green)'),metric('Sueño',(sleepDay.sleep_total_h?sleepDay.sleep_total_h:'--'),(sleepDay.date&&sleepDay.date!==h.date)?sleepDay.date.slice(5):'horas','var(--cyan)')],'ux-green'); hero('grasa-section','ux-hero-grasa','FatOx Pro','Quema de grasa','FatMax, oxidación estimada y acumulado por sesión sin cambiar cálculos.',[metric('Hoy',(fm.today&&fm.today.fat_g!=null)?fm.today.fat_g:'--','g grasa','var(--orange)'),metric('Semana',wk.total_fat_g||'--','g grasa','var(--green)'),metric('FatMax',wk.fatmax_minutes||'--','min / meta','var(--cyan)'),metric('Mes',mo.total_fat_g||'--','g acumulados','var(--purple)')],'ux-yellow'); hero('rendimiento-section','ux-hero-rendimiento','Laboratorio','Rendimiento deportivo','VO2max, carga, adaptación, deriva cardíaca y calidad aeróbica.',[metric('VO2max',p.vo2max||((d.training||{}).status||{}).vo2max_precise||'--','ml/kg/min','var(--cyan)'),metric('Readiness',r.score||((d.today||{}).training_readiness||{}).score||'--','/100','var(--green)'),metric('Bloque',pr.block||pr.name||'--','periodización','var(--yellow)'),metric('Strain',lc.training_strain||ph.training_strain||'--','carga × monotonía','var(--purple)')],''); hero('plan-section','ux-hero-plan','Plan diario',wo.name||'Entrenamiento adaptativo','Sesión sugerida según recuperación, carga, zonas y objetivo.',[metric('Rango FC',wo.hr_range||'--','objetivo','var(--red)'),metric('Duración',wo.total_min||wo.duration_min||'--','min','var(--cyan)'),metric('Zona','Z'+(wo.zone_target||wo.zone||'--'),'target','var(--green)'),metric('FatMax',(fatmax.bpm_low||'--')+'–'+(fatmax.bpm_high||'--'),'bpm','var(--orange)')],''); hero('datos-section','ux-hero-datos','Auditoría','Datos y sincronización','Control técnico del JSON, caché, servidor y calidad de campos.',[metric('Salud',arr(d.health_daily).length,'días','var(--cyan)'),metric('Actividades',arr(d.activities).length,'registros','var(--green)'),metric('Calidad',(d.data_quality&&d.data_quality.score)||'--','/100','var(--purple)'),metric('Contrato',(d.meta&&d.meta.schema_version)||(d.contract&&(d.contract.schema||d.contract.version))||d.version||'--','schema','var(--yellow)')],'');}
   function resizeCharts(){try{Object.keys(window.charts||{}).forEach(function(k){var ch=window.charts[k]; if(ch&&ch.resize) ch.resize();});}catch(e){}}
   function bindUpload(){}
   function patchUploadZone(){
@@ -7033,14 +8338,17 @@ body{background:transparent;}
     Object.keys(cs).forEach(function(id){ try{ if(cs[id] && cs[id].resize) cs[id].resize(); }catch(e){ console.warn('resize chart',id,e); } });
   }
   function renderTab(tab){
+    if(!window.G && (typeof G==='undefined' || !G)) return;
     tab=tab||activeTab();
     try{ if(tab==='salud' && typeof renderSalud==='function') renderSalud(); }catch(e){console.warn('renderSalud',e);}
     try{ if(tab==='zonas' && typeof renderZonas==='function') renderZonas(); }catch(e){console.warn('renderZonas',e);}
     try{ if(tab==='grasa' && typeof renderGrasa==='function') renderGrasa(); }catch(e){console.warn('renderGrasa',e);}
-    try{ if(tab==='rendimiento' && typeof renderRendimiento==='function') renderRendimiento(); }catch(e){console.warn('renderRendimiento',e);}
+    try{ if(tab==='progreso'){ if(typeof renderPeso==='function') renderPeso(); if(typeof window.renderGrasa==='function') window.renderGrasa(); if(typeof window.renderEdadDefinitiva==='function') window.renderEdadDefinitiva(); } }catch(e){console.warn('renderProgreso',e);}
+    try{ if(tab==='rendimiento'){ if(typeof renderRendimiento==='function') renderRendimiento(); if(typeof renderZonas==='function') renderZonas(); if(typeof renderCarreras==='function') renderCarreras(); if(typeof renderVO2==='function') renderVO2(); } }catch(e){console.warn('renderRendimiento',e);}
     try{ if(tab==='peso' && typeof renderPeso==='function') renderPeso(); }catch(e){console.warn('renderPeso',e);}
     try{ if(tab==='carreras' && typeof renderCarreras==='function'){ renderCarreras(); if(typeof renderLastActivityHR==='function') renderLastActivityHR(); } }catch(e){console.warn('renderCarreras',e);}
     try{ if(tab==='plan' && typeof renderPlanDay==='function') renderPlanDay(); }catch(e){console.warn('renderPlan',e);}
+    try{ if(tab==='datos'){ if(typeof window.renderDatosDefinitivos==='function') window.renderDatosDefinitivos(); if(typeof window.renderAuditV48==='function') window.renderAuditV48(); if(typeof renderAuditTechnical==='function') renderAuditTechnical(); } }catch(e){console.warn('renderDatos',e);}
     setTimeout(resizeAll,80); setTimeout(resizeAll,260); setTimeout(resizeAll,700);
   }
   function patchMkChart(){
@@ -7050,8 +8358,12 @@ body{background:transparent;}
         var c=by(id); if(!c) return;
         var cs=getCharts();
         try{ if(cs[id] && cs[id].destroy) cs[id].destroy(); delete cs[id]; }catch(e){}
-        var finalCfg=cfg||{};
-        try{ if(typeof chartHasData==='function' && typeof placeholderChart==='function' && !chartHasData(finalCfg)){ finalCfg=placeholderChart('Datos pendientes'); } }catch(e){}
+        var rawCfg = cfg||{};
+        var base = (typeof CH!=='undefined' && CH.defaults) ? JSON.parse(JSON.stringify(CH.defaults)) : {};
+        var mergedOpts = (rawCfg.type!=='empty' && typeof deepMerge==='function')
+          ? deepMerge(base, rawCfg.options||{})
+          : (rawCfg.options||{});
+        var finalCfg = Object.assign({}, rawCfg, {options: mergedOpts});
         try{
           c.style.display='block'; c.style.width='100%'; c.style.height='100%';
           cs[id]=new Chart(c, finalCfg);
@@ -7218,10 +8530,18 @@ body.msq-focus-mode #hoy-content>.card:not(#msq-coach-decision-card):not(#msq-pl
   }
 
   function computeWeekly(d){
-    var z2Max=getZ2Max(d), acts=recentActivities(d,7), total=sum(acts.map(activityMinutes));
+    var zones=getZones(d), z2Max=getZ2Max(d), acts=recentActivities(d,7), low=0, high=0, total=0;
+    acts.forEach(function(a){
+      var m=activityMinutes(a); if(!m) return;
+      if(typeof window.msqExtractZoneMinutes==='function'){
+        var zm=window.msqExtractZoneMinutes(a, zones);
+        var l=zm[0]+zm[1], h=zm[2]+zm[3]+zm[4], s=l+h;
+        if(s>0){ low+=l; high+=h; total+=s; return; }
+      }
+      total+=m; if(n(a.avg_hr,999)<=z2Max) low+=m; else high+=m;
+    });
     var sessions=acts.filter(function(a){return activityMinutes(a)>=12;}).length;
-    var low=sum(acts.filter(function(a){return n(a.avg_hr,999)<=z2Max;}).map(activityMinutes));
-    var high=Math.max(0,total-low), lowPct=total?Math.round(low/total*100):0, highPct=total?Math.round(high/total*100):0;
+    var lowPct=total?Math.round(low/total*100):0, highPct=total?Math.round(high/total*100):0;
     var sessionsScore=pct(sessions/4*100), minutesScore=pct(total/150*100), intensityScore=pct(100-Math.abs(80-lowPct)*1.2);
     var score=Math.round(sessionsScore*.35+minutesScore*.35+intensityScore*.30);
     return {score:score,sessions:sessions,totalMin:Math.round(total),lowMin:Math.round(low),highMin:Math.round(high),lowPct:lowPct,highPct:highPct,intensityScore:Math.round(intensityScore),label:labelScore(score)};
@@ -7324,12 +8644,12 @@ body.msq-focus-mode #hoy-content>.card:not(#msq-coach-decision-card):not(#msq-pl
   }
 
   function addChartConclusion(id,text){var c=by(id); if(!c) return; var card=c.closest('.card'); if(!card) return; var old=card.querySelector('.msq-chart-note[data-for="'+id+'"]'); if(!old){old=document.createElement('div'); old.className='msq-chart-note'; old.setAttribute('data-for',id); card.appendChild(old);} old.innerHTML='<strong>💡 Conclusión:</strong> '+esc(text);}
-  function renderChartConclusions(){var d=data(); if(!d||!Object.keys(d).length) return; var h=arr(d.health_daily); var rhrs=h.map(function(x){return n(x.rhr,null);}).filter(function(x){return x!==null;}); var hrvs=h.map(function(x){return n(x.hrv_night,n(x.hrv_week,null));}).filter(function(x){return x!==null;}); var weekly=computeWeekly(d), risk=computeOverload(d), z2=computeZ2Efficiency(d);
+  function renderChartConclusions(){var d=data(); if(!d||!Object.keys(d).length) return; var h=arr(d.health_daily).slice().sort(function(a,b){return String(b.date||'').localeCompare(String(a.date||''));}); var rhrs=h.map(function(x){return n(x.rhr,null);}).filter(function(x){return x!==null;}); var hrvs=h.map(function(x){return n(x.hrv_night,n(x.hrv_week,null));}).filter(function(x){return x!==null;}); var weekly=computeWeekly(d), risk=computeOverload(d), z2=computeZ2Efficiency(d);
     if(rhrs.length>=2){var latest=rhrs[0], prev=avg(rhrs.slice(1,7)); addChartConclusion('chart-rhr',latest<=prev?'FC reposo estable o favorable frente a los últimos registros.':'FC reposo por encima del promedio reciente; conviene vigilar fatiga, sueño e hidratación.');}
     if(hrvs.length>=2){var lh=hrvs[0], ah=avg(hrvs.slice(1,7)); addChartConclusion('chart-hrv',lh>=ah?'HRV acompaña la recuperación actual.':'HRV por debajo del promedio reciente; mejor priorizar control de intensidad.');}
     addChartConclusion('chart-efficiency',z2.available?'Eficiencia Z2 '+z2.label.toLowerCase()+': '+(z2.delta>0?'+':'')+z2.delta+'% frente a la sesión comparable inicial.':z2.message);
     addChartConclusion('chart-zone-minutes','Distribución semanal estimada: '+weekly.lowPct+'% baja intensidad y '+weekly.highPct+'% alta/media.');
-    addChartConclusion('chart-load-curve','Riesgo de sobrecarga actual: '+risk.level+'. '+risk.action);
+    addChartConclusion('chart-training-load-pro','Riesgo de sobrecarga actual: '+risk.level+'. '+risk.action);
   }
 
   function renderCommercialUX(){
@@ -7381,9 +8701,6 @@ body.msq-focus-mode #hoy-content>.card:not(#msq-coach-decision-card):not(#msq-pl
   #generate-status{
     min-height:28px;
   }
-  @media (min-width:561px){
-    #generate-btn{font-size:18px!important;}
-  }
 </style>
 <script id="manusquash-generate-integration">
 (function(){
@@ -7400,10 +8717,10 @@ body.msq-focus-mode #hoy-content>.card:not(#msq-coach-decision-card):not(#msq-pl
   function normalizeHeaderGenerateLabel(){
     var b=by('generate-btn'); if(!b) return;
     var txt=(b.textContent||'').trim();
-    if(/generado|✅/i.test(txt)){ setBtnText(b,'✅'); b.title='Entrenamiento generado hoy'; b.style.opacity='.70'; return; }
-    if(/verificando|generando|procesando|⏳/i.test(txt)){ setBtnText(b,'⏳'); b.title='Generando entrenamiento diario'; b.style.opacity='1'; return; }
-    if(/error|sin conexión|respuesta inesperada|⚠|❌/i.test(txt)){ setBtnText(b,'⚠️'); b.title='No se pudo generar. Revisa conexión o servidor.'; b.style.opacity='1'; return; }
-    setBtnText(b,'🏃');
+    if(/generado|✅/i.test(txt)){ setBtnText(b,'✅ Generado'); b.title='Entrenamiento generado hoy'; b.style.opacity='.70'; return; }
+    if(/verificando|generando|procesando|⏳/i.test(txt)){ setBtnText(b,'⏳ Generando'); b.title='Generando entrenamiento diario'; b.style.opacity='1'; return; }
+    if(/error|sin conexión|respuesta inesperada|⚠|❌/i.test(txt)){ setBtnText(b,'⚠️ Reintentar'); b.title='No se pudo generar. Revisa conexión o servidor.'; b.style.opacity='1'; return; }
+    setBtnText(b,'🏃 Entreno');
     b.title='Generar entrenamiento diario ahora con datos frescos de Garmin';
     b.style.opacity='1';
   }
@@ -7560,9 +8877,14 @@ body.msq-focus-mode #hoy-content>.card:not(#msq-coach-decision-card):not(#msq-pl
       if(tab==='datos'){
         if(window.renderDatosDefinitivos) window.renderDatosDefinitivos();
         if(window.renderAuditV48) window.renderAuditV48();
+        if(window.renderAuditTechnical) window.renderAuditTechnical();
       }
     });
-    setTimeout(function(){safe(function(){window.dispatchEvent(new Event('resize'))})},120);
+    setTimeout(function(){safe(function(){
+      if(window.ManuSquashUX494 && window.ManuSquashUX494.resizeCharts) window.ManuSquashUX494.resizeCharts();
+      if(window.ManuSquashCharts495 && window.ManuSquashCharts495.resizeAll) window.ManuSquashCharts495.resizeAll();
+      window.dispatchEvent(new Event('resize'));
+    })},120);
   }
   function activate(tab){
     if(MAIN.indexOf(tab)<0) tab='hoy';
@@ -7570,7 +8892,7 @@ body.msq-focus-mode #hoy-content>.card:not(#msq-coach-decision-card):not(#msq-pl
     qsa('#content>.section').forEach(function(sec){
       var on = sec.id === tab+'-section';
       sec.classList.toggle('active', on);
-      sec.style.display = on ? 'block' : 'none';
+      sec.style.display = on ? '' : 'none';
     });
     renderFor(tab);
   }
@@ -7586,7 +8908,20 @@ body.msq-focus-mode #hoy-content>.card:not(#msq-coach-decision-card):not(#msq-pl
         ev.preventDefault();
         var p=head.closest('.ux-panel'); if(!p) return;
         p.classList.toggle('open'); syncPanelState(p);
-        setTimeout(function(){safe(function(){window.dispatchEvent(new Event('resize'))})},80);
+        if(p.classList.contains('open')){
+          var tEl = document.querySelector('.tabs .tab.active');
+          var curTab = (tEl && tEl.dataset && tEl.dataset.tab) || 'hoy';
+          renderFor(curTab);
+          [80, 280].forEach(function(ms){
+            setTimeout(function(){safe(function(){
+              if(window.ManuSquashUX494 && window.ManuSquashUX494.resizeCharts) window.ManuSquashUX494.resizeCharts();
+              if(window.ManuSquashCharts495 && window.ManuSquashCharts495.resizeAll) window.ManuSquashCharts495.resizeAll();
+              window.dispatchEvent(new Event('resize'));
+            })}, ms);
+          });
+        } else {
+          setTimeout(function(){safe(function(){window.dispatchEvent(new Event('resize'))})},80);
+        }
       });
     });
     activate((document.querySelector('.tabs .tab.active')||{}).dataset && document.querySelector('.tabs .tab.active').dataset.tab || 'hoy');

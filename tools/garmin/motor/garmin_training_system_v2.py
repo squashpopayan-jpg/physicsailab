@@ -599,7 +599,18 @@ def extract_all(api: Garmin, days: int = 90) -> dict:
                 light  = dto.get("lightSleepSeconds", 0) or 0
                 sleep_start = dto.get("sleepStartTimestampLocal") or dto.get("sleepStartTimestampGMT")
                 sleep_end   = dto.get("sleepEndTimestampLocal")   or dto.get("sleepEndTimestampGMT")
-                overall_score  = dto.get("overallScore") or dto.get("sleepScore") or dto.get("score")
+                sleep_scores_obj = dto.get("sleepScores") or {}
+                if not isinstance(sleep_scores_obj, dict):
+                    sleep_scores_obj = {}
+                overall_score  = (
+                    dto.get("overallScore")
+                    or dto.get("sleepScore")
+                    or dto.get("score")
+                    or (sleep_scores_obj.get("overall") or {}).get("value")
+                )
+                quality_score  = dto.get("qualityScore") or (sleep_scores_obj.get("quality") or {}).get("value")
+                duration_score = dto.get("durationScore") or (sleep_scores_obj.get("duration") or {}).get("value")
+                sleep_fb       = dto.get("sleepScoreFeedback") or (sleep_scores_obj.get("overall") or {}).get("qualifierKey")
                 bb_recovered   = dto.get("bodyBatteryChange") or dto.get("bodyBatteryRecovered")
 
                 rec |= {
@@ -616,9 +627,9 @@ def extract_all(api: Garmin, days: int = 90) -> dict:
                     "sleep_stress":         dto.get("avgSleepStress"),
                     "sleep_bb_recovered":   bb_recovered,
                     "sleep_score_overall":  overall_score,
-                    "sleep_score_quality":  dto.get("qualityScore"),
-                    "sleep_score_duration": dto.get("durationScore"),
-                    "sleep_feedback":       dto.get("sleepScoreFeedback"),
+                    "sleep_score_quality":  quality_score,
+                    "sleep_score_duration": duration_score,
+                    "sleep_feedback":       sleep_fb,
                 }
 
                 # ── Siestas (napDTO) ──────────────────────────
@@ -758,10 +769,17 @@ def extract_all(api: Garmin, days: int = 90) -> dict:
     except Exception as e:
         print(f"    ❌ {e}")
 
-    # ── Laps de la última actividad ──────────────────────
+    # ── Laps y serie HR de la última actividad entrenada ─
     print("  🏁 Laps última actividad...")
     try:
-        last_act = raw["activities"][0] if raw["activities"] else None
+        acts_list = raw["activities"] or []
+        def _is_meaningful_hr_act(a):
+            if not a or not a.get("id") or (a.get("dur_min") or 0) <= 5:
+                return False
+            ext = a.get("garmin_extra_metrics") or {}
+            zsum = sum(float(ext.get(f"hrTimeInZone_{z}") or 0) for z in range(1, 6))
+            return float(a.get("avg_hr") or 0) >= 95 or float(a.get("max_hr") or 0) >= 115 or zsum > 0 or float(a.get("training_load") or 0) >= 5
+        last_act = next((a for a in sorted(acts_list, key=lambda x: str(x.get("date") or ""), reverse=True) if _is_meaningful_hr_act(a)), None) or (acts_list[0] if acts_list else None)
         if last_act and last_act.get("id"):
             detail = None
             if hasattr(api, "get_activity_details"):
@@ -771,7 +789,11 @@ def extract_all(api: Garmin, days: int = 90) -> dict:
             if detail:
                 raw["last_activity_laps"] = _extract_laps(detail)
                 raw["last_activity_detail_id"] = last_act["id"]
-                print(f"    ✅ {len(raw['last_activity_laps'])} laps")
+                if not last_act.get("route_points"):
+                    hr_only = _extract_hr_series_from_detail(detail)
+                    if hr_only:
+                        last_act["hr_series"] = hr_only
+                print(f"    ✅ {len(raw['last_activity_laps'])} laps ({last_act.get('name','')})")
     except Exception as e:
         print(f"    ❌ {e}")
 
@@ -1216,9 +1238,12 @@ def calculate_performance_metrics(raw: dict, profile: dict) -> dict:
     - Deriva cardiaca promedio
     """
     acts   = raw.get("health_daily", [])
-    runs   = [a for a in raw.get("activities", [])
-              if ("running" in str(a.get("type","")).lower() or str(a.get("type","")).lower() in ("run","jog","virtual_run"))
-              and a.get("avg_hr") and a.get("dist_km", 0) > 1]
+    runs   = sorted(
+        [a for a in raw.get("activities", [])
+         if ("running" in str(a.get("type","")).lower() or str(a.get("type","")).lower() in ("run","jog","virtual_run"))
+         and a.get("avg_hr") and a.get("dist_km", 0) > 1],
+        key=lambda x: str(x.get("date", "")),
+    )
     zones  = profile.get("zones", calc_zones(193, 54))
     z2_max = zones[1]["bpm_high"] if zones else 151
     z2_min = zones[1]["bpm_low"]  if zones else 137
@@ -2452,6 +2477,59 @@ def _build_advanced_performance(raw: dict, profile: dict, workout: dict, route_s
         ],
     }
 
+def _extract_hr_series_from_detail(detail: dict) -> list[dict]:
+    """Extrae serie {sec, hr} desde activityDetailMetrics incluso sin GPS."""
+    if not isinstance(detail, dict):
+        return []
+    rows = detail.get("activityDetailMetrics") or []
+    desc = detail.get("metricDescriptors") or detail.get("metricsDescriptors") or detail.get("activityDetailMetricDescriptors") or []
+    if not isinstance(rows, list) or not rows:
+        return []
+    hr_i, dur_i, time_i = None, None, None
+    if isinstance(desc, list) and desc:
+        for i, d in enumerate(desc):
+            if isinstance(d, dict):
+                idx_m = d.get("metricsIndex")
+                idx_m = int(idx_m) if idx_m is not None else i
+                name = str(d.get("key") or d.get("metricKey") or d.get("displayName") or "").lower()
+            else:
+                idx_m = i
+                name = str(d).lower()
+            if hr_i is None and ("heart" in name or name == "hr"):
+                hr_i = idx_m
+            if dur_i is None and ("elapsed" in name or "sumduration" in name or "timer" in name):
+                dur_i = idx_m
+            elif time_i is None and ("duration" in name or "time" in name):
+                time_i = idx_m
+    sec_i = dur_i if dur_i is not None else time_i
+    out = []
+    for idx, row in enumerate(rows):
+        if not isinstance(row, dict):
+            continue
+        hr = sec = None
+        vals = row.get("metrics")
+        if isinstance(vals, list) and hr_i is not None and hr_i < len(vals):
+            raw_hr = vals[hr_i]
+            hr = raw_hr.get("value") if isinstance(raw_hr, dict) else raw_hr
+            if sec_i is not None and sec_i < len(vals):
+                raw_sec = vals[sec_i]
+                sec = raw_sec.get("value") if isinstance(raw_sec, dict) else raw_sec
+        else:
+            hr  = row.get("heartRate") or row.get("hr") or row.get("heartRateBpm")
+            sec = row.get("timerDuration") or row.get("sumElapsedDuration") or row.get("elapsedDuration")
+        try:
+            if hr is not None and float(hr) > 30:
+                out.append({"sec": int(float(sec)) if sec is not None else idx * 5, "hr": int(round(float(hr)))})
+        except Exception:
+            pass
+    if out and out[0]["sec"] > 1e8:  # timestamp epoch -> relative seconds
+        t0 = out[0]["sec"]
+        div = 1000 if t0 > 1e11 else 1
+        for p in out:
+            p["sec"] = max(0, (p["sec"] - t0) // div)
+    return out
+
+
 def _extract_laps(detail: dict) -> list[dict]:
     """
     Extrae laps/splits de activityDetailMetrics o del campo 'laps' del detalle.
@@ -2519,12 +2597,15 @@ def _build_last_activity_hr(raw: dict, profile: dict) -> dict:
     if not acts:
         return {"available": False}
 
-    # Última actividad con datos de HR
-    last = None
-    for a in reversed(acts):
-        if a.get("avg_hr") and a.get("dur_min", 0) > 5:
-            last = a
-            break
+    # Última actividad con esfuerzo HR real (evita registros accidentales en reposo tipo 74 bpm / 80 pasos)
+    acts_sorted = sorted(acts, key=lambda x: str(x.get("date") or ""), reverse=True)
+    def _has_real_effort(a):
+        ext = a.get("garmin_extra_metrics") or {}
+        zsum = sum(float(ext.get(f"hrTimeInZone_{z}") or 0) for z in range(1, 6))
+        return float(a.get("avg_hr") or 0) >= 95 or float(a.get("max_hr") or 0) >= 115 or zsum > 0 or float(a.get("training_load") or 0) >= 5
+    last = next((a for a in acts_sorted if (a.get("dur_min") or 0) > 5 and a.get("avg_hr") and _has_real_effort(a)), None)
+    if not last:
+        last = next((a for a in acts_sorted if a.get("avg_hr") and (a.get("dur_min") or 0) > 5), None)
     if not last:
         return {"available": False}
 
@@ -2544,15 +2625,17 @@ def _build_last_activity_hr(raw: dict, profile: dict) -> dict:
         {"z": 5, "name": "Z5 VO2max",           "lo": karvonen_bpm(0.90), "hi": karvonen_bpm(1.00), "color": "#f87171"},
     ]
 
-    # ── Serie HR desde route_points ───────────────────────
-    pts = last.get("route_points") or []
+    # ── Serie HR desde route_points o detalle HR ──────────
+    pts = last.get("route_points") or last.get("hr_series") or []
     hr_series = []
     zone_seconds = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 0: 0}  # 0 = por debajo de Z1
 
     prev_sec = None
-    for p in pts:
+    for idx_p, p in enumerate(pts):
         hr  = p.get("hr")
         sec = p.get("sec")
+        if sec is None and hr is not None:
+            sec = idx_p * 5
         if hr is None or sec is None:
             continue
         hr_series.append({"sec": int(sec), "hr": int(hr)})
@@ -2567,15 +2650,21 @@ def _build_last_activity_hr(raw: dict, profile: dict) -> dict:
             zone_seconds[zone_num] += dt
         prev_sec = int(sec)
 
-    # Si no hay route_points con HR, estimar distribución solo con avg/max
-    if not hr_series and last.get("avg_hr"):
-        avg = float(last["avg_hr"])
-        dur_sec = float(last.get("dur_min", 0)) * 60
-        zone_num = 0
-        for zd in zones_def:
-            if avg >= zd["lo"]:
-                zone_num = zd["z"]
-        zone_seconds[zone_num] = int(dur_sec)
+    # Si no hay serie temporal, usar hrTimeInZone_1..5 de Garmin antes de estimar por avg_hr
+    if sum(zone_seconds.values()) == 0:
+        extra = last.get("garmin_extra_metrics") or {}
+        garmin_z = {z: int(round(float(extra.get(f"hrTimeInZone_{z}") or 0))) for z in range(1, 6)}
+        if sum(garmin_z.values()) > 0:
+            for z in range(1, 6):
+                zone_seconds[z] = garmin_z[z]
+        elif last.get("avg_hr"):
+            avg = float(last["avg_hr"])
+            dur_sec = float(last.get("dur_min", 0)) * 60
+            zone_num = 0
+            for zd in zones_def:
+                if avg >= zd["lo"]:
+                    zone_num = zd["z"]
+            zone_seconds[zone_num] = int(dur_sec)
 
     total_sec = sum(zone_seconds.values()) or 1
 
@@ -2611,22 +2700,8 @@ def _build_last_activity_hr(raw: dict, profile: dict) -> dict:
         "hr_series_points": len(hr_series_out),
         "zone_distribution": zone_distribution,
         "zones_def":        [{k: v for k, v in z.items() if k != "color"} for z in zones_def],
-        "note":             "Serie HR de route_points (Garmin API). Zonas Karvonen personalizadas.",
+        "note":             "Serie HR de route_points o detalle Garmin API. Zonas Karvonen personalizadas.",
     }
-
-
-
-    out = []
-    for a in raw.get("activities", []):
-        if a.get("type") not in ("running", "trail_running", "walking", "cycling"): continue
-        pts = a.get("route_points") or []
-        out.append({
-            "id": a.get("id"), "name": a.get("name"), "type": a.get("type"), "date": a.get("date"),
-            "dist_km": a.get("dist_km", 0), "dur_min": a.get("dur_min", 0), "avg_hr": a.get("avg_hr"),
-            "max_hr": a.get("max_hr"), "route_available": bool(pts or a.get("start_point")),
-            "route_point_count": len(pts), "start_point": a.get("start_point"), "end_point": a.get("end_point"),
-        })
-    return out[:40]
 
 
 
