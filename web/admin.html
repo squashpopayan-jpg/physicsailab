@@ -695,6 +695,9 @@
                 <button class="adm-btn adm-btn-secondary" onclick="refreshAdminData(true)" title="Sincronizar telemetría y datos">
                     🔄 Refrescar
                 </button>
+                <a href="/garmin/" target="_blank" class="adm-btn adm-btn-secondary" style="border-color:rgba(34, 211, 238, 0.45); color:#22d3ee; font-weight:700;" title="Abrir ManuSquash Garmin AI Pro (Privado)">
+                    ⌚ Garmin Pro ↗️
+                </a>
                 <a href="/truetrading/" target="_blank" class="adm-btn adm-btn-secondary" style="border-color:rgba(245, 158, 11, 0.45); color:#fbbf24; font-weight:700;" title="Abrir TrueTrading Gold (Privado)">
                     📈 TrueTrading ↗️
                 </a>
@@ -1361,9 +1364,47 @@
             checkAuth();
         });
 
+        const ADMIN_AUTH_SALT = 'PHYSICSAILAB_DOCENTE_OBANDO_2026';
+        function computeAdminToken(key) {
+            const str = String(key || '').trim().toUpperCase() + '::' + ADMIN_AUTH_SALT;
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                hash = ((hash << 5) - hash) + str.charCodeAt(i);
+                hash |= 0;
+            }
+            return 'auth_' + Math.abs(hash).toString(36) + '_' + btoa(str).slice(0, 10);
+        }
+
+        const VALID_ADMIN_TOKENS = [
+            computeAdminToken(ADMIN_MASTER_KEY.toUpperCase()),
+            computeAdminToken('OBANDO-MASTER-ADMIN')
+        ];
+
+        function getSafeRedirectUrl() {
+            try {
+                const params = new URLSearchParams(window.location.search);
+                const red = (params.get('redirect') || '').trim();
+                if (red && red.startsWith('/') && !red.startsWith('//') && !/^\/admin\.html/i.test(red)) {
+                    return red;
+                }
+            } catch (e) {}
+            return '';
+        }
+
         function checkAuth() {
-            const isAdmin = localStorage.getItem('physicsailab_admin') === 'true';
+            const hasFlag = localStorage.getItem('physicsailab_admin') === 'true';
+            const token = localStorage.getItem('physicsailab_admin_token');
+            const isAdmin = hasFlag && Boolean(token) && VALID_ADMIN_TOKENS.includes(token);
+            if (!isAdmin && (hasFlag || token)) {
+                localStorage.removeItem('physicsailab_admin');
+                localStorage.removeItem('physicsailab_admin_token');
+            }
             if (isAdmin) {
+                const target = getSafeRedirectUrl();
+                if (target) {
+                    window.location.replace(target);
+                    return;
+                }
                 document.getElementById('adm-login-screen').style.display = 'none';
                 document.getElementById('adm-dashboard-screen').style.display = 'flex';
                 loadAdminData();
@@ -1377,9 +1418,12 @@
             const passInput = document.getElementById('adm-pass');
             const errDiv = document.getElementById('adm-login-err');
             const val = (passInput.value || '').trim();
+            const upper = val.toUpperCase();
 
-            if (val === ADMIN_MASTER_KEY || val.toUpperCase() === 'OBANDO-MASTER-ADMIN') {
+            if (upper === ADMIN_MASTER_KEY.toUpperCase() || upper === 'OBANDO-MASTER-ADMIN') {
+                const canonKey = upper === 'OBANDO-MASTER-ADMIN' ? 'OBANDO-MASTER-ADMIN' : ADMIN_MASTER_KEY.toUpperCase();
                 localStorage.setItem('physicsailab_admin', 'true');
+                localStorage.setItem('physicsailab_admin_token', computeAdminToken(canonKey));
                 localStorage.setItem('physicsailab_unlocked_all', 'true');
                 errDiv.style.display = 'none';
                 checkAuth();

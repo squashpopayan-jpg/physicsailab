@@ -3635,6 +3635,23 @@ window.renderEnrolledCourses = renderEnrolledCourses;
     updateStudentBannerState();
     renderCourses('all');
 
+    let _lastAdminNavState = isAdmin();
+    function syncAdminNavFromStorage() {
+        const currentAdmin = isAdmin();
+        updateStudentBannerState();
+        if (currentAdmin !== _lastAdminNavState) {
+            _lastAdminNavState = currentAdmin;
+            renderEnrolledCourses();
+            renderCourses(currentCourseFilter);
+        }
+    }
+    window.addEventListener('storage', (e) => {
+        if (!e || !e.key || e.key === 'physicsailab_admin' || e.key === 'physicsailab_admin_token') {
+            syncAdminNavFromStorage();
+        }
+    });
+    window.addEventListener('focus', syncAdminNavFromStorage);
+
     // 4. Renderizar Canales Oficiales en Spotify (Visual Nativo y Carga Compacta Móvil)
     let spotifyExpanded = false;
     window.toggleSpotifyExpansion = function() {
