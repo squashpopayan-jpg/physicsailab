@@ -1,0 +1,52 @@
+<template class="chapter-src" data-id="comparador" data-num="15" data-title="Comparadores y sensores: la luz crepuscular" data-part="Parte V · Circuitos integrados" data-short="El A.O. sin realimentación como comparador; umbral con potenciómetro; salida de colector abierto del LM393; interruptor crepuscular con LDR que enciende un LED en la oscuridad">
+<p class="lead">Si a un amplificador operacional se le quita la realimentación, su enorme ganancia lo convierte en una <b>decisión</b>: la salida salta al riel positivo cuando \(V_+>V_-\) y al negativo cuando \(V_+<V_-\). Es un <b>comparador</b>: la manera más barata de pasar de una magnitud analógica (la luz, la temperatura, una tensión) a un sí o no digital. Con una fotorresistencia y un potenciómetro se construye aquí un interruptor crepuscular, el corazón de cualquier lámpara de jardín automática.</p>
+
+<section>
+<h2>El comparador</h2>
+<p>La salida es \(V_{out}=V_{alto}\) si \(V_+>V_-\) y \(V_{bajo}\) si \(V_+<V_-\). Una de las entradas recibe la señal; la otra, una <b>referencia</b> que fija el <b>umbral</b>. Existen dos tipos de salida:</p>
+<ul>
+<li><b>Push-pull</b> (el LM358 usado como comparador): la salida sube al riel positivo (menos 1,5 V) y baja casi a 0 V.</li>
+<li><b>Colector abierto</b> (LM393): la salida solo puede <i>hundir</i> corriente; para obtener un nivel alto se necesita un <b>resistor de pull-up</b> a la tensión deseada. Es lo que permite manejar cargas con una tensión distinta (5 V, 12 V…) o conectar varias salidas en paralelo.</li>
+</ul>
+<p>En la protoboard, el LM393 y el LM358 comparten un mismo DIP-8: dos comparadores por encapsulado. Los pines: 1 = salida A, 2 = entrada A−, 3 = entrada A+, 4 = tierra, 5/6/7 = entrada B+/B−/salida B, 8 = alimentación.</p>
+<div class="sim" data-sim="c15-lm393" data-title="LM393: salida de colector abierto con resistor de pull-up"></div>
+<div class="sim-guide"><ul>
+<li>IN− está fija en 2,5 V (divisor 10k/10k). IN+ la mueve el potenciómetro.</li>
+<li>Con IN+ por encima de 2,5 V (potenciómetro en 0,49 o menos) la salida está en <b>alto</b>: 4,97 V (el transistor de salida está cortado, el pull-up de 4,7 kΩ la lleva a +5 V).</li>
+<li>Con IN+ bajo 2,5 V (potenciómetro en 0,51 o más) la salida cae a <b>0,15 V</b>: el transistor de salida conduce y hunde la corriente del pull-up (1 mA).</li>
+<li>El cambio ocurre en un margen muy estrecho (menos de 10 mV): una señal ruidosa cerca del umbral haría oscilar la salida; el remedio es la <b>histéresis</b> (realimentación positiva con un resistor), que se estudia en cursos de electrónica analógica.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Interruptor crepuscular con una LDR</h2>
+<p>La LDR forma con un resistor de 10 kΩ un divisor (como en el capítulo 6); su punto medio entra a la entrada inversora. Un potenciómetro de 10 kΩ entre +5 V y tierra fija el umbral en la entrada no inversora. Con luz, la LDR tiene poca resistencia y la tensión de IN− es alta (> umbral): la salida va a bajo y el LED, conectado de la salida a tierra con un resistor de 330 Ω, está apagado. Al oscurecer, la LDR aumenta su resistencia, IN− baja del umbral y la salida salta a alto: el LED se enciende.</p>
+<div class="sim" data-sim="c15-crepuscular" data-title="Interruptor crepuscular: la luz decide si el LED se enciende"></div>
+<div class="sim-guide"><ul>
+<li>Con el umbral a mitad (2,5 V): a 1 y 10 lux (oscuridad) IN− vale 0,47 y 1,67 V; el LED <b>se enciende</b> (la salida sube a 3,1 V). A 50 lux, IN− = 3,03 V y el LED se apaga; a 200 lux, 4,01 V.</li>
+<li>El umbral se mueve con el potenciómetro: con 4 V (cursor en 0,2) el LED se enciende incluso con luz de 200 lux (IN− = 4,01 V justo en el límite); con 1 V (cursor en 0,8) solo se enciende en una oscuridad casi total.</li>
+<li>Sin histéresis, la lámpara parpadearía al amanecer o cuando pasa una nube; los diseños reales la incluyen.</li>
+</ul></div>
+<div class="box note"><p><b>Otras entradas, el mismo circuito.</b> Cambie la LDR por un termistor NTC: un termostato (enciende un ventilador al pasar los 30 °C); por un fotodiodo: un detector de pulso; por dos resistencias y un hilo: un sensor de nivel de agua. El comparador convierte cualquier divisor en una señal digital.</p></div>
+</section>
+
+<section>
+<h2>Problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Una LDR de 20 kΩ (10 lux) y 4 kΩ (100 lux) forma un divisor con 10 kΩ y 5 V, con la LDR arriba. ¿Qué umbral de referencia debe fijarse para que el LED se encienda por debajo de 50 lux (aproximadamente 6,6 kΩ)?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Tensión en IN− a 50 lux.</b> \(V=5\cdot10/(10+6{,}6)=3{,}01\) V.</li>
+<li><b>Referencia.</b> Poner IN+ en 3,0 V: IN− baja de 3,0 V con menos de 50 lux.</li>
+<li><b>Resultado.</b> <span class="ans">Umbral de ≈ 3,0 V (el cursor del potenciómetro en 0,4).</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Un LM393 con pull-up de 4,7 kΩ a 5 V. ¿Qué corriente hunde la salida cuando está en bajo?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Corriente.</b> \(I=(5-0{,}15)/4700=1{,}03\) mA.</li>
+<li><b>Resultado.</b> <span class="ans">≈ 1 mA (el LM393 soporta hasta 16 mA).</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Para manejar un LED con 15 mA desde la salida de colector abierto de un LM393, con 12 V de alimentación del LED y \(V_F=2\) V, ¿cuánto vale el resistor y qué disipa el LM393?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Resistor.</b> \(R=(12-2-0{,}2)/0{,}015=653\ \Omega\) → 680 Ω.</li>
+<li><b>Potencia en el LM393.</b> \(0{,}2\ \text{V}\cdot15\ \text{mA}=3\) mW.</li>
+<li><b>Resultado.</b> <span class="ans">680 Ω; 3 mW en el integrado: ventaja del colector abierto, que acepta tensiones de hasta 36 V en la carga.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

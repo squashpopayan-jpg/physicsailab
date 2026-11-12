@@ -1,0 +1,95 @@
+<template class="chapter-src" data-id="banco" data-num="1" data-title="El banco: la protoboard por dentro" data-part="Parte I · El banco de trabajo" data-short="Cómo está hecha una protoboard: tiras, rieles y canal central; una pata por agujero; cables y colores; primer montaje con un LED; errores clásicos de montaje y cómo encontrarlos">
+<p class="lead">La protoboard es la mesa de trabajo de la electrónica: una placa de plástico con cientos de agujeros, separados 2,54 mm, donde las patas de los componentes se insertan <b>sin soldar</b>. Por dentro, láminas metálicas unen unos agujeros con otros, y esas uniones invisibles son la causa de casi todos los errores de quien empieza. Este capítulo enseña a «ver» a través del plástico y a armar el primer circuito. Desde aquí todo el curso ocurre sobre esta misma placa: las piezas se arrastran, los cables se mueven de agujero en agujero, y lo que está mal armado <b>no funciona o se quema</b>, como en la mesa real.</p>
+
+<section>
+<h2>Qué hay debajo de los agujeros</h2>
+<p>Una protoboard «media» de 400 puntos tiene <b>30 columnas</b> de agujeros y dos zonas de rieles. Observe la figura de la primera simulación: las filas se rotulan con letras (<b>a–e</b> abajo, <b>f–j</b> arriba) y las columnas con números. Debajo del plástico hay láminas de metal con forma de peine:</p>
+<div class="tablewrap"><table class="tbl"><tr><th>Zona</th><th>Qué está unido</th><th>Para qué se usa</th></tr>
+<tr><td><b>Columnas</b> (a–e) y (f–j)</td><td>Los <b>cinco agujeros de una misma columna y de una misma mitad</b>: a5, b5, c5, d5 y e5 son un solo punto eléctrico; f5 … j5 son otro</td><td>Ahí se «sueldan sin soldar» las patas: dos patas en la misma tira quedan conectadas entre sí</td></tr>
+<tr><td><b>Canal central</b></td><td>Nada: la mitad de abajo y la de arriba <b>no</b> están unidas (e5 no toca f5)</td><td>Los circuitos integrados se montan «a caballo» del canal para que sus dos filas de patas queden aisladas</td></tr>
+<tr><td><b>Rieles</b> (franjas con + y −)</td><td>Todos los agujeros de una misma línea, a lo largo de toda la placa</td><td>Distribuyen la alimentación: la franja roja (+) y la azul (−)</td></tr></table></div>
+<div class="box law"><p><b>Regla de oro de la protoboard.</b> Dos patas insertadas en agujeros de la <b>misma tira</b> están unidas con un cable de resistencia casi nula. Por eso un resistor con sus dos patas en la misma columna no hace nada: está <i>puenteado</i>. Y por eso una pata y un cable en la misma columna de cinco agujeros ya están conectados, sin más.</p></div>
+<div class="box note"><p><b>Una pata por agujero.</b> Cada agujero admite <b>una sola</b> pata o un solo cable. Si dos piezas deben unirse, se ponen en dos agujeros distintos <i>de la misma columna</i> (hay cinco por mitad). El simulador respeta esto: no deja soltar una pieza sobre un agujero ocupado.</p></div>
+</section>
+
+<section>
+<h2>Verlo con el multímetro: la prueba de continuidad</h2>
+<p>La manera práctica de descubrir qué está unido a qué es la <b>prueba de continuidad</b> del multímetro: si hay un camino conductor entre las dos puntas, el aparato <b>pita</b> y muestra una resistencia casi nula. En la simulación hay una protoboard vacía con dos cables ya tendidos y un multímetro en la función de continuidad (símbolo <b>·))</b>). Las dos puntas, roja y negra, descansan en la parte baja del banco. <b>Arrástrelas</b> —agarre el mango— y suéltelas sobre los agujeros: cuando cae sobre un agujero, el agujero se marca.</p>
+<div class="sim" data-sim="c1-tiras" data-title="¿Qué está unido a qué? Prueba de continuidad en la protoboard"></div>
+<div class="sim-guide"><ul>
+<li>Ponga una punta en <b>a12</b> y la otra en <b>e12</b>: pita. Muévala a <b>f12</b>: deja de pitar, el canal central las separa.</li>
+<li>Mida entre <b>a12</b> y <b>a20</b>: pita porque un cable une ambas columnas. Compruebe el otro cable entre las columnas de arriba, <b>f25</b> y <b>f27</b>.</li>
+<li>Mida a lo largo de un riel (<b>T+1</b> y <b>T+25</b>): pita. Entre <b>T+1</b> y <b>T−1</b>: no pita, son líneas distintas.</li>
+<li>Active <b>Tensiones</b> en la barra para ver, más adelante, qué tiras tienen potencial; con el circuito apagado todas valen 0 V.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Cables, colores y puntas</h2>
+<p>Los cables puente (<i>jumpers</i>) se tienden <b>arrastrando desde un agujero libre hasta otro</b>: aparece un cable que se puede recoger por cualquiera de sus extremos y mover a otro agujero. Para quitarlo, selecciónelo con un clic y pulse <kbd>Supr</kbd>. El color es una convención, no una necesidad, pero conviene respetarla porque ahorra errores:</p>
+<div class="tablewrap"><table class="tbl"><tr><th>Color</th><th>Uso habitual</th></tr>
+<tr><td>Rojo</td><td>Positivo de la alimentación (+5 V, +9 V…)</td></tr>
+<tr><td>Negro</td><td>Negativo o tierra (0 V)</td></tr>
+<tr><td>Amarillo, verde, azul, naranja</td><td>Señales: entradas, salidas, control</td></tr></table></div>
+<p>Los instrumentos del banco —fuente, generador, multímetro, osciloscopio— se conectan con <b>sus propios cables</b>, que salen de las tomas (los círculos de colores del borde del banco) y se enchufan en la protoboard. Se tienden igual: arrastre desde una toma hasta un agujero libre.</p>
+</section>
+
+<section>
+<h2>Primer montaje: un LED que no se quema</h2>
+<p>La batería de 9 V ya está conectada a los <b>rieles inferiores</b> (el rojo, +, y el azul, −) y sobre la mesa hay un resistor de 330 Ω y un LED rojo. La tarea: pasar las dos piezas a la placa y cablear el circuito en serie: <b>batería (+) → resistor → LED (ánodo) → LED (cátodo) → batería (−)</b>. El LED es un diodo y tiene polaridad: la pata larga es el <b>ánodo</b> (+), la corta el cátodo (−) y el lado plano de la cápsula marca el cátodo. Si lo invierte, no conduce.</p>
+<div class="sim" data-sim="c1-led" data-title="Primer montaje: resistor, LED y batería"></div>
+<div class="sim-guide"><ul>
+<li>Agarre el <b>cuerpo</b> del resistor y arrástrelo a la placa: sus dos patas deben caer en <b>columnas distintas</b> (por ejemplo e5 y e9). Haga lo mismo con el LED: ánodo en la columna del resistor (d9) y cátodo en otra columna (d12).</li>
+<li>Tienda un cable rojo del riel <b>+</b> a la columna del extremo libre del resistor, y un cable negro del cátodo al riel <b>−</b>. Si la pieza se mueve al soltarla, el cable se está enchufando donde no debe: agárrelo por el extremo.</li>
+<li>El LED se enciende con unos <b>21 mA</b>. Cambie el resistor a 1 kΩ (clic en la pieza, panel «propiedades»): baja a unos 7 mA, más tenue. Con 4,7 kΩ apenas brilla.</li>
+<li>Para ver el castigo, pruebe la versión sin resistor: tienda el cable directo al LED. La corriente supera 0,8 A, el LED humea y se apaga para siempre; «Reparar» pone otro nuevo.</li>
+</ul></div>
+<div class="box ex"><p><b>¿Por qué 330 Ω?</b> El LED rojo cae unos \(V_F\approx2{,}0\) V cuando conduce. El resistor debe «absorber» el resto: \(R=\dfrac{V_s-V_F}{I_F}=\dfrac{9-2{,}0}{0{,}020}=350\ \Omega\). El valor comercial más cercano es 330 Ω, que da 21 mA. Un LED de 5 mm tolera 20–30 mA; la corriente se limita <i>siempre</i> con un resistor.</p></div>
+</section>
+
+<section>
+<h2>Los errores clásicos de montaje</h2>
+<p>El circuito de un LED con su resistor está bien dibujado en el papel, pero en la placa hay muchas maneras de equivocarse sin darse cuenta. Seleccione cada <b>montaje</b> de la lista y diagnostique qué pasa mirando la placa:</p>
+<div class="sim" data-sim="c1-errores" data-title="Cuatro montajes que no funcionan: ¿qué les pasa?"></div>
+<div class="sim-guide"><ul>
+<li><b>Resistor puenteado.</b> Sus dos patas están en la misma tira (e5 y d5): el resistor no está en el circuito y el LED recibe toda la corriente. Se quema en un instante.</li>
+<li><b>LED invertido.</b> Cátodo del lado positivo: la polarización inversa no deja pasar corriente. No se enciende, pero tampoco se daña (tolera 5 V inversos).</li>
+<li><b>Pata sin insertar.</b> Una pata quedó «en el aire», sobre el agujero y no dentro. No hay circuito: el LED no se enciende. El botón <b>Revisar</b> de la barra lo detecta.</li>
+<li><b>Cable en la columna vecina.</b> El cable negro termina en la columna 13, no en la 12 donde está el cátodo. Con el multímetro en continuidad se descubre al instante.</li>
+</ul></div>
+<div class="box safe"><p><b>Método de diagnóstico.</b> Primero la inspección visual (patas dentro, polaridad, cables en la columna correcta); luego, <i>con el circuito apagado</i>, la continuidad entre los puntos que deberían estar unidos; y por último, con el circuito encendido, el voltaje en cada punto. Siga siempre ese orden: de lo más barato y seguro a lo más arriesgado.</p></div>
+</section>
+
+<section>
+<h2>La mesa libre</h2>
+<p>Esta es la protoboard completa. Abra la caja de componentes, saque lo que necesite y juegue: cada pieza tiene propiedades (valor, modelo, color) que se editan al seleccionarla. Todo lo que se arma aquí se guarda en el navegador y reaparece la próxima vez. Experimente con una fuente de laboratorio: tienda los cables rojo y negro de las tomas del canal 1 a los rieles, encienda la salida y ajuste la tensión.</p>
+<div class="sim" data-sim="c1-libre" data-title="La mesa libre: arme lo que quiera"></div>
+</section>
+
+<section>
+<h2>Problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>En una protoboard media, ¿cuáles de estos pares de agujeros están unidos eléctricamente? (a) c7 y e7; (b) e7 y f7; (c) g14 y j14; (d) T+3 y T+20; (e) T+3 y T−3.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Regla.</b> Dentro de una mitad, la columna entera (cinco agujeros) es una tira; el canal separa las mitades; los rieles unen toda su línea.</li>
+<li><b>(a)</b> Misma columna y misma mitad (a–e): <b>sí</b>.</li>
+<li><b>(b)</b> e y f están a lados opuestos del canal: <b>no</b>.</li>
+<li><b>(c)</b> Columna 14, mitad superior (f–j): <b>sí</b>.</li>
+<li><b>(d)</b> Mismo riel positivo: <b>sí</b>.</li>
+<li><b>(e)</b> Rieles distintos (+ y −): <b>no</b>.</li>
+<li><b>Resultado.</b> <span class="ans">Unidos: (a), (c) y (d). No unidos: (b) y (e).</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Un LED rojo (\(V_F=2\) V) se alimenta con 5 V y debe circular 10 mA. ¿Qué resistor del valor comercial más cercano se usa y qué corriente resulta?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Cálculo.</b> \(R=(5-2)/0{,}010=300\ \Omega\).</li>
+<li><b>Valor comercial.</b> En la serie E12 los vecinos son 270 Ω y 330 Ω; se elige 330 Ω (corriente ligeramente menor, más segura).</li>
+<li><b>Corriente real.</b> \(I=(5-2)/330=9{,}1\) mA.</li>
+<li><b>Resultado.</b> <span class="ans">330 Ω y 9,1 mA.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un estudiante pone un resistor con una pata en e5 y la otra en <b>a5</b>, y conecta el riel + a e9 y el LED entre d9 y d12. ¿Qué ocurre y cómo lo detecta sin encender nada?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Análisis de tiras.</b> e5 y a5 están en la misma columna y mitad: las dos patas del resistor están en la <b>misma tira</b>; el resistor está puenteado (cortocircuitado) por la lámina.</li>
+<li><b>Consecuencia.</b> Además, nada une la columna 5 con la 9; el LED queda sin camino hacia el resistor. Si el cable fuese a la columna 5, el LED recibiría los 9 V sin resistor.</li>
+<li><b>Detección.</b> Con el circuito apagado, la prueba de continuidad entre las dos patas del resistor pita (debería marcar su resistencia, 330 Ω, pero marca ≈ 0 Ω).</li>
+<li><b>Resultado.</b> <span class="ans">El resistor no limita nada porque está puenteado por la tira; se descubre midiendo continuidad entre sus patas: pita cuando no debería.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

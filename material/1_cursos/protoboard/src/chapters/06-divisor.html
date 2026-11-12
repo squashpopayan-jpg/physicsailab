@@ -1,0 +1,73 @@
+<template class="chapter-src" data-id="divisor" data-num="6" data-title="Divisores, carga y sensores resistivos" data-part="Parte II · Los pasivos en la protoboard" data-short="Divisor de tensión, equivalente de Thévenin, el efecto de carga, el potenciómetro y los sensores que cambian de resistencia (LDR, NTC): circuitos que convierten magnitudes físicas en tensiones medibles">
+<p class="lead">Con dos resistores y una fuente se construye el circuito más versátil de la electrónica: el <b>divisor de tensión</b>. Sirve para fijar una tensión de referencia, atenuar una señal, leer un sensor o regular un brillo. También es la mejor escuela para aprender que <i>conectar algo a un circuito lo cambia</i>: la salida de un divisor depende de lo que se le conecte. En este capítulo se mide un divisor, se descubre su equivalente de Thévenin, se mueve un potenciómetro y se lee la luz con una fotorresistencia.</p>
+
+<section>
+<h2>El divisor de tensión</h2>
+<p>Dos resistores en serie entre una fuente \(V_s\) y tierra. La misma corriente \(I=V_s/(R_1+R_2)\) pasa por ambos y la tensión entre el punto medio y tierra es la caída en \(R_2\):</p>
+\[V_{out}=V_s\,\frac{R_2}{R_1+R_2}\]
+<p>Si \(R_1=R_2\), sale la mitad. En la protoboard se monta con los dos resistores compartiendo <i>una columna</i>: ese es el punto medio. Elija los valores y mida: el multímetro (10 MΩ) apenas perturba el divisor.</p>
+<div class="sim" data-sim="c6-divisor" data-title="Divisor de 10 V: medir con el voltímetro"></div>
+<div class="sim-guide"><ul>
+<li>Con 4,7 kΩ arriba y 10 kΩ abajo: \(10\cdot10/(4{,}7+10)=6{,}80\) V y 0,68 mA por el divisor.</li>
+<li>La corriente del divisor es un desperdicio constante: para ahorrar energía se usan valores altos (decenas de kΩ); para que la salida sea firme, valores bajos. Es un compromiso.</li>
+<li>Mueva la punta negra de la tierra al riel positivo: la lectura es la caída en R₁, y la suma de las dos caídas da la fuente (ley de tensiones de Kirchhoff).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>La carga cambia el divisor</h2>
+<p>La salida de un divisor casi nunca va al aire: alimenta algo. Esa «carga» \(R_L\) queda en paralelo con \(R_2\) y la tensión baja. La manera sistemática de entender esto es el <b>equivalente de Thévenin</b>: visto desde la salida, el divisor es equivalente a una fuente \(V_{th}=V_s R_2/(R_1+R_2)\) en serie con una resistencia \(R_{th}=R_1\parallel R_2\). Con carga:</p>
+\[V_L=V_{th}\,\frac{R_L}{R_{th}+R_L}\]
+<p>Con 10 kΩ + 10 kΩ y 10 V: \(V_{th}=5\) V y \(R_{th}=5\) kΩ. Pruebe distintas cargas:</p>
+<div class="sim" data-sim="c6-carga" data-title="La carga baja la tensión del divisor"></div>
+<div class="sim-guide"><ul>
+<li>Sin carga: 5,00 V. Con 1 MΩ: 4,97 V (−0,5 %). Con 100 kΩ: 4,76 V (−5 %). Con 10 kΩ: 3,33 V (−33 %). Con 1 kΩ: 0,83 V.</li>
+<li><b>Regla del 10:</b> para que la carga perturbe menos del 10 %, \(R_L\ge10\,R_{th}\).</li>
+<li>Esta es también la razón por la que un voltímetro de poca resistencia de entrada da lecturas equivocadas en circuitos de alta impedancia (capítulo 2).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El potenciómetro: un divisor ajustable</h2>
+<p>Un potenciómetro es un resistor con un contacto deslizante (el <b>cursor</b>) que divide la pista en dos tramos. Con los extremos a la tensión \(V_s\) y a tierra, el cursor entrega cualquier tensión intermedia. En la protoboard se usa el <b>trimmer</b> de 3 patas: A, cursor (centro) y B. Está dibujado con su tornillo; la rueda del ratón o el control deslizante lo mueven.</p>
+<div class="sim" data-sim="c6-pot" data-title="Potenciómetro de 10 kΩ y un LED"></div>
+<div class="sim-guide"><ul>
+<li>Con el cursor en el extremo + hay 5 V: el LED recibe 9,2 mA. A medida que baja, la tensión del cursor cae pero <b>queda sujeta</b> por el LED (≈ 2 V): en cuanto el divisor intenta bajar de ese valor, el LED absorbe la diferencia y la corriente se apaga muy deprisa. Un LED no es una resistencia: no responde linealmente.</li>
+<li>El mismo potenciómetro con una carga resistiva (por ejemplo, la entrada de un amplificador de 100 kΩ) sí daría una variación suave. Para atenuar brillos se usa PWM (capítulo 17).</li>
+</ul></div>
+<div class="box note"><p><b>Detalle práctico.</b> Un trimmer de 10 kΩ tiene su pista de carbón con un 20 % de tolerancia y una «curva» lineal (B) o logarítmica (A, para audio). Nunca se conecta el cursor directamente a un extremo sin resistencia: en una posición extrema pondría una fuente en cortocircuito con lo que esté conectado al otro lado.</p></div>
+</section>
+
+<section>
+<h2>Sensores resistivos: la luz y la temperatura</h2>
+<p>Muchos sensores cambian su resistencia con la magnitud física que miden. La <b>LDR</b> (fotorresistencia de sulfuro de cadmio) baja de varios megaohmios en la oscuridad a unos cientos de ohmios con luz intensa; sigue aproximadamente \(R=R_{10}\,(10/E)^{\gamma}\) con \(E\) en lux y \(\gamma\approx0{,}7\). Un <b>termistor NTC</b> baja su resistencia al calentarse: \(R=R_{25}\,e^{B(1/T-1/298)}\) con \(T\) en kelvin. Para convertir esa resistencia en tensión se usa… un divisor.</p>
+<div class="sim" data-sim="c6-ldr" data-title="Un sensor de luz: la LDR en un divisor"></div>
+<div class="sim-guide"><ul>
+<li>A 1 lux la LDR vale 100 kΩ: la salida es 4,54 V (casi la fuente). A 100 lux (una habitación iluminada) vale 4 kΩ y la salida es 1,43 V. A 10 000 lux (sol) vale 159 Ω y la salida es 0,08 V.</li>
+<li>La salida es una función de la luz, pero <b>no lineal</b>: sube rápido con poca luz y casi no cambia con mucha. La elección del resistor fija el rango de mejor sensibilidad: se escoge igual a la resistencia de la LDR en el punto de interés (aquí, 10 kΩ ≈ 40 lux).</li>
+<li>El capítulo 16 usa esta salida con un comparador para encender una luz cuando oscurece.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Se necesita 3,3 V a partir de 9 V con un divisor cuyo resistor inferior es de 10 kΩ. ¿Cuánto debe valer el superior y qué corriente circula?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Relación.</b> \(3{,}3/9=R_2/(R_1+R_2)\Rightarrow R_1=R_2(9/3{,}3-1)=10\cdot1{,}727=17{,}3\) kΩ.</li>
+<li><b>Valor comercial.</b> 18 kΩ (E12 más cercano); la salida real es \(9\cdot10/28=3{,}21\) V (−2,7 %).</li>
+<li><b>Corriente.</b> \(9/28\ \text{k}\Omega=0{,}32\) mA.</li>
+<li><b>Resultado.</b> <span class="ans">≈ 18 kΩ; salida 3,21 V con 0,32 mA.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Un divisor 10 kΩ + 10 kΩ de 10 V alimenta una carga de 10 kΩ. ¿Qué tensión llega a la carga?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Thévenin.</b> \(V_{th}=5\) V, \(R_{th}=5\) kΩ.</li>
+<li><b>Con carga.</b> \(V_L=5\cdot\dfrac{10}{5+10}=3{,}33\) V.</li>
+<li><b>Resultado.</b> <span class="ans">3,33 V (una caída del 33 %).</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Una LDR de 4 kΩ (100 lux) y un resistor de 10 kΩ forman un divisor con la LDR abajo y 5 V. Calcule la salida y qué le pasa si la luz se multiplica por 10.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>A 100 lux.</b> \(V=5\cdot4/(10+4)=1{,}43\) V.</li>
+<li><b>A 1000 lux.</b> La LDR baja a \(4\cdot10^{-0{,}7}=0{,}80\) kΩ: \(V=5\cdot0{,}8/10{,}8=0{,}37\) V.</li>
+<li><b>Resultado.</b> <span class="ans">1,43 V a 100 lux y 0,37 V a 1000 lux: diez veces más luz baja la salida casi cuatro veces.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

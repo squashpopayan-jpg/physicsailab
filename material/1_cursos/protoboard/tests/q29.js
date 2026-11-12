@@ -1,0 +1,5 @@
+const { loadChapter, labOf } = require('./harness');
+const S = loadChapter('20-proyectos-sonido.js');
+{ const c = S['p4-timbre'].cfgs[0]; for (const [cc, r] of [[1e-7, 6800], [1e-8, 6800], [1e-6, 22000]]) { const l = labOf(c); c.controls[0].apply(l, cc); c.controls[1].apply(l, r); l.bench.noBudget = true; l.bench.setTdiv(Math.min(0.002, 1 / (1.44 / ((1000 + 2 * r) * cc)) * 0.4 )); l.run(0.2, 0.01); console.log('timbre', cc, r, JSON.stringify(l.outs()), l.bench.issues.join()); } }
+{ const c = S['p5-continuidad'].cfgs[0]; for (const rx of [1e9, 1, 100, 1000, 10000, 100000]) { const l = labOf(c); c.controls[0].apply(l, rx); l.run(0.3, 0.05); console.log('cont', rx, JSON.stringify(l.outs()), l.bench.issues.join()); } }
+{ const c = S['p6-motor'].cfgs[0]; const l = labOf(c); l.bench.noBudget = true; l.run(1, 0.05); console.log('motor reposo', JSON.stringify(l.outs()), l.bench.issues.join()); l.press('S1', true); l.run(2, 0.05); console.log('motor pulsado', JSON.stringify(l.outs())); l.press('S1', false); l.run(2, 0.05); console.log('motor suelto', JSON.stringify(l.outs())); }

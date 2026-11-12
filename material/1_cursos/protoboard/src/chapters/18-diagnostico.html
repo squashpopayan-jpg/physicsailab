@@ -1,0 +1,66 @@
+<template class="chapter-src" data-id="diagnostico" data-num="18" data-title="Diagnóstico de fallas: la clínica del banco" data-part="Parte VI · Fallas, proyectos y taller" data-short="Método sistemático para encontrar averías en un circuito armado en la protoboard: inspección, alimentación, señal; cinco casos con cables rotos, condensadores envejecidos, cortocircuitos y circuitos integrados abiertos, para resolver con multímetro y osciloscopio">
+<p class="lead">Un circuito que «no funciona» es la situación más común en el laboratorio, y la que más enseña. Quien sabe diagnosticar ahorra horas, piezas y desánimo. Este capítulo propone un <b>método</b> y cinco casos clínicos sobre la fuente de 5 V del capítulo 10: cada uno lleva una avería oculta, distinta y realista. Se resuelven con el multímetro y el osciloscopio, <i>sin</i> mirar la respuesta: la tabla de soluciones está al final, plegada.</p>
+
+<section>
+<h2>El método: de lo más simple a lo más fino</h2>
+<ol>
+<li><b>Mire.</b> Piezas quemadas, patas fuera del agujero, polaridad de electrolíticos y LED, circuito integrado con la muesca al lado correcto, cables en la columna vecina. En un minuto se resuelven la mitad de los problemas.</li>
+<li><b>Alimentación.</b> ¿Llega energía? Mida la tensión de entrada, en los rieles y en las patas de alimentación de cada integrado. «Sin tensión» y «tensión equivocada» son las dos averías más frecuentes.</li>
+<li><b>Siga la cadena.</b> Parta de donde sabe que hay señal (la salida del transformador) y avance etapa por etapa: tras el puente, tras el filtro, tras el regulador. El punto donde la señal desaparece o se deforma es el sospechoso: la avería está entre el último punto bueno y el primero malo.</li>
+<li><b>Con el circuito apagado,</b> mida continuidad y resistencias en la zona sospechosa (cables, patas, uniones). Descargue los condensadores antes de tocar nada.</li>
+<li><b>Cambie una cosa a la vez.</b> Si modifica varias, no sabrá cuál arregló o empeoró.</li>
+<li><b>Anote.</b> Lo medido, lo que esperaba, lo que cambió.</li>
+</ol>
+<div class="box note"><p><b>Valores esperados</b> en la fuente de 5 V con 47 Ω de carga: transformador 12 V<sub>ef</sub> (17 V de pico) entre «~1» y «~2»; tras el puente y el filtro, 13–14 V continuos con 0,3 V de rizado (en el punto del condensador); a la salida del 7805, 4,99 V; LED verde encendido. Desvíese de eso y empieza la caza.</p></div>
+</section>
+
+<section>
+<h2>La clínica</h2>
+<p>Elija un caso. El multímetro y el osciloscopio están conectados a la placa: mueva las puntas por los puntos de prueba (columnas 6 a 14). La causa no se muestra hasta que marque «Revelar la causa»; hágalo solo después de intentar el diagnóstico.</p>
+<div class="sim" data-sim="c18-clinica" data-title="Cinco casos clínicos: ¿qué le pasa a la fuente de 5 V?"></div>
+<div class="sim-guide"><ul>
+<li><b>Puntos de medida útiles:</b> los dos cables naranjas del transformador entran en las columnas 6 y 8; las patas del puente «+» (columna 9) y «−» (columna 11); el condensador de filtro en la columna 7 (+); la entrada del 7805 en la columna 12; la salida en la 14.</li>
+<li>Pruebe con el multímetro en V⎓ (puntas negras en el riel de tierra) y con el osciloscopio en AC para ver rizado.</li>
+<li>Una buena pregunta antes de cada medida: «¿qué valor espero ver aquí si todo está bien?»</li>
+</ul></div>
+<details class="sol"><summary>Soluciones de los cinco casos (solo después de intentarlo)</summary><ol class="steps">
+<li><b>Caso 1: sin energía en la placa.</b> Al medir entre «~1» y «~2» el transformador da 12 V~, pero tras el cable naranja (columna 6) no hay nada: <b>el cable está cortado por dentro</b>. Prueba con continuidad apagado: no pita. Se sustituye el cable.</li>
+<li><b>Caso 2: hay tensión en el filtro, no a la salida.</b> En el condensador (columna 7) hay 15,6 V, pero en la entrada del 7805 (columna 12) hay 0 V: <b>el cable rojo entre ambas columnas no conduce</b>.</li>
+<li><b>Caso 3: todo parece bien… pero algo está mal.</b> La salida es 4,99 V con el LED encendido, pero el osciloscopio muestra varios voltios (≈ 8 V) pico a pico de rizado en el filtro en lugar de 0,3 V: <b>el electrolítico perdió casi toda su capacidad</b>. Con más corriente la entrada del regulador se acercaría a su límite y la fuente dejaría de regular. Una avería «silenciosa»: solo se ve con el osciloscopio.</li>
+<li><b>Caso 4: la salida es casi cero y el filtro en 6 V.</b> El condensador del filtro baja a ≈ 6 V porque el regulador, con su salida en cortocircuito, entrega su corriente máxima (y se calienta): <b>el condensador de salida está en cortocircuito</b>. Con el circuito apagado, el multímetro en Ω mide ≈ 0 Ω entre la salida y tierra.</li>
+<li><b>Caso 5: 15,6 V en el filtro y 0 V a la salida.</b> La entrada del 7805 está bien alimentada (15,6 V), pero no sale nada: <b>el regulador está abierto</b>. Se cambia el integrado y se averigua por qué falló (un cortocircuito en la salida, falta de disipador, polaridad).</li>
+</ol></details>
+</section>
+
+<section>
+<h2>Las averías típicas de una protoboard</h2>
+<div class="tablewrap"><table class="tbl"><tr><th>Síntoma</th><th>Causas más probables</th></tr>
+<tr><td>Nada funciona</td><td>Fuente apagada o con límite de corriente muy bajo; cable de alimentación flojo; pata de un integrado doblada fuera del agujero</td></tr>
+<tr><td>Funciona a ratos</td><td>Contacto intermitente (agujero gastado, pata oxidada); cable de núcleo roto por doblarlo muchas veces; zumbido en el cable de tierra largo</td></tr>
+<tr><td>Se calienta algo</td><td>Cortocircuito parcial; resistor mal valorado; integrado al revés</td></tr>
+<tr><td>Funciona mal con la mano cerca</td><td>Entrada flotante (sin resistor a tierra); alta impedancia que capta ruido</td></tr>
+<tr><td>Funciona sola la primera vez</td><td>Condensador de desacople ausente; efecto de los cables largos</td></tr></table></div>
+<div class="box safe"><p>Cuando algo se caliente o huela, <b>apague primero</b>. Un circuito con corriente anómala puede dañar piezas en segundos; conviene trabajar siempre con el límite de corriente de la fuente en un valor bajo, que protege mientras uno busca la falla.</p></div>
+</section>
+
+<section>
+<h2>Problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>En un amplificador alimentado con 9 V el multímetro mide 0 V en la pata de alimentación del circuito integrado, pero 9 V en el riel. ¿Cuál es el siguiente paso?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Hecho.</b> Hay tensión en el riel; no llega a la pata: el problema está entre ambos.</li>
+<li><b>Acción.</b> Mida continuidad (apagado) entre el riel y la columna de la pata 8; revise el cable y que la pata esté bien insertada.</li>
+<li><b>Resultado.</b> <span class="ans">Revisar el cable o el agujero entre el riel y la pata: probablemente sin contacto.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un 7805 tiene 12 V en IN, 0 V en OUT y está muy caliente. ¿Qué sospecha y qué mide?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Hipótesis.</b> Cortocircuito en la salida: el regulador entrega su límite y se calienta; la protección térmica lo apaga (OUT=0).</li>
+<li><b>Prueba.</b> Con todo apagado, resistencia entre OUT y tierra: ≈ 0 Ω confirma el corto (condensador o carga).</li>
+<li><b>Resultado.</b> <span class="ans">Cortocircuito en la salida; se mide la resistencia OUT–GND con el circuito apagado.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>El rizado en el filtro de una fuente es ocho veces mayor que el calculado. ¿Qué causa probable tiene y cómo lo confirma?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Causa.</b> Condensador con capacidad perdida (envejecido) o mal conectado.</li>
+<li><b>Prueba.</b> Medir su capacidad con un capacímetro, o sustituirlo por otro nuevo en paralelo y ver si el rizado baja.</li>
+<li><b>Resultado.</b> <span class="ans">Condensador de filtro degradado (o con una pata sin contacto).</span></li></ol></details></li>
+</ol>
+</section>
+</template>

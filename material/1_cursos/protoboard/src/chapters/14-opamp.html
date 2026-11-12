@@ -1,0 +1,60 @@
+<template class="chapter-src" data-id="opamp" data-num="14" data-title="El amplificador operacional" data-part="Parte V · Circuitos integrados" data-short="Amplificador operacional LM741 con fuente simétrica ±12 V: reglas del A.O. ideal, configuraciones inversora, no inversora y seguidor, ganancia por realimentación, saturación y limitaciones reales, medidas con el osciloscopio">
+<p class="lead">El amplificador operacional (A.O.) es el circuito integrado analógico por excelencia: un amplificador de diferencias con una ganancia enorme (100 000 o más) que, con <b>realimentación</b>, se convierte en un bloque preciso cuya ganancia depende solo de dos resistores. Con él se amplifica, se invierte, se suma, se filtra, se integra. En la protoboard el A.O. es un integrado de 8 patas (DIP-8) que se monta a caballo del canal; necesita una fuente <b>simétrica</b> (±12 V) que se arma con los dos canales de la fuente de laboratorio.</p>
+
+<section>
+<h2>El A.O. ideal y sus dos reglas</h2>
+<p>El A.O. tiene dos entradas, <b>no inversora (+)</b> e <b>inversora (−)</b>, una salida y las dos patas de alimentación. Amplifica la diferencia entre sus entradas: \(V_{out}=A_0(V_+-V_-)\), limitada por los rieles de alimentación. Con realimentación negativa (la salida vuelve a la entrada inversora) el A.O. ajusta su salida hasta que \(V_+\approx V_-\), y de esa condición salen las dos reglas del A.O. ideal:</p>
+<ol>
+<li>Las entradas <b>no consumen corriente</b> (impedancia de entrada infinita).</li>
+<li>Con realimentación negativa, las dos entradas están a <b>la misma tensión</b> (el «cortocircuito virtual»).</li>
+</ol>
+<p>En el LM741 las patas son: 2 = IN−, 3 = IN+, 4 = V−, 6 = salida, 7 = V+; las patas 1 y 5 (ajuste de desplazamiento) y la 8 no se conectan. La muesca (o el punto) marca el lado de la pata 1.</p>
+<h3>Las tres configuraciones básicas</h3>
+<div class="tablewrap"><table class="tbl"><tr><th>Configuración</th><th>Ganancia</th><th>Características</th></tr>
+<tr><td><b>Inversora</b></td><td>\(A_v=-R_f/R_{in}\)</td><td>Salida invertida; impedancia de entrada \(R_{in}\)</td></tr>
+<tr><td><b>No inversora</b></td><td>\(A_v=1+R_f/R_g\)</td><td>Salida en fase; impedancia de entrada muy alta</td></tr>
+<tr><td><b>Seguidor</b></td><td>\(A_v=1\)</td><td>Copia la tensión: aísla una fuente de impedancia alta de una carga</td></tr></table></div>
+</section>
+
+<section>
+<h2>El montaje en la protoboard</h2>
+<p>La fuente se usa en <b>dos canales</b>: el canal 1 da +12 V y el canal 2 da −12 V; sus terminales «−» (canal 1) y «+» (canal 2) se unen en el riel común (0 V), con lo que se obtiene \(+12\ \text{V}\), \(0\ \text{V}\), \(-12\ \text{V}\). El generador alimenta la entrada con un seno de 1 kHz. El canal 1 del osciloscopio mide la entrada y el canal 2, la salida.</p>
+<div class="sim" data-sim="c14-opamp" data-title="El LM741 con alimentación ±12 V: inversor, no inversor y seguidor"></div>
+<div class="sim-guide"><ul>
+<li><b>Inversor, R_f = 10 kΩ, R_in = 1 kΩ:</b> ganancia medida <b>−10,00</b> (la salida está invertida: cuando la entrada sube, baja). Con 0,5 V de pico de entrada, salen 5 V de pico (≈ 9,5–10 V pico a pico).</li>
+<li><b>Saturación:</b> con R_f = 100 kΩ y 0,5 V, la ganancia pedida es −100 y la salida querría 50 V: el A.O. se <b>satura</b> a ±10 V (la alimentación menos ≈ 2 V) y la señal se recorta. Baje la entrada a 0,05 V: ganancia medida 99,3 (el 0,7 % de error viene de la ganancia finita del A.O.).</li>
+<li><b>No inversor, R_f = 10 kΩ, R_g = 1 kΩ:</b> ganancia <b>+11,0</b> = 1 + 10/1; la salida está en fase con la entrada.</li>
+<li><b>Seguidor:</b> ganancia 1,00. Parece inútil, pero con una fuente débil (un sensor con 1 MΩ de impedancia) es el bloque que «adapta» la señal para la etapa siguiente.</li>
+<li><b>47 kΩ y 10 kΩ inversor:</b> −4,70, exacto al teórico.</li>
+</ul></div>
+<div class="box note"><p><b>Lo que el A.O. real no hace.</b> (1) La salida no alcanza los rieles: el 741 se queda 2 V por debajo (el LM358 llega a 0,05 V por abajo y a 1,5 V del positivo). (2) Su ganancia cae con la frecuencia: el producto ganancia–ancho de banda del 741 es 1 MHz, de modo que con ganancia 100 el ancho de banda es de solo 10 kHz. (3) Su velocidad de respuesta (<i>slew rate</i>, 0,5 V/µs) limita las señales grandes y rápidas. (4) Tiene un pequeño desplazamiento (<i>offset</i>) de ≈ 1 mV en la entrada.</p></div>
+<div class="box safe"><p><b>Alimentación:</b> el A.O. se destruye si se alimenta con la polaridad invertida (como se vio en el capítulo 4) o si se superan sus 36 V. Se comprueban las tres tensiones (+12, 0, −12) con el multímetro <i>antes</i> de insertar el integrado.</p></div>
+</section>
+
+<section>
+<h2>Problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Diseñe un amplificador inversor de ganancia −25 con \(R_{in}=2{,}2\) kΩ. ¿Cuánto vale \(R_f\) y cuál es la salida con 0,2 V de entrada?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Resistor.</b> \(R_f=25\cdot2{,}2=55\) kΩ; valor E12: 56 kΩ (ganancia −25,5).</li>
+<li><b>Salida.</b> \(0{,}2\cdot(-25{,}5)=-5{,}1\) V.</li>
+<li><b>Resultado.</b> <span class="ans">56 kΩ; −5,1 V (dentro de ±10 V).</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Un no inversor tiene \(R_f=47\) kΩ y \(R_g=4{,}7\) kΩ. ¿Qué ganancia tiene y qué salida produce con 0,4 V<sub>pico</sub> si se alimenta con ±12 V?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Ganancia.</b> \(1+47/4{,}7=11\).</li>
+<li><b>Salida ideal.</b> \(0{,}4\cdot11=4{,}4\) V de pico.</li>
+<li><b>Límite.</b> 4,4 V < 10 V: no se satura.</li>
+<li><b>Resultado.</b> <span class="ans">Ganancia 11; 4,4 V de pico, sin recorte.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un 741 con ganancia 50 y producto ganancia–ancho de banda de 1 MHz: ¿qué ancho de banda tiene y a qué amplitud máxima puede dar 20 kHz sin quedar limitado por el slew rate (0,5 V/µs)?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Ancho de banda.</b> \(f_{-3\ dB}=GBW/A=10^6/50=20\) kHz.</li>
+<li><b>Slew rate.</b> Para un seno \(V_p\) de frecuencia \(f\) la pendiente máxima es \(2\pi fV_p\le SR\Rightarrow V_p\le0{,}5\cdot10^6/(2\pi\cdot2\cdot10^4)=3{,}98\) V.</li>
+<li><b>Resultado.</b> <span class="ans">20 kHz; hasta ≈ 4 V de pico sin distorsión por velocidad de respuesta.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>En un inversor con \(R_{in}=10\) kΩ y \(R_f=100\) kΩ la entrada es de 1 V<sub>pico</sub> y la alimentación ±12 V. Describa la salida.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Ganancia ideal.</b> −10; salida ideal ±10 V.</li>
+<li><b>Límite.</b> El 741 llega a ±10 V (con dropout de 2 V): está justo en el límite; pequeños aumentos de entrada la recortan.</li>
+<li><b>Resultado.</b> <span class="ans">Un seno de ±10 V invertido, casi recortado en las crestas.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

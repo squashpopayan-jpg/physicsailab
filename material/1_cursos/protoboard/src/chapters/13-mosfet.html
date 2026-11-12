@@ -1,0 +1,54 @@
+<template class="chapter-src" data-id="mosfet" data-num="13" data-title="MOSFET de potencia y control de motores" data-part="Parte IV · Transistores" data-short="El MOSFET como interruptor controlado por tensión: umbral, resistencia R_DS(on), nivel lógico; resistor de compuerta y de descarga; PWM para variar la velocidad de un motor de CC y diodo de rueda libre; pérdidas y calentamiento">
+<p class="lead">Si el BJT es una válvula controlada por corriente, el <b>MOSFET</b> es una válvula controlada por <i>tensión</i>: su compuerta (<i>gate</i>) está aislada del resto por una fina capa de óxido y casi no toma corriente. Eso lo hace ideal para manejar motores, lámparas y resistencias de calentamiento desde un microcontrolador. Un MOSFET de potencia conduce con una resistencia de milésimas de ohmio y casi no se calienta: por eso domina la electrónica de potencia. En este capítulo se maneja un motor de CC desde el generador con modulación por ancho de pulso (PWM).</p>
+
+<section>
+<h2>Cómo funciona un MOSFET de canal N</h2>
+<p>Tres patas: <b>G</b> (compuerta), <b>D</b> (drenador) y <b>S</b> (fuente). Si \(V_{GS}\) supera el <b>umbral</b> \(V_{th}\) el canal conduce entre D y S; cuanto mayor es \(V_{GS}-V_{th}\), menor es la resistencia del canal, hasta el valor mínimo \(R_{DS(on)}\) de la hoja de datos. Con corriente de drenador \(I_D\) la potencia disipada es \(P=I_D^2R_{DS(on)}\):</p>
+<div class="tablewrap"><table class="tbl"><tr><th>MOSFET</th><th>\(V_{th}\)</th><th>\(R_{DS(on)}\)</th><th>Compuerta necesaria</th><th>Cápsula</th></tr>
+<tr><td>2N7000</td><td>2,1 V</td><td>1,8 Ω (10 V)</td><td>5 V</td><td>TO-92 (S-G-D)</td></tr>
+<tr><td>IRLZ44N</td><td>1,7 V</td><td>22 mΩ (5 V)</td><td><b>5 V (nivel lógico)</b></td><td>TO-220 (G-D-S)</td></tr>
+<tr><td>IRF540N</td><td>3,5 V</td><td>44 mΩ (10 V)</td><td>10 V</td><td>TO-220 (G-D-S)</td></tr></table></div>
+<p>Los MOSFET de «nivel lógico» (la <b>L</b> en IRL…) conducen del todo con 5 V; los demás necesitan 10 V. En la protoboard el IRLZ44N lleva sus patas de izquierda a derecha como <b>G – D – S</b>, vistas por la cara con el nombre; la lengüeta metálica es el drenador. <b>Ojo</b>: el 2N7000 es <b>S – G – D</b>, un orden distinto: confundirlos es la causa de muchas piezas dañadas.</p>
+<div class="box law"><p><b>Dos resistores que no deben faltar.</b> (1) Un <b>resistor de compuerta</b> en serie (≈ 100 Ω) limita la corriente de carga de la capacitancia de la compuerta y evita oscilaciones. (2) Un <b>resistor de descarga</b> (≈ 10 kΩ) de la compuerta a la fuente mantiene la compuerta en 0 V cuando nada la excita: una compuerta al aire capta cargas estáticas y el transistor se enciende solo (o se perfora).</p></div>
+</section>
+
+<section>
+<h2>PWM: variar la velocidad con pulsos</h2>
+<p>Un motor de CC gira más rápido con más tensión, pero regular la tensión con un resistor desperdicia energía. La <b>modulación por ancho de pulso</b> (PWM) enciende y apaga el MOSFET cientos de veces por segundo: la tensión media que ve el motor es \(V_{med}=D\,V_{CC}\), con \(D\) el ciclo de trabajo. El MOSFET está encendido (casi sin pérdidas) o apagado (sin corriente): su disipación es mínima. El <b>diodo de rueda libre</b> da camino a la corriente del motor en los intervalos de apagado, igual que en el relé del capítulo 11.</p>
+<p>Aquí el generador entrega 200 Hz (0–5 V) a la compuerta; el motor de 6 V tiene una carga mecánica que lo frena. El osciloscopio muestra la compuerta (canal 1) y el drenador (canal 2).</p>
+<div class="sim" data-sim="c13-motor" data-title="Control de velocidad de un motor de 6 V con un MOSFET y PWM"></div>
+<div class="sim-guide"><ul>
+<li><b>Ciclo de trabajo 20 %:</b> tensión media 1,2 V: el motor <b>no arranca</b> (la fricción, la «zona muerta»). A 40 %, gira al 21 % de su velocidad máxima; al 50 %, 37 %; al 90 %, 66 %. La velocidad crece casi linealmente con el ciclo de trabajo, desde el umbral de arranque.</li>
+<li>El canal 2 (drenador) vale ≈ 0 V durante el pulso (MOSFET encendido) y se eleva hacia 6 V al apagarse. <b>Desmarque el diodo de rueda libre</b>: el pico inductivo del motor sube hasta ≈ 60 V, donde el diodo parásito del MOSFET entra en avalancha y lo absorbe: la potencia media del MOSFET se multiplica por 15 (de 0,03 W a 0,4 W) y la velocidad del motor baja un poco. Un IRLZ44N lo soporta durante un rato, pero con motores mayores o con un transistor sin avalancha (como el BC547 del capítulo 11) el resultado es la destrucción.</li>
+<li>El IRLZ44N se comporta bien con 5 V. El IRF540N, de 10 V de compuerta, tiene un umbral mayor: con 5 V conduce, pero con una resistencia mayor y se calentaría más con las corrientes grandes (decenas de amperios) de un motor de verdad.</li>
+</ul></div>
+<div class="box safe"><p><b>Potencia.</b> Un motor de CC consume una corriente de arranque (<i>stall</i>) de seis a diez veces la nominal: la fuente de laboratorio con límite de corriente se ajusta por encima de la corriente de arranque o el motor no arrancará. Un MOSFET con disipador y diodo de rueda libre es el montaje estándar; el motor se alimenta aparte de la lógica.</p></div>
+</section>
+
+<section>
+<h2>Problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un IRLZ44N (\(R_{DS(on)}=22\) mΩ) conduce 10 A. ¿Qué potencia disipa y qué caída tiene?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Caída.</b> \(V_{DS}=I\,R=10\cdot0{,}022=0{,}22\) V.</li>
+<li><b>Potencia.</b> \(P=I^2R=100\cdot0{,}022=2{,}2\) W.</li>
+<li><b>Resultado.</b> <span class="ans">0,22 V y 2,2 W: necesita disipador (TO-220 al aire: 62 K/W → +136 K).</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Un PWM al 35 % controla una lámpara de 12 V. ¿Qué tensión media recibe y qué corriente media circula si la lámpara es de 6 Ω?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Tensión media.</b> \(0{,}35\cdot12=4{,}2\) V.</li>
+<li><b>Corriente media.</b> \(I=0{,}35\cdot12/6=0{,}7\) A (la corriente cuando conduce es 2 A).</li>
+<li><b>Resultado.</b> <span class="ans">4,2 V y 0,7 A.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>El motor tiene una resistencia de 2 Ω y una constante \(k=0{,}01\) V·s/rad. Con una carga que exige 0,8 A, ¿qué velocidad tiene al 50 % de ciclo de trabajo con 6 V?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Tensión media.</b> 3 V.</li>
+<li><b>Fuerza contraelectromotriz.</b> \(E=V-IR=3-0{,}8\cdot2=1{,}4\) V.</li>
+<li><b>Velocidad.</b> \(\omega=E/k=140\) rad/s = 1340 rpm (el 23 % de los 600 rad/s de vacío).</li>
+<li><b>Resultado.</b> <span class="ans">≈ 140 rad/s; a 20 % (1,2 V) \(E<0\): no arranca.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué un MOSFET con la compuerta al aire puede encenderse solo, y qué resistor lo evita?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Causa.</b> La compuerta es un condensador aislado: cualquier carga estática o ruido que la cargue por encima del umbral abre el canal.</li>
+<li><b>Remedio.</b> Un resistor de 10 kΩ a 100 kΩ entre compuerta y fuente descarga la compuerta cuando nadie la maneja.</li>
+<li><b>Resultado.</b> <span class="ans">La compuerta acumula carga; un resistor de «pull-down» de 10 kΩ de G a S la mantiene en 0 V.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

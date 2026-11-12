@@ -1,0 +1,99 @@
+<template class="chapter-src" data-id="senales" data-num="3" data-title="El generador y el osciloscopio" data-part="Parte I · El banco de trabajo" data-short="Señales periódicas (periodo, frecuencia, amplitud, valor eficaz, ciclo de trabajo); el generador de funciones y su impedancia de salida; el osciloscopio de dos canales, el disparo, el acoplamiento y la punta ×1/×10">
+<p class="lead">El multímetro da <i>un número</i>; el osciloscopio muestra <i>la película</i>. Casi todo lo interesante en electrónica ocurre en el tiempo —un condensador que se carga, un oscilador que late, una señal que se deforma—, y para verlo hace falta un instrumento que dibuje la tensión en función del tiempo. En este capítulo se aprenden el lenguaje de las señales periódicas, el uso del generador de funciones que las produce y el del osciloscopio que las mide, con sus trampas: la impedancia de salida del generador, el acoplamiento, el disparo y la punta ×10.</p>
+
+<section>
+<h2>Señales periódicas: el vocabulario</h2>
+<p>Una señal periódica repite su forma cada <b>periodo</b> \(T\); la <b>frecuencia</b> es \(f=1/T\) (en hercios, Hz). La amplitud puede darse de varias maneras y conviene no confundirlas:</p>
+<div class="tablewrap"><table class="tbl"><tr><th>Magnitud</th><th>Qué es</th><th>Seno</th><th>Cuadrada (simétrica)</th><th>Triángulo</th></tr>
+<tr><td>Pico \(V_p\)</td><td>Desde el cero hasta el máximo</td><td>\(V_p\)</td><td>\(V_p\)</td><td>\(V_p\)</td></tr>
+<tr><td>Pico a pico \(V_{pp}\)</td><td>Del mínimo al máximo</td><td>\(2V_p\)</td><td>\(2V_p\)</td><td>\(2V_p\)</td></tr>
+<tr><td>Eficaz \(V_{rms}\)</td><td>Valor que daría la misma potencia en una resistencia con continua</td><td>\(V_p/\sqrt2\)</td><td>\(V_p\)</td><td>\(V_p/\sqrt3\)</td></tr>
+<tr><td>Medio \(V_{med}\)</td><td>Promedio en un periodo (la componente continua)</td><td>0</td><td>0</td><td>0</td></tr></table></div>
+<p>Una señal rectangular se describe además con su <b>ciclo de trabajo</b> (<i>duty</i>): la fracción del periodo en que está en alto. Una cuadrada simétrica tiene 50 %; una señal de PWM para un motor puede tener 10 % o 90 %.</p>
+</section>
+
+<section>
+<h2>El generador de funciones</h2>
+<p>El generador produce seno, cuadrada, triángulo, diente de sierra y pulsos, entre 1 mHz y 1 MHz, con una amplitud regulable y un <b>desplazamiento de continua</b> (<i>offset</i>). Dos detalles lo distinguen de una fuente ideal:</p>
+<ul>
+<li><b>Impedancia de salida de 50 Ω.</b> La tensión que ajusta es la de <i>circuito abierto</i>; al conectar una carga, parte cae en esos 50 Ω. Con una carga de 1 kΩ, 2 V<sub>pp</sub> se convierten en \(2\cdot\dfrac{1000}{1050}=1{,}90\) V<sub>pp</sub>. Con una carga de 50 Ω, la señal baja exactamente a la mitad.</li>
+<li><b>El borne GND está conectado a tierra</b>, igual que los de las puntas del osciloscopio. Todo lo que se una a ese borne queda a 0 V de referencia.</li>
+</ul>
+<p>En la simulación siguiente, el generador alimenta una carga de 1 kΩ entre la columna 5 y el riel negativo. La punta del canal 1 del osciloscopio ya está en la señal y su pinza de masa en el riel negativo. Pruebe los controles de la derecha y mire la pantalla del osciloscopio (pestaña <b>Osciloscopio</b> bajo el banco).</p>
+<div class="sim" data-sim="c3-scope" data-title="Del generador al osciloscopio: forma, frecuencia y amplitud"></div>
+<div class="sim-guide"><ul>
+<li>El osciloscopio dibuja 10 divisiones horizontales y 8 verticales. Cada división vale lo que indica la <b>base de tiempo</b> (s/div) y la <b>escala vertical</b> (V/div).</li>
+<li>Pulse <b>Autoajuste</b>: elige una base de tiempo que muestre ≈ 3 periodos y una escala vertical que ocupe unas 6 divisiones. Es el botón que más se usa, pero conviene saber hacerlo a mano.</li>
+<li>Con 1 kHz y 0,5 ms/div, un periodo ocupa 2 divisiones: \(T=2\cdot0{,}5\ \text{ms}=1\) ms.</li>
+<li>Cambie a cuadrada y vea cómo el valor eficaz sube de 0,67 V (seno) a 0,95 V (cuadrada) con la misma amplitud.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El osciloscopio: tres mandos que hay que dominar</h2>
+<ol>
+<li><b>Escala vertical (V/div) y posición.</b> Elija la escala para que la señal ocupe la mayor parte de la pantalla sin salirse. La marca triangular del borde izquierdo indica dónde está el cero del canal; la <i>posición</i> la desplaza.</li>
+<li><b>Base de tiempo (s/div).</b> Para ver 2–5 periodos: \(\text{s/div}\approx T/2\) a \(T/5\cdot\ldots\) o, más simple, \(\text{s/div}=\dfrac{3T}{10}\).</li>
+<li><b>Disparo (<i>trigger</i>).</b> Sin disparo, cada barrido empezaría en un punto distinto de la onda y la imagen «correría». El disparo detiene el barrido hasta que la señal cruza un <b>nivel</b> en un <b>flanco</b> (subida o bajada); así, cada barrido empieza en el mismo punto de la forma y la imagen queda quieta. En modo <i>Automático</i> el osciloscopio barre aunque no encuentre disparo (útil para ver continua); en <i>Normal</i>, espera.</li>
+</ol>
+<h3>Acoplamiento: DC, AC y GND</h3>
+<p>En <b>DC</b> se ve la señal completa, con su continua. En <b>AC</b> un condensador en serie quita la componente continua: sirve para ver una pequeña ondulación sobre una continua grande (por ejemplo, el rizado de una fuente de alimentación). En <b>GND</b> la entrada se pone a masa y se ve la línea de 0 V: es la manera de comprobar dónde está el cero.</p>
+<div class="sim" data-sim="c3-acople" data-title="Acoplamiento: la misma señal en DC, AC y GND"></div>
+<div class="sim-guide"><ul>
+<li>El generador da 2 V<sub>pp</sub> sobre 3 V de continua; debido a los 50 Ω y la carga de 1 kΩ, la continua medida es 2,86 V (no 3 V).</li>
+<li>En <b>DC</b> el seno está centrado en 2,86 V; en <b>AC</b> está centrado en cero; en <b>GND</b> queda una línea recta en el cero del canal.</li>
+<li>Suba el desplazamiento a 5 V con 0,5 V/div: la señal sale de pantalla en DC, pero sigue centrada en AC.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Un filtro RC en dos canales</h2>
+<p>Con dos canales se compara la entrada con la salida de un circuito. Aquí un filtro pasabajos de 1 kΩ y 100 nF: el canal 1 mide la entrada (señal del generador) y el canal 2 la salida (tensión en el condensador). Su <b>frecuencia de corte</b> es \(f_c=\dfrac{1}{2\pi RC}=\dfrac{1}{2\pi\cdot1000\cdot10^{-7}}=1592\ \text{Hz}\), donde la amplitud de salida baja a \(1/\sqrt2=0{,}707\) de la de entrada.</p>
+<div class="sim" data-sim="c3-rc" data-title="Respuesta en frecuencia de un filtro RC, medida con dos canales"></div>
+<div class="sim-guide"><ul>
+<li>A 100 Hz la ganancia es 0,998: pasa todo. A 1 kHz, 0,847. En \(f_c\) (≈ 1,6 kHz), 0,707. A 5 kHz, 0,303; a 20 kHz, 0,080.</li>
+<li>Observe también el <b>desfase</b>: la salida (canal 2) va retrasada respecto a la entrada; en \(f_c\) el retraso es de 45° (un octavo de periodo).</li>
+<li>Cambie la forma de onda de entrada a cuadrada en el generador (pestaña Generador): a frecuencias altas la salida se vuelve un «triángulo redondeado», el condensador no alcanza a cargarse.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>La punta del osciloscopio</h2>
+<p>La punta (sonda) <b>no es un simple cable</b>. Tiene un interruptor <b>×1 / ×10</b>. En ×10 la punta atenúa la señal diez veces y presenta al circuito una impedancia mucho mayor (10 MΩ ‖ 14 pF, frente a 1 MΩ ‖ 110 pF en ×1), de modo que perturba menos el circuito y llega a frecuencias más altas. El osciloscopio debe <b>saber</b> qué factor hay: la entrada del canal tiene un ajuste que multiplica la lectura. Si ambos no coinciden, las lecturas son 10 veces mayores o menores.</p>
+<div class="sim" data-sim="c3-puntas" data-title="Punta ×1 / ×10: cuando el interruptor y el menú no coinciden"></div>
+<div class="sim-guide"><ul>
+<li>Con ambos en ×10 la lectura es 1,90 V<sub>pp</sub> (el valor correcto: 2 V del generador menos la caída en los 50 Ω).</li>
+<li>Con el interruptor de la punta en ×1 y el menú en ×10 el osciloscopio multiplica por 10 de más y muestra <b>19,0 V</b>: un error clásico y muy frecuente.</li>
+<li>Con el interruptor en ×10 y el menú en ×1, la lectura es <b>0,19 V</b>: diez veces menos.</li>
+</ul></div>
+<div class="box safe"><p><b>Antes de usar la punta,</b> compruebe tres cosas: la pinza de masa conectada al 0 V del circuito (la pinza <i>es</i> tierra: no la conecte a un punto con tensión), el interruptor ×1/×10 de la punta y el factor correspondiente en el menú del canal.</p></div>
+</section>
+
+<section>
+<h2>Problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Una señal senoidal ocupa 6 divisiones de pico a pico en la escala de 0,5 V/div y su periodo ocupa 4 divisiones en la base de 0,25 ms/div. Calcule amplitud, valor eficaz y frecuencia.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Pico a pico.</b> \(6\times0{,}5=3{,}0\) V; amplitud \(V_p=1{,}5\) V.</li>
+<li><b>Eficaz.</b> \(V_{rms}=1{,}5/\sqrt2=1{,}06\) V.</li>
+<li><b>Periodo.</b> \(T=4\times0{,}25=1\) ms; \(f=1\) kHz.</li>
+<li><b>Resultado.</b> <span class="ans">1,5 V de pico, 1,06 V eficaces y 1 kHz.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>El generador está ajustado a 4 V<sub>pp</sub> (circuito abierto). ¿Qué V<sub>pp</sub> hay sobre una carga de 50 Ω y sobre una de 10 kΩ?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Divisor.</b> \(V_L=V_{oc}\,\dfrac{R_L}{R_L+50}\).</li>
+<li><b>50 Ω.</b> \(4\cdot\dfrac{50}{100}=2{,}0\) V<sub>pp</sub>.</li>
+<li><b>10 kΩ.</b> \(4\cdot\dfrac{10000}{10050}=3{,}98\) V<sub>pp</sub>.</li>
+<li><b>Resultado.</b> <span class="ans">2,0 V<sub>pp</sub> con 50 Ω y 3,98 V<sub>pp</sub> con 10 kΩ.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un filtro RC de 10 kΩ y 10 nF se excita con 1 V de pico. ¿Qué amplitud de salida se espera a 5 kHz?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Frecuencia de corte.</b> \(f_c=1/(2\pi\cdot10^4\cdot10^{-8})=1592\) Hz.</li>
+<li><b>Ganancia.</b> \(|H|=1/\sqrt{1+(5000/1592)^2}=1/\sqrt{1+9{,}86}=0{,}303\).</li>
+<li><b>Resultado.</b> <span class="ans">0,303 V de pico a la salida (−10,4 dB).</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Se ve una señal de 3,2 V<sub>pp</sub> con la punta en ×10 pero el menú del osciloscopio en ×1. ¿Cuál es la amplitud real?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Qué hace la punta.</b> En ×10 divide la señal entre 10; el menú en ×1 no la vuelve a multiplicar.</li>
+<li><b>Real.</b> \(3{,}2\times10=32\) V<sub>pp</sub>.</li>
+<li><b>Resultado.</b> <span class="ans">32 V<sub>pp</sub>: la señal es diez veces mayor que la que se ve.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

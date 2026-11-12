@@ -1,0 +1,84 @@
+<template class="chapter-src" data-id="condensadores" data-num="7" data-title="Condensadores y circuitos RC" data-part="Parte II · Los pasivos en la protoboard" data-short="El condensador: carga, energía, tipos (cerámico, poliéster, electrolítico) y marcado; carga y descarga con constante de tiempo RC medidas con multímetro y osciloscopio; filtro pasaaltos y acoplamiento">
+<p class="lead">Un condensador almacena carga entre dos placas aisladas. Esa sencilla idea explica los temporizadores, los filtros, las fuentes de alimentación, los flashes de las cámaras y la memoria de las computadoras. Lo que lo hace interesante en el banco es que su comportamiento está en el <b>tiempo</b>: no basta un multímetro, hay que ver cómo cambia la tensión. Este capítulo pasa del condensador de 100 µF que se carga en segundos —y se puede seguir con el multímetro— al de 1 µF que se carga en milisegundos y solo se ve con el osciloscopio.</p>
+
+<section>
+<h2>Qué es un condensador</h2>
+<p>La <b>capacitancia</b> \(C=Q/V\) mide cuánta carga almacena por voltio (en faradios, F). Con corriente variable, \(i=C\,dv/dt\): la corriente es proporcional a la <i>rapidez</i> con que cambia la tensión; con tensión constante (continua) no pasa corriente, y el condensador es un circuito abierto. Almacena la energía \(E=\tfrac12CV^2\): un condensador de 100 µF cargado a 16 V guarda 12,8 mJ.</p>
+<div class="tablewrap"><table class="tbl"><tr><th>Tipo</th><th>Aspecto</th><th>Valores típicos</th><th>Polaridad</th><th>Uso</th></tr>
+<tr><td>Cerámico</td><td>Lenteja o disco naranja/marrón, marcado «104»</td><td>1 pF – 1 µF</td><td>No</td><td>Desacople, alta frecuencia</td></tr>
+<tr><td>Poliéster (film)</td><td>Caja rectangular roja o verde</td><td>1 nF – 10 µF</td><td>No</td><td>Filtros, temporizadores estables</td></tr>
+<tr><td>Electrolítico</td><td>Cilindro azul o negro con franja</td><td>1 µF – 10 mF</td><td><b>Sí</b></td><td>Fuentes, acoplamiento de audio</td></tr></table></div>
+<p>El código de tres cifras de los cerámicos se lee como los resistores, en picofaradios: <b>104</b> = 10 × 10⁴ pF = 100 nF; <b>473</b> = 47 nF; <b>22</b> = 22 pF. Los electrolíticos tienen impreso su valor, su tensión máxima y la franja del terminal negativo; son de tolerancia grande (−20 %, +80 %) y tienen una resistencia en serie (ESR) y una corriente de fuga apreciables.</p>
+<ul>
+<li><b>En paralelo</b> las capacitancias se suman: \(C=C_1+C_2\). <b>En serie</b> se combinan como las conductancias: \(1/C=1/C_1+1/C_2\).</li>
+<li>La tensión en un condensador <b>no puede cambiar bruscamente</b>: es una «inercia» de tensión.</li>
+</ul>
+</section>
+
+<section>
+<h2>Carga y descarga: la constante de tiempo</h2>
+<p>Un resistor \(R\) en serie con \(C\) y una fuente \(V_s\): la tensión en el condensador sube según</p>
+\[v_C(t)=V_s\left(1-e^{-t/RC}\right),\qquad \tau=RC\]
+<p>A \(t=\tau\) el condensador ha llegado al 63,2 % de \(V_s\); a \(3\tau\), al 95 %; a \(5\tau\), al 99,3 % (se considera «cargado»). La descarga es \(v_C=V_0e^{-t/RC}\). El producto \(RC\) tiene unidades de segundo: 10 kΩ × 100 µF = 1 s.</p>
+<p>En la simulación un resistor de 10 kΩ carga un electrolítico de 100 µF desde 5 V. El multímetro lee la tensión en el condensador. El simulador corre en <b>tiempo real</b> (puede ponerse en cámara lenta con la lista «Velocidad»); el reloj de la derecha indica el tiempo transcurrido desde el último reinicio.</p>
+<div class="sim" data-sim="c7-carga" data-title="Cargar un electrolítico de 100 µF con 10 kΩ: τ = 1 s"></div>
+<div class="sim-guide"><ul>
+<li>La lectura coincide con la teórica: 3,16 V en 1 s, 4,32 V en 2 s, 4,75 V en 3 s. Después de 5 s queda en <b>4,95 V</b>, no en 5,00: la <b>corriente de fuga</b> del electrolítico (≈ 5 µA, equivalente a ≈ 1 MΩ) forma un divisor con el resistor de carga.</li>
+<li>Pulse «Descargar con un cable»: el condensador se vacía casi al instante (resistencia ≈ 0) y la tensión cae a cero. Quite el cable y vuelve a cargarse.</li>
+<li>Cambie el resistor a 47 kΩ: τ = 4,7 s; la carga es 4,7 veces más lenta. Con 1 kΩ, τ = 0,1 s.</li>
+</ul></div>
+<div class="box safe"><p><b>Descargar antes de tocar.</b> Un condensador grande conserva su carga mucho después de apagar la fuente: uno de 1000 µF a 25 V entrega una descarga dolorosa y puede soldar un destornillador. Para descargarlo se une a través de un resistor (por ejemplo 100 Ω), nunca con un cable directo.</p></div>
+</section>
+
+<section>
+<h2>Verlo con el osciloscopio: la onda cuadrada</h2>
+<p>Para observar la carga y descarga de un condensador de 1 µF hay que repetirlas muchas veces por segundo: una onda cuadrada de 0 a 5 V del generador lo logra. El canal 1 muestra la cuadrada y el canal 2 la tensión en el condensador, que sube y baja con forma exponencial. La constante de tiempo se lee en pantalla: el tiempo que tarda en subir el 63 % del salto.</p>
+<div class="sim" data-sim="c7-rc-scope" data-title="Onda cuadrada sobre un circuito RC"></div>
+<div class="sim-guide"><ul>
+<li>Con 1 kΩ, 1 µF y 200 Hz: τ ≈ 1,05 ms (se suman los 50 Ω del generador) y medio periodo 2,5 ms: casi 2,4 τ por semiciclo. La salida llega a 4,5 V y baja a 0,45 V (pico a pico 4,15 V).</li>
+<li>Con 100 nF: τ = 0,105 ms: la salida alcanza los 5 V en cada semiciclo y se parece a la entrada (el filtro «deja pasar» la cuadrada).</li>
+<li>Con 10 kΩ y 1 µF: τ = 10 ms, mucho mayor que el semiciclo: el condensador no alcanza a cargarse y la salida es un diente de sierra pequeño (0,6 V<sub>pp</sub>) montado sobre 2,5 V: el circuito <b>integra</b> la señal.</li>
+<li>Suba la frecuencia a 2 kHz con 1 kΩ y 1 µF: lo mismo que antes, ahora por la rapidez.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El condensador como filtro de continua</h2>
+<p>El condensador en serie con la señal deja pasar las variaciones (alterna) y bloquea la continua: es el <b>pasaaltos</b>. Con \(R\) a tierra, la salida en \(R\) tiene una frecuencia de corte \(f_c=1/(2\pi RC)\) por debajo de la cual se atenúa. Se usa para <b>acoplar</b> etapas de audio: se bloquea la polarización de continua y se pasa la música.</p>
+<div class="sim" data-sim="c7-pasaaltos" data-title="Filtro pasaaltos: 100 nF y 1 kΩ"></div>
+<div class="sim-guide"><ul>
+<li>A 100 Hz la ganancia es 0,063; a 1 kHz, 0,532; en \(f_c=1592\) Hz, 0,707; a 10 kHz, 0,988.</li>
+<li>Con el canal 1 en la entrada y el 2 en la salida, a baja frecuencia la salida <b>adelanta</b> a la entrada (hasta +90°), el opuesto del pasabajos del capítulo 3.</li>
+<li>Combinados, un pasabajos y un pasaaltos forman un <b>pasabanda</b>.</li>
+</ul></div>
+<div class="box note"><p><b>Condensadores de desacople.</b> En toda placa con un circuito integrado se pone un cerámico de 100 nF entre la alimentación y tierra, lo más cerca posible de las patas: entrega las corrientes rápidas que el cable de la fuente, con su inductancia, no puede dar. Sin él, circuitos lógicos y osciladores se comportan de manera caprichosa.</p></div>
+</section>
+
+<section>
+<h2>Problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un resistor de 47 kΩ carga un condensador de 22 µF desde 9 V. ¿Cuánto vale τ y qué tensión hay a los 2 s?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Constante.</b> \(\tau=RC=47\,000\cdot22\cdot10^{-6}=1{,}034\) s.</li>
+<li><b>Tensión.</b> \(v=9(1-e^{-2/1{,}034})=9(1-0{,}1446)=7{,}70\) V.</li>
+<li><b>Resultado.</b> <span class="ans">τ = 1,03 s; 7,70 V a los 2 s.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>¿Qué capacitancia tiene un cerámico marcado «224» y qué tensión máxima deben tener dos electrolíticos de 47 µF en serie para soportar 24 V?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>224.</b> 22 × 10⁴ pF = 220 nF.</li>
+<li><b>En serie.</b> Cada uno soporta la mitad (si son iguales): 12 V como mínimo; con el margen del 80 %, 15 V; el valor comercial es 16 V.</li>
+<li><b>Capacidad total.</b> 23,5 µF.</li>
+<li><b>Resultado.</b> <span class="ans">220 nF; 16 V cada uno (idealmente con resistores de igualación en paralelo).</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>¿Qué frecuencia de corte tiene un filtro RC de 10 kΩ y 4,7 nF? ¿Cuánto se atenúa una señal de 10 kHz?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Corte.</b> \(f_c=1/(2\pi\cdot10^4\cdot4{,}7\cdot10^{-9})=3386\) Hz.</li>
+<li><b>Pasabajos a 10 kHz.</b> \(|H|=1/\sqrt{1+(10\,000/3386)^2}=1/3{,}12=0{,}32\) (−9,9 dB).</li>
+<li><b>Resultado.</b> <span class="ans">3,39 kHz; a 10 kHz el pasabajos deja pasar 0,32 de la amplitud.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Para obtener un retardo aproximado de 3 s antes de que un condensador alcance el 63 % de 5 V con un resistor de 100 kΩ, ¿qué capacitancia se necesita?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Condición.</b> A \(t=\tau\), 63 %: \(\tau=3\) s.</li>
+<li><b>Capacitancia.</b> \(C=\tau/R=3/10^5=30\ \mu\text{F}\).</li>
+<li><b>Valor comercial.</b> 33 µF (τ = 3,3 s); los electrolíticos tienen tolerancia grande, así que el retardo es aproximado.</li>
+<li><b>Resultado.</b> <span class="ans">≈ 30 µF (33 µF comercial).</span></li></ol></details></li>
+</ol>
+</section>
+</template>

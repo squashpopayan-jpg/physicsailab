@@ -1,0 +1,123 @@
+<template class="chapter-src" data-id="danos" data-num="4" data-title="Por qué se queman las cosas" data-part="Parte I · El banco de trabajo" data-short="Potencia y calor, el resistor de 1/4 W, el LED sin resistor, el electrolítico al revés, la batería en cortocircuito, el fusible y el circuito integrado con la alimentación invertida: causas, síntomas y cómo evitarlos">
+<p class="lead">En electrónica se aprende tanto de lo que funciona como de lo que humea. Casi todas las piezas se destruyen por una de tres causas: <b>demasiada potencia</b> (se calientan), <b>demasiada tensión</b> (se perforan) o <b>polaridad equivocada</b> (se invierten sus uniones). En este capítulo se provocan esos fallos a propósito, uno por uno, con el simulador, para reconocerlos —el olor a quemado es una medida— y para saber qué hacer antes de que ocurran en la mesa de verdad. Cada pieza del banco integra su potencia, su temperatura y sus esfuerzos eléctricos; cuando se pasa del límite falla con humo, chispas y un aviso que explica la causa.</p>
+
+<section>
+<h2>El calor: potencia, resistencia térmica y límite</h2>
+<p>Toda pieza que conduce corriente convierte parte de la energía eléctrica en calor: \(P=VI\). Ese calor debe escapar al aire, y la temperatura de equilibrio de la pieza sube sobre la del ambiente en proporción a la potencia:</p>
+\[T_{pieza}=T_{amb}+P\,R_{\theta}\]
+<p>donde \(R_\theta\) es la <b>resistencia térmica</b> (K/W) hacia el aire: cuanto más grande es la pieza, menor. Un resistor de 1/4 W tiene unos 500 K/W: a su potencia nominal se calienta 125 K sobre el ambiente y llega a unos 150 °C, <i>ya muy caliente al tacto</i>. Más allá de unos 230 °C, el cuerpo se carboniza y la pista se abre. Dos detalles hacen el fenómeno más peligroso de lo que parece:</p>
+<ul>
+<li><b>El calor tarda en llegar.</b> Una pieza pequeña con una potencia enorme se destruye en segundos; con una potencia solo un poco superior a la nominal puede tardar minutos. Por eso el banco permite acelerar el calentamiento (lista «Calor 1×, 4×, 20×, 100×»).</li>
+<li><b>La potencia crece como \(V^2\) o \(I^2\).</b> Duplicar la tensión sobre un resistor multiplica por cuatro su potencia.</li>
+</ul>
+<div class="box law"><p><b>Regla práctica.</b> Elija siempre piezas cuya potencia nominal sea al menos el <b>doble</b> de la que disiparán. Un resistor de 1/4 W no debe disipar más de 125 mW en trabajo continuo.</p></div>
+</section>
+
+<section>
+<h2>Experimento 1: el resistor de 1/4 W</h2>
+<p>Un resistor de 100 Ω entre los rieles, alimentado por la fuente. Active <b>Temperatura</b> en la barra: cada pieza se colorea con su temperatura (azul frío → rojo caliente) y muestra el valor. Suba la tensión poco a poco.</p>
+<div class="sim" data-sim="c4-resistor" data-title="Subir la tensión hasta que el resistor se queme"></div>
+<div class="sim-guide"><ul>
+<li>A 3 V el resistor disipa \(3^2/100=0{,}09\) W (0,36× lo nominal): tibio. A 5 V disipa 0,25 W (1×): su temperatura de equilibrio es de 150 °C.</li>
+<li>A 7 V disipa 0,49 W (≈ 2×): su equilibrio sería de unos 270 °C, por encima del límite; se ve humear y se quema. A 10 V (1 W, 4×) se quema en menos de un segundo del cálculo acelerado.</li>
+<li>Cambie la potencia nominal a 1 W: a 10 V ya no se quema porque su resistencia térmica es 4 veces menor.</li>
+<li>Con 10 Ω a 5 V la potencia es 2,5 W: un resistor de 1/4 W ni lo intenta; uno de 5 W lo soporta.</li>
+</ul></div>
+<div class="box safe"><p><b>Los resistores de potencia queman.</b> Un resistor de 5 W alcanza 150 °C con su potencia nominal: puede dar una quemadura de segundo grado en un segundo de contacto. Se montan separados de la placa y de otras piezas, nunca tocándolos.</p></div>
+</section>
+
+<section>
+<h2>Experimento 2: el LED sin resistor</h2>
+<p>Un LED no se parece a una bombilla: por encima de su tensión umbral (≈ 2 V el rojo), la corriente crece <b>exponencialmente</b> con la tensión. Una pequeña variación de tensión es una enorme variación de corriente, por eso hay que limitarla con un resistor en serie: el resistor, no el LED, fija la corriente.</p>
+<div class="sim" data-sim="c4-led" data-title="El LED con resistor y sin él"></div>
+<div class="sim-guide"><ul>
+<li>Con 330 Ω a 5 V la corriente es 9,2 mA: el LED brilla cómodamente. Con 1 kΩ, 3,1 mA: tenue. Con 100 Ω, 29 mA: ya en el límite superior de un LED de 5 mm (20–30 mA). Con 47 Ω, 57 mA: el LED se calienta rápido y se quema.</li>
+<li>Con <b>ningún resistor</b> (0 Ω) la corriente supera 0,6 A: el LED se quema de inmediato y se apaga para siempre. La fuente «limita» a 1 A, demasiado para él.</li>
+<li>Un LED azul o blanco (≈ 3 V de caída) con 5 V y 100 Ω da unos 20 mA; el verde, unos 29 mA. El resistor correcto depende del color.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Experimento 3: el condensador electrolítico</h2>
+<p>Los electrolíticos tienen polaridad: una capa de óxido muy delgada solo se forma con el positivo en el lado correcto. Invertida, esa capa se destruye, circula una corriente grande, el electrolito hierve y el encapsulado se abre («revienta»): es el fallo más espectacular de la electrónica de aficionado. También revientan si la tensión supera el valor impreso en el cuerpo. Fíjese en el marcado: la franja clara con signos «−» señala la pata negativa; la pata <b>más larga</b> es la positiva.</p>
+<div class="sim" data-sim="c4-electrolitico" data-title="Polaridad y tensión máxima de un electrolítico de 100 µF / 16 V"></div>
+<div class="sim-guide"><ul>
+<li>Con polaridad correcta, 5 V y 12 V son tranquilos; incluso 16 V (la tensión máxima) se soporta; a 22 V <b>revienta</b>: el condensador vomita electrolito y queda marcado con una cruz.</li>
+<li>Con la polaridad <b>invertida</b>, aun a 2 V se destruye. La regla es: tensión de trabajo ≤ 80 % de la nominal y polaridad siempre comprobada.</li>
+<li>La corriente que circula en el estado de régimen es de microamperios (fuga): el condensador está cargado y la fuente apenas entrega corriente. El peligro está en el instante de conexión.</li>
+</ul></div>
+<div class="box safe"><p><b>Protección personal.</b> Cuando un electrolítico pequeño revienta, expulsa gas caliente y electrolito corrosivo. Se usan gafas de seguridad en el laboratorio y se conecta la alimentación con la mano lejos de la pieza.</p></div>
+</section>
+
+<section>
+<h2>Experimento 4: el cortocircuito</h2>
+<p>Un <b>cortocircuito</b> es un camino de resistencia casi nula entre dos puntos de distinta tensión. La corriente solo queda limitada por la resistencia interna de la fuente y los cables: para una batería, unos pocos ohmios; para la red, casi nada. Una batería de 9 V con 1,7 Ω de resistencia interna en cortocircuito entrega \(9/1{,}7\approx5{,}3\) A y disipa dentro de sí \(I^2r=48\) W: en segundos se pone al rojo, se hincha y puede arder. Una fuente con límite de corriente se detiene en su límite y no pasa nada.</p>
+<div class="sim" data-sim="c4-corto" data-title="Cortocircuito: batería frente a fuente de laboratorio con límite"></div>
+<div class="sim-guide"><ul>
+<li>Con la <b>fuente</b> ajustada a 9 V y límite 0,3 A, el cable entre rieles la lleva a <b>C.C.</b>: 0,3 A, y la tensión cae a casi cero. Retire el cable y todo vuelve a la normalidad. Nada se daña.</li>
+<li>Con la <b>batería de 9 V</b>, el mismo cable hace circular unos 5 A: la batería se sobrecalienta (la temperatura sube a más de 100 °C en pocos segundos) y se daña.</li>
+<li>El fenómeno no es teórico: ocurre cuando una pata suelta cae sobre dos tiras vecinas, o cuando una moneda o una herramienta tocan los rieles de una batería.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Experimento 5: el fusible</h2>
+<p>El <b>fusible</b> es la pieza que se sacrifica a propósito: un hilo fino que se funde cuando la corriente supera la nominal durante suficiente tiempo. Los <b>rápidos</b> (F) reaccionan en milisegundos y protegen semiconductores; los <b>retardados</b> (T) toleran picos de corta duración (arranque de motores y de fuentes). Se funden por el calor \(\int I^2\,dt\), no solo por el valor de la corriente.</p>
+<div class="sim" data-sim="c4-fusible" data-title="Un fusible de 0,5 A frente a distintas cargas"></div>
+<div class="sim-guide"><ul>
+<li>Con corrientes por debajo de la nominal (0,09 A y 0,41 A) el fusible no se funde nunca. Con 0,6 A (1,2×) tarda más de un segundo; con 0,9 A (1,8×), una fracción de segundo; con 1,9 A o más, es casi instantáneo.</li>
+<li>El fusible de 0,5 A no «protege» a una carga por debajo de su nominal: solo actúa ante una falla. Se elige un valor entre 1,25 y 2 veces la corriente normal.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Experimento 6: el circuito integrado al revés</h2>
+<p>Un circuito integrado tiene diodos de protección y uniones parásitas que, con la alimentación invertida, conducen en directo con corrientes que solo limita la fuente. El 555 de la placa está bien alimentado a 9 V (consume unos 5 mA); si el cable rojo se conecta al riel negativo, circula una corriente grande por una unión no prevista y el chip se destruye en décimas de segundo.</p>
+<div class="sim" data-sim="c4-ic" data-title="El 555 con la fuente conectada al revés"></div>
+<div class="sim-guide"><ul>
+<li>Con la conexión correcta, el 555 consume ≈ 4,7 mA (sin carga en la salida) y no se calienta.</li>
+<li>Con la polaridad invertida, el aviso de falla aparece de inmediato. La fuente, con su límite en 0,3 A, evita males mayores, pero el chip ya no sirve: hay que cambiarlo.</li>
+<li>Defensa: un <b>diodo en serie</b> con la alimentación (o un MOSFET) o, simplemente, <b>comprobar la polaridad antes de encender</b>.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Lista de causas, síntomas y remedios</h2>
+<div class="tablewrap"><table class="tbl"><tr><th>Pieza</th><th>Se daña por</th><th>Síntoma</th><th>Cómo evitarlo</th></tr>
+<tr><td>Resistor</td><td>\(P&gt;P_{nom}\)</td><td>Se oscurece, huele, se abre</td><td>Calcular \(P=V^2/R\); usar el doble de margen</td></tr>
+<tr><td>LED</td><td>Corriente excesiva</td><td>Se apaga (o brilla muy intenso y se apaga)</td><td>Resistor en serie siempre</td></tr>
+<tr><td>Electrolítico</td><td>Polaridad invertida o sobretensión</td><td>Abombado, estallido, electrolito</td><td>Comprobar la pata «+»; trabajar al 80 % de \(V_{max}\)</td></tr>
+<tr><td>Batería</td><td>Cortocircuito</td><td>Se calienta, se hincha</td><td>No usar cables desnudos; fusible en serie</td></tr>
+<tr><td>Transistor</td><td>Exceso de potencia, de corriente o de \(V_{CE}\)</td><td>Queda en corto C–E o abierto</td><td>Dimensionar; disipador (cap. 18)</td></tr>
+<tr><td>Circuito integrado</td><td>Tensión de alimentación excesiva o invertida</td><td>Se calienta, no funciona</td><td>Verificar pines y polaridad; regulador</td></tr></table></div>
+<div class="box safe"><p><b>Antes de encender cualquier circuito:</b> (1) polaridad de cada pieza polarizada; (2) ningún cable suelto entre rieles; (3) límite de corriente de la fuente en un valor bajo; (4) ¿qué se calienta? Si algo huele a quemado, apague primero y pregunte después.</p></div>
+</section>
+
+<section>
+<h2>Problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un resistor de 220 Ω y 1/4 W se conecta a 12 V. ¿Qué potencia disipa y qué resistor mínimo (valor de potencia comercial) conviene?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Potencia.</b> \(P=V^2/R=144/220=0{,}65\) W, 2,6 veces la nominal.</li>
+<li><b>Margen.</b> Se busca una potencia nominal de al menos el doble: 1,3 W.</li>
+<li><b>Resultado.</b> <span class="ans">0,65 W; hace falta un resistor de 2 W (o de 1 W como mínimo absoluto).</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Calcule el resistor para un LED verde (\(V_F=2{,}1\) V, 15 mA) alimentado con 9 V y la potencia que disipa el resistor.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Resistor.</b> \(R=(9-2{,}1)/0{,}015=460\ \Omega\). El valor comercial más cercano (E12) es 470 Ω.</li>
+<li><b>Corriente real.</b> \(I=(9-2{,}1)/470=14{,}7\) mA.</li>
+<li><b>Potencia.</b> \(P=I^2R=0{,}0147^2\cdot470=0{,}10\) W: cabe en un resistor de 1/4 W (40 % de su nominal).</li>
+<li><b>Resultado.</b> <span class="ans">470 Ω, 14,7 mA y 0,10 W.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Una batería de 9 V con resistencia interna de 1,7 Ω se pone en cortocircuito con un cable de resistencia despreciable. ¿Qué corriente circula y cuánta potencia se disipa dentro de la batería?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Corriente.</b> \(I=9/1{,}7=5{,}3\) A.</li>
+<li><b>Potencia interna.</b> \(P=I^2r=5{,}3^2\cdot1{,}7=47{,}7\) W.</li>
+<li><b>Comparación.</b> Una batería de este tipo disipa de manera segura menos de 1,5 W: el exceso es 30×.</li>
+<li><b>Resultado.</b> <span class="ans">5,3 A y 48 W dentro de la batería: se calienta rápidamente.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un condensador electrolítico de 25 V funciona en un circuito de 24 V. ¿Es correcto? ¿Qué voltaje de trabajo recomendaría?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Margen.</b> 24 V es el 96 % de la tensión máxima: casi sin margen; con picos de arranque se supera.</li>
+<li><b>Criterio.</b> Trabajar a un máximo del 80 %: \(V_{max}\ge24/0{,}8=30\) V; el valor comercial siguiente es 35 V.</li>
+<li><b>Resultado.</b> <span class="ans">No es adecuado; conviene un condensador de 35 V.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

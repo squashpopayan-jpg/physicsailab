@@ -1,0 +1,5 @@
+const { loadChapter, labOf } = require('./harness');
+const S = loadChapter('19-proyectos-luz.js');
+{ const c = S['p1-linterna'].cfgs[0]; for (const [on, col, k, r] of [[1,'blanco','aa4',150],[1,'blanco','aa2',150],[1,'rojo','aa4',150],[1,'blanco','alk9',150],[1,'blanco','alk9',47],[0,'blanco','aa4',150]]) { const l = labOf(c); c.controls[1].apply(l, col); c.controls[2].apply(l, k); c.controls[3].apply(l, r); c.controls[0].apply(l, on); l.run(0.5, 0.05); console.log('lin', on, col, k, r, JSON.stringify(l.outs()), l.bench.issues.join()); } }
+{ const c = S['p2-nocturna'].cfgs[0]; for (const [lux, p] of [[1,0.5],[30,0.5],[100,0.5],[1000,0.5]]) { const l = labOf(c); c.controls[0].apply(l, lux); c.controls[1].apply(l, p); l.run(0.4, 0.02); console.log('noct', lux, p, JSON.stringify(l.outs()), l.bench.issues.join()); } }
+{ const c = S['p3-toque'].cfgs[0]; for (const rf of [1e9, 1e7, 1e6, 1e5, 1e4]) { const l = labOf(c); c.controls[0].apply(l, rf); l.run(0.3, 0.05); console.log('toque', rf, JSON.stringify(l.outs()), l.bench.issues.join()); } }

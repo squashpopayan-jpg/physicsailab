@@ -1,0 +1,56 @@
+<template class="chapter-src" data-id="reguladores" data-num="17" data-title="Reguladores de tensión y disipación de calor" data-part="Parte V · Circuitos integrados" data-short="Regulador lineal 7805 y LM317 ajustable: tensión de caída (dropout), potencia disipada, resistencia térmica, disipadores y protección térmica; el montaje de TO-220 en la protoboard y cómo elegir el disipador">
+<p class="lead">Una pila de 9 V se agota y baja; el adaptador de pared no es exactamente de 5 V; la red varía. Un <b>regulador lineal</b> convierte esas fuentes imperfectas en una tensión firme. El precio es calor: lo que sobra entre la entrada y la salida se disipa en el integrado. Este capítulo mide ese compromiso con el 7805 (fijo) y el LM317 (ajustable), y enseña a dimensionar el disipador para que el regulador no se apague por protección térmica ni se queme.</p>
+
+<section>
+<h2>El 7805: tensión fija con tres patas</h2>
+<p>El 7805 entrega 5 V mientras reciba al menos ≈ 7 V (su <b>tensión de caída</b>, <i>dropout</i>, es de unos 2 V) y no pase de 1,5 A. Tres patas, vistas por la cara con el nombre: <b>IN – GND – OUT</b> (en el LM317 son <b>ADJ – OUT – IN</b>: otro orden, ¡atención!). Un condensador de 0,33 µF en la entrada y 0,1 µF en la salida evitan oscilaciones. Su potencia es \(P=(V_{in}-V_{out})\,I\); como el TO-220 tiene unos 65 K/W respecto al aire, a 1 W se calienta 65 K: de 25 °C a 90 °C.</p>
+<div class="sim" data-sim="c17-7805" data-title="El 7805: dropout, calor y disipador"></div>
+<div class="sim-guide"><ul>
+<li><b>12 V y 106 mA (47 Ω):</b> 4,99 V a la salida; el 7805 disipa 0,74 W y llega a 71 °C. <b>Con 6 V</b> de entrada la salida baja a 3,99 V: el regulador está por debajo de su dropout y deja de regular. <b>Con 8 V</b> regula bien (4,99 V) con 0,32 W.</li>
+<li><b>12 V y 5 Ω (1 A):</b> debería disipar 7 W: sin disipador sube a 157 °C y su <b>protección térmica</b> lo apaga (la salida cae a cero); al enfriarse se vuelve a encender, en ciclos. Con un disipador grande (3 K/W) el regulador se mantiene en 80 °C, regulando 4,95 V con 7 W.</li>
+<li><b>30 V de entrada</b> con una carga pequeña: la tensión excede los 35 V si se sigue subiendo; entre el exceso de caída y la corriente, se calienta enseguida. Cuanto mayor es la caída \(V_{in}-V_{out}\), peor.</li>
+</ul></div>
+<div class="box law"><p><b>Cómo elegir el disipador.</b> Se calcula la potencia \(P=(V_{in,máx}-5)\,I_{máx}\) y se exige \(T_j=T_a+P\,(R_{jc}+R_{ca})\le125\ ^\circ\text{C}\). Con \(R_{jc}=5\) K/W, 25 °C y 2,1 W (12 V, 0,3 A): \(R_{ca}\le(125-25)/2{,}1-5=42\) K/W: sirve un disipador pequeño de 20 K/W. Se aísla eléctricamente de otras piezas, porque la lengüeta metálica del TO-220 está conectada a tierra (7805) o a la salida (LM317).</p></div>
+</section>
+
+<section>
+<h2>El LM317: regulador ajustable</h2>
+<p>El LM317 mantiene 1,25 V entre sus patas OUT y ADJ. Un divisor externo (R₁ entre OUT y ADJ, R₂ entre ADJ y tierra) fija la salida:</p>
+\[V_{out}=1{,}25\left(1+\frac{R_2}{R_1}\right)+I_{ADJ}R_2\]
+<p>con \(I_{ADJ}\approx50\) µA. Con R₁ = 240 Ω, una R₂ distinta da cada tensión. La entrada debe superar a la salida en al menos 2,5 V.</p>
+<div class="sim" data-sim="c17-lm317" data-title="LM317: la tensión de salida la fija R₂"></div>
+<div class="sim-guide"><ul>
+<li><b>R₂ = 0:</b> 1,25 V (el mínimo). <b>240 Ω:</b> 2,51 V. <b>720 Ω:</b> 5,03 V. <b>1,2 kΩ:</b> 7,55 V.</li>
+<li><b>R₂ = 2,4 kΩ</b> daría 13,8 V pero con 15 V de entrada solo llega a 12,45 V: se pierde el margen de 2,5 V y el LM317 pierde la regulación.</li>
+<li>Con un potenciómetro de 5 kΩ en lugar de R₂ se obtiene una fuente variable de 1,25 V a unos 30 V: es el centro de las fuentes de laboratorio caseras.</li>
+</ul></div>
+<div class="box note"><p><b>Regular con eficiencia.</b> Un regulador lineal desperdicia \(P=(V_{in}-V_{out})I\): de 12 V a 5 V la eficiencia es 42 %. Para corrientes grandes se usan reguladores <b>conmutados</b> (<i>buck</i>), que llegan al 90 %, pero producen ruido de conmutación: son un tema para otro curso. Para cargas de 100 mA, el lineal es perfecto por su sencillez y silencio.</p></div>
+</section>
+
+<section>
+<h2>Problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un 7805 recibe 9 V de una batería y entrega 150 mA. ¿Qué potencia disipa y cuánto sube su temperatura sin disipador (65 K/W)?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Potencia.</b> \(P=(9-5)\cdot0{,}15=0{,}6\) W.</li>
+<li><b>Subida.</b> \(\Delta T=0{,}6\cdot65=39\) K → 64 °C con 25 °C ambiente.</li>
+<li><b>Resultado.</b> <span class="ans">0,6 W; la unión llega a unos 64 °C: no necesita disipador.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Con un LM317, R₁ = 240 Ω, ¿qué R₂ da 9 V?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Despejar.</b> \(1+R_2/R_1=9/1{,}25=7{,}2\Rightarrow R_2=6{,}2\cdot240=1488\) Ω.</li>
+<li><b>Valor E12.</b> 1,5 kΩ → \(V_{out}=1{,}25(1+6{,}25)+0{,}05\text{ mA}\cdot1500=9{,}14\) V.</li>
+<li><b>Resultado.</b> <span class="ans">R₂ ≈ 1,5 kΩ (9,1 V).</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un 7805 entrega 400 mA con 12 V de entrada. Calcule la resistencia térmica máxima del disipador (R<sub>ca</sub>) para que la unión no pase de 110 °C con 30 °C de ambiente. \(R_{jc}=5\) K/W.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Potencia.</b> \(P=(12-5)\cdot0{,}4=2{,}8\) W.</li>
+<li><b>Total permitido.</b> \((110-30)/2{,}8=28{,}6\) K/W.</li>
+<li><b>Disipador.</b> \(R_{ca}\le28{,}6-5=23{,}6\) K/W (más el contacto: ≈ 21 K/W).</li>
+<li><b>Resultado.</b> <span class="ans">Un disipador de ≤ 20 K/W (un trozo de aluminio de unos 3×3 cm).</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué un 7805 alimentado con 6 V da menos de 5 V?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Dropout.</b> El 7805 necesita ≥ 2 V de diferencia entre entrada y salida.</li>
+<li><b>Salida máxima.</b> \(6-2=4\) V; el simulador da 3,99 V.</li>
+<li><b>Resultado.</b> <span class="ans">Está por debajo de su tensión de caída: la salida sigue a la entrada con 2 V menos. Un regulador LDO (como el AMS1117) funciona con 1 V de caída.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

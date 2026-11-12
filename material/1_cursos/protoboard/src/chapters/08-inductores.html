@@ -1,0 +1,74 @@
+<template class="chapter-src" data-id="inductores" data-num="8" data-title="Inductores y relés" data-part="Parte II · Los pasivos en la protoboard" data-short="El inductor: tensión proporcional a la variación de corriente, constante de tiempo L/R vista en el osciloscopio, energía almacenada, relé electromecánico y la patada inductiva que hace necesario el diodo de rueda libre">
+<p class="lead">Si el condensador es la inercia de la <i>tensión</i>, el inductor es la inercia de la <i>corriente</i>: se opone a que la corriente cambie. Es un alambre enrollado y, por eso, aparece sin que lo hayamos pedido en cualquier bobina: los relés, los motores, los altavoces, los transformadores. Entender su comportamiento es entender por qué un interruptor que abre una bobina hace saltar chispas, y por qué un diodo de 20 centavos salva a un transistor de 2 dólares.</p>
+
+<section>
+<h2>Qué es un inductor</h2>
+<p>La <b>inductancia</b> \(L\) (henrios, H) relaciona la tensión con la <i>rapidez de cambio</i> de la corriente:</p>
+\[v_L=L\,\frac{di}{dt}\]
+<p>Con corriente constante (continua) la tensión es cero: el inductor es un cable. Si se intenta cortar la corriente, \(di/dt\) es enorme y aparece una tensión grande con el signo necesario para mantenerla: es la <b>fuerza contraelectromotriz</b>. La energía almacenada en el campo magnético es \(E=\tfrac12LI^2\): una bobina de relé de 0,2 H con 70 mA guarda 0,5 mJ, que puede dar una chispa de cientos de voltios.</p>
+<p>Los inductores reales tienen la resistencia del alambre (R<sub>dc</sub>), una capacitancia entre espiras y una corriente de saturación: cuando el núcleo se satura, la inductancia cae de golpe. En la caja del banco hay un inductor de 10 mH con núcleo de ferrita y R<sub>dc</sub> ≈ 1,2 Ω.</p>
+</section>
+
+<section>
+<h2>El circuito RL y su constante de tiempo</h2>
+<p>Un inductor en serie con un resistor y una fuente: la corriente sube según</p>
+\[i(t)=\frac{V}{R}\left(1-e^{-t/\tau}\right),\qquad \tau=\frac{L}{R}\]
+<p>Con una onda cuadrada del generador, el osciloscopio muestra la tensión en el resistor —proporcional a la corriente— subiendo como un condensador que se carga. A \(t=\tau\) la corriente ha llegado al 63 % de su valor final.</p>
+<div class="sim" data-sim="c8-rl" data-title="Corriente en un inductor de 10 mH: τ = L/R"></div>
+<div class="sim-guide"><ul>
+<li>Con 10 mH y 100 Ω: la resistencia total del lazo suma los 50 Ω del generador y 1,2 Ω de la bobina: τ = 10 mH / 151 Ω = 66 µs. La corriente final es 5 V/151 Ω = 33 mA y el canal 2 llega a 3,3 V.</li>
+<li>Con 100 mH, τ = 0,66 ms: más lenta. Con 1 mH, τ = 6,6 µs: el generador (1 kHz) ya no deja ver la subida a esta escala (use 10 µs/div).</li>
+<li>Con 470 Ω, τ = 19 µs y la corriente final es 9,6 mA.</li>
+<li>Compare con el RC del capítulo anterior: allí la constante era RC; aquí es L/R. Una R mayor hace que el RL sea <i>más rápido</i>; en el RC, más lento.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El relé: un interruptor accionado por una bobina</h2>
+<p>El <b>relé</b> es una bobina con un núcleo de hierro que, al pasar la corriente, atrae una armadura metálica y cierra (o abre) unos contactos. Permite que una señal débil —la de un pulsador, un transistor— gobierne un circuito distinto, <i>aislado eléctricamente</i>. El relé del banco es el pequeño de 5 V (tipo SRD-05VDC): bobina de 70 Ω (≈ 71 mA a 5 V) y un conmutador de un polo, dos tiros: <b>COM</b> (común), <b>NA</b> (normalmente abierto) y <b>NC</b> (normalmente cerrado). En reposo COM está unido a NC; con la bobina energizada, COM se une a NA.</p>
+<p>En la simulación, el pulsador de cuatro patas alimenta la bobina; el contacto NA enciende un LED verde a través de otra fuente (aquí la misma de 5 V). Observe también la geometría: el relé tiene cinco patas en una disposición poco amigable con la protoboard; las dos de la bobina están a ambos lados del canal.</p>
+<div class="sim" data-sim="c8-rele" data-title="Un relé de 5 V gobernado con un pulsador"></div>
+<div class="sim-guide"><ul>
+<li>Marque «Mantener el pulsador apretado» (o mantenga pulsado el botón del banco con el ratón): la corriente de bobina sube a 64 mA, el relé se conecta y el LED verde recibe 8,8 mA. Al soltar, la bobina se apaga y el LED también.</li>
+<li>El relé necesita tiempo para actuar (ms) y no se cierra hasta superar cerca del 70 % de su corriente nominal.</li>
+<li>Los dos circuitos (bobina y LED) solo comparten aquí la fuente; en un caso real pueden tener tensiones diferentes: el relé aísla un circuito de baja potencia de uno de potencia.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>La patada inductiva y el diodo de rueda libre</h2>
+<p>Cuando se corta la corriente de una bobina de relé, su campo magnético colapsa y la bobina genera una tensión opuesta, tan grande como haga falta para mantener la corriente un instante. Con un interruptor mecánico, es la causa de la chispa entre los contactos; con un transistor, es una tensión de cientos de voltios en su colector, que lo destruye. La protección es un <b>diodo de rueda libre</b> (<i>flyback</i>) en paralelo con la bobina, con su cátodo hacia el positivo: normalmente no conduce; al cortar, da a la corriente de la bobina un camino por el que decaer en unos milisegundos.</p>
+<ul>
+<li>Sin diodo: tensión inversa de decenas a cientos de voltios en el instante de abrir.</li>
+<li>Con diodo: la tensión de la bobina queda limitada a −0,7 V (el diodo conduce).</li>
+</ul>
+<p>En la simulación anterior active la casilla «Diodo de rueda libre»: el diodo 1N4007 se coloca entre las patas de la bobina (a la izquierda). No cambia nada al accionar, porque en estado normal no conduce. Su utilidad se mostrará en el capítulo del transistor, donde sí hay un componente que proteger.</p>
+<div class="box safe"><p><b>Nunca</b> se desconecte a mano con el circuito encendido el cable de una bobina grande (un motor, un relé de red, un transformador): salta una chispa que, además de dañar piezas, puede producir una descarga. Siempre se corta la alimentación con el interruptor del circuito o con un transistor <i>con el diodo puesto</i>.</p></div>
+</section>
+
+<section>
+<h2>Problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un inductor de 50 mH y 20 Ω se conecta a 12 V. ¿Cuál es la corriente final y cuánto tarda en llegar al 95 %?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Corriente final.</b> \(I=12/20=0{,}6\) A.</li>
+<li><b>Constante.</b> \(\tau=L/R=0{,}05/20=2{,}5\) ms.</li>
+<li><b>Al 95 %.</b> \(t=3\tau=7{,}5\) ms.</li>
+<li><b>Resultado.</b> <span class="ans">0,6 A; el 95 % se alcanza en 7,5 ms.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>¿Cuánta energía almacena la bobina de un relé de 0,2 H con 70 mA?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Energía.</b> \(E=\tfrac12LI^2=0{,}5\cdot0{,}2\cdot0{,}07^2=0{,}49\) mJ.</li>
+<li><b>Resultado.</b> <span class="ans">0,49 mJ.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Una bobina de 0,2 H con 70 mA se desconecta en 1 µs. ¿Qué tensión media aparece en ella?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Variación.</b> \(di/dt=0{,}07/10^{-6}=7\cdot10^{4}\) A/s.</li>
+<li><b>Tensión.</b> \(v=L\,di/dt=0{,}2\cdot7\cdot10^4=14\,000\) V (teórica; en la realidad el arco y las capacidades parásitas la limitan a unos cientos de voltios).</li>
+<li><b>Resultado.</b> <span class="ans">Del orden de 10 kV en teoría: de ahí la necesidad del diodo de rueda libre.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>¿Qué corriente de colector soporta un transistor 2N3904 si debe conmutar un relé de 70 Ω a 5 V, y qué dato falta para elegirlo?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Corriente de la bobina.</b> \(5/70=71\) mA; el 2N3904 admite 200 mA: alcanza.</li>
+<li><b>Lo que falta.</b> Su tensión máxima V<sub>CEO</sub> = 40 V frente a la patada inductiva: se resuelve con el diodo de rueda libre en paralelo con la bobina.</li>
+<li><b>Resultado.</b> <span class="ans">71 mA (alcanza) y el diodo de protección.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

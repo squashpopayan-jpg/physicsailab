@@ -1,0 +1,9 @@
+const { loadChapter, labOf } = require('./harness');
+const sims = loadChapter('04-danos.js');
+const show = (n, lab) => console.log(n, JSON.stringify(lab.outs()));
+{ const c = sims['c4-resistor'].cfgs[0]; const lab = labOf(c); for (const [v, w] of [[3,0.25],[5,0.25],[7,0.25],[10,0.25],[10,1]]) { const l = labOf(c); c.controls[0].apply(l, v); c.controls[1].apply(l, w); l.run(3); console.log('R', v, w, JSON.stringify(l.outs())); } }
+{ const c = sims['c4-led'].cfgs[0]; for (const r of [0.001, 47, 100, 330, 1000]) { const l = labOf(c); c.controls[0].apply(l, r); l.run(2); console.log('LED R', r, JSON.stringify(l.outs())); } }
+{ const c = sims['c4-electrolitico'].cfgs[0]; for (const [rev, v] of [[0,5],[0,12],[0,16],[0,22],[1,5],[1,2]]) { const l = labOf(c); c.controls[0].apply(l, rev); c.controls[1].apply(l, v); l.run(4); console.log('CE rev', rev, 'v', v, JSON.stringify(l.outs())); } }
+{ const c = sims['c4-corto'].cfgs[0]; for (const s of ['psu','bat']) { const l = labOf(c); c.controls[0].apply(l, s); c.controls[1].apply(l, true); l.run(5); console.log('corto', s, JSON.stringify(l.outs())); } }
+{ const c = sims['c4-fusible'].cfgs[0]; for (const [r, k] of [[100,'fast'],[22,'fast'],[15,'fast'],[10,'fast'],[4.7,'fast'],[4.7,'slow'],[1,'fast']]) { const l = labOf(c); c.controls[0].apply(l, r); c.controls[1].apply(l, k); let t=0; for (; t < 20 && !l.dead('F1'); t += 0.02) l.bench.frame(0.02); console.log('fus', r, k, 'fundido en', l.dead('F1') ? t.toFixed(2)+' s' : 'no', JSON.stringify(l.outs())); } }
+{ const c = sims['c4-ic'].cfgs[0]; for (const rev of [0, 1]) { const l = labOf(c); c.controls[0].apply(l, rev); let t=0; for (; t < 10 && !l.dead('U1'); t += 0.02) l.bench.frame(0.02); console.log('ic', rev, l.dead('U1') ? 'muere en ' + t.toFixed(2) : 'vive', JSON.stringify(l.outs())); } }

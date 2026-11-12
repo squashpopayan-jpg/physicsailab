@@ -1,0 +1,100 @@
+<template class="chapter-src" data-id="proyectos-sonido" data-num="20" data-title="Proyectos en casa II: sonido y movimiento" data-part="Parte VI · Fallas, proyectos y taller" data-short="Tres proyectos con baja tensión: timbre electrónico con 555 y altavoz, probador de continuidad con zumbador y un motor de juguete controlado con MOSFET y pulsador; piezas recicladas, montaje por agujeros y pruebas">
+<p class="lead">El sonido y el movimiento son lo que da vida a un montaje. En este capítulo se arman tres proyectos que suenan o se mueven: un <b>timbre</b> de 555 que se oye en un altavoz, un <b>probador de continuidad</b> que pita cuando dos puntos están unidos y un <b>motor</b> de juguete que arranca al pulsar un botón. Se pueden construir con piezas de aparatos viejos —el altavoz de una radio, el motor de un ventilador, un zumbador de un despertador— y todos funcionan con pilas. (Active el icono de altavoz de la barra de la simulación para escuchar.)</p>
+
+<section>
+<h2>Proyecto 4 · Timbre electrónico con 555 y altavoz</h2>
+<p><b>Objetivo:</b> generar un tono de unos 1000 Hz con el oscilador astable del capítulo 16, que suena en un altavoz de 8 Ω a través de un condensador de acoplamiento.</p>
+<div class="tablewrap"><table class="tbl"><tr><th>Cantidad</th><th>Pieza</th><th>Origen</th></tr>
+<tr><td>1</td><td>NE555</td><td>Tienda; tarjetas de electrodomésticos</td></tr>
+<tr><td>3</td><td>Resistores 1 kΩ, 6,8 kΩ (R₂), y condensadores 100 nF cerámico y 100 µF/16 V</td><td>Cualquier tienda</td></tr>
+<tr><td>1</td><td>Altavoz de 8 Ω (o piezoeléctrico)</td><td>Radio, juguete o teléfono viejos</td></tr>
+<tr><td>1</td><td>Portapilas de 4 × AA</td><td>—</td></tr></table></div>
+<h3>Montaje</h3>
+<ol class="steps">
+<li>Batería a los rieles superiores (+ en T+1, − en T−1); cable entre los rieles superiores e inferiores en la columna 25.</li>
+<li>555 en <b>e10</b> con la muesca a la izquierda: VCC (pata 8, <b>j10</b>) a T+3; GND (pata 1, <b>a10</b>) a B−3; RESET (pata 4, <b>d13</b>) a VCC (<b>i10</b>).</li>
+<li>R₁ = 1 kΩ de <b>h10</b> a <b>h11</b> (entre VCC y DIS); R₂ = 6,8 kΩ de <b>g11</b> a <b>g12</b> (entre DIS y THR).</li>
+<li>THR (columna 12 arriba) a TRIG (columna 11 abajo): cable de <b>j12</b> a <b>a11</b>.</li>
+<li>Condensador de 100 nF entre la columna 11 y el riel «−» (<b>b11</b> a B−11).</li>
+<li>Salida (pata 3, columna 12 abajo): electrolítico de 100 µF con el «+» en <b>c12</b> y el «−» en <b>c16</b>; altavoz de <b>d16</b> a B−9.</li>
+</ol>
+<div class="sim" data-sim="p4-timbre" data-title="Un tono de 1 kHz con el 555 y un altavoz"></div>
+<div class="sim-guide"><ul>
+<li>La frecuencia calculada es \(f=1{,}44/((1000+2\cdot6800)\cdot10^{-7})=986\) Hz; en la simulación el altavoz sigue una señal de 975 Hz con unos 6 V<sub>pp</sub>. La batería entrega ≈ 3,6 mA.</li>
+<li>Con 10 nF el tono sube a 9,75 kHz (muy agudo); con 1 µF y 22 kΩ baja a 32 Hz (un «tableteo» que ya no es una nota).</li>
+<li>El condensador de 100 µF en serie con el altavoz bloquea la continua: sin él, circularían 6 V/8 Ω = 0,75 A de continua por la bobina del altavoz (y la quemaría).</li>
+<li><b>Mejoras:</b> sustituir R₂ por un potenciómetro de 100 kΩ en serie con 1 kΩ (un «theremin» de perilla); poner la LDR como R₂ (la luz cambia el tono).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Proyecto 5 · Probador de continuidad con zumbador</h2>
+<p><b>Objetivo:</b> una herramienta útil: un aparato que pita cuando dos puntos (los extremos de un cable, una pista, un fusible) están unidos por un camino conductor. Con dos pilas AA, un BC547 y un zumbador activo.</p>
+<div class="tablewrap"><table class="tbl"><tr><th>Cantidad</th><th>Pieza</th><th>Origen</th></tr>
+<tr><td>1</td><td>BC547 (o similar NPN)</td><td>Tienda</td></tr>
+<tr><td>1</td><td>Zumbador activo de 3–5 V</td><td>Despertador, tostadora o teléfono viejo</td></tr>
+<tr><td>1</td><td>Resistor de 1 kΩ</td><td>—</td></tr>
+<tr><td>1</td><td>2 pilas AA con portapilas</td><td>—</td></tr>
+<tr><td>2</td><td>Puntas de prueba (cables con alfiler)</td><td>Cable de teléfono y alfileres</td></tr></table></div>
+<h3>El circuito</h3>
+<ol class="steps">
+<li>Batería de 2 pilas (3 V) a los rieles inferiores.</li>
+<li>BC547 en <b>e10–e12</b> (C-B-E); emisor (<b>a12</b>) a B−4; zumbador de <b>B+10</b> al colector (<b>a10</b>).</li>
+<li>Resistor de 1 kΩ de <b>B+6</b> a <b>a16</b> (la «punta A»); la «punta B» va a la base (columna 11). En la simulación el objeto probado, RX, está entre las columnas 16 y 11.</li>
+</ol>
+<p>Cuando RX conduce, una corriente \((3-0{,}7)/(1000+R_X)\) entra a la base y el transistor se satura: el zumbador recibe corriente y suena.</p>
+<div class="sim" data-sim="p5-continuidad" data-title="Probador de continuidad: ¿suena o no?"></div>
+<div class="sim-guide"><ul>
+<li><b>Abierto (nada entre las puntas):</b> silencio. <b>Cable (1 Ω):</b> 2,2 mA de base y 17,6 mA en el zumbador: suena fuerte. <b>1 kΩ y 10 kΩ:</b> también suena.</li>
+<li><b>100 kΩ:</b> la corriente de base es de solo 23 µA: el zumbador recibe 6,8 mA, medio débil. El probador es sensible a resistencias de hasta ≈ 50 kΩ: es un «pita si hay camino», no un ohmímetro.</li>
+<li><b>Usos:</b> comprobar un cable dañado, un fusible, una pista de una tarjeta, una bombilla de linterna. Siempre con el aparato <b>apagado y desconectado</b>; no sirve para una pila ni una fuente.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Proyecto 6 · Motor de juguete con MOSFET y pulsador</h2>
+<p><b>Objetivo:</b> hacer girar un motor pequeño (de ventilador, de un juguete) al pulsar un botón, con el MOSFET IRLZ44N del capítulo 13. La compuerta recibe +6 V al pulsar; un resistor de 10 kΩ la mantiene en 0 V en reposo.</p>
+<div class="tablewrap"><table class="tbl"><tr><th>Cantidad</th><th>Pieza</th><th>Origen</th></tr>
+<tr><td>1</td><td>IRLZ44N (o cualquier MOSFET de nivel lógico: IRL540, FQP30N06L)</td><td>Tienda; fuentes de PC y placas de motores viejas</td></tr>
+<tr><td>1</td><td>Motor de CC de 3–6 V</td><td>Juguete, ventilador USB, lector de CD</td></tr>
+<tr><td>1</td><td>Diodo 1N4007</td><td>Cargador viejo</td></tr>
+<tr><td>2</td><td>Resistores de 10 kΩ y 1 kΩ</td><td>—</td></tr>
+<tr><td>1</td><td>Pulsador de 4 patas y portapilas de 4 × AA</td><td>—</td></tr></table></div>
+<h3>Montaje</h3>
+<ol class="steps">
+<li>Batería a los rieles inferiores. MOSFET en <b>e10–e12</b> con el nombre hacia usted: G (e10), D (e11), S (e12). Fuente (<b>a12</b>) a B−3.</li>
+<li>Motor de <b>B+6</b> al drenador (<b>a11</b>); diodo 1N4007 con el ánodo en <b>b11</b> y el cátodo en B+4 (rayado hacia el «+»).</li>
+<li>Resistor de 10 kΩ de <b>d10</b> (compuerta) a B−6.</li>
+<li>Pulsador en <b>e20</b> (patas e20, e22, f20, f22): el lado de abajo (columna 20) a la compuerta (cable <b>a20</b> a <b>a10</b>) a través del resistor de 1 kΩ (<b>c20</b> a <b>c10</b>); el lado de arriba (<b>j20</b>) al riel «+».</li>
+</ol>
+<div class="sim" data-sim="p6-motor" data-title="Motor de juguete con un MOSFET: pulsar para girar"></div>
+<div class="sim-guide"><ul>
+<li>En reposo la compuerta está en 0 V y el motor parado: la batería no entrega corriente (36 pA).</li>
+<li>Al pulsar (marque la casilla, o mantenga el clic sobre el botón del banco), la compuerta sube a 5,75 V, el MOSFET se satura y el motor gira al 82 % de su velocidad máxima, tomando 0,41 A.</li>
+<li>Al soltar, el resistor de 10 kΩ descarga la compuerta y el motor se detiene.</li>
+<li><b>Variante:</b> un potenciómetro y un 555 como en el capítulo 13 regulan la velocidad. Un motor con más par arranca con corrientes de varios amperios: use pilas que aguanten o una fuente con límite.</li>
+</ul></div>
+<div class="box safe"><p><b>Motores:</b> un motor gira con fuerza suficiente para atrapar un cabello o un dedo; el eje se protege con una tapa. Se mantiene la batería desconectada mientras se monta; el diodo de rueda libre es obligatorio.</p></div>
+</section>
+
+<section>
+<h2>Preguntas para comprobar lo aprendido</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Para qué sirve el condensador de 100 µF entre el 555 y el altavoz?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Problema.</b> La salida del 555 oscila entre 0 y ≈ 4 V (valor medio ≈ 2 V): por un altavoz de 8 Ω circularían 0,25 A de continua.</li>
+<li><b>Solución.</b> El condensador deja pasar la alterna (el sonido) y bloquea la continua.</li>
+<li><b>Resultado.</b> <span class="ans">Bloquea la corriente continua que quemaría la bobina del altavoz.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>El probador del proyecto 5 pita con un resistor de 22 kΩ entre las puntas. ¿Está averiado?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Cálculo.</b> \(I_B=2{,}3/(1\ \text{k}\Omega+22\ \text{k}\Omega)=0{,}1\) mA; con β = 300 se saturaría hasta 30 mA.</li>
+<li><b>Interpretación.</b> Con 0,1 mA de base el transistor aún entrega los ≈ 17 mA que el zumbador necesita: sí pita.</li>
+<li><b>Resultado.</b> <span class="ans">No está averiado: su sensibilidad es de decenas de kΩ; no distingue un cable de un resistor de 22 kΩ.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>¿Qué función cumple el diodo en el proyecto 6 y qué ocurre sin él al soltar el botón?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Función.</b> Rueda libre: conduce la corriente del motor al apagarse y evita el pico de tensión.</li>
+<li><b>Sin diodo.</b> El pico supera la tensión de avalancha del MOSFET; con motores mayores lo destruye (capítulo 13).</li>
+<li><b>Resultado.</b> <span class="ans">Protege el MOSFET del pico inductivo al soltar el botón.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

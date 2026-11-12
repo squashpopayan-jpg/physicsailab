@@ -64,18 +64,22 @@ const SCIENTIFIC_THESAURUS = {
     'riel': ['riel de aire', 'fotocompuertas', 'colisiones', 'segunda ley', 'newton', 'oscilador', 'polea', 'mecanica', 'carrito', 'plano inclinado', 'choques', 'momento lineal', 'dinamica'],
     'colision': ['riel', 'choque', 'momento lineal', 'conservacion', 'mecanica'],
     'choque': ['riel', 'colision', 'momento', 'energia', 'mecanica'],
-    'dispositivos': ['circuitos', 'pasivos', 'activos', 'resistor', 'resistencia', 'condensador', 'capacitor', 'inductor', 'bobina', 'diodo', 'led', 'zener', 'bjt', 'transistor', 'mosfet', 'amplificador', 'opamp', 'spice', 'protoboard', 'ley de ohm', 'thevenin', 'norton', 'filtro', 'rectificador', '555', 'cortocircuito'],
-    'pasivos': ['dispositivos', 'resistores', 'condensadores', 'inductores', 'circuitos', 'spice'],
-    'activos': ['dispositivos', 'diodos', 'transistores', 'amplificadores', 'opamp', 'circuitos', 'spice'],
-    'diodo': ['dispositivos', 'led', 'zener', 'rectificador', 'semiconductor', 'p-n', 'activos'],
-    'transistor': ['dispositivos', 'bjt', 'mosfet', 'amplificador', 'conmutacion', 'activos', 'spice'],
-    'resistor': ['dispositivos', 'resistencia', 'ley de ohm', 'pasivos', 'potenciometro', 'divisor de tension'],
-    'condensador': ['dispositivos', 'capacitor', 'faradios', 'filtro', 'pasivos', 'rc'],
-    'inductor': ['dispositivos', 'bobina', 'henrios', 'flujo magnetico', 'pasivos', 'rl', 'rlc'],
-    'circuitos': ['dispositivos', 'arduino', 'esp32', 'spice', 'electronica', 'protoboard', 'ley de ohm'],
+    'dispositivos': ['circuitos', 'protoboard', 'pasivos', 'activos', 'resistor', 'resistencia', 'condensador', 'capacitor', 'inductor', 'bobina', 'diodo', 'led', 'zener', 'bjt', 'transistor', 'mosfet', 'amplificador', 'opamp', 'spice', 'ley de ohm', 'thevenin', 'norton', 'filtro', 'rectificador', '555', 'cortocircuito'],
+    'protoboard': ['breadboard', 'circuitos', 'spice', 'electronica', 'dispositivos', 'arduino', 'multimetro', 'osciloscopio', 'fuente', 'resistor', 'condensador', 'diodo', 'led', 'zener', 'bjt', 'mosfet', 'opamp', 'lm741', 'lm358', 'lm393', 'ne555', '555', '7805', 'lm317', 'rele', 'fusible', 'diagnostico', 'fallas', 'cortocircuito', 'proyectos'],
+    'breadboard': ['protoboard', 'circuitos', 'electronica', 'spice', 'multimetro', 'proyectos'],
+    'multimetro': ['protoboard', 'voltaje', 'corriente', 'continuidad', 'fusible', 'dispositivos', 'arduino', 'electronica'],
+    'osciloscopio': ['protoboard', 'senales', 'generador', 'dispositivos', 'ac', 'rectificador', 'transformadores'],
+    'pasivos': ['dispositivos', 'protoboard', 'resistores', 'condensadores', 'inductores', 'circuitos', 'spice'],
+    'activos': ['dispositivos', 'protoboard', 'diodos', 'transistores', 'amplificadores', 'opamp', 'circuitos', 'spice'],
+    'diodo': ['dispositivos', 'protoboard', 'led', 'zener', 'rectificador', 'semiconductor', 'p-n', 'activos'],
+    'transistor': ['dispositivos', 'protoboard', 'bjt', 'mosfet', 'amplificador', 'conmutacion', 'activos', 'spice'],
+    'resistor': ['dispositivos', 'protoboard', 'resistencia', 'ley de ohm', 'pasivos', 'potenciometro', 'divisor de tension'],
+    'condensador': ['dispositivos', 'protoboard', 'capacitor', 'faradios', 'filtro', 'pasivos', 'rc'],
+    'inductor': ['dispositivos', 'protoboard', 'bobina', 'henrios', 'flujo magnetico', 'pasivos', 'rl', 'rlc'],
+    'circuitos': ['protoboard', 'dispositivos', 'arduino', 'esp32', 'spice', 'electronica', 'ley de ohm'],
     'arduino': ['esp32', 'circuitos vivos', 'microcontrolador', 'sensores', 'iot', 'protoboard', 'electronica', 'pwm', 'adc', 'i2c', 'spi'],
     'esp32': ['arduino', 'circuitos vivos', 'wifi', 'bluetooth', 'iot', 'sensores', 'microcontrolador', 'faro'],
-    'electronica': ['dispositivos', 'arduino', 'esp32', 'circuitos', 'diodos', 'transistores', 'spice'],
+    'electronica': ['protoboard', 'dispositivos', 'arduino', 'esp32', 'circuitos', 'diodos', 'transistores', 'spice'],
     'venturi': ['bernoulli', 'presion', 'fluido', 'tubo', 'caudal', 'hidrodinamica', 'manometro', 'manometrico', 'densidad', 'flujo'],
     'bernoulli': ['venturi', 'fluidos', 'presion', 'energia mecanica', 'caudal'],
     'fluidos': ['venturi', 'bernoulli', 'presion', 'viscosidad', 'densidad', 'arquimedes', 'pascal', 'torricelli'],
@@ -202,6 +206,7 @@ const CURATED_SEARCH_SUGGESTIONS = [
     { text: 'Simulador 3D de Squash & Biomecánica', sub: '22 rutinas, atleta volumétrico 3D y anatomía 3D giratoria', icon: '🎾', query: 'Squash Biomecánica' },
     { text: 'Riel de Aire 3D', sub: 'Laboratorio Virtual 3D · Dinámica de Newton', icon: '🏎️', query: 'Riel de Aire 3D' },
     { text: 'Dispositivos Activos y Pasivos', sub: '30 capítulos, 128 simuladores SPICE', icon: '🔌', query: 'Dispositivos Activos y Pasivos' },
+    { text: 'Protoboard: Laboratorio de Simulación', sub: '22 capítulos, 62 simuladores SPICE, 9 proyectos y diagnóstico de fallas', icon: '🔩', query: 'Protoboard Laboratorio Simulación' },
     { text: 'Circuitos Vivos Arduino & ESP32', sub: 'Protoboard interactiva y microcontroladores', icon: '⚡', query: 'Circuitos Vivos Arduino ESP32' },
     { text: 'Mecánica Clásica Universitaria', sub: '18 capítulos interactivos completos', icon: '⚛️', query: 'Mecánica Clásica' },
     { text: 'Exploraciones en Física Cuántica', sub: 'Simulador numérico de pozo y efecto túnel', icon: '🌌', query: 'Física Cuántica' },
@@ -470,6 +475,13 @@ function handleGlobalSearchFocus() {
                         <small style="color:#94a3b8; font-size:0.7rem;">30 capítulos, 128 simuladores SPICE</small>
                     </div>
                 </button>
+                <button type="button" class="search-quick-item" onclick="setGlobalSearchQuery('Protoboard Laboratorio Simulación')">
+                    <span style="font-size:1.15rem;">🔩</span>
+                    <div>
+                        <strong style="display:block; color:#fff; font-size:0.82rem;">Protoboard: Lab SPICE</strong>
+                        <small style="color:#94a3b8; font-size:0.7rem;">22 caps · 62 sims · fallos y proyectos</small>
+                    </div>
+                </button>
                 <button type="button" class="search-quick-item" onclick="setGlobalSearchQuery('Riel de Aire 3D')">
                     <span style="font-size:1.15rem;">🏎️</span>
                     <div>
@@ -568,7 +580,7 @@ function handleGlobalSearch(query) {
     const pData = (typeof data !== 'undefined' && data) ? data : (window.PLATFORM_DATA || {});
     const candidateItems = [];
 
-    // 1. Cursos Oficiales (36 materias)
+    // 1. Cursos Oficiales (37 materias)
     const courses = (pData && pData.cursos) ? pData.cursos : [];
     courses.forEach(c => {
         if (c.oculto || c.privado) return;
@@ -602,6 +614,11 @@ function handleGlobalSearch(query) {
             badgeColor = '#34d399';
             badgeBg = 'rgba(16,185,129,0.2)';
             icon = '🏎️';
+        } else if (c.id === 'protoboard') {
+            badgeLabel = '🔩 Lab Protoboard SPICE';
+            badgeColor = '#34d399';
+            badgeBg = 'rgba(16,185,129,0.2)';
+            icon = '🔩';
         } else if (c.id === 'dispositivos') {
             badgeLabel = '🔌 Lab Hardware SPICE';
             badgeColor = '#fbbf24';
@@ -764,6 +781,7 @@ function handleGlobalSearch(query) {
                 </div>
                 <div style="display:flex; justify-content:center; gap:0.4rem; flex-wrap:wrap;">
                     <button type="button" class="search-autocomplete-pill" onclick="setGlobalSearchQuery('Riel de Aire 3D')">🏎️ Riel de Aire 3D</button>
+                    <button type="button" class="search-autocomplete-pill" onclick="setGlobalSearchQuery('Protoboard Laboratorio Simulación')">🔩 Protoboard SPICE</button>
                     <button type="button" class="search-autocomplete-pill" onclick="setGlobalSearchQuery('Dispositivos Activos y Pasivos')">🔌 Dispositivos</button>
                     <button type="button" class="search-autocomplete-pill" onclick="setGlobalSearchQuery('Circuitos Vivos Arduino')">⚡ Arduino</button>
                     <button type="button" class="search-autocomplete-pill" onclick="setGlobalSearchQuery('Mecánica Clásica')">⚛️ Mecánica</button>
@@ -2498,6 +2516,7 @@ window.renderEnrolledCourses = renderEnrolledCourses;
             solido: 'SOL',
             arduino: 'ARD',
             dispositivos: 'DIS',
+            protoboard: 'PRO',
             faro: 'FAR',
             diagnosticas: 'DIA',
             guias: 'GUI',
@@ -3485,6 +3504,7 @@ window.renderEnrolledCourses = renderEnrolledCourses;
             const isMcuantica = c.id === 'mcuantica';
             const isModerna = c.id === 'moderna';
             const isArduino = c.id === 'arduino';
+            const isProtoboard = c.id === 'protoboard';
             const isVenturi = c.id === 'venturi';
             const isRiel = c.id === 'riel';
             const isPendulo = c.id === 'pendulo';
@@ -3521,6 +3541,8 @@ window.renderEnrolledCourses = renderEnrolledCourses;
                 openBtnText = courseUnlocked ? 'Abrir Física Moderna (Nueva Ventana ↗) 🌌' : 'Vista Previa Moderna 👁️';
             } else if (isArduino) {
                 openBtnText = courseUnlocked ? 'Abrir Circuitos Vivos (Nueva Ventana ↗) ⚡' : 'Vista Previa Arduino 👁️';
+            } else if (isProtoboard) {
+                openBtnText = courseUnlocked ? 'Abrir Lab Protoboard (Nueva Ventana ↗) 🔩' : 'Vista Previa Protoboard 👁️';
             } else if (isVenturi || isPendulo || isRiel) {
                 openBtnText = '🧪 Abrir Laboratorio Libre (Nueva Ventana ↗)';
             } else if (isTransformadores) {
@@ -9575,7 +9597,7 @@ window.renderEnrolledCourses = renderEnrolledCourses;
     // ==========================================================================
     const PAGE_CATALOG = [
         { id: 'inicio', title: 'Portal de Bienvenida', short: 'Inicio', icon: '🏠', order: 1 },
-        { id: 'cursos', title: 'Cursos & Laboratorios (36)', short: 'Cursos & Labs', icon: '🚀', order: 2 },
+        { id: 'cursos', title: 'Cursos & Laboratorios (37)', short: 'Cursos & Labs', icon: '🚀', order: 2 },
         { id: 'quizzes', title: 'Evaluaciones & Quizzes con PIN', short: 'Quizzes PIN', icon: '📝', order: 3 },
         { id: 'trivia', title: 'Gran Trivia de Física (1.000 preg.)', short: 'Trivia Física', icon: '🎯', order: 4 },
         { id: 'trivia-historia', title: 'Historia de la Física (500 preg.)', short: 'Historia Física', icon: '📜', order: 5 },

@@ -1,0 +1,76 @@
+<template class="chapter-src" data-id="rectificacion" data-num="10" data-title="Rectificación y fuente de alimentación" data-part="Parte III · Diodos" data-short="Del transformador a la continua: rectificador de media onda, puente de diodos, condensador de filtro y rizado, y una fuente lineal completa con regulador 7805, con el transformador aislado, el osciloscopio y la protección térmica">
+<p class="lead">Casi todo aparato electrónico enchufado a la pared lleva dentro la misma cadena: un <b>transformador</b> baja la tensión de la red, un <b>rectificador</b> convierte la alterna en pulsos de un solo sentido, un <b>condensador</b> los aplana y un <b>regulador</b> deja una tensión fija. En este capítulo se arma esa cadena en la protoboard, paso a paso, con el secundario aislado de un transformador de 12 V<sub>eficaces</sub> como fuente (la tensión de la red, por seguridad, nunca llega a la placa) y con el osciloscopio para ver cómo la alterna se va convirtiendo en continua.</p>
+
+<section>
+<h2>El transformador aislado y la regla de oro de la seguridad</h2>
+<p>El transformador reduce la tensión de la red a un valor seguro y la <b>aísla</b>: su secundario no tiene ninguna conexión con la red ni con tierra. Por eso se puede trabajar en la protoboard con 12 V<sub>ef</sub> sin riesgo de descarga. En la simulación se dispone de uno en la placa del banco («Transformador»): entrega \(V_{ef}=12\) V en vacío, que es un valor <b>pico</b> de \(12\sqrt2=17\) V, a 60 Hz, con 3 Ω de resistencia del bobinado.</p>
+<div class="box safe"><p><b>Nunca</b> se conectan 120 V o 230 V a una protoboard: sus contactos no están diseñados para ello, no tienen aislamiento y pueden provocar una descarga mortal o un incendio. Todo el trabajo se hace con el secundario de un transformador o con una fuente de laboratorio. La alterna de la red solo se toca <b>con un transformador de aislamiento</b> y siempre con la ayuda de personal experto.</p></div>
+</section>
+
+<section>
+<h2>Rectificador de media onda</h2>
+<p>Un solo diodo deja pasar solo los semiciclos positivos: la carga ve pulsos de un único sentido, con un <b>valor medio</b> \(V_{med}=V_p/\pi\) si el semiciclo ideal es una media senoide. Con 17 V de pico y 0,7 V de caída en el diodo, la salida llega a 16,2 V y su medio es 5,0 V.</p>
+<div class="sim" data-sim="c10-media" data-title="Rectificador de media onda: entrada y salida en el osciloscopio"></div>
+<div class="sim-guide"><ul>
+<li>Canal 1 (amarillo): la senoide de entrada, de ±17 V. Canal 2 (celeste): la salida, solo los semiciclos positivos y 0,7 V más baja.</li>
+<li>El valor medio de la salida (5,04 V) es el que mediría un multímetro en V⎓; el eficaz es mayor.</li>
+<li>Un diodo bloquea en inversa la tensión de pico de entrada: el 1N4007 soporta 1000 V; un 1N4148, 100 V.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El puente de diodos y el condensador de filtro</h2>
+<p>El <b>puente</b> de cuatro diodos aprovecha los dos semiciclos: en cada uno conducen dos diodos y la corriente siempre atraviesa la carga en el mismo sentido. La salida es una onda de pulsos al doble de frecuencia (120 Hz). El puente cuesta dos caídas de diodo: \(V_{pico}=V_p-2\cdot0{,}7=15{,}6\) V. En la protoboard se monta el puente integrado de cuatro patas: <b>~ · + · ~ · −</b>; las dos «~» van al transformador, la «+» y la «−» a la carga. Cuidado con ese orden de patas.</p>
+<p>Un <b>condensador de filtro</b> en paralelo con la carga se carga en los picos y entrega corriente entre ellos. El <b>rizado</b> (pico a pico) aproximado es</p>
+\[\Delta V\approx\frac{I_{carga}}{2fC}\quad(\text{rectificación de onda completa, }f=60\ \text{Hz})\]
+<p>Si se duplica la capacitancia, el rizado se reduce a la mitad. Pruebe los cinco valores con la carga de 470 Ω:</p>
+<div class="sim" data-sim="c10-puente" data-title="Puente rectificador con condensador de filtro"></div>
+<div class="sim-guide"><ul>
+<li><b>Sin filtro:</b> pulsos de 0 a 15,6 V, medio 9,4 V (rizado de 15,4 V<sub>pp</sub>).</li>
+<li><b>10 µF:</b> medio 11,0 V, rizado 9,5 V. <b>100 µF:</b> 14,2 V y 1,9 V. <b>470 µF:</b> 14,6 V y 0,43 V. <b>2200 µF:</b> 14,6 V y 0,09 V.</li>
+<li>Con una carga más pesada (100 Ω) el rizado sube y la tensión media baja: el condensador debe entregar más corriente en cada ciclo.</li>
+<li>El condensador no se carga con corriente suave, sino en <b>picos</b> breves (cuando la entrada supera su tensión): por eso el transformador, con su resistencia de 3 Ω, calienta más de lo que parece. En el capítulo anterior ya se vio que el condensador electrolítico tiene polaridad: aquí el «+» va a la salida «+» del puente.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>La fuente completa: transformador, puente, filtro y regulador 7805</h2>
+<p>El filtro deja un rizado y una tensión que cambia con la carga y con la red. Un <b>regulador lineal</b> 7805 lo convierte en 5 V firmes: el integrado mantiene su salida en 5 V mientras la entrada sea ≥ 7 V, disipando como calor la diferencia: \(P=(V_{in}-5)\,I\). El circuito, tal como se ve en la placa, es el esquema de manual de la fuente de 5 V: puente, 2200 µF, 7805 con 100 µF en la salida, una carga y un LED indicador con su resistor.</p>
+<div class="sim" data-sim="c10-fuente" data-title="Fuente lineal de 5 V completa: del transformador al LED"></div>
+<div class="sim-guide"><ul>
+<li>Con 12 V~ y 47 Ω (106 mA): entrada del regulador 13,4 V con 0,31 V de rizado; <b>salida 4,99 V con un rizado de microvoltios</b>. El regulador absorbió casi todo el rizado.</li>
+<li>El 7805 disipa \((13{,}4-5)\cdot0{,}106+\ldots\approx1{,}0\) W sin disipador y llega a 80 °C. Con 10 Ω (0,5 A) disipa más de 4 W: sube sobre 110 °C: necesita un disipador (capítulo 17).</li>
+<li>Pase el transformador a <b>24 V~</b>: la entrada sube a 30 V; con 47 Ω el 7805 disipa \((30-5)\cdot0{,}106=2{,}7\) W, se calienta por encima de 150 °C y su <b>protección térmica</b> lo apaga: la salida cae a cero; al enfriarse, se vuelve a encender, en un ciclo repetitivo. Es el síntoma de un regulador sin disipador.</li>
+</ul></div>
+<div class="box note"><p><b>La eficiencia de un regulador lineal</b> es \(\eta=V_{out}/V_{in}\): con 13,4 V → 5 V es 37 %; el resto, 63 %, es calor. Por eso se dimensiona el transformador con la menor tensión posible para que el regulador no se queme (7 V mínimo a la entrada, el <i>dropout</i>, que se ve en el capítulo 17).</p></div>
+</section>
+
+<section>
+<h2>Problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un transformador de 9 V<sub>ef</sub> alimenta un puente de diodos de silicio. ¿Cuál es el pico de la salida sin filtro y qué tensión tendrá aproximadamente con un buen filtro?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Pico del secundario.</b> \(9\sqrt2=12{,}7\) V.</li>
+<li><b>Puente.</b> Dos diodos en conducción: \(12{,}7-1{,}4=11{,}3\) V.</li>
+<li><b>Con filtro.</b> Casi el pico: ≈ 11 V (menos el rizado y la caída en el transformador).</li>
+<li><b>Resultado.</b> <span class="ans">≈ 11,3 V de pico; con filtro bueno, unos 10,8–11 V continuos.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Una fuente con puente y filtro entrega 100 mA. ¿Cuánta capacitancia hace falta para que el rizado sea menor de 1 V<sub>pp</sub> a 60 Hz?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Fórmula.</b> \(\Delta V=I/(2fC)\Rightarrow C=I/(2f\,\Delta V)\).</li>
+<li><b>Cálculo.</b> \(C=0{,}1/(2\cdot60\cdot1)=833\ \mu\text{F}\).</li>
+<li><b>Valor comercial.</b> 1000 µF (rizado 0,83 V).</li>
+<li><b>Resultado.</b> <span class="ans">≈ 830 µF → 1000 µF.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un regulador 7805 recibe 12 V y alimenta 300 mA. ¿Cuánta potencia disipa y cuánta resistencia térmica total puede tener el conjunto para no pasar de 125 °C de unión con 25 °C de ambiente?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Potencia.</b> \(P=(12-5)\cdot0{,}3=2{,}1\) W.</li>
+<li><b>Resistencia térmica.</b> \(R_\theta\le(125-25)/2{,}1=47{,}6\) K/W.</li>
+<li><b>Sin disipador.</b> El TO-220 solo tiene 65 K/W: ya se pasa de 125 °C (163 °C); hace falta un disipador de ≤ 40 K/W.</li>
+<li><b>Resultado.</b> <span class="ans">2,1 W; hay que mantener la resistencia térmica total por debajo de 47 K/W: se necesita un disipador.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>¿Cuál es la tensión inversa máxima que debe soportar cada diodo de un puente alimentado con un secundario de 12 V<sub>ef</sub> y filtro capacitivo?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Pico.</b> \(12\sqrt2=17\) V.</li>
+<li><b>Con filtro.</b> En el puente, cada diodo bloqueado ve el pico del secundario (17 V) más un margen: la tensión inversa de pico (PIV) es \(\approx V_p=17\) V.</li>
+<li><b>Resultado.</b> <span class="ans">≈ 17 V; un 1N4007 (1000 V) tiene un margen enorme.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

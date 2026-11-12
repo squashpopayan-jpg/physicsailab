@@ -1,0 +1,61 @@
+<template class="chapter-src" data-id="t555" data-num="16" data-title="El temporizador 555" data-part="Parte V · Circuitos integrados" data-short="Estructura del 555, oscilador astable y monoestable en la protoboard: frecuencia, ciclo de trabajo y duración del pulso; patillas del DIP-8, condensadores de desacople y errores típicos de montaje">
+<p class="lead">El 555, de 1972, sigue siendo el circuito integrado más vendido de la historia. Con dos resistores y un condensador produce un tren de pulsos (oscilador <b>astable</b>); con uno solo y un pulsador, un pulso de duración exacta (<b>monoestable</b>). Es el circuito que hace parpadear un LED, suena una sirena, regula la velocidad de un motor o retrasa el apagado de una luz. En este capítulo se arma sobre la protoboard y se mide con el osciloscopio.</p>
+
+<section>
+<h2>Cómo es por dentro y cómo se conecta</h2>
+<p>Dentro del 555 hay tres resistores de 5 kΩ que forman un divisor (de ahí su nombre), dos comparadores, un biestable y un transistor de descarga. Los comparadores vigilan la tensión del condensador externo: cuando baja de \(V_{CC}/3\) el biestable se activa y la salida sube; cuando sube de \(2V_{CC}/3\) se desactiva y la salida baja. Las ocho patas del DIP-8 (con la muesca a la izquierda, la pata 1 es la de abajo a la izquierda):</p>
+<div class="tablewrap"><table class="tbl"><tr><th>Pata</th><th>Nombre</th><th>Función</th></tr>
+<tr><td>1</td><td>GND</td><td>Tierra</td></tr><tr><td>2</td><td>TRIG</td><td>Dispara cuando baja de \(V_{CC}/3\)</td></tr><tr><td>3</td><td>OUT</td><td>Salida (hasta 200 mA)</td></tr><tr><td>4</td><td>RESET</td><td>En bajo, apaga la salida; normalmente a \(V_{CC}\)</td></tr>
+<tr><td>5</td><td>CTRL</td><td>Tensión de control (2/3 \(V_{CC}\)); se desacopla con 10 nF</td></tr><tr><td>6</td><td>THR</td><td>Umbral: termina cuando sube de 2/3 \(V_{CC}\)</td></tr><tr><td>7</td><td>DIS</td><td>Descarga el condensador</td></tr><tr><td>8</td><td>VCC</td><td>+5 V a +15 V</td></tr></table></div>
+</section>
+
+<section>
+<h2>El oscilador astable</h2>
+<p>Con \(R_1\) entre \(V_{CC}\) y la pata 7, \(R_2\) entre las patas 7 y 6, y \(C\) de la pata 6 a tierra (con las patas 2 y 6 unidas), el condensador se carga por \(R_1+R_2\) hasta 2/3 \(V_{CC}\) y se descarga por \(R_2\) hasta 1/3 \(V_{CC}\). Resulta</p>
+\[f=\frac{1{,}44}{(R_1+2R_2)\,C},\qquad D=\frac{R_1+R_2}{R_1+2R_2}\]
+<p>El ciclo de trabajo nunca baja del 50 %. La simulación usa 9 V, \(R_1\) = 1 kΩ: se elige \(R_2\) y \(C\). El canal 1 muestra el condensador (sube y baja entre 3 V y 6 V, en dientes de sierra exponenciales) y el 2, la salida.</p>
+<div class="sim" data-sim="c16-astable" data-title="555 astable: R₂ y C fijan la frecuencia"></div>
+<div class="sim-guide"><ul>
+<li><b>R₂ = 47 kΩ, C = 10 µF:</b> frecuencia medida <b>1,50 Hz</b> (teórica 1,52 Hz), ciclo de trabajo 51 %. El LED se enciende y apaga 1,5 veces por segundo.</li>
+<li><b>R₂ = 10 kΩ, C = 1 µF:</b> 68,6 Hz: el LED parece fijo (parpadeo demasiado rápido para el ojo), pero el osciloscopio lo muestra con claridad.</li>
+<li><b>R₂ = 100 kΩ, C = 10 µF:</b> 0,72 Hz: casi un latido por segundo y medio.</li>
+<li>Para <b>subir el ciclo de trabajo al 50 %</b> con R₁ ≪ R₂; para ciclos menores al 50 % se pone un diodo en paralelo con R₂.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El monoestable: un pulso a pedido</h2>
+<p>En modo monoestable la salida está en reposo en bajo. Al llevar la pata 2 (TRIG) a menos de \(V_{CC}/3\) con un pulsador, la salida sube y el condensador comienza a cargarse por R; cuando alcanza 2/3 \(V_{CC}\) la salida vuelve a bajo. La duración es</p>
+\[T=1{,}1\,R\,C\]
+<p>Con R = 100 kΩ y C = 10 µF, \(T=1{,}1\) s. El pulsador de cuatro patas conecta TRIG a tierra mientras se oprime; un resistor de 10 kΩ lo mantiene en alto en reposo.</p>
+<div class="sim" data-sim="c16-mono" data-title="555 monoestable: un pulso de 1,1 s al pulsar el botón"></div>
+<div class="sim-guide"><ul>
+<li>Marque «Pulsar el botón» un instante (o mantenga el clic en el pulsador del banco) y suéltelo: el LED verde se enciende y se apaga solo a los <b>1,1 s</b>.</li>
+<li>Con 47 µF la duración es 5,2 s; con 1 µF, 0,11 s. Se obtienen retardos precisos sin código ni microcontrolador.</li>
+<li>Si TRIG sigue en bajo cuando el condensador ha terminado de cargarse, la salida permanece en alto: el pulso de disparo debe ser <b>más corto</b> que el pulso de salida.</li>
+</ul></div>
+<div class="box note"><p><b>Un 555 en la placa real.</b> Se pone un condensador de 100 nF entre las patas 8 y 1, lo más cerca posible, y otro de 10 nF entre la 5 y tierra. Se comprueban las patas con la muesca a la izquierda; el error más común es girar el integrado 180° y alimentarlo al revés: se calienta y se daña (capítulo 4). Con alimentación de 5 V y la salida en alto, la tensión de salida queda ≈ 1,7 V por debajo de \(V_{CC}\); para manejar cargas de 200 mA se usa la salida directamente, y para más se agrega un transistor.</p></div>
+</section>
+
+<section>
+<h2>Problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Qué \(R_2\) hace falta para un astable de 2 Hz con \(R_1=1\) kΩ y \(C=10\ \mu\)F?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Despejar.</b> \(R_1+2R_2=1{,}44/(fC)=1{,}44/(2\cdot10^{-5})=72\) kΩ.</li>
+<li><b>\(R_2\).</b> \((72-1)/2=35{,}5\) kΩ → 33 kΩ (E12) o 39 kΩ.</li>
+<li><b>Resultado.</b> <span class="ans">\(R_2\approx35\) kΩ (con 33 kΩ resulta 2,1 Hz).</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Calcule el ciclo de trabajo de un astable con \(R_1=1\) kΩ y \(R_2=47\) kΩ, y el tiempo en alto y en bajo con \(C=10\ \mu\)F.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Ciclo de trabajo.</b> \(D=(1+47)/(1+94)=50{,}5\ \%\).</li>
+<li><b>Alto.</b> \(t_H=0{,}693(R_1+R_2)C=0{,}693\cdot48\,000\cdot10^{-5}=0{,}333\) s.</li>
+<li><b>Bajo.</b> \(t_L=0{,}693R_2C=0{,}326\) s.</li>
+<li><b>Resultado.</b> <span class="ans">50,5 %; 0,333 s en alto y 0,326 s en bajo (periodo 0,66 s).</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Se necesita un pulso de 30 s con un monoestable y un condensador de 100 µF. ¿Qué R se usa y cuánto puede variar el pulso con un electrolítico de −20 %/+80 %?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>R.</b> \(R=T/(1{,}1\,C)=30/(1{,}1\cdot10^{-4})=273\) kΩ → 270 kΩ (T = 29,7 s).</li>
+<li><b>Tolerancia.</b> Con −20 %: 23,8 s; con +80 %: 53,5 s.</li>
+<li><b>Resultado.</b> <span class="ans">≈ 270 kΩ; el pulso puede variar de 24 s a 53 s: para tiempos precisos se usan condensadores de película.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

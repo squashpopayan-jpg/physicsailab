@@ -1,0 +1,80 @@
+<template class="chapter-src" data-id="diodos" data-num="9" data-title="Diodos y LED" data-part="Parte III · Diodos" data-short="La unión pn como válvula de corriente: caída directa y curva I–V de diodos de señal, rectificadores, Schottky y LED medidas en la protoboard; polarización inversa, LED en serie y paralelo y regulación con Zener">
+<p class="lead">El diodo es la primera pieza activa que se encuentra en la caja de componentes y la más simple: deja pasar la corriente en un sentido y la bloquea en el otro. Pero su curva no es una recta, y esa no linealidad explica por qué un LED necesita un resistor, por qué una fuente rectifica y por qué un Zener regula. En la protoboard se mide su caída directa con el multímetro, se comparan tipos (señal, rectificador, Schottky, LED) y se hacen los montajes que más se repiten: LED en serie y en paralelo y un regulador con Zener.</p>
+
+<section>
+<h2>La unión pn y la curva I–V</h2>
+<p>Un diodo es una <b>unión pn</b> de silicio. En polarización directa (ánodo positivo respecto al cátodo) la corriente crece exponencialmente con la tensión, según la ecuación de Shockley:</p>
+\[I=I_S\left(e^{V/nV_T}-1\right),\qquad V_T=\frac{kT}{q}\approx25{,}85\ \text{mV}\ (25\,^\circ\text{C})\]
+<p>Como la corriente cambia por un factor 10 cada \(nV_T\ln10\approx60\)–\(120\) mV, la caída \(V_F\) queda casi constante (≈ 0,6–0,7 V para silicio) en un enorme rango de corrientes: por eso se habla de una «tensión de umbral». En <b>polarización inversa</b> solo circula una corriente minúscula (la de saturación) hasta que se alcanza la tensión de ruptura, que en un rectificador 1N4007 es de 1000 V.</p>
+<p>Se reconoce por el <b>cátodo</b>: una franja en el cuerpo (plateada en el 1N4007, negra en el vidrio del 1N4148). La corriente fluye del ánodo (lado sin franja) hacia el cátodo (lado de la franja).</p>
+</section>
+
+<section>
+<h2>Medir la caída directa</h2>
+<p>Con un resistor de 1 kΩ que limita la corriente y una fuente variable, se puede <b>trazar la curva</b> del diodo punto a punto: la corriente es \((V_s-V_F)/R\) y la caída se lee con el multímetro puesto en paralelo con el diodo. Cambie el dispositivo y la tensión de la fuente.</p>
+<div class="sim" data-sim="c9-curva" data-title="Caída directa de diodos y LED: la curva punto a punto"></div>
+<div class="sim-guide"><ul>
+<li>Con 5 V y 1 kΩ (≈ 4,4 mA): <b>1N4148</b> 0,657 V; <b>1N4007</b> 0,653 V; <b>Schottky 1N5819</b> 0,27 V; <b>LED rojo</b> 1,88 V (3,1 mA); <b>LED azul</b> 2,87 V (2,1 mA).</li>
+<li>A 12 V la corriente sube a unos 11 mA: el 1N4148 solo sube a 0,704 V, un aumento de 47 mV con una corriente 2,6 veces mayor. La caída es casi constante: eso es una tensión de umbral.</li>
+<li>El LED rojo no conduce con 1 V en la fuente: queda sin corriente y la fuente cae toda en el diodo (lectura 1,000 V).</li>
+<li>Marque «Polarización inversa»: la corriente es nula y toda la tensión cae en el diodo. Con el LED azul a 12 V el diodo invertido <b>rompe</b> (los LED toleran apenas 5 V inversos) y el aviso lo señala.</li>
+</ul></div>
+<div class="box ex"><p><b>La prueba de diodo del multímetro.</b> En la función →| el multímetro hace circular ≈ 1 mA y muestra la caída: un buen diodo marca 0,5–0,7 V en un sentido y «OL» (abierto) en el otro; uno en cortocircuito marca ≈ 0 en los dos; uno abierto, «OL» en los dos. Es la manera de averiguar la polaridad y el estado de cualquier diodo o transistor sin soldarlo.</p></div>
+</section>
+
+<section>
+<h2>Varios LED: serie y paralelo</h2>
+<p>Un LED no se comporta como una resistencia y no se reparte la corriente por sí solo. Dos reglas:</p>
+<ul>
+<li><b>En serie</b>, la misma corriente recorre ambos LED y las caídas se suman: con 5 V y dos LED rojos (2 × 1,9 V) solo quedan 1,2 V para el resistor, y la corriente es mucho menor. Si la fuente fuese menor que la suma de caídas, no encenderían.</li>
+<li><b>En paralelo con un solo resistor</b>, la corriente se reparte según las pequeñas diferencias entre LED, y puede ser muy desigual. Dos LED idénticos reparten bien; dos de distinto color, no: el que conduce con menos tensión se queda con casi todo. La práctica correcta es <b>un resistor por LED</b>.</li>
+</ul>
+<div class="sim" data-sim="c9-leds" data-title="LED en serie y en paralelo con un solo resistor"></div>
+<div class="sim-guide"><ul>
+<li><b>Un LED:</b> 9,2 mA con 330 Ω y 5 V.</li>
+<li><b>Dos en serie:</b> 3,7 mA, cada uno con la mitad de brillo (la corriente es la misma, pero la caída del resistor es solo 1,2 V).</li>
+<li><b>Dos rojos en paralelo, una sola R:</b> 4,7 mA cada uno (9,4 mA en total): se reparten la corriente porque son iguales.</li>
+<li><b>Rojo y azul en paralelo, una sola R:</b> el rojo se queda con los 9,2 mA y el <b>azul no se enciende</b> (1 nA): el rojo mantiene la tensión en 1,9 V, por debajo del umbral del azul (≈ 2,9 V).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El diodo Zener: una referencia de tensión</h2>
+<p>Un <b>Zener</b> está hecho para trabajar en <b>ruptura inversa</b>: en esa zona su tensión se mantiene casi constante (\(V_Z\)) aunque la corriente cambie muchísimo. Se conecta al revés (cátodo al positivo) con un resistor en serie \(R_s\) que fija la corriente: \(I_Z=(V_{in}-V_Z)/R_s-I_L\). Su potencia es \(P_Z=V_ZI_Z\) y no debe superar el máximo (0,5 W para el de la caja).</p>
+<div class="sim" data-sim="c9-zener" data-title="Regulador con Zener de 5,1 V"></div>
+<div class="sim-guide"><ul>
+<li>Con 9 V, 330 Ω y casi sin carga la salida es 5,17 V con 11,6 mA en el Zener (la tensión sube un poco con la corriente: la <b>resistencia dinámica</b> del Zener).</li>
+<li>Con 1 kΩ de carga (5 mA) la salida es 5,12 V: el Zener absorbe el resto, 6,6 mA. Con 330 Ω de carga la carga pide más corriente que la que el resistor puede dar con ese margen y el Zener <b>deja de regular</b> (4,5 V): el Zener «se apaga».</li>
+<li>Con 15 V la salida casi no cambia (5,25 V). Con 20 V y 100 Ω en serie, el Zener y el resistor reciben 149 mA: el Zener pasa de 0,5 W y <b>se quema</b> en pocos segundos; deja el circuito en cortocircuito.</li>
+</ul></div>
+<div class="box note"><p><b>Un Zener no es un regulador de potencia.</b> Sirve como referencia o para cargas pequeñas (pocos mA). Para corrientes mayores se usa un Zener como referencia y un transistor que entrega la corriente, o directamente un regulador integrado (capítulo 17).</p></div>
+</section>
+
+<section>
+<h2>Problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Se mide con el multímetro en prueba de diodo: 0,62 V con las puntas en un sentido y «OL» en el otro. ¿Qué tipo de dispositivo es y cómo se identifica el cátodo?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Conclusión.</b> Es un diodo (unión pn) de silicio en buen estado: conduce en un solo sentido con una caída de ≈ 0,6 V.</li>
+<li><b>Cátodo.</b> La punta <b>negra</b> (COM) está en el cátodo cuando el multímetro lee 0,62 V (la roja es positiva).</li>
+<li><b>Resultado.</b> <span class="ans">Un diodo de silicio sano; el cátodo es el terminal donde estaba la punta negra al medir 0,62 V.</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Calcule el resistor para un LED azul (\(V_F=3{,}0\) V, 15 mA) con una fuente de 9 V y la potencia que disipa.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Resistor.</b> \(R=(9-3)/0{,}015=400\ \Omega\); valor E12 cercano: 390 Ω (15,4 mA).</li>
+<li><b>Potencia.</b> \(P=I^2R=0{,}0154^2\cdot390=0{,}092\) W.</li>
+<li><b>Resultado.</b> <span class="ans">390 Ω y 92 mW (un resistor de 1/4 W basta).</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Con una fuente de 12 V, ¿cuántos LED rojos (\(V_F=2\) V, 20 mA) se pueden poner en serie con un resistor y qué valor de resistor se usa?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Máximo.</b> Cada LED cae 2 V; con 5 LED quedan 12 − 10 = 2 V para el resistor.</li>
+<li><b>Resistor.</b> \(R=2/0{,}020=100\ \Omega\) (1/4 W: \(P=0{,}04\) W).</li>
+<li><b>Con 6 LED.</b> 12 V = 6·2 V: no queda margen: no se puede regular la corriente.</li>
+<li><b>Resultado.</b> <span class="ans">5 LED en serie con un resistor de 100 Ω.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un Zener de 5,1 V (0,5 W) alimentado desde 12 V con un resistor de 220 Ω y una carga de 10 mA. ¿Se mantiene la regulación y cuánta potencia disipa el Zener?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Corriente por el resistor.</b> \(I_R=(12-5{,}1)/220=31{,}4\) mA.</li>
+<li><b>Corriente por el Zener.</b> \(I_Z=31{,}4-10=21{,}4\) mA: positiva, hay regulación.</li>
+<li><b>Potencia.</b> \(P_Z=5{,}1\cdot0{,}0214=0{,}109\) W (22 % del máximo).</li>
+<li><b>Resultado.</b> <span class="ans">Sí regula; el Zener disipa 0,11 W. Sin carga disiparía 0,160 W: aún seguro.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

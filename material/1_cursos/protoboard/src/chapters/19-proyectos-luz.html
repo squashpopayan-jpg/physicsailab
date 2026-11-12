@@ -1,0 +1,105 @@
+<template class="chapter-src" data-id="proyectos-luz" data-num="19" data-title="Proyectos en casa I: luz y sensores" data-part="Parte VI · Fallas, proyectos y taller" data-short="Tres proyectos para armar en casa con baja tensión: linterna de LED con pilas, lámpara nocturna automática con LM358 y fotorresistencia, y sensor de toque o de humedad con un par Darlington; lista de materiales, montaje por agujeros y pruebas">
+<p class="lead">Hasta aquí se ha practicado en el simulador. Ahora llega el momento de llevarlo a la mesa de la casa: tres proyectos pequeños, baratos y con piezas que se consiguen en cualquier tienda de electrónica —o se rescatan de aparatos viejos— y que se comportan, en la placa real, como se vio en el banco virtual. Cada uno trae: lo que se necesita, el montaje agujero por agujero (el mismo de la simulación), las medidas que debe hacer y las preguntas para comprobar que se entendió. <b>Todos funcionan con pilas</b>: nunca con la red eléctrica.</p>
+
+<div class="box safe"><p><b>Reglas de seguridad para trabajar en casa.</b> (1) Solo pilas, baterías pequeñas (≤ 12 V) o el cargador USB de un celular <i>por su cable</i>, nunca la red de 120/220 V. (2) Las baterías de litio (18650, celulares) pueden incendiarse con un cortocircuito: se usan solo con circuito de protección y nunca se ponen en la protoboard sin resistor. (3) Se trabaja sobre una mesa libre y seca, con el cabello recogido, sin joyas ni metales sueltos que toquen las pilas. (4) Si algo se calienta, se apaga y se desconecta. (5) Los menores trabajan con un adulto.</p></div>
+
+<section>
+<h2>Proyecto 1 · Linterna de LED</h2>
+<p><b>Objetivo:</b> una linterna de bolsillo con un LED blanco, un interruptor y cuatro pilas AA; entender por qué se necesita el resistor y por qué las pilas de 3 V no bastan para un LED blanco.</p>
+<div class="tablewrap"><table class="tbl"><tr><th>Cantidad</th><th>Pieza</th><th>Dónde conseguirla</th></tr>
+<tr><td>1</td><td>Portapilas de 4 × AA con cables (o 4 pilas AA)</td><td>Tienda de electrónica; juguete roto</td></tr>
+<tr><td>1</td><td>LED blanco de 5 mm</td><td>Linterna de LED vieja</td></tr>
+<tr><td>1</td><td>Resistor de 150 Ω (marrón-verde-marrón) de 1/4 W</td><td>Cualquier tienda</td></tr>
+<tr><td>1</td><td>Interruptor deslizante (o pulsador)</td><td>Radio o juguete viejo</td></tr>
+<tr><td>6</td><td>Cables de protoboard</td><td>Tienda; se pueden hacer con cable de teléfono</td></tr></table></div>
+<h3>Montaje (idéntico al de la simulación)</h3>
+<ol class="steps">
+<li>Cable rojo de la batería al riel inferior «+» y cable negro al riel «−».</li>
+<li>Interruptor deslizante con sus tres patas en <b>e8, e9, e10</b>; el cable de e9 (patilla central, COM) al riel «+» (cable rojo corto desde a9).</li>
+<li>Resistor de 150 Ω de <b>d10</b> a <b>d14</b>.</li>
+<li>LED con el ánodo (pata larga) en <b>c14</b> y el cátodo (pata corta, lado plano) en <b>c15</b>.</li>
+<li>Cable negro de <b>a15</b> al riel «−».</li>
+</ol>
+<div class="sim" data-sim="p1-linterna" data-title="Linterna de LED con 4 pilas AA"></div>
+<div class="sim-guide"><ul>
+<li><b>Cálculo:</b> \(R=(V_s-V_F)/I_F=(6-3{,}1)/0{,}02=145\ \Omega\) → 150 Ω. Con 4 pilas AA (resistencia interna de ≈ 0,6 Ω) el LED recibe <b>18 mA</b> y el resistor disipa 51 mW.</li>
+<li><b>Con 2 pilas AA (3 V)</b> el LED blanco casi no enciende: 0,8 mA, porque 3 V no alcanzan los 3,1 V que necesita. Un LED rojo (2 V) sí encendería con 3 V.</li>
+<li><b>Con una batería de 9 V</b> y el mismo resistor circulan 37 mA: sobrepasa los 30 mA recomendados. Con 47 Ω y 9 V circulan 102 mA y el LED se quema.</li>
+<li><b>Autonomía:</b> 4 pilas AA alcalinas guardan ≈ 2500 mAh: con 18 mA duran unas 140 h de luz.</li>
+</ul></div>
+<p><b>Pruebe y mida en la placa real:</b> (1) la tensión de las pilas con el multímetro, en vacío y con la linterna encendida; (2) la caída en el LED (≈ 3 V) y en el resistor (≈ 2,9 V); (3) la corriente, abriendo el circuito entre el LED y el resistor. <b>Variante:</b> con un LED rojo y 2 pilas AA, el resistor correcto es 47 Ω.</p>
+</section>
+
+<section>
+<h2>Proyecto 2 · Lámpara nocturna automática</h2>
+<p><b>Objetivo:</b> una lámpara que se enciende sola cuando oscurece, con un LM358, una fotorresistencia y un potenciómetro que regula a qué nivel de oscuridad reacciona. Es el comparador del capítulo 15 alimentado con pilas.</p>
+<div class="tablewrap"><table class="tbl"><tr><th>Cantidad</th><th>Pieza</th><th>Dónde conseguirla</th></tr>
+<tr><td>1</td><td>LM358 (DIP-8)</td><td>Tienda de electrónica (cualquier A.O. doble de una sola alimentación funciona)</td></tr>
+<tr><td>1</td><td>Fotorresistencia LDR (≈ 10 kΩ a 10 lux)</td><td>Luz de jardín o lámpara solar vieja</td></tr>
+<tr><td>1</td><td>Potenciómetro de 10 kΩ (trimmer)</td><td>Radio vieja</td></tr>
+<tr><td>2</td><td>Resistores 10 kΩ y 220 Ω</td><td>Cualquier tienda</td></tr>
+<tr><td>1</td><td>LED blanco y portapilas de 4 × AA</td><td>Como en el proyecto 1</td></tr></table></div>
+<h3>Montaje</h3>
+<ol class="steps">
+<li>Alimentación: la batería a los rieles superiores (+ en T+1, − en T−1); un cable une los rieles superiores con los inferiores en la columna 25.</li>
+<li>LM358 en <b>e10</b> (muesca a la izquierda). VCC: cable de <b>j10</b> a T+3. GND (pata 4): cable de <b>a13</b> al riel inferior «−».</li>
+<li>Divisor de la LDR: LDR de <b>B+6</b> a <b>a11</b>; resistor de 10 kΩ de <b>b11</b> al riel «−». La columna 11 es la entrada inversora.</li>
+<li>Umbral: potenciómetro (3 patas en <b>e16, e17, e18</b>), cable de a16 a «+», de a18 a «−» y del centro (a17) a <b>a12</b> (entrada no inversora).</li>
+<li>Salida: resistor de 220 Ω de <b>d10</b> a <b>d14</b>; LED con el ánodo en <b>c14</b> y el cátodo en <b>c15</b>, con un cable de a15 al riel «−».</li>
+</ol>
+<div class="sim" data-sim="p2-nocturna" data-title="Lámpara nocturna automática"></div>
+<div class="sim-guide"><ul>
+<li>Con la luz de una habitación (200 lux) la LDR deja en IN− más de 3 V (por encima del umbral de 3 V): la salida está baja y la lámpara apagada.</li>
+<li>Al bajar la luz a 30 lux, IN− cae a 3,11 V, casi en el umbral; por debajo de ≈ 25 lux la lámpara <b>se enciende</b> (a 1 lux, IN− = 0,57 V y el LED recibe 4,6 mA).</li>
+<li>Gire el potenciómetro para elegir cuán oscuro debe estar: es el ajuste de «sensibilidad» de cualquier lámpara automática. Con la perilla abajo (umbral alto) se enciende en cuanto la luz baja un poco; con la perilla arriba, solo en la oscuridad casi total.</li>
+<li><b>Mejoras:</b> un transistor para manejar un LED más potente o una tira de varios LED; un resistor de 1 MΩ de la salida a IN+ añade histéresis (evita el parpadeo en el crepúsculo).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Proyecto 3 · Sensor de toque y de humedad</h2>
+<p><b>Objetivo:</b> detectar la corriente minúscula (microamperios) que pasa por la piel o por la tierra húmeda y encender un LED. Dos transistores en <b>Darlington</b> multiplican la corriente casi 100 000 veces.</p>
+<div class="tablewrap"><table class="tbl"><tr><th>Cantidad</th><th>Pieza</th><th>Dónde conseguirla</th></tr>
+<tr><td>2</td><td>Transistores BC547 (o 2N3904, 2N2222: cuidado con el orden de las patas)</td><td>Tienda; radios y juguetes viejos</td></tr>
+<tr><td>1</td><td>LED rojo y resistor de 330 Ω</td><td>Como antes</td></tr>
+<tr><td>2</td><td>Clavos o tornillos (las «puntas» de toque)</td><td>Caja de herramientas</td></tr>
+<tr><td>1</td><td>Portapilas de 4 × AA</td><td>—</td></tr></table></div>
+<h3>El circuito</h3>
+<p>Los dos BC547 se conectan en <b>Darlington</b>: el emisor del primero alimenta la base del segundo, y los colectores se unen. La ganancia de corriente es el producto: 300 × 300 ≈ 90 000. El dedo, o el agua, cierra el contacto entre el positivo y la base del primer transistor; la corriente de base (algunos µA) se amplifica hasta decenas de mA en el LED. En el simulador, el resistor RF1 representa lo que hay entre las dos puntas.</p>
+<ol class="steps">
+<li>Batería a los rieles inferiores. Q1 (BC547) en <b>e10–e12</b> (C-B-E: colector en e10, base en e11, emisor en e12); Q2 en <b>e14–e16</b>.</li>
+<li>Cable de <b>a12</b> (emisor de Q1) a <b>a15</b> (base de Q2); cable de <b>a10</b> a <b>a14</b> (colectores unidos); cable de <b>a16</b> al riel «−».</li>
+<li>Resistor de 330 Ω de <b>B+6</b> a <b>a9</b>; LED con el ánodo en <b>b9</b> y el cátodo en <b>b10</b>.</li>
+<li>Una punta de toque (cable con clavo) a la columna 11 (base) y la otra al riel «+».</li>
+</ol>
+<div class="sim" data-sim="p3-toque" data-title="Sensor de toque con par Darlington"></div>
+<div class="sim-guide"><ul>
+<li>Sin tocar (aire) circulan 5 nA por la base y el LED recibe 0,5 mA: apagado.</li>
+<li>Con un <b>dedo seco</b> (≈ 10 MΩ) la corriente de base es de solo 0,47 µA, pero el LED recibe 9,8 mA: <b>se enciende</b>. Con un dedo normal (1 MΩ): 4,7 µA; mojado (100 kΩ): 46 µA; con tierra húmeda (10 kΩ): 0,46 mA, y el LED recibe ≈ 10 mA (lo limita el resistor de 330 Ω).</li>
+<li><b>Aplicaciones:</b> un detector de humedad para una maceta (clavos en la tierra: se enciende cuando está húmeda), un interruptor táctil, un detector de nivel de agua (dos tornillos en la tapa de un tanque).</li>
+</ul></div>
+<div class="box safe"><p><b>Seguridad.</b> Con 6 V no hay peligro al tocar las puntas: la piel conduce microamperios. Pero ese circuito <b>nunca</b> se conecta a la red ni a enchufes: así se hacían los «interruptores táctiles» y las descargas eran mortales.</p></div>
+</section>
+
+<section>
+<h2>Preguntas para comprobar lo aprendido</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>En el proyecto 1, ¿qué pasa si se invierte el LED? ¿Y si el resistor se pone en el lado negativo?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>LED invertido.</b> No conduce y la linterna no enciende; además 6 V invertidos superan los ≈ 5 V que tolera un LED en inversa, de modo que se puede dañar: conviene comprobar la polaridad antes de conectar.</li>
+<li><b>Resistor del otro lado.</b> En serie el orden no importa: la corriente es la misma.</li>
+<li><b>Resultado.</b> <span class="ans">Invertido, no enciende (y se arriesga el LED); el orden del resistor es indiferente.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>En el proyecto 2 el potenciómetro está en 0,5 y la lámpara no enciende nunca. ¿Qué revisa primero?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Alimentación.</b> ¿Hay 6 V entre el pin 8 y el 4 del LM358?</li>
+<li><b>Entradas.</b> Con el multímetro, ¿IN+ está en 3 V y IN− baja de 3 V al tapar la LDR?</li>
+<li><b>Salida.</b> Si IN− < IN+ y la salida sigue en 0: LM358 dañado o LED al revés.</li>
+<li><b>Resultado.</b> <span class="ans">Alimentación, luego las dos entradas, luego la salida y el LED.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>¿Cuánta corriente de base necesita el Darlington del proyecto 3 para que el LED reciba 10 mA con una ganancia total de 90 000?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Fórmula.</b> \(I_B=I_C/\beta=0{,}01/90\,000\)</li>
+<li><b>Valor.</b> \(1{,}1\cdot10^{-7}\) A = 0,11 µA.</li>
+<li><b>Resultado.</b> <span class="ans">0,11 µA: un dedo seco de 10 MΩ con 6 V da 0,6 µA, de sobra.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

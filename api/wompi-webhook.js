@@ -22,7 +22,8 @@ const COURSE_TITLES = {
     'fluidos': 'Mecánica de Fluidos e Hidráulica Computacional',
     'venturi': 'Laboratorio Experimental Virtual de Tubo Venturi',
     'guias': 'Guías Didácticas de Laboratorio y Montajes Prácticos',
-    'ingles': 'Inglés Técnico Científico para Ingenieros y Físicos'
+    'ingles': 'Inglés Técnico Científico para Ingenieros y Físicos',
+    'protoboard': 'Protoboard: Laboratorio de Simulación — Del Cable al Circuito'
 };
 
 const COURSE_PREFIXES = {
@@ -43,7 +44,8 @@ const COURSE_PREFIXES = {
     'fluidos': 'FLU',
     'venturi': 'VEN',
     'guias': 'GUI',
-    'ingles': 'ENG'
+    'ingles': 'ENG',
+    'protoboard': 'PRO'
 };
 
 function generateUniquePassword(courseId) {

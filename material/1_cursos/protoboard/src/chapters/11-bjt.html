@@ -1,0 +1,65 @@
+<template class="chapter-src" data-id="bjt" data-num="11" data-title="El transistor bipolar como interruptor" data-part="Parte IV · Transistores" data-short="Corte, región activa y saturación del BJT NPN; resistor de base; encender un LED y manejar un relé; patillas del BC547 en la protoboard; la patada inductiva que destruye al transistor sin diodo de rueda libre">
+<p class="lead">Un transistor bipolar es una válvula de corriente: una pequeña corriente por la <b>base</b> controla una corriente mucho mayor entre el <b>colector</b> y el <b>emisor</b>. Con él un pin de un microcontrolador, que apenas da 20 mA, enciende un motor; una señal diminuta gobierna un relé. En este capítulo se usa en su papel más sencillo y más útil, el de <b>interruptor electrónico</b>: apagado del todo o encendido del todo, sin términos medios. Se aprende a elegir la corriente de base, se ve el paso de corte a saturación, y se comprueba con el osciloscopio por qué un relé sin diodo destruye el transistor.</p>
+
+<section>
+<h2>El NPN: tres patas, tres regiones</h2>
+<p>El <b>BC547</b> es un NPN de silicio en cápsula TO-92. Sus patas, vistas desde el lado de la cara plana y con las patas hacia abajo, son <b>C – B – E</b> (colector, base, emisor) de izquierda a derecha; otros transistores (2N3904, 2N2222) usan <b>E – B – C</b>: hay que mirar la hoja de datos. En la protoboard, las tres patas van en tres columnas contiguas. Al seleccionar el transistor, el panel de propiedades muestra el orden de las patas.</p>
+<p>El funcionamiento depende de la tensión base–emisor \(V_{BE}\) (≈ 0,65 V para conducir):</p>
+<div class="tablewrap"><table class="tbl"><tr><th>Región</th><th>Condición</th><th>Comportamiento</th></tr>
+<tr><td><b>Corte</b></td><td>\(V_{BE}&lt;0{,}5\) V</td><td>\(I_C\approx0\): interruptor abierto</td></tr>
+<tr><td><b>Activa</b></td><td>\(V_{BE}\approx0{,}65\) V, \(V_{CE}&gt;0{,}3\) V</td><td>\(I_C=\beta I_B\) (β ≈ 100–400 para el BC547): amplificador</td></tr>
+<tr><td><b>Saturación</b></td><td>\(I_B\) suficientemente grande</td><td>\(V_{CE}\approx0{,}05\)–\(0{,}2\) V: interruptor cerrado</td></tr></table></div>
+<div class="box law"><p><b>Regla de diseño del interruptor.</b> Para saturar con seguridad, la corriente de base debe ser mucho mayor que \(I_C/\beta\): se usa una <b>β forzada de 10</b>: \(I_B=I_C/10\) y \(R_B=(V_{in}-0{,}7)/I_B\). Con \(I_C=9\) mA a 5 V de señal: \(I_B=0{,}9\) mA y \(R_B=(5-0{,}7)/0{,}9\ \text{mA}=4{,}8\ \text{k}\Omega\) (se usa 4,7 kΩ). Con 10 kΩ la saturación es holgada.</p></div>
+</section>
+
+<section>
+<h2>Encender un LED con el transistor</h2>
+<p>En la simulación, la alimentación de 5 V pasa por un resistor de 330 Ω y un LED hasta el colector del BC547; el emisor va a tierra y la señal de base proviene del canal 2 de la fuente de laboratorio, a través de un resistor Rb. Suba la tensión de señal de 0 a 5 V y observe las corrientes y las regiones de trabajo.</p>
+<div class="sim" data-sim="c11-led" data-title="BC547 como interruptor: del corte a la saturación"></div>
+<div class="sim-guide"><ul>
+<li><b>0 V:</b> corte: la corriente de colector es nula (nanoamperios) y el LED apagado. <b>0,5 V:</b> \(I_C\) ≈ 1,5 µA, todavía en corte.</li>
+<li><b>0,7 V:</b> el transistor empieza a conducir: 1,0 mA en <b>región activa</b> (\(V_{CE}=2{,}85\) V): el LED apenas se enciende. Esa pequeña zona es una trampa: el transistor funciona como amplificador, no como interruptor, y disipa potencia.</li>
+<li><b>1,5 V:</b> ya 8,9 mA y \(V_{CE}=0{,}1\) V: <b>saturación</b>. Con 5 V y 10 kΩ: \(I_C\) = 9,05 mA, \(V_{CE}\) = 0,05 V; el LED brilla y el transistor casi no disipa nada.</li>
+<li>Con Rb = 470 kΩ y 5 V: \(I_B\) = 9,2 µA e \(I_C\) = 2,8 mA, β = 306: ahora el transistor está en región activa, no en saturación, y el LED recibe menos corriente. El resistor de base fija la corriente de base y de allí la de colector.</li>
+</ul></div>
+<div class="box note"><p><b>Un detalle de laboratorio.</b> La corriente de base no es de microamperios: con Rb = 1 kΩ y 5 V, \(I_B\) = 4,3 mA, mucho mayor de lo necesario. El transistor aguanta (BC547: hasta 100 mA), pero se desperdicia corriente de la fuente de señal. En un microcontrolador, cuya salida da 20 mA, conviene Rb entre 1 kΩ y 10 kΩ.</p></div>
+</section>
+
+<section>
+<h2>Cargas inductivas: el diodo de rueda libre</h2>
+<p>Al apagar la corriente de una bobina, la energía almacenada genera un pico de tensión (capítulo 8). Con un transistor como interruptor, ese pico aparece entre su colector y su emisor y puede sobrepasar los 45 V que aguanta un BC547. Para verlo, el generador excita la base con una cuadrada de 200 Hz (se usa una frecuencia alta para poder resolver el pico: a 2 Hz ocurriría igual, pero en un instante más corto que cualquier paso de la simulación) y el osciloscopio mide la tensión del colector.</p>
+<div class="sim" data-sim="c11-rele" data-title="Relé manejado por un BC547: sin diodo y con diodo de rueda libre"></div>
+<div class="sim-guide"><ul>
+<li><b>Sin diodo</b> (estado inicial): en el primer apagado el colector salta a casi <b>700 V</b>: el transistor sufre un «esfuerzo eléctrico excesivo» y se destruye en una fracción de segundo. Se pone en cortocircuito colector–emisor y deja de servir.</li>
+<li><b>Con el diodo</b> 1N4007 en paralelo con la bobina (cátodo hacia el positivo): el pico queda en 5,8 V (la fuente más la caída del diodo). La corriente de la bobina circula por el diodo mientras decae. El transistor sobrevive indefinidamente.</li>
+<li>Pulse «Reparar» tras la falla, active el diodo y repita.</li>
+</ul></div>
+<div class="box safe"><p><b>Regla:</b> toda bobina que se maneje con un transistor (relé, motor, solenoide, zumbador magnético) lleva su diodo de rueda libre. Es la pieza que más veces falta en los primeros montajes y la que más transistores destruye.</p></div>
+</section>
+
+<section>
+<h2>Problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un BC547 (β ≥ 110) debe saturarse para manejar 50 mA con una señal de 5 V. Calcule Rb con β forzada de 10.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Corriente de base.</b> \(I_B=I_C/10=5\) mA.</li>
+<li><b>Resistor.</b> \(R_B=(5-0{,}7)/0{,}005=860\ \Omega\); se usa 820 Ω (E12).</li>
+<li><b>Resultado.</b> <span class="ans">≈ 820 Ω (5,2 mA de base).</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>Con Rb = 10 kΩ y una señal de 3,3 V, ¿qué corriente de base circula y qué \(I_C\) máxima podría controlar con β = 200?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Base.</b> \(I_B=(3{,}3-0{,}7)/10\,000=0{,}26\) mA.</li>
+<li><b>Máxima \(I_C\) en activa.</b> \(\beta I_B=200\cdot0{,}26=52\) mA; para saturar con seguridad conviene \(I_C\le I_B\cdot10=2{,}6\) mA.</li>
+<li><b>Resultado.</b> <span class="ans">0,26 mA de base; como interruptor saturado maneja ≈ 2,6 mA; como amplificador hasta 52 mA.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un BC547 conmuta un LED con \(I_C\) = 15 mA y está saturado con \(V_{CE}\) = 0,1 V. ¿Qué potencia disipa el transistor?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Colector–emisor.</b> \(P_{CE}=V_{CE}I_C=0{,}1\cdot0{,}015=1{,}5\) mW.</li>
+<li><b>Base–emisor.</b> \(P_{BE}=0{,}7\cdot1{,}5\ \text{mA}=1{,}05\) mW.</li>
+<li><b>Resultado.</b> <span class="ans">≈ 2,6 mW en total: despreciable frente a los 500 mW de límite. Fuera de saturación (V<sub>CE</sub> = 3 V) serían 45 mW.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Un relé de 12 V y 400 Ω se conmuta con un 2N2222 (\(V_{CEO}\) = 40 V). ¿Qué corriente maneja y por qué es indispensable el diodo?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Corriente de bobina.</b> \(I=12/400=30\) mA (cabe en los 800 mA del 2N2222).</li>
+<li><b>Patada.</b> Al apagar, la bobina eleva el colector muy por encima de 12 V y de 40 V.</li>
+<li><b>Resultado.</b> <span class="ans">30 mA; el diodo de rueda libre limita el colector a 12,7 V, por debajo de los 40 V del transistor.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

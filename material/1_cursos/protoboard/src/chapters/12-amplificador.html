@@ -1,0 +1,64 @@
+<template class="chapter-src" data-id="amplificador" data-num="12" data-title="El transistor como amplificador" data-part="Parte IV · Transistores" data-short="Polarización por divisor de tensión, punto de operación, amplificador de emisor común con BC547: ganancia con y sin condensador de desacople, saturación y distorsión, respuesta en frecuencia; todo medido con multímetro y osciloscopio">
+<p class="lead">Amplificar es tomar una señal débil —el murmullo de un micrófono, la salida de un sensor— y hacerla más grande sin cambiar su forma. Con un transistor y cinco resistores se consigue. Pero antes de amplificar hay que <b>polarizar</b>: fijar con continua el punto en que el transistor trabaja, para que la señal alterna se mueva alrededor de él. Este capítulo arma, en la protoboard, el amplificador de emisor común, el más clásico, y se mide con el generador y el osciloscopio: ganancia, distorsión y respuesta en frecuencia.</p>
+
+<section>
+<h2>El circuito y su punto de operación</h2>
+<p>El BC547 está alimentado con 12 V. Un <b>divisor de tensión</b> (47 kΩ y 10 kΩ) fija la tensión de base \(V_B\approx12\cdot\frac{10}{57}=2{,}1\) V. La unión base–emisor consume 0,65 V, de modo que el emisor queda en \(V_E=V_B-0{,}65\approx1{,}4\) V, y la corriente de emisor es \(I_E=V_E/R_E=1{,}4\) mA. La corriente de colector es casi la misma, y la tensión en el colector es \(V_C=12-I_CR_C=12-1{,}4\ \text{mA}\cdot4{,}7\ \text{k}\Omega=5{,}4\) V: <b>a mitad de camino</b> entre 0 y 12 V, lo que da el máximo margen a la señal en ambos sentidos. Los condensadores de acoplamiento (1 µF a la entrada, 10 µF a la salida) dejan pasar la señal y bloquean la continua.</p>
+<p>Los valores del simulador, medidos con el circuito en reposo, coinciden: \(V_B=2{,}07\) V, \(V_E=1{,}39\) V, \(V_C=5{,}39\) V.</p>
+<div class="box law"><p><b>Ganancia de pequeña señal.</b> La resistencia dinámica del emisor es \(r_e=V_T/I_E=25{,}85\ \text{mV}/1{,}4\ \text{mA}=18{,}5\ \Omega\). Con el emisor puesto a tierra para la señal por un condensador:</p>
+\[A_v=-\frac{R_C\parallel R_L}{r_e}\approx-\frac{3{,}2\ \text{k}\Omega}{18{,}5\ \Omega}=-173\]
+<p>Sin condensador, \(R_E\) entra en el denominador: \(A_v\approx-\dfrac{R_C\parallel R_L}{r_e+R_E}=-3{,}1\). El signo negativo indica que la salida está <b>invertida</b> (desfasada 180°).</p></div>
+</section>
+
+<section>
+<h2>Medir la ganancia</h2>
+<p>El generador aplica una señal sinusoidal de 10 mV de pico a 1 kHz. El canal 1 del osciloscopio mide la entrada (20 mV/div) y el canal 2 la salida (0,5 V/div). La ganancia es el cociente de las amplitudes pico a pico.</p>
+<div class="sim" data-sim="c12-amp" data-title="Amplificador de emisor común con BC547 a 12 V"></div>
+<div class="sim-guide"><ul>
+<li><b>Con el condensador de emisor</b> (100 µF): ganancia medida ≈ <b>161</b> (teórica 173; la diferencia, la carga de las resistencias de polarización y el \(\beta\) finito). La salida está invertida respecto a la entrada.</li>
+<li><b>Sin el condensador:</b> la ganancia baja a ≈ <b>3,1</b>: el resistor de emisor realimenta y estabiliza, a costa de ganancia. Es un compromiso: más ganancia o más estabilidad.</li>
+<li><b>Distorsión:</b> con 100 mV de entrada la ganancia cae a 49 y con 150 mV a 33: la salida se aplana en sus picos (el transistor llega a corte y a saturación) y el punto de operación de continua se desplaza (V<sub>C</sub> sube a 10 V). Los amplificadores de pequeña señal se usan con entradas de unos pocos milivoltios.</li>
+<li><b>Frecuencia:</b> a 100 Hz la ganancia baja a 105 (los condensadores de acoplamiento y de desacople dejan de ser un corto); a 100 kHz sigue en 162: el BC547 aguanta mucho más. El comportamiento es un pasaaltos por la parte baja.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Cómo se diseña la polarización</h2>
+<ol>
+<li>Elegir la corriente de colector \(I_C\) (aquí 1,4 mA).</li>
+<li>Poner \(V_E\approx1\) V (≈ 10 % de la alimentación) para estabilizar contra la temperatura: \(R_E=V_E/I_E\).</li>
+<li>Poner \(V_C\approx V_{CC}/2\): \(R_C=(V_{CC}/2-V_E)/I_C\)… o bien se elige \(R_C\) para la ganancia deseada.</li>
+<li>El divisor de base debe «sostener» la tensión: su corriente debe ser ≥ 10 veces la de base, \(I_B=I_C/\beta\approx5\) µA. Con 47 kΩ y 10 kΩ la corriente por el divisor es 0,21 mA: 40 veces la de base.</li>
+<li>Comprobar con el multímetro las tres tensiones y la corriente de colector antes de aplicar la señal.</li>
+</ol>
+<div class="box note"><p><b>Un amplificador real en la protoboard</b> es sensible a todo: un cable largo en la entrada capta zumbido de la red (60 Hz), una mala conexión de tierra introduce oscilaciones, el condensador de desacople de la alimentación (100 nF) evita que el circuito se vuelva un oscilador. La limpieza del montaje (cables cortos, un solo punto de tierra) importa tanto como los valores.</p></div>
+</section>
+
+<section>
+<h2>Problemas</h2>
+<ol class="problems">
+<li><span class="lvl">Básico</span>En el amplificador de la figura, calcule \(V_B\), \(V_E\), \(I_E\) y \(V_C\) con \(R_1=47\) kΩ, \(R_2=10\) kΩ, \(R_E=1\) kΩ, \(R_C=4{,}7\) kΩ y \(V_{CC}=12\) V, suponiendo \(V_{BE}=0{,}65\) V y β grande.
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Divisor.</b> \(V_B=12\cdot10/57=2{,}105\) V.</li>
+<li><b>Emisor.</b> \(V_E=2{,}105-0{,}65=1{,}455\) V; \(I_E=1{,}455\) mA.</li>
+<li><b>Colector.</b> \(I_C\approx I_E\); \(V_C=12-1{,}455\cdot4{,}7=5{,}16\) V.</li>
+<li><b>Resultado.</b> <span class="ans">2,10 V; 1,46 V; 1,46 mA; 5,16 V (el simulador da 5,39 V por el β finito).</span></li></ol></details></li>
+<li><span class="lvl">Básico</span>¿Cuánto vale \(r_e\) con \(I_E=2\) mA y cuál es la ganancia con \(R_C\parallel R_L=2\) kΩ y el emisor desacoplado?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>\(r_e\).</b> \(25{,}85/2=12{,}9\ \Omega\).</li>
+<li><b>Ganancia.</b> \(A_v=-2000/12{,}9=-155\).</li>
+<li><b>Resultado.</b> <span class="ans">\(r_e\) = 12,9 Ω; \(A_v\) ≈ −155.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Una señal de 20 mV de pico entra al amplificador de ganancia 160. ¿Qué salida se espera y se puede obtener sin distorsión con \(V_C=5{,}4\) V y alimentación de 12 V?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Salida ideal.</b> \(160\cdot0{,}02=3{,}2\) V de pico.</li>
+<li><b>Margen.</b> Hacia arriba el colector puede subir hasta 12 V (6,6 V de margen); hacia abajo, hasta unos 1,5 V (saturación, 3,9 V de margen).</li>
+<li><b>Conclusión.</b> 3,2 V cabe en 3,9 V, pero la ganancia real baja por la no linealidad: hay distorsión apreciable.</li>
+<li><b>Resultado.</b> <span class="ans">3,2 V de pico ideal; hay poco margen hacia abajo (3,9 V): con 20 mV la distorsión ya es visible.</span></li></ol></details></li>
+<li><span class="lvl">Intermedio</span>Si se quita el condensador de desacople del emisor, ¿cuánto baja la ganancia con \(r_e=18{,}5\ \Omega\), \(R_E=1\) kΩ y \(R_C\parallel R_L=3{,}2\) kΩ?
+<details class="sol"><summary>Solución paso a paso</summary><ol class="steps">
+<li><b>Con \(R_E\).</b> \(A_v=-3200/(18{,}5+1000)=-3{,}14\).</li>
+<li><b>Relación.</b> \(173/3{,}14\approx55\) veces menos.</li>
+<li><b>Resultado.</b> <span class="ans">Pasa de −173 a −3,1: se pierde un factor ≈ 55.</span></li></ol></details></li>
+</ol>
+</section>
+</template>

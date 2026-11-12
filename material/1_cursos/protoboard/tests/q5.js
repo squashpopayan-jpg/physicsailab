@@ -1,0 +1,11 @@
+const { loadChapter, labOf, EM } = require('./harness');
+const sims = loadChapter('03-senales.js');
+const rc = labOf(sims['c3-rc'].cfgs[0]);
+rc.cfg.controls[0].apply(rc, 5000); rc.run(3);
+const b = rc.bench;
+const a1 = b.rings.c1.last(3000), a2 = b.rings.c2.last(3000);
+console.log('dt', b.dt, 'tdiv', b.inst.osc.tdiv, 'simT', b.simT);
+const s1 = EM.sigStats(a1, b.dt), s2 = EM.sigStats(a2, b.dt);
+console.log('pp1', s1.pp, 'f1', s1.f, 'pp2', s2.pp, 'f2', s2.f, 'mean2', s2.mean);
+console.log(Array.from(a2.slice(0, 12)).map((x) => x.toFixed(3)).join(' '));
+console.log('elems', b.net.cir.els.filter((e) => /R1|C1|FG1/.test(e.id)).map((e) => e.id + ':' + (e.r || e.c || e.type)).join(' '));
