@@ -23,7 +23,8 @@ const COURSE_TITLES = {
     'venturi': 'Laboratorio Experimental Virtual de Tubo Venturi',
     'guias': 'Guías Didácticas de Laboratorio y Montajes Prácticos',
     'ingles': 'Inglés Técnico Científico para Ingenieros y Físicos',
-    'protoboard': 'Protoboard: Laboratorio de Simulación — Del Cable al Circuito'
+    'protoboard': 'Protoboard: Laboratorio de Simulación — Del Cable al Circuito',
+    'instalacion': 'Obra Eléctrica: Laboratorio de Instalación Residencial (RETIE & NTC 2050)'
 };
 
 const COURSE_PREFIXES = {
@@ -45,7 +46,8 @@ const COURSE_PREFIXES = {
     'venturi': 'VEN',
     'guias': 'GUI',
     'ingles': 'ENG',
-    'protoboard': 'PRO'
+    'protoboard': 'PRO',
+    'instalacion': 'INS'
 };
 
 function generateUniquePassword(courseId) {

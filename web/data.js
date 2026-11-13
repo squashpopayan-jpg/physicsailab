@@ -63,7 +63,8 @@ window.PLATFORM_DATA = {
         "resultados": ["INGFISICA2026", "RESULTADOS-2026", "RA-INGFISICA-26", "RES-IF-26"],
         "pec": ["LIBRE", "PEC-NOVIRAO", "NOVIRAO-2026"],
         "deducciones": ["DEDUCCIONES-2026", "FORMULA-26", "OBANDO-DED-26", "DED-F42M-26"],
-        "pln": ["PLN-2026", "MAQUINAS-LEEN-26", "NLP-IA-26", "PLN-L37N-26"]
+        "pln": ["PLN-2026", "MAQUINAS-LEEN-26", "NLP-IA-26", "PLN-L37N-26"],
+        "instalacion": ["OBRA-ELECTRICA-2026", "INSTALACION-2026", "OBANDO-OBRA-26", "INST-8492-26"]
     },
 
     // Configuración oficial de Pasarelas de Pago (Wompi PSE, Bancolombia, Nequi y Hotmart)
@@ -1190,6 +1191,37 @@ window.PLATFORM_DATA = {
             precioUSD: 12,
             valorReal: "$35 USD",
             descuentoTag: "22 Caps · 62 Simuladores SPICE",
+            enlaceCompra: "https://hotmart.com",
+            enlaceWompi: "https://checkout.wompi.co/l/VPOS_b6GD2z"
+        },
+        {
+            id: "instalacion",
+            titulo: "Obra Eléctrica: Laboratorio de Instalación Residencial (RETIE & NTC 2050)",
+            nivel: "Ingenieros, Técnicos Electricistas, Estudiantes de Física & Makers",
+            modulos: "8 Etapas de Obra + Dictamen Técnico RETIE + 70 Pruebas Normativas + Simulador de Cableado",
+            categoria: "Instalaciones Eléctricas, RETIE & Hardware",
+            categoriaFiltro: "labs",
+            descripcion: "Laboratorio interactivo de simulación constructiva y normativa de la instalación eléctrica completa de una vivienda de 82 m² en Popayán bajo el RETIE y la NTC 2050. Como constructor y diseñador, recorre 8 etapas reales: 1) lectura y edición de plano en planta arquitectónica con regla de 1,8 m y tomas GFCI; 2) cálculo riguroso de demanda, acometida bifásica/monofásica, medidor en fachada e interruptor principal; 3) diseño de puesta a tierra con estratigrafía de Wenner, electrodos y telurómetro; 4) selección de calibres AWG, protecciones termomagnéticas y neutro/tierra por circuito; 5) canalizaciones EMT/PVC, factores de llenado y cajas de paso; 6) tablero general con balance de fases y puente neutro-tierra; 7) simulador interactivo de cableado a color con 5 montajes reales; y 8) energización y pruebas con Megger (aislamiento), polaridad, fugas, disparo GFCI y cortocircuitos. Culmina con el dictamen de inspección técnica oficial según RETIE 3.3.2 con puntaje sobre 100. Desarrollado por el Mg. Manuel Alejandro Obando (Universidad del Cauca).",
+            temas: [
+                "01. Plano y Puntos: 12 luminarias, 29 tomas, duchas, regla de 1,8 m y tomas GFCI",
+                "02. Demanda y Acometida: cálculo de carga según NTC 2050, calibre, principal y medidor",
+                "03. Puesta a Tierra: resistividad del suelo con método de Wenner, electrodos y telurómetro",
+                "04. Conductores y Protecciones: calibres AWG, breakers termomagnéticos y conductor de puesta a tierra",
+                "05. Canalizaciones y Cajas: tubos conduit EMT/PVC, factor de llenado y volumen de cajas",
+                "06. Tablero General: ubicación de tablero, balance de fases y puente de equipotencialidad",
+                "07. Colores y Cableado: simulador de 5 montajes con código de colores RETIE (fase, neutro y tierra)",
+                "08. Energización y Pruebas: aislamiento con Megger, polaridad, disparo GFCI y cortocircuitos",
+                "Dictamen Oficial: Certificación técnica de inspección de obra bajo RETIE 3.3.2 (0 a 100 puntos)"
+            ],
+            destacado: true,
+            tipo: "Laboratorio Interactivo de Instalación & Simulación Eléctrica",
+            bancosDisponibles: 8,
+            demoPath: "/material/1_cursos/instalacion/dist/index.html",
+            precioEstimado: "Acceso Semestral Universitario / $49.000 COP (~$12 USD)",
+            precioCOP: 49000,
+            precioUSD: 12,
+            valorReal: "$35 USD",
+            descuentoTag: "8 Etapas · Simulación RETIE & NTC 2050",
             enlaceCompra: "https://hotmart.com",
             enlaceWompi: "https://checkout.wompi.co/l/VPOS_b6GD2z"
         },

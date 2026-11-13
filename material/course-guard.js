@@ -65,7 +65,8 @@
         "resultados": ["INGFISICA2026", "RESULTADOS-2026", "RA-INGFISICA-26", "RES-IF-26"],
         "pec": ["LIBRE", "PEC-NOVIRAO", "NOVIRAO-2026"],
         "deducciones": ["DEDUCCIONES-2026", "FORMULA-26", "OBANDO-DED-26", "DED-F42M-26"],
-        "pln": ["PLN-2026", "MAQUINAS-LEEN-26", "NLP-IA-26", "PLN-L37N-26"]
+        "pln": ["PLN-2026", "MAQUINAS-LEEN-26", "NLP-IA-26", "PLN-L37N-26"],
+        "instalacion": ["OBRA-ELECTRICA-2026", "INSTALACION-2026", "OBANDO-OBRA-26", "INST-8492-26"]
     };
 
     function getCurrentCourseId() {
@@ -86,9 +87,11 @@
             if (raw === 'pec' || raw === 'novirao') return 'pec';
             if (raw === 'deducciones' || raw === 'formula-por-dentro') return 'deducciones';
             if (raw === 'pln' || raw === 'maquinas-que-leen') return 'pln';
+            if (raw === 'instalacion' || raw === 'obra-electrica') return 'instalacion';
             return raw;
         }
 
+        if (p.includes('/instalacion/') || p.includes('obra-electrica') || p.includes('obra_electrica')) return 'instalacion';
         if (p.includes('deducciones') || p.includes('formula-por-dentro')) return 'deducciones';
         if (/(?:^|\/)pln(?:\/|\.|$)/.test(p) || p.includes('maquinas-que-leen')) return 'pln';
         if (p.includes('historia') || p.includes('saber')) return 'historia';
@@ -147,6 +150,7 @@
         if (t.includes('material')) return 'materiales';
         if (t.includes('electro')) return 'electromagnetismo';
         if (t.includes('cuántica') || t.includes('cuantica')) return 'cuantica';
+        if (t.includes('obra eléctrica') || t.includes('obra electrica') || t.includes('instalación residencial') || t.includes('instalacion residencial')) return 'instalacion';
         if (t.includes('retie') || t.includes('cableado')) return 'retie';
         if (t.includes('squash')) return 'squash_sim';
         if (t.includes('finanzas') || t.includes('cuentas claras')) return 'finanzas';
@@ -270,6 +274,7 @@
     const isFaro = courseId === 'faro' || !!document.querySelector('.indice');
     const isRecorrido = courseId === 'recorrido';
     const isPec = courseId === 'pec' || location.pathname.includes('/pec/') || document.title.toLowerCase().includes('tejiendo el pec');
+    const isInstalacion = courseId === 'instalacion' || location.pathname.includes('/instalacion/') || !!document.querySelector('.pasos, #pasos');
 
     // Inyectar estilos CSS del modal, candados y barras
     const css = `
@@ -853,6 +858,23 @@
             return;
         }
 
+        // A2. Instalación / Obra Eléctrica
+        if (cId === 'instalacion' || isInstalacion) {
+            try {
+                if (window.OB && typeof window.OB.ir === 'function') {
+                    window.OB.ir('inicio');
+                }
+            } catch(e) {}
+            try {
+                history.replaceState(null, '', window.location.pathname + '#inicio');
+            } catch(e) {}
+            try {
+                location.hash = '#inicio';
+            } catch(e) {}
+            window.scrollTo({ top: 0, behavior: 'instant' });
+            return;
+        }
+
         // B. Péndulo
         if (isPendulo) {
             const b = document.querySelector('.nav a[href="#banco"], .nav a[data-tab="banco"]');
@@ -966,6 +988,10 @@
             modalTitle = 'Curso Privado & Restringido';
             modalDesc = `Este curso y las herramientas de análisis curricular de Resultados de Aprendizaje (Ingeniería Física) son de carácter personal y reservado. Para acceder al contenido completo y a las 22 herramientas interactivas, ingresa la clave de autorización asignada.`;
             buyEntityName = 'Módulo Privado';
+        } else if (curCourse === 'instalacion' || isInstalacion) {
+            modalTitle = 'Laboratorio de Obra Eléctrica Bloqueado';
+            modalDesc = `Has llegado al límite de la vista previa gratuita (Plano y puntos). Para acceder a las etapas de cálculo de demanda y acometida, puesta a tierra con telurómetro, conductores y protecciones termomagnéticas, canalizaciones y cajas, armado de tablero, simulador de cableado a color con 5 montajes, energización con megger y dictamen técnico final bajo RETIE y NTC 2050, ingresa tu clave de estudiante o adquiere tu licencia.`;
+            buyEntityName = 'Laboratorio de Obra Eléctrica';
         }
 
         const isRes = curCourse === 'resultados' || isResultados;
@@ -2041,6 +2067,67 @@
     }
 
     // ----------------------------------------------------
+    // Intercepción en Laboratorio de Obra Eléctrica (Instalación Residencial)
+    // ----------------------------------------------------
+    function applyInstalacionGuard() {
+        const unlocked = isUnlocked();
+        const lockedStages = ['acometida', 'tierra', 'circuitos', 'canal', 'tablero', 'cableado', 'pruebas', 'dictamen'];
+
+        // 1. Botones de pasos en la cabecera (#pasos button)
+        const pasoButtons = document.querySelectorAll('#pasos button');
+        pasoButtons.forEach((btn) => {
+            const id = btn.dataset.id;
+            if (!id || id === 'inicio' || id === 'plano') {
+                btn.classList.remove('pg-locked');
+                const p = btn.querySelector('.pg-lock-pill');
+                if (p) p.remove();
+                return;
+            }
+
+            const existingPill = btn.querySelector('.pg-lock-pill');
+            if (!unlocked) {
+                btn.classList.add('pg-locked');
+                if (!existingPill) {
+                    const pill = document.createElement('span');
+                    pill.className = 'pg-lock-pill';
+                    pill.textContent = '🔒';
+                    btn.appendChild(pill);
+                }
+            } else {
+                btn.classList.remove('pg-locked');
+                if (existingPill) existingPill.remove();
+            }
+        });
+
+        // 2. Intercepción de clics en #pasos y botones de etapas
+        if (!window.__instalacionGuardBound) {
+            window.__instalacionGuardBound = true;
+            document.addEventListener('click', (e) => {
+                if (isUnlocked()) return;
+                const btn = e.target.closest('#pasos button');
+                if (!btn) return;
+                const stageId = btn.dataset.id;
+                if (lockedStages.includes(stageId)) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    enforceFreePreviewState();
+                    const stageName = btn.textContent.replace('🔒', '').trim() || stageId;
+                    openPaywall(stageName);
+                }
+            }, true);
+        }
+
+        // 3. Validar hash actual si apunta a una etapa bloqueada
+        const curHash = (location.hash || '').replace(/^#/, '').toLowerCase();
+        if (!unlocked && lockedStages.includes(curHash)) {
+            setTimeout(() => {
+                enforceFreePreviewState();
+                openPaywall(curHash);
+            }, 80);
+        }
+    }
+
+    // ----------------------------------------------------
     // Actualización de estado general
     // ----------------------------------------------------
     function updateGuardState() {
@@ -2065,6 +2152,8 @@
             applyTorneosGuard();
         } else if (isFaro) {
             applyFaroGuard();
+        } else if (isInstalacion || getCurrentCourseId() === 'instalacion') {
+            applyInstalacionGuard();
         } else {
             // Notebook interactivo por defecto (Óptica, Mecánica, Materiales, Ondas, Termo, Fluidos, Cuántica, RETIE, etc.)
             applyNotebookGuard();
@@ -2081,6 +2170,15 @@
         if (cId === 'venturi' || cId === 'pendulo' || cId === 'riel' || isVenturi || isPendulo) return;
         const rawHash = decodeURIComponent(location.hash.replace(/^#/, '')).split('.')[0].toLowerCase();
         if (!rawHash || rawHash === 'inicio') return;
+
+        if (cId === 'instalacion' || isInstalacion) {
+            const lockedStages = ['acometida', 'tierra', 'circuitos', 'canal', 'tablero', 'cableado', 'pruebas', 'dictamen'];
+            if (lockedStages.includes(rawHash)) {
+                enforceFreePreviewState();
+                openPaywall(rawHash);
+            }
+            return;
+        }
 
         if (cId === 'squash_arbitraje') {
             if (['interferencia', 'marcador'].includes(rawHash)) {
@@ -2195,7 +2293,7 @@
         setTimeout(updateGuardState, 1200);
 
         // Observar cambios dinámicos en la tabla de contenidos si se construye asíncronamente
-        const tocEl = document.querySelector('#toc, .toc, .nav, nav');
+        const tocEl = document.querySelector('#toc, .toc, .nav, nav, #pasos');
         if (tocEl && window.MutationObserver) {
             const obs = new MutationObserver(() => {
                 updateGuardState();

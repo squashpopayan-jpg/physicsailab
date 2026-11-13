@@ -66,6 +66,13 @@ const SCIENTIFIC_THESAURUS = {
     'choque': ['riel', 'colision', 'momento', 'energia', 'mecanica'],
     'dispositivos': ['circuitos', 'protoboard', 'pasivos', 'activos', 'resistor', 'resistencia', 'condensador', 'capacitor', 'inductor', 'bobina', 'diodo', 'led', 'zener', 'bjt', 'transistor', 'mosfet', 'amplificador', 'opamp', 'spice', 'ley de ohm', 'thevenin', 'norton', 'filtro', 'rectificador', '555', 'cortocircuito'],
     'protoboard': ['breadboard', 'circuitos', 'spice', 'electronica', 'dispositivos', 'arduino', 'multimetro', 'osciloscopio', 'fuente', 'resistor', 'condensador', 'diodo', 'led', 'zener', 'bjt', 'mosfet', 'opamp', 'lm741', 'lm358', 'lm393', 'ne555', '555', '7805', 'lm317', 'rele', 'fusible', 'diagnostico', 'fallas', 'cortocircuito', 'proyectos'],
+    'instalacion': ['obra electrica', 'obra', 'retie', 'ntc 2050', 'acometida', 'puesta a tierra', 'tablero', 'cableado', 'conductores', 'canalizaciones', 'megger', 'telurometro', 'gfci', 'residencial', 'vivienda', 'electricidad', 'wenner', 'medidor', 'termomagnetico'],
+    'obra electrica': ['instalacion', 'retie', 'ntc 2050', 'acometida', 'puesta a tierra', 'tablero', 'cableado', 'conductores', 'canalizaciones', 'megger', 'telurometro', 'gfci', 'vivienda'],
+    'acometida': ['instalacion', 'obra electrica', 'retie', 'demanda', 'medidor', 'monofasica', 'bifasica', 'carga'],
+    'cableado': ['instalacion', 'obra electrica', 'retie', 'colores', 'fase', 'neutro', 'tierra', 'conductores', 'codigo de colores'],
+    'tablero': ['instalacion', 'obra electrica', 'retie', 'breakers', 'termomagnetico', 'balance de fases', 'peine'],
+    'telurometro': ['instalacion', 'puesta a tierra', 'retie', 'wenner', 'electrodos', 'resistividad'],
+    'megger': ['instalacion', 'aislamiento', 'pruebas', 'retie', 'fugas', 'cortocircuito'],
     'breadboard': ['protoboard', 'circuitos', 'electronica', 'spice', 'multimetro', 'proyectos'],
     'multimetro': ['protoboard', 'voltaje', 'corriente', 'continuidad', 'fusible', 'dispositivos', 'arduino', 'electronica'],
     'osciloscopio': ['protoboard', 'senales', 'generador', 'dispositivos', 'ac', 'rectificador', 'transformadores'],
@@ -207,6 +214,7 @@ const CURATED_SEARCH_SUGGESTIONS = [
     { text: 'Riel de Aire 3D', sub: 'Laboratorio Virtual 3D · Dinámica de Newton', icon: '🏎️', query: 'Riel de Aire 3D' },
     { text: 'Dispositivos Activos y Pasivos', sub: '30 capítulos, 128 simuladores SPICE', icon: '🔌', query: 'Dispositivos Activos y Pasivos' },
     { text: 'Protoboard: Laboratorio de Simulación', sub: '22 capítulos, 62 simuladores SPICE, 9 proyectos y diagnóstico de fallas', icon: '🔩', query: 'Protoboard Laboratorio Simulación' },
+    { text: 'Obra Eléctrica: Instalación Residencial', sub: '8 etapas de obra, RETIE & NTC 2050, cableado a color, megger y dictamen', icon: '🏠', query: 'Obra Eléctrica Instalación Residencial' },
     { text: 'Circuitos Vivos Arduino & ESP32', sub: 'Protoboard interactiva y microcontroladores', icon: '⚡', query: 'Circuitos Vivos Arduino ESP32' },
     { text: 'Mecánica Clásica Universitaria', sub: '18 capítulos interactivos completos', icon: '⚛️', query: 'Mecánica Clásica' },
     { text: 'Exploraciones en Física Cuántica', sub: 'Simulador numérico de pozo y efecto túnel', icon: '🌌', query: 'Física Cuántica' },
@@ -619,6 +627,11 @@ function handleGlobalSearch(query) {
             badgeColor = '#34d399';
             badgeBg = 'rgba(16,185,129,0.2)';
             icon = '🔩';
+        } else if (c.id === 'instalacion') {
+            badgeLabel = '🏠 Lab Obra Eléctrica';
+            badgeColor = '#38bdf8';
+            badgeBg = 'rgba(56,189,248,0.2)';
+            icon = '🏠';
         } else if (c.id === 'dispositivos') {
             badgeLabel = '🔌 Lab Hardware SPICE';
             badgeColor = '#fbbf24';
@@ -2517,6 +2530,7 @@ window.renderEnrolledCourses = renderEnrolledCourses;
             arduino: 'ARD',
             dispositivos: 'DIS',
             protoboard: 'PRO',
+            instalacion: 'INS',
             faro: 'FAR',
             diagnosticas: 'DIA',
             guias: 'GUI',
@@ -3505,6 +3519,7 @@ window.renderEnrolledCourses = renderEnrolledCourses;
             const isModerna = c.id === 'moderna';
             const isArduino = c.id === 'arduino';
             const isProtoboard = c.id === 'protoboard';
+            const isInstalacion = c.id === 'instalacion';
             const isVenturi = c.id === 'venturi';
             const isRiel = c.id === 'riel';
             const isPendulo = c.id === 'pendulo';
@@ -3543,6 +3558,8 @@ window.renderEnrolledCourses = renderEnrolledCourses;
                 openBtnText = courseUnlocked ? 'Abrir Circuitos Vivos (Nueva Ventana ↗) ⚡' : 'Vista Previa Arduino 👁️';
             } else if (isProtoboard) {
                 openBtnText = courseUnlocked ? 'Abrir Lab Protoboard (Nueva Ventana ↗) 🔩' : 'Vista Previa Protoboard 👁️';
+            } else if (isInstalacion) {
+                openBtnText = courseUnlocked ? 'Abrir Obra Eléctrica (Nueva Ventana ↗) 🏠' : 'Vista Previa Obra Eléctrica 👁️';
             } else if (isVenturi || isPendulo || isRiel) {
                 openBtnText = '🧪 Abrir Laboratorio Libre (Nueva Ventana ↗)';
             } else if (isTransformadores) {
@@ -9597,7 +9614,7 @@ window.renderEnrolledCourses = renderEnrolledCourses;
     // ==========================================================================
     const PAGE_CATALOG = [
         { id: 'inicio', title: 'Portal de Bienvenida', short: 'Inicio', icon: '🏠', order: 1 },
-        { id: 'cursos', title: 'Cursos & Laboratorios (37)', short: 'Cursos & Labs', icon: '🚀', order: 2 },
+        { id: 'cursos', title: 'Cursos & Laboratorios (38)', short: 'Cursos & Labs', icon: '🚀', order: 2 },
         { id: 'quizzes', title: 'Evaluaciones & Quizzes con PIN', short: 'Quizzes PIN', icon: '📝', order: 3 },
         { id: 'trivia', title: 'Gran Trivia de Física (1.000 preg.)', short: 'Trivia Física', icon: '🎯', order: 4 },
         { id: 'trivia-historia', title: 'Historia de la Física (500 preg.)', short: 'Historia Física', icon: '📜', order: 5 },
