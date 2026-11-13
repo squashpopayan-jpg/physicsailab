@@ -454,21 +454,41 @@
             z-index: 999999;
             display: flex;
             align-items: center;
-            gap: 0.6rem;
-            padding: 0.35rem 0.85rem;
-            background: rgba(15, 23, 42, 0.88);
-            backdrop-filter: blur(8px);
+            gap: 0.55rem;
+            padding: 0.32rem 0.8rem;
+            background: rgba(15, 23, 42, 0.92);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             border: 1px solid rgba(245, 158, 11, 0.45);
             border-radius: 9999px;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             color: #F8FAFC;
             box-shadow: 0 4px 20px rgba(0,0,0,0.35);
-            transition: all 0.3s;
+            transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.28s ease, background 0.2s, padding 0.2s;
+            max-width: calc(100vw - 24px);
         }
         .pg-top-bar.unlocked {
             border-color: rgba(16, 185, 129, 0.45);
-            background: rgba(6, 78, 59, 0.88);
+            background: rgba(6, 78, 59, 0.92);
+        }
+        .pg-top-bar.pg-hidden-scroll {
+            transform: translateY(-160%) !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+        .pg-top-bar.minimized {
+            padding: 0.25rem 0.55rem !important;
+            gap: 0.35rem !important;
+            cursor: pointer;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.4) !important;
+            background: rgba(15, 23, 42, 0.88) !important;
+            border-color: rgba(255, 255, 255, 0.2) !important;
+            user-select: none;
+        }
+        .pg-top-bar.unlocked.minimized {
+            background: rgba(6, 78, 59, 0.88) !important;
+            border-color: rgba(16, 185, 129, 0.5) !important;
         }
         .pg-top-bar strong {
             color: #F59E0B;
@@ -480,18 +500,56 @@
             background: linear-gradient(135deg, #F59E0B, #D97706);
             color: #0A0E17;
             font-weight: 700;
-            font-size: 0.76rem;
+            font-size: 0.74rem;
             border: none;
-            padding: 0.28rem 0.7rem;
+            padding: 0.25rem 0.65rem;
             border-radius: 9999px;
             cursor: pointer;
-            transition: opacity 0.2s;
+            transition: opacity 0.2s, transform 0.15s;
+            white-space: nowrap;
         }
         .pg-top-bar button:hover { opacity: 0.9; }
         .pg-top-bar.unlocked button {
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.16);
             color: #fff;
             border: 1px solid rgba(255, 255, 255, 0.25);
+        }
+        .pg-top-bar .pg-btn-minimize {
+            background: transparent !important;
+            border: none !important;
+            color: rgba(255, 255, 255, 0.65) !important;
+            font-size: 0.85rem !important;
+            padding: 0 3px !important;
+            line-height: 1 !important;
+            cursor: pointer !important;
+            margin-left: 2px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            border-radius: 50% !important;
+            width: 18px !important;
+            height: 18px !important;
+            transition: color 0.15s, background 0.15s !important;
+        }
+        .pg-top-bar .pg-btn-minimize:hover {
+            color: #fff !important;
+            background: rgba(255, 255, 255, 0.15) !important;
+        }
+        @media (max-width: 768px) {
+            .pg-top-bar {
+                top: 8px;
+                right: 8px;
+                font-size: 0.72rem;
+                padding: 0.22rem 0.6rem;
+                gap: 0.4rem;
+            }
+            .pg-top-bar button {
+                padding: 0.2rem 0.5rem;
+                font-size: 0.7rem;
+            }
+            .pg-top-bar.minimized {
+                padding: 0.2rem 0.45rem !important;
+            }
         }
 
         /* Barra flotante no invasiva para Torneos Squash Popayán (arriba a la derecha para no tapar navegación ni controles) */
@@ -1235,8 +1293,37 @@
         setTimeout(() => codeInput.focus(), 100);
     }
 
-    // Floating bar
+    // Floating bar state, auto-hide & minimize
     let topBar = null;
+    let topBarIsMin = false;
+    let topBarAutoHideTimer = null;
+
+    function scheduleTopBarAutoHide(delayMs = 4000) {
+        if (topBarAutoHideTimer) clearTimeout(topBarAutoHideTimer);
+        topBarAutoHideTimer = setTimeout(() => {
+            topBarIsMin = true;
+            renderTopBar();
+        }, delayMs);
+    }
+
+    // Scroll listener for smart hide on scroll down (libera 100% de la pantalla para lectura en celular)
+    if (typeof window !== 'undefined' && !window._pgScrollListenerAdded) {
+        window._pgScrollListenerAdded = true;
+        let lastScrollY = window.scrollY || 0;
+        window.addEventListener('scroll', () => {
+            if (!topBar) return;
+            const currentScrollY = window.scrollY || 0;
+            if (currentScrollY > lastScrollY && currentScrollY > 40) {
+                // Scrolleando hacia abajo: ocultar para no tapar navegación ni lectura
+                topBar.classList.add('pg-hidden-scroll');
+            } else if (currentScrollY < lastScrollY || currentScrollY <= 15) {
+                // Scrolleando hacia arriba o cerca del inicio: mostrar
+                topBar.classList.remove('pg-hidden-scroll');
+            }
+            lastScrollY = currentScrollY;
+        }, { passive: true });
+    }
+
     function renderTopBar() {
         if (isRecorrido) return; // Tour 3D liberado
         if (!topBar) {
@@ -1245,65 +1332,142 @@
         }
 
         const curCourse = getCurrentCourseId();
+        const unlocked = isUnlocked();
+        const isAdmin = localStorage.getItem('physicsailab_admin') === 'true';
+
+        // Determinar icono, texto y titulo para modo minimizado
+        let badgeIcon = '👁️';
+        let badgeShort = 'Vista';
+        let badgeTitle = 'Vista Previa';
+        let isFreeSpecial = false;
+
+        if (curCourse === 'historia') {
+            badgeIcon = '🎁'; badgeShort = 'Libre'; badgeTitle = '«Cómo llegamos a saber» · Acceso 100% Libre'; isFreeSpecial = true;
+        } else if (curCourse === 'pec' || isPec) {
+            badgeIcon = '🌱'; badgeShort = 'PEC'; badgeTitle = 'Tejiendo el PEC · Curso Comunitario'; isFreeSpecial = true;
+        } else if (LAB_COURSE_IDS.includes(curCourse)) {
+            badgeIcon = '🔬'; badgeShort = 'Lab'; badgeTitle = 'Laboratorio Virtual Abierto'; isFreeSpecial = true;
+        } else if (isAdmin) {
+            badgeIcon = '👑'; badgeShort = 'Admin'; badgeTitle = 'Modo Administrador (Profesor Obando)';
+        } else if (unlocked) {
+            badgeIcon = '🎓'; badgeShort = 'Activo'; badgeTitle = 'Modo Estudiante Activo';
+        } else if (isResultados || curCourse === 'resultados') {
+            badgeIcon = '🔒'; badgeShort = 'Privado'; badgeTitle = 'Curso Privado';
+        }
+
+        // Si esta minimizado: chip discreto y elegante en la esquina que no tapa titulos ni navegacion
+        if (topBarIsMin) {
+            topBar.className = 'pg-top-bar minimized' + (unlocked || isFreeSpecial ? ' unlocked' : '');
+            topBar.innerHTML = `
+                <span style="font-size:0.95rem; cursor:pointer;" title="${badgeTitle}">${badgeIcon}</span>
+                <span style="font-size:0.7rem; opacity:0.85; font-weight:700; cursor:pointer;">${badgeShort}</span>
+                <span style="font-size:0.62rem; opacity:0.65; margin-left:1px;">▲</span>
+            `;
+            topBar.onclick = () => {
+                topBarIsMin = false;
+                renderTopBar();
+                scheduleTopBarAutoHide(6000); // 6s expandido y luego vuelve a minimizarse
+            };
+            topBar.onmouseenter = null;
+            topBar.onmouseleave = null;
+            return;
+        }
+
+        // Si esta expandido: activar temporizador para auto-minimizar despues de 4 segundos
+        topBar.onclick = null;
+        scheduleTopBarAutoHide(4000);
+
+        topBar.onmouseenter = () => {
+            if (topBarAutoHideTimer) clearTimeout(topBarAutoHideTimer);
+        };
+        topBar.onmouseleave = () => {
+            if (!topBarIsMin) scheduleTopBarAutoHide(3000);
+        };
+
         if (curCourse === 'historia') {
             topBar.className = 'pg-top-bar unlocked';
-            topBar.innerHTML = `<span>🎁 <strong>«Cómo llegamos a saber»</strong> · Cortesía de Bienvenida · Acceso 100% Libre</span>`;
+            topBar.innerHTML = `
+                <span>🎁 <strong>«Cómo llegamos a saber»</strong> · Acceso 100% Libre</span>
+                <button type="button" class="pg-btn-minimize" title="Minimizar">✕</button>
+            `;
+            attachMinBtn();
             return;
         }
         if (curCourse === 'pec' || isPec) {
             topBar.className = 'pg-top-bar unlocked';
-            topBar.innerHTML = `<a href="/" class="pg-course-return" title="Volver a PhysicsAILab" style="color:#6b8bab;text-decoration:none;font-weight:600;font-size:0.75rem;margin-right:8px;display:inline-flex;align-items:center;gap:4px;"><img src="/assets/brand/logo-icon.png" alt="PAI" style="width:14px;height:14px;border-radius:50%;vertical-align:middle;display:inline-block;"> ← PhysicsAILab</a><span>🌱 <strong>Tejiendo el PEC (Novirao)</strong> · Curso Comunitario Privado · Acceso Libre</span>`;
+            topBar.innerHTML = `
+                <a href="/" class="pg-course-return" title="Volver a PhysicsAILab" style="color:#6b8bab;text-decoration:none;font-weight:600;font-size:0.75rem;margin-right:6px;display:inline-flex;align-items:center;gap:4px;"><img src="/assets/brand/logo-icon.png" alt="PAI" style="width:14px;height:14px;border-radius:50%;vertical-align:middle;display:inline-block;"> ← PAI</a>
+                <span>🌱 <strong>PEC Novirao</strong> · Acceso Libre</span>
+                <button type="button" class="pg-btn-minimize" title="Minimizar">✕</button>
+            `;
+            attachMinBtn();
             return;
         }
         if (LAB_COURSE_IDS.includes(curCourse)) {
             topBar.className = 'pg-top-bar unlocked';
-            topBar.innerHTML = `<span>🔬 <strong>Laboratorio Virtual Abierto</strong> · Acceso Libre al Público</span>`;
+            topBar.innerHTML = `
+                <span>🔬 <strong>Laboratorio Abierto</strong> · Acceso Libre</span>
+                <button type="button" class="pg-btn-minimize" title="Minimizar">✕</button>
+            `;
+            attachMinBtn();
             return;
         }
 
-        const unlocked = isUnlocked();
-        const isAdmin = localStorage.getItem('physicsailab_admin') === 'true';
-
         if (isTorneos || curCourse === 'torneos') {
             topBar.className = 'pg-top-bar pg-torneos-bar' + (unlocked ? ' unlocked' : '');
-            const isMob = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 768;
-            let isMin = localStorage.getItem('pg_torneos_bar_min') === 'true' || (isMob && localStorage.getItem('pg_torneos_bar_min') !== 'false');
+            topBar.innerHTML = `
+                <a href="/" class="pg-course-return" title="Volver a PhysicsAILab" style="color:#6b8bab;text-decoration:none;font-weight:600;font-size:0.72rem;display:inline-flex;align-items:center;gap:3px;margin-right:2px;"><img src="/assets/brand/logo-icon.png" alt="PAI" style="width:14px;height:14px;border-radius:50%;vertical-align:middle;display:inline-block;"> ← PhysicsAILab</a>
+                <span style="font-size:0.75rem;">${isAdmin ? '👑 <strong>Admin</strong>' : (unlocked ? '🎓 <strong>Activo</strong>' : '👁️ <strong>Vista</strong>')}</span>
+                ${unlocked 
+                    ? `<button type="button" id="pg-lock-again-btn" title="Cerrar sesión" style="padding:2px 7px;font-size:0.72rem;">🔒</button>` 
+                    : `<button type="button" id="pg-unlock-modal-btn" title="Desbloquear" style="padding:2px 7px;font-size:0.72rem;">🔑</button>`
+                }
+                <button type="button" class="pg-btn-minimize" title="Minimizar para que no estorbe">✕</button>
+            `;
+            attachMinBtn();
+            attachAuthButtons();
+            return;
+        }
 
-            if (isMin) {
-                topBar.classList.add('minimized');
-                topBar.innerHTML = `
-                    <span style="font-size:0.95rem;cursor:pointer;" title="${isAdmin ? 'Modo Administrador (Profesor Obando)' : (unlocked ? 'Modo Estudiante Activo' : 'Vista Previa')}">${isAdmin ? '👑' : (unlocked ? '🎓' : '👁️')}</span>
-                    <button type="button" class="pg-toggle-min" title="Expandir controles" style="background:transparent;border:none;color:#6b8bab;cursor:pointer;font-size:0.75rem;padding:2px 4px;">▲</button>
-                `;
-            } else {
-                topBar.innerHTML = `
-                    <a href="/" class="pg-course-return" title="Volver a PhysicsAILab" style="color:#6b8bab;text-decoration:none;font-weight:600;font-size:0.72rem;display:inline-flex;align-items:center;gap:3px;margin-right:2px;"><img src="/assets/brand/logo-icon.png" alt="PAI" style="width:14px;height:14px;border-radius:50%;vertical-align:middle;display:inline-block;"> ← PhysicsAILab</a>
-                    <span style="font-size:0.75rem;">${isAdmin ? '👑 <strong>Admin</strong>' : (unlocked ? '🎓 <strong>Activo</strong>' : '👁️ <strong>Vista</strong>')}</span>
-                    ${unlocked 
-                        ? `<button type="button" id="pg-lock-again-btn" title="Cerrar sesión" style="padding:2px 7px;font-size:0.72rem;">🔒</button>` 
-                        : `<button type="button" id="pg-unlock-modal-btn" title="Desbloquear" style="padding:2px 7px;font-size:0.72rem;">🔑</button>`
-                    }
-                    <button type="button" class="pg-toggle-min" title="Minimizar para que no estorbe" style="background:transparent;border:none;color:#6b8bab;cursor:pointer;font-size:0.75rem;padding:2px 4px;">▼</button>
-                `;
-            }
+        if (unlocked) {
+            topBar.className = 'pg-top-bar unlocked';
+            topBar.innerHTML = isAdmin
+                ? `<span>👑 <strong>Modo Administrador</strong> (Profesor Obando)</span>
+                   <button type="button" id="pg-lock-again-btn" title="Cerrar sesión de administrador">Bloquear 🔒</button>
+                   <button type="button" class="pg-btn-minimize" title="Minimizar anuncio">✕</button>`
+                : (isResultados || curCourse === 'resultados')
+                ? `<span>🎯 <strong>Resultados de Aprendizaje</strong> · Autorizado</span>
+                   <button type="button" id="pg-lock-again-btn" title="Bloquear curso">Bloquear 🔒</button>
+                   <button type="button" class="pg-btn-minimize" title="Minimizar anuncio">✕</button>`
+                : `<span>🎓 <strong>Modo Estudiante Activo</strong></span>
+                   <button type="button" id="pg-lock-again-btn" title="Cerrar sesión de estudiante en esta materia">Bloquear 🔒</button>
+                   <button type="button" class="pg-btn-minimize" title="Minimizar anuncio">✕</button>`;
+            attachMinBtn();
+            attachAuthButtons();
+        } else {
+            topBar.className = 'pg-top-bar';
+            topBar.innerHTML = `
+                <span>${(isResultados || curCourse === 'resultados') ? '🔒 <strong>Curso Privado</strong>' : '👁️ <strong>Vista Previa Gratuita</strong>'}</span>
+                <button type="button" id="pg-unlock-modal-btn">Desbloquear 🔑</button>
+                <button type="button" class="pg-btn-minimize" title="Minimizar anuncio">✕</button>
+            `;
+            attachMinBtn();
+            attachAuthButtons();
+        }
 
-            const toggleMin = topBar.querySelector('.pg-toggle-min');
-            if (toggleMin) {
-                toggleMin.addEventListener('click', (e) => {
+        function attachMinBtn() {
+            const minBtn = topBar.querySelector('.pg-btn-minimize');
+            if (minBtn) {
+                minBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    localStorage.setItem('pg_torneos_bar_min', isMin ? 'false' : 'true');
+                    if (topBarAutoHideTimer) clearTimeout(topBarAutoHideTimer);
+                    topBarIsMin = true;
                     renderTopBar();
                 });
             }
-            if (isMin) {
-                topBar.onclick = () => {
-                    localStorage.setItem('pg_torneos_bar_min', 'false');
-                    renderTopBar();
-                };
-            } else {
-                topBar.onclick = null;
-            }
+        }
 
+        function attachAuthButtons() {
             const lockBtn = topBar.querySelector('#pg-lock-again-btn');
             if (lockBtn) {
                 lockBtn.addEventListener('click', (e) => {
@@ -1313,7 +1477,8 @@
                     } else {
                         setCourseUnlocked(getCurrentCourseId(), false);
                     }
-                    showToast('🔒 Sesión cerrada.', 'info');
+                    showToast('🔒 Sesión cerrada. Curso en vista previa.', 'info');
+                    topBarIsMin = false;
                     updateGuardState();
                 });
             }
@@ -1323,53 +1488,6 @@
                     e.stopPropagation();
                     openPaywall();
                 });
-            }
-
-            if (!window._pgTorneosObserverSetup) {
-                window._pgTorneosObserverSetup = true;
-                const syncVisibility = () => {
-                    if (!topBar) return;
-                    const inMatchOrModal = !!document.querySelector('.sapp') || !!document.querySelector('.ovl');
-                    topBar.style.setProperty('display', inMatchOrModal ? 'none' : 'flex', 'important');
-                };
-                const obs = new MutationObserver(syncVisibility);
-                obs.observe(document.body, { childList: true, subtree: true });
-                syncVisibility();
-            }
-            return;
-        }
-
-        if (unlocked) {
-            topBar.className = 'pg-top-bar unlocked';
-            topBar.innerHTML = isAdmin
-                ? `<span>👑 <strong>Modo Administrador</strong> (Profesor Obando)</span>
-                   <button type="button" id="pg-lock-again-btn" title="Cerrar sesión de administrador">Bloquear 🔒</button>`
-                : (isResultados || curCourse === 'resultados')
-                ? `<span>🎯 <strong>Resultados de Aprendizaje</strong> · Grupo Autorizado</span>
-                   <button type="button" id="pg-lock-again-btn" title="Bloquear curso">Bloquear 🔒</button>`
-                : `<span>🎓 <strong>Modo Estudiante Activo</strong></span>
-                   <button type="button" id="pg-lock-again-btn" title="Cerrar sesión de estudiante en esta materia">Bloquear 🔒</button>`;
-            const lockBtn = topBar.querySelector('#pg-lock-again-btn');
-            if (lockBtn) {
-                lockBtn.addEventListener('click', () => {
-                    if (isAdmin) {
-                        localStorage.removeItem('physicsailab_admin');
-                    } else {
-                        setCourseUnlocked(getCurrentCourseId(), false);
-                    }
-                    showToast('🔒 Sesión cerrada. Curso en vista previa.', 'info');
-                    updateGuardState();
-                });
-            }
-        } else {
-            topBar.className = 'pg-top-bar';
-            topBar.innerHTML = `
-                <span>${(isResultados || curCourse === 'resultados') ? '🔒 <strong>Curso Privado</strong>' : '👁️ <strong>Vista Previa Gratuita</strong>'}</span>
-                <button type="button" id="pg-unlock-modal-btn">Desbloquear 🔑</button>
-            `;
-            const unlockBtn = topBar.querySelector('#pg-unlock-modal-btn');
-            if (unlockBtn) {
-                unlockBtn.addEventListener('click', () => openPaywall());
             }
         }
     }
