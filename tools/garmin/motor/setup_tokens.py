@@ -54,6 +54,13 @@ except ImportError:
     print("❌ Instala dependencias:  pip install -r requirements.txt")
     sys.exit(1)
 
+if TOKEN_FILE.exists():
+    try:
+        TOKEN_FILE.unlink()
+        print("  🧹 Se eliminaron tokens antiguos para forzar un inicio de sesión limpio.")
+    except Exception:
+        pass
+
 email    = input("📧 Email de Garmin Connect: ").strip()
 password = getpass("🔑 Contraseña: ")
 
@@ -62,6 +69,8 @@ try:
     g = Garmin(email=email, password=password, is_cn=False,
                prompt_mfa=lambda: input("🔐 Código MFA/2FA (o Enter si no tienes): ").strip())
     g.login(str(TOKEN_FILE))
+    if not TOKEN_FILE.exists():
+        g.client.dump(str(TOKEN_FILE))
     print(f"  ✅ Login exitoso. Tokens guardados en: {TOKEN_FILE}")
 except GarminConnectTooManyRequestsError:
     print("\n❌ Demasiados intentos. Espera 15–30 minutos e intenta de nuevo.")
