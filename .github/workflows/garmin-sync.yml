@@ -22,7 +22,7 @@ jobs:
       - name: 📥 Clonar repositorio
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 1
 
       - name: 🐍 Configurar Python 3.12
@@ -71,6 +71,14 @@ jobs:
           else
             git add web/garmin/data/web_export.json public/garmin/data/web_export.json
             git commit -m "datos: sincronización automática Garmin AI Pro [skip ci]"
-            git push
+            if ! git push; then
+              if [ -n "${{ secrets.GH_PAT }}" ]; then
+                echo "Intentando git push con GH_PAT..."
+                git push https://x-access-token:${{ secrets.GH_PAT }}@github.com/${{ github.repository }}.git HEAD:main
+              else
+                echo "❌ Error al hacer git push con GITHUB_TOKEN."
+                exit 1
+              fi
+            fi
             echo "✅ Datos sincronizados y desplegados a Vercel con éxito."
           fi
