@@ -85,7 +85,12 @@ const SCIENTIFIC_THESAURUS = {
     'inductor': ['dispositivos', 'protoboard', 'bobina', 'henrios', 'flujo magnetico', 'pasivos', 'rl', 'rlc'],
     'circuitos': ['protoboard', 'dispositivos', 'arduino', 'esp32', 'spice', 'electronica', 'ley de ohm'],
     'arduino': ['esp32', 'circuitos vivos', 'microcontrolador', 'sensores', 'iot', 'protoboard', 'electronica', 'pwm', 'adc', 'i2c', 'spi'],
-    'esp32': ['arduino', 'circuitos vivos', 'wifi', 'bluetooth', 'iot', 'sensores', 'microcontrolador', 'faro'],
+    'esp32': ['arduino', 'circuitos vivos', 'wifi', 'bluetooth', 'iot', 'sensores', 'microcontrolador', 'faro', 'esp32 display', 'ojo de murcielago', 'cyd', 't-display', 'pantalla', 'hc-sr04'],
+    'murcielago': ['esp32 display', 'ojo de murcielago', 'hc-sr04', 'ultrasonico', 'sensor ultrasonico', 'radar', 'ecolocalizacion', 'pantalla', 'cyd', 't-display', 'oled'],
+    'cyd': ['esp32 display', 'cheap yellow display', 'esp32-2432s028r', 'ili9341', 'xpt2046', 'ojo de murcielago', 'pantalla'],
+    't-display': ['esp32 display', 'lilygo', 'ttgo', 'st7789', 'ojo de murcielago', 'pantalla'],
+    'oled': ['esp32 display', 'ssd1306', 'i2c', 'ojo de murcielago', 'pantalla'],
+    'ultrasonico': ['hc-sr04', 'murcielago', 'sensor distancia', 'esp32 display', 'divisor de tension', 'echo', 'trigger', 'pantalla'],
     'electronica': ['protoboard', 'dispositivos', 'arduino', 'esp32', 'circuitos', 'diodos', 'transistores', 'spice'],
     'venturi': ['bernoulli', 'presion', 'fluido', 'tubo', 'caudal', 'hidrodinamica', 'manometro', 'manometrico', 'densidad', 'flujo'],
     'bernoulli': ['venturi', 'fluidos', 'presion', 'energia mecanica', 'caudal'],
@@ -216,6 +221,7 @@ const CURATED_SEARCH_SUGGESTIONS = [
     { text: 'Protoboard: Laboratorio de Simulación', sub: '22 capítulos, 62 simuladores SPICE, 9 proyectos y diagnóstico de fallas', icon: '🔩', query: 'Protoboard Laboratorio Simulación' },
     { text: 'Obra Eléctrica: Instalación Residencial', sub: '8 etapas de obra, RETIE & NTC 2050, cableado a color, megger y dictamen', icon: '🏠', query: 'Obra Eléctrica Instalación Residencial' },
     { text: 'Circuitos Vivos Arduino & ESP32', sub: 'Protoboard interactiva y microcontroladores', icon: '⚡', query: 'Circuitos Vivos Arduino ESP32' },
+    { text: 'Ojo de Murciélago: ESP32 con Pantalla & HC-SR04', sub: '12 capítulos, LilyGO T-Display, CYD, OLED, divisor 5V/3.3V y sketches probados', icon: '🦇', query: 'Ojo de Murciélago ESP32' },
     { text: 'Mecánica Clásica Universitaria', sub: '18 capítulos interactivos completos', icon: '⚛️', query: 'Mecánica Clásica' },
     { text: 'Exploraciones en Física Cuántica', sub: 'Simulador numérico de pozo y efecto túnel', icon: '🌌', query: 'Física Cuántica' },
     { text: 'Física KIDS (100% Libre)', sub: '10 mundos, 47 capítulos y 126 juegos familiares', icon: '🌈', query: 'Física KIDS' },
@@ -2531,6 +2537,7 @@ window.renderEnrolledCourses = renderEnrolledCourses;
             dispositivos: 'DIS',
             protoboard: 'PRO',
             instalacion: 'INS',
+            esp32_display: 'EDP',
             faro: 'FAR',
             diagnosticas: 'DIA',
             guias: 'GUI',
@@ -3520,6 +3527,7 @@ window.renderEnrolledCourses = renderEnrolledCourses;
             const isArduino = c.id === 'arduino';
             const isProtoboard = c.id === 'protoboard';
             const isInstalacion = c.id === 'instalacion';
+            const isEsp32Display = c.id === 'esp32_display';
             const isVenturi = c.id === 'venturi';
             const isRiel = c.id === 'riel';
             const isPendulo = c.id === 'pendulo';
@@ -3560,6 +3568,8 @@ window.renderEnrolledCourses = renderEnrolledCourses;
                 openBtnText = courseUnlocked ? 'Abrir Lab Protoboard (Nueva Ventana ↗) 🔩' : 'Vista Previa Protoboard 👁️';
             } else if (isInstalacion) {
                 openBtnText = courseUnlocked ? 'Abrir Obra Eléctrica (Nueva Ventana ↗) 🏠' : 'Vista Previa Obra Eléctrica 👁️';
+            } else if (isEsp32Display) {
+                openBtnText = 'Abrir Guía ESP32 (Acceso Libre ↗) 🦇';
             } else if (isVenturi || isPendulo || isRiel) {
                 openBtnText = '🧪 Abrir Laboratorio Libre (Nueva Ventana ↗)';
             } else if (isTransformadores) {
@@ -9614,7 +9624,7 @@ window.renderEnrolledCourses = renderEnrolledCourses;
     // ==========================================================================
     const PAGE_CATALOG = [
         { id: 'inicio', title: 'Portal de Bienvenida', short: 'Inicio', icon: '🏠', order: 1 },
-        { id: 'cursos', title: 'Cursos & Laboratorios (38)', short: 'Cursos & Labs', icon: '🚀', order: 2 },
+        { id: 'cursos', title: 'Cursos & Laboratorios (39)', short: 'Cursos & Labs', icon: '🚀', order: 2 },
         { id: 'quizzes', title: 'Evaluaciones & Quizzes con PIN', short: 'Quizzes PIN', icon: '📝', order: 3 },
         { id: 'trivia', title: 'Gran Trivia de Física (1.000 preg.)', short: 'Trivia Física', icon: '🎯', order: 4 },
         { id: 'trivia-historia', title: 'Historia de la Física (500 preg.)', short: 'Historia Física', icon: '📜', order: 5 },

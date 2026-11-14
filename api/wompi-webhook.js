@@ -24,7 +24,8 @@ const COURSE_TITLES = {
     'guias': 'Guías Didácticas de Laboratorio y Montajes Prácticos',
     'ingles': 'Inglés Técnico Científico para Ingenieros y Físicos',
     'protoboard': 'Protoboard: Laboratorio de Simulación — Del Cable al Circuito',
-    'instalacion': 'Obra Eléctrica: Laboratorio de Instalación Residencial (RETIE & NTC 2050)'
+    'instalacion': 'Obra Eléctrica: Laboratorio de Instalación Residencial (RETIE & NTC 2050)',
+    'esp32_display': 'Ojo de Murciélago: Guía Práctica ESP32 con Pantalla & HC-SR04'
 };
 
 const COURSE_PREFIXES = {
@@ -47,7 +48,8 @@ const COURSE_PREFIXES = {
     'guias': 'GUI',
     'ingles': 'ENG',
     'protoboard': 'PRO',
-    'instalacion': 'INS'
+    'instalacion': 'INS',
+    'esp32_display': 'EDP'
 };
 
 function generateUniquePassword(courseId) {

@@ -1,0 +1,1625 @@
+<title>Ojo de murciélago</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+/* Concepto: cuaderno de banco de electrónica. Columna de lectura con índice lateral,
+   selector de placa fijo arriba, tarjetas solo donde hay una acción (aviso, peligro, código).
+   Acento = verde-azulado del eco; ámbar = atención; rojo = peligro para la placa. */
+:root {
+  --bg: #f3f6f7;
+  --surface: #ffffff;
+  --surface-2: #e8eef0;
+  --fg: #14232b;
+  --fg-soft: #4a5d67;
+  --line: #cfd9de;
+  --accent: #0a7b78;
+  --accent-ink: #ffffff;
+  --accent-soft: #d6efed;
+  --warn: #a15c00;
+  --warn-soft: #fbefd6;
+  --bad: #b3261e;
+  --bad-soft: #fbe3e0;
+  --good: #1f7a3d;
+  --good-soft: #dcf1e2;
+  --code-bg: #0f1d24;
+  --code-fg: #dbe7ec;
+  --code-c: #7f95a0;
+  --code-k: #7cc7e8;
+  --code-s: #e9c98a;
+  --code-n: #f0a58a;
+  --code-f: #9ee0b4;
+  --code-t: #c9b3f0;
+  --wire-red: #d1332b;
+  --wire-green: #2b9a4d;
+  --wire-amber: #d98200;
+  --font-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Inter", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Cascadia Mono", Consolas, "Courier New", monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d171c; --surface: #14232a; --surface-2: #1c2f38; --fg: #e4eef2; --fg-soft: #9fb3bd;
+    --line: #2b414c; --accent: #4fd1c5; --accent-ink: #062623; --accent-soft: #123b3a;
+    --warn: #f0b24a; --warn-soft: #3a2c10; --bad: #ff8a80; --bad-soft: #401a17;
+    --good: #6fd68f; --good-soft: #143521;
+    --code-bg: #0a1216; --code-fg: #d4e2e8;
+    --wire-red: #ff6b61; --wire-green: #58d27b; --wire-amber: #ffb02e;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d171c; --surface: #14232a; --surface-2: #1c2f38; --fg: #e4eef2; --fg-soft: #9fb3bd;
+  --line: #2b414c; --accent: #4fd1c5; --accent-ink: #062623; --accent-soft: #123b3a;
+  --warn: #f0b24a; --warn-soft: #3a2c10; --bad: #ff8a80; --bad-soft: #401a17;
+  --good: #6fd68f; --good-soft: #143521;
+  --code-bg: #0a1216; --code-fg: #d4e2e8;
+  --wire-red: #ff6b61; --wire-green: #58d27b; --wire-amber: #ffb02e;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 84px; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.65;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 48px; margin: 0;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--surface); }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { animation: none !important; transition: none !important; } }
+a { color: var(--accent); text-underline-offset: 2px; }
+a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visible, select:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.2; text-wrap: balance; margin: 0; }
+code, pre, kbd { font-family: var(--font-mono); }
+code { background: var(--surface-2); padding: 1px 6px; border-radius: 4px; font-size: .88em; overflow-wrap: anywhere; }
+kbd { background: var(--surface); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 6px; font-size: .85em; }
+.wrap { max-width: 1160px; margin: 0 auto; }
+
+/* Barra superior fija con selector de placa */
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--surface); border-bottom: 1px solid var(--line);
+  margin-inline: calc(-1 * max(16px, env(safe-area-inset-left, 0px))); padding: 8px max(16px, env(safe-area-inset-left, 0px)); }
+.bar-in { max-width: 1160px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; }
+.bar b { font-family: var(--font-display); font-size: .95rem; }
+.seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.seg button { font: inherit; font-size: .9rem; border: 1px solid var(--line); background: var(--bg); color: var(--fg); border-radius: 8px; padding: 6px 12px; cursor: pointer; min-height: 38px; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+@media (max-width: 600px) { .bar b { display: none; } .seg .long { display: none; } .bar-in { gap: 6px 10px; } .bar .themebtn { padding: 6px 8px; } .seg button { padding: 6px 10px; } }
+.bar .themebtn { margin-left: auto; font: inherit; font-size: .85rem; background: none; border: 1px solid var(--line); color: var(--fg-soft); border-radius: 8px; padding: 6px 10px; cursor: pointer; min-height: 38px; }
+
+/* Portada */
+.hero { padding: 40px 0 28px; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 32px; align-items: center; }
+.hero h1 { font-size: clamp(2rem, 5vw, 3.2rem); letter-spacing: -.02em; }
+.hero .lead { font-size: 1.12rem; color: var(--fg-soft); margin: 14px 0 0; max-width: 56ch; }
+.hero .meta { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 18px; font-size: .9rem; color: var(--fg-soft); }
+.hero .meta b { color: var(--fg); }
+.hero svg { width: 100%; height: auto; max-width: 100%; }
+@media (max-width: 760px) { .hero { grid-template-columns: 1fr; padding-top: 24px; } }
+
+/* Disposición con índice */
+.layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 40px; align-items: start; }
+.toc { position: sticky; top: 72px; font-size: .88rem; max-height: calc(100vh - 90px); overflow: auto; padding-right: 4px; }
+.toc ol { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 2px; }
+.toc a { display: block; text-decoration: none; color: var(--fg-soft); padding: 5px 10px; border-radius: 6px; border-left: 3px solid transparent; }
+.toc a:hover { background: var(--surface-2); color: var(--fg); }
+.toc a.on { color: var(--fg); border-left-color: var(--accent); background: var(--surface-2); font-weight: 600; }
+.toc .prog { margin: 0 0 12px; font-size: .8rem; color: var(--fg-soft); }
+@media (max-width: 900px) { .layout { grid-template-columns: 1fr; } .toc { position: static; max-height: none; border: 1px solid var(--line); border-radius: 10px; padding: 8px; background: var(--surface); }
+  .toc ol { flex-direction: row; flex-wrap: wrap; } }
+
+main { min-width: 0; }
+section.cap { padding: 8px 0 28px; border-top: 1px solid var(--line); margin-top: 28px; }
+section.cap:first-child { border-top: 0; margin-top: 0; }
+.cap > h2 { font-size: clamp(1.5rem, 3vw, 2rem); margin: 18px 0 6px; letter-spacing: -.01em; }
+.cap .kicker { font-size: .78rem; text-transform: uppercase; letter-spacing: .09em; color: var(--accent); font-weight: 600; margin: 0; }
+.cap h3 { font-size: 1.2rem; margin: 30px 0 8px; }
+.cap p, .cap li { max-width: 72ch; }
+.cap ul, .cap ol { padding-left: 1.3rem; }
+.cap li { margin: 4px 0; }
+.goal { background: var(--accent-soft); border-radius: 10px; padding: 12px 16px; margin: 14px 0; max-width: 72ch; }
+.goal b { color: var(--accent); }
+
+/* Avisos */
+.note, .warn, .danger, .ok { border-radius: 10px; padding: 12px 16px; margin: 16px 0; max-width: 76ch; border: 1px solid transparent; }
+.note { background: var(--surface); border-color: var(--line); }
+.warn { background: var(--warn-soft); border-color: var(--warn); }
+.danger { background: var(--bad-soft); border-color: var(--bad); }
+.ok { background: var(--good-soft); border-color: var(--good); }
+.note > b:first-child, .warn > b:first-child, .danger > b:first-child, .ok > b:first-child { display: block; font-family: var(--font-display); margin-bottom: 2px; }
+.warn > b:first-child { color: var(--warn); } .danger > b:first-child { color: var(--bad); } .ok > b:first-child { color: var(--good); }
+
+/* Pasos numerados (secuencia real: el orden importa) */
+ol.steps { counter-reset: s; list-style: none; padding: 0; margin: 16px 0; display: flex; flex-direction: column; gap: 12px; max-width: 76ch; }
+ol.steps > li { counter-increment: s; position: relative; padding: 2px 0 2px 46px; margin: 0; }
+ol.steps > li::before { content: counter(s); position: absolute; left: 0; top: 0; width: 32px; height: 32px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font: 700 .95rem var(--font-display); display: grid; place-items: center; }
+
+/* Código */
+figure.code { margin: 16px 0; border-radius: 10px; overflow: hidden; background: var(--code-bg); border: 1px solid var(--line); max-width: 100%; }
+figure.code figcaption { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 6px 8px 6px 14px; background: #1b2e38; color: #b9cdd6; font: 500 .8rem var(--font-mono); }
+figure.code .copy { font: 600 .78rem var(--font-body); background: #2c4655; color: #e6f1f5; border: 0; border-radius: 6px; padding: 6px 12px; cursor: pointer; min-height: 32px; }
+figure.code .copy:hover { background: #38596b; }
+figure.code pre { margin: 0; padding: 14px; overflow-x: auto; color: var(--code-fg); font-size: .82rem; line-height: 1.55; tab-size: 2; }
+figure.code code { background: none; padding: 0; font-size: inherit; overflow-wrap: normal; }
+.c { color: var(--code-c); font-style: italic; } .k { color: var(--code-k); } .s { color: var(--code-s); } .n { color: var(--code-n); } .f { color: var(--code-f); } .t { color: var(--code-t); }
+pre.plain { background: var(--code-bg); color: var(--code-fg); border-radius: 10px; padding: 12px 14px; overflow-x: auto; font-size: .82rem; line-height: 1.5; margin: 14px 0; max-width: 100%; }
+pre.plain .minus { color: #ff8a80; } pre.plain .plus { color: #7bd88f; }
+
+/* Tablas */
+.tablewrap { overflow-x: auto; margin: 14px 0; max-width: 100%; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { background: var(--surface-2); font-family: var(--font-display); font-size: .82rem; white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+td.c, th.c { text-align: center; }
+td.bien { color: var(--good); font-weight: 600; } td.mal { color: var(--bad); font-weight: 700; }
+td { font-variant-numeric: tabular-nums; }
+table.enl .u { font: .72rem var(--font-mono); color: var(--fg-soft); overflow-wrap: anywhere; }
+
+/* Selección por placa */
+html[data-board="td"] .b:not(.td), html[data-board="cyd"] .b:not(.cyd), html[data-board="oled"] .b:not(.oled) { display: none; }
+.boardtag { display: inline-block; font: 600 .72rem var(--font-body); text-transform: uppercase; letter-spacing: .06em; background: var(--accent-soft); color: var(--accent); border-radius: 999px; padding: 2px 10px; margin-right: 6px; }
+
+/* Widgets */
+.lab { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin: 18px 0; max-width: 100%; }
+.lab > h4 { margin: 0 0 4px; font: 700 1.02rem var(--font-display); }
+.lab .sub { margin: 0 0 12px; color: var(--fg-soft); font-size: .9rem; }
+.row { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: end; }
+.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.field label { font-size: .82rem; color: var(--fg-soft); }
+.field input[type="number"], .field input[type="text"] { font: inherit; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; width: 130px; min-height: 40px; font-variant-numeric: tabular-nums; }
+.field input[type="range"] { width: min(300px, 100%); accent-color: var(--accent); min-height: 32px; }
+.out { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 14px; }
+.out > div { background: var(--surface-2); border-radius: 8px; padding: 8px 12px; min-width: 0; }
+.out small { display: block; color: var(--fg-soft); font-size: .76rem; }
+.out strong { font: 700 1.2rem var(--font-display); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 0; }
+.chips button { font: inherit; font-size: .82rem; border: 1px solid var(--line); background: var(--bg); color: var(--fg); border-radius: 999px; padding: 5px 12px; cursor: pointer; min-height: 34px; }
+.verdict { margin-top: 12px; padding: 10px 14px; border-radius: 8px; font-weight: 600; max-width: 76ch; }
+.verdict.good { background: var(--good-soft); color: var(--good); } .verdict.warn { background: var(--warn-soft); color: var(--warn); } .verdict.bad { background: var(--bad-soft); color: var(--bad); }
+.serial { font: .85rem/1.5 var(--font-mono); background: var(--code-bg); color: #9ee0b4; border-radius: 8px; padding: 10px 14px; margin-top: 12px; overflow-x: auto; white-space: pre; }
+svg.diagram { width: 100%; height: auto; max-width: 100%; display: block; }
+svg text { fill: var(--fg); font-family: var(--font-body); }
+.svgwrap { overflow-x: auto; max-width: 100%; }
+.svgwrap svg { min-width: 520px; }
+
+/* Lista de comprobación */
+ul.check { list-style: none; padding: 0; margin: 14px 0; max-width: 76ch; }
+ul.check li { display: flex; gap: 10px; align-items: flex-start; margin: 6px 0; }
+ul.check input { width: 22px; height: 22px; margin-top: 3px; accent-color: var(--accent); flex: none; }
+
+/* Cuestionario */
+.q { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin: 14px 0; background: var(--surface); max-width: 76ch; }
+.q p { margin: 0 0 8px; font-weight: 600; }
+.q label { display: flex; gap: 10px; align-items: flex-start; padding: 4px 0; cursor: pointer; }
+.q input { margin-top: 5px; accent-color: var(--accent); }
+.q .fb { margin-top: 8px; padding: 8px 12px; border-radius: 8px; font-size: .92rem; }
+.q .fb.good { background: var(--good-soft); } .q .fb.bad { background: var(--bad-soft); }
+.q button { font: 600 .85rem var(--font-body); background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 8px; padding: 8px 16px; cursor: pointer; margin-top: 6px; min-height: 38px; }
+.score { font: 700 1.1rem var(--font-display); margin: 10px 0; }
+
+details { border: 1px solid var(--line); border-radius: 10px; padding: 8px 14px; margin: 10px 0; background: var(--surface); max-width: 76ch; }
+details > summary { cursor: pointer; font-weight: 600; padding: 4px 0; }
+dl.gl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 16px; margin: 10px 0 4px; }
+dl.gl dt { font-weight: 600; } dl.gl dd { margin: 0; }
+@media (max-width: 560px) { dl.gl { grid-template-columns: 1fr; } dl.gl dd { margin-bottom: 8px; } }
+footer { border-top: 1px solid var(--line); margin-top: 40px; padding-top: 18px; color: var(--fg-soft); font-size: .88rem; }
+.cols2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin: 14px 0; }
+.cols2 > div { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; min-width: 0; }
+.cols2 h4 { margin: 0 0 4px; font: 700 1rem var(--font-display); }
+.cols2 p, .cols2 ul { margin: 4px 0; font-size: .92rem; }
+</style>
+
+<div class="bar" role="region" aria-label="Selector de placa">
+  <div class="bar-in">
+    <b>Mi placa:</b>
+    <div class="seg" id="seg" role="group" aria-label="Elija su placa">
+      <button type="button" data-b="td" aria-pressed="true"><span class="long">LilyGO </span>T-Display</button>
+      <button type="button" data-b="cyd" aria-pressed="false"><span class="long">ESP32-2432S028R «</span>CYD<span class="long">»</span></button>
+      <button type="button" data-b="oled" aria-pressed="false"><span class="long">ESP32 con </span>OLED<span class="long"> 0,96"</span></button>
+    </div>
+    <button type="button" class="themebtn" id="themebtn" aria-label="Cambiar entre tema claro y oscuro">Tema</button>
+  </div>
+</div>
+
+<div class="wrap">
+<header class="hero">
+  <div>
+    <p class="kicker" style="margin:0 0 8px;font-size:.8rem;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);font-weight:600">Guía práctica · ESP32 + HC-SR04</p>
+    <h1>Ojo de murciélago</h1>
+    <p class="lead">Instale su placa ESP32 con pantalla y construya, paso a paso, un medidor de distancia con el sensor ultrasónico HC-SR04. Cada comando, cada pin y cada línea de código vienen explicados, y cada enlace fue abierto y comprobado.</p>
+    <div class="meta">
+      <span><b>Duración:</b> 2 a 3 horas</span>
+      <span><b>Nivel:</b> sin experiencia previa</span>
+      <span><b>Núcleo ESP32:</b> 3.3.12</span>
+    </div>
+  </div>
+  <svg viewBox="0 0 420 250" role="img" aria-label="Un sensor ultrasónico emite ondas hacia un objeto, el eco regresa y la distancia aparece en una pantalla" class="diagram">
+    <rect x="8" y="60" width="110" height="100" rx="10" fill="var(--surface)" stroke="var(--fg)" stroke-width="2"/>
+    <circle cx="43" cy="110" r="26" fill="var(--surface-2)" stroke="var(--fg)" stroke-width="2"/><circle cx="83" cy="110" r="26" fill="var(--surface-2)" stroke="var(--fg)" stroke-width="2"/>
+    <text x="63" y="180" text-anchor="middle" font-size="12">HC-SR04</text>
+    <g fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round">
+      <path d="M140 90 Q156 110 140 130"/><path d="M158 78 Q184 110 158 142"/><path d="M176 66 Q212 110 176 154"/>
+    </g>
+    <text x="190" y="46" text-anchor="middle" font-size="12" style="fill:var(--accent)">onda de 40 kHz</text>
+    <rect x="320" y="50" width="12" height="120" rx="3" fill="var(--fg)"/>
+    <text x="326" y="190" text-anchor="middle" font-size="12">objeto</text>
+    <g fill="none" stroke="var(--wire-amber)" stroke-width="2" stroke-dasharray="5 5" stroke-linecap="round">
+      <path d="M310 100 Q270 110 310 120"/><path d="M310 86 Q250 110 310 134" opacity=".6"/>
+    </g>
+    <text x="262" y="160" text-anchor="middle" font-size="12" style="fill:var(--wire-amber)">eco</text>
+    <path d="M63 160 V205 H150" fill="none" stroke="var(--fg-soft)" stroke-width="2"/>
+    <rect x="150" y="190" width="150" height="46" rx="6" fill="var(--code-bg)" stroke="var(--fg)" stroke-width="2"/>
+    <text x="225" y="220" text-anchor="middle" font-size="20" style="fill:#9ee0b4;font-family:var(--font-mono)">123.4 cm</text>
+  </svg>
+</header>
+
+<div class="layout">
+<nav class="toc" aria-label="Índice">
+  <p class="prog" id="prog">Progreso: 0 de 9 listas</p>
+  <ol id="toc">
+    <li><a href="#c0">0 · Antes de empezar</a></li>
+    <li><a href="#c1">1 · Su placa</a></li>
+    <li><a href="#c2">2 · Instalar el software</a></li>
+    <li><a href="#c3">3 · Primer programa</a></li>
+    <li><a href="#c4">4 · Probar la pantalla</a></li>
+    <li><a href="#c5">5 · Cómo mide el HC-SR04</a></li>
+    <li><a href="#c6">6 · Conexión segura</a></li>
+    <li><a href="#c7">7 · El código, paso a paso</a></li>
+    <li><a href="#c8">8 · Calibrar y mejorar</a></li>
+    <li><a href="#c9">9 · Si algo falla</a></li>
+    <li><a href="#c10">10 · Evaluación</a></li>
+    <li><a href="#c11">11 · Enlaces y validación</a></li>
+    <li><a href="#glosario">Glosario</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<!-- ====================== 0 ====================== -->
+<section class="cap" id="c0">
+  <p class="kicker">Capítulo 0</p>
+  <h2>Antes de empezar</h2>
+  <div class="goal"><b>Al terminar</b> tendrá una placa ESP32 que mide la distancia a un objeto cada pocos instantes y la muestra en su pantalla en centímetros, con una barra que crece al alejarse el objeto.</div>
+
+  <h3>Cómo usar esta guía</h3>
+  <p>Arriba hay un selector con tres placas. <b>Elíjala una sola vez</b>: la guía muestra solo los pines, la configuración y el código que corresponden a su modelo (la elección se recuerda en este navegador). Si no sabe cuál tiene:</p>
+  <div class="cols2">
+    <div><h4>LilyGO T-Display</h4><p>Pantalla a color pequeña y <b>vertical</b> (1,14"), dos botones junto al conector USB-C y la palabra «TTGO» o «LILYGO».</p></div>
+    <div><h4>ESP32-2432S028R «CYD»</h4><p>Pantalla <b>táctil de 2,8"</b> a color, placa de fondo <b>amarillo</b>/ámbar y conector micro-USB o USB-C. «CYD» viene de <i>Cheap Yellow Display</i>.</p></div>
+    <div><h4>ESP32 con OLED 0,96"</h4><p>Pantalla <b>monocroma</b> diminuta (128×64 píxeles) soldada a una placa ESP32. Son los modelos tipo Heltec WiFi Kit 32 y sus clones.</p></div>
+  </div>
+
+  <h3>Materiales</h3>
+  <ul>
+    <li><b>Una</b> de las tres placas anteriores.</li>
+    <li>Un <b>cable USB de datos</b> (muchos cables baratos solo cargan y no transmiten datos: es la causa número uno de «mi PC no ve la placa»).</li>
+    <li>Un computador con Windows, macOS o Linux y conexión a Internet.</li>
+    <li>Un módulo <b>HC-SR04</b> (4 pines: VCC, TRIG, ECHO, GND).</li>
+    <li><b>Tres resistencias de 1 kΩ</b> (marrón-negro-rojo), que sirven para construir el divisor de tensión del capítulo 6.</li>
+    <li>Una protoboard pequeña y cables de conexión. Con la T-Display y la placa OLED sirven cables Dupont macho-hembra. <b>La CYD usa conectores de 1,25 mm</b>: necesita cables con ese conector (ver capítulo 6).</li>
+    <li>Opcional pero muy recomendado: un multímetro y una cinta métrica.</li>
+  </ul>
+
+  <div class="danger"><b>La advertencia que más importa</b>El HC-SR04 trabaja a <b>5 V</b> y su pin ECHO devuelve señales de 5 V. Los pines del ESP32 solo toleran <b>3,3 V</b> (el fabricante fija el máximo en VDD + 0,3 V = 3,6 V). Conectar ECHO directo al ESP32 puede dañar el pin o la placa. El capítulo 6 explica el divisor de tensión que lo evita.</div>
+
+  <h3>Mapa del recorrido</h3>
+  <ol class="steps">
+    <li><b>Instalar</b> el IDE de Arduino, el driver USB y el soporte para ESP32 (capítulo 2).</li>
+    <li><b>Subir un programa de prueba</b> para confirmar que la placa y el cable funcionan (capítulo 3).</li>
+    <li><b>Encender la pantalla</b> con su librería (capítulo 4).</li>
+    <li><b>Entender el sensor</b>: qué mide y cómo (capítulo 5).</li>
+    <li><b>Conectarlo</b> sin riesgo para la placa (capítulo 6).</li>
+    <li><b>Programarlo</b> en tres pasos: lectura básica, lectura fiable y medidor en pantalla (capítulo 7).</li>
+  </ol>
+  <div class="note"><b>Cómo se validó este material</b>Los 10 programas de la guía se compilaron con el núcleo ESP32 3.3.12 para cada placa (resultados en el capítulo 11) y las constantes se contrastaron con las hojas de datos del ESP32 y del HC-SR04. Aún no se probaron sobre placas físicas: por eso cada capítulo trae su prueba de comprobación y el capítulo 9 recoge los fallos más probables.</div>
+</section>
+
+<!-- ====================== 1 ====================== -->
+<section class="cap" id="c1">
+  <p class="kicker">Capítulo 1</p>
+  <h2>Conozca su placa</h2>
+  <p>Un ESP32 es un microcontrolador: un computador diminuto que ejecuta un solo programa. Tiene decenas de <b>pines GPIO</b> (entradas y salidas de propósito general) que usted configura como entradas o salidas. Parte de esos pines ya está conectada a la pantalla; el resto queda libre para el sensor.</p>
+
+  <div class="b td">
+    <h3><span class="boardtag">T-Display</span>LilyGO T-Display (ST7789, 135 × 240)</h3>
+    <p>La pantalla va conectada por <b>SPI</b> (un bus rápido de 4 hilos: reloj, datos, selección de chip, comando/dato). Los pines que usa la pantalla <b>no se pueden usar</b> para otra cosa. Datos tomados del <a href="https://github.com/Xinyuan-LilyGO/TTGO-T-Display" target="_blank" rel="noopener noreferrer">repositorio oficial de LilyGO</a> y del <a href="https://github.com/Bodmer/TFT_eSPI/blob/master/User_Setups/Setup25_TTGO_T_Display.h" target="_blank" rel="noopener noreferrer">archivo de configuración de TFT_eSPI</a>:</p>
+    <div class="tablewrap"><table><thead><tr><th>Función</th><th class="c">GPIO</th><th>Para qué sirve</th></tr></thead><tbody>
+      <tr><td>TFT_MOSI</td><td class="c">19</td><td>datos del ESP32 hacia la pantalla</td></tr>
+      <tr><td>TFT_SCLK</td><td class="c">18</td><td>reloj del bus SPI</td></tr>
+      <tr><td>TFT_CS</td><td class="c">5</td><td>«chip select»: activa la pantalla</td></tr>
+      <tr><td>TFT_DC</td><td class="c">16</td><td>indica si el byte es comando o dato</td></tr>
+      <tr><td>TFT_RST</td><td class="c">23</td><td>reinicio de la pantalla</td></tr>
+      <tr><td>TFT_BL</td><td class="c">4</td><td>luz de fondo (backlight)</td></tr>
+      <tr><td>Botón izquierdo / derecho</td><td class="c">0 / 35</td><td>entradas de usuario (el GPIO0 también pone la placa en modo de carga)</td></tr>
+      <tr><td>Medida de batería</td><td class="c">34</td><td>lectura analógica de la batería</td></tr>
+    </tbody></table></div>
+    <div class="ok"><b>Pines elegidos para el sensor</b>TRIG = <b>GPIO26</b> y ECHO = <b>GPIO27</b>. Ambos salen en el conector derecho de la placa (ver la <a href="https://raw.githubusercontent.com/Xinyuan-LilyGO/TTGO-T-Display/master/image/pinmap.jpg" target="_blank" rel="noopener noreferrer">imagen de pines oficial</a>), no los usa la pantalla y no son pines de arranque delicados. La alimentación de 5 V sale del pin marcado <b>5V</b> de esa misma fila.</div>
+  </div>
+
+  <div class="b cyd">
+    <h3><span class="boardtag">CYD</span>ESP32-2432S028R «Cheap Yellow Display» (ILI9341, 240 × 320)</h3>
+    <p>La placa lleva pantalla, panel táctil, lector microSD, LED RGB, altavoz y sensor de luz, y casi todos los pines ya están ocupados. Según la <a href="https://github.com/witnessmenow/ESP32-Cheap-Yellow-Display/blob/main/PINS.md" target="_blank" rel="noopener noreferrer">página de pines del repositorio de referencia</a>, <b>solo tres GPIO quedan libres</b> en conectores:</p>
+    <div class="tablewrap"><table><thead><tr><th class="c">GPIO</th><th>Dónde está</th><th>Observaciones</th></tr></thead><tbody>
+      <tr><td class="c">35</td><td>Conector <b>P3</b></td><td>Solo entrada y sin pull-up interno (perfecto para ECHO)</td></tr>
+      <tr><td class="c">22</td><td>Conectores <b>P3</b> y <b>CN1</b></td><td>Entrada y salida (lo usaremos para TRIG)</td></tr>
+      <tr><td class="c">27</td><td>Conector <b>CN1</b></td><td>Entrada y salida</td></tr>
+    </tbody></table></div>
+    <p>Pines que <b>no</b> debe tocar: 2, 12, 13, 14, 15 (pantalla), 21 (luz de fondo; sale en P3 «por alguna razón», dice el repositorio), 25, 32, 33, 36, 39 (táctil), 5, 18, 19, 23 (microSD), 4, 16, 17 (LED RGB), 26 (altavoz) y 34 (sensor de luz).</p>
+    <div class="warn"><b>Cuidado con P3</b>En el conector P3 el pin <b>IO21</b> está justo al lado de IO22 y es la luz de fondo. Si lo conecta por error, la pantalla se apaga o se comporta de forma extraña.</div>
+    <div class="ok"><b>Pines elegidos para el sensor</b>TRIG = <b>GPIO22</b> y ECHO = <b>GPIO35</b>. Los 5 V se toman del pin <b>VIN</b> del conector <b>P1</b> (cuatro pines: VIN, TX, RX, GND).</div>
+    <p>Los cuatro conectores (P1, P3, CN1 y el del altavoz) son «Molex PicoBlade» de 1,25 mm. Para usarlos necesita cables o adaptadores de <b>1,25 mm</b> a Dupont (se consiguen como «cable JST 1.25 4 pines»).</p>
+  </div>
+
+  <div class="b oled">
+    <h3><span class="boardtag">OLED</span>ESP32 con OLED SSD1306 de 0,96" (128 × 64)</h3>
+    <p>La pantalla se conecta por <b>I²C</b>, un bus de dos hilos: SDA (datos) y SCL (reloj). <b>Cada fabricante cableó la OLED a pines distintos</b>, por eso en el capítulo 4 usará un programa que los busca solo. Los más comunes:</p>
+    <div class="tablewrap"><table><thead><tr><th>Placa</th><th class="c">SDA</th><th class="c">SCL</th><th class="c">RST</th></tr></thead><tbody>
+      <tr><td>Heltec WiFi Kit 32 (<a href="https://docs.heltec.org/en/node/esp32/wifi_kit_32/index.html" target="_blank" rel="noopener noreferrer">ficha de Heltec</a>; el núcleo ESP32 la define con SDA_OLED=4, SCL_OLED=15, RST_OLED=16)</td><td class="c">4</td><td class="c">15</td><td class="c">16</td></tr>
+      <tr><td>Clones WEMOS/LOLIN32 con OLED</td><td class="c">5</td><td class="c">4</td><td class="c">—</td></tr>
+      <tr><td>Montaje con pines I²C estándar</td><td class="c">21</td><td class="c">22</td><td class="c">—</td></tr>
+    </tbody></table></div>
+    <div class="ok"><b>Pines elegidos para el sensor</b>TRIG = <b>GPIO26</b> y ECHO = <b>GPIO27</b>: no coinciden con ninguno de los pines de la tabla anterior. <b>Confirme en la serigrafía de su placa</b> que esos dos pines existen; si no, elija otros con las reglas de abajo.</div>
+  </div>
+
+  <h3>Reglas para elegir pines del ESP32</h3>
+  <ul>
+    <li><b>GPIO34 a 39 son solo entrada</b>: no tienen controlador de salida ni resistencias internas (hoja de datos del ESP32). Sirven para ECHO, <b>nunca</b> para TRIG.</li>
+    <li><b>Pines de arranque (strapping)</b>: GPIO0, 2, 5, 12 y 15. El ESP32 lee su nivel al encender para decidir cómo arrancar; si el sensor los fuerza a un nivel equivocado, la placa no arranca. Evítelos.</li>
+    <li><b>GPIO6 a 11</b> están conectados a la memoria flash: no los toque.</li>
+    <li>Para más detalle consulte la <a href="https://randomnerdtutorials.com/esp32-pinout-reference-gpios/" target="_blank" rel="noopener noreferrer">guía de pines de Random Nerd Tutorials</a> y la <a href="https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/peripherals/gpio.html" target="_blank" rel="noopener noreferrer">documentación de GPIO de Espressif</a>.</li>
+  </ul>
+  <ul class="check" data-key="c1"><li><label><input type="checkbox"> Ya sé qué placa tengo y la elegí arriba.</label></li><li><label><input type="checkbox"> Ubiqué en mi placa los pines de TRIG, ECHO, 5 V y GND.</label></li></ul>
+</section>
+
+<!-- ====================== 2 ====================== -->
+<section class="cap" id="c2">
+  <p class="kicker">Capítulo 2</p>
+  <h2>Instalar el software</h2>
+  <p>Necesita tres cosas: el programa donde escribe el código (<b>Arduino IDE</b>), el <b>driver</b> que permite al computador hablar con la placa por USB, y el <b>paquete de soporte ESP32</b> que enseña al IDE a compilar para este chip.</p>
+
+  <h3>2.1 Instalar Arduino IDE</h3>
+  <ol class="steps">
+    <li>Abra la <a href="https://www.arduino.cc/en/software" target="_blank" rel="noopener noreferrer">página de descarga de Arduino</a> y baje <b>Arduino IDE 2.x</b> para su sistema (Windows, macOS o Linux). Esta guía usa la versión 2.</li>
+    <li>Ejecute el instalador y acepte las opciones por defecto. Si Windows pide instalar drivers, <b>acepte</b>.</li>
+    <li>Si tiene dudas, siga la <a href="https://docs.arduino.cc/software/ide-v2/tutorials/getting-started/ide-v2-downloading-and-installing/" target="_blank" rel="noopener noreferrer">guía oficial de instalación del IDE 2</a>.</li>
+  </ol>
+
+  <h3>2.2 Driver USB de la placa</h3>
+  <p>La placa se comunica con el PC mediante un chip «USB a serie». Según el modelo es un <b>CP210x</b> (Silicon Labs) o un <b>CH340/CH343</b> (WCH). Sin su driver el PC no crea el puerto COM y no podrá cargar programas.</p>
+  <ol class="steps">
+    <li>Conecte la placa con el cable USB <b>de datos</b>.</li>
+    <li><b>Windows:</b> haga clic derecho en Inicio → <i>Administrador de dispositivos</i> → <i>Puertos (COM y LPT)</i>. Debe aparecer algo como «Silicon Labs CP210x USB to UART Bridge (COM5)» o «USB-SERIAL CH340 (COM5)». Si aparece un «dispositivo desconocido» con triángulo amarillo, falta el driver.</li>
+    <li>Instale el driver que corresponda:
+      <ul>
+        <li><b>CP210x:</b> <a href="https://www.silabs.com/software-and-tools/usb-to-uart-bridge-vcp-drivers" target="_blank" rel="noopener noreferrer">drivers VCP de Silicon Labs</a> (típico de las placas Heltec, que usan el chip CP2102).</li>
+        <li><b>CH340 / CH341:</b> <a href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" target="_blank" rel="noopener noreferrer">driver para Windows del fabricante WCH</a>, o la <a href="https://learn.sparkfun.com/tutorials/how-to-install-ch340-drivers/all" target="_blank" rel="noopener noreferrer">guía de SparkFun con instrucciones para cada sistema</a>. El repositorio de la CYD indica que esa placa usa el chip CH340.</li>
+        <li>La T-Display, según su versión, trae CP210x o CH34x; el README de LilyGO enlaza ambos drivers.</li>
+      </ul></li>
+    <li><b>macOS:</b> los chips CP210x suelen funcionar sin instalar nada en versiones recientes; el CH340 puede requerir el driver de WCH. <b>Linux:</b> el kernel ya trae ambos drivers, pero su usuario debe pertenecer al grupo <code>dialout</code> (<code>sudo usermod -a -G dialout $USER</code>, y luego cerrar sesión y volver a entrar).</li>
+  </ol>
+  <div class="note"><b>¿No aparece ningún puerto?</b>Casi siempre es el cable (solo carga) o el driver. Pruebe otro cable, otro puerto USB del PC (preferible directo, sin hub) y vuelva a mirar el Administrador de dispositivos con la placa desconectada y conectada: la línea que aparece y desaparece es la suya.</div>
+
+  <h3>2.3 Agregar el soporte ESP32 al IDE</h3>
+  <p>El IDE no compila para ESP32 por sí solo. Hay que añadir la dirección del paquete de Espressif (el fabricante del chip) y luego instalarlo. Es la <a href="https://docs.espressif.com/projects/arduino-esp32/en/latest/installing.html" target="_blank" rel="noopener noreferrer">instalación oficial documentada por Espressif</a>.</p>
+  <ol class="steps">
+    <li>Abra <i>Archivo → Preferencias</i> (en macOS: <i>Arduino IDE → Settings</i>).</li>
+    <li>En <b>«Gestor de URLs Adicionales de Tarjetas»</b> (<i>Additional boards manager URLs</i>) pegue esta dirección. Si ya hay otra, sepárelas con coma:
+      <pre class="plain">https://espressif.github.io/arduino-esp32/package_esp32_index.json</pre></li>
+    <li>Pulse <b>OK</b>.</li>
+    <li>Abra el <b>Gestor de tarjetas</b> (icono de la placa en la barra lateral, o <i>Herramientas → Placa → Gestor de tarjetas</i>), escriba <code>esp32</code> y instale <b>«esp32 by Espressif Systems»</b>. La descarga es grande (cientos de MB) porque incluye los compiladores: tenga paciencia.</li>
+    <li>Cuando diga «INSTALLED», cierre el gestor. Esta guía se validó con la versión <b>3.3.12</b>; el código sirve también para otras 3.x.</li>
+  </ol>
+  <p>El código del núcleo y su documentación están en el <a href="https://github.com/espressif/arduino-esp32" target="_blank" rel="noopener noreferrer">repositorio arduino-esp32</a> y en su <a href="https://docs.espressif.com/projects/arduino-esp32/en/latest/" target="_blank" rel="noopener noreferrer">manual en línea</a>.</p>
+
+  <h3>2.4 Elegir placa y puerto</h3>
+  <div class="b td"><p>En <i>Herramientas → Placa → esp32</i> elija <b>«LilyGo T-Display»</b>. (El README de LilyGO también acepta «ESP32 Dev Module»; si lo usa, ponga PSRAM en <i>Disabled</i> y Flash Size en <i>4MB</i>.)</p></div>
+  <div class="b cyd"><p>En <i>Herramientas → Placa → esp32</i> elija <b>«ESP32-2432S028R CYD»</b> (aparece en el núcleo 3.3.12). El repositorio de la CYD dice que sirve «básicamente cualquier placa ESP32», por ejemplo «ESP32 Dev Module». Si falla la carga, ponga <i>Upload Speed</i> en <code>115200</code>.</p></div>
+  <div class="b oled"><p>En <i>Herramientas → Placa → esp32</i> elija <b>«Heltec WiFi Kit 32»</b> si es de esa marca; en clones use <b>«WEMOS LOLIN32»</b> o <b>«ESP32 Dev Module»</b>.</p></div>
+  <p>Después elija el puerto en <i>Herramientas → Puerto</i> (el COM que vio en el Administrador de dispositivos; en macOS/Linux algo como <code>/dev/cu.usbserial-…</code> o <code>/dev/ttyUSB0</code>). Si hay varios y duda, desconecte la placa, mire la lista, conéctela y elija el que aparece de nuevo.</p>
+  <ul class="check" data-key="c2"><li><label><input type="checkbox"> Arduino IDE 2 instalado.</label></li><li><label><input type="checkbox"> El PC muestra un puerto COM/tty al conectar la placa.</label></li><li><label><input type="checkbox"> «esp32 by Espressif Systems» instalado, placa y puerto elegidos.</label></li></ul>
+</section>
+
+<!-- ====================== 3 ====================== -->
+<section class="cap" id="c3">
+  <p class="kicker">Capítulo 3</p>
+  <h2>Primer programa: «Hola»</h2>
+  <div class="goal"><b>Objetivo:</b> comprobar que el PC, el cable, el driver y la placa funcionan antes de añadir pantalla o sensor. Si esto falla, nada de lo demás funcionará, y es mucho más fácil corregirlo ahora.</div>
+  <ol class="steps">
+    <li>En el IDE: <i>Archivo → Nuevo sketch</i>. Borre el contenido y pegue el código de abajo.</li>
+    <li>Pulse <b>Subir</b> (flecha →). El IDE compila y transfiere. Verá «Connecting…» y una barra de porcentaje.</li>
+    <li>Abra <i>Herramientas → Monitor Serie</i> y ponga <b>115200 baudios</b> abajo a la derecha.</li>
+    <li>Si no ve texto, pulse el botón <b>RST</b> (reset) de la placa.</li>
+  </ol>
+  <figure class="code" data-file="01_hola_serie.ino"><figcaption><span>01_hola_serie.ino</span><button type="button" class="copy" aria-label="Copiar 01_hola_serie.ino">Copiar</button></figcaption><pre><code><span class="c">/* 01_hola_serie
+   Primer programa: comprueba que la placa, el cable, el driver y el
+   Monitor Serie funcionan. No usa pantalla ni sensor. */</span>
+
+<span class="k">int</span> contador = <span class="n">0</span>;               <span class="c">// cuenta los segundos desde el arranque</span>
+
+<span class="k">void</span> <span class="f">setup</span>() {
+  <span class="t">Serial</span>.<span class="f">begin</span>(<span class="n">115200</span>);         <span class="c">// abre el puerto serie a 115200 baudios</span>
+  <span class="f">delay</span>(<span class="n">1000</span>);                  <span class="c">// da tiempo a que el PC abra el puerto</span>
+  <span class="t">Serial</span>.<span class="f">println</span>();
+  <span class="t">Serial</span>.<span class="f">println</span>(<span class="s">"Hola desde el ESP32"</span>);
+  <span class="t">Serial</span>.<span class="f">print</span>(<span class="s">"Chip: "</span>);
+  <span class="t">Serial</span>.<span class="f">println</span>(<span class="t">ESP</span>.<span class="f">getChipModel</span>());          <span class="c">// p. ej. ESP32-D0WDQ6</span>
+  <span class="t">Serial</span>.<span class="f">print</span>(<span class="s">"Nucleos: "</span>);
+  <span class="t">Serial</span>.<span class="f">println</span>(<span class="t">ESP</span>.<span class="f">getChipCores</span>());          <span class="c">// normalmente 2</span>
+  <span class="t">Serial</span>.<span class="f">print</span>(<span class="s">"Frecuencia (MHz): "</span>);
+  <span class="t">Serial</span>.<span class="f">println</span>(<span class="t">ESP</span>.<span class="f">getCpuFreqMHz</span>());         <span class="c">// normalmente 240</span>
+  <span class="t">Serial</span>.<span class="f">print</span>(<span class="s">"Flash (MB): "</span>);
+  <span class="t">Serial</span>.<span class="f">println</span>(<span class="t">ESP</span>.<span class="f">getFlashChipSize</span>() / (<span class="n">1024</span> * <span class="n">1024</span>));
+}
+
+<span class="k">void</span> <span class="f">loop</span>() {
+  <span class="t">Serial</span>.<span class="f">print</span>(<span class="s">"Han pasado "</span>);
+  <span class="t">Serial</span>.<span class="f">print</span>(contador);
+  <span class="t">Serial</span>.<span class="f">println</span>(<span class="s">" s"</span>);
+  contador++;
+  <span class="f">delay</span>(<span class="n">1000</span>);                  <span class="c">// espera 1 segundo</span>
+}</code></pre></figure>
+  <h3>Qué hace cada parte</h3>
+  <ul>
+    <li><code>setup()</code> se ejecuta <b>una vez</b> al encender; <code>loop()</code> se repite <b>sin fin</b>.</li>
+    <li><code>Serial.begin(115200)</code> abre la comunicación con el PC a 115200 bits por segundo («baudios»). El Monitor Serie debe usar <b>el mismo número</b>; si no, verá símbolos raros.</li>
+    <li><code>Serial.println(…)</code> escribe texto y salta de línea; <code>Serial.print(…)</code> escribe sin saltar.</li>
+    <li><code>ESP.getChipModel()</code> y las demás funciones <code>ESP.get…</code> preguntan al propio chip sus datos.</li>
+    <li><code>delay(1000)</code> pausa 1000 milisegundos.</li>
+  </ul>
+  <div class="ok"><b>Resultado esperado</b>Primero «Hola desde el ESP32» con el modelo de chip, 2 núcleos y 240 MHz (la memoria flash varía según la placa), y después una línea «Han pasado 0 s», «Han pasado 1 s»… una por segundo.</div>
+  <h3>Si la carga falla</h3>
+  <div class="tablewrap"><table><thead><tr><th>Lo que ve</th><th>Causa probable y solución</th></tr></thead><tbody>
+    <tr><td>No hay puerto en la lista</td><td>Cable solo de carga o driver ausente (capítulo 2.2).</td></tr>
+    <tr><td><code>Failed to connect to ESP32: Wrong boot mode detected</code> o se queda en «Connecting…»</td><td>Mantenga pulsado el botón <b>BOOT</b> (GPIO0) mientras aparece «Connecting…», y suéltelo cuando empiece el porcentaje. Es el modo de carga manual. Más detalle en la <a href="https://docs.espressif.com/projects/esptool/en/latest/esp32/troubleshooting.html" target="_blank" rel="noopener noreferrer">guía de problemas de esptool</a>.</td></tr>
+    <tr><td>Error de «Permission denied» en Linux</td><td>Su usuario no está en el grupo <code>dialout</code> (capítulo 2.2).</td></tr>
+    <tr><td>El Monitor Serie muestra símbolos extraños</td><td>La velocidad no coincide: póngala en 115200.</td></tr>
+    <tr><td>Carga a medias y se corta</td><td>Baje <i>Upload Speed</i> a 115200 en el menú Herramientas, o cambie de cable/puerto.</td></tr>
+  </tbody></table></div>
+  <ul class="check" data-key="c3"><li><label><input type="checkbox"> Subí el programa sin errores.</label></li><li><label><input type="checkbox"> El Monitor Serie (115200) muestra «Hola desde el ESP32» y el contador.</label></li></ul>
+</section>
+
+<!-- ====================== 4 ====================== -->
+<section class="cap" id="c4">
+  <p class="kicker">Capítulo 4</p>
+  <h2>Encender la pantalla</h2>
+  <p>La pantalla es un dispositivo aparte con su propio controlador. El IDE necesita una <b>librería</b> que sepa darle órdenes («dibuja un rectángulo», «escribe este texto»). Las librerías se instalan con el <a href="https://docs.arduino.cc/software/ide-v2/tutorials/ide-v2-installing-a-library/" target="_blank" rel="noopener noreferrer">Gestor de bibliotecas</a> del IDE (icono de libros en la barra lateral).</p>
+
+  <div class="b td">
+    <h3><span class="boardtag">T-Display</span>Instalar y configurar TFT_eSPI</h3>
+    <ol class="steps">
+      <li>En el Gestor de bibliotecas busque <b>TFT_eSPI</b> (autor Bodmer) e instálela (<a href="https://github.com/Bodmer/TFT_eSPI" target="_blank" rel="noopener noreferrer">proyecto en GitHub</a>). Esta guía usó la versión 2.5.43.</li>
+      <li>TFT_eSPI no sabe qué pantalla tiene su placa: hay que decírselo editando un archivo. Ábralo con un editor de texto. Está en la carpeta de su <i>sketchbook</i> (ver <i>Archivo → Preferencias → Ubicación del sketchbook</i>); en Windows suele ser:
+        <pre class="plain">Documentos\Arduino\libraries\TFT_eSPI\User_Setup_Select.h</pre></li>
+      <li>Haga dos cambios: <b>comente</b> (con <code>//</code>) la línea que carga la configuración por defecto y <b>quite</b> las barras de la línea de la T-Display:
+<pre class="plain"><span class="minus">- #include &lt;User_Setup.h&gt;           // Default setup is root library folder</span>
+<span class="plus">+ //#include &lt;User_Setup.h&gt;           // Default setup is root library folder</span>
+...
+<span class="minus">- //#include &lt;User_Setups/Setup25_TTGO_T_Display.h&gt;    // Setup file for ESP32 and TTGO T-Display ST7789V SPI bus TFT</span>
+<span class="plus">+ #include &lt;User_Setups/Setup25_TTGO_T_Display.h&gt;    // Setup file for ESP32 and TTGO T-Display ST7789V SPI bus TFT</span></pre>
+        En la versión 2.5.43 son las líneas 27 y 58. Guarde el archivo y <b>reinicie el IDE</b>.</li>
+    </ol>
+    <p>Ese archivo (<a href="https://github.com/Bodmer/TFT_eSPI/blob/master/User_Setups/Setup25_TTGO_T_Display.h" target="_blank" rel="noopener noreferrer">Setup25</a>) declara el controlador <code>ST7789_DRIVER</code>, el tamaño 135 × 240 y los pines de la tabla del capítulo 1.</p>
+    <div class="warn"><b>Atención</b>Si luego actualiza TFT_eSPI desde el Gestor de bibliotecas, la actualización <b>borra su edición</b> y la pantalla dejará de funcionar. Repita los dos cambios.</div>
+    <div class="note"><b>Nota sobre versiones</b>El README de LilyGO dice que TFT_eSPI solo es compatible hasta el núcleo ESP32 2.0.14. Eso era cierto cuando se escribió; con TFT_eSPI 2.5.43 y el núcleo 3.3.12 los programas de esta guía compilan (capítulo 11). Si en su caso apareciera un error de compilación dentro de TFT_eSPI, la salida de emergencia es instalar el núcleo 2.0.14 desde el Gestor de tarjetas.</div>
+    <h3>Programa de prueba</h3>
+    <figure class="code" data-file="02a_pantalla_tdisplay.ino"><figcaption><span>02a_pantalla_tdisplay.ino</span><button type="button" class="copy" aria-label="Copiar 02a_pantalla_tdisplay.ino">Copiar</button></figcaption><pre><code><span class="c">/* 02a_pantalla_tdisplay
+   Prueba de la pantalla a color de la LilyGO T-Display (ST7789, 135x240).
+   Requiere TFT_eSPI con Setup25_TTGO_T_Display.h activado
+   en libraries/TFT_eSPI/User_Setup_Select.h */</span>
+
+<span class="k">#include</span> &lt;<span class="n">TFT_eSPI</span>.h&gt;
+
+<span class="n">TFT_eSPI</span> tft = <span class="n">TFT_eSPI</span>();      <span class="c">// objeto que controla la pantalla</span>
+
+<span class="k">void</span> <span class="f">setup</span>() {
+  <span class="t">Serial</span>.<span class="f">begin</span>(<span class="n">115200</span>);
+  tft.<span class="f">init</span>();                   <span class="c">// inicializa el controlador ST7789</span>
+  tft.<span class="f">setRotation</span>(<span class="n">1</span>);           <span class="c">// 1 = horizontal: 240 de ancho x 135 de alto</span>
+  tft.<span class="f">fillScreen</span>(<span class="n">TFT_BLACK</span>);    <span class="c">// fondo negro</span>
+
+  <span class="c">// Tres franjas de color para comprobar rojo, verde y azul</span>
+  tft.<span class="f">fillRect</span>(<span class="n">0</span>,   <span class="n">0</span>, <span class="n">80</span>, <span class="n">40</span>, <span class="n">TFT_RED</span>);
+  tft.<span class="f">fillRect</span>(<span class="n">80</span>,  <span class="n">0</span>, <span class="n">80</span>, <span class="n">40</span>, <span class="n">TFT_GREEN</span>);
+  tft.<span class="f">fillRect</span>(<span class="n">160</span>, <span class="n">0</span>, <span class="n">80</span>, <span class="n">40</span>, <span class="n">TFT_BLUE</span>);
+
+  tft.<span class="f">setTextColor</span>(<span class="n">TFT_WHITE</span>, <span class="n">TFT_BLACK</span>);   <span class="c">// texto blanco sobre negro</span>
+  tft.<span class="f">drawString</span>(<span class="s">"Pantalla OK"</span>, <span class="n">10</span>, <span class="n">60</span>, <span class="n">4</span>); <span class="c">// texto, x, y, fuente 4</span>
+  tft.<span class="f">drawString</span>(<span class="s">"240 x 135 px"</span>, <span class="n">10</span>, <span class="n">95</span>, <span class="n">2</span>);
+  <span class="t">Serial</span>.<span class="f">println</span>(<span class="s">"Pantalla inicializada"</span>);
+}
+
+<span class="k">void</span> <span class="f">loop</span>() {
+  <span class="c">// Nada que repetir: la imagen queda dibujada.</span>
+}</code></pre></figure>
+    <div class="ok"><b>Resultado esperado</b>Tres franjas (roja, verde, azul) arriba y el texto «Pantalla OK» en blanco. Si los colores salen cambiados (por ejemplo rojo donde va azul) el orden de color es distinto: añada <code>#define TFT_RGB_ORDER TFT_BGR</code> en el archivo Setup25.</div>
+  </div>
+
+  <div class="b cyd">
+    <h3><span class="boardtag">CYD</span>Instalar y configurar TFT_eSPI</h3>
+    <ol class="steps">
+      <li>En el Gestor de bibliotecas instale <b>TFT_eSPI</b> (<a href="https://github.com/Bodmer/TFT_eSPI" target="_blank" rel="noopener noreferrer">proyecto en GitHub</a>).</li>
+      <li>Abra el <a href="https://github.com/witnessmenow/ESP32-Cheap-Yellow-Display/blob/main/DisplayConfig/User_Setup.h" target="_blank" rel="noopener noreferrer">User_Setup.h preparado para la CYD</a>, cópielo completo y <b>reemplace</b> el contenido del archivo del mismo nombre que está dentro de <code>Documentos\Arduino\libraries\TFT_eSPI\</code> (o descárguelo desde el <a href="https://raw.githubusercontent.com/witnessmenow/ESP32-Cheap-Yellow-Display/main/DisplayConfig/User_Setup.h" target="_blank" rel="noopener noreferrer">enlace directo al archivo</a>). Es el paso que indica la <a href="https://github.com/witnessmenow/ESP32-Cheap-Yellow-Display/blob/main/SETUP.md" target="_blank" rel="noopener noreferrer">guía SETUP de la CYD</a>.</li>
+      <li>Reinicie el IDE. No toque <code>User_Setup_Select.h</code>: ya carga <code>User_Setup.h</code> por defecto.</li>
+    </ol>
+    <p>Ese archivo declara lo siguiente (coincide con la tabla de pines del capítulo 1):</p>
+    <div class="tablewrap"><table><thead><tr><th>Línea del archivo</th><th>Significado</th></tr></thead><tbody>
+      <tr><td><code>ILI9341_2_DRIVER</code></td><td>variante del controlador ILI9341 que usa esta pantalla</td></tr>
+      <tr><td><code>TFT_WIDTH 240 / TFT_HEIGHT 320</code></td><td>tamaño en píxeles (sin girar)</td></tr>
+      <tr><td><code>TFT_MISO 12, TFT_MOSI 13, TFT_SCLK 14, TFT_CS 15, TFT_DC 2</code></td><td>pines del bus SPI de la pantalla</td></tr>
+      <tr><td><code>TFT_RST -1</code></td><td>el reset va unido al reset de la placa, no a un GPIO</td></tr>
+      <tr><td><code>TFT_BL 21</code>, <code>TFT_BACKLIGHT_ON HIGH</code></td><td>luz de fondo en GPIO21, se enciende con nivel alto</td></tr>
+      <tr><td><code>USE_HSPI_PORT</code></td><td>usa el segundo bus SPI (HSPI), dejando el otro para la microSD</td></tr>
+    </tbody></table></div>
+    <div class="warn"><b>Atención</b>Una actualización de TFT_eSPI restablece <code>User_Setup.h</code>. Guarde una copia del archivo de la CYD.</div>
+    <h3>Programa de prueba</h3>
+    <figure class="code" data-file="02b_pantalla_cyd.ino"><figcaption><span>02b_pantalla_cyd.ino</span><button type="button" class="copy" aria-label="Copiar 02b_pantalla_cyd.ino">Copiar</button></figcaption><pre><code><span class="c">/* 02b_pantalla_cyd
+   Prueba de la pantalla de la ESP32-2432S028R «Cheap Yellow Display»
+   (ILI9341, 240x320). Requiere copiar el User_Setup.h del repositorio
+   de witnessmenow dentro de libraries/TFT_eSPI (ver el curso). */</span>
+
+<span class="k">#include</span> &lt;<span class="n">TFT_eSPI</span>.h&gt;
+
+<span class="n">TFT_eSPI</span> tft = <span class="n">TFT_eSPI</span>();
+
+<span class="k">void</span> <span class="f">setup</span>() {
+  <span class="t">Serial</span>.<span class="f">begin</span>(<span class="n">115200</span>);
+  tft.<span class="f">init</span>();
+  tft.<span class="f">setRotation</span>(<span class="n">1</span>);           <span class="c">// horizontal: 320 de ancho x 240 de alto</span>
+  tft.<span class="f">fillScreen</span>(<span class="n">TFT_BLACK</span>);
+
+  tft.<span class="f">fillRect</span>(<span class="n">0</span>,   <span class="n">0</span>, <span class="n">107</span>, <span class="n">60</span>, <span class="n">TFT_RED</span>);
+  tft.<span class="f">fillRect</span>(<span class="n">107</span>, <span class="n">0</span>, <span class="n">107</span>, <span class="n">60</span>, <span class="n">TFT_GREEN</span>);
+  tft.<span class="f">fillRect</span>(<span class="n">214</span>, <span class="n">0</span>, <span class="n">106</span>, <span class="n">60</span>, <span class="n">TFT_BLUE</span>);
+
+  tft.<span class="f">setTextColor</span>(<span class="n">TFT_WHITE</span>, <span class="n">TFT_BLACK</span>);
+  tft.<span class="f">drawString</span>(<span class="s">"Pantalla OK"</span>, <span class="n">20</span>, <span class="n">90</span>, <span class="n">4</span>);
+  tft.<span class="f">drawString</span>(<span class="s">"320 x 240 px"</span>, <span class="n">20</span>, <span class="n">130</span>, <span class="n">2</span>);
+  <span class="t">Serial</span>.<span class="f">println</span>(<span class="s">"Pantalla inicializada"</span>);
+}
+
+<span class="k">void</span> <span class="f">loop</span>() {
+}</code></pre></figure>
+    <div class="ok"><b>Resultado esperado</b>Tres franjas roja, verde y azul y el texto «Pantalla OK». Si la pantalla queda <b>blanca o negra</b>: revise que reemplazó <code>User_Setup.h</code>, que no conectó nada a IO21 y pruebe otro cable o fuente USB (consejos del <a href="https://github.com/witnessmenow/ESP32-Cheap-Yellow-Display/blob/main/TROUBLESHOOTING.md" target="_blank" rel="noopener noreferrer">documento de solución de problemas de la CYD</a>).</div>
+  </div>
+
+  <div class="b oled">
+    <h3><span class="boardtag">OLED</span>Instalar las librerías</h3>
+    <ol class="steps">
+      <li>En el Gestor de bibliotecas instale <b>Adafruit SSD1306</b> (<a href="https://github.com/adafruit/Adafruit_SSD1306" target="_blank" rel="noopener noreferrer">proyecto</a>). El IDE preguntará si instala también las dependencias: responda <b>«Instalar todo»</b>. Con ello se instalan <a href="https://github.com/adafruit/Adafruit-GFX-Library" target="_blank" rel="noopener noreferrer">Adafruit GFX</a> (dibujo de texto y figuras) y Adafruit BusIO (comunicación I²C). La <a href="https://learn.adafruit.com/monochrome-oled-breakouts" target="_blank" rel="noopener noreferrer">guía de Adafruit para pantallas OLED monocromas</a> explica la pantalla en detalle.</li>
+      <li>No hay que editar ningún archivo de configuración.</li>
+    </ol>
+    <h3>Paso A: buscar los pines de su OLED</h3>
+    <p>Este programa prueba los tres pares de pines más comunes y le dice cuál contesta. El <b>I²C</b> es un bus en el que cada dispositivo tiene una <i>dirección</i> de 7 bits; la OLED casi siempre es <code>0x3C</code>.</p>
+    <figure class="code" data-file="02c_buscar_oled.ino"><figcaption><span>02c_buscar_oled.ino</span><button type="button" class="copy" aria-label="Copiar 02c_buscar_oled.ino">Copiar</button></figcaption><pre><code><span class="c">/* 02c_buscar_oled
+   Busca la pantalla OLED por I2C probando los pares de pines (SDA, SCL)
+   más habituales en las placas ESP32 con OLED integrado.
+   Escribe en el Monitor Serie (115200) la dirección y los pines hallados. */</span>
+
+<span class="k">#include</span> &lt;<span class="t">Wire</span>.h&gt;
+
+<span class="k">struct</span> <span class="t">Par</span> { <span class="k">int</span> sda; <span class="k">int</span> scl; <span class="k">const</span> <span class="k">char</span>* nombre; };
+
+<span class="k">const</span> <span class="t">Par</span> PARES[] = {
+  {<span class="n">4</span>,  <span class="n">15</span>, <span class="s">"Heltec WiFi Kit 32 (SDA=4, SCL=15, RST=16)"</span>},
+  {<span class="n">5</span>,  <span class="n">4</span>,  <span class="s">"Clones WEMOS/LOLIN32 OLED (SDA=5, SCL=4)"</span>},
+  {<span class="n">21</span>, <span class="n">22</span>, <span class="s">"Pines I2C estandar (SDA=21, SCL=22)"</span>},
+};
+<span class="k">const</span> <span class="k">int</span> N_PARES = <span class="k">sizeof</span>(PARES) / <span class="k">sizeof</span>(PARES[<span class="n">0</span>]);
+<span class="k">const</span> <span class="k">int</span> <span class="n">PIN_RST_OLED</span> = <span class="n">16</span>;    <span class="c">// el Heltec necesita un pulso de reset</span>
+
+<span class="k">void</span> <span class="f">setup</span>() {
+  <span class="t">Serial</span>.<span class="f">begin</span>(<span class="n">115200</span>);
+  <span class="f">delay</span>(<span class="n">1000</span>);
+  <span class="t">Serial</span>.<span class="f">println</span>(<span class="s">"Buscando OLED por I2C..."</span>);
+
+  <span class="c">// Pulso de reset: algunas placas (Heltec) no inician la OLED sin el.</span>
+  <span class="f">pinMode</span>(<span class="n">PIN_RST_OLED</span>, <span class="k">OUTPUT</span>);
+  <span class="f">digitalWrite</span>(<span class="n">PIN_RST_OLED</span>, <span class="k">LOW</span>);
+  <span class="f">delay</span>(<span class="n">20</span>);
+  <span class="f">digitalWrite</span>(<span class="n">PIN_RST_OLED</span>, <span class="k">HIGH</span>);
+  <span class="f">delay</span>(<span class="n">50</span>);
+
+  <span class="k">bool</span> hallada = <span class="k">false</span>;
+  <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; N_PARES; i++) {
+    <span class="t">Wire</span>.<span class="f">end</span>();                                  <span class="c">// libera el bus anterior</span>
+    <span class="t">Wire</span>.<span class="f">begin</span>(PARES[i].sda, PARES[i].scl);      <span class="c">// prueba este par de pines</span>
+    <span class="k">for</span> (<span class="k">uint8_t</span> dir = <span class="n">1</span>; dir &lt; <span class="n">127</span>; dir++) {
+      <span class="t">Wire</span>.<span class="f">beginTransmission</span>(dir);               <span class="c">// intenta hablar a la direccion</span>
+      <span class="k">if</span> (<span class="t">Wire</span>.<span class="f">endTransmission</span>() == <span class="n">0</span>) {         <span class="c">// 0 = alguien contesto (ACK)</span>
+        <span class="t">Serial</span>.<span class="f">print</span>(<span class="s">"Dispositivo en 0x"</span>);
+        <span class="t">Serial</span>.<span class="f">print</span>(dir, HEX);
+        <span class="t">Serial</span>.<span class="f">print</span>(<span class="s">"  con  "</span>);
+        <span class="t">Serial</span>.<span class="f">println</span>(PARES[i].nombre);
+        hallada = <span class="k">true</span>;
+      }
+    }
+  }
+  <span class="k">if</span> (!hallada) <span class="t">Serial</span>.<span class="f">println</span>(<span class="s">"No se encontro nada. Revise la placa o pruebe con otros pines."</span>);
+  <span class="t">Serial</span>.<span class="f">println</span>(<span class="s">"Fin de la busqueda."</span>);
+}
+
+<span class="k">void</span> <span class="f">loop</span>() {
+}</code></pre></figure>
+    <div class="ok"><b>Resultado esperado</b>En el Monitor Serie (115200), una línea como <code>Dispositivo en 0x3C  con  Heltec WiFi Kit 32 (SDA=4, SCL=15, RST=16)</code>. Esa línea le dice sus pines. Si no aparece nada, la OLED usa otros pines o su placa es una variante con ESP32-S3: consulte la ficha del fabricante.</div>
+    <h3>Paso B: dibujar en la pantalla</h3>
+    <p>En la parte superior del siguiente programa hay tres líneas de pines; deje <b>solo una</b> sin comentar: la que coincide con lo que halló.</p>
+    <figure class="code" data-file="02d_pantalla_oled.ino"><figcaption><span>02d_pantalla_oled.ino</span><button type="button" class="copy" aria-label="Copiar 02d_pantalla_oled.ino">Copiar</button></figcaption><pre><code><span class="c">/* 02d_pantalla_oled
+   Prueba de la OLED SSD1306 de 128x64 con Adafruit_SSD1306.
+   Ajuste los tres numeros de pines con lo que halló 02c_buscar_oled. */</span>
+
+<span class="k">#include</span> &lt;<span class="t">Wire</span>.h&gt;
+<span class="k">#include</span> &lt;Adafruit_GFX.h&gt;
+<span class="k">#include</span> &lt;<span class="t">Adafruit_SSD1306</span>.h&gt;
+
+<span class="c">// --- Pines de la OLED: elija UNA linea (la de su placa) ---</span>
+<span class="k">const</span> <span class="k">int</span> OLED_SDA = <span class="n">4</span>;   <span class="k">const</span> <span class="k">int</span> OLED_SCL = <span class="n">15</span>;  <span class="k">const</span> <span class="k">int</span> OLED_RST = <span class="n">16</span>;  <span class="c">// Heltec WiFi Kit 32</span>
+<span class="c">// const int OLED_SDA = 5;   const int OLED_SCL = 4;   const int OLED_RST = -1;  // WEMOS/LOLIN32 OLED</span>
+<span class="c">// const int OLED_SDA = 21;  const int OLED_SCL = 22;  const int OLED_RST = -1;  // I2C estandar</span>
+
+<span class="k">const</span> <span class="k">int</span> ANCHO = <span class="n">128</span>;
+<span class="k">const</span> <span class="k">int</span> ALTO  = <span class="n">64</span>;
+<span class="k">const</span> <span class="k">uint8_t</span> DIRECCION = <span class="n">0x3C</span>;                 <span class="c">// casi siempre 0x3C (a veces 0x3D)</span>
+
+<span class="t">Adafruit_SSD1306</span> <span class="f">oled</span>(ANCHO, ALTO, &amp;<span class="t">Wire</span>, OLED_RST);
+
+<span class="k">void</span> <span class="f">setup</span>() {
+  <span class="t">Serial</span>.<span class="f">begin</span>(<span class="n">115200</span>);
+  <span class="t">Wire</span>.<span class="f">begin</span>(OLED_SDA, OLED_SCL);               <span class="c">// arrancamos nosotros el bus con SUS pines</span>
+  <span class="c">// begin(voltaje, direccion, reset, periphBegin=false): no reinicia Wire</span>
+  <span class="k">if</span> (!oled.<span class="f">begin</span>(<span class="n">SSD1306_SWITCHCAPVCC</span>, DIRECCION, <span class="k">true</span>, <span class="k">false</span>)) {
+    <span class="t">Serial</span>.<span class="f">println</span>(<span class="s">"No se pudo iniciar la OLED: revise pines y direccion"</span>);
+    <span class="k">while</span> (<span class="k">true</span>) <span class="f">delay</span>(<span class="n">1000</span>);                   <span class="c">// se detiene aqui</span>
+  }
+  oled.<span class="f">clearDisplay</span>();                          <span class="c">// borra la memoria de imagen</span>
+  oled.<span class="f">setTextColor</span>(<span class="n">SSD1306_WHITE</span>);
+  oled.<span class="f">setTextSize</span>(<span class="n">2</span>);                          <span class="c">// texto doble de grande</span>
+  oled.<span class="f">setCursor</span>(<span class="n">0</span>, <span class="n">0</span>);
+  oled.<span class="f">println</span>(<span class="s">"OLED OK"</span>);
+  oled.<span class="f">setTextSize</span>(<span class="n">1</span>);
+  oled.<span class="f">println</span>();
+  oled.<span class="f">println</span>(<span class="s">"128 x 64 pixeles"</span>);
+  oled.<span class="f">drawRect</span>(<span class="n">0</span>, <span class="n">40</span>, <span class="n">128</span>, <span class="n">24</span>, <span class="n">SSD1306_WHITE</span>); <span class="c">// un marco para ver los bordes</span>
+  oled.<span class="f">display</span>();                               <span class="c">// envia la imagen a la pantalla</span>
+  <span class="t">Serial</span>.<span class="f">println</span>(<span class="s">"OLED inicializada"</span>);
+}
+
+<span class="k">void</span> <span class="f">loop</span>() {
+}</code></pre></figure>
+    <div class="ok"><b>Resultado esperado</b>«OLED OK» en letra grande, «128 x 64 pixeles» y un marco abajo. La OLED guarda la imagen en una memoria del ESP32 y solo la envía cuando se llama a <code>display()</code>: sin esa instrucción la pantalla no cambia.</div>
+  </div>
+
+  <ul class="check" data-key="c4"><li><label><input type="checkbox"> Instalé la librería y apliqué la configuración de mi placa.</label></li><li><label><input type="checkbox"> Mi pantalla muestra el programa de prueba.</label></li></ul>
+</section>
+
+<!-- ====================== 5 ====================== -->
+<section class="cap" id="c5">
+  <p class="kicker">Capítulo 5</p>
+  <h2>Cómo mide el HC-SR04</h2>
+  <p>El HC-SR04 funciona como un murciélago: emite un chasquido de ultrasonido (inaudible, de 40 kHz), espera el eco que rebota en un objeto y <b>mide cuánto tardó</b>. Como conoce la velocidad del sonido, convierte tiempo en distancia.</p>
+
+  <h3>Los cuatro pines</h3>
+  <div class="tablewrap"><table><thead><tr><th>Pin</th><th>Función</th><th>Nivel de señal</th></tr></thead><tbody>
+    <tr><td><b>VCC</b></td><td>alimentación</td><td>5 V</td></tr>
+    <tr><td><b>TRIG</b></td><td>entrada: usted manda un pulso para pedir una medida</td><td>pulso alto de al menos 10 µs</td></tr>
+    <tr><td><b>ECHO</b></td><td>salida: el sensor devuelve un pulso cuya duración es el tiempo del viaje</td><td><b>5 V</b> (hay que bajarlo a 3,3 V)</td></tr>
+    <tr><td><b>GND</b></td><td>tierra común con la placa</td><td>0 V</td></tr>
+  </tbody></table></div>
+
+  <h3>Secuencia de una medida</h3>
+  <ol class="steps">
+    <li>El ESP32 pone <b>TRIG en alto durante 10 µs</b> (diez millonésimas de segundo) y lo baja.</li>
+    <li>El módulo emite <b>8 pulsos de ultrasonido a 40 kHz</b>.</li>
+    <li>Cuando termina de emitir, el módulo pone <b>ECHO en alto</b>.</li>
+    <li>Cuando recibe el eco, baja ECHO. <b>El tiempo que ECHO estuvo en alto</b> es lo que dura el viaje de ida y vuelta.</li>
+    <li>Si no hay eco, ECHO vuelve a bajar solo pasado un tiempo largo (en la práctica unos 38 ms; este dato no aparece en la hoja de datos). Por eso el programa usa un límite de espera propio de 30 ms.</li>
+  </ol>
+
+  <h3>Hoja de datos (datos del fabricante)</h3>
+  <div class="tablewrap"><table><thead><tr><th>Parámetro</th><th>Valor</th></tr></thead><tbody>
+    <tr><td>Tensión de trabajo</td><td>5 V continua</td></tr>
+    <tr><td>Corriente</td><td>15 mA</td></tr>
+    <tr><td>Rango</td><td>2 cm a 400 cm (4 m)</td></tr>
+    <tr><td>Ángulo de medida</td><td>15 grados</td></tr>
+    <tr><td>Pulso de disparo</td><td>10 µs, nivel TTL</td></tr>
+    <tr><td>Ciclo mínimo entre medidas</td><td>60 ms (para que un disparo no se confunda con el eco anterior)</td></tr>
+    <tr><td>Precisión declarada</td><td>hasta 3 mm</td></tr>
+    <tr><td>Fórmula del fabricante</td><td>µs / 58 = centímetros</td></tr>
+  </tbody></table></div>
+  <p>Fuente: <a href="https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" target="_blank" rel="noopener noreferrer">hoja de datos del HC-SR04 (PDF)</a>. Aclara además: conecte primero GND del módulo, y use objetos de al menos 0,5 m² y superficie lo más lisa posible.</p>
+
+  <h3>De tiempo a distancia</h3>
+  <p>El sonido recorre la distancia <i>d</i> hasta el objeto <b>y regresa</b>, así que el camino total es 2<i>d</i>:</p>
+  <p style="font-size:1.15rem"><b>d = v · t / 2</b></p>
+  <p>donde <i>t</i> es el tiempo medido y <i>v</i> la velocidad del sonido en el aire, que sube con la temperatura <i>T</i> (en °C):</p>
+  <p style="font-size:1.15rem"><b>v ≈ 331,3 + 0,606 · T</b> &nbsp; (m/s)</p>
+  <p>A 20 °C resulta <i>v</i> = 343,42 m/s = 0,034342 cm/µs. Por eso el fabricante dice «µs / 58»: 2 ÷ 0,034342 ≈ 58,2 µs por cada centímetro de distancia. Más información sobre la velocidad del sonido en <a href="https://es.wikipedia.org/wiki/Velocidad_del_sonido" target="_blank" rel="noopener noreferrer">Wikipedia</a>.</p>
+
+  <div class="lab" id="lab-eco">
+    <h4>Laboratorio 1 · Simulador del eco</h4>
+    <p class="sub">Mueva el objeto y cambie la temperatura. Vea cuánto dura el pulso ECHO y qué distancia calcularía un programa que supone siempre 20 °C.</p>
+    <div class="row">
+      <div class="field"><label for="eco-d">Distancia real al objeto: <b id="eco-dv">100</b> cm</label><input type="range" id="eco-d" min="2" max="450" step="1" value="100"></div>
+      <div class="field"><label for="eco-t">Temperatura del aire: <b id="eco-tv">20</b> °C</label><input type="range" id="eco-t" min="0" max="40" step="1" value="20"></div>
+      <div class="field"><label for="eco-obj" style="flex-direction:row;display:flex;gap:8px;align-items:center;font-size:.9rem;color:var(--fg)"><input type="checkbox" id="eco-obj" checked style="width:20px;height:20px;accent-color:var(--accent)"> Hay un objeto delante</label></div>
+    </div>
+    <div class="svgwrap"><svg class="diagram" id="eco-svg" viewBox="0 0 640 170" role="img" aria-label="Diagrama de tiempos de TRIG y ECHO"></svg></div>
+    <div class="out" id="eco-out"></div>
+    <div class="serial" id="eco-serial" aria-live="polite"></div>
+  </div>
+  <ul class="check" data-key="c5"><li><label><input type="checkbox"> Entiendo por qué se divide entre 2.</label></li><li><label><input type="checkbox"> Moví el simulador y vi cómo cambia el tiempo con la distancia y la temperatura.</label></li></ul>
+</section>
+
+<!-- ====================== 6 ====================== -->
+<section class="cap" id="c6">
+  <p class="kicker">Capítulo 6</p>
+  <h2>Conexión segura</h2>
+
+  <h3>6.1 El problema: 5 V frente a 3,3 V</h3>
+  <p>El ESP32 funciona a 3,3 V. Según su <a href="https://documentation.espressif.com/esp32_datasheet_en.pdf" target="_blank" rel="noopener noreferrer">hoja de datos</a>, un pin de entrada reconoce un «1» desde 0,75 × VDD (≈ 2,48 V) y admite como máximo <b>VDD + 0,3 V ≈ 3,6 V</b>. El HC-SR04 se alimenta con 5 V y su ECHO entrega hasta 5 V: <b>demasiado</b>.</p>
+  <ul>
+    <li><b>TRIG</b> (ESP32 → sensor): el ESP32 entrega 3,3 V, que el HC-SR04 reconoce como «alto» (entrada TTL). No hace falta divisor. Es la práctica habitual y funciona en la mayoría de módulos.</li>
+    <li><b>ECHO</b> (sensor → ESP32): <b>necesita reducir de 5 V a unos 3,3 V</b>. Se logra con un <b>divisor de tensión</b>.</li>
+  </ul>
+
+  <h3>6.2 El divisor de tensión</h3>
+  <p>Dos resistencias en serie reparten la tensión entre ellas. La señal de ECHO entra por R1; el punto medio va al pin del ESP32; R2 baja a GND:</p>
+  <p style="font-size:1.1rem"><b>V<sub>sal</sub> = V<sub>ent</sub> · R2 / (R1 + R2)</b></p>
+  <p>Con R1 = 1 kΩ y R2 = 2 kΩ: 5 × 2000 / 3000 = <b>3,33 V</b>. Para obtener 2 kΩ basta poner <b>dos resistencias de 1 kΩ en serie</b>: por eso solo necesita resistencias de un valor. La corriente que consume es 5 V / 3 kΩ ≈ 1,7 mA, que el sensor entrega sin problema.</p>
+
+  <div class="lab" id="lab-div">
+    <h4>Laboratorio 2 · Calculadora del divisor</h4>
+    <p class="sub">Pruebe valores de resistencias y vea si el pin del ESP32 queda protegido. Incluye el peor caso con resistencias de ±5 % de tolerancia.</p>
+    <div class="row">
+      <div class="field"><label for="dv-vin">Tensión de ECHO (V)</label><input type="number" id="dv-vin" value="5" min="0" step="0.1"></div>
+      <div class="field"><label for="dv-r1">R1 en serie (Ω)</label><input type="number" id="dv-r1" value="1000" min="0" step="10"></div>
+      <div class="field"><label for="dv-r2">R2 a GND (Ω)</label><input type="number" id="dv-r2" value="2000" min="1" step="10"></div>
+    </div>
+    <div class="chips" id="dv-chips">
+      <button type="button" data-r="1000,2000">1 kΩ + 2 kΩ (recomendado)</button>
+      <button type="button" data-r="1000,2200">1 kΩ + 2,2 kΩ</button>
+      <button type="button" data-r="10000,20000">10 kΩ + 20 kΩ</button>
+      <button type="button" data-r="1000,1000">1 kΩ + 1 kΩ</button>
+      <button type="button" data-r="2000,1000">2 kΩ + 1 kΩ</button>
+      <button type="button" data-r="0,1000">Sin divisor (¡no!)</button>
+    </div>
+    <div class="out" id="dv-out"></div>
+    <div class="verdict" id="dv-verdict" role="status"></div>
+  </div>
+
+  <h3>6.3 Dónde se conecta cada cable</h3>
+  <div class="b td"><div class="tablewrap"><table><thead><tr><th>HC-SR04</th><th>Placa T-Display</th><th>Color sugerido</th></tr></thead><tbody>
+    <tr><td>VCC</td><td>pin <b>5V</b> (conector derecho)</td><td>rojo</td></tr>
+    <tr><td>TRIG</td><td><b>GPIO26</b></td><td>verde</td></tr>
+    <tr><td>ECHO</td><td>por el divisor → <b>GPIO27</b></td><td>naranja</td></tr>
+    <tr><td>GND</td><td>pin <b>GND</b> (junto a 27)</td><td>negro</td></tr>
+  </tbody></table></div></div>
+  <div class="b cyd"><div class="tablewrap"><table><thead><tr><th>HC-SR04</th><th>Placa CYD</th><th>Color sugerido</th></tr></thead><tbody>
+    <tr><td>VCC</td><td>pin <b>VIN</b> del conector <b>P1</b></td><td>rojo</td></tr>
+    <tr><td>TRIG</td><td><b>IO22</b> (conector P3 o CN1)</td><td>verde</td></tr>
+    <tr><td>ECHO</td><td>por el divisor → <b>IO35</b> (conector P3)</td><td>naranja</td></tr>
+    <tr><td>GND</td><td><b>GND</b> de P1 o de P3</td><td>negro</td></tr>
+  </tbody></table></div>
+  <div class="warn"><b>Compruebe VIN antes de conectar el sensor</b>Con la placa encendida, mida con el multímetro entre VIN y GND de P1: debe dar cerca de 5 V (los 5 V del USB). Si da 3,3 V o 0 V, no lo use para alimentar el sensor.</div></div>
+  <div class="b oled"><div class="tablewrap"><table><thead><tr><th>HC-SR04</th><th>Placa con OLED</th><th>Color sugerido</th></tr></thead><tbody>
+    <tr><td>VCC</td><td>pin <b>5V</b> (sale del USB)</td><td>rojo</td></tr>
+    <tr><td>TRIG</td><td><b>GPIO26</b></td><td>verde</td></tr>
+    <tr><td>ECHO</td><td>por el divisor → <b>GPIO27</b></td><td>naranja</td></tr>
+    <tr><td>GND</td><td>pin <b>GND</b></td><td>negro</td></tr>
+  </tbody></table></div>
+  <p>Si su placa no tiene GPIO26 o GPIO27 en el borde, elija otros pines libres (capítulo 1) y cambie los números <code>PIN_TRIG</code> y <code>PIN_ECHO</code> en el código.</p></div>
+
+  <h3>6.4 Esquema</h3>
+  <div class="svgwrap"><svg id="wire-svg" class="diagram" viewBox="0 0 760 330" role="img" aria-label="Esquema de conexión del HC-SR04 con la placa y el divisor de tensión"></svg></div>
+  <p style="font-size:.9rem;color:var(--fg-soft)">El esquema cambia con la placa elegida. R1 = 1 kΩ en serie con la línea ECHO; R2 = dos resistencias de 1 kΩ en serie entre el punto medio y GND.</p>
+
+  <h3>6.5 Montaje paso a paso</h3>
+  <div class="warn"><b>Con la placa desconectada del USB</b>Cablee siempre sin tensión. Un cable mal puesto con la placa encendida es la forma más fácil de estropearla.</div>
+  <ol class="steps">
+    <li><b>Arme el divisor en la protoboard</b>: una resistencia de 1 kΩ (R1) y, a continuación, dos resistencias de 1 kΩ en serie (R2). Une tres puntos: <i>entrada</i> (extremo libre de R1), <i>punto medio</i> (unión de R1 con R2) y <i>masa</i> (extremo libre de R2).</li>
+    <li><b>Pruébelo antes de conectar el ESP32</b> (opcional, con multímetro): alimente la entrada con el pin de 5 V y la masa con GND de la placa, y mida entre el punto medio y GND. Debe leer unos <b>3,3 V</b> (entre 3,1 y 3,5 V según las tolerancias).</li>
+    <li><b>GND primero</b>: GND del HC-SR04 a GND de la placa (lo pide la hoja de datos).</li>
+    <li><b>VCC</b> del HC-SR04 al pin de 5 V (tabla de arriba).</li>
+    <li><b>TRIG</b> del HC-SR04 directo al GPIO de TRIG.</li>
+    <li><b>ECHO</b> del HC-SR04 a la entrada del divisor, y el <b>punto medio</b> del divisor al GPIO de ECHO.</li>
+    <li>Revise todo contra el esquema una vez más y <b>recién entonces</b> conecte el USB.</li>
+  </ol>
+  <div class="danger"><b>Errores que dañan placas</b>(1) ECHO directo a un GPIO sin divisor. (2) VCC del sensor a 3,3 V en un sensor de 5 V: no daña, pero casi siempre da lecturas erráticas. (3) Intercambiar VCC y GND. (4) En la CYD, tocar IO21 al lado de IO22.</div>
+  <div class="note"><b>¿Y los sensores de 3,3 V?</b>Existen variantes del HC-SR04 pensadas para 3,3 V (por ejemplo las denominadas HC-SR04P o HC-SR04+). Si la hoja de datos de <b>su</b> módulo dice que ECHO sale a 3,3 V, el divisor no es necesario. Si no está seguro, use el divisor: no perjudica a ninguna variante.</div>
+  <ul class="check" data-key="c6"><li><label><input type="checkbox"> El divisor mide ≈ 3,3 V en su punto medio (o lo revisé contra la calculadora).</label></li><li><label><input type="checkbox"> Conecté GND, VCC, TRIG y ECHO (con divisor) según la tabla de mi placa.</label></li><li><label><input type="checkbox"> Revisé todo con el USB desconectado.</label></li></ul>
+</section>
+
+<!-- ====================== 7 ====================== -->
+<section class="cap" id="c7">
+  <p class="kicker">Capítulo 7</p>
+  <h2>El código, paso a paso</h2>
+  <p>Se avanza en tres escalones. En cada uno se aprende algo nuevo y se comprueba que sigue funcionando. <b>No salte pasos</b>: si el escalón 1 funciona, el problema del escalón 3 será de pantalla y no de sensor.</p>
+
+  <h3>Escalón 1 · La lectura más sencilla</h3>
+  <p>En la parte superior del programa hay una selección de placa: deje <b>una sola línea</b> <code>#define PLACA_…</code> sin comentar. El resto del programa no cambia entre placas.</p>
+  <figure class="code" data-file="03_distancia_basica.ino"><figcaption><span>03_distancia_basica.ino</span><button type="button" class="copy" aria-label="Copiar 03_distancia_basica.ino">Copiar</button></figcaption><pre><code><span class="c">/* 03_distancia_basica
+   HC-SR04 con ESP32: la lectura mas sencilla posible, por el Monitor Serie.
+   ¡Recuerde el divisor de tension en ECHO (5 V -&gt; 3,3 V)! */</span>
+
+<span class="c">// --- Elija UNA placa quitando las barras de su linea ---</span>
+<span class="k">#define</span> PLACA_TDISPLAY
+<span class="c">//#define PLACA_CYD</span>
+<span class="c">//#define PLACA_OLED</span>
+
+<span class="k">#if</span> <span class="f">defined</span>(PLACA_TDISPLAY)
+  <span class="k">const</span> <span class="k">int</span> <span class="n">PIN_TRIG</span> = <span class="n">26</span>;      <span class="c">// salida: dispara el pulso ultrasonico</span>
+  <span class="k">const</span> <span class="k">int</span> <span class="n">PIN_ECHO</span> = <span class="n">27</span>;      <span class="c">// entrada: recibe el eco (CON divisor)</span>
+<span class="k">#elif</span> <span class="f">defined</span>(PLACA_CYD)
+  <span class="k">const</span> <span class="k">int</span> <span class="n">PIN_TRIG</span> = <span class="n">22</span>;
+  <span class="k">const</span> <span class="k">int</span> <span class="n">PIN_ECHO</span> = <span class="n">35</span>;      <span class="c">// GPIO35 es solo entrada: ideal para ECHO</span>
+<span class="k">#elif</span> <span class="f">defined</span>(PLACA_OLED)
+  <span class="k">const</span> <span class="k">int</span> <span class="n">PIN_TRIG</span> = <span class="n">26</span>;
+  <span class="k">const</span> <span class="k">int</span> <span class="n">PIN_ECHO</span> = <span class="n">27</span>;
+<span class="k">#else</span>
+  <span class="k">#error</span> <span class="s">"Elija una placa: PLACA_TDISPLAY, PLACA_CYD o PLACA_OLED"</span>
+<span class="k">#endif</span>
+
+<span class="k">void</span> <span class="f">setup</span>() {
+  <span class="t">Serial</span>.<span class="f">begin</span>(<span class="n">115200</span>);
+  <span class="f">pinMode</span>(<span class="n">PIN_TRIG</span>, <span class="k">OUTPUT</span>);
+  <span class="f">pinMode</span>(<span class="n">PIN_ECHO</span>, <span class="k">INPUT</span>);
+  <span class="f">digitalWrite</span>(<span class="n">PIN_TRIG</span>, <span class="k">LOW</span>);  <span class="c">// TRIG en reposo</span>
+}
+
+<span class="k">void</span> <span class="f">loop</span>() {
+  <span class="c">// 1) Pulso de disparo: 10 microsegundos en alto</span>
+  <span class="f">digitalWrite</span>(<span class="n">PIN_TRIG</span>, <span class="k">LOW</span>);
+  <span class="f">delayMicroseconds</span>(<span class="n">4</span>);         <span class="c">// asegura un LOW limpio antes del pulso</span>
+  <span class="f">digitalWrite</span>(<span class="n">PIN_TRIG</span>, <span class="k">HIGH</span>);
+  <span class="f">delayMicroseconds</span>(<span class="n">10</span>);        <span class="c">// el HC-SR04 exige &gt;= 10 us</span>
+  <span class="f">digitalWrite</span>(<span class="n">PIN_TRIG</span>, <span class="k">LOW</span>);
+
+  <span class="c">// 2) Medimos cuanto dura el pulso ECHO en alto (microsegundos)</span>
+  <span class="k">unsigned</span> <span class="k">long</span> duracion = <span class="f">pulseIn</span>(<span class="n">PIN_ECHO</span>, <span class="k">HIGH</span>);
+
+  <span class="c">// 3) Convertimos tiempo a distancia: el sonido va y vuelve (ida y vuelta)</span>
+  <span class="c">//    velocidad del sonido ~ 0,0343 cm/us a 20 C  -&gt;  d = t * 0,0343 / 2</span>
+  <span class="k">float</span> distancia = duracion * <span class="n">0.0343</span> / <span class="n">2.0</span>;
+
+  <span class="t">Serial</span>.<span class="f">print</span>(<span class="s">"Tiempo: "</span>);
+  <span class="t">Serial</span>.<span class="f">print</span>(duracion);
+  <span class="t">Serial</span>.<span class="f">print</span>(<span class="s">" us   Distancia: "</span>);
+  <span class="t">Serial</span>.<span class="f">print</span>(distancia);
+  <span class="t">Serial</span>.<span class="f">println</span>(<span class="s">" cm"</span>);
+
+  <span class="f">delay</span>(<span class="n">500</span>);                   <span class="c">// dos lecturas por segundo</span>
+}</code></pre></figure>
+  <h4 style="font:700 1.05rem var(--font-display);margin:18px 0 6px">Explicación bloque por bloque</h4>
+  <dl class="gl">
+    <dt><code>#define PLACA_…</code> y <code>#if defined(…)</code></dt><dd>El preprocesador (lo que se ejecuta antes de compilar) elige los números de pines según la placa. Solo un bloque queda activo; si no elige ninguno, <code>#error</code> detiene la compilación con un aviso claro.</dd>
+    <dt><code>const int PIN_TRIG</code></dt><dd>Una constante: un número que no cambiará. Poner nombres a los pines evita «números mágicos» y permite cambiarlos en un solo lugar.</dd>
+    <dt><code>pinMode(PIN_TRIG, OUTPUT)</code></dt><dd>Declara que TRIG es una <b>salida</b> (el ESP32 la maneja); <code>INPUT</code> declara ECHO como <b>entrada</b> (el ESP32 la lee).</dd>
+    <dt><code>digitalWrite(PIN_TRIG, HIGH/LOW)</code></dt><dd>Pone el pin a 3,3 V (HIGH) o a 0 V (LOW).</dd>
+    <dt><code>delayMicroseconds(10)</code></dt><dd>Espera 10 µs: la duración exigida del pulso de disparo. La pausa de 4 µs en LOW antes asegura que el pulso empiece desde cero.</dd>
+    <dt><code>pulseIn(PIN_ECHO, HIGH)</code></dt><dd>Espera a que ECHO suba, <b>cuenta los microsegundos</b> que permanece en alto y devuelve ese número (<a href="https://docs.arduino.cc/language-reference/en/functions/advanced-io/pulseIn/" target="_blank" rel="noopener noreferrer">referencia de pulseIn</a>). Si no sube a tiempo devuelve 0.</dd>
+    <dt><code>duracion * 0.0343 / 2.0</code></dt><dd>El tiempo de ida y vuelta por la velocidad del sonido a 20 °C (0,0343 cm/µs, redondeado), dividido entre 2. El <code>.0</code> fuerza división decimal.</dd>
+    <dt><code>Serial.print(…)</code></dt><dd>Muestra tiempo y distancia en el Monitor Serie.</dd>
+  </dl>
+  <div class="ok"><b>Qué debe ver</b>Con la mano a 20 cm de distancia del sensor: «Tiempo: ≈1166 us  Distancia: ≈20 cm» (20 ÷ 0,0343 × 2 = 1166 µs). Al alejar la mano, el tiempo y la distancia aumentan en proporción. Si la distancia es siempre 0.00, no llega el eco: revise el capítulo 9.</div>
+  <div class="note"><b>Limitación de este escalón</b>Si no hay objeto, <code>pulseIn</code> espera <b>un segundo</b> antes de rendirse (tiempo de espera por defecto) y el programa se queda «pegado». Además ignora la temperatura y no descarta lecturas absurdas. Se corrige en el escalón 2.</div>
+
+  <h3>Escalón 2 · La lectura fiable</h3>
+  <figure class="code" data-file="04_distancia_robusta.ino"><figcaption><span>04_distancia_robusta.ino</span><button type="button" class="copy" aria-label="Copiar 04_distancia_robusta.ino">Copiar</button></figcaption><pre><code><span class="c">/* 04_distancia_robusta
+   HC-SR04 con ESP32, version fiable:
+   - limite de espera (timeout) para no bloquearse sin eco,
+   - descarta lecturas fuera de 2-400 cm,
+   - mediana de 5 medidas (elimina valores locos),
+   - compensacion por temperatura. */</span>
+
+<span class="c">// --- Elija UNA placa quitando las barras de su linea ---</span>
+<span class="k">#define</span> PLACA_TDISPLAY
+<span class="c">//#define PLACA_CYD</span>
+<span class="c">//#define PLACA_OLED</span>
+
+<span class="k">#if</span> <span class="f">defined</span>(PLACA_TDISPLAY)
+  <span class="k">const</span> <span class="k">int</span> <span class="n">PIN_TRIG</span> = <span class="n">26</span>;
+  <span class="k">const</span> <span class="k">int</span> <span class="n">PIN_ECHO</span> = <span class="n">27</span>;
+<span class="k">#elif</span> <span class="f">defined</span>(PLACA_CYD)
+  <span class="k">const</span> <span class="k">int</span> <span class="n">PIN_TRIG</span> = <span class="n">22</span>;
+  <span class="k">const</span> <span class="k">int</span> <span class="n">PIN_ECHO</span> = <span class="n">35</span>;
+<span class="k">#elif</span> <span class="f">defined</span>(PLACA_OLED)
+  <span class="k">const</span> <span class="k">int</span> <span class="n">PIN_TRIG</span> = <span class="n">26</span>;
+  <span class="k">const</span> <span class="k">int</span> <span class="n">PIN_ECHO</span> = <span class="n">27</span>;
+<span class="k">#else</span>
+  <span class="k">#error</span> <span class="s">"Elija una placa: PLACA_TDISPLAY, PLACA_CYD o PLACA_OLED"</span>
+<span class="k">#endif</span>
+
+<span class="k">const</span> <span class="k">float</span> TEMPERATURA_C = <span class="n">20.0</span>;            <span class="c">// ponga la temperatura ambiente</span>
+<span class="k">const</span> <span class="k">unsigned</span> <span class="k">long</span> TIMEOUT_US = <span class="n">30000UL</span>;    <span class="c">// 30 ms ~ 5 m de ida y vuelta</span>
+<span class="k">const</span> <span class="k">float</span> DIST_MIN = <span class="n">2.0</span>;                  <span class="c">// cm: minimo del sensor</span>
+<span class="k">const</span> <span class="k">float</span> DIST_MAX = <span class="n">400.0</span>;                <span class="c">// cm: maximo del sensor</span>
+<span class="k">const</span> <span class="k">int</span> N_MUESTRAS = <span class="n">5</span>;                    <span class="c">// lecturas por medida</span>
+
+<span class="c">// Velocidad del sonido en cm por microsegundo:</span>
+<span class="c">// v = 331,3 + 0,606*T  (m/s)  y  1 m/s = 0,0001 cm/us</span>
+<span class="k">float</span> <span class="f">velocidadCmUs</span>() {
+  <span class="k">return</span> (<span class="n">331.3</span> + <span class="n">0.606</span> * TEMPERATURA_C) * <span class="n">0.0001</span>;
+}
+
+<span class="c">// Una lectura. Devuelve la distancia en cm o -1 si no es valida.</span>
+<span class="k">float</span> <span class="f">medirUnaVez</span>() {
+  <span class="f">digitalWrite</span>(<span class="n">PIN_TRIG</span>, <span class="k">LOW</span>);
+  <span class="f">delayMicroseconds</span>(<span class="n">4</span>);
+  <span class="f">digitalWrite</span>(<span class="n">PIN_TRIG</span>, <span class="k">HIGH</span>);
+  <span class="f">delayMicroseconds</span>(<span class="n">10</span>);
+  <span class="f">digitalWrite</span>(<span class="n">PIN_TRIG</span>, <span class="k">LOW</span>);
+
+  <span class="k">unsigned</span> <span class="k">long</span> t = <span class="f">pulseIn</span>(<span class="n">PIN_ECHO</span>, <span class="k">HIGH</span>, TIMEOUT_US);   <span class="c">// 0 si no hay eco</span>
+  <span class="k">if</span> (t == <span class="n">0</span>) <span class="k">return</span> -<span class="n">1</span>;
+  <span class="k">float</span> d = t * <span class="f">velocidadCmUs</span>() / <span class="n">2.0</span>;
+  <span class="k">if</span> (d &lt; DIST_MIN || d &gt; DIST_MAX) <span class="k">return</span> -<span class="n">1</span>;
+  <span class="k">return</span> d;
+}
+
+<span class="c">// Mediana de N_MUESTRAS lecturas validas. Devuelve -1 si hay menos de 3.</span>
+<span class="k">float</span> <span class="f">medirDistancia</span>() {
+  <span class="k">float</span> v[N_MUESTRAS];
+  <span class="k">int</span> n = <span class="n">0</span>;
+  <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; N_MUESTRAS; i++) {
+    <span class="k">float</span> d = <span class="f">medirUnaVez</span>();
+    <span class="k">if</span> (d &gt; <span class="n">0</span>) v[n++] = d;
+    <span class="f">delay</span>(<span class="n">60</span>);                               <span class="c">// el sensor pide &gt;= 60 ms entre disparos</span>
+  }
+  <span class="k">if</span> (n &lt; <span class="n">3</span>) <span class="k">return</span> -<span class="n">1</span>;
+  <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt; n; i++) {              <span class="c">// ordenar de menor a mayor (insercion)</span>
+    <span class="k">float</span> x = v[i];
+    <span class="k">int</span> j = i - <span class="n">1</span>;
+    <span class="k">while</span> (j &gt;= <span class="n">0</span> &amp;&amp; v[j] &gt; x) { v[j + <span class="n">1</span>] = v[j]; j--; }
+    v[j + <span class="n">1</span>] = x;
+  }
+  <span class="k">return</span> v[n / <span class="n">2</span>];                           <span class="c">// el valor del medio</span>
+}
+
+<span class="k">void</span> <span class="f">setup</span>() {
+  <span class="t">Serial</span>.<span class="f">begin</span>(<span class="n">115200</span>);
+  <span class="f">pinMode</span>(<span class="n">PIN_TRIG</span>, <span class="k">OUTPUT</span>);
+  <span class="f">pinMode</span>(<span class="n">PIN_ECHO</span>, <span class="k">INPUT</span>);
+  <span class="f">digitalWrite</span>(<span class="n">PIN_TRIG</span>, <span class="k">LOW</span>);
+}
+
+<span class="k">void</span> <span class="f">loop</span>() {
+  <span class="k">float</span> d = <span class="f">medirDistancia</span>();
+  <span class="k">if</span> (d &lt; <span class="n">0</span>) {
+    <span class="t">Serial</span>.<span class="f">println</span>(<span class="s">"Sin eco valido (objeto fuera de rango o cableado incorrecto)"</span>);
+  } <span class="k">else</span> {
+    <span class="t">Serial</span>.<span class="f">print</span>(<span class="s">"Distancia: "</span>);
+    <span class="t">Serial</span>.<span class="f">print</span>(d, <span class="n">1</span>);                      <span class="c">// un decimal</span>
+    <span class="t">Serial</span>.<span class="f">println</span>(<span class="s">" cm"</span>);
+  }
+  <span class="f">delay</span>(<span class="n">200</span>);
+}</code></pre></figure>
+  <h4 style="font:700 1.05rem var(--font-display);margin:18px 0 6px">Qué se añadió y por qué</h4>
+  <dl class="gl">
+    <dt>Tiempo límite <code>pulseIn(…, 30000UL)</code></dt><dd>Un objeto a 4 m tarda 23,3 ms en devolver el eco; 30 ms cubre el rango máximo con margen. Si no llega nada, la función retorna 0 tras 30 ms (y no tras 1 s) y el programa sigue vivo. El sufijo <code>UL</code> indica un entero largo sin signo.</dd>
+    <dt>Validar rango <code>DIST_MIN / DIST_MAX</code></dt><dd>Lo que salga de 2–400 cm no es creíble. La función devuelve <b>−1</b> como señal de «medida inválida».</dd>
+    <dt>Compensar la temperatura <code>velocidadCmUs()</code></dt><dd>Usa v = 331,3 + 0,606·T. Ajuste <code>TEMPERATURA_C</code> a la de su sala. Entre 20 °C y 30 °C la velocidad cambia 1,8 %, es decir 3,5 cm de error a 2 m si se ignora.</dd>
+    <dt>Mediana de 5 lecturas <code>medirDistancia()</code></dt><dd>Se toman 5 medidas, se ordenan y se elige la del medio. A diferencia del promedio, la mediana ignora los valores aislados disparatados. Ejemplo: 24,1 · 24,0 · <b>98,5</b> · 24,2 · 24,1 → promedio 38,98 (¡absurdo!), mediana <b>24,1</b>. Se exigen al menos 3 lecturas válidas.</dd>
+    <dt>Ordenar por inserción</dt><dd>Un algoritmo de pocas líneas: recorre el arreglo y va insertando cada valor en su sitio. Para 5 datos es más que suficiente.</dd>
+    <dt><code>delay(60)</code> entre lecturas</dt><dd>La hoja de datos pide al menos 60 ms entre disparos para que el eco de uno no contamine al siguiente. Una medida completa tarda ≈ 0,3 s.</dd>
+    <dt>Retornos tempranos <code>return -1</code></dt><dd>Cada función hace una cosa y avisa con −1 si falló; <code>loop()</code> decide qué mostrar.</dd>
+  </dl>
+  <div class="ok"><b>Qué debe ver</b>«Distancia: 20.0 cm» estable (varía en décimas). Con el sensor tapado con un trapo o apuntando al cielo: «Sin eco válido…».</div>
+
+  <h3>Escalón 3 · El medidor en pantalla</h3>
+  <p>Aquí se reutilizan <b>sin cambios</b> las funciones del escalón 2 y solo se añade el dibujo.</p>
+  <div class="b td"><figure class="code" data-file="05a_medidor_tdisplay.ino"><figcaption><span>05a_medidor_tdisplay.ino</span><button type="button" class="copy" aria-label="Copiar 05a_medidor_tdisplay.ino">Copiar</button></figcaption><pre><code><span class="c">/* 05a_medidor_tdisplay
+   Medidor de distancia HC-SR04 con la pantalla de la LilyGO T-Display.
+   TRIG = GPIO26, ECHO = GPIO27 (con divisor de tension). */</span>
+
+<span class="k">#include</span> &lt;<span class="n">TFT_eSPI</span>.h&gt;
+
+<span class="k">const</span> <span class="k">int</span> <span class="n">PIN_TRIG</span> = <span class="n">26</span>;
+<span class="k">const</span> <span class="k">int</span> <span class="n">PIN_ECHO</span> = <span class="n">27</span>;
+<span class="k">const</span> <span class="k">float</span> TEMPERATURA_C = <span class="n">20.0</span>;
+<span class="k">const</span> <span class="k">unsigned</span> <span class="k">long</span> TIMEOUT_US = <span class="n">30000UL</span>;
+<span class="k">const</span> <span class="k">float</span> DIST_MIN = <span class="n">2.0</span>;
+<span class="k">const</span> <span class="k">float</span> DIST_MAX = <span class="n">400.0</span>;
+<span class="k">const</span> <span class="k">int</span> N_MUESTRAS = <span class="n">5</span>;
+<span class="k">const</span> <span class="k">float</span> ESCALA_CM = <span class="n">200.0</span>;               <span class="c">// la barra llena equivale a 200 cm</span>
+
+<span class="n">TFT_eSPI</span> tft = <span class="n">TFT_eSPI</span>();
+
+<span class="k">float</span> <span class="f">velocidadCmUs</span>() { <span class="k">return</span> (<span class="n">331.3</span> + <span class="n">0.606</span> * TEMPERATURA_C) * <span class="n">0.0001</span>; }
+
+<span class="k">float</span> <span class="f">medirUnaVez</span>() {
+  <span class="f">digitalWrite</span>(<span class="n">PIN_TRIG</span>, <span class="k">LOW</span>);  <span class="f">delayMicroseconds</span>(<span class="n">4</span>);
+  <span class="f">digitalWrite</span>(<span class="n">PIN_TRIG</span>, <span class="k">HIGH</span>); <span class="f">delayMicroseconds</span>(<span class="n">10</span>);
+  <span class="f">digitalWrite</span>(<span class="n">PIN_TRIG</span>, <span class="k">LOW</span>);
+  <span class="k">unsigned</span> <span class="k">long</span> t = <span class="f">pulseIn</span>(<span class="n">PIN_ECHO</span>, <span class="k">HIGH</span>, TIMEOUT_US);
+  <span class="k">if</span> (t == <span class="n">0</span>) <span class="k">return</span> -<span class="n">1</span>;
+  <span class="k">float</span> d = t * <span class="f">velocidadCmUs</span>() / <span class="n">2.0</span>;
+  <span class="k">return</span> (d &lt; DIST_MIN || d &gt; DIST_MAX) ? -<span class="n">1</span> : d;
+}
+
+<span class="k">float</span> <span class="f">medirDistancia</span>() {
+  <span class="k">float</span> v[N_MUESTRAS];
+  <span class="k">int</span> n = <span class="n">0</span>;
+  <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; N_MUESTRAS; i++) {
+    <span class="k">float</span> d = <span class="f">medirUnaVez</span>();
+    <span class="k">if</span> (d &gt; <span class="n">0</span>) v[n++] = d;
+    <span class="f">delay</span>(<span class="n">60</span>);
+  }
+  <span class="k">if</span> (n &lt; <span class="n">3</span>) <span class="k">return</span> -<span class="n">1</span>;
+  <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt; n; i++) {
+    <span class="k">float</span> x = v[i]; <span class="k">int</span> j = i - <span class="n">1</span>;
+    <span class="k">while</span> (j &gt;= <span class="n">0</span> &amp;&amp; v[j] &gt; x) { v[j + <span class="n">1</span>] = v[j]; j--; }
+    v[j + <span class="n">1</span>] = x;
+  }
+  <span class="k">return</span> v[n / <span class="n">2</span>];
+}
+
+<span class="k">void</span> <span class="f">setup</span>() {
+  <span class="t">Serial</span>.<span class="f">begin</span>(<span class="n">115200</span>);
+  <span class="f">pinMode</span>(<span class="n">PIN_TRIG</span>, <span class="k">OUTPUT</span>);
+  <span class="f">pinMode</span>(<span class="n">PIN_ECHO</span>, <span class="k">INPUT</span>);
+  <span class="f">digitalWrite</span>(<span class="n">PIN_TRIG</span>, <span class="k">LOW</span>);
+
+  tft.<span class="f">init</span>();
+  tft.<span class="f">setRotation</span>(<span class="n">1</span>);                        <span class="c">// 240 x 135, horizontal</span>
+  tft.<span class="f">fillScreen</span>(<span class="n">TFT_BLACK</span>);
+  tft.<span class="f">setTextColor</span>(<span class="n">TFT_CYAN</span>, <span class="n">TFT_BLACK</span>);
+  tft.<span class="f">drawString</span>(<span class="s">"Distancia (cm)"</span>, <span class="n">8</span>, <span class="n">6</span>, <span class="n">2</span>);
+}
+
+<span class="k">void</span> <span class="f">loop</span>() {
+  <span class="k">float</span> d = <span class="f">medirDistancia</span>();
+
+  <span class="c">// Cifra grande: el fondo negro (2.º color) borra el valor anterior</span>
+  tft.<span class="f">setTextColor</span>(d &lt; <span class="n">0</span> ? <span class="n">TFT_RED</span> : <span class="n">TFT_GREEN</span>, <span class="n">TFT_BLACK</span>);
+  tft.<span class="f">setTextPadding</span>(<span class="n">224</span>);                   <span class="c">// borra hasta 224 px a la derecha</span>
+  <span class="k">if</span> (d &lt; <span class="n">0</span>) tft.<span class="f">drawString</span>(<span class="s">"-- sin eco --"</span>, <span class="n">8</span>, <span class="n">40</span>, <span class="n">4</span>);
+  <span class="k">else</span>       tft.<span class="f">drawString</span>(<span class="k">String</span>(d, <span class="n">1</span>), <span class="n">8</span>, <span class="n">34</span>, <span class="n">7</span>);   <span class="c">// fuente 7 segmentos</span>
+  tft.<span class="f">setTextPadding</span>(<span class="n">0</span>);
+
+  <span class="c">// Barra proporcional a la distancia</span>
+  <span class="k">int</span> w = <span class="n">0</span>;
+  <span class="k">if</span> (d &gt; <span class="n">0</span>) w = (<span class="k">int</span>)(<span class="n">224.0</span> * <span class="f">min</span>(d, ESCALA_CM) / ESCALA_CM);
+  tft.<span class="f">drawRect</span>(<span class="n">8</span>, <span class="n">100</span>, <span class="n">224</span>, <span class="n">24</span>, <span class="n">TFT_WHITE</span>);
+  tft.<span class="f">fillRect</span>(<span class="n">9</span>, <span class="n">101</span>, w, <span class="n">22</span>, <span class="n">TFT_GREEN</span>);
+  tft.<span class="f">fillRect</span>(<span class="n">9</span> + w, <span class="n">101</span>, <span class="n">222</span> - w, <span class="n">22</span>, <span class="n">TFT_BLACK</span>);
+
+  <span class="t">Serial</span>.<span class="f">println</span>(d);                         <span class="c">// tambien por el monitor serie</span>
+}</code></pre></figure></div>
+  <div class="b cyd"><figure class="code" data-file="05b_medidor_cyd.ino"><figcaption><span>05b_medidor_cyd.ino</span><button type="button" class="copy" aria-label="Copiar 05b_medidor_cyd.ino">Copiar</button></figcaption><pre><code><span class="c">/* 05b_medidor_cyd
+   Medidor de distancia HC-SR04 con la ESP32-2432S028R (CYD).
+   TRIG = GPIO22 (conector CN1/P3), ECHO = GPIO35 (conector P3, con divisor),
+   alimentacion 5 V desde el pin VIN del conector P1. */</span>
+
+<span class="k">#include</span> &lt;<span class="n">TFT_eSPI</span>.h&gt;
+
+<span class="k">const</span> <span class="k">int</span> <span class="n">PIN_TRIG</span> = <span class="n">22</span>;
+<span class="k">const</span> <span class="k">int</span> <span class="n">PIN_ECHO</span> = <span class="n">35</span>;
+<span class="k">const</span> <span class="k">float</span> TEMPERATURA_C = <span class="n">20.0</span>;
+<span class="k">const</span> <span class="k">unsigned</span> <span class="k">long</span> TIMEOUT_US = <span class="n">30000UL</span>;
+<span class="k">const</span> <span class="k">float</span> DIST_MIN = <span class="n">2.0</span>;
+<span class="k">const</span> <span class="k">float</span> DIST_MAX = <span class="n">400.0</span>;
+<span class="k">const</span> <span class="k">int</span> N_MUESTRAS = <span class="n">5</span>;
+<span class="k">const</span> <span class="k">float</span> ESCALA_CM = <span class="n">200.0</span>;
+
+<span class="n">TFT_eSPI</span> tft = <span class="n">TFT_eSPI</span>();
+
+<span class="k">float</span> <span class="f">velocidadCmUs</span>() { <span class="k">return</span> (<span class="n">331.3</span> + <span class="n">0.606</span> * TEMPERATURA_C) * <span class="n">0.0001</span>; }
+
+<span class="k">float</span> <span class="f">medirUnaVez</span>() {
+  <span class="f">digitalWrite</span>(<span class="n">PIN_TRIG</span>, <span class="k">LOW</span>);  <span class="f">delayMicroseconds</span>(<span class="n">4</span>);
+  <span class="f">digitalWrite</span>(<span class="n">PIN_TRIG</span>, <span class="k">HIGH</span>); <span class="f">delayMicroseconds</span>(<span class="n">10</span>);
+  <span class="f">digitalWrite</span>(<span class="n">PIN_TRIG</span>, <span class="k">LOW</span>);
+  <span class="k">unsigned</span> <span class="k">long</span> t = <span class="f">pulseIn</span>(<span class="n">PIN_ECHO</span>, <span class="k">HIGH</span>, TIMEOUT_US);
+  <span class="k">if</span> (t == <span class="n">0</span>) <span class="k">return</span> -<span class="n">1</span>;
+  <span class="k">float</span> d = t * <span class="f">velocidadCmUs</span>() / <span class="n">2.0</span>;
+  <span class="k">return</span> (d &lt; DIST_MIN || d &gt; DIST_MAX) ? -<span class="n">1</span> : d;
+}
+
+<span class="k">float</span> <span class="f">medirDistancia</span>() {
+  <span class="k">float</span> v[N_MUESTRAS];
+  <span class="k">int</span> n = <span class="n">0</span>;
+  <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; N_MUESTRAS; i++) {
+    <span class="k">float</span> d = <span class="f">medirUnaVez</span>();
+    <span class="k">if</span> (d &gt; <span class="n">0</span>) v[n++] = d;
+    <span class="f">delay</span>(<span class="n">60</span>);
+  }
+  <span class="k">if</span> (n &lt; <span class="n">3</span>) <span class="k">return</span> -<span class="n">1</span>;
+  <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt; n; i++) {
+    <span class="k">float</span> x = v[i]; <span class="k">int</span> j = i - <span class="n">1</span>;
+    <span class="k">while</span> (j &gt;= <span class="n">0</span> &amp;&amp; v[j] &gt; x) { v[j + <span class="n">1</span>] = v[j]; j--; }
+    v[j + <span class="n">1</span>] = x;
+  }
+  <span class="k">return</span> v[n / <span class="n">2</span>];
+}
+
+<span class="k">void</span> <span class="f">setup</span>() {
+  <span class="t">Serial</span>.<span class="f">begin</span>(<span class="n">115200</span>);
+  <span class="f">pinMode</span>(<span class="n">PIN_TRIG</span>, <span class="k">OUTPUT</span>);
+  <span class="f">pinMode</span>(<span class="n">PIN_ECHO</span>, <span class="k">INPUT</span>);                  <span class="c">// GPIO35: sin pull-up interno, no hace falta</span>
+  <span class="f">digitalWrite</span>(<span class="n">PIN_TRIG</span>, <span class="k">LOW</span>);
+
+  tft.<span class="f">init</span>();
+  tft.<span class="f">setRotation</span>(<span class="n">1</span>);                        <span class="c">// 320 x 240, horizontal</span>
+  tft.<span class="f">fillScreen</span>(<span class="n">TFT_BLACK</span>);
+  tft.<span class="f">setTextColor</span>(<span class="n">TFT_CYAN</span>, <span class="n">TFT_BLACK</span>);
+  tft.<span class="f">drawString</span>(<span class="s">"Distancia (cm)"</span>, <span class="n">12</span>, <span class="n">10</span>, <span class="n">4</span>);
+}
+
+<span class="k">void</span> <span class="f">loop</span>() {
+  <span class="k">float</span> d = <span class="f">medirDistancia</span>();
+
+  tft.<span class="f">setTextColor</span>(d &lt; <span class="n">0</span> ? <span class="n">TFT_RED</span> : <span class="n">TFT_GREEN</span>, <span class="n">TFT_BLACK</span>);
+  tft.<span class="f">setTextPadding</span>(<span class="n">300</span>);
+  <span class="k">if</span> (d &lt; <span class="n">0</span>) tft.<span class="f">drawString</span>(<span class="s">"-- sin eco --"</span>, <span class="n">12</span>, <span class="n">70</span>, <span class="n">4</span>);
+  <span class="k">else</span>       tft.<span class="f">drawString</span>(<span class="k">String</span>(d, <span class="n">1</span>), <span class="n">12</span>, <span class="n">60</span>, <span class="n">8</span>);  <span class="c">// fuente 8: cifras de 75 px</span>
+  tft.<span class="f">setTextPadding</span>(<span class="n">0</span>);
+
+  <span class="k">int</span> w = <span class="n">0</span>;
+  <span class="k">if</span> (d &gt; <span class="n">0</span>) w = (<span class="k">int</span>)(<span class="n">296.0</span> * <span class="f">min</span>(d, ESCALA_CM) / ESCALA_CM);
+  tft.<span class="f">drawRect</span>(<span class="n">12</span>, <span class="n">180</span>, <span class="n">296</span>, <span class="n">36</span>, <span class="n">TFT_WHITE</span>);
+  tft.<span class="f">fillRect</span>(<span class="n">13</span>, <span class="n">181</span>, w, <span class="n">34</span>, <span class="n">TFT_GREEN</span>);
+  tft.<span class="f">fillRect</span>(<span class="n">13</span> + w, <span class="n">181</span>, <span class="n">294</span> - w, <span class="n">34</span>, <span class="n">TFT_BLACK</span>);
+
+  <span class="t">Serial</span>.<span class="f">println</span>(d);
+}</code></pre></figure></div>
+  <div class="b oled"><figure class="code" data-file="05c_medidor_oled.ino"><figcaption><span>05c_medidor_oled.ino</span><button type="button" class="copy" aria-label="Copiar 05c_medidor_oled.ino">Copiar</button></figcaption><pre><code><span class="c">/* 05c_medidor_oled
+   Medidor de distancia HC-SR04 con una placa ESP32 + OLED SSD1306 (128x64).
+   TRIG = GPIO26, ECHO = GPIO27 (con divisor de tension). */</span>
+
+<span class="k">#include</span> &lt;<span class="t">Wire</span>.h&gt;
+<span class="k">#include</span> &lt;Adafruit_GFX.h&gt;
+<span class="k">#include</span> &lt;<span class="t">Adafruit_SSD1306</span>.h&gt;
+
+<span class="c">// --- Pines de la OLED: elija UNA linea (la que hallo 02c_buscar_oled) ---</span>
+<span class="k">const</span> <span class="k">int</span> OLED_SDA = <span class="n">4</span>;   <span class="k">const</span> <span class="k">int</span> OLED_SCL = <span class="n">15</span>;  <span class="k">const</span> <span class="k">int</span> OLED_RST = <span class="n">16</span>;  <span class="c">// Heltec WiFi Kit 32</span>
+<span class="c">// const int OLED_SDA = 5;   const int OLED_SCL = 4;   const int OLED_RST = -1;  // WEMOS/LOLIN32 OLED</span>
+<span class="c">// const int OLED_SDA = 21;  const int OLED_SCL = 22;  const int OLED_RST = -1;  // I2C estandar</span>
+
+<span class="k">const</span> <span class="k">int</span> <span class="n">PIN_TRIG</span> = <span class="n">26</span>;
+<span class="k">const</span> <span class="k">int</span> <span class="n">PIN_ECHO</span> = <span class="n">27</span>;
+<span class="k">const</span> <span class="k">float</span> TEMPERATURA_C = <span class="n">20.0</span>;
+<span class="k">const</span> <span class="k">unsigned</span> <span class="k">long</span> TIMEOUT_US = <span class="n">30000UL</span>;
+<span class="k">const</span> <span class="k">float</span> DIST_MIN = <span class="n">2.0</span>;
+<span class="k">const</span> <span class="k">float</span> DIST_MAX = <span class="n">400.0</span>;
+<span class="k">const</span> <span class="k">int</span> N_MUESTRAS = <span class="n">5</span>;
+<span class="k">const</span> <span class="k">float</span> ESCALA_CM = <span class="n">200.0</span>;
+
+<span class="t">Adafruit_SSD1306</span> <span class="f">oled</span>(<span class="n">128</span>, <span class="n">64</span>, &amp;<span class="t">Wire</span>, OLED_RST);
+
+<span class="k">float</span> <span class="f">velocidadCmUs</span>() { <span class="k">return</span> (<span class="n">331.3</span> + <span class="n">0.606</span> * TEMPERATURA_C) * <span class="n">0.0001</span>; }
+
+<span class="k">float</span> <span class="f">medirUnaVez</span>() {
+  <span class="f">digitalWrite</span>(<span class="n">PIN_TRIG</span>, <span class="k">LOW</span>);  <span class="f">delayMicroseconds</span>(<span class="n">4</span>);
+  <span class="f">digitalWrite</span>(<span class="n">PIN_TRIG</span>, <span class="k">HIGH</span>); <span class="f">delayMicroseconds</span>(<span class="n">10</span>);
+  <span class="f">digitalWrite</span>(<span class="n">PIN_TRIG</span>, <span class="k">LOW</span>);
+  <span class="k">unsigned</span> <span class="k">long</span> t = <span class="f">pulseIn</span>(<span class="n">PIN_ECHO</span>, <span class="k">HIGH</span>, TIMEOUT_US);
+  <span class="k">if</span> (t == <span class="n">0</span>) <span class="k">return</span> -<span class="n">1</span>;
+  <span class="k">float</span> d = t * <span class="f">velocidadCmUs</span>() / <span class="n">2.0</span>;
+  <span class="k">return</span> (d &lt; DIST_MIN || d &gt; DIST_MAX) ? -<span class="n">1</span> : d;
+}
+
+<span class="k">float</span> <span class="f">medirDistancia</span>() {
+  <span class="k">float</span> v[N_MUESTRAS];
+  <span class="k">int</span> n = <span class="n">0</span>;
+  <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; N_MUESTRAS; i++) {
+    <span class="k">float</span> d = <span class="f">medirUnaVez</span>();
+    <span class="k">if</span> (d &gt; <span class="n">0</span>) v[n++] = d;
+    <span class="f">delay</span>(<span class="n">60</span>);
+  }
+  <span class="k">if</span> (n &lt; <span class="n">3</span>) <span class="k">return</span> -<span class="n">1</span>;
+  <span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt; n; i++) {
+    <span class="k">float</span> x = v[i]; <span class="k">int</span> j = i - <span class="n">1</span>;
+    <span class="k">while</span> (j &gt;= <span class="n">0</span> &amp;&amp; v[j] &gt; x) { v[j + <span class="n">1</span>] = v[j]; j--; }
+    v[j + <span class="n">1</span>] = x;
+  }
+  <span class="k">return</span> v[n / <span class="n">2</span>];
+}
+
+<span class="k">void</span> <span class="f">setup</span>() {
+  <span class="t">Serial</span>.<span class="f">begin</span>(<span class="n">115200</span>);
+  <span class="f">pinMode</span>(<span class="n">PIN_TRIG</span>, <span class="k">OUTPUT</span>);
+  <span class="f">pinMode</span>(<span class="n">PIN_ECHO</span>, <span class="k">INPUT</span>);
+  <span class="f">digitalWrite</span>(<span class="n">PIN_TRIG</span>, <span class="k">LOW</span>);
+
+  <span class="t">Wire</span>.<span class="f">begin</span>(OLED_SDA, OLED_SCL);
+  <span class="k">if</span> (!oled.<span class="f">begin</span>(<span class="n">SSD1306_SWITCHCAPVCC</span>, <span class="n">0x3C</span>, <span class="k">true</span>, <span class="k">false</span>)) {
+    <span class="t">Serial</span>.<span class="f">println</span>(<span class="s">"No se pudo iniciar la OLED"</span>);
+    <span class="k">while</span> (<span class="k">true</span>) <span class="f">delay</span>(<span class="n">1000</span>);
+  }
+  oled.<span class="f">setTextColor</span>(<span class="n">SSD1306_WHITE</span>);
+}
+
+<span class="k">void</span> <span class="f">loop</span>() {
+  <span class="k">float</span> d = <span class="f">medirDistancia</span>();
+
+  oled.<span class="f">clearDisplay</span>();                       <span class="c">// la OLED se redibuja entera cada vez</span>
+  oled.<span class="f">setTextSize</span>(<span class="n">1</span>);
+  oled.<span class="f">setCursor</span>(<span class="n">0</span>, <span class="n">0</span>);
+  oled.<span class="f">print</span>(<span class="s">"Distancia (cm)"</span>);
+  oled.<span class="f">setTextSize</span>(<span class="n">3</span>);                       <span class="c">// cifras de 24 px de alto</span>
+  oled.<span class="f">setCursor</span>(<span class="n">0</span>, <span class="n">16</span>);
+  <span class="k">if</span> (d &lt; <span class="n">0</span>) { oled.<span class="f">setTextSize</span>(<span class="n">2</span>); oled.<span class="f">print</span>(<span class="s">"sin eco"</span>); }
+  <span class="k">else</span>       oled.<span class="f">print</span>(d, <span class="n">1</span>);
+
+  <span class="k">int</span> w = <span class="n">0</span>;
+  <span class="k">if</span> (d &gt; <span class="n">0</span>) w = (<span class="k">int</span>)(<span class="n">124.0</span> * <span class="f">min</span>(d, ESCALA_CM) / ESCALA_CM);
+  oled.<span class="f">drawRect</span>(<span class="n">0</span>, <span class="n">50</span>, <span class="n">128</span>, <span class="n">14</span>, <span class="n">SSD1306_WHITE</span>);
+  oled.<span class="f">fillRect</span>(<span class="n">2</span>, <span class="n">52</span>, w, <span class="n">10</span>, <span class="n">SSD1306_WHITE</span>);
+  oled.<span class="f">display</span>();                            <span class="c">// envia la imagen a la pantalla</span>
+
+  <span class="t">Serial</span>.<span class="f">println</span>(d);
+}</code></pre></figure></div>
+  <h4 style="font:700 1.05rem var(--font-display);margin:18px 0 6px">Explicación del dibujo</h4>
+  <dl class="gl">
+    <dt class="b td cyd"><code>tft.init() / setRotation(1)</code></dt><dd class="b td cyd">Inicializa la pantalla y la gira a horizontal. (Rotación 0 = vertical; 1, 2 y 3 giran de 90° en 90°.)</dd>
+    <dt class="b td cyd"><code>drawString(texto, x, y, fuente)</code></dt><dd class="b td cyd">Escribe texto en el punto (x, y), con origen arriba a la izquierda. La fuente 7 imita un display de 7 segmentos; la 8 es gigante y la 4 es de tamaño medio.</dd>
+    <dt class="b td cyd"><code>setTextColor(fg, TFT_BLACK)</code> y <code>setTextPadding(n)</code></dt><dd class="b td cyd">Al dar color de fondo, cada carácter se dibuja sobre un rectángulo negro y <b>borra el anterior</b>. El relleno (<i>padding</i>) borra hasta <i>n</i> píxeles a la derecha, necesario cuando el número nuevo es más corto que el anterior. Así <b>no hay que borrar toda la pantalla</b> en cada vuelta, lo que evitaría el parpadeo.</dd>
+    <dt class="b oled"><code>oled.begin(…, true, false)</code></dt><dd class="b oled">Los dos últimos valores significan: <code>true</code> = hacer reset de la pantalla; <code>false</code> = no reiniciar el bus I²C, porque ya lo arrancó <code>Wire.begin(SDA, SCL)</code> con sus pines.</dd>
+    <dt class="b oled"><code>clearDisplay() … display()</code></dt><dd class="b oled">La OLED trabaja con un «lienzo» en la memoria: se borra, se dibuja todo y se envía junto con <code>display()</code>. Por eso aquí sí se redibuja entera cada vuelta.</dd>
+    <dt class="b oled"><code>setTextSize(3)</code></dt><dd class="b oled">Multiplica el tamaño base (6×8 píxeles) por 3.</dd>
+    <dt>Barra proporcional</dt><dd>El ancho es <code>ancho_máximo × min(d, 200) / 200</code>: una regla de tres. <code>min</code> recorta a 200 cm para que la barra no se salga de su marco. Se dibuja el relleno y, a continuación, un rectángulo del color de fondo con el sobrante.</dd>
+    <dt>Colores por estado</dt><dd>Verde = medida válida, rojo = «sin eco». Codificar el estado en el color permite entender la pantalla de un vistazo.</dd>
+    <dt><code>Serial.println(d)</code></dt><dd>Además de la pantalla, se envía la distancia al PC: sirve para depurar y para graficar con el <i>Serial Plotter</i> del IDE.</dd>
+  </dl>
+  <div class="ok"><b>Resultado final</b>La pantalla muestra «Distancia (cm)», la cifra en grande con un decimal y una barra que crece al alejar la mano. Pruébelo con la palma plana a 10, 30 y 100 cm.</div>
+
+  <h3>Retos para seguir</h3>
+  <ul>
+    <li>Cambie el color de la cifra a rojo cuando la distancia sea menor que 15 cm.</li>
+    <li>Muestre también el mínimo y el máximo medidos desde que arrancó la placa.</li>
+    <li>Añada un zumbador activo en otro pin libre que pite más rápido cuanto más cerca esté el objeto (sensor de aparcamiento).</li>
+    <li>Muestre la temperatura real con un sensor (por ejemplo, DHT22) y pásela a <code>velocidadCmUs()</code> en vez de la constante.</li>
+  </ul>
+  <ul class="check" data-key="c7"><li><label><input type="checkbox"> El escalón 1 muestra tiempos y distancias que cambian al mover la mano.</label></li><li><label><input type="checkbox"> El escalón 2 da lecturas estables y avisa si no hay eco.</label></li><li><label><input type="checkbox"> El escalón 3 muestra la distancia en la pantalla.</label></li></ul>
+</section>
+
+<!-- ====================== 8 ====================== -->
+<section class="cap" id="c8">
+  <p class="kicker">Capítulo 8</p>
+  <h2>Calibrar y mejorar</h2>
+  <p>Un instrumento no está terminado hasta que se compara con una referencia. Ponga una cinta métrica o una regla, apoye el sensor en el cero y coloque una superficie plana (un libro) a distancias conocidas. Anote lo que marca el medidor. La calculadora de abajo compara y le propone una corrección.</p>
+
+  <div class="lab" id="lab-cal">
+    <h4>Laboratorio 3 · Tabla de calibración</h4>
+    <p class="sub">Los valores de «Medida» son un <b>ejemplo</b>: reemplácelos por los suyos. La corrección es una recta: <i>real ≈ a · medida + b</i> (regresión lineal por mínimos cuadrados).</p>
+    <div class="tablewrap"><table id="cal-t"><thead><tr><th class="c">Real (cm)</th><th class="c">Medida (cm)</th><th class="c">Error (cm)</th></tr></thead><tbody></tbody></table></div>
+    <div class="out" id="cal-out"></div>
+    <div class="serial" id="cal-code" style="color:#dbe7ec"></div>
+  </div>
+
+  <h3>Qué limita la precisión</h3>
+  <div class="tablewrap"><table><thead><tr><th>Factor</th><th>Efecto</th><th>Qué hacer</th></tr></thead><tbody>
+    <tr><td>Temperatura del aire</td><td>1,8 % de cambio de velocidad entre 20 y 30 °C</td><td>Usar la temperatura real en <code>TEMPERATURA_C</code></td></tr>
+    <tr><td>Superficie blanda (ropa, espuma)</td><td>absorbe el sonido: el eco es muy débil o no llega</td><td>Medir contra superficies duras y lisas</td></tr>
+    <tr><td>Superficie inclinada</td><td>el eco rebota hacia otro lado</td><td>Apuntar perpendicular al objeto</td></tr>
+    <tr><td>Objetos pequeños o delgados</td><td>devuelven poco eco; el cono de 15° ve otras cosas</td><td>Usar un objeto de al menos 0,5 m² (hoja de datos)</td></tr>
+    <tr><td>Menos de 2 cm</td><td>el sensor no distingue emisión de eco</td><td>Respetar el rango mínimo</td></tr>
+    <tr><td>Disparos muy seguidos</td><td>el eco anterior se confunde con el nuevo</td><td>Dejar al menos 60 ms entre medidas</td></tr>
+    <tr><td>Alimentación inestable</td><td>lecturas saltarinas</td><td>USB de buena calidad; evite alargar los cables de 5 V</td></tr>
+  </tbody></table></div>
+  <p>Para un segundo punto de vista sobre este mismo montaje con un ESP32, vea el <a href="https://randomnerdtutorials.com/esp32-hc-sr04-ultrasonic-arduino/" target="_blank" rel="noopener noreferrer">tutorial de Random Nerd Tutorials sobre HC-SR04 con ESP32</a>. Si desea ensayar el código sin la placa, el simulador <a href="https://wokwi.com/" target="_blank" rel="noopener noreferrer">Wokwi</a> incluye el sensor (<a href="https://docs.wokwi.com/parts/wokwi-hc-sr04" target="_blank" rel="noopener noreferrer">documentación de la pieza HC-SR04</a>).</p>
+</section>
+
+<!-- ====================== 9 ====================== -->
+<section class="cap" id="c9">
+  <p class="kicker">Capítulo 9</p>
+  <h2>Si algo falla</h2>
+  <p>Busque el síntoma y siga las causas en orden: están ordenadas de la más probable a la menos probable.</p>
+  <div class="tablewrap"><table><thead><tr><th>Síntoma</th><th>Causas, en orden, y solución</th></tr></thead><tbody>
+    <tr><td>El Monitor Serie no muestra nada</td><td>1) Velocidad distinta de 115200. 2) Puerto equivocado. 3) Pulse el botón RST de la placa.</td></tr>
+    <tr><td>La distancia sale siempre <b>0</b> o «Sin eco válido»</td><td>1) ECHO o TRIG en el pin equivocado (compare con la tabla de su placa). 2) El sensor no recibe 5 V (mida entre VCC y GND). 3) GND no está unido al de la placa. 4) El divisor está mal armado (mida el punto medio). 5) Objeto fuera de 2–400 cm o con superficie blanda.</td></tr>
+    <tr><td>Siempre marca el mismo valor, aunque mueva la mano</td><td>1) Falta GND común. 2) Cables sueltos en la protoboard. 3) El sensor apunta a una pared cercana (el eco más fuerte no es su mano).</td></tr>
+    <tr><td>Valores saltarines</td><td>1) Superficie inclinada o blanda. 2) Alimentación débil (cable USB largo o fino). 3) Menos de 60 ms entre disparos. 4) Use la mediana del escalón 2.</td></tr>
+    <tr><td>La placa se reinicia al conectar el sensor</td><td>El sensor tira de la alimentación: pruebe otro cable o puerto USB, y revise que no haya un cortocircuito entre VCC y GND.</td></tr>
+    <tr><td>La pantalla se queda en blanco o negra</td><td><b>T-Display/CYD:</b> configuración de TFT_eSPI no aplicada o borrada por una actualización de la librería (capítulo 4). <b>CYD:</b> no use IO21. <b>OLED:</b> pines distintos: repita el programa de búsqueda; pruebe 0x3D en vez de 0x3C.</td></tr>
+    <tr><td>Colores invertidos o imagen espejada (T-Display/CYD)</td><td>Ajuste <code>setRotation</code> o añada <code>#define TFT_RGB_ORDER TFT_BGR</code> / <code>TFT_INVERSION_ON</code> en el archivo de configuración de TFT_eSPI.</td></tr>
+    <tr><td>Error «TFT_eSPI.h: No such file»</td><td>La librería no está instalada; use el Gestor de bibliotecas.</td></tr>
+    <tr><td>Error «Elija una placa»</td><td>Es el <code>#error</code> del programa: quite las barras de <b>una</b> línea <code>#define PLACA_…</code>.</td></tr>
+    <tr><td>No sube el programa</td><td>Capítulo 3: cable de datos, driver, botón BOOT y velocidad de carga.</td></tr>
+    <tr><td>Sospecho que dañé un pin</td><td>Cambie TRIG y ECHO a otros GPIO libres y actualice los números en el código. Un pin dañado suele quedar fijo en un nivel.</td></tr>
+  </tbody></table></div>
+  <div class="note"><b>Método de diagnóstico</b>Divida el problema: (1) ¿la placa sube el programa «Hola»? (2) ¿la pantalla funciona sola? (3) ¿el sensor funciona en el escalón 1? Cuando una etapa falla, el error está <b>solo</b> entre la etapa anterior y esa.</div>
+</section>
+
+<!-- ====================== 10 ====================== -->
+<section class="cap" id="c10">
+  <p class="kicker">Capítulo 10</p>
+  <h2>Evaluación</h2>
+  <p>Diez preguntas para comprobar lo aprendido. Las que llevan cálculo se pueden resolver con los datos de los capítulos 5 a 7; la respuesta explica el procedimiento.</p>
+  <div id="quiz"></div>
+  <div class="score" id="score" role="status"></div>
+</section>
+
+<!-- ====================== 11 ====================== -->
+<section class="cap" id="c11">
+  <p class="kicker">Capítulo 11</p>
+  <h2>Enlaces y validación</h2>
+
+  <h3>Todos los enlaces de esta guía</h3>
+  <p>Estos son <b>todos</b> los enlaces que contiene la guía. Se comprobó cada uno con una petición HTTP real (siguiendo redirecciones) y se anotó el título que devuelve la página, para verificar que es la que se anuncia.</p>
+  <p><b>32 enlaces comprobados el 2026-11-14:</b> 32 responden HTTP 200, ninguno roto.</p><div class="tablewrap"><table class="enl"><thead><tr><th>Página (título real de la página)</th><th class="c">Estado</th></tr></thead><tbody><tr><td><a href="https://github.com/Xinyuan-LilyGO/TTGO-T-Display" target="_blank" rel="noopener noreferrer">GitHub - Xinyuan-LilyGO/TTGO-T-Display · GitHub</a><div class="u">https://github.com/Xinyuan-LilyGO/TTGO-T-Display</div></td><td class="c bien">200</td></tr><tr><td><a href="https://github.com/Bodmer/TFT_eSPI/blob/master/User_Setups/Setup25_TTGO_T_Display.h" target="_blank" rel="noopener noreferrer">TFT_eSPI/User_Setups/Setup25_TTGO_T_Display.h at master · Bodmer/TFT_eSPI · GitHub</a><div class="u">https://github.com/Bodmer/TFT_eSPI/blob/master/User_Setups/Setup25_TTGO_T_Display.h</div></td><td class="c bien">200</td></tr><tr><td><a href="https://raw.githubusercontent.com/Xinyuan-LilyGO/TTGO-T-Display/master/image/pinmap.jpg" target="_blank" rel="noopener noreferrer">https://raw.githubusercontent.com/Xinyuan-LilyGO/TTGO-T-Display/master/image/pinmap.jpg</a><div class="u">https://raw.githubusercontent.com/Xinyuan-LilyGO/TTGO-T-Display/master/image/pinmap.jpg</div></td><td class="c bien">200</td></tr><tr><td><a href="https://github.com/witnessmenow/ESP32-Cheap-Yellow-Display/blob/main/PINS.md" target="_blank" rel="noopener noreferrer">ESP32-Cheap-Yellow-Display/PINS.md at main · witnessmenow/ESP32-Cheap-Yellow-Display · Git</a><div class="u">https://github.com/witnessmenow/ESP32-Cheap-Yellow-Display/blob/main/PINS.md</div></td><td class="c bien">200</td></tr><tr><td><a href="https://docs.heltec.org/en/node/esp32/wifi_kit_32/index.html" target="_blank" rel="noopener noreferrer">WiFi Kit 32 — esp32 latest documentation</a><div class="u">https://docs.heltec.org/en/node/esp32/wifi_kit_32/index.html</div></td><td class="c bien">200</td></tr><tr><td><a href="https://randomnerdtutorials.com/esp32-pinout-reference-gpios/" target="_blank" rel="noopener noreferrer">ESP32 Pinout Reference: Which GPIO pins should you use? | Random Nerd Tutorials</a><div class="u">https://randomnerdtutorials.com/esp32-pinout-reference-gpios/</div></td><td class="c bien">200</td></tr><tr><td><a href="https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/peripherals/gpio.html" target="_blank" rel="noopener noreferrer">GPIO &amp; RTC GPIO - ESP32 - — ESP-IDF Programming Guide v6.1.1 documentation</a><div class="u">https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/peripherals/gpio.html</div></td><td class="c bien">200</td></tr><tr><td><a href="https://www.arduino.cc/en/software" target="_blank" rel="noopener noreferrer">https://www.arduino.cc/en/software</a><div class="u">https://www.arduino.cc/en/software</div></td><td class="c bien">200</td></tr><tr><td><a href="https://docs.arduino.cc/software/ide-v2/tutorials/getting-started/ide-v2-downloading-and-installing/" target="_blank" rel="noopener noreferrer">https://docs.arduino.cc/software/ide-v2/tutorials/getting-started/ide-v2-downloading-and-i</a><div class="u">https://docs.arduino.cc/software/ide-v2/tutorials/getting-started/ide-v2-downloading-and-installing/</div></td><td class="c bien">200</td></tr><tr><td><a href="https://www.silabs.com/software-and-tools/usb-to-uart-bridge-vcp-drivers" target="_blank" rel="noopener noreferrer">CP210x USB to UART Bridge VCP Drivers - Silicon Labs</a><div class="u">https://www.silabs.com/software-and-tools/usb-to-uart-bridge-vcp-drivers</div></td><td class="c bien">200</td></tr><tr><td><a href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" target="_blank" rel="noopener noreferrer">Nanjing Qinheng Microelectronics Co., Ltd.</a><div class="u">https://www.wch-ic.com/downloads/CH341SER_EXE.html</div></td><td class="c bien">200</td></tr><tr><td><a href="https://learn.sparkfun.com/tutorials/how-to-install-ch340-drivers/all" target="_blank" rel="noopener noreferrer">How to Install CH340 Drivers - SparkFun Learn</a><div class="u">https://learn.sparkfun.com/tutorials/how-to-install-ch340-drivers/all</div></td><td class="c bien">200</td></tr><tr><td><a href="https://docs.espressif.com/projects/arduino-esp32/en/latest/installing.html" target="_blank" rel="noopener noreferrer">Installing - - — Arduino ESP32 latest documentation</a><div class="u">https://docs.espressif.com/projects/arduino-esp32/en/latest/installing.html</div></td><td class="c bien">200</td></tr><tr><td><a href="https://github.com/espressif/arduino-esp32" target="_blank" rel="noopener noreferrer">GitHub - espressif/arduino-esp32: Arduino core for the ESP32 family of SoCs · GitHub</a><div class="u">https://github.com/espressif/arduino-esp32</div></td><td class="c bien">200</td></tr><tr><td><a href="https://docs.espressif.com/projects/arduino-esp32/en/latest/" target="_blank" rel="noopener noreferrer">Welcome to ESP32 Arduino Core’s documentation - - — Arduino ESP32 latest documentation</a><div class="u">https://docs.espressif.com/projects/arduino-esp32/en/latest/</div></td><td class="c bien">200</td></tr><tr><td><a href="https://docs.espressif.com/projects/esptool/en/latest/esp32/troubleshooting.html" target="_blank" rel="noopener noreferrer">Troubleshooting - ESP32 - — esptool latest documentation</a><div class="u">https://docs.espressif.com/projects/esptool/en/latest/esp32/troubleshooting.html</div></td><td class="c bien">200</td></tr><tr><td><a href="https://docs.arduino.cc/software/ide-v2/tutorials/ide-v2-installing-a-library/" target="_blank" rel="noopener noreferrer">https://docs.arduino.cc/software/ide-v2/tutorials/ide-v2-installing-a-library/</a><div class="u">https://docs.arduino.cc/software/ide-v2/tutorials/ide-v2-installing-a-library/</div></td><td class="c bien">200</td></tr><tr><td><a href="https://github.com/Bodmer/TFT_eSPI" target="_blank" rel="noopener noreferrer">GitHub - Bodmer/TFT_eSPI: Arduino and PlatformIO IDE compatible TFT library optimised for </a><div class="u">https://github.com/Bodmer/TFT_eSPI</div></td><td class="c bien">200</td></tr><tr><td><a href="https://github.com/witnessmenow/ESP32-Cheap-Yellow-Display/blob/main/DisplayConfig/User_Setup.h" target="_blank" rel="noopener noreferrer">ESP32-Cheap-Yellow-Display/DisplayConfig/User_Setup.h at main · witnessmenow/ESP32-Cheap-Y</a><div class="u">https://github.com/witnessmenow/ESP32-Cheap-Yellow-Display/blob/main/DisplayConfig/User_Setup.h</div></td><td class="c bien">200</td></tr><tr><td><a href="https://raw.githubusercontent.com/witnessmenow/ESP32-Cheap-Yellow-Display/main/DisplayConfig/User_Setup.h" target="_blank" rel="noopener noreferrer">https://raw.githubusercontent.com/witnessmenow/ESP32-Cheap-Yellow-Display/main/DisplayConf</a><div class="u">https://raw.githubusercontent.com/witnessmenow/ESP32-Cheap-Yellow-Display/main/DisplayConfig/User_Setup.h</div></td><td class="c bien">200</td></tr><tr><td><a href="https://github.com/witnessmenow/ESP32-Cheap-Yellow-Display/blob/main/SETUP.md" target="_blank" rel="noopener noreferrer">ESP32-Cheap-Yellow-Display/SETUP.md at main · witnessmenow/ESP32-Cheap-Yellow-Display · Gi</a><div class="u">https://github.com/witnessmenow/ESP32-Cheap-Yellow-Display/blob/main/SETUP.md</div></td><td class="c bien">200</td></tr><tr><td><a href="https://github.com/witnessmenow/ESP32-Cheap-Yellow-Display/blob/main/TROUBLESHOOTING.md" target="_blank" rel="noopener noreferrer">ESP32-Cheap-Yellow-Display/TROUBLESHOOTING.md at main · witnessmenow/ESP32-Cheap-Yellow-Di</a><div class="u">https://github.com/witnessmenow/ESP32-Cheap-Yellow-Display/blob/main/TROUBLESHOOTING.md</div></td><td class="c bien">200</td></tr><tr><td><a href="https://github.com/adafruit/Adafruit_SSD1306" target="_blank" rel="noopener noreferrer">GitHub - adafruit/Adafruit_SSD1306: Arduino library for SSD1306 monochrome 128x64 and 128x</a><div class="u">https://github.com/adafruit/Adafruit_SSD1306</div></td><td class="c bien">200</td></tr><tr><td><a href="https://github.com/adafruit/Adafruit-GFX-Library" target="_blank" rel="noopener noreferrer">GitHub - adafruit/Adafruit-GFX-Library: Adafruit GFX graphics core Arduino library, this i</a><div class="u">https://github.com/adafruit/Adafruit-GFX-Library</div></td><td class="c bien">200</td></tr><tr><td><a href="https://learn.adafruit.com/monochrome-oled-breakouts" target="_blank" rel="noopener noreferrer">Overview | Monochrome OLED Breakouts | Adafruit Learning System</a><div class="u">https://learn.adafruit.com/monochrome-oled-breakouts</div></td><td class="c bien">200</td></tr><tr><td><a href="https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf" target="_blank" rel="noopener noreferrer">https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf</a><div class="u">https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf</div></td><td class="c bien">200</td></tr><tr><td><a href="https://es.wikipedia.org/wiki/Velocidad_del_sonido" target="_blank" rel="noopener noreferrer">Velocidad del sonido - Wikipedia, la enciclopedia libre</a><div class="u">https://es.wikipedia.org/wiki/Velocidad_del_sonido</div></td><td class="c bien">200</td></tr><tr><td><a href="https://documentation.espressif.com/esp32_datasheet_en.pdf" target="_blank" rel="noopener noreferrer">https://documentation.espressif.com/esp32_datasheet_en.pdf</a><div class="u">https://documentation.espressif.com/esp32_datasheet_en.pdf</div></td><td class="c bien">200</td></tr><tr><td><a href="https://docs.arduino.cc/language-reference/en/functions/advanced-io/pulseIn/" target="_blank" rel="noopener noreferrer">https://docs.arduino.cc/language-reference/en/functions/advanced-io/pulseIn/</a><div class="u">https://docs.arduino.cc/language-reference/en/functions/advanced-io/pulseIn/</div></td><td class="c bien">200</td></tr><tr><td><a href="https://randomnerdtutorials.com/esp32-hc-sr04-ultrasonic-arduino/" target="_blank" rel="noopener noreferrer">ESP32 with HC-SR04 Ultrasonic Sensor with Arduino IDE | Random Nerd Tutorials</a><div class="u">https://randomnerdtutorials.com/esp32-hc-sr04-ultrasonic-arduino/</div></td><td class="c bien">200</td></tr><tr><td><a href="https://wokwi.com/" target="_blank" rel="noopener noreferrer">Wokwi - World's most advanced ESP32 Simulator</a><div class="u">https://wokwi.com/</div></td><td class="c bien">200</td></tr><tr><td><a href="https://docs.wokwi.com/parts/wokwi-hc-sr04" target="_blank" rel="noopener noreferrer">wokwi-hc-sr04 Reference | Wokwi Docs</a><div class="u">https://docs.wokwi.com/parts/wokwi-hc-sr04</div></td><td class="c bien">200</td></tr></tbody></table></div>
+
+  <h3>Compilación de los programas</h3>
+  <p>Cada uno de los 10 sketches se compiló con <code>arduino-cli</code> para su placa (<code>lilygo_t_display</code>, <code>jczn_2432s028r</code> = CYD, <code>heltec_wifi_kit_32</code>) y, los de uso general, también para «ESP32 Dev Module» (<code>esp32</code>). Antes de cada compilación de pantalla se comprobó que la configuración de TFT_eSPI activa fuera la de la placa (Setup25 para la T-Display, el <code>User_Setup.h</code> de la CYD). Las librerías se instalaron en una carpeta temporal, con las versiones indicadas abajo. La columna «Memoria» es el programa ya compilado frente a los 1.310.720 bytes disponibles.</p>
+  <p><b>19 de 19 compilaciones correctas</b> el 2026-11-14 con el núcleo <code>esp32 3.3.12</code>. Librerías: Adafruit BusIO 1.17.4 · Adafruit GFX Library 1.13.0 · Adafruit SSD1306 2.5.17 · TFT_eSPI 2.5.43.</p><div class="tablewrap"><table><thead><tr><th>Sketch</th><th>Placa elegida en el IDE</th><th class="c">Resultado</th><th>Memoria</th></tr></thead><tbody><tr><td><code>01_hola_serie</code></td><td><code>esp32</code></td><td class="c bien">compila</td><td>269.964 bytes (20 %)</td></tr><tr><td><code>03_distancia_basica</code></td><td><code>esp32</code></td><td class="c bien">compila</td><td>272.940 bytes (20 %)</td></tr><tr><td><code>03_distancia_basica</code></td><td><code>heltec_wifi_kit_32</code></td><td class="c bien">compila</td><td>273.024 bytes (20 %)</td></tr><tr><td><code>03_distancia_basica</code></td><td><code>jczn_2432s028r</code></td><td class="c bien">compila</td><td>273.024 bytes (20 %)</td></tr><tr><td><code>03_distancia_basica</code></td><td><code>lilygo_t_display</code></td><td class="c bien">compila</td><td>272.956 bytes (20 %)</td></tr><tr><td><code>04_distancia_robusta</code></td><td><code>esp32</code></td><td class="c bien">compila</td><td>273.140 bytes (20 %)</td></tr><tr><td><code>04_distancia_robusta</code></td><td><code>heltec_wifi_kit_32</code></td><td class="c bien">compila</td><td>273.224 bytes (20 %)</td></tr><tr><td><code>04_distancia_robusta</code></td><td><code>jczn_2432s028r</code></td><td class="c bien">compila</td><td>273.224 bytes (20 %)</td></tr><tr><td><code>04_distancia_robusta</code></td><td><code>lilygo_t_display</code></td><td class="c bien">compila</td><td>273.156 bytes (20 %)</td></tr><tr><td><code>02a_pantalla_tdisplay</code></td><td><code>esp32</code></td><td class="c bien">compila</td><td>315.608 bytes (24 %)</td></tr><tr><td><code>02a_pantalla_tdisplay</code></td><td><code>lilygo_t_display</code></td><td class="c bien">compila</td><td>315.624 bytes (24 %)</td></tr><tr><td><code>05a_medidor_tdisplay</code></td><td><code>esp32</code></td><td class="c bien">compila</td><td>318.068 bytes (24 %)</td></tr><tr><td><code>05a_medidor_tdisplay</code></td><td><code>lilygo_t_display</code></td><td class="c bien">compila</td><td>318.100 bytes (24 %)</td></tr><tr><td><code>02b_pantalla_cyd</code></td><td><code>esp32</code></td><td class="c bien">compila</td><td>315.068 bytes (24 %)</td></tr><tr><td><code>02b_pantalla_cyd</code></td><td><code>jczn_2432s028r</code></td><td class="c bien">compila</td><td>315.156 bytes (24 %)</td></tr><tr><td><code>05b_medidor_cyd</code></td><td><code>jczn_2432s028r</code></td><td class="c bien">compila</td><td>317.612 bytes (24 %)</td></tr><tr><td><code>02c_buscar_oled</code></td><td><code>heltec_wifi_kit_32</code></td><td class="c bien">compila</td><td>294.320 bytes (22 %)</td></tr><tr><td><code>02d_pantalla_oled</code></td><td><code>heltec_wifi_kit_32</code></td><td class="c bien">compila</td><td>305.988 bytes (23 %)</td></tr><tr><td><code>05c_medidor_oled</code></td><td><code>heltec_wifi_kit_32</code></td><td class="c bien">compila</td><td>307.488 bytes (23 %)</td></tr></tbody></table></div>
+  <div class="warn"><b>Lo que no se comprobó</b>No hubo placas físicas disponibles para esta validación: la compilación demuestra que el código es correcto para cada placa y que los pines coinciden con las fuentes citadas, pero no que su montaje concreto funcione. Por eso hay pruebas de comprobación en cada capítulo y un capítulo de fallos.</div>
+</section>
+
+<section class="cap" id="glosario">
+  <p class="kicker">Referencia</p>
+  <h2>Glosario</h2>
+  <dl class="gl">
+    <dt>ADC</dt><dd>Conversor analógico-digital: convierte una tensión en un número.</dd>
+    <dt>Baudio (baud)</dt><dd>Velocidad de la comunicación serie: símbolos por segundo. Debe ser igual en el programa y en el Monitor Serie.</dd>
+    <dt>Backlight</dt><dd>Luz de fondo de la pantalla.</dd>
+    <dt>Divisor de tensión</dt><dd>Dos resistencias en serie que entregan en su punto medio una fracción de la tensión de entrada.</dd>
+    <dt>Eco</dt><dd>Onda sonora reflejada que regresa al sensor.</dd>
+    <dt>GPIO</dt><dd>Pin de entrada y salida de propósito general del microcontrolador.</dd>
+    <dt>I²C</dt><dd>Bus de dos hilos (SDA y SCL) en el que cada dispositivo tiene una dirección.</dd>
+    <dt>Mediana</dt><dd>Valor central de una lista ordenada; resiste valores extremos.</dd>
+    <dt>Núcleo (core)</dt><dd>Paquete que enseña al IDE de Arduino a compilar para un chip. Aquí, «esp32 by Espressif Systems».</dd>
+    <dt>Pin de arranque (strapping)</dt><dd>Pin cuyo nivel al encender determina cómo arranca el chip (GPIO0, 2, 5, 12, 15).</dd>
+    <dt>Pull-up / pull-down</dt><dd>Resistencia que lleva un pin a nivel alto/bajo cuando nadie lo maneja.</dd>
+    <dt>PWM</dt><dd>Modulación por ancho de pulso: simula tensiones intermedias con pulsos rápidos.</dd>
+    <dt>SPI</dt><dd>Bus rápido de cuatro hilos que usan las pantallas a color (reloj, datos, selección y comando/dato).</dd>
+    <dt>TTL</dt><dd>Niveles lógicos de señal digital: «alto» y «bajo» definidos por tensiones.</dd>
+    <dt>Ultrasonido</dt><dd>Sonido de frecuencia mayor a 20 kHz, inaudible para las personas. El HC-SR04 usa 40 kHz.</dd>
+    <dt>VDD</dt><dd>Tensión de alimentación del chip; en el ESP32 es de 3,3 V.</dd>
+  </dl>
+  <footer>
+    <p>Guía preparada como material de apoyo por <b>Mg. Manuel Alejandro Obando</b> · Departamento de Física, Universidad del Cauca. Las marcas y nombres de placas pertenecen a sus fabricantes; los datos de pines proceden de las fuentes enlazadas en cada capítulo.</p>
+  </footer>
+</section>
+
+</main>
+</div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
+  function fmt(x, d) { return Number(x).toLocaleString("es-CO", { minimumFractionDigits: d, maximumFractionDigits: d }); }
+
+  /* ---------- Placa ---------- */
+  var BOARDS = {
+    td:   { nombre: "LilyGO T-Display", trig: 26, echo: 27, v5: "5V", gnd: "GND" },
+    cyd:  { nombre: "ESP32-2432S028R (CYD)", trig: 22, echo: 35, v5: "VIN (P1)", gnd: "GND" },
+    oled: { nombre: "ESP32 con OLED", trig: 26, echo: 27, v5: "5V", gnd: "GND" }
+  };
+  var board = store("ojo-placa");
+  if (!BOARDS[board]) board = "td";
+  function setBoard(b) {
+    board = b; document.documentElement.setAttribute("data-board", b); store("ojo-placa", b);
+    $$("#seg button").forEach(function (x) { x.setAttribute("aria-pressed", x.getAttribute("data-b") === b ? "true" : "false"); });
+    drawWiring();
+  }
+  $$("#seg button").forEach(function (x) { x.addEventListener("click", function () { setBoard(x.getAttribute("data-b")); }); });
+  $("#themebtn").addEventListener("click", function () {
+    var r = document.documentElement, dark = r.getAttribute("data-theme") === "dark" ||
+      (!r.getAttribute("data-theme") && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    r.setAttribute("data-theme", dark ? "light" : "dark");
+  });
+
+  /* ---------- Copiar código ---------- */
+  $$("figure.code .copy").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var code = btn.closest("figure").querySelector("code");
+      var txt = code.innerText;
+      function ok() { btn.textContent = "Copiado"; setTimeout(function () { btn.textContent = "Copiar"; }, 1600); }
+      function fallback() {
+        var r = document.createRange(); r.selectNodeContents(code);
+        var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+        btn.textContent = "Seleccionado: Ctrl+C"; setTimeout(function () { btn.textContent = "Copiar"; }, 2400);
+      }
+      try { navigator.clipboard.writeText(txt).then(ok, fallback); } catch (e) { fallback(); }
+    });
+  });
+
+  /* ---------- Listas de comprobación y progreso ---------- */
+  var cks = $$("ul.check");
+  function progreso() {
+    var hechas = 0;
+    cks.forEach(function (ul) { var cs = $$("input", ul); if (cs.length && cs.every(function (c) { return c.checked; })) hechas++; });
+    $("#prog").textContent = "Progreso: " + hechas + " de " + cks.length + " etapas listas";
+  }
+  cks.forEach(function (ul) {
+    var key = "ojo-ck-" + ul.getAttribute("data-key");
+    var saved = []; try { saved = JSON.parse(store(key) || "[]"); } catch (e) { saved = []; }
+    $$("input", ul).forEach(function (c, i) {
+      c.checked = !!saved[i];
+      c.addEventListener("change", function () { store(key, JSON.stringify($$("input", ul).map(function (x) { return x.checked; }))); progreso(); });
+    });
+  });
+  progreso();
+
+  /* ---------- Índice activo ---------- */
+  if ("IntersectionObserver" in window) {
+    var links = {}; $$("#toc a").forEach(function (a) { links[a.getAttribute("href").slice(1)] = a; });
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { $$("#toc a").forEach(function (a) { a.classList.remove("on"); }); if (links[e.target.id]) links[e.target.id].classList.add("on"); } });
+    }, { rootMargin: "-20% 0px -70% 0px" });
+    $$("section.cap").forEach(function (s) { io.observe(s); });
+  }
+
+  /* ---------- Laboratorio 1: eco ---------- */
+  var ecoD = $("#eco-d"), ecoT = $("#eco-t"), ecoO = $("#eco-obj");
+  function vcmus(T) { return (331.3 + 0.606 * T) * 0.0001; }
+  function eco() {
+    var d = +ecoD.value, T = +ecoT.value, hay = ecoO.checked;
+    $("#eco-dv").textContent = d; $("#eco-tv").textContent = T;
+    var v = vcmus(T), tEcho = 2 * d / v; // µs
+    var timeout = 30000, fuera = d > 400 || d < 2;
+    var llega = hay && !fuera && tEcho <= timeout;
+    var pulse = llega ? Math.round(tEcho) : 0;
+    var dCalc = pulse * 0.0343 / 2;               // escalón 1 (20 °C fijo)
+    var dReal = pulse * v / 2;                    // escalón 2 (con T)
+    var W = 640, x0 = 70, x1 = 610, escala = (x1 - x0) / 30000;
+    var wEco = llega ? tEcho * escala : 0;
+    var svg = '' +
+      '<text x="4" y="30" font-size="13" font-weight="600">TRIG</text>' +
+      '<polyline points="' + x0 + ',50 ' + x0 + ',50 ' + (x0 + 6) + ',50 ' + (x0 + 6) + ',20 ' + (x0 + 14) + ',20 ' + (x0 + 14) + ',50 ' + x1 + ',50" fill="none" stroke="var(--wire-green)" stroke-width="2.5"/>' +
+      '<text x="' + (x0 + 22) + '" y="30" font-size="12" style="fill:var(--fg-soft)">10 µs (el ancho no está a escala)</text>' +
+      '<text x="4" y="110" font-size="13" font-weight="600">ECHO</text>' +
+      '<polyline points="' + x0 + ',130 ' + (x0 + 20) + ',130 ' + (x0 + 20) + ',90 ' + (x0 + 20 + wEco) + ',90 ' + (x0 + 20 + wEco) + ',130 ' + x1 + ',130" fill="none" stroke="var(--wire-amber)" stroke-width="2.5"/>' +
+      (llega ? '<line x1="' + (x0 + 20) + '" y1="80" x2="' + (x0 + 20 + wEco) + '" y2="80" stroke="var(--fg)" stroke-width="1.5"/><text x="' + (x0 + 24 + wEco / 2) + '" y="74" text-anchor="middle" font-size="12" font-weight="600">t = ' + fmt(tEcho / 1000, 2) + ' ms</text>' :
+        '<text x="' + (x0 + 30) + '" y="86" font-size="12" style="fill:var(--bad)">sin eco: ECHO baja por sí solo</text>') +
+      '<line x1="' + x0 + '" y1="146" x2="' + x1 + '" y2="146" stroke="var(--fg-soft)"/>' +
+      [0, 5, 10, 15, 20, 25, 30].map(function (ms) { var x = x0 + ms * 1000 * escala; return '<line x1="' + x + '" y1="146" x2="' + x + '" y2="151" stroke="var(--fg-soft)"/><text x="' + x + '" y="165" text-anchor="middle" font-size="11" style="fill:var(--fg-soft)">' + ms + (ms === 30 ? ' ms (límite de pulseIn)' : '') + '</text>'; }).join("") +
+      '<line x1="' + x1 + '" y1="84" x2="' + x1 + '" y2="146" stroke="var(--bad)" stroke-dasharray="4 4"/>';
+    $("#eco-svg").innerHTML = svg;
+    var errPct = pulse ? (dCalc - d) / d * 100 : 0;
+    $("#eco-out").innerHTML =
+      '<div><small>Tiempo de ida y vuelta</small><strong>' + fmt(tEcho, 0) + ' µs</strong></div>' +
+      '<div><small>Velocidad del sonido</small><strong>' + fmt(v * 1e4, 1) + ' m/s</strong></div>' +
+      '<div><small>Devuelve pulseIn</small><strong>' + pulse + ' µs</strong></div>' +
+      '<div><small>Distancia con T real (escalón 2)</small><strong>' + (pulse ? fmt(dReal, 1) + ' cm' : '—') + '</strong></div>' +
+      '<div><small>Distancia suponiendo 20 °C (escalón 1)</small><strong>' + (pulse ? fmt(dCalc, 1) + ' cm' : '—') + '</strong></div>' +
+      '<div><small>Error de ignorar la temperatura</small><strong>' + (pulse ? fmt(dCalc - d, 1) + ' cm (' + fmt(errPct, 1) + ' %)' : '—') + '</strong></div>';
+    var msg;
+    if (!hay) msg = "Sin objeto: pulseIn espera 30 ms y devuelve 0\nSin eco válido (objeto fuera de rango o cableado incorrecto)";
+    else if (fuera) msg = "Objeto fuera del rango 2–400 cm (" + d + " cm): el sensor no es fiable\nSin eco válido (objeto fuera de rango o cableado incorrecto)";
+    else if (!llega) msg = "El eco tarda más de 30 ms: pulseIn devuelve 0\nSin eco válido";
+    else msg = "Tiempo: " + pulse + " us   Distancia: " + fmt(dCalc, 2).replace(",", ".") + " cm      (escalón 1)\nDistancia: " + fmt(dReal, 1).replace(",", ".") + " cm                              (escalón 2)";
+    $("#eco-serial").textContent = msg;
+  }
+  [ecoD, ecoT, ecoO].forEach(function (e) { e.addEventListener("input", eco); e.addEventListener("change", eco); });
+  eco();
+
+  /* ---------- Laboratorio 2: divisor ---------- */
+  var dvVin = $("#dv-vin"), dvR1 = $("#dv-r1"), dvR2 = $("#dv-r2");
+  function divisor() {
+    var vin = +dvVin.value, r1 = +dvR1.value, r2 = +dvR2.value;
+    if (!(r2 > 0) || !(r1 >= 0) || !(vin >= 0)) { $("#dv-out").innerHTML = ""; $("#dv-verdict").className = "verdict warn"; $("#dv-verdict").textContent = "Escriba valores válidos (R2 mayor que 0)."; return; }
+    var vo = vin * r2 / (r1 + r2), i = vin / (r1 + r2) * 1000;
+    var voMax = vin * (r2 * 1.05) / (r1 * 0.95 + r2 * 1.05), voMin = vin * (r2 * 0.95) / (r1 * 1.05 + r2 * 0.95);
+    $("#dv-out").innerHTML =
+      '<div><small>V en el pin del ESP32</small><strong>' + fmt(vo, 2) + ' V</strong></div>' +
+      '<div><small>Peor caso (±5 %)</small><strong>' + fmt(voMin, 2) + ' – ' + fmt(voMax, 2) + ' V</strong></div>' +
+      '<div><small>Corriente del divisor</small><strong>' + fmt(i, 2) + ' mA</strong></div>' +
+      '<div><small>Potencia en las resistencias</small><strong>' + fmt(vin * vin / (r1 + r2) * 1000, 1) + ' mW</strong></div>';
+    var v = $("#dv-verdict"), cls, txt;
+    if (voMax > 3.6) { cls = "bad"; txt = "PELIGRO: " + fmt(voMax, 2) + " V supera los 3,6 V (VDD + 0,3 V) que admite el pin. Puede dañar el ESP32."; }
+    else if (voMin < 2.475) { cls = "bad"; txt = "El pin podría no leer «alto»: se necesitan al menos 2,48 V (0,75 × VDD). En el peor caso hay " + fmt(voMin, 2) + " V."; }
+    else if (voMin < 2.8) { cls = "warn"; txt = "Funciona pero con poco margen (mínimo " + fmt(voMin, 2) + " V de 2,48 V). Prefiera valores cercanos a 3,3 V."; }
+    else { cls = "good"; txt = "Seguro: entre " + fmt(voMin, 2) + " y " + fmt(voMax, 2) + " V, por encima del mínimo de «alto» (2,48 V) y por debajo del máximo (3,6 V)."; }
+    v.className = "verdict " + cls; v.textContent = txt;
+  }
+  [dvVin, dvR1, dvR2].forEach(function (e) { e.addEventListener("input", divisor); });
+  $$("#dv-chips button").forEach(function (b) { b.addEventListener("click", function () { var p = b.getAttribute("data-r").split(","); dvR1.value = p[0]; dvR2.value = p[1]; divisor(); }); });
+  divisor();
+
+  /* ---------- Esquema de conexión ---------- */
+  function drawWiring() {
+    var b = BOARDS[board];
+    var s = '';
+    s += '<rect x="14" y="30" width="200" height="270" rx="12" fill="var(--surface)" stroke="var(--fg)" stroke-width="2"/>';
+    s += '<text x="114" y="56" text-anchor="middle" font-size="13" font-weight="700">' + b.nombre + '</text>';
+    s += '<rect x="560" y="30" width="186" height="270" rx="12" fill="var(--surface)" stroke="var(--fg)" stroke-width="2"/>';
+    s += '<text x="653" y="56" text-anchor="middle" font-size="13" font-weight="700">HC-SR04</text>';
+    s += '<circle cx="610" cy="262" r="20" fill="var(--surface-2)" stroke="var(--fg)"/><circle cx="696" cy="262" r="20" fill="var(--surface-2)" stroke="var(--fg)"/>';
+    var ys = { v: 100, t: 150, e: 200, g: 250 };
+    function pin(xp, y, label, side) {
+      s += '<circle cx="' + xp + '" cy="' + y + '" r="5" fill="var(--fg)"/>';
+      if (side === "l") s += '<text x="' + (xp - 12) + '" y="' + (y + 4) + '" text-anchor="end" font-size="12">' + label + '</text>';
+      else s += '<text x="' + (xp + 12) + '" y="' + (y + 4) + '" font-size="12">' + label + '</text>';
+    }
+    // pines de la placa (a la derecha del cuadro) y del sensor (a la izquierda)
+    pin(214, ys.v, '', 'l'); pin(214, ys.t, '', 'l'); pin(214, ys.e, '', 'l'); pin(214, ys.g, '', 'l');
+    s += '<text x="26" y="' + (ys.v + 4) + '" font-size="12">' + b.v5 + '</text>';
+    s += '<text x="26" y="' + (ys.t + 4) + '" font-size="12">GPIO' + b.trig + ' (TRIG)</text>';
+    s += '<text x="26" y="' + (ys.e + 4) + '" font-size="12">GPIO' + b.echo + ' (ECHO)</text>';
+    s += '<text x="26" y="' + (ys.g + 4) + '" font-size="12">' + b.gnd + '</text>';
+    pin(560, ys.v, '', 'r'); pin(560, ys.t, '', 'r'); pin(560, ys.e, '', 'r'); pin(560, ys.g, '', 'r');
+    s += '<text x="572" y="' + (ys.v + 4) + '" font-size="12">VCC</text><text x="572" y="' + (ys.t + 4) + '" font-size="12">TRIG</text><text x="572" y="' + (ys.e + 4) + '" font-size="12">ECHO</text><text x="572" y="' + (ys.g + 4) + '" font-size="12">GND</text>';
+    // cables
+    s += '<line x1="214" y1="' + ys.v + '" x2="560" y2="' + ys.v + '" stroke="var(--wire-red)" stroke-width="3"/>';
+    s += '<line x1="214" y1="' + ys.t + '" x2="560" y2="' + ys.t + '" stroke="var(--wire-green)" stroke-width="3"/>';
+    s += '<line x1="214" y1="' + ys.g + '" x2="560" y2="' + ys.g + '" stroke="var(--fg)" stroke-width="3"/>';
+    // ECHO con divisor
+    s += '<line x1="560" y1="' + ys.e + '" x2="470" y2="' + ys.e + '" stroke="var(--wire-amber)" stroke-width="3"/>';
+    s += '<rect x="410" y="' + (ys.e - 11) + '" width="60" height="22" rx="3" fill="var(--surface-2)" stroke="var(--fg)" stroke-width="1.5"/>';
+    s += '<text x="440" y="' + (ys.e + 4) + '" text-anchor="middle" font-size="11" font-weight="600">R1 1 kΩ</text>';
+    s += '<line x1="410" y1="' + ys.e + '" x2="214" y2="' + ys.e + '" stroke="var(--wire-amber)" stroke-width="3"/>';
+    s += '<line x1="340" y1="' + ys.e + '" x2="340" y2="' + (ys.e + 8) + '" stroke="var(--wire-amber)" stroke-width="3"/>';
+    s += '<rect x="322" y="' + (ys.e + 8) + '" width="36" height="34" rx="3" fill="var(--surface-2)" stroke="var(--fg)" stroke-width="1.5"/>';
+    s += '<text x="340" y="' + (ys.e + 22) + '" text-anchor="middle" font-size="10" font-weight="600">R2</text><text x="340" y="' + (ys.e + 35) + '" text-anchor="middle" font-size="10">2×1 kΩ</text>';
+    s += '<line x1="340" y1="' + (ys.e + 42) + '" x2="340" y2="' + ys.g + '" stroke="var(--fg)" stroke-width="3"/>';
+    s += '<circle cx="340" cy="' + ys.e + '" r="5" fill="var(--wire-amber)"/><circle cx="340" cy="' + ys.g + '" r="5" fill="var(--fg)"/>';
+    s += '<text x="348" y="' + (ys.e - 10) + '" font-size="11" style="fill:var(--fg-soft)">punto medio ≈ 3,3 V</text>';
+    s += '<text x="480" y="' + (ys.e - 18) + '" font-size="11" style="fill:var(--fg-soft)">5 V</text>';
+    s += '<text x="380" y="' + (ys.v - 10) + '" text-anchor="middle" font-size="11" style="fill:var(--fg-soft)">5 V de alimentación</text>';
+    $("#wire-svg").innerHTML = s;
+  }
+
+  /* ---------- Laboratorio 3: calibración ---------- */
+  var cal = [[10, 10.4], [20, 20.5], [50, 50.6], [100, 100.9], [150, 151.2]];
+  var tb = $("#cal-t tbody");
+  tb.innerHTML = cal.map(function (r, i) {
+    return '<tr><td class="c"><input type="number" class="ci" data-i="' + i + '" data-j="0" value="' + r[0] + '" step="1" aria-label="Distancia real ' + (i + 1) + '" style="width:90px;font:inherit;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:4px 6px;min-height:36px"></td>' +
+      '<td class="c"><input type="number" class="ci" data-i="' + i + '" data-j="1" value="' + r[1] + '" step="0.1" aria-label="Medida ' + (i + 1) + '" style="width:90px;font:inherit;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:4px 6px;min-height:36px"></td>' +
+      '<td class="c" id="ce' + i + '">—</td></tr>';
+  }).join("");
+  function calc() {
+    var pts = [];
+    $$(".ci").forEach(function (inp) { var i = +inp.getAttribute("data-i"), j = +inp.getAttribute("data-j"); cal[i][j] = parseFloat(inp.value); });
+    cal.forEach(function (r, i) {
+      var e = r[1] - r[0];
+      $("#ce" + i).textContent = isFinite(e) ? fmt(e, 2) : "—";
+      if (isFinite(r[0]) && isFinite(r[1])) pts.push(r);
+    });
+    var n = pts.length;
+    if (n < 2) { $("#cal-out").innerHTML = ""; $("#cal-code").textContent = "Escriba al menos dos pares de datos."; return; }
+    var mean = pts.reduce(function (s, p) { return s + (p[1] - p[0]); }, 0) / n;
+    var maxE = Math.max.apply(null, pts.map(function (p) { return Math.abs(p[1] - p[0]); }));
+    // real = a * medida + b
+    var sx = 0, sy = 0, sxx = 0, sxy = 0;
+    pts.forEach(function (p) { sx += p[1]; sy += p[0]; sxx += p[1] * p[1]; sxy += p[1] * p[0]; });
+    var den = n * sxx - sx * sx, a = den ? (n * sxy - sx * sy) / den : 1, b = (sy - a * sx) / n;
+    var resid = Math.max.apply(null, pts.map(function (p) { return Math.abs(a * p[1] + b - p[0]); }));
+    $("#cal-out").innerHTML =
+      '<div><small>Error medio</small><strong>' + fmt(mean, 2) + ' cm</strong></div>' +
+      '<div><small>Error máximo</small><strong>' + fmt(maxE, 2) + ' cm</strong></div>' +
+      '<div><small>Pendiente a</small><strong>' + fmt(a, 4) + '</strong></div>' +
+      '<div><small>Ordenada b</small><strong>' + fmt(b, 2) + ' cm</strong></div>' +
+      '<div><small>Error máximo tras corregir</small><strong>' + fmt(resid, 2) + ' cm</strong></div>';
+    $("#cal-code").textContent = "// Añada esta línea justo antes de mostrar la distancia:\nd = " + a.toFixed(4) + " * d + (" + b.toFixed(2) + ");";
+  }
+  $$(".ci").forEach(function (x) { x.addEventListener("input", calc); });
+  calc();
+
+  /* ---------- Evaluación ---------- */
+  var V20 = (331.3 + 0.606 * 20) * 1e-4;
+  var QS = [
+    { q: "El PC no muestra ningún puerto COM al conectar la placa. ¿Qué es lo primero que debe revisar?", o: ["Que el cable sea de datos y que el driver USB esté instalado", "Que el sketch tenga un setup()", "La velocidad del Monitor Serie", "La temperatura del aire"], a: 0, e: "Sin puerto, el PC no ve la placa: lo más probable es un cable que solo carga o un driver (CP210x/CH340) sin instalar." },
+    { q: "El Monitor Serie muestra símbolos extraños. El sketch usa Serial.begin(115200). ¿Qué pasa?", o: ["La velocidad del Monitor no es 115200", "El ESP32 se dañó", "Falta la librería TFT_eSPI", "El sensor está a 3,3 V"], a: 0, e: "La velocidad del programa y la del Monitor Serie deben ser idénticas." },
+    { q: "A 20 °C, un objeto está a 100 cm. ¿Cuánto dura el pulso ECHO?", o: ["≈ 2,9 ms", "≈ 5,8 ms", "≈ 11,6 ms", "≈ 58 ms"], a: 1, e: "t = 2d/v = 200 cm / 0,034342 cm/µs = " + Math.round(200 / V20) + " µs ≈ 5,8 ms." },
+    { q: "pulseIn devuelve 1160 µs a 20 °C. ¿Qué distancia hay?", o: ["≈ 39,9 cm", "≈ 19,9 cm", "≈ 9,9 cm", "≈ 199 cm"], a: 1, e: "d = t·v/2 = 1160 × 0,034342 / 2 = " + (1160 * V20 / 2).toFixed(1) + " cm." },
+    { q: "Divisor con R1 = 1 kΩ y R2 = 2 kΩ alimentado con 5 V. ¿Qué tensión llega al pin del ESP32?", o: ["1,67 V", "2,50 V", "3,33 V", "5,00 V"], a: 2, e: "Vsal = 5 × 2000/(1000+2000) = " + (5 * 2 / 3).toFixed(2) + " V." },
+    { q: "¿Por qué no se conecta ECHO directamente a un GPIO del ESP32?", o: ["Porque ECHO sale a 5 V y el pin admite como máximo 3,6 V", "Porque el ESP32 no tiene entradas digitales", "Porque ECHO es una salida analógica", "Porque se gastaría la batería"], a: 0, e: "La hoja de datos del ESP32 fija VIH máx. = VDD + 0,3 V = 3,6 V; ECHO entrega 5 V." },
+    { q: "Lecturas: 24,1 · 24,0 · 98,5 · 24,2 · 24,1 cm. ¿Cuál es la mediana?", o: ["24,1", "38,98", "24,2", "98,5"], a: 0, e: "Ordenadas: 24,0 · 24,1 · 24,1 · 24,2 · 98,5. La del medio es 24,1. El promedio (38,98) lo arruina el valor 98,5." },
+    { q: "¿Qué devuelve pulseIn(pin, HIGH, 30000) si no llega ningún eco?", o: ["0", "30000", "−1", "Se queda esperando para siempre"], a: 0, e: "Al agotarse el tiempo límite (30 ms) la función devuelve 0." },
+    { q: "¿Qué pin puede servir como ECHO pero NO como TRIG?", o: ["GPIO35", "GPIO26", "GPIO27", "GPIO22"], a: 0, e: "GPIO34 a 39 son solo entrada (no tienen controlador de salida)." },
+    { q: "Con el aire a 30 °C, un objeto está a 200 cm. Si el programa supone 20 °C, ¿qué distancia calcula?", o: ["≈ 196,5 cm", "≈ 200 cm", "≈ 203,6 cm", "≈ 100 cm"], a: 0, e: "t = 400/0,034948 = " + Math.round(400 / ((331.3 + 0.606 * 30) * 1e-4)) + " µs; con v(20 °C): d = t × 0,034342 / 2 = " + (400 / ((331.3 + 0.606 * 30) * 1e-4) * V20 / 2).toFixed(1) + " cm. El sonido va más rápido y el programa lo subestima." }
+  ];
+  var respondidas = {};
+  var qh = QS.map(function (q, i) {
+    return '<div class="q" id="q' + i + '"><p>' + (i + 1) + '. ' + q.q + '</p>' +
+      q.o.map(function (o, j) { return '<label><input type="radio" name="q' + i + '" value="' + j + '"> <span>' + o + '</span></label>'; }).join("") +
+      '<button type="button" data-q="' + i + '">Comprobar</button><div class="fb" hidden></div></div>';
+  }).join("");
+  $("#quiz").innerHTML = qh;
+  $$("#quiz button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var i = +b.getAttribute("data-q"), sel = $('input[name="q' + i + '"]:checked'), fb = $("#q" + i + " .fb");
+      fb.hidden = false;
+      if (!sel) { fb.className = "fb bad"; fb.textContent = "Elija una opción."; return; }
+      var ok = +sel.value === QS[i].a; respondidas[i] = ok;
+      fb.className = "fb " + (ok ? "good" : "bad");
+      fb.textContent = (ok ? "Correcto. " : "No es esa. ") + QS[i].e;
+      var n = Object.keys(respondidas).length, c = Object.keys(respondidas).filter(function (k) { return respondidas[k]; }).length;
+      $("#score").textContent = "Va " + c + " correctas de " + n + " respondidas (" + QS.length + " en total).";
+    });
+  });
+
+  setBoard(board);
+})();
+</script>

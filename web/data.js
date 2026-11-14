@@ -64,7 +64,8 @@ window.PLATFORM_DATA = {
         "pec": ["LIBRE", "PEC-NOVIRAO", "NOVIRAO-2026"],
         "deducciones": ["DEDUCCIONES-2026", "FORMULA-26", "OBANDO-DED-26", "DED-F42M-26"],
         "pln": ["PLN-2026", "MAQUINAS-LEEN-26", "NLP-IA-26", "PLN-L37N-26"],
-        "instalacion": ["OBRA-ELECTRICA-2026", "INSTALACION-2026", "OBANDO-OBRA-26", "INST-8492-26"]
+        "instalacion": ["OBRA-ELECTRICA-2026", "INSTALACION-2026", "OBANDO-OBRA-26", "INST-8492-26"],
+        "esp32_display": ["ESP32-DISPLAY-2026", "OBANDO-ESP32-26", "ESP-DISP-26"]
     },
 
     // Configuración oficial de Pasarelas de Pago (Wompi PSE, Bancolombia, Nequi y Hotmart)
@@ -1224,6 +1225,41 @@ window.PLATFORM_DATA = {
             descuentoTag: "8 Etapas · Simulación RETIE & NTC 2050",
             enlaceCompra: "https://hotmart.com",
             enlaceWompi: "https://checkout.wompi.co/l/VPOS_b6GD2z"
+        },
+        {
+            id: "esp32_display",
+            titulo: "Ojo de Murciélago: Guía Práctica ESP32 con Pantalla & HC-SR04",
+            nivel: "Educación Media / Universidad / Robótica, IoT & Física",
+            modulos: "12 Capítulos Prácticos + 3 Placas (T-Display, CYD & OLED) + Sketches Ino Verificados",
+            categoria: "Laboratorio de Hardware, Robótica & IoT",
+            categoriaFiltro: "labs",
+            descripcion: "Guía experimental y laboratorio práctico de microcontroladores desarrollado por el Mg. Manuel Alejandro Obando (Universidad del Cauca). Aprende a instalar, programar y calibrar tu placa ESP32 con pantalla integrada (LilyGO T-Display, ESP32-2432S028R Cheap Yellow Display CYD o ESP32 con OLED 0.96\") construyendo un medidor de distancia ultrasónico en tiempo real con el sensor HC-SR04. Explica la física de la ecolocalización sonora (velocidad del sonido v = 343 m/s), cálculo de distancias por tiempo de vuelo (TOF), protección de entradas GPIO mediante divisor de tensión resistivo (5V a 3.3V), renderizado de gráficos y barras en pantalla con librerías TFT_eSPI y Adafruit SSD1306, y depuración paso a paso. 100% de código compilado y enlaces verificados con núcleo ESP32 3.3.12.",
+            temas: [
+                "00. Antes de Empezar: Fundamentos de Ecolocalización y Materiales del Banco",
+                "01. Su Placa: Selector Interactivo entre LilyGO T-Display, ESP32 CYD y OLED 0.96\"",
+                "02. Instalación de Software: Arduino IDE 2.x, Drivers USB (CH340/CP2102) y Núcleo ESP32 3.3.12",
+                "03. Primer Programa: Comunicación Serie UART y Verificación de Flasheo",
+                "04. Control de Pantalla: Inicialización Gráfica, Fuentes y Buffer con TFT_eSPI y SSD1306",
+                "05. Física del HC-SR04: Pulso Trigger de 10 µs, Ondas de 40 kHz y Medición por Tiempo de Vuelo",
+                "06. Conexión Eléctrica Segura: Divisor de Tensión 2:1 para Proteger Pines de 3.3V de los 5V de Echo",
+                "07. Código Completo Explicado: Medición No Bloqueante, Filtrado y Visualización en Pantalla",
+                "08. Calibración Experimental: Efecto de la Temperatura en la Velocidad del Sonido y Barra Dinámica",
+                "09. Diagnóstico de Fallos: Detección de Timeout, Ruido Acústico y Errores de Cableado",
+                "10. Evaluación & Rúbrica: Criterios de Funcionamiento, Montaje y Optimización de Memoria",
+                "11. Validación y Enlaces: Comprobación de Enlaces Oficiales y Registro de Compilación"
+            ],
+            destacado: true,
+            tipo: "Guía Práctica & Laboratorio de Hardware",
+            esLaboratorio: true,
+            demoPath: "/material/1_cursos/esp32_display/dist/index.html",
+            precioEstimado: "Acceso Libre / Abierto",
+            precioCOP: 0,
+            precioUSD: 0,
+            accesoLibre: true,
+            descuentoTag: "Laboratorio Abierto 100% Libre",
+            esCortesia: true,
+            enlaceCompra: null,
+            enlaceWompi: null
         },
         {
             id: "fluidos",

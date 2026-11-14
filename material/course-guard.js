@@ -26,7 +26,8 @@
         "recorrido",
         "historia",
         "kids",
-        "riel"
+        "riel",
+        "esp32_display"
     ];
     const DEFAULT_COURSE_KEYS = {
         "mecanica": ["MECANICA-2026", "OBANDO-MEC-26", "MEC-QXN7-26"],
@@ -66,7 +67,8 @@
         "pec": ["LIBRE", "PEC-NOVIRAO", "NOVIRAO-2026"],
         "deducciones": ["DEDUCCIONES-2026", "FORMULA-26", "OBANDO-DED-26", "DED-F42M-26"],
         "pln": ["PLN-2026", "MAQUINAS-LEEN-26", "NLP-IA-26", "PLN-L37N-26"],
-        "instalacion": ["OBRA-ELECTRICA-2026", "INSTALACION-2026", "OBANDO-OBRA-26", "INST-8492-26"]
+        "instalacion": ["OBRA-ELECTRICA-2026", "INSTALACION-2026", "OBANDO-OBRA-26", "INST-8492-26"],
+        "esp32_display": ["ESP32-DISPLAY-2026", "OBANDO-ESP32-26", "ESP-DISP-26"]
     };
 
     function getCurrentCourseId() {
@@ -88,9 +90,11 @@
             if (raw === 'deducciones' || raw === 'formula-por-dentro') return 'deducciones';
             if (raw === 'pln' || raw === 'maquinas-que-leen') return 'pln';
             if (raw === 'instalacion' || raw === 'obra-electrica') return 'instalacion';
+            if (raw === 'esp32_display' || raw === 'esp32-display') return 'esp32_display';
             return raw;
         }
 
+        if (p.includes('esp32_display') || p.includes('esp32-display') || p.includes('guia-esp32-display') || p.includes('ojo-de-murcielago')) return 'esp32_display';
         if (p.includes('/instalacion/') || p.includes('obra-electrica') || p.includes('obra_electrica')) return 'instalacion';
         if (p.includes('deducciones') || p.includes('formula-por-dentro')) return 'deducciones';
         if (/(?:^|\/)pln(?:\/|\.|$)/.test(p) || p.includes('maquinas-que-leen')) return 'pln';
@@ -131,6 +135,7 @@
         if (p.includes('/pec/') || p.includes('tejiendo-pec') || p.includes('pec')) return 'pec';
 
         const t = (document.title || '').toLowerCase();
+        if (t.includes('ojo de murciélago') || t.includes('ojo de murcielago') || (t.includes('esp32') && (t.includes('display') || t.includes('pantalla') || t.includes('hc-sr04')))) return 'esp32_display';
         if (t.includes('la fórmula por dentro') || t.includes('la formula por dentro')) return 'deducciones';
         if (t.includes('máquinas que leen') || t.includes('maquinas que leen')) return 'pln';
         if (t.includes('historia') || t.includes('llegamos a saber') || t.includes('saber')) return 'historia';
