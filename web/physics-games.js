@@ -1784,7 +1784,7 @@
 
 
     // =========================================================================
-    // JUEGO 4: QUANTUM SNAKE (ONDAS DE BROGLIE & EFECTO TÚNEL CUÁNTICO)
+    // JUEGO 4: QUANTUM SNAKE (ONDAS DE BROGLIE & EFECTO TÚNEL CUÁNTICO) - 60 FPS FLUIDO
     // =========================================================================
     const QuantumSnakeGame = {
         canvas: null,
@@ -1798,24 +1798,26 @@
         cellH: 20,
 
         // Estado cuántico
-        n: 1, // Nivel cuántico principal
+        n: 1,
         scoreEV: 0,
         quantaCount: 0,
-        tunnelGauge: 100, // 0-100%
+        tunnelGauge: 100,
         isTunneling: false,
-        barrierV0: 15.0, // eV
+        barrierV0: 15.0,
         boundaryMode: 'barrier', // 'barrier' o 'periodic'
-        speedFactor: 1.0,
+        speedMode: 'norm', // 'slow' (85ms), 'norm' (62ms), 'fast' (45ms)
+        moveInterval: 62, // Base ágil y rápida
 
         // Estado de la serpiente / paquete de onda
         body: [],
         dir: { x: 1, y: 0 },
-        nextDir: { x: 1, y: 0 },
+        inputQueue: [],
         lastMoveTime: 0,
-        moveInterval: 110,
+        lastTelemetryTime: 0,
+        lastFrameTime: 0,
         wavePhase: 0,
         isGameOver: false,
-        isPaused: false,
+        dom: null,
 
         // Cuantos / Fotones en el pozo
         quanta: [],
@@ -1828,6 +1830,28 @@
 
         particles: [],
         keyListener: null,
+
+        cacheDom() {
+            this.dom = {
+                elLvl: document.getElementById('qs-level'),
+                elScr: document.getElementById('qs-score'),
+                elLmb: document.getElementById('qs-lambda'),
+                elTun: document.getElementById('qs-tunnel'),
+                elQnt: document.getElementById('qs-quanta'),
+                elP: document.getElementById('qs-p'),
+                elVg: document.getElementById('qs-vg'),
+                elV0: document.getElementById('qs-v0'),
+                elTr: document.getElementById('qs-trans'),
+                btnTunnel: document.getElementById('btn-qs-tunnel'),
+                rngV0: document.getElementById('rng-qs-v0'),
+                lblV0: document.getElementById('lbl-qs-v0'),
+                btnModeB: document.getElementById('btn-mode-barrier'),
+                btnModeP: document.getElementById('btn-mode-periodic'),
+                btnSpdSlow: document.getElementById('btn-qs-spd-slow'),
+                btnSpdNorm: document.getElementById('btn-qs-spd-norm'),
+                btnSpdFast: document.getElementById('btn-qs-spd-fast')
+            };
+        },
 
         init(container) {
             container.innerHTML = `
@@ -1895,6 +1919,16 @@
                         <!-- Columna de Controles e Instrumentación Científica -->
                         <div class="game-controls-col">
                             <div class="game-controls-panel">
+                                <!-- Selector de Velocidad y Fluidez -->
+                                <div class="ctrl-group">
+                                    <span class="ctrl-sublabel">⚡ Velocidad &amp; Fluidez de la Onda:</span>
+                                    <div class="btn-group-row">
+                                        <button type="button" class="btn-topol" id="btn-qs-spd-slow" onclick="window.QuantumSnakeGame.setSpeedMode('slow')">Paseo (85ms)</button>
+                                        <button type="button" class="btn-topol active" id="btn-qs-spd-norm" onclick="window.QuantumSnakeGame.setSpeedMode('norm')">⚡ Rápida (62ms)</button>
+                                        <button type="button" class="btn-topol" id="btn-qs-spd-fast" onclick="window.QuantumSnakeGame.setSpeedMode('fast')">🚀 Relativista (45ms)</button>
+                                    </div>
+                                </div>
+
                                 <div class="ctrl-group">
                                     <div class="ctrl-header-row">
                                         <label>🧪 Barrera de Potencial V₀: <strong id="lbl-qs-v0">15.0 eV</strong></label>
@@ -1910,8 +1944,8 @@
                                 <div class="ctrl-group">
                                     <span class="ctrl-sublabel">🌌 Condiciones de Contorno:</span>
                                     <div class="btn-group-row">
-                                        <button type="button" class="btn-topol active" id="btn-mode-barrier" onclick="window.QuantumSnakeGame.setBoundaryMode('barrier')">Pozo Finito (Colisión Mortal)</button>
-                                        <button type="button" class="btn-topol" id="btn-mode-periodic" onclick="window.QuantumSnakeGame.setBoundaryMode('periodic')">Periódico Libre (Toroidal)</button>
+                                        <button type="button" class="btn-topol active" id="btn-mode-barrier" onclick="window.QuantumSnakeGame.setBoundaryMode('barrier')">Pozo Finito (Mortal)</button>
+                                        <button type="button" class="btn-topol" id="btn-mode-periodic" onclick="window.QuantumSnakeGame.setBoundaryMode('periodic')">Periódico Libre</button>
                                     </div>
                                 </div>
 
@@ -1940,10 +1974,28 @@
             `;
 
             this.canvas = document.getElementById('snake-canvas');
+            this.cacheDom();
             this.resize();
             this.bindEvents();
             this.resetGame();
             this.loop();
+        },
+
+        setSpeedMode(mode) {
+            this.speedMode = mode;
+            if (mode === 'slow') this.moveInterval = 85;
+            else if (mode === 'norm') this.moveInterval = 62;
+            else if (mode === 'fast') this.moveInterval = 45;
+
+            // Ajustar con el nivel cuántico
+            this.moveInterval = Math.max(38, this.moveInterval - (this.n - 1) * 3);
+
+            if (this.dom) {
+                if (this.dom.btnSpdSlow) this.dom.btnSpdSlow.classList.toggle('active', mode === 'slow');
+                if (this.dom.btnSpdNorm) this.dom.btnSpdNorm.classList.toggle('active', mode === 'norm');
+                if (this.dom.btnSpdFast) this.dom.btnSpdFast.classList.toggle('active', mode === 'fast');
+            }
+            playSound('click');
         },
 
         resize() {
@@ -1960,12 +2012,10 @@
         },
 
         bindEvents() {
-            const rngV0 = document.getElementById('rng-qs-v0');
-            if (rngV0) {
-                rngV0.addEventListener('input', (e) => {
+            if (this.dom && this.dom.rngV0) {
+                this.dom.rngV0.addEventListener('input', (e) => {
                     this.barrierV0 = parseFloat(e.target.value);
-                    const lbl = document.getElementById('lbl-qs-v0');
-                    if (lbl) lbl.textContent = this.barrierV0.toFixed(1) + ' eV';
+                    if (this.dom.lblV0) this.dom.lblV0.textContent = this.barrierV0.toFixed(1) + ' eV';
                     this.updateTelemetry();
                 });
             }
@@ -1986,10 +2036,14 @@
         },
 
         setDirection(dx, dy) {
-            // Prevenir giro instantáneo de 180° contra el cuerpo
-            if (this.dir.x + dx === 0 && this.dir.y + dy === 0) return;
-            this.nextDir = { x: dx, y: dy };
-            playSound('click');
+            // Buffer de comandos (evita comerse giros rápidos o suicidio a 180°)
+            const lastDir = this.inputQueue.length > 0 ? this.inputQueue[this.inputQueue.length - 1] : this.dir;
+            if (lastDir.x + dx === 0 && lastDir.y + dy === 0) return;
+            if (lastDir.x === dx && lastDir.y === dy) return;
+            if (this.inputQueue.length < 2) {
+                this.inputQueue.push({ x: dx, y: dy });
+                playSound('click');
+            }
         },
 
         toggleTunnel() {
@@ -2000,10 +2054,9 @@
                 if (this.tunnelGauge > 8) {
                     this.isTunneling = true;
                     playSound('tunnel');
-                    // Generar destello cuántico en la cabeza
                     if (this.body.length > 0) {
                         const h = this.body[0];
-                        this.spawnParticles((h.x + 0.5) * this.cellW, (h.y + 0.5) * this.cellH, '#c084fc', 14);
+                        this.spawnParticles((h.x + 0.5) * this.cellW, (h.y + 0.5) * this.cellH, '#c084fc', 12);
                     }
                 }
             }
@@ -2011,34 +2064,33 @@
         },
 
         updateTunnelButton() {
-            const btn = document.getElementById('btn-qs-tunnel');
-            if (btn) {
-                if (this.isTunneling) {
-                    btn.classList.add('active');
-                    btn.innerHTML = '⚡ TÚNEL ACTIVO (' + Math.round(this.tunnelGauge) + '%)';
-                } else {
-                    btn.classList.remove('active');
-                    btn.innerHTML = '⚡ Tunelar (' + Math.round(this.tunnelGauge) + '%)';
-                }
+            if (!this.dom || !this.dom.btnTunnel) return;
+            const pct = Math.round(this.tunnelGauge);
+            if (this.isTunneling) {
+                this.dom.btnTunnel.classList.add('active');
+                this.dom.btnTunnel.textContent = `⚡ TÚNEL ACTIVO (${pct}%)`;
+            } else {
+                this.dom.btnTunnel.classList.remove('active');
+                this.dom.btnTunnel.textContent = `⚡ Tunelar (${pct}%)`;
             }
         },
 
         nudgeBarrier(delta) {
             this.barrierV0 = Math.max(5, Math.min(30, +(this.barrierV0 + delta).toFixed(1)));
-            const rng = document.getElementById('rng-qs-v0');
-            const lbl = document.getElementById('lbl-qs-v0');
-            if (rng) rng.value = this.barrierV0;
-            if (lbl) lbl.textContent = this.barrierV0.toFixed(1) + ' eV';
+            if (this.dom) {
+                if (this.dom.rngV0) this.dom.rngV0.value = this.barrierV0;
+                if (this.dom.lblV0) this.dom.lblV0.textContent = this.barrierV0.toFixed(1) + ' eV';
+            }
             this.updateTelemetry();
             playSound('click');
         },
 
         setBoundaryMode(mode) {
             this.boundaryMode = mode;
-            const btnB = document.getElementById('btn-mode-barrier');
-            const btnP = document.getElementById('btn-mode-periodic');
-            if (btnB) btnB.classList.toggle('active', mode === 'barrier');
-            if (btnP) btnP.classList.toggle('active', mode === 'periodic');
+            if (this.dom) {
+                if (this.dom.btnModeB) this.dom.btnModeB.classList.toggle('active', mode === 'barrier');
+                if (this.dom.btnModeP) this.dom.btnModeP.classList.toggle('active', mode === 'periodic');
+            }
             playSound('click');
         },
 
@@ -2049,18 +2101,18 @@
             this.tunnelGauge = 100;
             this.isTunneling = false;
             this.isGameOver = false;
-            this.moveInterval = 110;
             this.dir = { x: 1, y: 0 };
-            this.nextDir = { x: 1, y: 0 };
+            this.inputQueue = [];
             this.particles = [];
+            this.setSpeedMode(this.speedMode || 'norm');
 
             const startX = 8;
             const startY = 9;
             this.body = [
-                { x: startX, y: startY },
-                { x: startX - 1, y: startY },
-                { x: startX - 2, y: startY },
-                { x: startX - 3, y: startY }
+                { x: startX, y: startY, prevX: startX - 1, prevY: startY },
+                { x: startX - 1, y: startY, prevX: startX - 2, prevY: startY },
+                { x: startX - 2, y: startY, prevX: startX - 3, prevY: startY },
+                { x: startX - 3, y: startY, prevX: startX - 4, prevY: startY }
             ];
 
             this.quanta = [];
@@ -2068,6 +2120,7 @@
                 this.spawnQuantum();
             }
 
+            this.lastMoveTime = performance.now();
             this.updateTelemetry();
             this.updateTunnelButton();
             playSound('hit');
@@ -2098,33 +2151,38 @@
         spawnParticles(x, y, color, count = 8) {
             for (let i = 0; i < count; i++) {
                 const angle = Math.random() * Math.PI * 2;
-                const speed = 1.2 + Math.random() * 2.8;
+                const speed = 1.4 + Math.random() * 3.0;
                 this.particles.push({
                     x, y,
                     vx: Math.cos(angle) * speed,
                     vy: Math.sin(angle) * speed,
                     color,
                     life: 1.0,
-                    decay: 0.03 + Math.random() * 0.03,
-                    size: 2.5 + Math.random() * 2.5
+                    decay: 0.035 + Math.random() * 0.035,
+                    size: 2.2 + Math.random() * 2.2
                 });
             }
         },
 
         step() {
             if (this.isGameOver) return;
-            this.dir = { ...this.nextDir };
+            if (this.inputQueue.length > 0) {
+                this.dir = this.inputQueue.shift();
+            }
+
             const head = this.body[0];
             let nx = head.x + this.dir.x;
             let ny = head.y + this.dir.y;
 
             // Manejo de contornos / barrera
             const hitWall = nx < 0 || nx >= this.cols || ny < 0 || ny >= this.rows;
+            let didTunnel = false;
+
             if (hitWall) {
                 if (this.isTunneling || this.boundaryMode === 'periodic') {
-                    // Efecto túnel a través del contorno
                     nx = (nx + this.cols) % this.cols;
                     ny = (ny + this.rows) % this.rows;
+                    didTunnel = true;
                     this.tunnelGauge = Math.max(0, this.tunnelGauge - 6);
                     this.spawnParticles((nx + 0.5) * this.cellW, (ny + 0.5) * this.cellH, '#38bdf8', 10);
                     playSound('tunnel');
@@ -2136,13 +2194,12 @@
                 }
             }
 
-            // Colisión contra la propia cola (Interferencia cuántica)
+            // Colisión contra la propia cola
             const hitSelf = this.body.some(b => b.x === nx && b.y === ny);
             if (hitSelf) {
                 if (this.isTunneling) {
-                    // Superposición cuántica sin colapso
-                    this.tunnelGauge = Math.max(0, this.tunnelGauge - 12);
-                    this.spawnParticles((nx + 0.5) * this.cellW, (ny + 0.5) * this.cellH, '#c084fc', 10);
+                    this.tunnelGauge = Math.max(0, this.tunnelGauge - 10);
+                    this.spawnParticles((nx + 0.5) * this.cellW, (ny + 0.5) * this.cellH, '#c084fc', 8);
                     playSound('spark');
                 } else {
                     this.isGameOver = true;
@@ -2152,49 +2209,60 @@
                 }
             }
 
-            // Absorción de cuantos fotónicos
+            // Absorción de fotones
             const qIdx = this.quanta.findIndex(q => q.x === nx && q.y === ny);
+            let grew = false;
             if (qIdx !== -1) {
                 const q = this.quanta[qIdx];
                 this.quanta.splice(qIdx, 1);
                 this.quantaCount++;
                 this.scoreEV = +(this.scoreEV + q.ev).toFixed(2);
                 this.tunnelGauge = Math.min(100, this.tunnelGauge + q.tunnel);
-                this.spawnParticles((nx + 0.5) * this.cellW, (ny + 0.5) * this.cellH, q.color, 16);
+                this.spawnParticles((nx + 0.5) * this.cellW, (ny + 0.5) * this.cellH, q.color, 14);
                 playSound('eat');
 
-                // Nivel cuántico n
                 const newN = 1 + Math.floor(this.quantaCount / 4);
                 if (newN > this.n) {
                     this.n = newN;
-                    this.moveInterval = Math.max(65, 110 - (this.n - 1) * 6);
+                    this.setSpeedMode(this.speedMode);
                     playSound('powerup');
                 }
-
                 this.spawnQuantum();
-                // Al absorber fotón, la serpiente crece (no hace pop)
-            } else {
-                this.body.pop();
+                grew = true;
             }
 
-            this.body.unshift({ x: nx, y: ny });
-            this.updateTelemetry();
+            // Actualizar posiciones con historial prevX, prevY para interpolación suave 60 FPS
+            const newHead = {
+                x: nx,
+                y: ny,
+                prevX: didTunnel ? nx : head.x,
+                prevY: didTunnel ? ny : head.y
+            };
+
+            for (let i = 0; i < this.body.length; i++) {
+                this.body[i].prevX = this.body[i].x;
+                this.body[i].prevY = this.body[i].y;
+            }
+
+            if (!grew) {
+                this.body.pop();
+            }
+            this.body.unshift(newHead);
         },
 
         update(dt) {
-            this.wavePhase += 0.12;
+            this.wavePhase += 0.15;
 
             // Drenaje o regeneración pasiva del efecto túnel
             if (this.isTunneling) {
-                this.tunnelGauge = Math.max(0, this.tunnelGauge - dt * 20);
+                this.tunnelGauge = Math.max(0, this.tunnelGauge - dt * 22);
                 if (this.tunnelGauge <= 0) {
                     this.isTunneling = false;
                     playSound('spark');
                 }
             } else {
-                this.tunnelGauge = Math.min(100, this.tunnelGauge + dt * 2.8);
+                this.tunnelGauge = Math.min(100, this.tunnelGauge + dt * 3.5);
             }
-            this.updateTunnelButton();
 
             // Partículas
             for (let i = this.particles.length - 1; i >= 0; i--) {
@@ -2204,60 +2272,63 @@
                 p.life -= p.decay;
                 if (p.life <= 0) this.particles.splice(i, 1);
             }
+
+            // Throttling de telemetría a 10 FPS para no recalcular layout en el navegador
+            const now = performance.now();
+            if (now - this.lastTelemetryTime > 90) {
+                this.updateTelemetry();
+                this.updateTunnelButton();
+                this.lastTelemetryTime = now;
+            }
         },
 
         updateTelemetry() {
+            if (!this.dom) this.cacheDom();
+            const d = this.dom;
+            if (!d) return;
+
             const lambdaNm = Math.max(120, Math.round(650 / Math.sqrt(this.n)));
             const pVal = (1.05 * Math.sqrt(this.n)).toFixed(2);
             const vgVal = (1.15 * Math.sqrt(this.n)).toFixed(2);
-            const transProb = this.isTunneling ? 98.4 : Math.min(15.0, (this.tunnelGauge * 0.12)).toFixed(2);
+            const transProb = this.isTunneling ? '98.4%' : Math.min(15.0, (this.tunnelGauge * 0.12)).toFixed(2) + '%';
 
-            const elLvl = document.getElementById('qs-level');
-            const elScr = document.getElementById('qs-score');
-            const elLmb = document.getElementById('qs-lambda');
-            const elTun = document.getElementById('qs-tunnel');
-            const elQnt = document.getElementById('qs-quanta');
+            if (d.elLvl) d.elLvl.textContent = `n = ${this.n}`;
+            if (d.elScr) d.elScr.textContent = `${this.scoreEV.toFixed(2)} eV`;
+            if (d.elLmb) d.elLmb.textContent = `${lambdaNm} nm`;
+            if (d.elTun) d.elTun.textContent = `${Math.round(this.tunnelGauge)}% ${this.isTunneling ? '(ACTIVO)' : ''}`;
+            if (d.elQnt) d.elQnt.textContent = `${this.quantaCount}`;
 
-            if (elLvl) elLvl.textContent = `n = ${this.n}`;
-            if (elScr) elScr.textContent = `${this.scoreEV.toFixed(2)} eV`;
-            if (elLmb) elLmb.textContent = `${lambdaNm} nm`;
-            if (elTun) elTun.textContent = `${Math.round(this.tunnelGauge)}% ${this.isTunneling ? '(ACTIVO)' : ''}`;
-            if (elQnt) elQnt.textContent = `${this.quantaCount}`;
-
-            const elP = document.getElementById('qs-p');
-            const elVg = document.getElementById('qs-vg');
-            const elV0 = document.getElementById('qs-v0');
-            const elTr = document.getElementById('qs-trans');
-
-            if (elP) elP.textContent = `${pVal} ×10⁻²⁷ kg·m/s`;
-            if (elVg) elVg.textContent = `${vgVal} ×10⁵ m/s`;
-            if (elV0) elV0.textContent = `${this.barrierV0.toFixed(1)} eV`;
-            if (elTr) elTr.textContent = `${transProb}%`;
+            if (d.elP) d.elP.textContent = `${pVal} ×10⁻²⁷ kg·m/s`;
+            if (d.elVg) d.elVg.textContent = `${vgVal} ×10⁵ m/s`;
+            if (d.elV0) d.elV0.textContent = `${this.barrierV0.toFixed(1)} eV`;
+            if (d.elTr) d.elTr.textContent = transProb;
         },
 
         draw() {
             const ctx = this.ctx;
             if (!ctx) return;
 
+            const now = performance.now();
+            // Progreso de interpolación entre el tick anterior y el siguiente (0.0 a 1.0)
+            const progress = Math.min(1.0, (now - this.lastMoveTime) / this.moveInterval);
+
             // Fondo del pozo cuántico
             ctx.fillStyle = '#060913';
             ctx.fillRect(0, 0, this.w, this.h);
 
-            // Rejilla cuántica sutil
+            // Rejilla sutil en una sola pasada de trazado
+            ctx.beginPath();
             ctx.strokeStyle = 'rgba(56, 189, 248, 0.04)';
             ctx.lineWidth = 1;
-            for (let c = 0; c <= this.cols; c++) {
-                ctx.beginPath();
+            for (let c = 0; c <= this.cols; c += 2) {
                 ctx.moveTo(c * this.cellW, 0);
                 ctx.lineTo(c * this.cellW, this.h);
-                ctx.stroke();
             }
-            for (let r = 0; r <= this.rows; r++) {
-                ctx.beginPath();
+            for (let r = 0; r <= this.rows; r += 2) {
                 ctx.moveTo(0, r * this.cellH);
                 ctx.lineTo(this.w, r * this.cellH);
-                ctx.stroke();
             }
+            ctx.stroke();
 
             // Borde de la barrera de potencial V0
             ctx.strokeStyle = this.isTunneling ? '#c084fc' : (this.boundaryMode === 'periodic' ? 'rgba(56, 189, 248, 0.4)' : '#38bdf8');
@@ -2269,9 +2340,8 @@
                 const cx = (q.x + 0.5) * this.cellW;
                 const cy = (q.y + 0.5) * this.cellH;
                 const pulse = Math.sin(this.wavePhase * 2 + q.phase);
-                const r = this.cellW * 0.35 + pulse * 1.8;
+                const r = this.cellW * 0.35 + pulse * 1.5;
 
-                // Anillo de onda de probabilidad
                 ctx.save();
                 ctx.strokeStyle = q.color;
                 ctx.lineWidth = 1.5;
@@ -2280,40 +2350,49 @@
                 ctx.arc(cx, cy, r + 4, 0, Math.PI * 2);
                 ctx.stroke();
 
-                // Núcleo cuántico
                 ctx.globalAlpha = 0.95;
                 ctx.fillStyle = q.color;
                 ctx.shadowColor = q.color;
-                ctx.shadowBlur = 10;
+                ctx.shadowBlur = 8;
                 ctx.beginPath();
                 ctx.arc(cx, cy, r, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.restore();
             }
 
-            // Dibujar serpiente como función de onda cuántica continua
+            // Dibujar serpiente con interpolación sub-píxel continua a 60 FPS
             if (this.body.length > 0) {
                 ctx.save();
                 ctx.shadowColor = this.isTunneling ? '#c084fc' : '#38bdf8';
-                ctx.shadowBlur = this.isTunneling ? 18 : 10;
+                ctx.shadowBlur = this.isTunneling ? 16 : 8;
 
-                // Trazar línea de onda a lo largo de los segmentos
-                ctx.beginPath();
+                // Calcular posiciones interpoladas suaves para cada segmento
+                const interpCoords = [];
                 for (let i = 0; i < this.body.length; i++) {
                     const seg = this.body[i];
-                    const cx = (seg.x + 0.5) * this.cellW;
-                    const cy = (seg.y + 0.5) * this.cellH;
+                    // Si saltó por túnel, no interpolar a través de toda la pantalla
+                    let ix = seg.x;
+                    let iy = seg.y;
+                    if (Math.abs(seg.x - seg.prevX) <= 1 && Math.abs(seg.y - seg.prevY) <= 1) {
+                        ix = seg.prevX + (seg.x - seg.prevX) * progress;
+                        iy = seg.prevY + (seg.y - seg.prevY) * progress;
+                    }
+                    const cx = (ix + 0.5) * this.cellW;
+                    const cy = (iy + 0.5) * this.cellH;
 
-                    // Ondulación senoidal perpendicular a la trayectoria
-                    const waveOffset = Math.sin(i * 0.8 - this.wavePhase * 1.5) * 3.5;
-                    const perpX = -this.dir.y * waveOffset;
-                    const perpY = this.dir.x * waveOffset;
+                    // Ondulación de De Broglie transversal fluida
+                    const waveOffset = Math.sin(i * 0.85 - this.wavePhase * 2.0) * 3.2;
+                    const px = cx - this.dir.y * waveOffset;
+                    const py = cy + this.dir.x * waveOffset;
+                    interpCoords.push({ px, py, cx, cy });
+                }
 
-                    const px = cx + perpX;
-                    const py = cy + perpY;
-
-                    if (i === 0) ctx.moveTo(px, py);
-                    else ctx.lineTo(px, py);
+                // Trazar línea de onda continua y suave
+                ctx.beginPath();
+                for (let i = 0; i < interpCoords.length; i++) {
+                    const pt = interpCoords[i];
+                    if (i === 0) ctx.moveTo(pt.px, pt.py);
+                    else ctx.lineTo(pt.px, pt.py);
                 }
                 ctx.strokeStyle = this.isTunneling ? '#e879f9' : '#38bdf8';
                 ctx.lineWidth = Math.max(6, this.cellW * 0.55);
@@ -2322,26 +2401,24 @@
                 ctx.stroke();
 
                 // Nodos cuánticos sobre cada segmento
-                for (let i = 0; i < this.body.length; i++) {
-                    const seg = this.body[i];
-                    const cx = (seg.x + 0.5) * this.cellW;
-                    const cy = (seg.y + 0.5) * this.cellH;
+                for (let i = 0; i < interpCoords.length; i++) {
+                    const pt = interpCoords[i];
                     const isHead = (i === 0);
 
                     ctx.fillStyle = isHead ? '#ffffff' : (this.isTunneling ? '#c084fc' : '#0284c7');
                     ctx.beginPath();
                     const nodeR = isHead ? this.cellW * 0.42 : this.cellW * 0.28;
-                    ctx.arc(cx, cy, nodeR, 0, Math.PI * 2);
+                    ctx.arc(pt.cx, pt.cy, nodeR, 0, Math.PI * 2);
                     ctx.fill();
 
-                    // Ojos con espín cuántico en la cabeza
+                    // Ojos cuánticos en la cabeza
                     if (isHead) {
                         ctx.fillStyle = '#0f172a';
                         const eyeOffset = this.cellW * 0.18;
-                        const eyeX1 = cx - this.dir.y * eyeOffset + this.dir.x * 2;
-                        const eyeY1 = cy + this.dir.x * eyeOffset + this.dir.y * 2;
-                        const eyeX2 = cx + this.dir.y * eyeOffset + this.dir.x * 2;
-                        const eyeY2 = cy - this.dir.x * eyeOffset + this.dir.y * 2;
+                        const eyeX1 = pt.cx - this.dir.y * eyeOffset + this.dir.x * 2.5;
+                        const eyeY1 = pt.cy + this.dir.x * eyeOffset + this.dir.y * 2.5;
+                        const eyeX2 = pt.cx + this.dir.y * eyeOffset + this.dir.x * 2.5;
+                        const eyeY2 = pt.cy - this.dir.x * eyeOffset + this.dir.y * 2.5;
 
                         ctx.beginPath();
                         ctx.arc(eyeX1, eyeY1, 2.2, 0, Math.PI * 2);
@@ -2353,21 +2430,21 @@
             }
 
             // Partículas
-            for (const p of this.particles) {
+            if (this.particles.length > 0) {
                 ctx.save();
-                ctx.globalAlpha = p.life;
-                ctx.fillStyle = p.color;
-                ctx.shadowColor = p.color;
-                ctx.shadowBlur = 6;
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
-                ctx.fill();
+                for (const p of this.particles) {
+                    ctx.globalAlpha = p.life;
+                    ctx.fillStyle = p.color;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+                    ctx.fill();
+                }
                 ctx.restore();
             }
 
-            // Pantalla de Game Over (Colapso de Función de Onda)
+            // Cartel de fin de partida
             if (this.isGameOver) {
-                ctx.fillStyle = 'rgba(5, 8, 18, 0.82)';
+                ctx.fillStyle = 'rgba(5, 8, 18, 0.84)';
                 ctx.fillRect(0, 0, this.w, this.h);
 
                 ctx.textAlign = 'center';
@@ -2390,7 +2467,7 @@
 
         loop() {
             const now = performance.now();
-            const dt = Math.min(0.1, (now - (this.lastFrameTime || now)) / 1000);
+            const dt = Math.min(0.08, (now - (this.lastFrameTime || now)) / 1000);
             this.lastFrameTime = now;
 
             if (now - this.lastMoveTime >= this.moveInterval) {
@@ -2414,7 +2491,7 @@
     };
 
     // =========================================================================
-    // JUEGO 5: PAC-COULOMB (ELECTROSTÁTICA, LEY DE COULOMB & JAULA DE FARADAY)
+    // JUEGO 5: PAC-COULOMB (ELECTROSTÁTICA, LEY DE COULOMB & JAULA DE FARADAY) - ALTA VELOCIDAD
     // =========================================================================
     const PacCoulombGame = {
         canvas: null,
@@ -2427,12 +2504,7 @@
         tileW: 27,
         tileH: 26,
 
-        // Mapa del laberinto electrostático:
-        // 1 = Pared dieléctrica aislante (barrera de potencial)
-        // 0 = Canal conductor con electrón (-e)
-        // 2 = Canal vacío (sin carga)
-        // 3 = Supercondensador (Jaula de Faraday / Inversión)
-        // 4 = Puerta cámara de iones
+        // Mapa del laberinto electrostático
         mazeLayout: [
             [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
             [1,3,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,3,1],
@@ -2454,18 +2526,17 @@
         ],
         grid: [],
 
-        // Pac-Coulomb (Carga de prueba)
+        // Pac-Coulomb (Carga de prueba) - Velocidad ágil de arcade (0.145 tiles/frame ~ 8.7 tiles/s)
         pac: {
             x: 9, y: 13,
             dx: 0, dy: 0,
             reqDx: 0, reqDy: 0,
-            speed: 0.088,
-            charge: +1, // +1 = Protón (+e)
+            speed: 0.142,
+            charge: +1,
             mouthAngle: 0.2,
             mouthDir: 1
         },
 
-        // 4 Iones Fantasmas (Cationes y Aniones)
         ghosts: [],
 
         // Modos y Estado
@@ -2473,12 +2544,35 @@
         scoreEV: 0,
         lives: 3,
         dotsRemaining: 0,
-        superTimer: 0, // Segundos restantes de Jaula Faraday
-        coulombK: 1.0, // Constante de fuerza relativa
+        superTimer: 0,
+        coulombK: 1.0,
+        speedMode: 'fast', // 'norm' (0.11), 'fast' (0.142), 'turbo' (0.19)
         isGameOver: false,
         isLevelClear: false,
+        lastTelemetryTime: 0,
+        lastFrameTime: 0,
+        dom: null,
         particles: [],
         keyListener: null,
+
+        cacheDom() {
+            this.dom = {
+                elCharge: document.getElementById('pc-charge'),
+                elScore: document.getElementById('pc-score'),
+                elLives: document.getElementById('pc-lives'),
+                elMode: document.getElementById('pc-mode'),
+                elLevel: document.getElementById('pc-level'),
+                elDots: document.getElementById('pc-dots'),
+                elE: document.getElementById('pc-efield'),
+                elF: document.getElementById('pc-force'),
+                elV: document.getElementById('pc-volt'),
+                rngKe: document.getElementById('rng-pc-ke'),
+                lblKe: document.getElementById('lbl-pc-ke'),
+                btnSpdNorm: document.getElementById('btn-pc-spd-norm'),
+                btnSpdFast: document.getElementById('btn-pc-spd-fast'),
+                btnSpdTurbo: document.getElementById('btn-pc-spd-turbo')
+            };
+        },
 
         init(container) {
             container.innerHTML = `
@@ -2546,6 +2640,16 @@
                         <!-- Columna de Controles e Instrumentación Científica -->
                         <div class="game-controls-col">
                             <div class="game-controls-panel">
+                                <!-- Selector de Velocidad y Dinamismo -->
+                                <div class="ctrl-group">
+                                    <span class="ctrl-sublabel">⚡ Velocidad &amp; Fluidez de Partícula:</span>
+                                    <div class="btn-group-row">
+                                        <button type="button" class="btn-topol" id="btn-pc-spd-norm" onclick="window.PacCoulombGame.setSpeedMode('norm')">Clásico (1.0x)</button>
+                                        <button type="button" class="btn-topol active" id="btn-pc-spd-fast" onclick="window.PacCoulombGame.setSpeedMode('fast')">⚡ Rápido (1.35x)</button>
+                                        <button type="button" class="btn-topol" id="btn-pc-spd-turbo" onclick="window.PacCoulombGame.setSpeedMode('turbo')">🚀 Turbo (1.75x)</button>
+                                    </div>
+                                </div>
+
                                 <div class="ctrl-group">
                                     <div class="ctrl-header-row">
                                         <label>⚡ Constante Coulomb ke: <strong id="lbl-pc-ke">1.0× (Normal)</strong></label>
@@ -2590,10 +2694,25 @@
             `;
 
             this.canvas = document.getElementById('pacman-canvas');
+            this.cacheDom();
             this.resize();
             this.bindEvents();
             this.resetGame();
             this.loop();
+        },
+
+        setSpeedMode(mode) {
+            this.speedMode = mode;
+            if (mode === 'norm') this.pac.speed = 0.11;
+            else if (mode === 'fast') this.pac.speed = 0.145;
+            else if (mode === 'turbo') this.pac.speed = 0.192;
+
+            if (this.dom) {
+                if (this.dom.btnSpdNorm) this.dom.btnSpdNorm.classList.toggle('active', mode === 'norm');
+                if (this.dom.btnSpdFast) this.dom.btnSpdFast.classList.toggle('active', mode === 'fast');
+                if (this.dom.btnSpdTurbo) this.dom.btnSpdTurbo.classList.toggle('active', mode === 'turbo');
+            }
+            playSound('click');
         },
 
         resize() {
@@ -2610,12 +2729,10 @@
         },
 
         bindEvents() {
-            const rngKe = document.getElementById('rng-pc-ke');
-            if (rngKe) {
-                rngKe.addEventListener('input', (e) => {
+            if (this.dom && this.dom.rngKe) {
+                this.dom.rngKe.addEventListener('input', (e) => {
                     this.coulombK = parseFloat(e.target.value);
-                    const lbl = document.getElementById('lbl-pc-ke');
-                    if (lbl) lbl.textContent = `${this.coulombK.toFixed(1)}× (${this.coulombK > 1 ? 'Fuerte' : (this.coulombK < 1 ? 'Débil' : 'Normal')})`;
+                    if (this.dom.lblKe) this.dom.lblKe.textContent = `${this.coulombK.toFixed(1)}× (${this.coulombK > 1 ? 'Fuerte' : (this.coulombK < 1 ? 'Débil' : 'Normal')})`;
                     playSound('click');
                 });
             }
@@ -2638,6 +2755,16 @@
         setDirection(dx, dy) {
             this.pac.reqDx = dx;
             this.pac.reqDy = dy;
+
+            // Si está quieto, arrancar de inmediato si el camino está libre
+            if (this.pac.dx === 0 && this.pac.dy === 0) {
+                const rx = Math.round(this.pac.x);
+                const ry = Math.round(this.pac.y);
+                if (!this.isWall(rx + dx, ry + dy)) {
+                    this.pac.dx = dx;
+                    this.pac.dy = dy;
+                }
+            }
             playSound('click');
         },
 
@@ -2645,19 +2772,18 @@
             this.pac.charge = (this.pac.charge === +1) ? -1 : +1;
             playSound('tunnel');
             this.spawnParticles((this.pac.x + 0.5) * this.tileW, (this.pac.y + 0.5) * this.tileH, this.pac.charge > 0 ? '#38bdf8' : '#ec4899', 14);
-            const elCh = document.getElementById('pc-charge');
-            if (elCh) {
-                elCh.textContent = this.pac.charge > 0 ? '+1e (Protón)' : '−1e (Electrón)';
-                elCh.style.color = this.pac.charge > 0 ? '#38bdf8' : '#ec4899';
+            if (this.dom && this.dom.elCharge) {
+                this.dom.elCharge.textContent = this.pac.charge > 0 ? '+1e (Protón)' : '−1e (Electrón)';
+                this.dom.elCharge.style.color = this.pac.charge > 0 ? '#38bdf8' : '#ec4899';
             }
         },
 
         nudgeCoupling(delta) {
             this.coulombK = Math.max(0.4, Math.min(2.0, +(this.coulombK + delta).toFixed(1)));
-            const rng = document.getElementById('rng-pc-ke');
-            const lbl = document.getElementById('lbl-pc-ke');
-            if (rng) rng.value = this.coulombK;
-            if (lbl) lbl.textContent = `${this.coulombK.toFixed(1)}× (${this.coulombK > 1 ? 'Fuerte' : (this.coulombK < 1 ? 'Débil' : 'Normal')})`;
+            if (this.dom) {
+                if (this.dom.rngKe) this.dom.rngKe.value = this.coulombK;
+                if (this.dom.lblKe) this.dom.lblKe.textContent = `${this.coulombK.toFixed(1)}× (${this.coulombK > 1 ? 'Fuerte' : (this.coulombK < 1 ? 'Débil' : 'Normal')})`;
+            }
             playSound('click');
         },
 
@@ -2674,7 +2800,6 @@
             this.superTimer = 0;
             this.particles = [];
 
-            // Copiar mapa y contar electrones
             this.grid = this.mazeLayout.map(row => [...row]);
             this.dotsRemaining = 0;
             for (let r = 0; r < this.rows; r++) {
@@ -2685,7 +2810,6 @@
                 }
             }
 
-            // Posición inicial de Pac-Coulomb
             this.pac.x = 9;
             this.pac.y = 13;
             this.pac.dx = 0;
@@ -2693,8 +2817,8 @@
             this.pac.reqDx = 0;
             this.pac.reqDy = 0;
             this.pac.charge = +1;
+            this.setSpeedMode(this.speedMode || 'fast');
 
-            // Inicializar los 4 Iones Fantasmas
             this.ghosts = [
                 { id: 'blinky', name: 'Alfa', charge: +2, color: '#ef4444', x: 9, y: 7, dx: 0, dy: -1, eaten: false },
                 { id: 'pinky',  name: 'Beta',  charge: -1, color: '#ec4899', x: 8, y: 9, dx: -1, dy: 0, eaten: false },
@@ -2709,21 +2833,21 @@
         spawnParticles(x, y, color, count = 10) {
             for (let i = 0; i < count; i++) {
                 const angle = Math.random() * Math.PI * 2;
-                const speed = 1.0 + Math.random() * 2.5;
+                const speed = 1.2 + Math.random() * 3.0;
                 this.particles.push({
                     x, y,
                     vx: Math.cos(angle) * speed,
                     vy: Math.sin(angle) * speed,
                     color,
                     life: 1.0,
-                    decay: 0.03 + Math.random() * 0.03,
+                    decay: 0.035 + Math.random() * 0.035,
                     size: 2.2 + Math.random() * 2.2
                 });
             }
         },
 
         isWall(tileX, tileY) {
-            if (tileX < 0 || tileX >= this.cols) return false; // Túneles laterales
+            if (tileX < 0 || tileX >= this.cols) return false;
             if (tileY < 0 || tileY >= this.rows) return true;
             return this.grid[tileY][tileX] === 1;
         },
@@ -2731,7 +2855,7 @@
         update(dt) {
             if (this.isGameOver || this.isLevelClear) return;
 
-            // Timer de Jaula de Faraday (Supercondensador)
+            // Timer de Jaula de Faraday
             if (this.superTimer > 0) {
                 this.superTimer -= dt;
                 if (this.superTimer <= 0) {
@@ -2740,67 +2864,69 @@
                 }
             }
 
-            // Movimiento suave de Pac-Coulomb
             const p = this.pac;
-            p.mouthAngle += 0.08 * p.mouthDir;
+            p.mouthAngle += 0.12 * p.mouthDir;
             if (p.mouthAngle > 0.45 || p.mouthAngle < 0.05) p.mouthDir *= -1;
 
-            // Intentar girar en la dirección solicitada
-            const snapThreshold = p.speed * 0.95;
             const rx = Math.round(p.x);
             const ry = Math.round(p.y);
-            const atCenter = Math.abs(p.x - rx) < snapThreshold && Math.abs(p.y - ry) < snapThreshold;
+            const turnTolerance = p.speed * 1.5;
 
+            // Giro instantáneo y fluido de esquina (Pre-turn buffering)
             if (p.reqDx !== 0 || p.reqDy !== 0) {
-                // Giros opuestos inmediatos (ej: iba derecha y presiona izquierda)
+                // Inversión inmediata de 180°
                 if (p.reqDx === -p.dx && p.reqDx !== 0) {
                     p.dx = p.reqDx; p.dy = 0;
                 } else if (p.reqDy === -p.dy && p.reqDy !== 0) {
                     p.dy = p.reqDy; p.dx = 0;
-                } else if (atCenter) {
-                    const nextX = rx + p.reqDx;
-                    const nextY = ry + p.reqDy;
-                    if (!this.isWall(nextX, nextY)) {
+                }
+                // Giro perpendicular a Y
+                else if (p.reqDy !== 0 && Math.abs(p.x - rx) <= turnTolerance) {
+                    if (!this.isWall(rx, ry + p.reqDy)) {
                         p.x = rx;
-                        p.y = ry;
-                        p.dx = p.reqDx;
+                        p.dx = 0;
                         p.dy = p.reqDy;
+                    }
+                }
+                // Giro perpendicular a X
+                else if (p.reqDx !== 0 && Math.abs(p.y - ry) <= turnTolerance) {
+                    if (!this.isWall(rx + p.reqDx, ry)) {
+                        p.y = ry;
+                        p.dy = 0;
+                        p.dx = p.reqDx;
                     }
                 }
             }
 
-            // Comprobar pared frontal
-            if (atCenter && (p.dx !== 0 || p.dy !== 0)) {
-                const frontX = rx + p.dx;
-                const frontY = ry + p.dy;
-                if (this.isWall(frontX, frontY)) {
-                    p.x = rx;
-                    p.y = ry;
-                    p.dx = 0;
-                    p.dy = 0;
-                }
+            // Detección de colisión frontal contra pared
+            if (p.dx > 0 && p.x + p.speed > rx && this.isWall(rx + 1, ry)) {
+                p.x = rx; p.dx = 0;
+            } else if (p.dx < 0 && p.x - p.speed < rx && this.isWall(rx - 1, ry)) {
+                p.x = rx; p.dx = 0;
+            } else if (p.dy > 0 && p.y + p.speed > ry && this.isWall(rx, ry + 1)) {
+                p.y = ry; p.dy = 0;
+            } else if (p.dy < 0 && p.y - p.speed < ry && this.isWall(rx, ry - 1)) {
+                p.y = ry; p.dy = 0;
+            } else {
+                p.x += p.dx * p.speed;
+                p.y += p.dy * p.speed;
             }
 
-            p.x += p.dx * p.speed;
-            p.y += p.dy * p.speed;
-
-            // Túneles laterales de transporte de carga
+            // Túneles laterales
             if (p.x < -0.5) p.x = this.cols - 0.5;
             if (p.x > this.cols - 0.5) p.x = -0.5;
 
-            // Recolección de electrones y supercondensadores
+            // Recolección de electrones
             const curTileX = Math.round(p.x);
             const curTileY = Math.round(p.y);
             if (curTileX >= 0 && curTileX < this.cols && curTileY >= 0 && curTileY < this.rows) {
                 const cell = this.grid[curTileY][curTileX];
                 if (cell === 0) {
-                    // Electrón (-e) consumido
                     this.grid[curTileY][curTileX] = 2;
                     this.scoreEV += 10;
                     this.dotsRemaining--;
                     playSound('eat');
                 } else if (cell === 3) {
-                    // Supercondensador activado (Jaula de Faraday)
                     this.grid[curTileY][curTileX] = 2;
                     this.scoreEV += 50;
                     this.dotsRemaining--;
@@ -2817,11 +2943,10 @@
                 }
             }
 
-            // Actualización de los 4 Iones Fantasmas (Coulomb AI)
-            const ghostSpeed = (this.superTimer > 0 ? 0.048 : 0.072) * (1 + (this.level - 1) * 0.06);
+            // Actualización ágil de Iones Fantasmas
+            const ghostSpeed = (this.superTimer > 0 ? 0.075 : 0.112) * (1 + (this.level - 1) * 0.05);
 
             for (const g of this.ghosts) {
-                // Oscilación de polaridad de Clyde (Delta)
                 if (g.id === 'clyde') {
                     g.oscTimer = (g.oscTimer || 0) + dt;
                     if (g.oscTimer > 7.0) {
@@ -2833,49 +2958,41 @@
 
                 const gx = Math.round(g.x);
                 const gy = Math.round(g.y);
-                const gAtCenter = Math.abs(g.x - gx) < ghostSpeed * 0.95 && Math.abs(g.y - gy) < ghostSpeed * 0.95;
+                const gAtCenter = Math.abs(g.x - gx) < ghostSpeed * 1.2 && Math.abs(g.y - gy) < ghostSpeed * 1.2;
 
                 if (gAtCenter) {
                     g.x = gx;
                     g.y = gy;
 
-                    // Posibles direcciones sin chocar con paredes
                     const possibleDirs = [
                         { dx: 0, dy: -1 },
                         { dx: 0, dy: 1 },
                         { dx: -1, dy: 0 },
                         { dx: 1, dy: 0 }
                     ].filter(d => {
-                        // Evitar retroceso instantáneo estricto salvo callejón sin salida
                         if (d.dx === -g.dx && d.dy === -g.dy) return false;
                         return !this.isWall(gx + d.dx, gy + d.dy);
                     });
 
                     const validDirs = possibleDirs.length > 0 ? possibleDirs : [{ dx: -g.dx, dy: -g.dy }];
 
-                    // Cálculo de objetivo guiado por Fuerza de Coulomb
                     let targetX = p.x;
                     let targetY = p.y;
 
                     if (this.superTimer > 0) {
-                        // En Jaula de Faraday huyen a las esquinas
                         targetX = (g.x > this.cols * 0.5) ? this.cols - 1 : 0;
                         targetY = (g.y > this.rows * 0.5) ? this.rows - 1 : 0;
                     } else {
-                        // Ley de Coulomb: cargas del mismo signo se repelen, opuestas se atraen
                         const sameSign = (g.charge * p.charge) > 0;
                         if (sameSign) {
-                            // Repulsión: busca rodear a distancia de 4 tiles
                             targetX = p.x + p.dx * 3;
                             targetY = p.y + p.dy * 3;
                         } else {
-                            // Atracción culombiana directa hacia Pac-Coulomb
                             targetX = p.x;
                             targetY = p.y;
                         }
                     }
 
-                    // Elegir la dirección que minimice la distancia euclídea al objetivo
                     let bestDir = validDirs[0];
                     let bestDist = 999999;
                     for (const d of validDirs) {
@@ -2896,26 +3013,23 @@
                 if (g.x < -0.5) g.x = this.cols - 0.5;
                 if (g.x > this.cols - 0.5) g.x = -0.5;
 
-                // Colisión Pac-Man <-> Ion Fantasma
+                // Colisión
                 const colDist = Math.hypot(p.x - g.x, p.y - g.y);
                 if (colDist < 0.68) {
                     if (this.superTimer > 0 && !g.eaten) {
-                        // Neutralización electrostática del ion
                         g.eaten = true;
                         g.x = 9; g.y = 8; g.dx = 0; g.dy = -1;
                         this.scoreEV += 400;
                         playSound('spark');
-                        this.spawnParticles((p.x + 0.5) * this.tileW, (p.y + 0.5) * this.tileH, g.color, 20);
+                        this.spawnParticles((p.x + 0.5) * this.tileW, (p.y + 0.5) * this.tileH, g.color, 18);
                     } else if (!g.eaten) {
-                        // Ruptura Dieléctrica: Pérdida de vida
                         this.lives--;
                         playSound('gameover');
-                        this.spawnParticles((p.x + 0.5) * this.tileW, (p.y + 0.5) * this.tileH, '#ef4444', 24);
+                        this.spawnParticles((p.x + 0.5) * this.tileW, (p.y + 0.5) * this.tileH, '#ef4444', 22);
 
                         if (this.lives <= 0) {
                             this.isGameOver = true;
                         } else {
-                            // Reposicionar
                             p.x = 9; p.y = 13; p.dx = 0; p.dy = 0; p.reqDx = 0; p.reqDy = 0;
                             this.ghosts.forEach(gh => { gh.x = 9; gh.y = 8; });
                         }
@@ -2933,11 +3047,19 @@
                 if (pt.life <= 0) this.particles.splice(i, 1);
             }
 
-            this.updateTelemetry();
+            // Throttling de telemetría a 10 FPS
+            const now = performance.now();
+            if (now - this.lastTelemetryTime > 90) {
+                this.updateTelemetry();
+                this.lastTelemetryTime = now;
+            }
         },
 
         updateTelemetry() {
-            // Calcular campo eléctrico y fuerza resultante sobre Pac-Coulomb
+            if (!this.dom) this.cacheDom();
+            const d = this.dom;
+            if (!d) return;
+
             let Ex = 0;
             let Ey = 0;
             let netF = 0;
@@ -2949,7 +3071,6 @@
                 const r = Math.sqrt(r2);
                 const chargeProd = g.charge * this.pac.charge;
 
-                // F = ke * q1 * q2 / r^2
                 const fVal = this.coulombK * (chargeProd / r2);
                 netF += Math.abs(fVal);
                 Ex += (g.charge / r2) * (dx / r);
@@ -2960,65 +3081,53 @@
             const totalF = (netF * 3.8).toFixed(1);
             const voltV = (netF * 1.5).toFixed(1);
 
-            const elScr = document.getElementById('pc-score');
-            const elLiv = document.getElementById('pc-lives');
-            const elMod = document.getElementById('pc-mode');
-            const elLvl = document.getElementById('pc-level');
-            const elDot = document.getElementById('pc-dots');
-
-            if (elScr) elScr.textContent = `${this.scoreEV} eV`;
-            if (elLiv) elLiv.textContent = '⚡'.repeat(Math.max(0, this.lives)) || 'AGOTADAS';
-            if (elMod) {
+            if (d.elScore) d.elScore.textContent = `${this.scoreEV} eV`;
+            if (d.elLives) d.elLives.textContent = '⚡'.repeat(Math.max(0, this.lives)) || 'AGOTADAS';
+            if (d.elMode) {
                 if (this.superTimer > 0) {
-                    elMod.textContent = `FARADAY (${this.superTimer.toFixed(1)}s)`;
-                    elMod.style.color = '#c084fc';
+                    d.elMode.textContent = `FARADAY (${this.superTimer.toFixed(1)}s)`;
+                    d.elMode.style.color = '#c084fc';
                 } else {
-                    elMod.textContent = 'Aislante Normal';
-                    elMod.style.color = '#38bdf8';
+                    d.elMode.textContent = 'Aislante Normal';
+                    d.elMode.style.color = '#38bdf8';
                 }
             }
-            if (elLvl) elLvl.textContent = `${this.level}`;
-            if (elDot) elDot.textContent = `${this.dotsRemaining}`;
+            if (d.elLevel) d.elLevel.textContent = `${this.level}`;
+            if (d.elDots) d.elDots.textContent = `${this.dotsRemaining}`;
 
-            const elE = document.getElementById('pc-efield');
-            const elF = document.getElementById('pc-force');
-            const elV = document.getElementById('pc-volt');
-
-            if (elE) elE.textContent = `${totalE} N/C`;
-            if (elF) elF.textContent = `${totalF} pN`;
-            if (elV) elV.textContent = `${voltV} V`;
+            if (d.elE) d.elE.textContent = `${totalE} N/C`;
+            if (d.elF) d.elF.textContent = `${totalF} pN`;
+            if (d.elV) d.elV.textContent = `${voltV} V`;
         },
 
         draw() {
             const ctx = this.ctx;
             if (!ctx) return;
 
-            // Fondo profundo
             ctx.fillStyle = '#050814';
             ctx.fillRect(0, 0, this.w, this.h);
 
-            // 1. Dibujar líneas de campo electrostático tenue en corredores
+            // 1. Líneas de campo electrostático tenue en una sola pasada de trazado
             ctx.save();
+            ctx.beginPath();
             ctx.strokeStyle = 'rgba(56, 189, 248, 0.08)';
             ctx.lineWidth = 1;
+            const g0 = this.ghosts[0];
             for (let r = 1; r < this.rows - 1; r += 2) {
                 for (let c = 1; c < this.cols - 1; c += 2) {
                     if (this.grid[r][c] !== 1) {
                         const px = (c + 0.5) * this.tileW;
                         const py = (r + 0.5) * this.tileH;
-                        // Pequeño vector que apunta hacia el ion más cercano
-                        const g = this.ghosts[0];
-                        const angle = Math.atan2(g.y - r, g.x - c);
-                        ctx.beginPath();
+                        const angle = Math.atan2(g0.y - r, g0.x - c);
                         ctx.moveTo(px, py);
                         ctx.lineTo(px + Math.cos(angle) * 6, py + Math.sin(angle) * 6);
-                        ctx.stroke();
                     }
                 }
             }
+            ctx.stroke();
             ctx.restore();
 
-            // 2. Dibujar paredes dieléctricas y electrones del laberinto
+            // 2. Paredes dieléctricas y electrones
             for (let r = 0; r < this.rows; r++) {
                 for (let c = 0; c < this.cols; c++) {
                     const x = c * this.tileW;
@@ -3026,27 +3135,21 @@
                     const cell = this.grid[r][c];
 
                     if (cell === 1) {
-                        // Pared aislante dieléctrica
                         ctx.fillStyle = '#0f172a';
                         ctx.fillRect(x + 1, y + 1, this.tileW - 2, this.tileH - 2);
                         ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
                         ctx.lineWidth = 1.5;
                         ctx.strokeRect(x + 1, y + 1, this.tileW - 2, this.tileH - 2);
                     } else if (cell === 0) {
-                        // Electrón (-e)
                         ctx.fillStyle = '#38bdf8';
-                        ctx.shadowColor = '#38bdf8';
-                        ctx.shadowBlur = 4;
                         ctx.beginPath();
                         ctx.arc(x + this.tileW * 0.5, y + this.tileH * 0.5, 3.2, 0, Math.PI * 2);
                         ctx.fill();
-                        ctx.shadowBlur = 0;
                     } else if (cell === 3) {
-                        // Supercondensador / Nodo Dieléctrico
                         const pulse = Math.sin(performance.now() * 0.008) * 1.5;
                         ctx.fillStyle = '#a855f7';
                         ctx.shadowColor = '#c084fc';
-                        ctx.shadowBlur = 10;
+                        ctx.shadowBlur = 8;
                         ctx.beginPath();
                         ctx.arc(x + this.tileW * 0.5, y + this.tileH * 0.5, 6.5 + pulse, 0, Math.PI * 2);
                         ctx.fill();
@@ -3055,8 +3158,10 @@
                 }
             }
 
-            // 3. Arcos de Interacción de Coulomb (entre Pac-Coulomb y Fantasmas cercanos)
+            // 3. Arcos de Coulomb
             ctx.save();
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([4, 4]);
             for (const g of this.ghosts) {
                 const dist = Math.hypot(this.pac.x - g.x, this.pac.y - g.y);
                 if (dist < 4.5 && !g.eaten) {
@@ -3067,8 +3172,6 @@
 
                     const sameSign = (g.charge * this.pac.charge) > 0;
                     ctx.strokeStyle = sameSign ? 'rgba(239, 68, 68, 0.45)' : 'rgba(56, 189, 248, 0.5)';
-                    ctx.lineWidth = 1.5;
-                    ctx.setLineDash([4, 4]);
                     ctx.beginPath();
                     ctx.moveTo(px, py);
                     ctx.lineTo(gx, gy);
@@ -3077,7 +3180,7 @@
             }
             ctx.restore();
 
-            // 4. Dibujar Iones Fantasmas
+            // 4. Iones Fantasmas
             for (const g of this.ghosts) {
                 const gx = (g.x + 0.5) * this.tileW;
                 const gy = (g.y + 0.5) * this.tileH;
@@ -3089,12 +3192,10 @@
 
                 ctx.fillStyle = gColor;
                 ctx.shadowColor = gColor;
-                ctx.shadowBlur = isVulnerable ? 14 : 8;
+                ctx.shadowBlur = isVulnerable ? 12 : 6;
 
-                // Cúpula superior
                 ctx.beginPath();
                 ctx.arc(gx, gy - r * 0.2, r, Math.PI, 0, false);
-                // Falda inferior ondulada
                 ctx.lineTo(gx + r, gy + r);
                 ctx.lineTo(gx + r * 0.5, gy + r * 0.6);
                 ctx.lineTo(gx, gy + r);
@@ -3103,7 +3204,7 @@
                 ctx.closePath();
                 ctx.fill();
 
-                // Ojos indicadores de dirección
+                // Ojos
                 ctx.fillStyle = '#ffffff';
                 const eyeXOff = (g.dx || 0) * 3;
                 const eyeYOff = (g.dy || 0) * 3;
@@ -3118,7 +3219,7 @@
                 ctx.arc(gx + 4 + eyeXOff * 1.3, gy - 3 + eyeYOff * 1.3, 1.8, 0, Math.PI * 2);
                 ctx.fill();
 
-                // Placa de carga electrostática sobre el ion
+                // Placa de carga
                 ctx.fillStyle = '#ffffff';
                 ctx.font = 'bold 9px monospace';
                 ctx.textAlign = 'center';
@@ -3127,7 +3228,7 @@
                 ctx.restore();
             }
 
-            // 5. Dibujar Pac-Coulomb (Carga de Prueba)
+            // 5. Pac-Coulomb
             const px = (this.pac.x + 0.5) * this.tileW;
             const py = (this.pac.y + 0.5) * this.tileH;
             const pr = this.tileW * 0.44;
@@ -3135,9 +3236,8 @@
             ctx.save();
             ctx.fillStyle = this.pac.charge > 0 ? '#facc15' : '#ec4899';
             ctx.shadowColor = this.pac.charge > 0 ? '#facc15' : '#ec4899';
-            ctx.shadowBlur = 12;
+            ctx.shadowBlur = 10;
 
-            // Determinar ángulo de orientación según dirección
             let baseAngle = 0;
             if (this.pac.dx === 1) baseAngle = 0;
             else if (this.pac.dx === -1) baseAngle = Math.PI;
@@ -3151,7 +3251,7 @@
             ctx.closePath();
             ctx.fill();
 
-            // Símbolo de carga al centro (+ o -)
+            // Símbolo de carga
             ctx.shadowBlur = 0;
             ctx.fillStyle = '#0f172a';
             ctx.font = 'bold 11px system-ui, sans-serif';
@@ -3160,20 +3260,20 @@
             ctx.fillText(this.pac.charge > 0 ? '+' : '−', px, py);
             ctx.restore();
 
-            // 6. Dibujar partículas
-            for (const pt of this.particles) {
+            // 6. Partículas
+            if (this.particles.length > 0) {
                 ctx.save();
-                ctx.globalAlpha = pt.life;
-                ctx.fillStyle = pt.color;
-                ctx.shadowColor = pt.color;
-                ctx.shadowBlur = 6;
-                ctx.beginPath();
-                ctx.arc(pt.x, pt.y, pt.size * pt.life, 0, Math.PI * 2);
-                ctx.fill();
+                for (const pt of this.particles) {
+                    ctx.globalAlpha = pt.life;
+                    ctx.fillStyle = pt.color;
+                    ctx.beginPath();
+                    ctx.arc(pt.x, pt.y, pt.size * pt.life, 0, Math.PI * 2);
+                    ctx.fill();
+                }
                 ctx.restore();
             }
 
-            // 7. Carteles de fin de partida
+            // 7. Carteles
             if (this.isGameOver) {
                 ctx.fillStyle = 'rgba(5, 8, 20, 0.85)';
                 ctx.fillRect(0, 0, this.w, this.h);
@@ -3213,7 +3313,7 @@
 
         loop() {
             const now = performance.now();
-            const dt = Math.min(0.1, (now - (this.lastFrameTime || now)) / 1000);
+            const dt = Math.min(0.08, (now - (this.lastFrameTime || now)) / 1000);
             this.lastFrameTime = now;
 
             this.update(dt);
