@@ -1,0 +1,75 @@
+<template class="chapter-src" data-id="posicion" data-num="7" data-title="Tamaño de posición, cero promediación y las dos balas del día" data-part="Parte II · Anatomía de la estrategia" data-short="Riesgo fijo por operación y cálculo del lote; redondeo; por qué no se promedia; el modelo de dos balas diarias y el árbol de un día">
+<p class="lead">El tamaño de la posición es la única palanca que controla cuánto se puede perder con una estrategia dada. El manual v1.3 la fija con tres decisiones: arriesgar siempre lo mismo (125 USD), abrir <b>una sola posición por señal</b> (jamás promediar) y permitir como máximo <b>dos intentos al día</b>. Este capítulo explica cada decisión y qué cambia con ella.</p>
+
+<section>
+<h2>Riesgo fijo por operación</h2>
+<p>El tamaño sale de despejar el lote en la pérdida que se está dispuesto a sufrir si el stop se toca:</p>
+<div class="eq key" data-name="Lote por riesgo fijo">\[\text{lote}=\Big\lfloor \frac{\text{riesgo en USD}}{(d_{SL}+s)\cdot 100 + k}\Big\rfloor_{0.01},\qquad \text{riesgo}=0.125\,\%\times 100\,000=125\ \text{USD}\]</div>
+<p>donde \(d_{SL}\) es la distancia del stop en USD, \(s\) el spread, \(k\) la comisión por lote y \(\lfloor\cdot\rfloor_{0.01}\) indica redondeo hacia abajo al múltiplo de 0.01. Si el stop es corto, el lote es grande; si es largo, pequeño: así cada operación arriesga lo mismo en dólares sin importar la volatilidad del día.</p>
+<div class="box warn"><p>El redondeo al múltiplo de 0.01 lote es inofensivo con 125 USD (el error es del orden de 3 %) pero se vuelve crítico en cuentas pequeñas. En una cuenta de 49 USD con un lote mínimo de 0.01, arriesgar el 1 % (0.49 USD) con un stop de 55 pips es imposible: el lote mínimo ya arriesga 0.55 USD más el spread. El riesgo real es el que impone el lote mínimo, no el que usted escribió en la configuración.</p></div>
+<div class="sim" data-sim="redondeo" data-title="Riesgo nominal contra riesgo real según el stop"></div>
+<div class="sim-guide"><ul>
+<li>La línea discontinua es el riesgo que usted pide; la escalera, el que realmente corre con lotes de 0.01. Con 125 USD la escalera queda siempre por debajo (rojo = por debajo, es decir, menos riesgo).</li>
+<li>Baje el riesgo nominal a 10 USD: con un stop de 55 pips el lote mínimo (0.01) ya cuesta 5.8 USD y la escalera se pega al fondo; con 3 USD, el lote mínimo <i>excede</i> el riesgo pedido y se arriesga el doble o el triple.</li>
+<li>El lote real depende también del spread y de la comisión, que en cuentas de comisión suben el riesgo efectivo.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Cero promediación: una posición por señal</h2>
+<p>Promediar (<i>DCA</i>, <i>averaging down</i>) es añadir lotes cuando el precio va en contra, para mejorar el precio medio de entrada y salir con ganancia en un pequeño rebote. La versión 1.2 del motor lo hacía (hasta tres niveles); la 1.3 lo eliminó. La razón es matemática: en un mercado sin ventaja, promediar no cambia la esperanza, solo la forma del resultado, y la forma que produce es peligrosa.</p>
+<div class="sim" data-sim="escalera" data-title="Promediar a la baja en un mercado sin ventaja"></div>
+<div class="sim-guide"><ul>
+<li>Se simula una caminata aleatoria. La escalera abre un nuevo lote cada «paso» pips en contra y sale con ganancia pequeña cuando el precio rebota hasta el take profit medido desde el precio medio; si cae hasta el stop duro, pierde todo el riesgo asignado (1 R en total).</li>
+<li>Con niveles = 1 es una operación normal. Con tres niveles, el acierto sube a 80–90 %, las ganancias son pequeñas y la pérdida ocasional es grande. La esperanza sigue siendo 0 (menos costos).</li>
+<li>Es el perfil de «escalera» del capítulo 3: la curva sube suavemente y cae de golpe. Con apalancamiento y sin un stop duro (martingala), esa caída es la ruina.</li>
+</ul></div>
+<div class="box explain"><p>Promediar es como pagar una póliza de seguro para no perder en los días normales, cobrando una prima en forma de ganancias pequeñas, y confiar en que el siniestro grande nunca llegue. La póliza no es gratis: la prima la paga justamente la pérdida grande que el 10–20 % de las veces cae.</p></div>
+</section>
+
+<section>
+<h2>Las dos balas: máximo dos intentos por día</h2>
+<p>Con riesgo de 125 USD y un tope diario de −250 USD, el día admite hasta dos pérdidas completas. Cada intento es una «bala»; el modelo de dos balas dice: si el primero pierde, hay un segundo; si el segundo también pierde, se frena la jornada. Si el segundo gana (+1.64 R ≈ +205 USD), el día termina en positivo neto (+80 USD). Y si el primero toca el take profit, el candado <i>One and Done</i> bloquea el resto del día.</p>
+<p>La estructura del día es un árbol de decisiones. Cada hoja tiene una probabilidad y un resultado; el valor del día es la suma ponderada.</p>
+<div class="sim" data-sim="arbol-dia" data-title="El árbol de un día con dos balas"></div>
+<div class="sim-guide"><ul>
+<li>Las probabilidades de cada desenlace de una operación vienen de las 71 operaciones reales de M5: 24 % TP (+1.64 R), 18 % stop inicial (−0.98 R), 20 % SL defensivo (−0.39 R), 23 % break-even (+0.09 R) y 15 % estancamiento (−0.32 R). Puede modificarlas.</li>
+<li>Las barras muestran la distribución del resultado del día en dólares. Cambie «Señales por día» para ver que la mayoría de los días no pasa nada: con 0.8 señales diarias, en 45 % de los días no hay operación.</li>
+<li>Marque o desmarque el One and Done y el tope: la media diaria casi no cambia; lo que cambia es el peor día posible: con 4 balas y sin tope puede llegar a −4 R, con 2 balas y tope no pasa de −2 R.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Práctica: lotes, riesgo real y operaciones por día</h2>
+<div class="box py"><p>El programa ejecuta el manual en M1 y M5 reales y mide el tamaño de las posiciones, la pérdida real a stop completo, el reparto de operaciones por día y el efecto de compensar el spread.</p>
+<div class="py" data-py="07-posicion"></div></div>
+<div class="box read"><ul>
+<li><b>Lotes</b>: mediana 0.20 en M1 (0.19–0.26); pérdida a stop completo entre 119 y 125 USD, media 121.6: el redondeo hacia abajo deja el riesgo real un 2.7 % por debajo del nominal.</li>
+<li><b>Días</b>: en M1, el 38 % de los días no tiene operación, el 42 % una y el 19 % dos. En M5 (señales más escasas), el 82 % no opera, 16 % una y 2 % dos.</li>
+<li><b>Resultado diario</b>: en M1 el día medio rinde 0 USD; hay 27 % de días verdes y 34 % rojos; el mejor día +205 USD y el peor −249 USD (casi el tope).</li>
+<li><b>Compensar spread</b>: con y sin compensación, el lote mediano y el R medio casi no cambian (+0.108 contra +0.103); lo que cambia es que sin compensar el spread, el stop se activa una fracción de veces por la horquilla Ask/Bid.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Riesgo fijo de 125 USD por operación: el lote varía con la distancia del stop; el redondeo a 0.01 deja el riesgo real 2–3 % por debajo.</li>
+<li>En cuentas pequeñas, el lote mínimo impone un riesgo real mayor que el pedido.</li>
+<li>Una posición por señal y cero promediación: promediar no crea ventaja y convierte la pérdida en un evento raro y grande.</li>
+<li>Dos balas diarias con tope de −250 USD y One and Done: define un árbol de resultados diarios; la mayoría de los días no opera.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Riesgo 125 USD, stop 48 pips, spread 0.27 compensado. ¿Qué lote?
+<details><summary>Respuesta</summary><p>D = 4.80 + 0.27 = 5.07 USD; lote = 125/(5.07 × 100) = 0.2465 → 0.24.</p></details></li>
+<li><span class="lvl">Básico</span>¿Cuál es la pérdida máxima de un día completo con el manual?
+<details><summary>Respuesta</summary><p>Dos balas × 125 = 250 USD = 0.25 % de la cuenta de 100 000 USD (el tope duro diario del bot es −250).</p></details></li>
+<li><span class="lvl">Intermedio</span>Cuenta de 49 USD, lote mínimo 0.01, stop 55 pips, spread 0.48. ¿Cuánto arriesga como mínimo y qué porcentaje de la cuenta?
+<details><summary>Respuesta</summary><p>Distancia = 5.50 + 0.48 = 5.98 USD por onza; 0.01 lote = 1 onza: 5.98 USD = 12.2 % de la cuenta. Con una cuenta de centavos (USC) el mismo cálculo se expresa en centavos, pero el 12 % es el mismo.</p></details></li>
+<li><span class="lvl">Intermedio</span>Una escalera con tres niveles acierta el 85 % ganando 0.25 R por acierto. ¿Qué pérdida media debe tener el 15 % restante para que la esperanza sea cero?
+<details><summary>Respuesta</summary><p>0.85 × 0.25 = 0.2125 = 0.15 × L → L = 1.42 R. La pérdida media del 15 % debe ser de 1.4 R: con riesgo mal definido, mayor.</p></details></li>
+<li><span class="lvl">Avanzado</span>Con λ = 0.8 señales por día (Poisson), ¿cuál es la probabilidad de un día con dos o más señales, que es cuando la segunda bala puede usarse?
+<details><summary>Respuesta</summary><p>P(0) = e<sup>−0.8</sup> = 0.449; P(1) = 0.8 e<sup>−0.8</sup> = 0.359; P(≥2) = 1 − 0.449 − 0.359 = 0.191 (19 %). En M1 real se observó 19 %.</p></details></li>
+</ol>
+</section>
+</template>

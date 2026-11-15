@@ -1,0 +1,130 @@
+<template class="chapter-src" data-id="forward" data-num="23" data-title="Del laboratorio a la cuenta: la prueba hacia adelante" data-part="Parte VII · De la estrategia a la práctica" data-short="Pre-registro; tamaño de muestra y tiempo; regla secuencial de decisión; cómo leer un historial en vivo (el de escalera de la cuenta de prueba); bitácora y comparación con el backtest; criterios de parada; exportar más datos de MetaTrader">
+<p class="lead">Un backtest, por bien hecho que esté, es historia. La única prueba que no se puede contaminar es la que se hace <i>hacia adelante</i>, con operaciones que ocurren después de haber fijado las reglas. Este capítulo diseña esa prueba: qué fijar de antemano, cuántas operaciones hacen falta, cuándo parar, cómo leer un historial en vivo sin engañarse y cómo ampliar la muestra histórica con sus propios datos.</p>
+
+<section>
+<h2>El pre-registro: fijar antes de mirar</h2>
+<p>Antes de empezar, se escribe en un documento con fecha, y no se cambia:</p>
+<ol>
+<li><b>La configuración exacta</b>: todos los parámetros (hoja de estrategia del capítulo 24).</li>
+<li><b>La métrica</b>: el R medio por operación después de costos reales, con su intervalo del 95 %.</li>
+<li><b>El tamaño de muestra</b> y el calendario: cuántas operaciones y hasta cuándo.</li>
+<li><b>Los criterios de decisión</b>: qué resultado aprueba, descarta o deja sin decidir.</li>
+<li><b>Los criterios de parada de emergencia</b>: qué pérdidas o desviaciones detienen la prueba aunque no haya terminado.</li>
+</ol>
+<div class="box warn"><p>Cambiar un parámetro a mitad de la prueba «porque se ve que mejoraría» la convierte en otro backtest. Si surge una idea nueva, se anota para una prueba posterior; la actual sigue con las reglas escritas.</p></div>
+</section>
+
+<section>
+<h2>Cuántas operaciones y cuánto tiempo</h2>
+<p>El tamaño de muestra depende de la ventaja que se quiere detectar (capítulo 12) y del ritmo de señales. La regla del manual produce unas 0.8 operaciones por día en la serie M1 de 3.4 meses, pero solo 0.2 por día en los 17 meses de M5 (71 operaciones en 364 días con ventana). El ritmo real en vivo está entre ambos y debe medirse en las primeras semanas.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Ventaja verdadera</th><th>Operaciones para decidir</th><th>Tiempo a 0.8 por día</th><th>Tiempo a 0.2 por día</th></tr></thead>
+<tbody>
+<tr><td>+0.30 R</td><td>≈ 126</td><td>7 meses</td><td>2.5 años</td></tr>
+<tr><td>+0.20 R</td><td>≈ 283</td><td>1.4 años</td><td>5.6 años</td></tr>
+<tr><td>+0.10 R</td><td>≈ 1 129</td><td>5.6 años</td><td>22 años</td></tr>
+</tbody></table></div>
+<p>(Con \(\sigma\approx1.2\) R para la configuración de payoff alto; cálculos con potencia del 80 % y 5 % de falsos positivos.) La conclusión es incómoda: <b>con un ritmo bajo de señales, una ventaja de +0.10 R es indetectable en un plazo razonable</b>. Hay dos salidas: aumentar el ritmo (más instrumentos, otras sesiones, más variantes independientes) o aceptar que la decisión se tomará con evidencia parcial y un riesgo pequeño.</p>
+</section>
+
+<section>
+<h2>Una regla secuencial de decisión</h2>
+<p>En lugar de esperar un número fijo de operaciones, se evalúa tras cada una con reglas fijadas de antemano: <b>aprobar</b> si \(t>2.5\) con al menos 100 operaciones; <b>descartar</b> si \(t<-1.5\) con al menos 100 operaciones, o si el límite superior del intervalo queda por debajo de +0.05 R con al menos 200; en otro caso, seguir. La simulación muestra cómo se comporta la regla con la ventaja que usted elija.</p>
+<div class="sim" data-sim="prueba-adelante" data-title="Una prueba hacia adelante con regla secuencial"></div>
+<div class="sim-guide"><ul>
+<li>Elija la ventaja verdadera (que en la vida real se desconoce) y pulse «+50 operaciones» o «Reproducir». El gráfico muestra el R medio acumulado con su intervalo; las zonas de decisión se marcan al fondo.</li>
+<li>Las barras de abajo, calculadas con 1 000 historiales simulados con esa ventaja, dan la probabilidad de aprobar, descartar o quedar sin decidir en 800 operaciones.</li>
+<li>Con ventaja nula, la regla descarta en el 56 % de los casos y aprueba falsamente en el 4.7 %; con +0.10 R aprueba en el 83 % y descarta en el 1 %; con +0.05 R se queda sin decidir más de la mitad de las veces.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Cómo leer un historial en vivo: el caso de la escalera</h2>
+<p>La cuenta de prueba de FTMO acumuló, en la versión anterior del motor (la de escalera de tres tramos, antes del manual v1.3), 102 cierres parciales entre el 22 y el 27 de octubre de 2026. La simulación dibuja cada uno.</p>
+<div class="sim" data-sim="historial-escalera" data-title="102 cierres parciales de la cuenta de prueba (versión de escalera)"></div>
+<div class="sim-guide"><ul>
+<li>La curva sube con escalones pequeños (ganancias de 4 a 15 USD) y cae en tres saltos (−194, −401 y −118 USD) cuando varios tramos se cierran juntos en el stop.</li>
+<li>El histograma de abajo muestra dos mundos: una nube de ganancias pequeñas y una cola de pérdidas grandes.</li>
+</ul></div>
+<div class="tablewrap"><table>
+<thead><tr><th>Métrica</th><th>Valor</th><th>Lectura</th></tr></thead>
+<tbody>
+<tr><td>Cierres parciales</td><td>102</td><td>no son operaciones independientes: varios tramos de un mismo grupo se cierran juntos</td></tr>
+<tr><td>Aciertos</td><td>77.5 %</td><td>muy alto; el acierto de equilibrio con ese payoff es 75.6 %</td></tr>
+<tr><td>Ganancia media · pérdida media</td><td>+9.9 USD · −31.2 USD</td><td>payoff 0.32</td></tr>
+<tr><td>Factor de beneficio</td><td>1.09</td><td>apenas por encima de 1</td></tr>
+<tr><td>Resultado total</td><td>+64.1 USD en 4 días</td><td>ganancias +782, pérdidas −718</td></tr>
+<tr><td>Resultado por día</td><td>+104 · +107 · −162 · +15</td><td>un solo día malo borró casi dos buenos</td></tr>
+</tbody></table></div>
+<div class="box explain"><p>En una semana de operaciones y tres sucesos de pérdida, nada de esto permite concluir si el sistema tiene o no ventaja: son demasiado pocos eventos independientes (tres «eventos de pérdida»). Sí muestra la <i>forma</i> del riesgo: un acierto muy alto con pérdidas tres veces mayores que las ganancias. Es la huella de la promediación del capítulo 7 y la razón de que el manual v1.3 la haya eliminado.</p></div>
+</section>
+
+<section>
+<h2>La bitácora: comparar lo real con el backtest</h2>
+<p>Cada operación en vivo debe registrarse junto con lo que el backtest <i>habría</i> hecho en ese mismo momento. Las diferencias se agrupan en cuatro causas:</p>
+<ul>
+<li><b>Costos</b>: spread y comisión reales frente a los supuestos.</li>
+<li><b>Ejecución</b>: deslizamiento (precio de entrada y de salida frente al esperado) y retrasos.</li>
+<li><b>Señales</b>: operaciones que el backtest habría abierto y no se abrieron (por noticias, caídas de conexión, filtros) o al revés.</li>
+<li><b>Datos</b>: diferencias entre las velas del broker en vivo y las históricas (hora del servidor, spread).</li>
+</ul>
+<p>Si el R medio en vivo es menor que el del backtest en una cantidad mayor que el costo esperado, se investiga la causa <i>antes</i> de continuar. Es el mejor detector de errores de ejecución y de datos.</p>
+<h3>Criterios de parada</h3>
+<ul>
+<li><b>Parada de emergencia</b>: pérdida acumulada de 6 R (750 USD con riesgo de 125) o 3 días con pérdida máxima seguidos: se detiene para revisar, aunque probablemente sea ruido (una racha de 6 R es normal con 100 operaciones, véase el capítulo 3).</li>
+<li><b>Descarte</b>: regla secuencial del apartado anterior.</li>
+<li><b>Escalado del riesgo</b>: sube al siguiente nivel (0.125 → 0.25 → 0.5 %) solo si el límite inferior del intervalo del 95 % del R medio es mayor que cero con al menos 200 operaciones por nivel.</li>
+</ul>
+</section>
+
+<section>
+<h2>Ampliar los datos con los suyos</h2>
+<p>La manera más eficaz de reducir la incertidumbre es contar con más historia de M1. MetaTrader limita las velas almacenadas, pero se pueden exportar las que haya con un guion de Python (<code>pip install MetaTrader5 pandas</code>; con el terminal abierto y la sesión iniciada en su cuenta). Este guion <b>no se ejecuta en el curso</b>; se muestra para que usted lo ejecute si lo desea:</p>
+<div class="pycode" data-file="exportar_mt5.py"><div class="pycode-head"><b>exportar_mt5.py</b><span class="sp"></span></div><pre><code>import MetaTrader5 as mt5, pandas as pd
+
+mt5.initialize()                                    # se conecta al terminal abierto
+simbolo = "XAUUSD"                                  # ajuste al nombre de su broker (p. ej. XAUUSD-VIPc)
+velas = mt5.copy_rates_from_pos(simbolo, mt5.TIMEFRAME_M1, 0, 1_000_000)
+df = pd.DataFrame(velas)
+df["time"] = pd.to_datetime(df["time"], unit="s")   # hora del SERVIDOR del broker
+df.rename(columns={"time": "time", "tick_volume": "tickvol"}, inplace=True)
+df[["time", "open", "high", "low", "close", "spread"]].to_csv("xauusd_m1.csv", index=False)
+print(len(df), "velas desde", df["time"].iloc[0], "hasta", df["time"].iloc[-1])
+mt5.shutdown()</code></pre></div>
+<p>Cargue el CSV en la simulación 11.2 (indicando el desfase horario del servidor) o, en Python, con <code>motor.desde_dataframe</code>. Con un año de M1 la muestra del manual pasaría de unas 60 operaciones a unas 250.</p>
+</section>
+
+<section>
+<h2>Práctica: tamaño de muestra y regla secuencial</h2>
+<div class="box py"><p>El programa describe el historial en vivo de la cuenta de prueba, calcula cómo se estrecha el intervalo con el número de operaciones y simula la regla secuencial con distintas ventajas verdaderas.</p>
+<div class="py" data-py="23-forward"></div></div>
+<div class="box read"><ul>
+<li><b>Historial</b>: 77.5 % de aciertos, ganancia media +9.9 USD, pérdida media −31.2 USD, factor de beneficio 1.09, razón 3.2 : 1 entre pérdida y ganancia; tres grupos de stops suman −718 USD frente a +782 de las 79 ganancias.</li>
+<li><b>Intervalo</b> (sd 0.88): ±0.39 R con 20 operaciones, ±0.17 con 100, ±0.086 con 400, ±0.061 con 800.</li>
+<li><b>Regla secuencial</b>: ventaja −0.10 → descarta 99.8 % (174 operaciones); 0 → descarta 55.6 %, aprueba falsamente 4.7 %, 39.7 % sin decidir; +0.05 → aprueba 33 %, descarta 12 %, 55 % sin decidir; +0.10 → aprueba 83.5 % en unas 350 operaciones; +0.20 → 100 % en unas 150; +0.30 → 100 % en 107.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>La prueba hacia adelante exige fijar configuración, métrica, tamaño, decisiones y paradas antes de empezar.</li>
+<li>Con un ritmo de señales de 0.2–0.8 por día, detectar +0.20 R lleva de uno a seis años y +0.10 R es prácticamente indetectable.</li>
+<li>Una regla secuencial (aprobar con \(t>2.5\), descartar con \(t<-1.5\)) decide rápido con ventajas grandes o negativas y deja sin decidir las pequeñas.</li>
+<li>El historial de escalera (77.5 % de aciertos, pérdida media 3 veces la ganancia media) no permite concluir nada, pero muestra el perfil de riesgo de promediar.</li>
+<li>Más datos de M1 del propio broker son la mejora más eficaz de la incertidumbre.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Por qué no se cambia un parámetro durante la prueba hacia adelante?
+<details><summary>Respuesta</summary><p>Porque lo cambiaría quien ya vio resultados; cada ajuste tras mirar es una prueba más y reintroduce el sobreajuste.</p></details></li>
+<li><span class="lvl">Básico</span>Con 100 operaciones y sd 0.88, ¿cuál es la incertidumbre del R medio?
+<details><summary>Respuesta</summary><p>±1.96 × 0.88/10 = ±0.17 R.</p></details></li>
+<li><span class="lvl">Intermedio</span>Tras 150 operaciones, \(\bar R=+0.22\) con sd 0.9. ¿Qué decide la regla secuencial?
+<details><summary>Respuesta</summary><p>EE = 0.9/√150 = 0.073; t = 3.0 &gt; 2.5 con n ≥ 100: aprobar.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué la parada de emergencia (−6 R) no debería interpretarse como «la estrategia falló»?
+<details><summary>Respuesta</summary><p>Con 100 operaciones y ventaja positiva, caídas de 10 R son normales (mediana de la caída máxima). Es una parada para revisar la ejecución, no una conclusión.</p></details></li>
+<li><span class="lvl">Avanzado</span>La regla descarta si el límite superior del IC95 &lt; +0.05 con n ≥ 200. ¿Qué compromiso expresa?
+<details><summary>Respuesta</summary><p>Que una ventaja demostrablemente menor que +0.05 R no compensa el costo de operar y el riesgo; se acepta descartar una estrategia con una ventaja real pequeña a cambio de no malgastar años.</p></details></li>
+</ol>
+</section>
+</template>

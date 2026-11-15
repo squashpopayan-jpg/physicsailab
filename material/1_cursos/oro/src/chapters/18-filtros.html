@@ -1,0 +1,88 @@
+<template class="chapter-src" data-id="filtros" data-num="18" data-title="Horario, noticias y filtros de contexto" data-part="Parte V · Afinar bloque por bloque" data-short="Resultado por hora de entrada, día de la semana y régimen de volatilidad; la ventana de entradas frente a otras sesiones; cierre antes de las noticias de Nueva York; el único hallazgo estadísticamente sólido del curso">
+<p class="lead">Hasta aquí, los efectos medidos eran más pequeños que su error. Este capítulo trae un resultado distinto: cuándo operar la estrategia sí cambia el resultado de forma <i>estadísticamente fuerte</i>. Se compara el rendimiento por hora, por día y por volatilidad, y se prueba qué pasa si se opera la misma regla en otras sesiones del día.</p>
+
+<section>
+<h2>Desglosar el resultado</h2>
+<p>Con la variante «EMA sin rechazo» (332 operaciones en M5, la que da muestra suficiente para dividir) se agrupan los resultados por hora de entrada, día de la semana y nivel de volatilidad (tercil del ATR14 de M15 al entrar).</p>
+<div class="sim" data-sim="desglose" data-title="El resultado según la hora, el día y la volatilidad"></div>
+<div class="sim-guide"><ul>
+<li>Cada barra es el R medio del grupo con su intervalo del 95 %. Con 60–110 operaciones por grupo, los intervalos son de ±0.17 a ±0.22 R: ninguna hora ni día se separa del resto de forma segura.</li>
+<li>Amplíe la ventana a «todo el día (02:00–19:00)» y vea qué ocurre fuera de Londres: las horas de la madrugada son claramente negativas.</li>
+<li>Por día de la semana, el martes (−0.21 R, ±0.19) parece el peor; con cinco días probados, un resultado así es lo esperable por azar, y no se debe actuar sobre él.</li>
+<li>Por volatilidad, el tercil alto rinde −0.02 R frente a +0.12 R de los otros dos: una pista débil de que la estrategia sufre cuando el ATR es alto, sin significancia.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El resultado fuerte: la ventana importa</h2>
+<p>Al ejecutar el manual con ventanas de entrada distintas se obtiene:</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Ventana de entradas (Madrid)</th><th>Manual («tocar»): n, R ± IC</th><th>«EMA sin rechazo»: n, R ± IC</th></tr></thead>
+<tbody>
+<tr><td><b>08:57–13:00 (manual)</b></td><td>71 · +0.108 ± 0.22</td><td>332 · +0.070 ± 0.10</td></tr>
+<tr><td>08:57–11:00</td><td>35 · +0.066 ± 0.29</td><td>199 · +0.049 ± 0.12</td></tr>
+<tr><td>11:00–13:00</td><td>39 · +0.091 ± 0.31</td><td>211 · +0.088 ± 0.12</td></tr>
+<tr><td>08:00–17:00</td><td>133 · +0.041 ± 0.16</td><td>519 · +0.024 ± 0.08</td></tr>
+<tr><td>14:30–19:00 (Nueva York)</td><td>44 · −0.076 ± 0.28</td><td>303 · +0.021 ± 0.11</td></tr>
+<tr><td><b>02:00–08:00 (Asia–Londres temprano)</b></td><td><b>122 · −0.318 ± 0.13</b></td><td>413 · −0.007 ± 0.09</td></tr>
+</tbody></table></div>
+<ul>
+<li>La franja de la madrugada (02:00–08:00) da <b>−0.32 R con un intervalo de ±0.13</b> para la regla del manual: \(t\approx-4.9\), que sobrevive incluso a una corrección por probar 12 combinaciones (umbral ≈ 2.9). Es el único resultado del curso que se puede llamar <b>significativo</b>.</li>
+<li>Dentro de las horas de la ventana de Londres, dividir en mitades (08:57–11:00 y 11:00–13:00) no da diferencia medible.</li>
+<li>Con la variante «EMA», la franja nocturna no es negativa (−0.007): el resultado depende de la regla, no solo del horario. El manual (rechazo en H30) pierde en la madrugada porque, con poca liquidez, los toques de extremo de 30 minutos son continuaciones y no rebotes.</li>
+</ul>
+<div class="sim" data-sim="sens-horario" data-title="Perfil de sensibilidad de las horas de entrada y de cierre"></div>
+<div class="sim-guide"><ul>
+<li>«Inicio de entradas» recorre desde las 07:00 hasta las 11:00; «Fin de entradas», de las 11:00 a las 17:00; «Cierre forzoso», desde las 13:00 hasta las 20:00.</li>
+<li>Ampliar la ventana hacia la tarde diluye el resultado; recortarlo lo vuelve inmedible. El horario del manual es una elección razonable, no un óptimo demostrado.</li>
+</ul></div>
+<div class="box explain"><p>Que un restaurante cierre a las 4 de la mañana no demuestra que sea mal negocio; que a esa hora pierda dinero con una significación clara, sí es útil: dice «no abras de madrugada». Esa es la utilidad del horario: <i>excluir</i> las horas en que la regla deja de describir el mercado, no encontrar la mejor hora.</p></div>
+</section>
+
+<section>
+<h2>Noticias y cierre antes de Nueva York</h2>
+<p>Los datos económicos de EE. UU. de las 8:30 de Nueva York (14:30 de Madrid) caen después de la ventana de entradas, pero una operación abierta antes puede seguir viva. El manual cierra 10 minutos antes de noticias High en USD; el curso no tiene el calendario, y lo aproxima con un cierre forzoso a las 14:20 de Madrid:</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Cierre forzoso</th><th>Operaciones</th><th>R medio</th><th>Salidas por tiempo</th></tr></thead>
+<tbody>
+<tr><td>20:00 (manual)</td><td>71</td><td>+0.108 ± 0.217</td><td>0</td></tr>
+<tr><td>14:20 (antes de datos de NY)</td><td>71</td><td>+0.099 ± 0.214</td><td>1</td></tr>
+<tr><td>13:00 (al salir de la ventana)</td><td>71</td><td>+0.069 ± 0.199</td><td>12</td></tr>
+</tbody></table></div>
+<p>Cerrar antes de las noticias casi no cambia el resultado (de +0.108 a +0.099), porque solo una operación sobrevive hasta las 14:20. Es una protección barata: elimina el riesgo de un deslizamiento violento sin costo medible. Cerrar a las 13:00 sí recorta el resultado (−0.04), porque obliga a abandonar 12 operaciones que aún no se habían resuelto.</p>
+</section>
+
+<section>
+<h2>Práctica: filtros de horario y volatilidad</h2>
+<div class="box py"><p>El programa desglosa la variante «EMA» por hora, día y tercil de volatilidad, y compara ventanas de entrada y horas de cierre forzoso.</p>
+<div class="py" data-py="18-filtros"></div></div>
+<div class="box read"><ul>
+<li><b>Por hora</b>: +0.118 (09:00), −0.037 (10:00), +0.107 (11:00), +0.099 (12:00), con intervalos de ±0.17 a ±0.21: indistinguibles.</li>
+<li><b>Por día</b>: lunes +0.239, martes −0.205, miércoles +0.156, jueves +0.060, viernes +0.068: dispersión de ruido.</li>
+<li><b>Por volatilidad</b>: baja +0.116, media +0.118, alta −0.022 (cortes en 57 y 81 pips).</li>
+<li><b>Ventanas</b>: 02:00–08:00 con el manual da −0.318 ± 0.127 (122 operaciones), el mayor efecto del curso.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>El único resultado estadísticamente sólido del curso: el manual pierde −0.32 R en la madrugada (02:00–08:00); excluir esas horas es una decisión respaldada.</li>
+<li>Dentro de la ventana de Londres, hora, día de la semana y volatilidad no producen diferencias medibles.</li>
+<li>Con 5 días y 3 niveles probados, hallazgos «significativos» como el martes malo son los que se esperan por azar.</li>
+<li>El cierre a las 14:20 (antes de datos de Nueva York) casi no cuesta nada y es una protección razonable.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Por qué se prefiere excluir una franja negativa y significativa a buscar la «mejor hora»?
+<details><summary>Respuesta</summary><p>Porque la franja negativa tiene un efecto grande y estadísticamente fuerte; la mejor hora entre cuatro es probablemente suerte.</p></details></li>
+<li><span class="lvl">Básico</span>El martes rinde −0.205 ± 0.185. ¿Sería razonable no operar los martes?
+<details><summary>Respuesta</summary><p>No: t = −2.2 con cinco días probados; con Bonferroni el umbral es 2.6. Es un resultado compatible con el azar.</p></details></li>
+<li><span class="lvl">Intermedio</span>El resultado en la madrugada es −0.318 ± 0.127 con 122 operaciones. ¿Cuál es su estadístico \(t\)?
+<details><summary>Respuesta</summary><p>El error estándar es 0.127/1.96 = 0.065; t = −0.318/0.065 = −4.9.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué el resultado nocturno negativo no aparece con la variante «EMA»?
+<details><summary>Respuesta</summary><p>Porque la regla es distinta: el rechazo en la EMA20 de M15 produce otras señales que no pierden en la madrugada. El hallazgo es de la combinación regla × horario, no del horario solo.</p></details></li>
+<li><span class="lvl">Avanzado</span>¿Qué habría que hacer para confirmar que la madrugada es negativa para el manual?
+<details><summary>Respuesta</summary><p>Replicar en datos independientes (otro periodo, otro broker), idealmente con el horario fijado de antemano (hipótesis a priori); y buscar un mecanismo (menos liquidez, continuaciones en lugar de rebotes) que lo explique. El mecanismo propuesto se puede probar con la razón de varianza de esa franja.</p></details></li>
+</ol>
+</section>
+</template>

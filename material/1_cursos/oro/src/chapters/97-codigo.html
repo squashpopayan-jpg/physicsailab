@@ -1,0 +1,27 @@
+<template class="chapter-src" data-id="codigo" data-num="C" data-title="Código del motor en Python" data-part="Apéndices" data-short="motor.py (el motor de referencia) y ayuda.py (estadística y mundo sintético): el código que usan todos los programas de práctica">
+<p class="lead">Todos los programas de práctica importan dos módulos. <code>motor.py</code> implementa la estrategia (indicadores, señales, simulación de la operación y reglas diarias); <code>ayuda.py</code> añade intervalos de confianza, el modelo nulo y el mercado sintético. Cópielos en la misma carpeta que cualquier programa del curso. <code>motor.cargar('m5')</code> lee las series reales del curso (<code>src/data/*.json</code>); con sus propios datos exportados de MetaTrader use <code>motor.desde_dataframe(df, minutos_por_vela)</code>.</p>
+
+<section>
+<h2>motor.py</h2>
+<p>Es la implementación independiente con la que se valida el motor de JavaScript del curso (apéndice B): sobre los mismos datos y parámetros, ambas producen exactamente las mismas operaciones.</p>
+<div class="py" data-py="motor"></div>
+</section>
+
+<section>
+<h2>ayuda.py</h2>
+<div class="py" data-py="ayuda"></div>
+</section>
+
+<section>
+<h2>Uso mínimo</h2>
+<div class="pycode" data-file="ejemplo.py"><div class="pycode-head"><b>ejemplo.py</b><span class="sp"></span></div><pre><code>import motor
+from ayuda import *
+
+S = motor.cargar('m5')                       # velas M5 reales de oro (17 meses)
+P = motor.params(slk=0.5, tpk=2.5)           # el manual con otro stop y take profit (ver motor.DEFECTO)
+ops = motor.correr(S, P)                     # lista de operaciones (diccionarios)
+print(linea('mi configuración', ops))        # R medio, intervalo del 95 %, factor de beneficio...
+nu = nulo(S, None, P, n_rep=100)             # R medio de 100 réplicas de entradas al azar
+print('el azar da %+.3f; la señal supera al %.0f %% de las réplicas' % (nu.mean(), 100 * (nu &lt; R_de(ops).mean()).mean()))</code></pre></div>
+</section>
+</template>

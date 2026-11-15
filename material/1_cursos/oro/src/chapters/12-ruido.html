@@ -1,0 +1,82 @@
+<template class="chapter-src" data-id="ruido" data-num="12" data-title="Ruido y señal: cuántas operaciones hacen falta para saber" data-part="Parte IV · Medir con honestidad" data-short="Error estándar y estadístico t; intervalos de confianza; potencia y tamaño de muestra; falsos positivos; probar muchas variantes; por qué 70 operaciones no bastan">
+<p class="lead">Todo resultado de un backtest es una estimación con error. La pregunta que decide si una estrategia merece confianza no es «¿cuánto ganó?», sino «¿cuánto podría haber ganado por azar con esta cantidad de operaciones?». Este capítulo da las herramientas para responderla: el error estándar, el intervalo de confianza, el tamaño de muestra necesario y el castigo por probar muchas variantes.</p>
+
+<section>
+<h2>El promedio de unas pocas operaciones es muy ruidoso</h2>
+<p>Con \(n\) operaciones de resultado \(R_i\) (media \(\bar R\), desviación \(s\)), el <span class="term">error estándar</span> de la media es \(s/\sqrt n\). El intervalo de confianza del 95 % es, aproximadamente:</p>
+<div class="eq key" data-name="Intervalo de confianza del R medio">\[\bar R\ \pm\ 1.96\,\frac{s}{\sqrt n},\qquad t=\frac{\bar R}{s/\sqrt n}\]</div>
+<p>El estadístico \(t\) mide cuántos errores estándar separan la media de cero. Por convención, \(|t|>2\) es «significativo»: si no hubiera ventaja, ocurriría por azar solo el 5 % de las veces. En los datos reales del curso \(s\approx0.88\) R. Con 71 operaciones el error estándar es 0.105 R y el intervalo mide ±0.21 R: un R medio de +0.11 es compatible con cualquier verdad entre −0.10 y +0.32.</p>
+<div class="box ex"><p>M5, manual: 71 operaciones, \(\bar R=+0.108\), \(s=0.88\). \(\mathrm{EE}=0.88/\sqrt{71}=0.104\); \(t=1.04\); intervalo del 95 %: \(+0.108\pm0.205=[-0.10,+0.31]\). No se puede decir que la estrategia gane, ni que pierda.</p></div>
+</section>
+
+<section>
+<h2>Cuántas operaciones hacen falta</h2>
+<p>Para detectar una ventaja verdadera \(\Delta\) con probabilidad 80 % (potencia) y 5 % de falsos positivos, hacen falta:</p>
+<div class="eq key" data-name="Operaciones necesarias">\[n\approx\Big(\frac{(z_{0.975}+z_{0.80})\,s}{\Delta}\Big)^{2}=\Big(\frac{2.80\,s}{\Delta}\Big)^{2}\]</div>
+<p>El tamaño necesario crece con el <b>cuadrado</b> de la inversa de la ventaja: detectar una ventaja la mitad de grande exige cuatro veces más operaciones.</p>
+<div class="sim" data-sim="potencia" data-title="Operaciones necesarias para detectar una ventaja"></div>
+<div class="sim-guide"><ul>
+<li>La curva es \(n\) contra la ventaja \(\Delta\) para la desviación elegida. Con \(s=0.88\): +0.30 R requiere 68 operaciones; +0.20 R, 153; +0.10 R, 610; +0.05 R, 2 439.</li>
+<li>Los marcadores son las muestras de este curso: M1 (59), M5 (71) y M15 (184). La ventaja mínima detectable con cada una es, respectivamente, +0.32, +0.29 y +0.18 R. Una estrategia con una ventaja realista de +0.05 a +0.10 R es <b>invisible</b> con esas muestras.</li>
+<li>A 0.8 operaciones por día, 610 operaciones son tres años de operar. Sin más datos o más operaciones, no se puede saber si una ventaja de +0.1 R existe.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Mil estrategias sin ventaja</h2>
+<p>Un intervalo del 95 % se equivoca el 5 % de las veces: de cada 20 estrategias sin ventaja, una parecerá «significativa». Si un trader prueba 20 variantes y publica la mejor, la ilusión está garantizada. La simulación genera estrategias de esperanza exactamente cero (con la forma real de R) y muestra qué resultados produce el azar.</p>
+<div class="sim" data-sim="mil-estrategias" data-title="Qué produce el azar: estrategias sin ninguna ventaja"></div>
+<div class="sim-guide"><ul>
+<li>El histograma es el estadístico \(t\) de cada estrategia sin ventaja. Las líneas son ±1.96. Alrededor del 5 % queda fuera, y la mejor de mil llega a \(t\approx3\) con facilidad.</li>
+<li>Pulse «Mostrar la mejor»: la curva de capital de la mejor estrategia sin ventaja parece la de un sistema real, con rachas y todo.</li>
+<li>La probabilidad de que <i>al menos una</i> de \(K\) variantes parezca significativa es \(1-(1-\alpha)^K\): 11 % con 5 variantes, 37 % con 20, 90 % con 100 (cola única de 2.3 %).</li>
+</ul></div>
+<div class="box warn"><p>Si usted probó diez parámetros, tres filtros y dos horarios hasta encontrar un resultado bonito, ha probado unas cien variantes. Un resultado con \(t=2.5\) ya no significa 1.2 % de probabilidad de azar: significa que es lo esperable al elegir el mejor de cien. Para que la prueba valga, la cuenta de variantes debe hacerse <i>antes</i> y el umbral ajustarse (Bonferroni: \(\alpha/K\)).</p></div>
+</section>
+
+<section>
+<h2>Cómo reducir la incertidumbre</h2>
+<ul>
+<li><b>Más operaciones</b>: más años de datos, más frecuencia (más señales) o más instrumentos. Es la única forma directa.</li>
+<li><b>Menor varianza por operación</b>: una gestión que reduzca \(s\) mejora la precisión (aunque no la esperanza).</li>
+<li><b>Una hipótesis <i>a priori</i></b>: si la regla se justifica antes de mirar los datos (por ejemplo, «los retrocesos se revierten», confirmado por la razón de varianza del capítulo 9), una sola prueba es más creíble que cien.</li>
+<li><b>Fuera de muestra</b>: reservar datos que no se usaron para elegir nada (capítulo 15) y, sobre todo, <b>probar hacia adelante</b> en vivo (capítulo 23).</li>
+</ul>
+</section>
+
+<section>
+<h2>Práctica: potencia, intervalos y falsos positivos</h2>
+<div class="box py"><p>El programa calcula las operaciones necesarias, los anchos de intervalo, simula mil estrategias sin ventaja con la forma real de R y tabula la probabilidad de un falso positivo al probar \(K\) variantes.</p>
+<div class="py" data-py="12-ruido"></div></div>
+<div class="box read"><ul>
+<li><b>Desviación real</b>: 0.88 R por operación.</li>
+<li><b>Muestra necesaria</b>: +0.30 R → 68; +0.20 → 153; +0.10 → 610; +0.05 → 2 439; +0.03 → 6 773 operaciones.</li>
+<li><b>Anchos</b>: ±0.225 R con 59 operaciones; ±0.205 con 71; ±0.127 con 184; ±0.086 con 400; ±0.055 con 1 000.</li>
+<li><b>Falsos positivos</b>: con \(n=70\), el 6.3 % de las estrategias sin ventaja tiene \(|t|>2\); la mejor de las mil llega a \(t=2.94\). No es una desviación del 5 %: es la esperanza de mil intentos.</li>
+<li><b>Variantes</b>: con 20 variantes sin ventaja, 37 % de probabilidad de ver al menos una con \(t>2\); con 100, 90 %.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>EE = \(s/\sqrt n\); intervalo del 95 % = \(\bar R\pm1.96\,\mathrm{EE}\); significativo si \(|t|>2\).</li>
+<li>Con \(s\approx0.88\), detectar +0.10 R exige unas 600 operaciones; +0.05 R, unas 2 400.</li>
+<li>Las muestras del curso (59–184 operaciones) solo detectan ventajas de +0.18 R o más.</li>
+<li>Probar \(K\) variantes multiplica el riesgo de un falso positivo: con 20, 37 %; con 100, 90 %.</li>
+<li>La única defensa real es más datos, hipótesis previa, umbral corregido y prueba fuera de muestra.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>184 operaciones, \(\bar R=-0.08\), \(s=0.88\). ¿Intervalo del 95 %?
+<details><summary>Respuesta</summary><p>EE = 0.88/√184 = 0.065; ±1.96 × 0.065 = ±0.127: [−0.21, +0.05]. Incluye el cero.</p></details></li>
+<li><span class="lvl">Básico</span>¿Cuántas operaciones para detectar +0.15 R con \(s=0.88\)?
+<details><summary>Respuesta</summary><p>(2.80 × 0.88/0.15)² = 16.4² ≈ 270.</p></details></li>
+<li><span class="lvl">Intermedio</span>Con 10 variantes probadas, ¿qué umbral de \(|t|\) da un 5 % global de falsos positivos (Bonferroni)?
+<details><summary>Respuesta</summary><p>α/K = 0.005 por prueba (bilateral), \(z_{0.9975}\) = 2.81. Se necesita \(|t|>2.81\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Una estrategia gana +0.12 R con \(t=2.1\) tras probar 40 variantes. ¿Es creíble?
+<details><summary>Respuesta</summary><p>Poco: la probabilidad de que al menos una de 40 variantes sin ventaja llegue a \(t>2\) es 1 − 0.977⁴⁰ ≈ 60 %. Con umbral de Bonferroni (≈ 3.0) no pasa.</p></details></li>
+<li><span class="lvl">Avanzado</span>Si la ventaja verdadera fuera la mitad, ¿cómo cambia la muestra necesaria y por qué?
+<details><summary>Respuesta</summary><p>Se cuadruplica, porque \(n\propto(s/\Delta)^2\): el error estándar cae como \(1/\sqrt n\), así que reducirlo a la mitad cuesta cuatro veces más datos.</p></details></li>
+</ol>
+</section>
+</template>

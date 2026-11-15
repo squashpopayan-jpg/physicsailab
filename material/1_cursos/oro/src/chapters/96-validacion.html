@@ -1,0 +1,88 @@
+<template class="chapter-src" data-id="validacion" data-num="B" data-title="Validación del motor y del núcleo" data-part="Apéndices" data-short="Comparación con SciPy, pandas, zoneinfo y una segunda implementación en Python: 81 de 81 pruebas superadas">
+<p class="lead">Cada simulación del curso usa el núcleo de <code>src/lib</code> (motor de la estrategia, estadística, mercado sintético, riesgo). Esta tabla lo compara con bibliotecas independientes (SciPy, pandas, zoneinfo) y con el motor de referencia en Python (<code>py/motor.py</code>), escrito aparte. Se regenera con <code>python tests/referencias.py &amp;&amp; node tests/validar.js</code>.</p>
+<section><h2>Resultado</h2><div class="box val"><p><b>81 de 81 pruebas superadas</b> (2026-11-14). Las 33 pruebas del capítulo 10 comparan el motor de JavaScript con el de Python en 11 casos que cubren M1, M5 y M15; las cuatro reglas de entrada; vela de rechazo activada y desactivada; contra-tendencia; orden intrabarra normal y pesimista; costos, deslizamiento y cierre horario distintos; gestión completa y apagada. En todos, el número de operaciones, las barras de señal, entrada y salida, las direcciones, los motivos y el resultado total en USD coinciden.</p></div>
+<p>Qué demuestra y qué no: confirma que el motor ejecuta lo que se especifica y que no hay errores de implementación entre las dos versiones. No detecta errores de especificación compartidos (una regla del manual interpretada igual de forma equivocada) ni fugas de información presentes en ambos; para eso están las pruebas de sentido del capítulo 10 (mundos sin memoria con esperanza cero, regla tramposa).</p></section>
+<section><h2>Tabla de pruebas</h2><div class="tablewrap"><table><thead><tr><th>Cap.</th><th>Prueba</th><th>Calculado</th><th>Referencia</th><th>Fuente</th><th>Error</th><th>Estado</th></tr></thead><tbody>
+<tr><td>2</td><td>Cuantil normal 0.975</td><td>1.95996398</td><td>1.95996398</td><td>SciPy norm.ppf</td><td>2.2e-16</td><td>OK</td></tr>
+<tr><td>2</td><td>Cuantil normal 0.80</td><td>0.841621234</td><td>0.841621234</td><td>SciPy norm.ppf</td><td>3.3e-16</td><td>OK</td></tr>
+<tr><td>2</td><td>Cuantil normal 0.999</td><td>3.09023231</td><td>3.09023231</td><td>SciPy norm.ppf</td><td>1.2e-13</td><td>OK</td></tr>
+<tr><td>2</td><td>CDF normal en 1.96</td><td>0.975002105</td><td>0.975002105</td><td>SciPy norm.cdf</td><td>1.1e-16</td><td>OK</td></tr>
+<tr><td>2</td><td>Cola superior normal en 3</td><td>0.00134989803</td><td>0.00134989803</td><td>SciPy norm.sf</td><td>4.5e-17</td><td>OK</td></tr>
+<tr><td>2</td><td>erf(0.1)</td><td>0.112462916</td><td>0.112462916</td><td>SciPy special.erf</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>2</td><td>erf(0.5)</td><td>0.520499878</td><td>0.520499878</td><td>SciPy special.erf</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>2</td><td>erf(1.0)</td><td>0.842700793</td><td>0.842700793</td><td>SciPy special.erf</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>2</td><td>erf(2.0)</td><td>0.995322265</td><td>0.995322265</td><td>SciPy special.erf</td><td>4.4e-16</td><td>OK</td></tr>
+<tr><td>2</td><td>erf(3.0)</td><td>0.99997791</td><td>0.99997791</td><td>SciPy special.erf</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>12</td><td>Cuantil t 0.975 con 4 g.l.</td><td>2.77644511</td><td>2.77644511</td><td>SciPy t.ppf</td><td>8.0e-15</td><td>OK</td></tr>
+<tr><td>12</td><td>Cuantil t 0.975 con 29 g.l.</td><td>2.04522964</td><td>2.04522964</td><td>SciPy t.ppf</td><td>2.2e-15</td><td>OK</td></tr>
+<tr><td>12</td><td>Cuantil t 0.975 con 70 g.l.</td><td>1.99443711</td><td>1.99443711</td><td>SciPy t.ppf</td><td>1.8e-15</td><td>OK</td></tr>
+<tr><td>12</td><td>CDF t en 2.1 con 12 g.l.</td><td>0.971227531</td><td>0.971227531</td><td>SciPy t.cdf</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>12</td><td>Valor p bilateral de t = 2.5 con 70 g.l.</td><td>0.0147653765</td><td>0.0147653765</td><td>SciPy t.sf</td><td>2.1e-16</td><td>OK</td></tr>
+<tr><td>12</td><td>Beta incompleta I(0.4; 2.5, 3.5)</td><td>0.486904192</td><td>0.486904192</td><td>SciPy special.betainc</td><td>6.7e-16</td><td>OK</td></tr>
+<tr><td>12</td><td>Beta incompleta I(0.2; 0.5, 7)</td><td>0.917582122</td><td>0.917582122</td><td>SciPy special.betainc</td><td>1.1e-16</td><td>OK</td></tr>
+<tr><td>12</td><td>Operaciones para detectar +0.10 R con sd 0.88 (80 %)</td><td>608</td><td>608</td><td>fórmula con cuantiles de SciPy</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>4</td><td>Velas M15 remuestreadas (número)</td><td>3.333600e+4</td><td>3.333600e+4</td><td>pandas resample</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>4</td><td>Velas H4 remuestreadas (número)</td><td>2256</td><td>2256</td><td>pandas resample</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>4</td><td>Cierre de la última vela M15</td><td>4139.72</td><td>4139.72</td><td>pandas resample</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>4</td><td>Suma de máximos M15</td><td>1.385922e+8</td><td>1.385922e+8</td><td>pandas resample</td><td>1.9e-15</td><td>OK</td></tr>
+<tr><td>4</td><td>Cierre de la última vela H4</td><td>4139.72</td><td>4139.72</td><td>pandas resample</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>4</td><td>EMA20 de M15 (última)</td><td>4152.1528</td><td>4152.1528</td><td>pandas ewm(span=20, adjust=False)</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>4</td><td>EMA20 de M15 (barra 5 000)</td><td>3335.37101</td><td>3335.37101</td><td>pandas ewm</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>4</td><td>EMA50 de H4 (última)</td><td>4183.81652</td><td>4183.81652</td><td>pandas ewm(span=50, adjust=False)</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>4</td><td>EMA50 de H4 (barra 1 500)</td><td>4772.4818</td><td>4772.4818</td><td>pandas ewm</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>4</td><td>ATR14 de Wilder (última)</td><td>4.99792826</td><td>4.99792826</td><td>pandas ewm(alpha=1/14, adjust=False)</td><td>1.8e-15</td><td>OK</td></tr>
+<tr><td>4</td><td>ATR14 de Wilder (barra 5 000)</td><td>3.72236712</td><td>3.72236712</td><td>pandas ewm</td><td>1.8e-15</td><td>OK</td></tr>
+<tr><td>4</td><td>Máximo de las 24 barras previas</td><td>3359.61</td><td>3359.61</td><td>NumPy max de la ventana</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>4</td><td>Mínimo de las 24 barras previas</td><td>3353.83</td><td>3353.83</td><td>NumPy min de la ventana</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>2</td><td>Desfase de Madrid en 2026-03-29T00:59 UTC</td><td>1</td><td>1</td><td>zoneinfo Europe/Madrid</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>2</td><td>Desfase de Madrid en 2026-03-29T01:00 UTC</td><td>2</td><td>2</td><td>zoneinfo Europe/Madrid</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>2</td><td>Desfase de Madrid en 2026-10-25T00:59 UTC</td><td>2</td><td>2</td><td>zoneinfo Europe/Madrid</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>2</td><td>Desfase de Madrid en 2026-10-25T01:00 UTC</td><td>1</td><td>1</td><td>zoneinfo Europe/Madrid</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>2</td><td>Desfase de Madrid en 2026-07-15T12:00 UTC</td><td>2</td><td>2</td><td>zoneinfo Europe/Madrid</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>2</td><td>Desfase de Madrid en 2026-12-15T12:00 UTC</td><td>1</td><td>1</td><td>zoneinfo Europe/Madrid</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>2</td><td>Desfase de Madrid en 2025-03-30T01:00 UTC</td><td>2</td><td>2</td><td>zoneinfo Europe/Madrid</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>2</td><td>Desfase de Madrid en 2025-10-26T00:59 UTC</td><td>2</td><td>2</td><td>zoneinfo Europe/Madrid</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>2</td><td>Desfase de Madrid en 2024-03-31T01:00 UTC</td><td>2</td><td>2</td><td>zoneinfo Europe/Madrid</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>2</td><td>Desfase de Madrid en 2010-03-28T01:00 UTC</td><td>2</td><td>2</td><td>zoneinfo Europe/Madrid</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>8</td><td>P(+8 antes que −10), μ = 0.05, σ = 1 (MC 40 000)</td><td>0.76365</td><td>0.757301685</td><td>fórmula del movimiento browniano (error de MC)</td><td>6.3e-3</td><td>OK</td></tr>
+<tr><td>8</td><td>P sin deriva = b/(a+b)</td><td>0.555555556</td><td>0.555555556</td><td>identidad</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>19</td><td>Kelly numérico = E/σ²</td><td>0.129</td><td>0.129132231</td><td>maximización numérica de g(f)</td><td>1.3e-4</td><td>OK</td></tr>
+<tr><td>19</td><td>Crecimiento nulo en 2·Kelly</td><td>-3.469447e-18</td><td>0</td><td>identidad</td><td>3.5e-18</td><td>OK</td></tr>
+<tr><td>9</td><td>Rango medio M5 sintético (12 mundos) ≈ real (4.93 USD)</td><td>4.92075598</td><td>4.93</td><td>oro real M5</td><td>9.2e-3</td><td>OK</td></tr>
+<tr><td>9</td><td>Máximo ≥ max(O,C) y mínimo ≤ min(O,C) en todas las velas</td><td>1</td><td>1</td><td>identidad</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>6</td><td>R medio sin costos en mundos sin memoria (|R|/EE &lt; 3)</td><td>1.47725972</td><td>0</td><td>teorema de parada opcional (martingala)</td><td>1.5e+0</td><td>OK</td></tr>
+<tr><td>10</td><td>Motor «m1-base»: número de operaciones</td><td>59</td><td>59</td><td>motor de Python</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>10</td><td>Motor «m1-base»: resultado total (USD)</td><td>-3.58509868</td><td>-3.585099</td><td>motor de Python</td><td>3.2e-7</td><td>OK</td></tr>
+<tr><td>10</td><td>Motor «m1-base»: barras, direcciones y motivos (10 operaciones)</td><td>1</td><td>1</td><td>motor de Python</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>10</td><td>Motor «m1-zona»: número de operaciones</td><td>102</td><td>102</td><td>motor de Python</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>10</td><td>Motor «m1-zona»: resultado total (USD)</td><td>-1241.73566</td><td>-1241.73566</td><td>motor de Python</td><td>3.7e-7</td><td>OK</td></tr>
+<tr><td>10</td><td>Motor «m1-zona»: barras, direcciones y motivos (10 operaciones)</td><td>1</td><td>1</td><td>motor de Python</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>10</td><td>Motor «m1-costos»: número de operaciones</td><td>72</td><td>72</td><td>motor de Python</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>10</td><td>Motor «m1-costos»: resultado total (USD)</td><td>-575.618387</td><td>-575.618387</td><td>motor de Python</td><td>2.6e-7</td><td>OK</td></tr>
+<tr><td>10</td><td>Motor «m1-costos»: barras, direcciones y motivos (10 operaciones)</td><td>1</td><td>1</td><td>motor de Python</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>10</td><td>Motor «m1-contra»: número de operaciones</td><td>134</td><td>134</td><td>motor de Python</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>10</td><td>Motor «m1-contra»: resultado total (USD)</td><td>34.8508712</td><td>34.850871</td><td>motor de Python</td><td>2.3e-7</td><td>OK</td></tr>
+<tr><td>10</td><td>Motor «m1-contra»: barras, direcciones y motivos (10 operaciones)</td><td>1</td><td>1</td><td>motor de Python</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>10</td><td>Motor «m5-base»: número de operaciones</td><td>71</td><td>71</td><td>motor de Python</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>10</td><td>Motor «m5-base»: resultado total (USD)</td><td>961.136866</td><td>961.136866</td><td>motor de Python</td><td>4.2e-7</td><td>OK</td></tr>
+<tr><td>10</td><td>Motor «m5-base»: barras, direcciones y motivos (10 operaciones)</td><td>1</td><td>1</td><td>motor de Python</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>10</td><td>Motor «m5-pess»: número de operaciones</td><td>271</td><td>271</td><td>motor de Python</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>10</td><td>Motor «m5-pess»: resultado total (USD)</td><td>-62.3274571</td><td>-62.327457</td><td>motor de Python</td><td>1.2e-7</td><td>OK</td></tr>
+<tr><td>10</td><td>Motor «m5-pess»: barras, direcciones y motivos (10 operaciones)</td><td>1</td><td>1</td><td>motor de Python</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>10</td><td>Motor «m5-sin-gestion»: número de operaciones</td><td>92</td><td>92</td><td>motor de Python</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>10</td><td>Motor «m5-sin-gestion»: resultado total (USD)</td><td>535.425346</td><td>535.425346</td><td>motor de Python</td><td>1.2e-7</td><td>OK</td></tr>
+<tr><td>10</td><td>Motor «m5-sin-gestion»: barras, direcciones y motivos (10 operaciones)</td><td>1</td><td>1</td><td>motor de Python</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>10</td><td>Motor «m15-base»: número de operaciones</td><td>186</td><td>186</td><td>motor de Python</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>10</td><td>Motor «m15-base»: resultado total (USD)</td><td>-1918.69</td><td>-1918.69</td><td>motor de Python</td><td>1.2e-10</td><td>OK</td></tr>
+<tr><td>10</td><td>Motor «m15-base»: barras, direcciones y motivos (10 operaciones)</td><td>1</td><td>1</td><td>motor de Python</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>10</td><td>Motor «m5-ruptura»: número de operaciones</td><td>498</td><td>498</td><td>motor de Python</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>10</td><td>Motor «m5-ruptura»: resultado total (USD)</td><td>-5052.48035</td><td>-5052.48035</td><td>motor de Python</td><td>1.7e-8</td><td>OK</td></tr>
+<tr><td>10</td><td>Motor «m5-ruptura»: barras, direcciones y motivos (10 operaciones)</td><td>1</td><td>1</td><td>motor de Python</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>10</td><td>Motor «m5-ema»: número de operaciones</td><td>332</td><td>332</td><td>motor de Python</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>10</td><td>Motor «m5-ema»: resultado total (USD)</td><td>2920.19291</td><td>2920.19291</td><td>motor de Python</td><td>5.2e-8</td><td>OK</td></tr>
+<tr><td>10</td><td>Motor «m5-ema»: barras, direcciones y motivos (10 operaciones)</td><td>1</td><td>1</td><td>motor de Python</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>10</td><td>Motor «m1-ruptura»: número de operaciones</td><td>127</td><td>127</td><td>motor de Python</td><td>0.0e+0</td><td>OK</td></tr>
+<tr><td>10</td><td>Motor «m1-ruptura»: resultado total (USD)</td><td>-1898.90705</td><td>-1898.90704</td><td>motor de Python</td><td>4.8e-7</td><td>OK</td></tr>
+<tr><td>10</td><td>Motor «m1-ruptura»: barras, direcciones y motivos (10 operaciones)</td><td>1</td><td>1</td><td>motor de Python</td><td>0.0e+0</td><td>OK</td></tr>
+</tbody></table></div></section>
+</template>

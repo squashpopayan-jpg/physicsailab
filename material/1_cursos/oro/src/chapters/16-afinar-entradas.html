@@ -1,0 +1,75 @@
+<template class="chapter-src" data-id="afinar-entradas" data-num="16" data-title="Afinar las entradas: qué parámetros importan y cuáles no" data-part="Parte V · Afinar bloque por bloque" data-short="Sensibilidad de cada parámetro de entrada con intervalos y modelo nulo: extremo corto, anti-persecución, banda H4, distancia a la EMA, límite sobre H120, vela de rechazo, dirección y contra-tendencia">
+<p class="lead">Con el método de la parte IV se puede recorrer, parámetro por parámetro, la regla de entrada del manual y preguntar tres cosas: ¿el resultado cambia si lo muevo?, ¿el cambio supera el ruido?, ¿lo que aporta es la regla o es el mercado? La respuesta es instructiva: de los siete parámetros de entrada, solo dos o tres son palancas reales; el resto son indiferentes, y uno es literalmente un cable desconectado.</p>
+
+<section>
+<h2>Cómo se mide cada parámetro</h2>
+<p>Para cada valor se ejecuta el manual en M5 real (17 meses) cambiando únicamente ese parámetro; se anotan las operaciones, el R medio con su intervalo y, con 60 réplicas de entradas al azar bajo las mismas condiciones de sesgo y horario, el <b>R del azar</b>. La diferencia «señal − azar» mide lo que aporta la regla de entrada y no el mercado. Todo resultado debe leerse con su intervalo: con 71 operaciones, ±0.22 R.</p>
+<div class="sim" data-sim="sens-entradas" data-title="Perfil de sensibilidad de los parámetros de entrada"></div>
+<div class="sim-guide"><ul>
+<li>Recorra el menú de parámetros. Casi todos los perfiles son más planos que sus intervalos: la entrada no se puede «afinar» con esta muestra.</li>
+<li>Active la comparación con el azar: la línea punteada gris es lo que se obtendría entrando sin regla; la distancia a ella es el aporte de la entrada.</li>
+<li>Cambie a «EMA sin rechazo» (332 operaciones) para ver el mismo parámetro con una muestra cinco veces mayor y menor sensibilidad.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Parámetro por parámetro</h2>
+<div class="tablewrap"><table>
+<thead><tr><th>Parámetro</th><th>Valores probados</th><th>Lo que se observa (M5, manual)</th><th>Veredicto</th></tr></thead>
+<tbody>
+<tr><td>Extremo corto (min)</td><td>10 a 90</td><td>+0.01 (10), +0.06 (15), <b>+0.11 (30)</b>, +0.08 (45), −0.01 (60), −0.03 (90); la diferencia con el azar sigue la misma joroba, de +0.04 a +0.14 y de nuevo +0.02</td><td>joroba suave entre 15 y 45 min; 30 es razonable</td></tr>
+<tr><td>Anti-persecución (pips)</td><td>2 a 30</td><td>R de +0.02 (4 pips, 19 ops) a +0.11 (<b>8</b>, 71 ops), +0.04 (12), 0.00 (20) y −0.03 (30, 280 ops); diferencia con el azar: +0.14, +0.07, +0.02, −0.01</td><td><b>palanca real</b>: la calidad cae al permitir entradas tardías</td></tr>
+<tr><td>Vela de rechazo</td><td>sí / no</td><td>con vela: +0.108 (71 ops), diferencia con el azar +0.14; sin ella: +0.020 (381), diferencia +0.04</td><td><b>palanca real</b>: filtra ruido</td></tr>
+<tr><td>Banda neutra H4 (pips)</td><td>0 a 400</td><td>+0.11 en todos los valores hasta 200 pips (74 a 43 ops)</td><td>indiferente</td></tr>
+<tr><td>Distancia mínima a la EMA20</td><td>0 a 80</td><td>+0.11 (0), +0.05 (20), +0.02 (40), +0.07 (80, 17 ops)</td><td>no ayuda; reduce operaciones</td></tr>
+<tr><td>Límite sobre H120 (pips)</td><td>0 a 400</td><td>71 operaciones y +0.108 R en <b>todos</b> los valores</td><td><b>parámetro inerte</b>: la anti-persecución ya impone una cercanía mucho mayor</td></tr>
+<tr><td>Dirección</td><td>ambas / venta / compra</td><td>+0.108, +0.109, +0.108</td><td>sin diferencia detectable</td></tr>
+<tr><td>Contra-tendencia</td><td>sí / no</td><td>445 operaciones, −0.060 R (señal − azar: −0.035)</td><td>confirma la decisión del manual de eliminarla</td></tr>
+</tbody></table></div>
+</section>
+
+<section>
+<h2>Lo que aprendemos</h2>
+<ol>
+<li><b>Hay una tensión entre cantidad y calidad.</b> Aflojar la anti-persecución de 8 a 20 pips triplica las operaciones (de 71 a 208) y hace desaparecer la ventaja sobre el azar. Entradas más selectivas son mejores pero escasas; con pocas operaciones no se pueden medir.</li>
+<li><b>El parámetro «límite sobre H120» es inerte.</b> La regla de «no vender a más de 20 pips sobre el máximo de 2 horas» nunca se activa porque, para tocar H30 y cerrar a menos de 8 pips de él, el precio ya está cerca de H120. Un parámetro que no cambia nada debe eliminarse: añade complejidad y falsa seguridad.</li>
+<li><b>La banda H4 de 15 pips no filtra.</b> Hasta 200 pips no cambia el resultado y solo reduce las operaciones. Una banda ancha (400 pips) deja 26 operaciones: no mejora nada que se pueda medir.</li>
+<li><b>La vela de rechazo es la pieza que más aporta.</b> Quitarla multiplica las operaciones por cinco y reduce el R de +0.11 a +0.02.</li>
+</ol>
+<div class="box warn"><p>Cuidado con generalizar lo que ve en <i>una</i> serie. Las diferencias entre valores de un parámetro son del orden de 0.05 a 0.1 R, menores que el error de ±0.2 R de cada punto. Lo que sí es consistente (la caída de la ventaja al aflojar la anti-persecución, el valor de la vela de rechazo) se repite en las dos series y en la comparación con el azar; el resto es ruido.</p></div>
+</section>
+
+<section>
+<h2>Práctica: sensibilidad de los parámetros de entrada</h2>
+<div class="box py"><p>El programa recorre cada parámetro de entrada y, para cada valor, calcula el R con su intervalo, el R del azar (60 réplicas) y la diferencia.</p>
+<div class="py" data-py="16-entradas"></div></div>
+<div class="box read"><ul>
+<li><b>Extremo corto</b>: la diferencia señal − azar es +0.04 (10 min), +0.10 (15), +0.14 (30), +0.12 (45), +0.03 (60) y +0.02 (90).</li>
+<li><b>Anti-persecución</b>: +0.14 (8 pips) → +0.07 (12) → +0.02 (20) → −0.01 (30 pips, 280 operaciones).</li>
+<li><b>Techo H120</b>: 71 operaciones y +0.108 R en 0, 20, 50 y 400 pips; no tiene efecto.</li>
+<li><b>Sin vela de rechazo</b>: 381 operaciones, +0.020 R, diferencia con el azar +0.044.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>De los parámetros de entrada, tres son palancas (vela de rechazo, anti-persecución, extremo corto de 15–45 min); la banda H4 y la distancia a la EMA no cambian el resultado medible; el límite sobre H120 es inerte.</li>
+<li>La ventaja sobre el azar crece al estrechar la entrada, pero las operaciones se reducen: se paga en poder estadístico.</li>
+<li>La contra-tendencia empeora el resultado: confirma su eliminación.</li>
+<li>Un parámetro que no cambia nada debe eliminarse.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Por qué el parámetro «límite sobre H120» no tiene efecto con \(\text{maxdist}=8\)?
+<details><summary>Respuesta</summary><p>Porque la señal exige que el cierre esté a menos de 8 pips de H30, y H30 ≤ H120; para superar H120 en más de 20 pips el cierre tendría que estar por encima de H30 en más de 20 pips.</p></details></li>
+<li><span class="lvl">Básico</span>¿Qué mide «señal − azar»?
+<details><summary>Respuesta</summary><p>El R que aporta la regla de entrada una vez descontado lo que daría entrar al azar, en las mismas condiciones, con las mismas salidas.</p></details></li>
+<li><span class="lvl">Intermedio</span>Al pasar de maxdist 8 a 20, las operaciones pasan de 71 a 208 y el R de +0.108 a +0.001. ¿Qué operaciones nuevas se añadieron y cuánto rinden?
+<details><summary>Respuesta</summary><p>137 operaciones; su R conjunto es (208×0.001 − 71×0.108)/137 = −0.055 R. Las operaciones añadidas son peores que las originales.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué elegir maxdist = 8 mirando este perfil es arriesgado?
+<details><summary>Respuesta</summary><p>Porque 8 es el máximo del perfil en una sola muestra de 71 operaciones y su valor ya estaba fijado por el manual: el perfil lo confirma débilmente, pero no demuestra que 6 o 10 sean peores.</p></details></li>
+<li><span class="lvl">Avanzado</span>Con rechazo desactivado hay 381 operaciones y +0.020 R (IC ±0.087). ¿Es positivo?
+<details><summary>Respuesta</summary><p>t = 0.020/0.044 = 0.45: no. Pero sí es mucho más preciso que el resultado con rechazo (±0.22), lo que ilustra que una regla más «abierta» mide mejor su efecto, aunque su efecto sea menor.</p></details></li>
+</ol>
+</section>
+</template>

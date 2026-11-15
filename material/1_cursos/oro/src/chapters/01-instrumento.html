@@ -1,0 +1,94 @@
+<template class="chapter-src" data-id="instrumento" data-num="1" data-title="El oro como instrumento: pip, lote, spread y costo" data-part="Parte I · Fundamentos" data-short="XAUUSD, onza, lote, pip; valor de un movimiento; spread, comisión y deslizamiento; margen; el costo de cada operación expresado en R">
+<p class="lead">Antes de hablar de estrategias hay que saber exactamente qué se compra, cuánto vale cada centavo de movimiento y cuánto cuesta entrar y salir. En una estrategia que arriesga 125 dólares por operación, el spread y la comisión no son detalles: son la cuota fija que el mercado cobra por cada intento. Este capítulo fija el vocabulario y las unidades que usará todo el curso.</p>
+
+<section>
+<h2>Qué es XAUUSD</h2>
+<div class="box def"><p><span class="term">XAUUSD</span> es el precio de una onza troy de oro (<i>XAU</i>) expresado en dólares estadounidenses. En un broker de CFD no se entrega oro: se firma un contrato por diferencia, cuyo resultado es el cambio de precio multiplicado por el tamaño de la posición. Un <span class="term">lote</span> estándar equivale a <b>100 onzas</b>.</p></div>
+<ul>
+<li>Con el oro cerca de 4 250 USD, un lote tiene un valor nocional de unos 425 000 USD. Por eso casi nadie opera lotes enteros: la unidad práctica es el <b>0.01 lote</b> (una onza).</li>
+<li>Cada movimiento de 1.00 USD en el precio cambia el resultado de un lote en <b>100 USD</b>, y el de 0.01 lote en 1 USD.</li>
+<li>El precio tiene dos caras: el <span class="term">Bid</span> (a lo que usted vende) y el <span class="term">Ask</span> (a lo que usted compra). La diferencia es el <span class="term">spread</span>.</li>
+</ul>
+<h3>El pip del manual</h3>
+<p>En el manual técnico, <b>1 pip = 0.10 USD</b> de precio (la segunda cifra decimal del oro es el «centavo», la primera, el «pip»). Todas las distancias del curso se darán en pips con esa convención: un stop de 55 pips es un recorrido de 5.50 USD; un take profit de 90 pips, de 9.00 USD. Otras plataformas llaman «pip» al centavo; compruébelo antes de copiar parámetros.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Distancia</th><th>En USD de precio</th><th>Por 1 lote</th><th>Por 0.20 lote</th><th>Por 0.01 lote</th></tr></thead>
+<tbody>
+<tr><td>1 pip</td><td>0.10</td><td>10 USD</td><td>2 USD</td><td>0.10 USD</td></tr>
+<tr><td>20 pips</td><td>2.00</td><td>200 USD</td><td>40 USD</td><td>2 USD</td></tr>
+<tr><td>55 pips</td><td>5.50</td><td>550 USD</td><td>110 USD</td><td>5.50 USD</td></tr>
+<tr><td>90 pips</td><td>9.00</td><td>900 USD</td><td>180 USD</td><td>9 USD</td></tr>
+</tbody></table></div>
+</section>
+
+<section>
+<h2>Cuánto vale un movimiento: la calculadora de una operación</h2>
+<p>Con el riesgo fijado en dólares y el stop fijado en pips, el tamaño de la posición sale de una división. La simulación calcula el lote, lo que se pierde si el precio toca el stop, lo que se gana si llega al take profit, el margen que el broker retiene y, sobre todo, <b>cuánto del riesgo se va solo en spread y comisión</b>.</p>
+<div class="sim" data-sim="calculadora" data-title="Calculadora de una operación de oro"></div>
+<div class="sim-guide"><ul>
+<li>La escalera muestra la entrada, el stop y el take profit. En compra, usted entra al Ask (más arriba que el Bid) y sale al Bid; en venta ocurre al revés. Por eso el spread se paga siempre, gane o pierda.</li>
+<li>El lote se redondea <i>hacia abajo</i> a 0.01. Con riesgo de 125 USD y stop de 55 pips, el lote ideal sería 0.2273, pero se opera 0.21 y se arriesgan unos 121 USD reales.</li>
+<li>«Costo en R» es la cuota fija por intento: spread más comisión divididos entre el riesgo. Si es de 5 %, una estrategia sin ninguna ventaja pierde en promedio 0.05 R por operación.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Spread, comisión y deslizamiento</h2>
+<p>Tres cosas separan el precio del gráfico del precio que usted realmente obtiene:</p>
+<ul>
+<li><b>Spread</b>: la diferencia entre Ask y Bid. Los gráficos de MetaTrader dibujan solo el Bid; las compras se llenan 0.27 USD más arriba (en las series del curso, el spread es casi constante, entre 0.25 y 0.29 USD).</li>
+<li><b>Comisión</b>: algunas cuentas (tipo ECN o fondeo) cobran una cantidad fija por lote, ida y vuelta, y tienen spreads menores. Se modela como USD por lote.</li>
+<li><b>Deslizamiento</b> (<i>slippage</i>): la diferencia entre el precio que usted pidió y el que le dieron, por la demora de milisegundos. En oro, tras noticias, puede ser de varios pips.</li>
+</ul>
+<div class="box warn"><p>Los datos históricos del curso guardan un spread casi fijo. En el mercado real el spread se ensancha en el cambio de día (rollover, hacia las 23:00 de Madrid) y en las noticias. Por eso la estrategia no opera en esos momentos, y por eso el motor del curso permite sumar deslizamiento y comisión como parámetros. Un backtest con costos demasiado bajos es la forma más común de sobrestimar una estrategia.</p></div>
+<div class="eq key" data-name="Costo fijo por intento, en unidades de riesgo">\[c=\frac{100\,s+k}{100\,D+k},\qquad D=\underbrace{d_{SL}}_{\text{stop en USD}}+\underbrace{s}_{\text{spread (si se compensa)}}\]</div>
+<p>donde \(s\) es el spread en USD por onza, \(k\) la comisión en USD por lote (un lote son 100 onzas) y \(D\) la distancia total del stop. Mientras más corto el stop, más pesa el costo: con \(s=0.27\), un stop de 30 pips cuesta 8.3 % de R en spread; uno de 90 pips, 2.9 %.</p>
+<div class="sim" data-sim="costo-r" data-title="El spread se come el R: costo según la distancia del stop"></div>
+<div class="sim-guide"><ul>
+<li>La banda sombreada es el rango de stops del manual (45–60 pips). Dentro de ella el spread de 0.27 USD cuesta entre 4.3 % y 5.7 % de R.</li>
+<li>Con spread 1.00 (un broker retail con spread amplio, o una hora de baja liquidez) el costo sube a 14–18 % de R: la misma estrategia pasa de «casi gratis» a «imposible».</li>
+<li>Marque «acierto de equilibrio» para ver qué porcentaje de aciertos exige cada costo con el payoff del manual (1.64): sube de 37.9 % a unos 39 % solo por el spread.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Apalancamiento, margen y por qué importa menos de lo que parece</h2>
+<p>Con apalancamiento 1:100, el broker retiene como <span class="term">margen</span> el 1 % del valor nocional. Una posición de 0.21 lotes con el oro a 4 250 USD tiene un nocional de 89 250 USD y exige unos 892 USD de margen, menos del 1 % de una cuenta de 100 000 USD. El margen rara vez limita a una estrategia que arriesga 0.125 % por operación; lo que la limita es el <b>riesgo por operación</b> y las <b>reglas de pérdida diaria</b> de la firma de fondeo (capítulo 8).</p>
+<div class="box explain"><p>Piense en el margen como el depósito de garantía de un alquiler: es dinero inmovilizado, no dinero gastado. El riesgo real es lo que se pierde si el precio llega al stop; el margen solo dice cuánto del capital queda bloqueado mientras tanto.</p></div>
+</section>
+
+<section>
+<h2>Práctica: costos y tamaño de posición con datos reales</h2>
+<div class="box py"><p>El programa lee 100 000 velas M1 reales de oro (26 de junio a 7 de octubre de 2026), mide el spread de la ventana de entradas y calcula lotes, pérdida real al stop y margen para varios stops.</p>
+<div class="py" data-py="01-costos"></div></div>
+<div class="box read"><ul>
+<li><b>Spread</b>: mediana 0.27 USD, nunca por encima de 0.29 en la ventana. Es un valor registrado casi constante; no se debe suponer que será así en vivo.</li>
+<li><b>Costo en R</b>: con stop de 55 pips y spread de 0.27, la cuota por intento es 4.7 % de R; con una comisión de 7 USD por lote, 5.8 %.</li>
+<li><b>Lotes</b>: 0.26 con stop de 45 pips, 0.21 con 55 y 0.19 con 60. Por el redondeo, la pérdida real al stop (119–124 USD) queda por debajo de los 125 USD teóricos.</li>
+<li><b>Margen</b>: entre 0.8 % y 1.1 % de la cuenta. No es la restricción relevante.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>XAUUSD: 1 lote = 100 onzas; 1 pip del manual = 0.10 USD; 1 USD de precio = 100 USD por lote.</li>
+<li>Se compra al Ask y se vende al Bid; el spread se paga en cada operación, gane o pierda.</li>
+<li>El lote sale de arriesgado ÷ (stop + spread) y se redondea hacia abajo; el riesgo real queda algo por debajo del nominal.</li>
+<li>El costo por intento en R es <i>c</i> = (spread + comisión/100) ÷ distancia del stop: pesa más mientras más corto el stop.</li>
+<li>El margen no es la restricción; el riesgo por operación y las reglas diarias sí.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un stop de 48 pips en una venta de 0.17 lotes. ¿Cuántos dólares se pierden si se toca (sin contar el spread)?
+<details><summary>Respuesta</summary><p>48 pips = 4.80 USD por onza; 0.17 lotes = 17 onzas; 4.80 × 17 = 81.60 USD.</p></details></li>
+<li><span class="lvl">Básico</span>Con riesgo de 125 USD, stop de 50 pips y spread de 0.30 compensado en el stop, ¿qué lote se opera?
+<details><summary>Respuesta</summary><p>Distancia total D = 5.00 + 0.30 = 5.30 USD. Lote = 125 ÷ (5.30 × 100) = 0.2358, que se redondea a 0.23.</p></details></li>
+<li><span class="lvl">Intermedio</span>Si el spread sube a 0.80 en una hora de poca liquidez y el stop es de 45 pips, ¿qué fracción del riesgo es spread?
+<details><summary>Respuesta</summary><p>c = 0.80 ÷ (4.50 + 0.80) = 15.1 % de R. Con el payoff de 1.64 el acierto de equilibrio sube a (1 + 0.151)/(1 + 1.64 + 0.151) = 41.2 %.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué un CFD de oro «sin comisión» no es necesariamente más barato que una cuenta con comisión de 7 USD por lote?
+<details><summary>Respuesta</summary><p>Porque la comisión se compensa en un spread menor. Lo único comparable es el costo total por lote ida y vuelta: una cuenta con 7 USD de comisión y spread 0.15 cuesta 0.15 + 0.07 = 0.22 USD/onza; una «sin comisión» con spread 0.40 cuesta 0.40.</p></details></li>
+<li><span class="lvl">Avanzado</span>Demuestre que, con el riesgo fijo en USD, la pérdida esperada de una estrategia sin ventaja crece cuando el stop se acorta.
+<details><summary>Respuesta</summary><p>Una estrategia sin ventaja tiene esperanza de precio cero, así que su resultado esperado por operación es −(spread + comisión/100) × lotes × 100. Como lotes = riesgo ÷ (D × 100), la pérdida esperada es −riesgo × c con c = costo ÷ D, que crece cuando D disminuye.</p></details></li>
+</ol>
+</section>
+</template>

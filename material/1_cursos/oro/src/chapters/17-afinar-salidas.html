@@ -1,0 +1,97 @@
+<template class="chapter-src" data-id="afinar-salidas" data-num="17" data-title="Afinar las salidas: stop, take profit y gestión" data-part="Parte V · Afinar bloque por bloque" data-short="Stop y take profit en múltiplos del ATR; acierto frente a payoff; SL defensivo, break-even y estancamiento uno a uno; la cresta de stop corto y TP largo y la gestión mínima">
+<p class="lead">En el capítulo 6 se demostró que ninguna salida crea ventaja. Entonces, ¿para qué afinarlas? Porque cambian tres cosas que sí importan: el <b>costo relativo</b> (un stop corto paga más spread en R), la <b>precisión de la medición</b> (un acierto de 30 % tarda más en distinguirse del azar que uno de 50 %) y la <b>experiencia de operar</b> (rachas, caídas). Este capítulo mide cada pieza sobre datos reales y propone una gestión mínima.</p>
+
+<section>
+<h2>Acierto frente a payoff: la misma esperanza, otra forma</h2>
+<p>Al cambiar la distancia del take profit con el stop fijo, el acierto y el payoff se mueven en sentido opuesto. Con datos reales de M5, stop de 0.5 ATR y entradas del manual:</p>
+<div class="tablewrap"><table>
+<thead><tr><th>TP (× ATR)</th><th>0.6</th><th>1.0</th><th>1.4</th><th>2.0</th><th>3.0</th><th>4.0</th></tr></thead>
+<tbody>
+<tr><td>Acierto</td><td>56.2 %</td><td>54.1 %</td><td>43.8 %</td><td>34.2 %</td><td>31.5 %</td><td>23.3 %</td></tr>
+<tr><td>Ganancia media</td><td>+0.62 R</td><td>+0.87 R</td><td>+1.33 R</td><td>+2.06 R</td><td>+2.64 R</td><td>+3.45 R</td></tr>
+<tr><td>R medio</td><td>−0.02</td><td>+0.05</td><td>+0.10</td><td>+0.16</td><td>+0.27</td><td>+0.17</td></tr>
+<tr><td>Intervalo (±)</td><td>0.19</td><td>0.25</td><td>0.31</td><td>0.39</td><td>0.50</td><td>0.57</td></tr>
+</tbody></table></div>
+<p>El R medio sube hasta TP ≈ 3 ATR, pero el error crece más rápido que el efecto: el intervalo pasa de ±0.19 a ±0.50. Un TP largo ofrece más recompensa por operación a costa de un acierto bajo y mediciones más ruidosas.</p>
+<div class="sim" data-sim="sens-salidas" data-title="Perfil de sensibilidad de las salidas y la gestión"></div>
+<div class="sim-guide"><ul>
+<li>Elija el parámetro. «Stop = k × ATR» mueve el stop con el TP en 1.4 ATR; «Take profit = k × ATR», el TP con el stop en 0.5 ATR (ambos sin topes). Los demás conservan el manual.</li>
+<li>El stop casi no importa (+0.03 a +0.10 R para k entre 0.3 y 2.0); el TP, algo más (−0.02 a +0.27), pero con intervalos que se solapan.</li>
+<li>Los parámetros de gestión (SL defensivo, break-even, estancamiento) muestran perfiles planos o ruidosos: sus efectos individuales son menores que el error.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El costo relativo del stop</h2>
+<p>Con el spread de 0.27 USD, un stop de 0.3 ATR (≈ 22 pips) cuesta un 11 % de R en spread; uno de 2 ATR (≈ 146 pips), un 1.8 %. Un stop más corto necesita más lote para el mismo riesgo y paga más spread. Si el efecto del costo es lo único que cambia con el stop, la ventaja de un stop corto debe venir de otra fuente (por ejemplo, que el pullback correcto no retroceda más que unos pips). Eso lo explica la cresta del capítulo 14: con stop corto y TP largo, la señal aporta +0.4 R sobre el azar en estos datos.</p>
+</section>
+
+<section>
+<h2>La gestión, pieza por pieza</h2>
+<div class="tablewrap"><table>
+<thead><tr><th>Configuración (M5 / M1)</th><th>Acierto</th><th>R medio M5</th><th>R medio M1</th></tr></thead>
+<tbody>
+<tr><td>Completa (manual)</td><td>46 % / 49 %</td><td>+0.108</td><td>0.000</td></tr>
+<tr><td>Sin SL defensivo</td><td>50 % / 60 %</td><td>+0.035</td><td>+0.080</td></tr>
+<tr><td>SL defensivo a +20 pasa a 0 (no a −20)</td><td>41 % / 46 %</td><td>+0.133</td><td>+0.034</td></tr>
+<tr><td>Sin break-even</td><td>30 % / 28 %</td><td>+0.119</td><td>−0.010</td></tr>
+<tr><td>Break-even al 25 % del TP</td><td>62 % / 67 %</td><td>+0.149</td><td>+0.047</td></tr>
+<tr><td>Break-even al 60 % del TP</td><td>37 % / 33 %</td><td>+0.107</td><td>−0.040</td></tr>
+<tr><td>Sin estancamiento</td><td>49 % / 49 %</td><td>+0.013</td><td>−0.002</td></tr>
+<tr><td>Estancamiento a 60 min</td><td>47 % / 49 %</td><td>+0.063</td><td>−0.002</td></tr>
+<tr><td>Sin ninguna gestión</td><td>40 % / 42 %</td><td>+0.059</td><td>+0.086</td></tr>
+</tbody></table></div>
+<ul>
+<li>Todas las diferencias son menores que los intervalos (±0.2 a ±0.3 R). <b>No hay evidencia de que la gestión «completa» sea mejor que «ninguna»</b>; tampoco de que sea peor.</li>
+<li>Lo que sí cambia con claridad es el <b>acierto</b> (de 28 % a 67 %) y el tamaño medio de ganancias y pérdidas.</li>
+<li>El SL defensivo recorta el stop de −55 a −20 pips cuando el precio ha ido +20 a favor. En M1 y M5 casi todos los casos en que se activa terminan siendo operaciones que el precio devuelve: el SL defensivo cierra el 20 % de las operaciones en −0.4 R, y apagarlo mejora el resultado en M1 (+0.08) pero lo empeora en M5 (+0.035): ruido.</li>
+<li>El estancamiento a 30 minutos mejora M5 (+0.108 contra +0.013) y no hace nada en M1 (no se activa): con una sola serie «a favor» no se concluye.</li>
+</ul>
+<div class="box explain"><p>Piense en cuántas perillas tiene una radio vieja: bajo, medios, altos, balance, volumen. Con ruido de fondo en la señal, girar cada perilla produce cambios que parecen mejoras. Solo cuando se escucha la misma melodía limpia en varias radios se sabe que la perilla importa. Aquí, las perillas de gestión suenan distinto, pero la melodía (la esperanza) no cambia de forma medible.</p></div>
+</section>
+
+<section>
+<h2>Una gestión mínima</h2>
+<p>Con este panorama, la recomendación de diseño es la más simple que conserve lo útil:</p>
+<ul>
+<li><b>Stop y TP iniciales</b> en múltiplos del ATR, sin topes que los vuelvan constantes.</li>
+<li><b>Un solo mecanismo de protección</b>: el break-even (a una fracción corta del TP, como 20–25 %). Tiene un efecto claro sobre la forma (sube el acierto de 46 % a 60 %), costo bajo y una lógica verificable: tras ir a favor lo suficiente, no se acepta una pérdida.</li>
+<li><b>Sin SL defensivo ni estancamiento</b> hasta que la prueba hacia adelante demuestre su valor. Cada mecanismo añadido es otro parámetro libre y otra puerta al sobreajuste.</li>
+</ul>
+<p>La combinación «stop 0.5 ATR, TP 2.5 ATR, solo break-even al 20 %» (la «candidata» del capítulo 24) da, con los mismos datos, +0.28 R en M5 y +0.34 R en M1 con intervalos de ±0.4 a ±0.5 R: es una hipótesis para validar hacia adelante, no un descubrimiento.</p>
+</section>
+
+<section>
+<h2>Práctica: sensibilidad de las salidas y la gestión</h2>
+<div class="box py"><p>El programa recorre el stop, el TP, los topes y cada mecanismo de gestión en M5 y M1, con acierto, ganancia media, pérdida media y R con su intervalo; al final compara la «cresta» con el manual.</p>
+<div class="py" data-py="17-salidas"></div></div>
+<div class="box read"><ul>
+<li><b>Stop (M5, TP 1.4 ATR)</b>: +0.06 (0.3 ATR), +0.10 (0.5), +0.03 (0.8), +0.03 (1.2), +0.05 (2.0): plano. El acierto sube de 36 % a 55 %; las ganancias medias caen de +1.96 R a +0.31 R.</li>
+<li><b>TP (M5, stop 0.5 ATR)</b>: de −0.02 (0.6 ATR) a +0.27 (3.0 ATR), luego +0.17 (4.0).</li>
+<li><b>Topes del manual</b>: cambiarlos (stop 30–60, 45–120, TP 80–200) deja el R en +0.106 a +0.115: los topes son poco relevantes con estos ATR.</li>
+<li><b>Cresta (stop 0.5, TP 2.5)</b>: +0.33 R (M5) y +0.19 R (M1) con la gestión del manual; con solo break-even al 20 %, +0.28 y +0.34.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Cambiar stop, TP o gestión redistribuye el resultado entre acierto y payoff; el R medio se mueve menos que su intervalo.</li>
+<li>Un stop corto paga más spread en R, pero es compatible con una ventaja mayor sobre el azar en estos datos.</li>
+<li>No hay evidencia de que la gestión completa supere a la mínima; sí de que cambia el acierto (28 % a 67 %).</li>
+<li>La recomendación: ATR sin topes, solo break-even, sin SL defensivo ni estancamiento, hasta tener evidencia hacia adelante.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Un TP de 3 ATR con un stop de 0.5 ATR, ¿qué payoff tiene?
+<details><summary>Respuesta</summary><p>3 ÷ 0.5 = 6 : 1 (antes de costos). El acierto de equilibrio sería 1/7 = 14.3 %.</p></details></li>
+<li><span class="lvl">Básico</span>¿Por qué el acierto sube al acercar el take profit?
+<details><summary>Respuesta</summary><p>Porque un objetivo cercano es alcanzado con mayor probabilidad antes de que el precio vuelva al stop; la ganancia por acierto baja en la misma proporción.</p></details></li>
+<li><span class="lvl">Intermedio</span>Con el spread de 0.27, ¿cuánto cuesta en R un stop de 25 pips y uno de 100?
+<details><summary>Respuesta</summary><p>Stop 25 pips: 0.27/(2.5+0.27) = 9.7 %; stop 100 pips: 0.27/(10+0.27) = 2.6 %.</p></details></li>
+<li><span class="lvl">Intermedio</span>El break-even al 25 % del TP sube el acierto a 62 %. ¿Por qué no lo convierte en una mejor estrategia?
+<details><summary>Respuesta</summary><p>Porque cada «acierto» por break-even vale ≈ +0.09 R, y los trades que cierra de forma anticipada habrían llegado al TP algunas veces. Sube \(p\), baja \(b\), la esperanza queda parecida (+0.149 contra +0.108, dentro del ruido).</p></details></li>
+<li><span class="lvl">Avanzado</span>Por qué la regla «solo cambiar un mecanismo de gestión si su efecto es consistente en las dos series» es sensata?
+<details><summary>Respuesta</summary><p>Porque cada serie es una muestra pequeña y el efecto de un mecanismo individual (±0.05–0.1 R) es menor que el error. Un efecto que cambia de signo entre series (como el del SL defensivo: +0.08 en M1, −0.07 en M5) es típicamente ruido.</p></details></li>
+</ol>
+</section>
+</template>

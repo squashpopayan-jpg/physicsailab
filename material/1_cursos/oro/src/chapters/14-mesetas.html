@@ -1,0 +1,92 @@
+<template class="chapter-src" data-id="mesetas" data-num="14" data-title="Mesetas, no picos: el mapa de parámetros" data-part="Parte IV · Medir con honestidad" data-short="Superficies de resultado; picos frente a mesetas; suavizado por vecindad; separar lo que aporta la regla de lo que aporta el mercado con el modelo nulo; perfiles de sensibilidad de un parámetro">
+<p class="lead">El capítulo anterior dice qué evitar: elegir el pico. Este dice qué buscar: una <b>meseta</b>, una región de parámetros donde el resultado es parecido en todas las celdas vecinas. Una meseta es evidencia de que el resultado no depende de un valor exacto y de que, al mover un poco el parámetro en vivo, no se cae por un precipicio. Con mapas de calor sobre datos reales, y restando lo que haría el azar, se distingue lo que aporta la regla de lo que aporta el mercado.</p>
+
+<section>
+<h2>Pico o meseta</h2>
+<div class="box def"><p>Un <span class="term">pico</span> es una configuración muy superior a sus vecinas. Una <span class="term">meseta</span> es una región amplia de configuraciones con resultados parecidos. El pico se explica fácilmente por ruido; la meseta, no: es poco probable que cien celdas contiguas hayan tenido suerte a la vez, aunque sus resultados no son independientes (comparten las mismas operaciones).</p></div>
+<p>Criterios prácticos para elegir una configuración:</p>
+<ol>
+<li>Calcule el resultado de cada celda <b>promediado con sus vecinas</b> (suavizado 3×3) y elija el máximo del suavizado, no el de la celda bruta.</li>
+<li>Exija que la celda elegida esté <i>rodeada</i> por celdas de signo parecido.</li>
+<li>Elija el <b>centro</b> de la meseta, no su borde: así, si el mercado se mueve, tiene margen.</li>
+<li>Verifique que la meseta se vea en <i>ambas mitades</i> de los datos y en varias series.</li>
+</ol>
+</section>
+
+<section>
+<h2>El mapa del stop y del take profit</h2>
+<p>La simulación calcula el R medio para una rejilla de 7×7 valores del stop (en múltiplos del ATR) y del take profit. Puede cambiar la serie, la regla de entrada y ver tres versiones del mismo mapa: la de la <b>señal</b>, la de <b>entradas al azar</b> (misma frecuencia y mismas salidas) y su <b>diferencia</b>, que mide lo que aporta la regla de entrada.</p>
+<div class="sim" data-sim="mapa-parametros" data-title="Mapa del R medio según el stop y el take profit"></div>
+<div class="sim-guide"><ul>
+<li>Haga clic en una celda para ver sus operaciones, su R y su intervalo. El cuadrado con borde punteado marca la celda con mejor valor bruto; el relleno punteado, la de mejor valor suavizado.</li>
+<li><b>Manual («tocar y rechazar»), M5, señal</b>: una cresta clara en la esquina de stops cortos (0.4–0.6 ATR) y take profits largos (≥ 2.4 ATR), con +0.3 R, y casi todo positivo.</li>
+<li><b>Azar</b>: las mismas celdas con entradas aleatorias dan 0.00 a −0.16 R: el costo y nada más. La cresta no es una propiedad del mercado.</li>
+<li><b>Diferencia</b>: +0.15 R de promedio en todo el mapa, +0.42 en la cresta. La regla de entrada aporta algo en estos datos. Pero cada celda tiene solo 71 operaciones, con error de ±0.3 a ±0.5 R: la señal sigue sin ser concluyente.</li>
+<li>Pase a «ema sin rechazo» (332 operaciones): el mapa es mucho más plano, con una cresta débil de +0.1 R en stops cortos y take profit de 1.1–1.4 ATR. Con más operaciones los efectos se achican.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>¿Resiste la cresta?</h2>
+<p>La prueba de fuego de una meseta es separarla en dos mitades del tiempo y ver si se mantiene. Con los 17 meses de M5, se elige la configuración con la primera mitad y se mide en la segunda:</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Regla</th><th>Criterio de elección en la 1.ª mitad</th><th>R 1.ª mitad</th><th>R 2.ª mitad</th></tr></thead>
+<tbody>
+<tr><td rowspan="2">Manual «tocar y rechazar»</td><td>mejor celda bruta (stop 0.6, TP 3.0)</td><td>+0.450</td><td>+0.107</td></tr>
+<tr><td>mejor por vecindad (stop 0.4, TP 3.0)</td><td>+0.386</td><td>+0.266</td></tr>
+<tr><td rowspan="2">«ema» sin rechazo</td><td>mejor celda bruta (stop 0.4, TP 1.1)</td><td>+0.253</td><td>−0.029</td></tr>
+<tr><td>mejor por vecindad (stop 0.4, TP 1.4)</td><td>+0.242</td><td>−0.027</td></tr>
+</tbody></table></div>
+<ul>
+<li>Para el manual, la elección por vecindad se mantuvo mejor (+0.27 contra +0.11 de la celda bruta) y el promedio de <i>todas</i> las celdas en la segunda mitad es +0.08: la cresta tiene el mismo signo en ambas mitades, aunque más débil.</li>
+<li>Para «ema», ninguna elección sobrevive: el mapa de la segunda mitad es plano (promedio +0.00).</li>
+<li>Es la distinción buscada: una configuración cuya cresta se repite en ambas mitades y cuya vecindad también ganó merece seguimiento; una cuyo resultado desaparece, no.</li>
+</ul>
+<div class="box explain"><p>Elegir una configuración por una sola celda es como elegir un restaurante porque un plato fue excelente un día. Elegirlo por el promedio de las celdas vecinas es como elegirlo porque casi todos sus platos fueron buenos en varias visitas. Lo segundo no garantiza nada, pero predice mucho mejor.</p></div>
+</section>
+
+<section>
+<h2>Perfiles de sensibilidad de un parámetro</h2>
+<p>Cuando hay muchos parámetros no se puede mapear todo en dos dimensiones. Un <b>perfil</b> mueve un solo parámetro y deja los demás en su valor de referencia. Esta herramienta se usará en los capítulos 16 a 18.</p>
+<div class="sim" data-sim="perfil-1d" data-title="Perfil de sensibilidad de un parámetro (con intervalos del 95 %)"></div>
+<div class="sim-guide"><ul>
+<li>Elija el parámetro, la serie y la regla. Cada punto es el R medio con su intervalo; la línea punteada vertical marca el valor del manual. «Comparar con el azar» añade la línea de entradas aleatorias con la misma configuración.</li>
+<li>Un parámetro importa si su perfil <i>sube de forma sostenida</i> y los intervalos de los extremos no se solapan. Casi todos los perfiles son planos frente a la anchura de sus intervalos: eso dice que el parámetro, tal como está, no se puede afinar con esta muestra.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Práctica: el mapa y su prueba contra el azar</h2>
+<div class="box py"><p>El programa construye los mapas del manual y de «ema», el suavizado por vecindad, la prueba de dos mitades y el mapa de entradas al azar (40 réplicas por celda) y su diferencia.</p>
+<div class="py" data-py="14-meseta"></div></div>
+<div class="box read"><ul>
+<li><b>Manual</b>: 48 de 49 celdas con R positivo; diferencia media entre celdas vecinas de 0.038 R (superficie lisa). Mejor bruta: stop 0.4, TP 2.4 (+0.37 R).</li>
+<li><b>Azar</b>: celdas de −0.16 a +0.00: ninguna celda del mapa nulo es positiva de forma apreciable.</li>
+<li><b>Diferencia señal − azar</b>: +0.153 R en promedio; +0.419 en la cresta (stop ≤ 0.6 ATR, TP ≥ 2.4 ATR).</li>
+<li><b>«ema»</b>: 44 de 49 celdas positivas con +0.00 a +0.11; la elección en la primera mitad no sobrevive en la segunda (−0.03).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Busque mesetas (regiones amplias de resultados parecidos), elija el máximo del <i>suavizado</i> y quédese en el centro.</li>
+<li>Reste el mapa de entradas al azar: lo que queda es lo que aporta la regla de entrada, no el mercado.</li>
+<li>En M5, el manual muestra una cresta lisa (stop corto, TP largo, +0.3 R) con +0.15 R de diferencia media sobre el azar, pero con solo 71 operaciones por celda.</li>
+<li>Elegida con la primera mitad, la cresta se mantiene con el mismo signo en la segunda (+0.27 R por vecindad); la variante «ema» no.</li>
+<li>Es una pista que merece seguimiento hacia adelante, no una prueba.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Por qué se prefiere el máximo del mapa suavizado al máximo bruto?
+<details><summary>Respuesta</summary><p>Porque el bruto es el que más azar favorable acumuló; el suavizado exige que también las celdas vecinas sean buenas.</p></details></li>
+<li><span class="lvl">Básico</span>Un mapa de entradas al azar muestra −0.05 R en una celda. ¿Qué significa?
+<details><summary>Respuesta</summary><p>Que con esos stop y take profit, entrar sin regla alguna pierde −0.05 R por costos (y por la deriva del periodo). Es la línea base contra la que medir la regla.</p></details></li>
+<li><span class="lvl">Intermedio</span>La señal da +0.30 y el azar −0.10 en una celda de 71 operaciones (EE de la señal 0.25). ¿La diferencia es significativa?
+<details><summary>Respuesta</summary><p>La diferencia es +0.40 con error aproximado 0.25 (el del nulo es menor): t ≈ 1.6. No lo es, y si se eligió esa celda entre 49, menos.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué las celdas vecinas del mapa no son independientes y qué consecuencia tiene?
+<details><summary>Respuesta</summary><p>Comparten las mismas señales y casi las mismas trayectorias; sus resultados están muy correlacionados. Por eso una «meseta» es menos evidencia que la que daría el mismo número de celdas independientes.</p></details></li>
+<li><span class="lvl">Avanzado</span>Una cresta tiene el mismo signo en las dos mitades pero la mitad de la magnitud en la segunda. ¿Qué hipótesis alternativas explican esto?
+<details><summary>Respuesta</summary><p>(a) Ventaja real pequeña más el optimismo de la selección en la primera mitad (regresión a la media); (b) un efecto de régimen (la primera mitad incluye el tramo alcista fuerte de 2025); (c) puro ruido con signo igual por casualidad (probabilidad ≈ 50 %). No se pueden distinguir con estos datos: hace falta una muestra nueva.</p></details></li>
+</ol>
+</section>
+</template>

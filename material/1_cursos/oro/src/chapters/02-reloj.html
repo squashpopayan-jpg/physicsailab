@@ -1,0 +1,87 @@
+<template class="chapter-src" data-id="reloj" data-num="2" data-title="El reloj: Madrid, Londres y cuándo se mueve el oro" data-part="Parte I · Fundamentos" data-short="Hora de Madrid y cambio de hora, ventana 08:57–13:00, perfil horario en 16 años, apertura de Nueva York, cierres de las 20:00 y del viernes">
+<p class="lead">La estrategia opera solo unas horas al día y todas sus reglas de tiempo están escritas en hora de Madrid. Este capítulo explica por qué importa el reloj, qué dicen 16 años de datos sobre cuándo se mueve el oro y cuál es el verdadero motivo de la ventana de entradas, que no es exactamente el que suele contarse.</p>
+
+<section>
+<h2>Una estrategia con horario de oficina</h2>
+<p>El manual restringe las entradas a la franja <b>08:57–13:00 (Madrid)</b>, cierra todo a las <b>20:00</b> y, los viernes, a las <b>21:00</b>. Hay tres razones para limitar el horario de una estrategia:</p>
+<ul>
+<li><b>Liquidez y spread</b>: en las horas con pocos participantes, el spread se ensancha y el precio salta con órdenes pequeñas. Los costos de la estrategia (capítulo 1) son una proporción grande del stop, así que el spread importa.</li>
+<li><b>Noticias</b>: los datos de empleo, inflación y las decisiones de la Fed (8:30 y 10:00 de Nueva York) mueven el oro decenas de dólares en segundos. Las firmas de fondeo restringen operar alrededor de esas publicaciones.</li>
+<li><b>Estabilidad del comportamiento</b>: un patrón que existe en una sesión (por ejemplo, reversión después de un rebote) puede no existir en otra. Limitar el horario reduce el riesgo de mezclar mercados distintos.</li>
+</ul>
+<div class="box warn"><p>Un error frecuente es decir que la ventana de Londres es «la de mayor volatilidad del día». Los datos de este capítulo muestran que no lo es: la hora más movida del oro es la apertura de Nueva York (14:00–16:00 en Madrid), donde el rango medio de una vela H1 es casi el doble. La ventana de entradas queda <b>antes</b> de esa explosión, y esa es su virtud.</p></div>
+</section>
+
+<section>
+<h2>Hora de Madrid, hora del broker y el cambio de hora</h2>
+<p>Madrid está en UTC+1 en invierno y UTC+2 en verano. El cambio ocurre el último domingo de marzo y el último de octubre a las 01:00 UTC. Los brokers de MetaTrader suelen usar una hora de servidor propia (a menudo UTC+2 o UTC+3, con su propio horario de verano de Nueva York), de modo que una regla como «08:57» exige convertir con cuidado. El motor del curso trabaja en UTC y convierte a Madrid con la regla europea, sin depender de la hora del servidor.</p>
+<div class="box ex"><p>Un lunes de julio la ventana va de 06:57 a 11:00 UTC. Un lunes de diciembre, de 07:57 a 12:00 UTC. En la semana de finales de octubre en que Europa ya cambió de hora pero Estados Unidos todavía no (y en marzo, al revés), la apertura de Nueva York cae una hora más tarde o más temprano <i>respecto de Madrid</i>: los datos de las 8:30 de Nueva York llegan a las 14:30 de Madrid casi todo el año, pero a las 13:30 o 15:30 durante dos o tres semanas.</p></div>
+<div class="sim" data-sim="reloj-dst" data-title="La ventana en UTC y en Madrid a lo largo del año"></div>
+<div class="sim-guide"><ul>
+<li>Mueva la fecha. La banda verde es la ventana de entradas; la franja ámbar, los datos de las 8:30 de Nueva York y su apertura de acciones a las 9:30.</li>
+<li>Busque las dos «semanas de desajuste» (finales de marzo y finales de octubre/principios de noviembre): ahí el reloj de Madrid y el de Nueva York se mueven un día distinto, y el cierre preventivo de noticias debe seguir a Nueva York, no a Madrid.</li>
+<li>La hora UTC de la ventana cambia en una hora entre verano e invierno. Un bot que use hora fija UTC operará una hora «desplazada» medio año.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>¿Cuándo se mueve el oro? Dieciséis años de velas H1</h2>
+<p>Con 98 141 velas H1 de 2010 a 2026 se mide el <b>rango medio</b> (máximo menos mínimo) de la vela que empieza a cada hora de Madrid. El rango es una medida simple de cuánto se mueve el mercado en esa hora.</p>
+<div class="sim" data-sim="perfil-horario" data-title="Rango medio por hora de Madrid, 2010–2026"></div>
+<div class="sim-guide"><ul>
+<li>Las barras son el rango medio de la vela H1 en cada hora de Madrid; la banda es su ventana de entradas (ajústela).</li>
+<li>El pico está en las <b>14:00–16:00</b>: datos económicos de las 8:30 de Nueva York y apertura de acciones. El valle, entre las 22:00 y las 07:00.</li>
+<li>La ventana 09:00–13:00 contiene alrededor del 17 % del rango diario con el 16.7 % del reloj: <b>no es más movida que un promedio</b>. Es una zona de movimiento normal sin la explosión de Nueva York.</li>
+<li>Con «hora fija UTC+1» (ignorando el cambio de hora) el pico se corre una hora en verano: ese es el error que cometería un reloj mal configurado.</li>
+</ul></div>
+<div class="sim" data-sim="mapa-hora-dia" data-title="Mapa de calor: hora de Madrid por día de la semana (M5, 17 meses)"></div>
+<div class="sim-guide"><ul>
+<li>Cada celda es el rango medio de una vela M5. Dentro de la ventana (borde verde) los cinco días son parecidos: entre 4.2 y 4.6 USD por vela en promedio. La diferencia está en la tarde: entre las 14:00 y las 17:00 el jueves y el viernes promedian 7.9 USD, frente a 6.7 USD el lunes.</li>
+<li>Pase el puntero sobre una celda para leer su valor.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Los otros relojes: 20:00, viernes y el lunes</h2>
+<ul>
+<li><b>Cierre de las 20:00</b>: ninguna posición debe pasar el cambio de día del broker (rollover, a las 23:00 de Madrid), cuando se cobra el swap y el spread se ensancha. El manual cierra a las 20:00 por prudencia. Como las entradas terminan a las 13:00, el cierre de las 20:00 solo actúa sobre operaciones que sobreviven siete horas, rarísimas.</li>
+<li><b>Cierre del viernes a las 21:00</b>: ninguna operación pasa el fin de semana, porque el mercado puede abrir el lunes con un hueco (<i>gap</i>) que salta el stop.</li>
+<li><b>Lunes</b>: en la versión 1.2 del motor no se opera hasta que pasan 120 velas M1 desde la apertura semanal; en la ventana de Londres esa regla casi nunca importa.</li>
+</ul>
+<div class="box explain"><p>Piense en el horario como en el de una tienda: abrir cuando hay clientes normales y cerrar antes de la hora punta de otra sucursal no es una predicción, es una forma de evitar los momentos en que las reglas de su sistema dejan de describir el mercado.</p></div>
+</section>
+
+<section>
+<h2>Práctica: perfil horario y ventana con datos reales</h2>
+<div class="box py"><p>El programa convierte cada vela H1 a hora de Madrid con el cambio de hora europeo, promedia el rango por hora y mide qué fracción del movimiento diario cae dentro de la ventana. Después lo repite por año, para ver el efecto del precio del oro.</p>
+<div class="py" data-py="02-horario"></div></div>
+<div class="box read"><ul>
+<li><b>Perfil</b>: el rango por hora va de 2.90 USD (22:00) a 9.06 USD (15:00). Las tres horas de las 14:00 a las 16:00 superan los 8.7 USD; la ventana de entradas (09:00–12:59) se mueve entre 4.7 y 5.5 USD por hora.</li>
+<li><b>Fracción del movimiento</b>: la ventana de cuatro horas concentra el 17.1 % del rango diario acumulado, casi lo mismo que su 16.7 % del reloj.</li>
+<li><b>Por año</b>: el rango de la ventana pasó de unos 2–3 USD (2017–2019) a 10.7 USD en 2025 y 19.9 USD en 2026, porque el precio se multiplicó por tres. En porcentaje del precio sube de 0.17 % a 0.43 %. Un stop fijo en pips cubre cada vez menos «movimiento normal»: este es el argumento para medir el stop en múltiplos del ATR (capítulo 6) y no en pips fijos.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Toda la lógica horaria del manual está en hora de Madrid; el motor convierte desde UTC con la regla europea del cambio de hora.</li>
+<li>La ventana 08:57–13:00 es de actividad <i>normal</i>, no máxima; la hora más movida del oro es la de las 14:00–16:00 (Nueva York).</li>
+<li>La ventaja de la ventana es negativa: evita la apertura de Nueva York, sus noticias y su spread.</li>
+<li>El oro de 2025–2026 se mueve 3–8 veces más, en dólares, que el de 2015–2019: los parámetros en pips no son estables en el tiempo.</li>
+<li>Cierre a las 20:00 y a las 21:00 del viernes: ninguna posición pasa el rollover ni el fin de semana.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿A qué hora UTC empieza la ventana el 15 de julio y el 15 de diciembre?
+<details><summary>Respuesta</summary><p>En julio Madrid es UTC+2: 08:57 − 2 h = 06:57 UTC. En diciembre es UTC+1: 07:57 UTC.</p></details></li>
+<li><span class="lvl">Básico</span>Si el rango por hora fuese idéntico a toda hora, ¿qué fracción del rango diario tendría una ventana de 4 horas?
+<details><summary>Respuesta</summary><p>4/24 = 16.7 %. El valor medido (17.1 %) es casi igual: la ventana no es especial por su movimiento.</p></details></li>
+<li><span class="lvl">Intermedio</span>El 28 de octubre de 2026, Europa ya está en horario de invierno y Estados Unidos aún en verano. ¿A qué hora de Madrid cae el dato de las 8:30 de Nueva York?
+<details><summary>Respuesta</summary><p>Nueva York (EDT, UTC−4) a las 8:30 equivale a 12:30 UTC; Madrid (UTC+1) a las 13:30. Es una hora antes de lo habitual (14:30), y cae dentro de la ventana de entradas: el filtro de noticias debe reconocerlo.</p></details></li>
+<li><span class="lvl">Intermedio</span>El rango medio de la ventana pasó de 2.3 USD (2018) a 19.9 USD (2026). Un stop de 45 pips (4.5 USD) ¿cuántas veces el rango de una vela H1 representaba en cada año?
+<details><summary>Respuesta</summary><p>En 2018, 4.5/2.3 ≈ 2.0 veces; en 2026, 4.5/19.9 ≈ 0.23 veces. El mismo stop fijo pasó de «dos velas de margen» a «una cuarta parte de una vela».</p></details></li>
+<li><span class="lvl">Avanzado</span>Un bot usa «hora fija UTC+1» todo el año. ¿Cuántos meses al año opera una hora desplazada y en qué dirección?
+<details><summary>Respuesta</summary><p>Unos siete meses (de finales de marzo a finales de octubre), cuando Madrid está en UTC+2. El bot cree que son las 08:57 cuando en Madrid son las 09:57: entra una hora más tarde de lo previsto, y su cierre «de las 20:00» ocurre a las 21:00 reales.</p></details></li>
+</ol>
+</section>
+</template>

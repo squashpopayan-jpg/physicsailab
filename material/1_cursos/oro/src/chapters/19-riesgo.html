@@ -1,0 +1,70 @@
+<template class="chapter-src" data-id="riesgo" data-num="19" data-title="Cuánto arriesgar por operación: crecimiento, caídas y Kelly" data-part="Parte VI · Riesgo y cuenta de fondeo" data-short="Riesgo fijo y crecimiento compuesto; criterio de Kelly y por qué se usa una fracción; caídas máximas por Monte Carlo; el compromiso entre ritmo de crecimiento y supervivencia con una ventaja incierta">
+<p class="lead">Hasta aquí el riesgo por operación (0.125 %) se trató como un dato. Es, en realidad, la perilla más poderosa de todo el sistema: no cambia la ventaja, pero escala por igual las ganancias y las caídas. Este capítulo muestra cómo elegirla: qué ritmo de crecimiento ofrece cada nivel, qué caídas hay que estar dispuesto a soportar y por qué, con una ventaja que no se conoce con certeza, la fracción óptima es mucho menor de lo que dice la fórmula.</p>
+
+<section>
+<h2>El riesgo escala todo</h2>
+<p>Con riesgo \(f\) (fracción de la cuenta por operación) y resultados \(R_i\), el capital evoluciona como \(C_n=C_0\prod_i(1+f R_i)\). El crecimiento logarítmico por operación es, para \(f\) pequeño:</p>
+<div class="eq key" data-name="Crecimiento compuesto por operación">\[g(f)=\mathbb E\big[\ln(1+fR)\big]\approx f\,E-\tfrac12 f^{2}\sigma^{2}\]</div>
+<p>El primer término (la ventaja \(E\)) crece <i>linealmente</i> con \(f\); el segundo (la penalización por varianza) crece con \(f^2\). A riesgos pequeños domina la ventaja; a riesgos grandes, la varianza. Existe un \(f\) que maximiza \(g\), el <span class="term">criterio de Kelly</span>:</p>
+<div class="eq key" data-name="Fracción de Kelly">\[f^{*}=\frac{E}{\sigma^{2}}\]</div>
+<p>Con \(\sigma=0.88\) R: si la ventaja fuera +0.10 R, \(f^{*}=12.9\,\%\) por operación; con +0.05 R, 6.4 %. Son cifras enormes comparadas con el 0.125 % del manual. Pero asumen que la ventaja se conoce con exactitud, y no es así.</p>
+</section>
+
+<section>
+<h2>Una ventaja incierta cambia todo</h2>
+<p>Con 71 operaciones, el R medio de +0.11 tiene un intervalo del 95 % de [−0.10, +0.31]. El Kelly «verdadero» puede ser cualquier valor entre negativo y 40 %. Arriesgar el Kelly estimado cuando la ventaja real es la mitad produce un crecimiento <i>peor</i> que arriesgar el Kelly completo con la ventaja real; excederlo, en general, es mucho más doloroso que quedarse corto: la curva \(g(f)\) cae en picada a la derecha del óptimo (con 2\(f^{*}\) el crecimiento ya es cero).</p>
+<div class="sim" data-sim="kelly-curva" data-title="La curva de crecimiento y su incertidumbre"></div>
+<div class="sim-guide"><ul>
+<li>La curva verde es el crecimiento esperado por operación según el riesgo, con la ventaja que usted estima. La zona sombreada es el rango que cubre el intervalo del 95 % de esa estimación, con el número de operaciones medidas.</li>
+<li>Con 71 operaciones, la zona incluye curvas con crecimiento negativo para casi cualquier riesgo: no se sabe si la estrategia crece.</li>
+<li>Los marcadores: riesgo del manual (0.125 %), medio Kelly y Kelly completo (de la ventaja estimada). El Kelly completo queda <i>fuera</i> de lo que cualquiera estaría dispuesto a soportar: provoca caídas de más del 50 %.</li>
+<li>Regla práctica: usar una fracción (un cuarto o menos) del Kelly estimado con el <i>límite inferior</i> del intervalo.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Las caídas: el costo psicológico y contractual</h2>
+<p>El riesgo también decide la caída máxima (<i>drawdown</i>) que habrá que soportar. La simulación siguiente genera miles de años de operación con la forma real de \(R\) y la ventaja que usted indique.</p>
+<div class="sim" data-sim="abanico-riesgo" data-title="Mil trayectorias de un año según el riesgo y la ventaja"></div>
+<div class="sim-guide"><ul>
+<li>El abanico es la curva de capital (% de la cuenta) para 250 operaciones (≈ 1 año a una por día): mediana, percentiles 5–95 y 25–75.</li>
+<li>Con ventaja 0 y 0.125 %, la banda es de ±2 % alrededor de cero: nada ocurre. Con 1 %, la caída máxima mediana es del 14 % y el 80 % de las trayectorias pasa por una caída mayor al 10 %.</li>
+<li>Con ventaja +0.10 R y 0.5 % de riesgo: +13 % en el año (mediana), 3.4 % de trayectorias terminan en pérdida y las caídas rara vez pasan del 5 %. Es el tipo de perfil que una firma de fondeo y un trader prudente aceptan.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Práctica: Kelly y caídas con la forma real de R</h2>
+<div class="box py"><p>El programa toma 332 operaciones reales de M5 (forma de la distribución de R), calcula el Kelly para varias ventajas y simula 4 000 trayectorias de 250 operaciones por cada combinación de ventaja y riesgo.</p>
+<div class="py" data-py="19-riesgo"></div></div>
+<div class="box read"><ul>
+<li><b>Forma de R</b>: media +0.070, desviación 0.88, asimetría +0.73 (ganancias grandes poco frecuentes), peor −1.00, mejor +1.67.</li>
+<li><b>Kelly</b>: 6.4 % (+0.05 R), 12.9 % (+0.10), 25.8 % (+0.20); un cuarto de Kelly de +0.10 R sería 3.2 %.</li>
+<li><b>Ventaja 0</b>: riesgo 0.125 %: mediana +0.0 %, caída máxima mediana 1.9 %; riesgo 1 %: −1.1 %, caída 14.4 %, y 80 % de probabilidad de una caída mayor al 10 %; riesgo 2 %: −4.0 %, caída 27 %, 78 % de caídas mayores al 20 %.</li>
+<li><b>Ventaja +0.10 R</b>: 0.125 % → +3.2 % (probabilidad de pérdida 3.7 %); 0.5 % → +13 % (3.4 %); 1 % → +27.6 % (4.5 %, caída 8.1 %); 2 % → +59 % (caída mediana 16 %, 94 % de caídas &gt; 10 %).</li>
+<li><b>Ventaja +0.20 R</b>: 1 % → +63 % con 0 % de pérdidas; 2 % → +160 %.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Crecimiento ≈ \(fE-\tfrac12f^2\sigma^2\); Kelly \(f^{*}=E/\sigma^2\): con \(E=0.10\) y \(\sigma=0.88\), 12.9 % por operación.</li>
+<li>Con ventaja incierta (±0.2 R con 71 operaciones) se usa una fracción pequeña del Kelly, medida con el límite inferior de la ventaja.</li>
+<li>Sin ventaja, ningún riesgo hace crecer la cuenta: solo aumenta la caída (14 % con 1 %, 27 % con 2 %).</li>
+<li>Con +0.10 R, un riesgo de 0.5–1 % ofrece +13 % a +28 % al año con caídas de 4–8 %.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Ventaja +0.10 R, \(\sigma=0.88\). ¿Kelly y medio Kelly?
+<details><summary>Respuesta</summary><p>\(f^{*}=0.10/0.7744=12.9\,\%\); medio Kelly, 6.5 %.</p></details></li>
+<li><span class="lvl">Básico</span>Con ventaja cero, ¿qué efecto tiene doblar el riesgo?
+<details><summary>Respuesta</summary><p>Dobla las caídas y las variaciones; no crea crecimiento (la esperanza sigue siendo 0, y el efecto de composición lo reduce algo).</p></details></li>
+<li><span class="lvl">Intermedio</span>Se arriesga el doble del Kelly verdadero. ¿Cuál es el crecimiento esperado?
+<details><summary>Respuesta</summary><p>\(g(2f^{*})=2f^{*}E-2f^{*2}\sigma^2=2f^{*}E-2f^{*}E=0\): cero. Arriesgar más que el doble produce crecimiento negativo.</p></details></li>
+<li><span class="lvl">Intermedio</span>Con 250 operaciones, \(\sigma=0.88\), ¿qué incertidumbre tiene la ventaja estimada y qué Kelly resulta con el límite inferior si se mide +0.10?
+<details><summary>Respuesta</summary><p>EE = 0.88/√250 = 0.056; IC95 = ±0.109: [−0.009, +0.209]. Con el límite inferior, la ventaja es ≈ 0 y el Kelly también. Es razonable operar un riesgo pequeño mientras la evidencia crece.</p></details></li>
+<li><span class="lvl">Avanzado</span>¿Por qué la asimetría positiva de R (+0.73) matiza el criterio de Kelly?
+<details><summary>Respuesta</summary><p>La fórmula \(E/\sigma^2\) supone una distribución simétrica o pequeña \(f\). Con asimetría positiva (ganancias grandes raras) el crecimiento a riesgos moderados es algo mayor y las pérdidas más acotadas; pero los intervalos son más anchos, lo que refuerza la cautela.</p></details></li>
+</ol>
+</section>
+</template>

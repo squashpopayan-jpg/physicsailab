@@ -1,0 +1,94 @@
+<template class="chapter-src" data-id="indicadores" data-num="4" data-title="Los instrumentos de lectura: EMA, ATR, extremos y sesgo H4" data-part="Parte II · Anatomía de la estrategia" data-short="Velas cerradas y anticipación; EMA20 de M15; ATR14 de Wilder; máximos y mínimos de 30 y 120 minutos; sesgo H4 con banda neutra y su estabilidad">
+<p class="lead">La estrategia lee el mercado con cuatro instrumentos: una media móvil rápida, una medida de volatilidad, los extremos recientes del precio y un sesgo de dirección de fondo. Ninguno predice nada por sí mismo; cada uno aporta una pieza de contexto que las reglas de entrada y salida combinan. Este capítulo define cada instrumento con precisión, muestra cómo se comporta con datos reales y destaca dos detalles que cambian el comportamiento: el sesgo H4 casi nunca es «neutro» y el stop pasa gran parte del tiempo pegado a su tope.</p>
+
+<section>
+<h2>Solo velas cerradas</h2>
+<p>El primer principio de un backtest honesto es que cada indicador se calcula, en el instante de decidir, <b>únicamente con velas completamente cerradas</b>. La vela M1 que acaba de cerrar a las 10:15 puede usarse; la vela M15 de las 10:15 a las 10:30, todavía abierta, no. Usar una vela abierta equivale a ver el futuro de esa vela: el máximo y el mínimo aún no existen. Es la fuga de información más común y la que más infla los resultados.</p>
+<div class="box def"><p>El motor del curso evalúa la estrategia al <b>cierre</b> de cada vela base (M1 o M5). Para M15 y H4 usa la última vela cuyo cierre ya ocurrió en ese instante. La orden se envía al abrir la vela siguiente, a precio de mercado.</p></div>
+</section>
+
+<section>
+<h2>EMA20 de M15: el filtro de impulso</h2>
+<p>Una <span class="term">media móvil exponencial</span> (EMA) promedia los cierres dando más peso a los recientes. Con periodo \(N\), el factor de suavizado es \(\alpha=2/(N+1)\):</p>
+<div class="eq key" data-name="Media móvil exponencial">\[\mathrm{EMA}_t=\alpha\,C_t+(1-\alpha)\,\mathrm{EMA}_{t-1},\qquad \alpha=\frac{2}{N+1},\qquad \mathrm{EMA}_N=\frac1N\sum_{i=1}^{N}C_i\]</div>
+<p>La inicialización con la media simple de los primeros \(N\) cierres (como pide el manual) importa poco: su efecto decae como \((1-\alpha)^t\). La EMA20 de M15 resume el precio de las últimas cinco horas. En la estrategia sirve de <b>referencia de rebote</b>: en un sesgo bajista, una venta solo tiene sentido si el precio ha rebotado por encima de ella.</p>
+</section>
+
+<section>
+<h2>ATR14 de M15: la regla del tamaño</h2>
+<p>El <span class="term">rango verdadero</span> de una vela incluye los huecos con la vela anterior, y el <span class="term">ATR</span> (<i>average true range</i>) de Wilder lo promedia de forma exponencial:</p>
+<div class="eq key" data-name="Rango verdadero y ATR de Wilder">\[\mathrm{TR}_t=\max\big(H_t-L_t,\ |H_t-C_{t-1}|,\ |L_t-C_{t-1}|\big),\qquad \mathrm{ATR}_t=\frac{(N-1)\,\mathrm{ATR}_{t-1}+\mathrm{TR}_t}{N}\]</div>
+<p>Con \(N=14\) en velas M15, el ATR dice cuánto se mueve el oro en un cuarto de hora, y por tanto cuál es «un movimiento normal». La estrategia lo usa para dimensionar el stop y el take profit: <code>SL = 0.8 × ATR</code> acotado a 45–60 pips, <code>TP = 1.4 × ATR</code> acotado a 80–100. Los acotamientos (los «topes») tienen un efecto grande y poco evidente, que se ve en la tercera simulación de este capítulo.</p>
+</section>
+
+<section>
+<h2>Máximos y mínimos de 30 y 120 minutos</h2>
+<p>Los extremos de rango corto y medio se calculan sobre las velas base <b>anteriores</b> a la actual (sin incluirla):</p>
+<div class="eq">\[H_{30}(t)=\max_{k=1\ldots30}H_{t-k},\quad L_{30}(t)=\min_{k=1\ldots30}L_{t-k},\quad H_{120},\,L_{120}\ \text{análogos con 120 velas}\]</div>
+<p>En M1 son 30 y 120 velas; en M5, 6 y 24 (el motor convierte minutos a velas). Sirven para decir que el precio «toca el techo local» (H30), que hay un máximo reciente de dos horas (H120) y que un movimiento no es un desbordamiento (el precio no debe superar H120 en más de 20 pips).</p>
+<div class="sim" data-sim="velas-indicadores" data-title="Un día real de oro en M1 con los instrumentos de la estrategia"></div>
+<div class="sim-guide"><ul>
+<li>Elija un día de los 73 disponibles (26 de junio a 7 de octubre de 2026). Se muestran las velas M1 entre las 08:00 y las 14:00 de Madrid; la zona verde es la ventana de entradas (08:57–13:00).</li>
+<li>Las líneas naranja son H30 y L30 (envoltura de 30 minutos); las grises finas, H120 y L120; la azul escalonada, la EMA20 de M15 (se actualiza solo cuando cierra una vela M15).</li>
+<li>Los triángulos son las señales del manual en ese día (capítulo 5). Mueva «Vela» para leer, en esa vela, cada indicador, el ATR en pips y el sesgo H4.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El sesgo H4: dirección de fondo con banda neutra</h2>
+<p>El <span class="term">sesgo</span> compara el último cierre de H4 con la EMA50 de H4. Si queda más de 15 pips (1.50 USD) por encima, el sesgo es alcista; si más de 15 pips por debajo, bajista; en medio, neutro (se prohíbe operar). La banda tiene el propósito de evitar un sesgo «errático» cuando el precio oscila alrededor de la media.</p>
+<div class="box warn"><p>La banda de 15 pips es minúscula frente al tamaño real del movimiento. Con el oro en 4 000 USD, la distancia mediana entre el cierre de H4 y su EMA50 es de unos <b>52 USD (518 pips)</b>. Con banda de 15 pips el sesgo es neutro solo el 1.6 % del tiempo: en la práctica el sesgo es <b>binario</b> (arriba o abajo de la media) y puede cambiar de signo muy seguido.</p></div>
+<div class="sim" data-sim="sesgo-h4" data-title="El sesgo H4 y el efecto de la banda neutra"></div>
+<div class="sim-guide"><ul>
+<li>La curva es el cierre de H4 (azul) y su EMA50 (naranja) en los 17 meses de datos M5, con el sesgo coloreado de fondo. Elija la banda: con 15 pips casi no se ve la franja neutra; con 400 pips ocupa 41 % del tiempo.</li>
+<li>Una banda ancha significa operar menos, solo en tendencias claras. Los capítulos 16 y 22 miden si eso mejora el resultado.</li>
+<li>Con la historia de 16 años (H1 → H4) el sesgo cambia de signo en promedio cada 4 velas H4 (menos de un día): no es una tendencia de semanas, sino un indicador de posición respecto de la media de ocho días.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Los topes del stop y del take profit</h2>
+<p>Con el ATR de M15 en la ventana de Londres entre 38 y 124 pips (percentiles 10 y 90), el cálculo \(0.8\times\mathrm{ATR}\) da stops de 30 a 100 pips. El manual los acota a 45–60. El resultado es que el stop queda en el <i>piso</i> de 45 pips cerca de una tercera parte del tiempo, en el <i>techo</i> de 60 pips casi la mitad, y solo libre (entre ambos) una cuarta parte. Con el take profit pasa algo parecido, y la razón entre ambos queda cerca de 1.7 casi siempre.</p>
+<div class="sim" data-sim="atr-topes" data-title="Qué hacen los topes con la volatilidad real del oro"></div>
+<div class="sim-guide"><ul>
+<li>El histograma es la distribución real del ATR14 de M15 en la ventana. Las líneas verticales son los puntos donde el tope se activa.</li>
+<li>Con el manual (0.8 / 45–60 y 1.4 / 80–100) el stop depende poco del ATR: es casi constante. Quite los topes (mínimo 0, máximo 999) y el stop sigue a la volatilidad, pero llega a 100 pips en los días nerviosos y a 30 en los tranquilos.</li>
+<li>Observe el «payoff teórico» (TP ÷ SL): con topes, 1.7 casi siempre; sin topes, el mismo cociente 1.75 por definición. El tope no cambia la razón; cambia la <i>distancia absoluta</i> y, con ella, el costo en R del spread y la frecuencia con que se toca el stop.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Práctica: sesgo, ATR y topes con datos reales</h2>
+<div class="box py"><p>El programa calcula el sesgo H4 con distintas bandas, el ATR de M15 en la ventana y qué fracción del tiempo actúan los topes del stop y del take profit.</p>
+<div class="py" data-py="04-indicadores"></div></div>
+<div class="box read"><ul>
+<li><b>Banda y sesgo</b>: con 0 pips, 43.8 % bajista y 56.2 % alcista; con 15 pips, 43.0 / 1.6 / 55.4 %; con 400 pips, 23.8 / 41.0 / 35.2 %. El 56 % alcista del periodo es el reflejo del mercado alcista de 2025–2026.</li>
+<li><b>ATR</b>: mediana de 73 pips en la ventana, con percentiles 10–90 de 38–124 pips y máximo de 639 (un día de noticias extremas).</li>
+<li><b>Topes</b>: el stop se pega al piso (45 pips) el 29 % del tiempo y al techo (60 pips) el 47 %; el take profit, al piso (80 pips) el 30 % y al techo (100 pips) el 52 %. La razón TP/SL tiene mediana 1.72 (percentiles 10–90: 1.67–1.78).</li>
+<li><b>Persistencia</b>: en 16 años de H1, las rachas de un mismo sesgo duran en mediana 4 velas H4 (0.7 días).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Todo indicador se calcula con velas cerradas; la señal se evalúa al cierre y la orden entra en la apertura siguiente.</li>
+<li>La EMA20 de M15 es la referencia de rebote; el ATR14 de M15 mide «un movimiento normal» y dimensiona stop y take profit.</li>
+<li>H30/L30 y H120/L120 son los extremos de 30 y 120 minutos previos, sin incluir la vela actual.</li>
+<li>La banda neutra de 15 pips del sesgo H4 es casi irrelevante frente al movimiento real: el sesgo es binario y cambia de signo en menos de un día.</li>
+<li>Los topes de 45–60 y 80–100 pips hacen que stop y take profit se comporten como valores casi fijos, no como múltiplos del ATR.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>El ATR14 de M15 vale 72 pips. ¿Qué stop y qué take profit calcula el manual?
+<details><summary>Respuesta</summary><p>SL = 0.8 × 72 = 57.6 pips (dentro de 45–60); TP = 1.4 × 72 = 100.8 pips, que el tope limita a 100 pips.</p></details></li>
+<li><span class="lvl">Básico</span>Con ATR de 30 pips, ¿cuánto vale el stop con el manual?
+<details><summary>Respuesta</summary><p>0.8 × 30 = 24 pips, pero el piso lo eleva a 45 pips. Es un stop de 1.5 ATR en vez de 0.8 ATR.</p></details></li>
+<li><span class="lvl">Intermedio</span>Si el cierre de H4 está 1.20 USD por encima de la EMA50 de H4, ¿cuál es el sesgo con banda de 15 pips?
+<details><summary>Respuesta</summary><p>Neutro: 1.20 &lt; 1.50. Con banda de 5 pips (0.50 USD) sería alcista.</p></details></li>
+<li><span class="lvl">Intermedio</span>Con EMA de periodo 20, ¿qué peso total tienen los 20 cierres más recientes?
+<details><summary>Respuesta</summary><p>1 − (1−α)<sup>20</sup> con α = 2/21 = 0.0952: 1 − 0.9048<sup>20</sup> = 1 − 0.1351 = 86.5 %.</p></details></li>
+<li><span class="lvl">Avanzado</span>Un programador calcula la EMA20 de M15 con la vela M15 en curso incluida. ¿Qué sesgo introduce en un backtest de ventas por rebote?
+<details><summary>Respuesta</summary><p>La vela en curso ya contiene el cierre parcial más reciente, y cuando el precio rebota hacia arriba, la EMA se mueve junto con él, reduciendo la distancia precio–EMA justo en las señales. Además, al usar el máximo/mínimo aún no definitivos, la lectura «del pasado» incorpora información del momento de entrada. Efecto: el backtest ve más rebotes «limpios» de los que habría en tiempo real.</p></details></li>
+</ol>
+</section>
+</template>

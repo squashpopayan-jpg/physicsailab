@@ -1,0 +1,75 @@
+<template class="chapter-src" data-id="candados" data-num="21" data-title="Los candados diarios: qué hacen y qué no hacen" data-part="Parte VI · Riesgo y cuenta de fondeo" data-short="One and Done, meta diaria, tope de pérdida y número de balas; efecto sobre el resultado medio, los días verdes y el peor día; por qué cambian la forma del día y no la esperanza">
+<p class="lead">El manual tiene tres candados diarios: <b>One and Done</b> (tras el primer take profit del día, se acaba la jornada), <b>meta diaria</b> (+180 USD) y <b>tope de pérdida</b> (−250 USD, o dos stops seguidos). Intuitivamente, parecen una forma de «asegurar ganancias» y «evitar días malos». Este capítulo mide con precisión qué hacen en realidad: protegen contra el peor día, pero no aumentan los días verdes ni mejoran la ganancia media; cuando hay ventaja, incluso la reducen un poco.</p>
+
+<section>
+<h2>Los candados no cambian el precio</h2>
+<p>Un candado solo decide cuándo dejar de operar. Si cada operación tiene una esperanza \(E\) por intento, y el candado <i>solo detiene</i> operaciones futuras, el resultado esperado del día es \(E\) multiplicado por la cantidad esperada de operaciones. Un candado puede, por tanto, <b>reducir</b> la esperanza diaria (haciendo menos operaciones) pero no <b>aumentarla</b> con una ventaja positiva; y con ventaja nula, no cambia nada (excepto el costo).</p>
+<div class="eq key" data-name="Esperanza diaria con un tiempo de parada">\[\mathbb E[\text{día}]=E\cdot\mathbb E[N_{\text{ops}}],\qquad N_{\text{ops}}\le\text{balas}\]</div>
+<p>(La igualdad es el teorema de Wald: la esperanza de una suma con un número de términos que depende del pasado es la esperanza individual por la esperanza del número de términos.) Lo que sí cambia un candado es la <i>distribución</i> del día: acota la cola de pérdidas.</p>
+<div class="sim" data-sim="candados-comparar" data-title="Cinco políticas de candado sobre las mismas operaciones"></div>
+<div class="sim-guide"><ul>
+<li>Cada columna es una política: sin candados (5 balas), 2 balas sin candados, el manual (2 balas + One and Done + meta 180 + tope −250), una sola bala y el manual con meta de 90 USD. Los resultados vienen de 40 000 días simulados con la forma real de R.</li>
+<li>Con ventaja 0 todas rinden ≈ 0 USD por día. Con ventaja +0.10 R, rinden entre 7.6 y 9.8 USD: la política con más candados da <i>menos</i>.</li>
+<li>Los «días verdes» son casi iguales en todas (27–28 %): el 45 % de los días no hay operación y los candados no producen más días en positivo.</li>
+<li>Lo que cambia con claridad es el <b>peor día</b>: −514 USD sin candados con 5 balas, −268 con 2 balas, −134 con una sola bala.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Una política a medida</h2>
+<div class="sim" data-sim="candados-libre" data-title="La distribución del resultado diario según sus candados"></div>
+<div class="sim-guide"><ul>
+<li>Cambie balas, One and Done, meta y tope. El histograma es la distribución del resultado diario en USD (40 000 días simulados).</li>
+<li>Con One and Done activado hay una acumulación en torno a +205 USD (días que terminan en el primer take profit). Desactivarlo permite una segunda operación y desplaza algo de esa masa.</li>
+<li>La meta diaria de +180 USD con un take profit de +205 USD casi nunca se activa de forma independiente: el One and Done actúa primero.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Lo que aportan y lo que cuestan</h2>
+<div class="tablewrap"><table>
+<thead><tr><th>Candado</th><th>Qué hace</th><th>Costo</th></tr></thead>
+<tbody>
+<tr><td>Dos balas y tope de −250</td><td>limita el peor día a −268 USD (0.27 % de la cuenta)</td><td>renuncia a las oportunidades posteriores del día</td></tr>
+<tr><td>One and Done</td><td>«guarda» el día tras un TP; evita devolver la ganancia</td><td>reduce la media diaria (≈ −10 % con ventaja +0.10 R) porque descarta oportunidades con la misma esperanza</td></tr>
+<tr><td>Meta diaria</td><td>protege contra la sobreoperación tras un día muy bueno</td><td>casi nunca actúa con el One and Done activo</td></tr>
+<tr><td>Una sola bala</td><td>peor día de −134 USD</td><td>reduce la media diaria un 22 % con ventaja</td></tr>
+</tbody></table></div>
+<div class="box warn"><p>El efecto psicológico de los candados es real: evitan el «un intento más» que arruina a muchos traders. Pero esa es una virtud de <i>control de conducta</i>, no de rentabilidad. No hay que presentarlos (ni creerlos) como parte de la ventaja de la estrategia. Con ventaja positiva son un impuesto pequeño; con ventaja negativa no protegen de nada, solo ralentizan la pérdida.</p></div>
+<div class="box explain"><p>Un candado es como el cinturón de seguridad: no hace que el coche llegue antes ni más seguido, solo reduce el daño del peor accidente. Si usted quiere llegar más rápido, necesita un coche mejor (más ventaja), no un cinturón distinto.</p></div>
+</section>
+
+<section>
+<h2>Práctica: políticas de candado con R reales</h2>
+<div class="box py"><p>El programa toma las 332 operaciones reales de M5 (variante «ema»), resta su media y suma la ventaja elegida, y simula 40 000 días con cada política.</p>
+<div class="py" data-py="21-candados"></div></div>
+<div class="box read"><ul>
+<li><b>Sin ventaja</b>: la media diaria es +0.1 a +0.4 USD en las cinco políticas (ruido); los días verdes, 27–28 %; los rojos, 27–28 %; sin operar, 45 %.</li>
+<li><b>Peor día</b>: −514 (5 balas sin candados), −268 (2 balas), −268 (manual), −134 (1 bala).</li>
+<li><b>Con +0.10 R</b>: media diaria de 9.8 USD (5 balas) → 9.3 (2 balas) → 8.7 (manual) → 7.6 (1 bala) → 9.5 (meta 90). El manual cede un 11 % frente a «sin candados».</li>
+<li><b>Desviación diaria</b>: 98.5 USD sin candados; 92.2 con los del manual; 81.6 con una bala.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Un candado decide cuándo parar; por el teorema de Wald no puede aumentar la esperanza.</li>
+<li>Reduce el peor día (−514 → −268 → −134 USD) y la dispersión diaria, y reduce algo la media con ventaja positiva.</li>
+<li>No aumenta los días verdes (27–28 % en todas las políticas).</li>
+<li>Su valor es de disciplina y de control de la cola, no de rentabilidad.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Un candado puede hacer rentable una estrategia con esperanza negativa?
+<details><summary>Respuesta</summary><p>No: opera menos veces, así que pierde menos por día, pero el promedio por operación sigue siendo negativo.</p></details></li>
+<li><span class="lvl">Básico</span>El One and Done se activa tras el primer TP. ¿Por qué no aumenta los días verdes?
+<details><summary>Respuesta</summary><p>Porque los días con TP ya eran verdes; el candado solo evita una segunda operación que podría empeorar o mejorar el día, con esperanza parecida.</p></details></li>
+<li><span class="lvl">Intermedio</span>Con \(E=0.10\) R y 1.6 operaciones por día disponibles pero un tope de 1.1 por candados, ¿cuánto rinde el día en promedio en USD con 125 USD por R?
+<details><summary>Respuesta</summary><p>0.10 × 1.1 × 125 = 13.75 USD; sin candados, 0.10 × 1.6 × 125 = 20 USD.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué una sola bala deja un peor día de −134 y dos balas de −268?
+<details><summary>Respuesta</summary><p>El peor día es el número de balas por la pérdida de un stop completo (≈ 121–134 USD): 1 × 134, 2 × 134.</p></details></li>
+<li><span class="lvl">Avanzado</span>Si la esperanza dependiera del momento del día (por ejemplo, la segunda operación fuera peor que la primera), ¿podría un candado mejorar la media?
+<details><summary>Respuesta</summary><p>Sí: si las operaciones posteriores tienen esperanza menor (por ejemplo, por mala racha de señales o efectos de dependencia), detener tras la primera elimina operaciones de peor calidad. Habría que medirlo: con los datos disponibles no se detecta diferencia entre primera y segunda operación.</p></details></li>
+</ol>
+</section>
+</template>

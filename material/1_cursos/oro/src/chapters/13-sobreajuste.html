@@ -1,0 +1,88 @@
+<template class="chapter-src" data-id="sobreajuste" data-num="13" data-title="Sobreajuste: la ilusión del mejor ajuste" data-part="Parte IV · Medir con honestidad" data-short="Optimizar sobre ruido; mejor ajuste dentro y fuera de muestra; el mismo experimento con oro real; cuántas pruebas hacen falsa a una buena prueba">
+<p class="lead">Un backtest con un parámetro libre es una pregunta; con diez parámetros y cientos de combinaciones es una <b>búsqueda</b>. Cualquier búsqueda sobre datos ruidosos encuentra algo que parece bueno. El <i>sobreajuste</i> es exactamente eso: elegir, entre muchas configuraciones, la que mejor se adaptó al ruido particular de la muestra. Este capítulo lo demuestra de dos maneras: en mundos sin ventaja, donde sabemos que no hay nada que encontrar, y en el oro real, donde no lo sabemos pero podemos comprobarlo.</p>
+
+<section>
+<h2>Qué es un parámetro «óptimo» en una muestra finita</h2>
+<p>Cada configuración de parámetros produce un R medio con un error. Si se prueban \(M\) configuraciones, el mayor de los \(M\) resultados contiene dos partes: la ventaja verdadera de esa configuración y el <b>azar favorable</b> que la hizo ganar el concurso. Cuanto más ruidosa la muestra y más configuraciones, mayor la parte de azar. Fuera de muestra, el azar no se repite y el resultado vuelve hacia su valor verdadero (la <i>regresión a la media</i>).</p>
+<div class="eq key" data-name="Optimismo del mejor entre M">\[\mathbb E\Big[\max_{m\le M}\hat R_m\Big]\ \approx\ \Delta+\mathrm{EE}\cdot z_{\,1-1/(M+1)}\quad(\Delta=0:\ \text{puro ruido})\]</div>
+<p>Con \(M=75\) combinaciones, \(z\approx2.5\): el «mejor» ajuste de un mundo sin ventaja se sitúa unos 2.5 errores estándar por encima de cero, y se desvanece fuera de muestra.</p>
+</section>
+
+<section>
+<h2>Experimento 1: optimizar en un mundo sin ventaja</h2>
+<p>Se generan 30 parejas de mundos sintéticos de 60 días, <b>sin ninguna memoria</b>: ninguna regla puede ganar antes de costos. En el primer mundo se prueba una rejilla de 75 combinaciones (stop en ATR × take profit en ATR × extremo corto) y se elige la mejor. Después se evalúa <i>esa misma</i> combinación en el segundo mundo.</p>
+<div class="sim" data-sim="optimizador" data-title="El mejor ajuste en ruido: dentro y fuera de muestra"></div>
+<div class="sim-guide"><ul>
+<li>Cada punto es una pareja de mundos: en el eje horizontal, el R del mejor ajuste en el mundo 1; en el vertical, el R de esa misma combinación en el mundo 2. La diagonal sería «el resultado se mantiene».</li>
+<li>Los puntos forman una nube centrada en el eje vertical: la mejor combinación dentro de muestra rinde de +0.1 a +0.3 R y fuera de muestra, en promedio, algo negativo (−0.05 R): el costo.</li>
+<li>El «mejor ajuste» positivo en el mundo 1 ocurre en más de dos tercios de las parejas, aunque no hay ninguna ventaja que descubrir. Con una sola muestra jamás se distingue de una ventaja real.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Experimento 2: la misma prueba en el oro real</h2>
+<p>En el oro real no sabemos si hay ventaja, pero se puede aplicar la misma lógica: elegir con la primera mitad de los 17 meses (8.5 meses) y evaluar con la segunda. Si las combinaciones buenas lo son de verdad, el R de cada combinación debería correlacionar entre mitades.</p>
+<div class="sim" data-sim="real-mitades" data-title="Las 75 combinaciones en las dos mitades del oro real (M5)"></div>
+<div class="sim-guide"><ul>
+<li>Cada punto es una combinación de parámetros; su posición, el R medio en la primera mitad (eje horizontal) y en la segunda (vertical). Hay una nube sin pendiente: la <b>correlación entre mitades es −0.06</b>, es decir, nula.</li>
+<li>La estrella marca la mejor combinación de la primera mitad (+0.26 R en 179 operaciones); en la segunda mitad rinde −0.04 R en 168.</li>
+<li>Casi todas las combinaciones fueron positivas en la primera mitad (69 de 75): fue un periodo favorable para todo, no para una configuración. En la segunda, el promedio de todas es cero.</li>
+</ul></div>
+<div class="box warn"><p>Observe que una buena <i>media global</i> no certifica una buena <i>configuración</i>. Que 69 de 75 combinaciones ganen en la primera mitad habla del mercado de ese periodo (una racha de tendencia del oro), no de los parámetros. El jugador que optimiza dentro de ese periodo hereda el optimismo de la racha.</p></div>
+</section>
+
+<section>
+<h2>Cuántas pruebas hacen falsa una prueba</h2>
+<div class="sim" data-sim="cuantos-intentos" data-title="El máximo de K pruebas sin ventaja"></div>
+<div class="sim-guide"><ul>
+<li>La curva sube con \(\sqrt{2\ln K}\): al probar 10, 100 o 1 000 variantes, el mejor \(t\) esperado en puro ruido es aproximadamente 1.6, 2.6 y 3.3.</li>
+<li>La línea horizontal es el \(t\) que usted observó. Si cae por debajo de la curva, su «descubrimiento» es lo que se espera de esa cantidad de intentos.</li>
+<li>La probabilidad de al menos un falso positivo (\(|t|>1.96\)) con \(K\) pruebas llega al 92 % con 50 variantes.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Cómo se evita</h2>
+<ol>
+<li><b>Cuente sus pruebas</b> y corrija el umbral. Si busca entre \(K\) variantes, exija \(|t|>z_{1-\alpha/2K}\).</li>
+<li><b>Reserve datos intactos</b> para una única evaluación final: decidir con ellos los vuelve datos de entrenamiento.</li>
+<li><b>Prefiera pocos parámetros</b> con una justificación previa; cada parámetro libre agrega pruebas.</li>
+<li><b>Busque mesetas, no picos</b> (capítulo 14): un resultado que desaparece al mover un parámetro un 10 % es ruido.</li>
+<li><b>Valide hacia adelante</b>: las reglas de la parte VII.</li>
+</ol>
+</section>
+
+<section>
+<h2>Práctica: optimizar sobre ruido y sobre oro real</h2>
+<div class="box py"><p>El programa repite ambos experimentos: 30 parejas de mundos sintéticos sin ventaja y las dos mitades del oro real M5, con una rejilla de 75 combinaciones.</p>
+<div class="py" data-py="13-sobreajuste"></div></div>
+<div class="box read"><ul>
+<li><b>Mundos sin ventaja</b>: el mejor ajuste rinde +0.148 R dentro de muestra y −0.053 R fuera, igual que el promedio de las 75 combinaciones fuera de muestra (−0.049): el «mejor» no aporta nada. Fue positivo en 21 de 30 parejas dentro de muestra y en 8 de 30 fuera.</li>
+<li><b>Oro real</b>: el mejor de la primera mitad (stop 0.5 ATR, TP 1.4, ventana de 15 minutos) rindió +0.259 R con 179 operaciones y, en la segunda mitad, −0.036 R con 168. La correlación entre los 75 resultados de ambas mitades es −0.06.</li>
+<li>Combinaciones con R positivo: 69 de 75 en la primera mitad; 57 de 75 en la segunda. R medio de todas: +0.066 y 0.000.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>El mejor de \(M\) ajustes incluye azar favorable; fuera de muestra se pierde.</li>
+<li>En mundos sin ventaja, el mejor ajuste rinde +0.15 R dentro y −0.05 R fuera de muestra.</li>
+<li>En el oro real, la correlación entre mitades de los resultados de 75 combinaciones es −0.06: la «mejor» combinación no se sostuvo.</li>
+<li>Que muchas combinaciones ganen en un periodo describe al periodo, no a los parámetros.</li>
+<li>Contar las pruebas, corregir el umbral y reservar datos intactos son las defensas.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Con 100 combinaciones sin ventaja, ¿qué \(t\) máximo esperaría?
+<details><summary>Respuesta</summary><p>\(z_{1-1/101}\approx2.33\) (esperanza del máximo de 100 normales ≈ 2.5).</p></details></li>
+<li><span class="lvl">Básico</span>¿Por qué el rendimiento fuera de muestra de la mejor combinación suele ser peor?
+<details><summary>Respuesta</summary><p>Porque se eligió, entre muchas, la que tuvo más suerte en la muestra; la suerte no se repite.</p></details></li>
+<li><span class="lvl">Intermedio</span>El mejor de 75 ajustes tiene \(t=2.4\). ¿Cuál es la probabilidad (aprox.) de ver \(t>2.4\) en al menos una de 75 pruebas sin ventaja?
+<details><summary>Respuesta</summary><p>P(t > 2.4) ≈ 0.0082 por prueba; 1 − (1 − 0.0082)⁷⁵ ≈ 46 %.</p></details></li>
+<li><span class="lvl">Intermedio</span>Si los R de 75 configuraciones tienen correlación 0.0 entre dos mitades, ¿qué indica?
+<details><summary>Respuesta</summary><p>Que las diferencias entre configuraciones son ruido: ninguna ordenación se mantiene entre periodos.</p></details></li>
+<li><span class="lvl">Avanzado</span>Un optimizador con rejilla de 75 puntos «mejora» un resultado de 0 R a +0.20 R en 70 operaciones (EE ≈ 0.11). ¿Cuánto de esa mejora esperaría en puro ruido?
+<details><summary>Respuesta</summary><p>≈ 2.5 EE = 0.27 R. La mejora observada (+0.20) está por debajo del máximo esperado del ruido: no hay evidencia de nada.</p></details></li>
+</ol>
+</section>
+</template>

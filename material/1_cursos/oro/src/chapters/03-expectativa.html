@@ -1,0 +1,94 @@
+<template class="chapter-src" data-id="expectativa" data-num="3" data-title="La expectativa: ganar en promedio, no ganar seguido" data-part="Parte I · Fundamentos" data-short="R-múltiplos, acierto, payoff y costo; acierto de equilibrio; expectativa; varianza de los resultados; por qué un 77 % de aciertos puede perder dinero">
+<p class="lead">Una estrategia no es rentable porque gane muchas veces, sino porque lo que gana en promedio supera lo que pierde en promedio, después de costos. Este capítulo define la unidad de medida de todo el curso (el <b>R</b>), la fórmula de la expectativa y la forma de los resultados que produce, incluida su enorme variabilidad: con la misma ventaja, la mitad de las rachas de cien operaciones parecen muy distintas.</p>
+
+<section>
+<h2>El múltiplo R</h2>
+<div class="box def"><p>Se llama <span class="term">R</span> al riesgo asumido en una operación: la pérdida si el precio toca el stop inicial. El resultado de cada operación se expresa en múltiplos de R. Una operación que gana el doble de lo arriesgado vale <b>+2 R</b>; una que pierde la mitad (porque se cerró antes del stop) vale <b>−0.5 R</b>; una que toca el stop completo, <b>−1 R</b>.</p></div>
+<p>Con el riesgo fijado en 125 USD, 1 R = 125 USD. Medir en R tiene dos ventajas: permite comparar operaciones de tamaños distintos y separa la calidad de la estrategia del tamaño de la cuenta. Un sistema que rinde +0.10 R por operación rinde +12.5 USD por operación con riesgo de 125 USD y +125 USD con riesgo de 1 250 USD; el riesgo cambia la escala, no la ventaja.</p>
+<h3>Los cuatro números de una estrategia</h3>
+<div class="tablewrap"><table>
+<thead><tr><th>Símbolo</th><th>Nombre</th><th>Significado</th></tr></thead>
+<tbody>
+<tr><td>\(p\)</td><td>Acierto</td><td>fracción de operaciones con resultado positivo</td></tr>
+<tr><td>\(b\)</td><td>Payoff</td><td>ganancia media ÷ pérdida media, ambas en valor absoluto</td></tr>
+<tr><td>\(c\)</td><td>Costo</td><td>spread, comisión y deslizamiento por intento, en R (capítulo 1)</td></tr>
+<tr><td>\(E\)</td><td>Expectativa</td><td>resultado medio por operación, en R</td></tr>
+</tbody></table></div>
+</section>
+
+<section>
+<h2>La expectativa y el acierto de equilibrio</h2>
+<div class="eq key" data-name="Expectativa por operación (en R)">\[E = p\,b-(1-p)-c\]</div>
+<p>donde se mide la pérdida media como 1 R (por eso el payoff \(b\) es el cociente). Igualando a cero se obtiene el acierto mínimo para no perder:</p>
+<div class="eq key" data-name="Acierto de equilibrio">\[p^{*}=\frac{1+c}{1+b+c}\]</div>
+<p>Con el payoff del manual (\(b\approx1.64\), TP de 90 pips contra SL de 55) y un costo de 5 % de R, el acierto de equilibrio es 39.6 %. Por encima de ese acierto la estrategia gana; por debajo, pierde. Esa es toda la matemática del negocio: el resto del curso trata de estimar \(p\), \(b\) y \(c\) sin engañarse y de saber cuánto confiar en la estimación.</p>
+<div class="sim" data-sim="mapa-expectativa" data-title="Mapa de la expectativa según el acierto y el payoff"></div>
+<div class="sim-guide"><ul>
+<li>Verde: expectativa positiva; rojo: negativa. La curva negra es el acierto de equilibrio \(p^{*}\).</li>
+<li>Suba el costo: la curva se desplaza hacia arriba y toda la región verde se reduce. Un costo de 10 % de R exige 40.7 % de aciertos con payoff 1.6.</li>
+<li>El rombo marca el perfil medido del manual en M5 real: 46.5 % de aciertos, ganancia media de 0.89 R contra pérdida media de 0.57 R (payoff efectivo 1.56). Está en la zona verde, pero cerca de la frontera: un pequeño empeoramiento lo cruza.</li>
+<li>Pase el puntero para leer \(E\) en cualquier punto.</li>
+</ul></div>
+<div class="box warn"><p>El acierto por sí solo no dice nada. Con payoff 0.6 hacen falta 64 % de aciertos para empatar; con payoff 3, 26 %. Un vendedor de señales que presume «80 % de aciertos» sin decir cuánto gana y cuánto pierde cada vez no le ha dicho si el sistema funciona.</p></div>
+</section>
+
+<section>
+<h2>Con ventaja positiva, el camino sigue siendo ruidoso</h2>
+<p>La expectativa describe el promedio de un número infinito de operaciones. Lo que usted vive son secuencias cortas, y la variabilidad entre secuencias es enorme. Si cada operación tiene desviación típica \(\sigma\approx1\) R, la suma de \(n\) operaciones tiene una desviación \(\sigma\sqrt n\) alrededor de su promedio \(nE\): crece como la raíz de \(n\), mientras que la ganancia esperada crece como \(n\).</p>
+<div class="sim" data-sim="abanico" data-title="Mil futuros posibles de la misma estrategia"></div>
+<div class="sim-guide"><ul>
+<li>Cada línea fina es una secuencia de operaciones con el acierto, el payoff y el costo elegidos. La línea gruesa es la mediana; la banda, del percentil 5 al 95.</li>
+<li>Con \(p=45\) %, \(b=1.64\), \(c=5\) % la expectativa es +0.14 R por operación. Tras 100 operaciones la banda va de unos −7 R a +35 R, y el 13 % de las secuencias termina en pérdida, a pesar de la ventaja.</li>
+<li>Ponga acierto 40 % (expectativa ≈ 0): la banda queda centrada en cero y casi la mitad de las secuencias parece «ganadora» durante largos tramos. Eso es el azar, no una ventaja.</li>
+<li>La caída máxima mediana es de unos 10 R (1 250 USD con riesgo de 125 USD) incluso con ventaja positiva: la prudencia en el tamaño importa.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Misma expectativa, tres perfiles de vida</h2>
+<p>Dos sistemas pueden tener la misma expectativa y ser experiencias completamente distintas. Si se acepta una pérdida pequeña con mucha frecuencia y una grande rara vez (un estilo «escalera» o de promediar), se tiene un acierto muy alto; si se aceptan muchas pérdidas pequeñas para capturar una ganancia grande ocasional (estilo de tendencia), un acierto muy bajo.</p>
+<div class="sim" data-sim="tres-perfiles" data-title="Tres sistemas con la misma esperanza y formas opuestas"></div>
+<div class="sim-guide"><ul>
+<li>Los tres perfiles tienen esperanza ≈ −0.05 R (solo costos). Se muestra la distribución del R de una operación y una secuencia de 200 operaciones.</li>
+<li><b>Escalera</b> (acierto alto, pérdida rara y grande): ganas muchas veces, y de golpe pierdes varias ganancias. Es el perfil del historial real de la cuenta de prueba de FTMO, con 77.5 % de aciertos, ganancia media de 9.9 USD y pérdida media de 31.2 USD (capítulo 23).</li>
+<li><b>Equilibrado</b> (el manual): acierto cercano a 45 %, payoff 1.6.</li>
+<li><b>Tendencia</b> (acierto bajo, payoff alto): rachas perdedoras largas y psicológicamente duras, curva a saltos.</li>
+</ul></div>
+<div class="box explain"><p>Es la diferencia entre cobrar un sueldo pequeño todos los días con un riesgo de despido de golpe, y cobrar un premio grande de vez en cuando con muchos meses sin ingresos. Ambos pueden promediar lo mismo; pero uno es muy fácil de abandonar a mitad del camino y el otro, muy fácil de sobreestimar.</p></div>
+</section>
+
+<section>
+<h2>Práctica: acierto de equilibrio, expectativa y variabilidad</h2>
+<div class="box py"><p>El programa tabula el acierto de equilibrio para distintos payoffs y costos, calcula la expectativa de las combinaciones del manual y simula 10 000 secuencias de 100 operaciones para medir su dispersión.</p>
+<div class="py" data-py="03-expectativa"></div></div>
+<div class="box read"><ul>
+<li><b>Equilibrio</b>: con payoff 1.60 hace falta 38.5 % sin costos, 39.6 % con \(c=0.05\) y 40.7 % con \(c=0.10\). Con payoff 3.0, 25 %, 25.9 % y 26.8 %.</li>
+<li><b>Expectativa</b>: con 45 % de acierto y payoff 1.64 la ganancia esperada es +0.138 R por operación; con 40 %, +0.006 R: prácticamente el equilibrio.</li>
+<li><b>Variabilidad</b>: en las 10 000 secuencias de 100 operaciones, el resultado medio es +13.7 R, pero la desviación es 13.2 R; el percentil 5 es −7.3 R y el 13 % de las secuencias son negativas aun con ventaja positiva.</li>
+<li><b>Rachas</b>: la racha más larga de pérdidas seguidas tiene una mediana de 7 operaciones; la caída máxima mediana es 9.8 R y en el percentil 90, 16.7 R.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>1 R es el riesgo de una operación (125 USD en el manual); todos los resultados se miden en R.</li>
+<li>\(E=p\,b-(1-p)-c\); el acierto de equilibrio es \(p^{*}=(1+c)/(1+b+c)\).</li>
+<li>Acierto y payoff solo tienen sentido juntos: un 77 % de aciertos puede perder dinero y un 25 % puede ganarlo.</li>
+<li>Una ventaja de +0.14 R por operación aún produce un 13 % de secuencias perdedoras de 100 operaciones.</li>
+<li>La variabilidad crece con \(\sqrt n\) y la ganancia esperada con \(n\): con pocas operaciones domina el azar.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Una estrategia gana 0.9 R en promedio cuando gana, pierde 0.6 R cuando pierde y acierta el 46 %. ¿Cuál es su expectativa sin costos?
+<details><summary>Respuesta</summary><p>E = 0.46 × 0.9 − 0.54 × 0.6 = 0.414 − 0.324 = +0.090 R. (Es el perfil del manual en M5.)</p></details></li>
+<li><span class="lvl">Básico</span>Con payoff 2 y costo 0.05, ¿qué acierto de equilibrio hace falta?
+<details><summary>Respuesta</summary><p>p* = 1.05 / (1 + 2 + 0.05) = 34.4 %.</p></details></li>
+<li><span class="lvl">Intermedio</span>Un sistema acierta el 77 % ganando 10 USD y pierde 31 USD en el resto. ¿Cuál es su expectativa por operación y cuál su payoff?
+<details><summary>Respuesta</summary><p>E = 0.77 × 10 − 0.23 × 31 = 7.7 − 7.1 = +0.6 USD, casi cero. Payoff = 10 ÷ 31 = 0.32; el acierto de equilibrio sería 1/(1 + 0.32) = 75.6 %: apenas por encima.</p></details></li>
+<li><span class="lvl">Intermedio</span>Con \(\sigma=0.9\) R por operación, ¿cuántas operaciones se necesitan para que la ganancia esperada de una ventaja de +0.10 R iguale una desviación típica del resultado total?
+<details><summary>Respuesta</summary><p>nE = σ√n → √n = σ/E = 9 → n = 81 operaciones. Antes de ese tamaño, el ruido supera a la ventaja.</p></details></li>
+<li><span class="lvl">Avanzado</span>Demuestre que, con p y b fijos, aumentar el costo c en un décimo de R aumenta el acierto de equilibrio en menos de un décimo.
+<details><summary>Respuesta</summary><p>p* = (1+c)/(1+b+c). Su derivada es dp*/dc = b/(1+b+c)², que es menor que 1 para b > 0 (con b = 1.64 y c = 0.05, vale 0.23). Por eso un incremento de 0.1 en c eleva p* en unos 2.3 puntos.</p></details></li>
+</ol>
+</section>
+</template>

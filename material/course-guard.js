@@ -68,7 +68,8 @@
         "deducciones": ["DEDUCCIONES-2026", "FORMULA-26", "OBANDO-DED-26", "DED-F42M-26"],
         "pln": ["PLN-2026", "MAQUINAS-LEEN-26", "NLP-IA-26", "PLN-L37N-26"],
         "instalacion": ["OBRA-ELECTRICA-2026", "INSTALACION-2026", "OBANDO-OBRA-26", "INST-8492-26"],
-        "esp32_display": ["ESP32-DISPLAY-2026", "OBANDO-ESP32-26", "ESP-DISP-26"]
+        "esp32_display": ["ESP32-DISPLAY-2026", "OBANDO-ESP32-26", "ESP-DISP-26"],
+        "oro": ["OBANDO-ADMIN-2026", "ORO-2026", "XAUUSD-2026", "OBANDO-ORO-26"]
     };
 
     function getCurrentCourseId() {
@@ -91,9 +92,11 @@
             if (raw === 'pln' || raw === 'maquinas-que-leen') return 'pln';
             if (raw === 'instalacion' || raw === 'obra-electrica') return 'instalacion';
             if (raw === 'esp32_display' || raw === 'esp32-display') return 'esp32_display';
+            if (raw === 'oro' || raw === 'oro-con-metodo') return 'oro';
             return raw;
         }
 
+        if (p.includes('/1_cursos/oro') || p.includes('oro-con-metodo') || p.includes('/oro/')) return 'oro';
         if (p.includes('esp32_display') || p.includes('esp32-display') || p.includes('guia-esp32-display') || p.includes('ojo-de-murcielago')) return 'esp32_display';
         if (p.includes('/instalacion/') || p.includes('obra-electrica') || p.includes('obra_electrica')) return 'instalacion';
         if (p.includes('deducciones') || p.includes('formula-por-dentro')) return 'deducciones';
@@ -170,12 +173,17 @@
         if (t.includes('arduino') || t.includes('circuitos vivos')) return 'arduino';
         if (t.includes('protoboard')) return 'protoboard';
         if (t.includes('fisicoquímica') || t.includes('fisicoquimica')) return 'fisicoquimica';
+        if (t.includes('oro con método') || t.includes('oro con metodo') || t.includes('xauusd')) return 'oro';
 
         return 'general';
     }
 
     function isUnlocked() {
         const cId = getCurrentCourseId();
+        // Proyecto privado del profesor: solo accesible si se ha iniciado sesión como Administrador
+        if (cId === 'oro') {
+            return localStorage.getItem('physicsailab_admin') === 'true';
+        }
         // Cursos 100% liberados y cortesías de bienvenida:
         if (cId === 'venturi' || cId === 'pendulo' || cId === 'recorrido' || cId === 'historia' || cId === 'kids' || cId === 'riel' || cId === 'pec') return true;
         if (LAB_COURSE_IDS.includes(cId)) return true;
@@ -280,6 +288,7 @@
     const isRecorrido = courseId === 'recorrido';
     const isPec = courseId === 'pec' || location.pathname.includes('/pec/') || document.title.toLowerCase().includes('tejiendo el pec');
     const isInstalacion = courseId === 'instalacion' || location.pathname.includes('/instalacion/') || !!document.querySelector('.pasos, #pasos');
+    const isOro = courseId === 'oro' || location.pathname.includes('/1_cursos/oro') || document.title.toLowerCase().includes('oro con método') || document.title.toLowerCase().includes('oro con metodo');
 
     // Inyectar estilos CSS del modal, candados y barras
     const css = `
@@ -1011,9 +1020,10 @@
 
         // Ocultar forzosamente cualquier capítulo bloqueado en el DOM
         try {
+            const isStrictPrivate = isResultados || isOro;
             document.querySelectorAll('.chapter, article[id^="cap-"]').forEach(art => {
                 const id = art.dataset.id || (art.id || '').replace(/^cap-/, '');
-                if (id && id !== 'inicio' && (!firstThematic || id !== firstThematic)) {
+                if (id && id !== 'inicio' && (isStrictPrivate || (!firstThematic || id !== firstThematic))) {
                     art.hidden = true;
                     art.style.display = 'none';
                 } else if (id === 'inicio') {
@@ -1051,6 +1061,10 @@
             modalTitle = 'Curso Privado & Restringido';
             modalDesc = `Este curso y las herramientas de análisis curricular de Resultados de Aprendizaje (Ingeniería Física) son de carácter personal y reservado. Para acceder al contenido completo y a las 22 herramientas interactivas, ingresa la clave de autorización asignada.`;
             buyEntityName = 'Módulo Privado';
+        } else if (curCourse === 'oro' || isOro) {
+            modalTitle = 'Proyecto Exclusivo del Profesor';
+            modalDesc = `Este curso y suite analítica cuantitativa de trading intradía (XAUUSD & Backtest Validado) es un proyecto de investigación y desarrollo personal del Mg. Manuel Alejandro Obando. El acceso está restringido exclusivamente al docente o administrador. Para ingresar, autentíquese con su clave de administrador.`;
+            buyEntityName = 'Proyecto Docente';
         } else if (curCourse === 'instalacion' || isInstalacion) {
             modalTitle = 'Laboratorio de Obra Eléctrica Bloqueado';
             modalDesc = `Has llegado al límite de la vista previa gratuita (Plano y puntos). Para acceder a las etapas de cálculo de demanda y acometida, puesta a tierra con telurómetro, conductores y protecciones termomagnéticas, canalizaciones y cajas, armado de tablero, simulador de cableado a color con 5 montajes, energización con megger y dictamen técnico final bajo RETIE y NTC 2050, ingresa tu clave de estudiante o adquiere tu licencia.`;
@@ -1058,6 +1072,7 @@
         }
 
         const isRes = curCourse === 'resultados' || isResultados;
+        const isStrictPriv = isRes || curCourse === 'oro' || isOro;
         const overlay = document.createElement('div');
         overlay.className = 'pg-overlay';
         overlay.innerHTML = `
@@ -1066,7 +1081,7 @@
                 <div style="text-align:center; margin-bottom:0.75rem;">
                     <img src="/assets/brand/logo-horizontal.png" alt="PhysicsAILab" style="max-height:44px; width:auto; filter:drop-shadow(0 4px 12px rgba(0,0,0,0.5));" />
                 </div>
-                <span class="pg-badge">${isRes ? '🔒 Acceso Privado · Grupo Autorizado' : '🔒 Vista Previa Gratuita'}</span>
+                <span class="pg-badge">${(curCourse === 'oro' || isOro) ? '👑 Exclusivo Profesor / Administrador' : (isRes ? '🔒 Acceso Privado · Grupo Autorizado' : '🔒 Vista Previa Gratuita')}</span>
                 <h3 class="pg-title">${modalTitle}</h3>
                 <p class="pg-desc">
                     ${modalDesc}
@@ -1074,15 +1089,15 @@
 
                 <!-- Opción 1: Clave Estudiante Aula o Licencia -->
                 <div class="pg-card-student">
-                    <h4>${isRes ? '🔐 Acceso con Clave Autorizada' : '🎓 ¿Eres estudiante o ya compraste tu licencia?'}</h4>
-                    <p>${isRes ? 'Ingresa la clave de acceso autorizada proporcionada por el docente (Mg. Manuel Alejandro Obando) para desbloquear el contenido completo.' : 'Ingresa la clave de clase proporcionada por el docente en el aula o el código de tu licencia personal para desbloquear el acceso completo permanente.'}</p>
+                    <h4>${(curCourse === 'oro' || isOro) ? '👑 Autenticación Docente / Administrador' : (isRes ? '🔐 Acceso con Clave Autorizada' : '🎓 ¿Eres estudiante o ya compraste tu licencia?')}</h4>
+                    <p>${(curCourse === 'oro' || isOro) ? 'Ingrese la clave de administrador para desbloquear el proyecto completo de trading cuantitativo.' : (isRes ? 'Ingresa la clave de acceso autorizada proporcionada por el docente (Mg. Manuel Alejandro Obando) para desbloquear el contenido completo.' : 'Ingresa la clave de clase proporcionada por el docente en el aula o el código de tu licencia personal para desbloquear el acceso completo permanente.')}</p>
                     <div class="pg-input-group">
-                        <input type="text" class="pg-input" id="pg-student-code-input" placeholder="${isRes ? 'Ingresa clave de acceso (ej. INGFISICA2026)...' : 'Ingresa clave o código de licencia...'}" />
+                        <input type="${(curCourse === 'oro' || isOro) ? 'password' : 'text'}" class="pg-input" id="pg-student-code-input" placeholder="${(curCourse === 'oro' || isOro) ? 'Clave de administrador docente...' : (isRes ? 'Ingresa clave de acceso (ej. INGFISICA2026)...' : 'Ingresa clave o código de licencia...')}" />
                         <button class="pg-btn-unlock" id="pg-btn-do-unlock">Desbloquear 🔓</button>
                     </div>
                 </div>
 
-                ${isRes ? '' : `
+                ${isStrictPriv ? '' : `
                 <!-- Opción 2: Adquisición / Compra con Cupones -->
                 <div class="pg-card-buy">
                     <h4>🛒 Adquirir Licencia del ${buyEntityName}</h4>
@@ -1103,7 +1118,7 @@
 
                 <div style="text-align:center; margin-top:0.5rem;">
                     <button class="pg-close-btn" style="background:none; border:none; color:#94A3B8; font-size:0.84rem; cursor:pointer; text-decoration:underline;">
-                        ${isRes ? '← Volver a la portada' : '← Continuar explorando la vista previa gratuita'}
+                        ${isStrictPriv ? '← Volver a la portada' : '← Continuar explorando la vista previa gratuita'}
                     </button>
                 </div>
             </div>
@@ -1167,6 +1182,23 @@
             if (!val) {
                 showToast('⚠️ Por favor ingresa una clave o código.', 'error');
                 return;
+            }
+
+            // 0. Protección estricta para Oro con Método: proyecto reservado exclusivamente al profesor o administrador
+            if (currentCourse === 'oro' || isOro) {
+                const isOroAdmin = val === ADMIN_MASTER_KEY || val === 'OBANDO-MASTER-ADMIN' || valClean === 'OBANDOADMIN2026' || valClean === 'OBANDO2026' || valClean === 'ADMIN2026' || val === 'OBANDO-ORO-26' || val === 'ORO-2026' || val === 'XAUUSD-2026';
+                if (isOroAdmin) {
+                    localStorage.setItem('physicsailab_admin', 'true');
+                    setCourseUnlocked(currentCourse, true);
+                    document.body.classList.remove('pg-barrier-active');
+                    if (activeModal) { activeModal.remove(); activeModal = null; }
+                    showToast('👑 ¡Sesión Docente Autorizada! Acceso concedido al Mg. Manuel Alejandro Obando.', 'success');
+                    updateGuardState();
+                    return;
+                } else {
+                    showToast('🔒 Acceso denegado: Este proyecto es exclusivo del profesor o administrador.', 'error');
+                    return;
+                }
             }
 
             // 1. Clave Maestra de Administrador (Profesor Manuel Alejandro Obando)
@@ -1352,6 +1384,8 @@
             badgeIcon = '🌱'; badgeShort = 'PEC'; badgeTitle = 'Tejiendo el PEC · Curso Comunitario'; isFreeSpecial = true;
         } else if (LAB_COURSE_IDS.includes(curCourse)) {
             badgeIcon = '🔬'; badgeShort = 'Lab'; badgeTitle = 'Laboratorio Virtual Abierto'; isFreeSpecial = true;
+        } else if (isOro || curCourse === 'oro') {
+            badgeIcon = '🪙'; badgeShort = isAdmin ? 'Oro' : 'Privado'; badgeTitle = isAdmin ? '👑 Modo Administrador (Profesor Obando · Oro con Método)' : '🔒 Proyecto Privado del Profesor';
         } else if (isAdmin) {
             badgeIcon = '👑'; badgeShort = 'Admin'; badgeTitle = 'Modo Administrador (Profesor Obando)';
         } else if (unlocked) {
@@ -1436,7 +1470,11 @@
 
         if (unlocked) {
             topBar.className = 'pg-top-bar unlocked';
-            topBar.innerHTML = isAdmin
+            topBar.innerHTML = (isAdmin && (isOro || curCourse === 'oro'))
+                ? `<span>🪙 <strong>Profesor Obando</strong> · Oro con Método (Privado)</span>
+                   <button type="button" id="pg-lock-again-btn" title="Cerrar sesión de administrador">Bloquear 🔒</button>
+                   <button type="button" class="pg-btn-minimize" title="Minimizar anuncio">✕</button>`
+                : isAdmin
                 ? `<span>👑 <strong>Modo Administrador</strong> (Profesor Obando)</span>
                    <button type="button" id="pg-lock-again-btn" title="Cerrar sesión de administrador">Bloquear 🔒</button>
                    <button type="button" class="pg-btn-minimize" title="Minimizar anuncio">✕</button>`
@@ -1452,7 +1490,7 @@
         } else {
             topBar.className = 'pg-top-bar';
             topBar.innerHTML = `
-                <span>${(isResultados || curCourse === 'resultados') ? '🔒 <strong>Curso Privado</strong>' : '👁️ <strong>Vista Previa Gratuita</strong>'}</span>
+                <span>${(isOro || curCourse === 'oro') ? '🪙 <strong>Proyecto Privado Docente</strong>' : (isResultados || curCourse === 'resultados') ? '🔒 <strong>Curso Privado</strong>' : '👁️ <strong>Vista Previa Gratuita</strong>'}</span>
                 <button type="button" id="pg-unlock-modal-btn">Desbloquear 🔑</button>
                 <button type="button" class="pg-btn-minimize" title="Minimizar anuncio">✕</button>
             `;
@@ -1535,7 +1573,7 @@
         const firstThematic = getFirstThematicId();
 
         // 1. Sidebar TOC links (#toc a)
-        const isStrictPrivate = isResultados;
+        const isStrictPrivate = isResultados || isOro;
         const tocLinks = document.querySelectorAll('#toc a, .toc a');
         tocLinks.forEach((a) => {
             const href = a.getAttribute('href') || '';
@@ -1638,7 +1676,8 @@
         if (!id || id === 'inicio') return;
 
         const firstThematic = getFirstThematicId();
-        if (!isResultados && firstThematic && id === firstThematic) return;
+        const isStrictPrivate = isResultados || isOro;
+        if (!isStrictPrivate && firstThematic && id === firstThematic) return;
 
         // Cualquier otro capítulo está bloqueado en preview
         e.preventDefault();
@@ -1652,7 +1691,8 @@
         if (isUnlocked()) return;
         const h = decodeURIComponent(location.hash.replace(/^#/, '')).split('.')[0];
         if (!h || h === 'inicio') return;
-        if (!isResultados && firstThematic && h === firstThematic) return;
+        const isStrictPrivate = isResultados || isOro;
+        if (!isStrictPrivate && firstThematic && h === firstThematic) return;
 
         // Intentó entrar por hash directamente a un capítulo bloqueado
         enforceFreePreviewState();
@@ -2344,8 +2384,9 @@
         }
 
         // Notebooks por defecto
+        const isStrictPrivate = isResultados || isOro;
         const firstThematic = (getFirstThematicId() || '').toLowerCase();
-        if (firstThematic && rawHash === firstThematic) return;
+        if (!isStrictPrivate && firstThematic && rawHash === firstThematic) return;
 
         enforceFreePreviewState();
         openPaywall(rawHash);

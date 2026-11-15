@@ -1,0 +1,94 @@
+<template class="chapter-src" data-id="sintetico" data-num="9" data-title="Mundos sintéticos: un oro cuya verdad conocemos" data-part="Parte III · El laboratorio" data-short="Por qué simular el mercado; caminata aleatoria con volatilidad horaria, agrupamiento y saltos; extremos de vela por puente browniano; calibración con la razón de varianza; en qué tipo de mundo vive la estrategia">
+<p class="lead">Con datos reales nunca se sabe si una estrategia gana porque tiene ventaja o porque tuvo suerte: la verdad del mercado es desconocida. En un <b>mercado sintético</b> la verdad es una perilla que usted controla. Se puede fabricar un oro sin ninguna ventaja posible, un oro con tendencia o un oro con reversión, y ver cómo responde la estrategia en cada uno. Este capítulo construye ese laboratorio y lo calibra con el oro real.</p>
+
+<section>
+<h2>Por qué simular</h2>
+<p>Tres preguntas que los datos reales no pueden responder, y un mundo sintético sí:</p>
+<ul>
+<li><b>¿Qué resultado produce la estrategia cuando no hay ventaja?</b> Es la vara de comparación. Si en un mundo sin ventaja la estrategia da +0.10 R en 70 operaciones, ese +0.10 no significa nada.</li>
+<li><b>¿Qué tan seguido un optimizador «encuentra» ventaja en ruido?</b> (Capítulo 13.)</li>
+<li><b>¿En qué tipo de mercado funciona la estrategia?</b> Una estrategia de pullback necesita que los retrocesos se reviertan; una de ruptura, que los movimientos continúen. Con una perilla de «memoria» se ve qué mercado le conviene.</li>
+</ul>
+<div class="box warn"><p>Un mundo sintético no es el oro real: es un modelo con las propiedades que usted decide poner. Sirve para entender mecanismos y calibrar la intuición, no para predecir resultados. Por eso todo el curso usa ambos: lo sintético para saber qué <i>debería</i> pasar y los 100 000 datos reales para ver qué <i>pasó</i>.</p></div>
+</section>
+
+<section>
+<h2>La receta del mercado sintético</h2>
+<p>Cada vela M5 sale de un movimiento de apertura a cierre con estas capas:</p>
+<ol>
+<li><b>Perfil horario de volatilidad</b>: la desviación del movimiento sigue el rango medio por hora del oro real (más alto a las 14:00–16:00 de Madrid que a las 05:00).</li>
+<li><b>Agrupamiento de volatilidad</b>: un proceso autorregresivo \(x_t=\phi x_{t-1}+\varepsilon_t\) multiplica la volatilidad por \(e^{x_t}\): los periodos agitados y los tranquilos se agrupan, como en el oro.</li>
+<li><b>Saltos</b>: con probabilidad 0.2 % por vela, la volatilidad se multiplica por 4 (noticias, barridos de liquidez).</li>
+<li><b>Memoria opcional</b>: una deriva persistente (<i>tendencia</i> o momento) y/o una atracción hacia una media móvil lenta (<i>reversión</i>). Con ambas en cero el precio es una <b>martingala</b>: la mejor predicción del próximo precio es el actual.</li>
+<li><b>Máximos y mínimos</b>: dado el apertura y el cierre, el extremo superior e inferior de la vela siguen la distribución exacta de un <i>puente browniano</i>: \(M=\tfrac12\big(O+C+\sqrt{(C-O)^2-2\sigma^2\ln U}\big)\) con \(U\) uniforme.</li>
+</ol>
+<div class="eq key" data-name="Paso de un precio sintético">\[C_t=O_t+\underbrace{m_t}_{\text{tendencia}}-\underbrace{\kappa\,\frac{O_t-A_t}{48}}_{\text{reversión}}+\sigma_t\,z_t,\qquad \sigma_t=\sigma\,h(\text{hora})\,e^{x_t}\]</div>
+<p>donde \(A_t\) es una media móvil exponencial lenta (de unas 4 horas), \(h(\text{hora})\) el perfil horario y \(z_t\) un ruido normal. Con \(\kappa=0\) y \(m_t=0\) no hay nada que aprender del pasado.</p>
+<div class="sim" data-sim="mundo-real" data-title="El mundo sintético frente al oro real"></div>
+<div class="sim-guide"><ul>
+<li>Arriba a la izquierda, el rango medio por hora: la línea es el oro real (M5) y las barras, el mundo sintético. Con los valores por defecto coinciden: el perfil horario está calibrado.</li>
+<li>A la derecha, la <i>razón de varianza</i> (VR) a 30, 60 y 120 minutos, explicada abajo. El oro real (rombos) está por debajo de 1; el mundo sin memoria, en 1.</li>
+<li>Mueva «Reversión» hasta que las barras se acerquen a los rombos: es la calibración del mundo con el oro real (alrededor de 1).</li>
+<li>Los valores de curtosis resumen las colas pesadas del oro: el real (≈ 53) supera con mucho el normal (3). Los saltos del modelo reproducen una parte; aumente su probabilidad para ver el efecto.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>La razón de varianza: ¿el oro tiene memoria?</h2>
+<p>Si el precio fuera una caminata aleatoria, la varianza de los cambios a \(q\) velas sería \(q\) veces la de un cambio a una vela. La <span class="term">razón de varianza</span> compara ambos:</p>
+<div class="eq key" data-name="Razón de varianza">\[\mathrm{VR}(q)=\frac{\operatorname{Var}\big(C_{t+q}-C_t\big)}{q\,\operatorname{Var}\big(C_{t+1}-C_t\big)}\]</div>
+<ul>
+<li>\(\mathrm{VR}=1\): sin memoria (martingala).</li>
+<li>\(\mathrm{VR}<1\): <b>reversión</b>; los movimientos se cancelan parcialmente (los rebotes se deshacen).</li>
+<li>\(\mathrm{VR}>1\): <b>momento</b>; los movimientos continúan.</li>
+</ul>
+<p>En el oro real dentro de la ventana de Londres, medida con velas M5, \(\mathrm{VR}(6)=0.87\), \(\mathrm{VR}(12)=0.86\) y \(\mathrm{VR}(24)=0.78\): una reversión moderada a escala de 30 minutos a 2 horas. Es justo la propiedad que una estrategia de pullback necesita, y es una buena noticia con un matiz importante: es una propiedad <i>pequeña</i>, que los costos pueden consumir por completo.</p>
+</section>
+
+<section>
+<h2>¿En qué mundo vive la estrategia?</h2>
+<p>La simulación siguiente genera mundos de 60 días en los que cambia la memoria (de fuerte reversión a fuerte momento) y ejecuta el manual en cada uno. Cada punto es el promedio de muchos mundos con distinta semilla, con su intervalo de confianza.</p>
+<div class="sim" data-sim="mundo-estrategia" data-title="El manual en mundos con distinta memoria"></div>
+<div class="sim-guide"><ul>
+<li>Pulse «Calcular». El eje horizontal va de reversión fuerte (izquierda) a momento fuerte (derecha); el centro es el mundo sin memoria. La línea punteada vertical marca la memoria medida en el oro real (reversión ≈ 1).</li>
+<li>La estrategia gana en mundos de reversión (los retrocesos se deshacen) y pierde en mundos de momento (los retrocesos continúan). Con la memoria del oro real obtiene un resultado muy cercano a cero.</li>
+<li>La curva «azar» (entradas aleatorias a favor del sesgo) muestra el costo puro: sin ventaja posible en la entrada.</li>
+</ul></div>
+<div class="box explain"><p>Una estrategia de pullback es como una red de pesca que funciona cuando hay peces que regresan al arrecife (reversión). Si en el océano que usted pesca los peces se alejan en línea recta (tendencia), la red solo recoge agua. La tarea del trader no es dominar la red sino saber en qué océano está.</p></div>
+</section>
+
+<section>
+<h2>Práctica: calibración y respuesta de la estrategia</h2>
+<div class="box py"><p>El programa mide la razón de varianza del oro real, genera mundos sintéticos con distinta memoria y ejecuta el manual en 60 mundos por fila.</p>
+<div class="py" data-py="09-sintetico"></div></div>
+<div class="box read"><ul>
+<li><b>Oro real</b>: rango medio de 4.97 USD y VR de 0.87, 0.86 y 0.78 a 30, 60 y 120 minutos.</li>
+<li><b>Mundo sin memoria</b>: rango 4.88 y VR ≈ 1 (1.00, 0.98, 0.98). El manual obtiene +0.010 R con error estándar de 0.033: ninguna ventaja, como debe ser.</li>
+<li><b>Con momento</b>: VR(24) de 1.23 y 2.26; el manual pierde −0.110 R y −0.218 R. Es la cara de la medalla: los pullbacks no se deshacen.</li>
+<li><b>Con reversión</b>: VR(24) de 0.71 (calibrado con el oro, κ = 1) y 0.46 (κ = 3); el manual obtiene +0.041 R y +0.086 R. Con la reversión del oro real la expectativa sería positiva pero pequeña: del mismo orden que el costo (0.05 R).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Un mundo sintético permite saber la verdad: sin memoria no hay ventaja posible; con memoria, el signo de la memoria decide si una estrategia gana.</li>
+<li>El modelo combina perfil horario, agrupamiento de volatilidad, saltos y extremos de puente browniano, y se calibra con el oro real.</li>
+<li>La razón de varianza del oro en la ventana (0.87 / 0.86 / 0.78) indica reversión moderada: la premisa del pullback tiene algo de sustento.</li>
+<li>Con esa reversión, el manual esperaría unos +0.04 R por operación: positivo pero pequeño, del tamaño del costo.</li>
+<li>La estrategia pierde en mercados de momento y gana en mercados de reversión: es una apuesta sobre la naturaleza del mercado.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Si VR(24) = 0.78, ¿qué significa?
+<details><summary>Respuesta</summary><p>Que la varianza de los cambios a 24 velas (2 horas en M5) es el 78 % de la que tendría una caminata aleatoria: los movimientos se compensan en parte (reversión).</p></details></li>
+<li><span class="lvl">Básico</span>¿Por qué un mercado sin memoria ni deriva es una «martingala»?
+<details><summary>Respuesta</summary><p>Porque el valor esperado del precio futuro, dado el pasado, es el precio actual: no hay forma de ganar en promedio con información del pasado.</p></details></li>
+<li><span class="lvl">Intermedio</span>La estrategia obtiene +0.01 R en 738 operaciones de mundos sin memoria (EE = 0.033). ¿Es evidencia de ventaja?
+<details><summary>Respuesta</summary><p>No: t = 0.01/0.033 = 0.3. Y en ese mundo la ventaja es cero por construcción. Los costos (−0.05 R) quedan compensados por ruido.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué se usan extremos de puente browniano y no simplemente el máximo y mínimo de unos pocos pasos intermedios?
+<details><summary>Respuesta</summary><p>Con pocos pasos los extremos quedan «recortados» y las salidas de stop y take profit se llenan en niveles más favorables de lo que ocurriría con precio continuo, lo que introduce una ventaja espuria (+0.08 R en pruebas con 6 pasos). El puente da la distribución exacta de los extremos.</p></details></li>
+<li><span class="lvl">Avanzado</span>Con reversión κ y media móvil de 48 velas, ¿qué esperaría para VR(q) cuando q tiende a infinito?
+<details><summary>Respuesta</summary><p>Si el precio revierte hacia una media móvil de la que él mismo forma parte, el proceso deja de ser estacionario en diferencias a largo plazo: VR tiende a un valor menor que 1 (en el límite, la varianza crece más despacio que q) mientras la deriva de la media lenta no domine. En el modelo, VR(q) cae con q hasta unas 4 horas y luego se estabiliza.</p></details></li>
+</ol>
+</section>
+</template>

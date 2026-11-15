@@ -1,0 +1,91 @@
+<template class="chapter-src" data-id="walkforward" data-num="15" data-title="Validación progresiva: walk-forward" data-part="Parte IV · Medir con honestidad" data-short="Entrenar con el pasado y operar el futuro inmediato; ventanas móviles; resultados agregados fuera de muestra; comparación con parámetros fijos; walk-forward sobre mundos sin ventaja">
+<p class="lead">La mitad-contra-mitad del capítulo anterior es una sola prueba. El <b>walk-forward</b> la repite muchas veces a lo largo del tiempo, imitando lo que ocurriría en la vida real: se re-optimiza con el pasado reciente, se opera el futuro inmediato con lo elegido, se avanza y se repite. Lo que queda es una serie de resultados <i>fuera de muestra</i> encadenados, la estimación más honesta que ofrece un backtest del rendimiento de un <b>proceso de optimización</b>, no de una configuración.</p>
+
+<section>
+<h2>El procedimiento</h2>
+<figure class="fig" style="max-width:none">
+<svg viewBox="0 0 960 190" role="img" aria-label="Ventanas móviles de walk-forward">
+  <g font-family="Archivo, sans-serif" font-size="12" fill="var(--ink-2)">
+    <text x="8" y="30">Tramo 1</text><rect x="90" y="16" width="360" height="20" rx="3" fill="var(--accent)" opacity=".35"/><rect x="450" y="16" width="120" height="20" rx="3" fill="var(--c4)"/>
+    <text x="8" y="70">Tramo 2</text><rect x="210" y="56" width="360" height="20" rx="3" fill="var(--accent)" opacity=".35"/><rect x="570" y="56" width="120" height="20" rx="3" fill="var(--c4)"/>
+    <text x="8" y="110">Tramo 3</text><rect x="330" y="96" width="360" height="20" rx="3" fill="var(--accent)" opacity=".35"/><rect x="690" y="96" width="120" height="20" rx="3" fill="var(--c4)"/>
+    <text x="8" y="150">Tramo 4</text><rect x="450" y="136" width="360" height="20" rx="3" fill="var(--accent)" opacity=".35"/><rect x="810" y="136" width="120" height="20" rx="3" fill="var(--c4)"/>
+    <text x="90" y="178">entrenamiento: se elige la mejor combinación</text><text x="460" y="178" fill="var(--c4)" font-weight="700">prueba: se opera lo elegido (nunca se vio)</text>
+  </g>
+</svg>
+<figcaption>Walk-forward con ventana de entrenamiento fija: cada tramo elige con el pasado y se evalúa en el futuro inmediato. Los tramos de prueba, concatenados, forman la serie fuera de muestra.</figcaption>
+</figure>
+<ol>
+<li>Se fija una ventana de entrenamiento (por ejemplo, 180 días) y una de prueba (60 días).</li>
+<li>En el entrenamiento se prueban todas las combinaciones de la rejilla y se elige la mejor por R medio (con un mínimo de operaciones).</li>
+<li>Se opera <b>solo</b> la combinación elegida durante la ventana de prueba y se anotan las operaciones.</li>
+<li>Se avanza una ventana de prueba y se repite hasta agotar los datos.</li>
+</ol>
+<p>Se compara el resultado agregado de las pruebas con el de unos parámetros <b>fijos</b> (por ejemplo, los del manual) en los mismos tramos. Si la re-optimización no supera a los parámetros fijos fuera de muestra, optimizar no agrega valor.</p>
+</section>
+
+<section>
+<h2>Walk-forward sobre el oro real</h2>
+<div class="sim" data-sim="walkforward" data-title="Walk-forward sobre 17 meses de M5"></div>
+<div class="sim-guide"><ul>
+<li>Cada tramo muestra dos barras: el R medio del <i>ganador</i> en el entrenamiento (translúcida) y el R medio de esa misma configuración en la prueba (sólida). La diferencia entre ambas es el sobreajuste de ese tramo.</li>
+<li>Con 180 días de entrenamiento y 60 de prueba (valores por defecto) hay 5 tramos. Los ganadores del entrenamiento rinden unos +0.2 R de promedio; en la prueba, −0.02 R.</li>
+<li>Los parámetros fijos del manual dan +0.02 R en los mismos tramos: la re-optimización no mejoró, y los intervalos de ambos resultados (±0.12 R) incluyen el cero.</li>
+<li>Pruebe ventanas de entrenamiento más largas o cortas, y la variante «tocar»: con pocas operaciones por tramo el resultado se vuelve aún más ruidoso.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Walk-forward sobre mundos sin ventaja</h2>
+<p>Para saber qué esperar de un walk-forward cuando <i>no hay nada que encontrar</i>, se repite el procedimiento en mundos sintéticos de 150 días sin ninguna memoria. Es la línea de base: el resultado fuera de muestra de un proceso de optimización sobre ruido.</p>
+<div class="sim" data-sim="wf-azar" data-title="Walk-forward en mundos sin ventaja"></div>
+<div class="sim-guide"><ul>
+<li>Cada punto es un mundo: eje horizontal, el R medio de los ganadores en entrenamiento; eje vertical, su R en la prueba. Los ganadores se ven bien (+0.1 a +0.3 R) y en la prueba se centran en cero (menos el costo).</li>
+<li>Esto es lo que usted debe esperar del walk-forward si no hay ventaja: una brecha sistemática entre lo que el optimizador ve y lo que obtiene. En el oro real la brecha observada (+0.23 → −0.02) tiene exactamente ese tamaño.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Qué nos dice y qué no</h2>
+<ul>
+<li>Si el rendimiento fuera de muestra es del mismo signo y magnitud que el de entrenamiento, el proceso funciona. Si cae a cero, el proceso solo ajustó ruido.</li>
+<li>El walk-forward evalúa el <i>proceso</i> («cada 60 días elijo la mejor de 12 combinaciones»), no una combinación concreta. Un proceso inútil no implica que la estrategia base sea inútil.</li>
+<li>Sigue estando limitado por el tamaño de la muestra: 200 operaciones tienen un intervalo de ±0.12 R. Una ventaja de +0.05 R no se distingue de cero.</li>
+<li>Es una prueba retrospectiva: elegir cómo hacer el walk-forward (ventanas, rejilla) tras ver resultados la contamina. La prueba definitiva es la que se hace hacia adelante, en vivo (capítulo 23).</li>
+</ul>
+</section>
+
+<section>
+<h2>Práctica: walk-forward en M5</h2>
+<div class="box py"><p>El programa ejecuta el walk-forward con 180 días de entrenamiento, 60 de prueba y avance de 60, con una rejilla de 12 combinaciones de stop y take profit (variante «ema», 332 operaciones en total).</p>
+<div class="py" data-py="15-walkforward"></div></div>
+<div class="box read"><ul>
+<li>En cinco tramos, el ganador del entrenamiento rinde de +0.06 a +0.40 R (promedio +0.225); en la prueba rinde −0.056, −0.020, −0.060, +0.103 y −0.100.</li>
+<li><b>Agregado fuera de muestra</b>: re-optimizando, −0.023 R (IC: [−0.15, +0.10], n = 206); con los parámetros fijos del manual, +0.019 R ([−0.10, +0.14], n = 203).</li>
+<li>La brecha entre lo que ve el optimizador (+0.225) y lo que obtiene (−0.023) es de 0.25 R: es el costo del sobreajuste.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Walk-forward: entrenar con el pasado, operar el futuro inmediato, avanzar y repetir; el resultado fuera de muestra se encadena.</li>
+<li>Compare siempre con parámetros fijos: si no supera, optimizar no agrega valor.</li>
+<li>En M5 real, el ganador del entrenamiento rinde +0.225 R y en la prueba −0.023 R; los parámetros fijos rinden +0.019 R.</li>
+<li>En mundos sin ventaja el patrón es el mismo: es la huella del ruido.</li>
+<li>Es una prueba retrospectiva y de muestra limitada; no sustituye a la prueba hacia adelante.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Por qué no se usa el mismo periodo para elegir y para evaluar?
+<details><summary>Respuesta</summary><p>Porque el periodo de elección ya contiene la suerte que hizo ganar a la combinación; evaluar en él mide esa suerte.</p></details></li>
+<li><span class="lvl">Básico</span>Con entrenamiento de 180 días y prueba de 60, ¿cuántos tramos caben en 480 días?
+<details><summary>Respuesta</summary><p>El primer tramo termina en 240 días; luego se avanza de 60 en 60: (480 − 240)/60 + 1 = 5 tramos.</p></details></li>
+<li><span class="lvl">Intermedio</span>El optimizador ve +0.20 R y obtiene −0.02. ¿Cuál es su estimación de la ventaja verdadera?
+<details><summary>Respuesta</summary><p>La del resultado fuera de muestra (−0.02 ± 0.12), cercana a cero. El +0.20 es una estimación sesgada hacia arriba.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué conviene exigir un mínimo de operaciones en el entrenamiento?
+<details><summary>Respuesta</summary><p>Con pocas operaciones, el R medio puede ser extremo por azar y ganar la elección; el mínimo evita elegir combinaciones por muestras minúsculas.</p></details></li>
+<li><span class="lvl">Avanzado</span>Un walk-forward con anclaje (la ventana de entrenamiento crece desde el inicio) frente a uno móvil (tamaño fijo): ¿qué compromiso hay?
+<details><summary>Respuesta</summary><p>El anclado usa más datos (estimaciones más estables) pero reacciona despacio a cambios de régimen; el móvil se adapta pero tiene más ruido. Con un mercado que cambia de régimen (2025 frente a 2026), el móvil suele ser preferible si el entrenamiento tiene suficientes operaciones.</p></details></li>
+</ol>
+</section>
+</template>

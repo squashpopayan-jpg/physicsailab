@@ -1,0 +1,74 @@
+<template class="chapter-src" data-id="reto" data-num="20" data-title="Aprobar el reto de fondeo: riesgo, ventaja y tiempo" data-part="Parte VI · Riesgo y cuenta de fondeo" data-short="Simulación Monte Carlo de un reto de dos pasos; probabilidad de aprobar, de fallar y días hasta aprobar según el riesgo por operación y la ventaja; el punto dulce del riesgo; por qué con riesgo bajo el reto no termina">
+<p class="lead">El capítulo 8 concluyó que, con 125 USD por operación, las reglas de pérdida casi no limitan y lo que manda es el objetivo de ganancia. Este capítulo lo cuantifica con una simulación de Monte Carlo del reto completo: ¿qué probabilidad hay de aprobar, de fallar y cuánto se tarda según el riesgo por operación y la ventaja real de la estrategia? Es donde aparece el verdadero «punto dulce» del sistema, porque, a diferencia de los parámetros de entrada, el riesgo sí se puede elegir con fundamento.</p>
+
+<section>
+<h2>El modelo</h2>
+<p>Cada día hábil se generan señales con una distribución de Poisson de media \(\lambda\) (0.8 por defecto), hasta el máximo de balas; el resultado de cada operación se toma, con reposición, de las 332 operaciones reales de M5 (restando su media y sumando la ventaja que se quiera suponer), de modo que la forma de la distribución es la real. Se aplican los candados del manual (One and Done, meta y tope diarios, escalados con el riesgo) y las reglas de la firma: objetivo de 10 %, pérdida diaria de 5 %, pérdida total de 10 %, mínimo de 4 días.</p>
+<div class="box warn"><p>La simulación supone una ventaja constante y operaciones independientes. La realidad tiene rachas, cambios de régimen y dependencia entre operaciones. Los números son orientativos: sirven para comparar niveles de riesgo y ventaja, no para prometer una probabilidad concreta.</p></div>
+<div class="eq key" data-name="Tiempo esperado hasta el objetivo (sin límites de pérdida)">\[T_{\text{días}}\approx\frac{\text{objetivo}}{\lambda\cdot E\cdot r\cdot C_0}\qquad(r=\text{riesgo por operación},\ C_0=\text{cuenta})\]</div>
+<p>Con \(\lambda=0.8\), \(E=0.10\) R, \(r=0.125\,\%\) y objetivo de 10 %: \(T=0.10/(0.8\times0.10\times0.00125)=1\,000\) días hábiles, cuatro años. El tiempo es <i>inversamente proporcional</i> al riesgo y a la ventaja.</p>
+<div class="sim" data-sim="reto-mc" data-title="Simulador del reto de fondeo"></div>
+<div class="sim-guide"><ul>
+<li>Elija la ventaja verdadera y el riesgo. El histograma muestra en cuántos días se aprueba; las barras de resultado, la probabilidad de aprobar, fallar o no terminar en el plazo.</li>
+<li>Con ventaja +0.10 R y riesgo 0.125 % no se aprueba en 365 días de operación (0 %): el reto no termina. Con 0.5 %, se aprueba el 76 % de las veces en una mediana de 206 días, con 0.3 % de fallos.</li>
+<li>Con ventaja 0, el reto con 1 % de riesgo se aprueba el 42 % de las veces y se falla el 43 %: una moneda al aire. No es una ventaja; es el efecto de que la meta (+10 %) y el límite (−10 %) estén a la misma distancia.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>El mapa riesgo × ventaja</h2>
+<div class="sim" data-sim="reto-mapa" data-title="Probabilidad de aprobar o fallar en 365 días de operación"></div>
+<div class="sim-guide"><ul>
+<li>Cada celda es el resultado de 400 retos de hasta 365 días de operación (un día de operación = un día hábil con 0.8 señales en promedio). Elija si ver la probabilidad de aprobar, la de fallar, o su diferencia (aprobar − fallar).</li>
+<li>Con una ventaja de +0.10 R, el riesgo que maximiza «aprobar − fallar» está entre 0.5 % y 1 %: 76–93 % de aprobación con menos de 5 % de fallos. Más riesgo apenas acorta el tiempo y aumenta los fallos.</li>
+<li>Con ventaja +0.05 R, el riesgo bueno es 1 % (72 % / 18.5 %): aprobar exige asumir una probabilidad de fallar casi del 20 %.</li>
+<li>Con ventaja 0, ninguna celda es buena: o no pasa nada (riesgo bajo) o es un volado (riesgo alto).</li>
+</ul></div>
+<div class="box explain"><p>Es como cruzar un río con una cuerda: con paso corto (riesgo bajo) la corriente lo vence antes de cruzar (el tiempo se agota sin llegar); con paso largo (riesgo alto) puede caer al agua por cualquier tropiezo. El paso adecuado depende de cuán fuerte sea usted (la ventaja), y es justo lo que no se conoce con certeza.</p></div>
+</section>
+
+<section>
+<h2>Qué significa para el manual</h2>
+<ul>
+<li><b>El 0.125 % es un riesgo de «preservación»</b>: la cuenta casi no puede fallar y, con ventajas de +0.05 a +0.10 R, el reto no termina en un plazo razonable. Con +0.20 R (una ventaja que los datos del curso no confirman), aprueba el 2 % en 365 días de operación; con +0.2 R y 0.25 %, el 82 %.</li>
+<li><b>Si la ventaja real es +0.10 R</b>, un riesgo de 0.5 % aprueba el 76 % en seis a siete meses con probabilidad de fallar de 0.3 %; 1 %, el 92.5 % en cuatro meses con 4.3 % de fallos.</li>
+<li><b>Si la ventaja real es cero</b>, no hay riesgo que sirva: a 1 % se aprueba el 42 % pero se falla el 43 %, y un reto aprobado sin ventaja no tiene continuación rentable.</li>
+<li><b>El dilema es de información, no de optimización</b>: no se sabe qué ventaja hay. Subir el riesgo antes de saberlo convierte el reto en una apuesta; esperar sabiendo (con la prueba hacia adelante del capítulo 23) es lo racional.</li>
+</ul>
+<div class="box warn"><p>Aprobar un reto con riesgo alto y ventaja nula es comprar un billete de lotería: puede ganar, pero lo que gana (una cuenta fondeada) se pierde después con la misma estrategia. La economía de un reto (el costo de la inscripción contra el reparto de utilidades) debe calcularse aparte, y solo con una ventaja demostrada tiene sentido.</p></div>
+</section>
+
+<section>
+<h2>Práctica: Monte Carlo del reto</h2>
+<div class="box py"><p>El programa simula 1 500 retos por celda con la forma real de R, 0.8 señales por día, dos balas y los candados del manual (escalados con el riesgo).</p>
+<div class="py" data-py="20-reto"></div></div>
+<div class="box read"><ul>
+<li><b>Ventaja 0</b>: 0.125 % → 0 % aprueba, 0 % falla (nada ocurre); 0.5 % → 15 % / 15 %; 1 % → 42 % / 43 %.</li>
+<li><b>Ventaja +0.05 R</b>: 0.25 % → 2.8 % / 0 %; 0.5 % → 43 % / 2.7 %; 1 % → 72 % / 18.5 % (129 días).</li>
+<li><b>Ventaja +0.10 R</b>: 0.25 % → 17 % / 0 %; 0.5 % → 76 % / 0.3 % (206 días); 1 % → 92.5 % / 4.3 % (105 días).</li>
+<li><b>Ventaja +0.20 R</b>: 0.25 % → 82 % / 0 % (260 días); 0.5 % → 99.6 % (137 días); 1 % → 99.6 % (66 días).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>El tiempo hasta el objetivo es inversamente proporcional a riesgo × ventaja × operaciones diarias: con 0.125 % y +0.10 R, unos cuatro años.</li>
+<li>Con +0.10 R, el riesgo de 0.5–1 % aprueba el 76–93 % en 3–7 meses con menos de 5 % de fallos.</li>
+<li>Sin ventaja, el riesgo no ayuda: solo convierte el reto en un volado.</li>
+<li>El riesgo adecuado depende de la ventaja, y la ventaja es lo que aún no se conoce: subir el riesgo antes de saberlo es una apuesta.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Con \(\lambda=0.8\), \(E=0.2\) R, riesgo 0.25 %, objetivo 10 %, ¿cuántos días?
+<details><summary>Respuesta</summary><p>0.10/(0.8 × 0.2 × 0.0025) = 250 días hábiles (simulado: 260).</p></details></li>
+<li><span class="lvl">Básico</span>¿Por qué con ventaja 0 y 1 % de riesgo se aprueba casi la mitad de las veces?
+<details><summary>Respuesta</summary><p>Porque en una caminata aleatoria con meta +10 % y límite −10 % la probabilidad de tocar primero la meta es 50 %; el tiempo es largo pero finito si el riesgo es suficiente.</p></details></li>
+<li><span class="lvl">Intermedio</span>La probabilidad de aprobar con +0.10 R y 0.5 % es 76 % y con 1 % es 92.5 %, pero la de fallar sube de 0.3 % a 4.3 %. ¿Qué elegiría y por qué?
+<details><summary>Respuesta</summary><p>Depende del costo de fallar (perder la inscripción) frente a la demora. Si la ventaja es incierta, 0.5 % deja margen: una ventaja de +0.05 en vez de +0.10 hace que 1 % falle el 18.5 %.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Cómo cambia el tiempo para aprobar si la ventaja real es la mitad de lo supuesto?
+<details><summary>Respuesta</summary><p>Se duplica (tiempo ∝ 1/ventaja) y, con límites de pérdida, aumenta la probabilidad de fallar.</p></details></li>
+<li><span class="lvl">Avanzado</span>Para un movimiento browniano con deriva \(\mu\) y varianza \(\sigma^2\) por paso, la probabilidad de tocar \(+a\) antes que \(-b\) es \(\dfrac{1-e^{2\mu b/\sigma^2}}{e^{-2\mu a/\sigma^2}-e^{2\mu b/\sigma^2}}\). Con \(\mu=0.01\) R por operación, \(\sigma=0.88\) y \(a=b=80\) R (el 10 % con 125 USD por R es 80 R), ¿qué da?
+<details><summary>Respuesta</summary><p>\(k=2\mu/\sigma^2=0.0258\); \(e^{kb}=7.88\) y \(e^{-ka}=0.127\). P = (1 − 7.88)/(0.127 − 7.88) = 0.89. Con una deriva minúscula (0.01 R) se alcanza antes la meta que el límite el 89 % de las veces; el problema es el tiempo: 80/(0.01) = 8 000 operaciones.</p></details></li>
+</ol>
+</section>
+</template>

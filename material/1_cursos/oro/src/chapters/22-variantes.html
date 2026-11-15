@@ -1,0 +1,78 @@
+<template class="chapter-src" data-id="variantes" data-num="22" data-title="Variantes de la estrategia: compararlas con la misma vara" data-part="Parte VII · De la estrategia a la práctica" data-short="Pullback frente a ruptura; once variantes con el mismo motor, intervalo, modelo nulo y umbral corregido; qué familia gana en qué tipo de mercado; qué variante conviene seguir">
+<p class="lead">El usuario del manual se pregunta con razón si no habrá una variante mejor: otra regla de entrada, otra dirección, otro extremo. Probarlas sin método es la manera más rápida de fabricar un falso descubrimiento (capítulo 13). Este capítulo las compara con una vara común: el mismo motor, los mismos datos, el intervalo de confianza de cada una, el modelo nulo y un umbral de significancia <b>corregido por haber probado varias</b>.</p>
+
+<section>
+<h2>Dos filosofías opuestas</h2>
+<p>Todas las variantes caen en dos familias, que apuestan por mercados opuestos:</p>
+<ul>
+<li><b>Pullback</b> (reversión): entrar <i>contra</i> el último movimiento corto, a favor del movimiento de fondo (sesgo H4). Gana si los retrocesos se deshacen (razón de varianza menor que 1). Es el manual («tocar y rechazar») y el motor v1.2 («zona del H120»).</li>
+<li><b>Retroceso a la media</b>: entrar cuando el precio toca la EMA20 de M15 y es rechazado, a favor del sesgo. Se parece más al seguimiento de tendencia que a la reversión: una EMA es una zona de continuación.</li>
+<li><b>Ruptura</b> (momento): entrar <i>con</i> el último movimiento, cuando rompe el mínimo o el máximo de 30 minutos a favor del sesgo. Gana si los movimientos continúan (razón de varianza mayor que 1).</li>
+</ul>
+<p>El capítulo 9 ya lo mostró en mundos sintéticos: el manual gana en reversión y pierde en momento. La simulación siguiente lo comprueba para las cuatro familias de entrada.</p>
+<div class="sim" data-sim="familia-memoria" data-title="Qué familia de entrada gana en qué tipo de mundo"></div>
+<div class="sim-guide"><ul>
+<li>Pulse «Calcular». Para cada familia se muestran tres mundos: de reversión (como el oro real), sin memoria y de momento. Cada barra es el R medio con su intervalo.</li>
+<li>El manual («tocar») gana en reversión (+0.02 a +0.12 R según la fuerza) y pierde en momento (−0.15 a −0.28). La ruptura pierde en reversión (−0.14 a −0.21) y solo gana con momento fuerte (+0.15). El rechazo en la EMA20 es negativo en reversión (−0.08 a −0.12) y positivo con momento fuerte (+0.06): se comporta como seguimiento de tendencia. En el mundo sin memoria, ninguna gana.</li>
+<li>Conclusión: elegir familia es apostar por la naturaleza del mercado. La razón de varianza del oro (0.87 / 0.86 / 0.78) respalda al pullback «tocar», pero con una fuerza pequeña.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Once variantes bajo la misma vara</h2>
+<p>Se comparan 11 variantes (las que no son duplicadas): reglas de entrada, extremos de 15 y 60 minutos, solo compras, solo ventas y contra-tendencia. Con \(K=11\) pruebas, el umbral de Bonferroni para un 5 % global de falsos positivos es \(|t|>2.84\), no 1.96.</p>
+<div class="sim" data-sim="comparar-variantes" data-title="Variantes con intervalo ordinario, intervalo corregido y azar"></div>
+<div class="sim-guide"><ul>
+<li>Cada fila es una variante. La barra fina es el intervalo del 95 % ordinario (±1.96 EE); la gruesa, el corregido por probar 11 variantes (±2.84 EE); el rombo gris, el R del azar con las mismas condiciones.</li>
+<li><b>Ninguna cruza el umbral corregido en positivo</b>. En M5, el mejor es «rechazo en la EMA sin vela» (+0.07, t = 1.45) y el manual (+0.11, t = 1.0). En M1, ninguna sale positiva de forma apreciable.</li>
+<li>Las ventas del manual en M1 (−0.16) y las compras (+0.21) tienen signo opuesto con intervalos enormes: el sesgo alcista del oro de 2025–2026 explica gran parte de la diferencia.</li>
+<li>La ruptura da −0.08 en M5 (t = −2.2) y −0.13 en M1: es la que más cerca llega de ser significativamente <i>mala</i>, consistente con un mercado de reversión.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Cómo decidir entre variantes</h2>
+<ol>
+<li><b>Número de pruebas honesto</b>: cada variante cuenta, incluidas las que se descartaron «a ojo».</li>
+<li><b>Misma vara</b>: mismo motor, mismos costos, mismos datos, mismo riesgo.</li>
+<li><b>Exigir más que significancia</b>: signo igual en las dos series, igual en las dos mitades, positivo frente al azar y con una explicación causal verificable (por ejemplo, la reversión medida por la razón de varianza).</li>
+<li><b>Preferir la más simple</b> cuando los resultados no se distinguen: menos parámetros, menos puertas al sobreajuste.</li>
+<li><b>Seguir las finalistas hacia adelante</b>, en demo o sombra (capítulo 23), con criterios fijados antes.</li>
+</ol>
+<p>Con esos criterios, la candidata principal es el <b>manual</b> («tocar y rechazar»), que supera al azar de forma consistente aunque sin significancia y cuenta con una explicación causal (la reversión medida). La <b>variante «rechazo en la EMA20»</b> tiene cinco veces más operaciones y un resultado similar, pero apuesta por lo contrario (continuación): sus datos reales (+0.07, n.s.) no concuerdan con su comportamiento en mundos de reversión, otra señal de que es ruido. Descartadas: la ruptura (negativa en ambas series), el motor v1.2 (negativo en ambas), la contra-tendencia (negativa) y la regla de zona sin distancia a la EMA (la más negativa de M1: −0.157, t = −2.2).</p>
+</section>
+
+<section>
+<h2>Práctica: comparación de variantes con corrección por múltiples pruebas</h2>
+<div class="box py"><p>El programa ejecuta las 11 variantes en M5 y M1, calcula intervalo, estadístico t, R del azar (40 réplicas) y compara con el umbral de Bonferroni.</p>
+<div class="py" data-py="22-variantes"></div></div>
+<div class="box read"><ul>
+<li><b>Umbral</b>: \(|t|>2.84\) para \(K=11\).</li>
+<li><b>M5</b>: manual +0.108 (t = +0.98); EMA sin vela +0.070 (+1.45); EMA con vela +0.057 (+1.10); zona del v1.2 −0.037; ruptura −0.081 (−2.17); contra-tendencia −0.060 (−1.54). Ninguna es significativa.</li>
+<li><b>M1</b>: manual 0.000; zona −0.097 / −0.157; EMA −0.105 / −0.210 (t = −2.49); ruptura −0.125; contra −0.062. La mayoría son negativas.</li>
+<li>El azar da entre −0.02 y −0.12 R según la serie y la variante: el mundo base es ligeramente perdedor por costos.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Pullback y ruptura apuestan por mercados opuestos; el oro de la ventana de Londres tiene reversión moderada (VR &lt; 1), lo que favorece al pullback.</li>
+<li>Con 11 variantes, el umbral de significancia sube a \(|t|>2.84\); ninguna lo alcanza en positivo.</li>
+<li>La finalista es el manual; «rechazo en la EMA20» apuesta por lo contrario y no tiene respaldo causal; la ruptura, el motor v1.2 y la contra-tendencia pierden.</li>
+<li>Elegir entre variantes con resultados indistinguibles se hace por simplicidad, justificación causal y validación hacia adelante.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Por qué la ruptura pierde en un mercado de reversión?
+<details><summary>Respuesta</summary><p>Porque entra con el movimiento justo cuando este tiende a deshacerse: compra altos y vende bajos que luego revierten.</p></details></li>
+<li><span class="lvl">Básico</span>Con 11 variantes, ¿qué \(t\) mínimo exige Bonferroni?
+<details><summary>Respuesta</summary><p>\(z_{1-0.05/22}=2.84\).</p></details></li>
+<li><span class="lvl">Intermedio</span>Una variante da +0.20 R con EE = 0.10 (t = 2.0) tras probar 11. ¿Es significativa?
+<details><summary>Respuesta</summary><p>No: 2.0 &lt; 2.84. La probabilidad de que al menos una de 11 variantes sin ventaja llegue a |t| ≥ 2.0 es 1 − 0.954¹¹ ≈ 40 %.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué se prefiere la variante con más operaciones, si el R medio es igual?
+<details><summary>Respuesta</summary><p>Porque su intervalo es mucho más estrecho: se mide mejor y se valida antes hacia adelante.</p></details></li>
+<li><span class="lvl">Avanzado</span>¿Qué evidencia independiente, además del backtest, apoyaría a una familia?
+<details><summary>Respuesta</summary><p>Una propiedad estadística del mercado que justifique el mecanismo, medida antes y por separado: para el pullback, la razón de varianza menor que 1 en la franja operada, estable entre años y entre series.</p></details></li>
+</ol>
+</section>
+</template>

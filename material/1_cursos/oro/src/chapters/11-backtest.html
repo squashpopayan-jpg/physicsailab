@@ -1,0 +1,105 @@
+<template class="chapter-src" data-id="backtest" data-num="11" data-title="El manual en datos reales: el laboratorio de backtest" data-part="Parte III · El laboratorio" data-short="Resultados del manual v1.3 en M1, M5 y M15; la estrategia por dirección y por motivo de salida; concentración de la ganancia en un trimestre; laboratorio con todos los parámetros; cómo cargar sus propios datos">
+<p class="lead">Con el motor validado y la teoría clara, llega el primer resultado: el manual v1.3 aplicado, sin tocar un parámetro, a 100 000 velas reales de oro. Este capítulo muestra qué sale, cómo leerlo y por qué casi toda la ganancia se explica por una sola racha de un trimestre. Al final dispone de un laboratorio con todos los parámetros, para repetir el ejercicio con los suyos, y de una herramienta para cargar sus propios datos exportados de MetaTrader.</p>
+
+<section>
+<h2>Los datos</h2>
+<div class="tablewrap"><table>
+<thead><tr><th>Serie</th><th>Periodo</th><th>Velas</th><th>Uso</th></tr></thead>
+<tbody>
+<tr><td>M1</td><td>26 jun – 7 oct de 2026 (3.4 meses)</td><td>99 999</td><td>La estrategia tal cual está escrita: ventanas de 30 y 120 minutos reales</td></tr>
+<tr><td>M5</td><td>11 may 2025 – 7 oct de 2026 (17 meses)</td><td>99 999</td><td>Mayor muestra; las ventanas se convierten a 6 y 24 velas</td></tr>
+<tr><td>M15</td><td>14 jul 2022 – 6 oct de 2026 (4.2 años)</td><td>99 999</td><td>Análogo de baja resolución; muestra más larga y variada</td></tr>
+<tr><td>H1</td><td>enero 2010 – octubre 2026</td><td>98 141</td><td>Perfil horario y régimen (capítulo 2)</td></tr>
+</tbody></table></div>
+<div class="box warn"><p>La plataforma solo entrega unas 100 000 velas por serie, y por eso las muestras de M1 y M5 son tan cortas. El M15 es una aproximación: sus ventanas de «30 minutos» tienen apenas 2 velas. Ninguna de las series incluye el calendario de noticias ni el spread real tick a tick (se registra un spread casi constante de 0.27 USD). Los resultados de este capítulo son indicativos, no concluyentes.</p></div>
+</section>
+
+<section>
+<h2>El manual, sin tocar nada</h2>
+<p>La simulación aplica el manual con sus parámetros por defecto: sesgo H4 con banda de 15 pips, regla «tocar y rechazar», stop 0.8 ATR (45–60), TP 1.4 ATR (80–100), SL defensivo a +20 → −20, break-even al 42 % del TP, estancamiento a los 30 minutos, dos balas, One and Done, meta 180 y tope −250 USD con riesgo de 125 USD.</p>
+<div class="sim" data-sim="laboratorio" data-title="Laboratorio de backtest: la estrategia completa con todos sus parámetros"></div>
+<div class="sim-guide"><ul>
+<li>El gráfico de arriba es la curva de capital en USD (con el riesgo de 125 USD por R); el de abajo, el histograma de resultados por operación en R, coloreado por motivo de salida.</li>
+<li>Los botones de preajuste cargan el manual, el motor v1.2 y la «candidata» del capítulo 24. Cambie un parámetro y observe: cada cambio vuelve a ejecutar las 100 000 velas en milisegundos.</li>
+<li>«Comparar con entradas al azar» ejecuta 100 réplicas del modelo nulo (mismas condiciones, hora de entrada aleatoria) y dice qué porcentaje de ellas supera a su señal.</li>
+<li>No se confíe de un número solo: observe siempre el intervalo de confianza, la cantidad de operaciones y la curva.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Qué sale</h2>
+<div class="tablewrap"><table>
+<thead><tr><th>Serie</th><th>Operaciones</th><th>Acierto</th><th>R medio</th><th>IC del 95 %</th><th>USD</th><th>Factor de beneficio</th></tr></thead>
+<tbody>
+<tr><td>M1</td><td>59</td><td>49.2 %</td><td>−0.000</td><td>[−0.24, +0.24]</td><td>−4</td><td>1.00</td></tr>
+<tr><td>M5</td><td>71</td><td>46.5 %</td><td>+0.108</td><td>[−0.11, +0.33]</td><td>+961</td><td>1.36</td></tr>
+<tr><td>M15 (análogo)</td><td>184</td><td>36.4 %</td><td>−0.080</td><td>[−0.20, +0.04]</td><td>−1 836</td><td>0.77</td></tr>
+</tbody></table></div>
+<p>Los intervalos de confianza incluyen el cero en las tres series: con estas muestras, <b>el manual no se distingue ni de una estrategia sin ventaja ni de una con +0.2 R</b>. El resultado más seguro es negativo en la serie más larga (M15) y neutro-positivo en las dos más cortas. Lo que sí puede afirmarse:</p>
+<ul>
+<li><b>El perfil</b>: solo 22–24 % de las operaciones llega al take profit (+1.55 a +1.64 R); el 18–22 % toca el stop inicial (−0.97 a −0.98 R); el SL defensivo cierra el 15–20 % en −0.34 a −0.39 R; el break-even, el 23–27 % en +0.08 a +0.09 R; el estancamiento, 3–15 % en −0.3 a −0.6 R.</li>
+<li><b>El acierto engaña</b>: del 46–49 % de «aciertos», más de la mitad son break-evens que valen casi cero.</li>
+<li><b>La caída máxima</b> es pequeña: 798 USD en M1 y 732 en M5 (0.7–0.8 % de la cuenta), 2 958 en M15 (3 %): el riesgo está bien contenido.</li>
+<li><b>La regla del motor v1.2</b> (zona H120, EMA + 40 pips) da resultados peores en las tres series (−0.097, −0.037, −0.082).</li>
+</ul>
+</section>
+
+<section>
+<h2>La ganancia de M5 viene de un trimestre</h2>
+<p>El R medio de +0.108 en M5 no es uniforme en el tiempo. Al separar por trimestre:</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Trimestre</th><th>2025 T2</th><th>2025 T3</th><th>2025 T4</th><th>2026 T1</th><th>2026 T2</th><th>2026 T3</th></tr></thead>
+<tbody>
+<tr><td>Operaciones</td><td>10</td><td>27</td><td>3</td><td>8</td><td>9</td><td>14</td></tr>
+<tr><td>R acumulado</td><td>−0.5</td><td>+10.4</td><td>−2.4</td><td>+1.8</td><td>−0.7</td><td>−0.8</td></tr>
+</tbody></table></div>
+<p>Solo el tercer trimestre de 2025 aporta +10.4 R; el resto de los cinco trimestres suma −2.7 R. Ese trimestre fue de fuerte tendencia en el oro; es decir, la ganancia observada del manual coincide con un periodo específico, no con un rendimiento regular. Este es el patrón típico de una estrategia cuya ventaja es débil o ligada a un régimen: la media global es positiva por un tramo corto.</p>
+<div class="box explain"><p>Si un estudiante saca 9 en un examen y 5 en los demás, su promedio de 5.7 no describe su nivel habitual. La media sola esconde la concentración. Por eso en este curso siempre se separa por tramos y se compara con el azar.</p></div>
+</section>
+
+<section>
+<h2>Sus propios datos</h2>
+<p>Si exporta velas de MetaTrader (Archivo → Guardar como, o con el script del capítulo 23), puede cargarlas aquí y ejecutar el motor sobre su historia, sin que nada salga de su navegador. Para que la EMA50 de H4 tenga historia necesita al menos unos 10 días de velas.</p>
+<div class="sim" data-sim="mis-datos" data-title="Cargue un CSV de velas de MetaTrader y ejecute el manual"></div>
+<div class="sim-guide"><ul>
+<li>Formato admitido: cabecera con columnas <code>DATE TIME OPEN HIGH LOW CLOSE</code> (y opcional <code>SPREAD</code> en puntos), separadas por tabulador, coma o punto y coma; o una sola columna <code>time</code> en formato ISO.</li>
+<li>Indique el <b>desfase de la hora del servidor respecto de UTC</b> (la mayoría de los brokers usa UTC+2 o UTC+3; el cambio de hora del servidor lo ajusta usted por tramos si hace falta). Un desfase equivocado desplaza la ventana de entradas y arruina el resultado.</li>
+<li>Con velas M1 de varios años, el tamaño de muestra del manual pasaría de 59 a cientos de operaciones: es la forma más eficaz de reducir la incertidumbre (capítulo 12).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Práctica: el manual en tres series</h2>
+<div class="box py"><p>El programa ejecuta el manual y sus variantes de dirección en M1, M5 y M15, lo compara con 200 réplicas de entradas al azar y desglosa por motivo de salida y por trimestre.</p>
+<div class="py" data-py="11-backtest-manual"></div></div>
+<div class="box read"><ul>
+<li><b>Contra el azar</b>: la señal del manual supera al 75 % (M1) y al 88 % (M5) de las réplicas aleatorias. Es la dirección correcta, pero lejos de ser significativa: para serlo debería superar al 97.5 %.</li>
+<li><b>Por dirección</b>: en M1, las compras rinden +0.21 R y las ventas −0.16 R; en M5, ambas rinden +0.11 R. Con 25–38 operaciones por lado, los intervalos (de ±0.3 a ±0.4) impiden concluir.</li>
+<li><b>Por motivo</b>: en las tres series, TP ≈ +1.6 R, SL ≈ −0.98 R, SL defensivo ≈ −0.4 R, break-even ≈ +0.09 R: un reparto casi idéntico, lo que confirma que el motor se comporta igual en todas.</li>
+<li><b>Trimestres</b>: 2025-T3 aporta +10.4 R de un total de +7.7 R.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>El manual tal cual rinde −0.00 R (M1), +0.11 R (M5) y −0.08 R (M15): todos los intervalos de confianza incluyen el cero.</li>
+<li>Solo el 22–24 % de las operaciones llega al take profit; más de la mitad de los «aciertos» son break-evens de +0.09 R.</li>
+<li>La caída máxima es de 0.7–3 % de la cuenta: el riesgo está bien contenido; el problema no es la pérdida sino la falta de una ventaja demostrable.</li>
+<li>La ganancia de M5 se concentra en el tercer trimestre de 2025; sin él, el resultado es negativo.</li>
+<li>La señal supera al 75–88 % de las entradas al azar: dirección favorable, sin significancia.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>En M5 se obtuvieron 71 operaciones con R medio +0.108 y error estándar 0.111. ¿Es significativo?
+<details><summary>Respuesta</summary><p>No: t = 0.108/0.111 ≈ 0.98, lejos de 2. El intervalo del 95 % va de −0.11 a +0.33 R.</p></details></li>
+<li><span class="lvl">Básico</span>¿Qué dice la tabla por trimestre sobre la regularidad de la ganancia?
+<details><summary>Respuesta</summary><p>Que no es regular: 2025-T3 aporta +10.4 R y los demás cinco trimestres juntos −2.7 R.</p></details></li>
+<li><span class="lvl">Intermedio</span>El 46.5 % de aciertos del manual en M5: ¿cuántos son take profit y cuántos break-even, si de 71 operaciones hay 17 TP y 16 BE?
+<details><summary>Respuesta</summary><p>Aciertos = 33 (46.5 % de 71); de ellos, 17 son TP (+1.64 R) y 16 BE (+0.09 R). La mitad de los aciertos casi no aporta.</p></details></li>
+<li><span class="lvl">Intermedio</span>Con una desviación de 0.88 R, ¿cuántas operaciones habría que tener para que el intervalo del 95 % de un R medio de +0.11 excluya el cero?
+<details><summary>Respuesta</summary><p>Se necesita 1.96 × 0.88 / √n &lt; 0.11 → √n &gt; 15.7 → n &gt; 246 operaciones (si el R medio verdadero fuera +0.11).</p></details></li>
+<li><span class="lvl">Avanzado</span>La serie M15 es más larga y negativa; las de M1 y M5, más cortas y neutro-positivas. ¿Contradicen entre sí? ¿Por qué podrían ser coherentes?
+<details><summary>Respuesta</summary><p>No son medidas del mismo sistema: el M15 es un análogo en que las ventanas de 30 y 120 minutos tienen 2 y 8 velas y el estancamiento a 30–60 minutos actúa sobre 2–4 velas, de modo que la «misma» regla se comporta distinto. Además, sus intervalos se solapan (−0.20 a +0.04 contra −0.11 a +0.33). Con estos errores estándar, los datos son compatibles con una ventaja pequeña (+0.02 R) o con ninguna.</p></details></li>
+</ol>
+</section>
+</template>

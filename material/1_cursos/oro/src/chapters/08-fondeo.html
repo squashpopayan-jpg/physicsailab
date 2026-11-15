@@ -1,0 +1,88 @@
+<template class="chapter-src" data-id="fondeo" data-num="8" data-title="La cuenta de fondeo: límites de la firma y pisos del bot" data-part="Parte II · Anatomía de la estrategia" data-short="Reto de dos pasos; pérdida diaria y total; objetivo y días mínimos; pisos con colchón; frenos de margen; qué restricción es la que realmente manda">
+<p class="lead">El manual está pensado para una cuenta de fondeo de 100 000 USD. Una <b>firma de fondeo</b> (<i>prop firm</i>) no presta dinero: vende la oportunidad de demostrar, con un capital simulado, que se puede ganar sin romper ciertos límites, y a cambio se queda con parte de las utilidades. Para el trader, las reglas de la firma son el entorno en el que debe vivir la estrategia. Este capítulo las ordena, explica los pisos de seguridad del bot y revela cuál de todas las restricciones es la que de verdad determina el diseño.</p>
+
+<section>
+<h2>El reto de dos pasos</h2>
+<p>En un reto estándar de dos pasos, la firma exige alcanzar un objetivo de ganancia sin superar un límite de pérdida, primero en una fase de evaluación y luego en una de verificación. Las reglas típicas, con las cifras del manual para una cuenta de 100 000 USD, son:</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Regla</th><th>Valor típico</th><th>En USD (cuenta 100 000)</th></tr></thead>
+<tbody>
+<tr><td>Objetivo, fase 1 (evaluación)</td><td>10 % del capital inicial</td><td>+10 000</td></tr>
+<tr><td>Objetivo, fase 2 (verificación)</td><td>5 %</td><td>+5 000</td></tr>
+<tr><td>Pérdida diaria máxima</td><td>5 % del balance inicial del día (con la posición abierta incluida)</td><td>−5 000 desde el balance de las 00:00</td></tr>
+<tr><td>Pérdida total máxima</td><td>10 % del capital inicial (piso estático)</td><td>equidad ≥ 90 000</td></tr>
+<tr><td>Días mínimos de operación</td><td>4</td><td>—</td></tr>
+<tr><td>Tiempo máximo</td><td>sin límite en el modelo estándar</td><td>—</td></tr>
+</tbody></table></div>
+<div class="box warn"><p>Estas son las cifras que usa el manual y las de un reto estándar al momento de escribirlo. Las firmas cambian sus reglas (días mínimos, límites de noticias, reglas de consistencia, definición de «día») con frecuencia: lea las condiciones vigentes del producto que contrate antes de operar y compárelas con los parámetros del bot. Un límite mal entendido es la forma más barata de perder una cuenta.</p></div>
+</section>
+
+<section>
+<h2>Los pisos del bot: un colchón antes de la línea roja</h2>
+<p>El bot no espera a tocar el límite de la firma: se detiene antes, con un <b>colchón</b>:</p>
+<ul>
+<li><b>Piso diario</b>: \(B_0(d)-4\,500\) USD, donde \(B_0(d)\) es el balance al empezar el día. La firma permite perder 5 000; el bot frena a 4 500, con 500 USD de reserva para cubrir deslizamientos y spreads.</li>
+<li><b>Piso total</b>: 91 000 USD de equidad. La firma permite 90 000; el bot frena a 91 000, con 1 000 USD de reserva.</li>
+<li><b>Frenos de margen</b>: con nivel de margen inferior a 300 % no abre órdenes nuevas; por debajo de 150 % cierra en emergencia.</li>
+</ul>
+<div class="eq">\[\text{equidad}(t)\ \ge\ \max\big(\,B_0(d)-4\,500,\ \ 91\,000\,\big)\quad\text{para operar}\]</div>
+<div class="sim" data-sim="pisos-ftmo" data-title="Una cuenta, sus pisos diarios y el piso total"></div>
+<div class="sim-guide"><ul>
+<li>La curva es una secuencia simulada de operaciones con el riesgo por operación que usted elija (R remuestreados de las operaciones reales de M5). La línea roja escalonada es el piso diario (se reinicia cada día); la roja horizontal, el piso total; las punteadas, los pisos del bot con colchón.</li>
+<li>Con 0.125 % por operación la curva queda a miles de dólares de los pisos todo el tiempo. Suba el riesgo a 1–2 %: la curva empieza a acercarse y los pisos pasan a ser parte del diseño.</li>
+<li>El indicador «distancia mínima a un piso» resume cuánta holgura queda en todo el recorrido.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Noticias y reglas de ejecución</h2>
+<p>Las firmas imponen restricciones sobre operar alrededor de noticias de alto impacto (por ejemplo, no abrir ni cerrar posiciones en una ventana de ±2 minutos del dato en cuentas ya fondeadas). El manual añade un doble escudo propio: no abre entradas 15 minutos antes y después de noticias High en USD, y si hay una posición abierta cierra a mercado 10 minutos antes. El filtro es <i>fail-closed</i>: si el calendario de ForexFactory no responde o su caché tiene más de 24 horas, el bot no opera.</p>
+<p>Los resultados de este curso <b>no incluyen</b> el calendario de noticias porque los datos disponibles no lo traen. El motor ofrece una aproximación conservadora: forzar el cierre a las 14:20 de Madrid, justo antes de los datos de las 8:30 de Nueva York (capítulo 18).</p>
+</section>
+
+<section>
+<h2>¿Qué restricción es la que manda?</h2>
+<p>Tras ver los límites conviene preguntar cuál de ellos condiciona realmente a la estrategia. Con un riesgo de 125 USD por operación, perder el límite diario de la firma (5 000 USD) requeriría 40 stops completos en un día, y el bot solo permite dos. Perder el total (10 000 USD) requeriría 80 stops seguidos. Esos eventos son prácticamente imposibles incluso para una estrategia con ventaja negativa.</p>
+<div class="sim" data-sim="margen-stops" data-title="Cuántos stops seguidos tocan cada límite según el riesgo por operación"></div>
+<div class="sim-guide"><ul>
+<li>Cada barra es el número de stops completos consecutivos necesarios para tocar un límite. Con el riesgo del manual (0.125 %), 40 stops para el límite diario y 80 para el total. Con 1 % de riesgo, 5 y 10.</li>
+<li>El tope de −250 USD diarios del bot hace aún más remoto el límite diario: es el 5 % del límite de la firma.</li>
+<li>Lectura: <b>el riesgo del manual está muy por debajo de lo que la firma permite</b>. Las reglas de pérdida no son la restricción activa; la restricción activa es el <i>objetivo de ganancia</i>: con una ventaja pequeña, ganar 10 000 USD a 125 USD de riesgo por operación lleva años (capítulo 20).</li>
+</ul></div>
+<div class="box explain"><p>Es como conducir a 30 km/h en una carretera con límite de 120 km/h: ninguna multa por exceso de velocidad es posible, pero tampoco se llega a tiempo. El riesgo bajo protege la cuenta y alarga el reto; el punto dulce está en algún lugar intermedio, y depende de cuánta ventaja haya realmente, que es la pregunta de la parte IV.</p></div>
+</section>
+
+<section>
+<h2>Práctica: holgura frente a los límites</h2>
+<div class="box py"><p>El programa calcula, para varios riesgos por operación, cuántos stops seguidos tocan cada límite, cuánto es el peor día posible del manual y cuántas operaciones requiere el objetivo de 10 000 USD según la ventaja por operación.</p>
+<div class="py" data-py="08-reglas-ftmo"></div></div>
+<div class="box read"><ul>
+<li>Con 125 USD por operación: 40 stops para el límite diario, 80 para el total. Con 500 USD: 10 y 20; con 2 000 USD: 2.5 y 5.</li>
+<li>El peor día del manual es −250 USD (0.25 % de la cuenta): hacen falta 20 veces ese tope para llegar al límite de la firma.</li>
+<li>Probabilidad de 80 pérdidas seguidas con acierto de 40 %: \(1.8\times10^{-18}\), es decir, nula en la práctica.</li>
+<li>Para ganar 10 000 USD con riesgo de 125 USD: con ventaja de +0.10 R por operación, 800 operaciones (unos 1 000 días hábiles); con +0.20 R, 400 operaciones (500 días). Con +0.05 R, 1 600 operaciones.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>Reto de dos pasos: objetivos de 10 % y 5 %, pérdida diaria de 5 %, pérdida total de 10 %, 4 días mínimos (verifique las reglas vigentes).</li>
+<li>El bot frena antes: piso diario \(B_0(d)-4\,500\), piso total 91 000, frenos de margen 300 % y 150 %.</li>
+<li>Con 125 USD por operación las reglas de pérdida casi no limitan: 40 stops para el límite diario y 80 para el total.</li>
+<li>La restricción activa es el objetivo de ganancia: con poca ventaja por operación y riesgo bajo el reto dura años.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Balance de inicio de día 103 200 USD. ¿Cuál es el piso diario del bot y cuál el de la firma?
+<details><summary>Respuesta</summary><p>Bot: 103 200 − 4 500 = 98 700. Firma: 103 200 − 5 000 = 98 200. (El piso total, 91 000, queda mucho más abajo.)</p></details></li>
+<li><span class="lvl">Básico</span>¿Cuántos días hábiles de trading mínimos exige el modelo estándar?
+<details><summary>Respuesta</summary><p>4 (según el manual); no hay límite máximo de tiempo.</p></details></li>
+<li><span class="lvl">Intermedio</span>Si arriesga 1 % por operación (1 000 USD), ¿cuántos stops completos hacen falta para tocar el piso del bot de 91 000?
+<details><summary>Respuesta</summary><p>9 000 ÷ 1 000 = 9 stops (la firma permite 10; el colchón de 1 000 equivale a uno).</p></details></li>
+<li><span class="lvl">Intermedio</span>Un día, el bot pierde −250 USD en dos operaciones. ¿Qué fracción del límite diario de la firma ha consumido?
+<details><summary>Respuesta</summary><p>250 ÷ 5 000 = 5 %.</p></details></li>
+<li><span class="lvl">Avanzado</span>La firma mide la pérdida diaria con la equidad (incluye la posición abierta). ¿Por qué importa que el bot mida su piso en el mismo criterio?
+<details><summary>Respuesta</summary><p>Porque una posición abierta con una pérdida flotante grande puede violar el límite de la firma aunque el balance cerrado aún no lo haya hecho. Si el bot solo mirase el balance, tardaría en frenar. Medir con equidad (balance más flotante) evita esa diferencia.</p></details></li>
+</ol>
+</section>
+</template>

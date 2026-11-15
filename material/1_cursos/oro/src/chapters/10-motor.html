@@ -1,0 +1,90 @@
+<template class="chapter-src" data-id="motor" data-num="10" data-title="El motor de backtest: supuestos que cambian el resultado" data-part="Parte III · El laboratorio" data-short="Cómo se reconstruye una operación desde velas; orden de los extremos dentro de una vela; costos realistas; fuga de información; validación del motor contra una segunda implementación">
+<p class="lead">Un backtest es una reconstrucción: con velas de uno o cinco minutos hay que adivinar qué hizo el precio <i>dentro</i> de cada vela, quién tocó primero el stop o el take profit, cuánto costó entrar. Cada supuesto es una decisión que puede inclinar el resultado a favor o en contra. Este capítulo lista los supuestos del motor del curso, mide cuánto pesa cada uno y muestra cómo comprobar que el motor hace lo que dice.</p>
+
+<section>
+<h2>Cómo reconstruye una operación el motor</h2>
+<p>El motor recorre las velas en orden. En cada vela cerrada:</p>
+<ol>
+<li><b>Calcula los indicadores</b> con velas cerradas y evalúa las condiciones de entrada.</li>
+<li>Si hay señal y las reglas del día lo permiten, <b>abre la operación en la apertura de la vela siguiente</b>: compras al Ask (Bid + spread), ventas al Bid, más un posible deslizamiento adverso.</li>
+<li>En cada vela posterior, <b>procesa los extremos</b> (máximo y mínimo) para ver si tocaron el stop, el take profit o un nivel de gestión; al final de la vela evalúa el estancamiento y el cierre horario.</li>
+<li>Registra la salida, el resultado en USD y en R, y actualiza los contadores diarios (balas, candados).</li>
+</ol>
+<p>Las ventas se cierran al Ask, que no aparece en los datos: el motor lo reconstruye sumando el spread de la vela a las cotizaciones Bid.</p>
+</section>
+
+<section>
+<h2>Supuesto 1: el orden de los extremos dentro de una vela</h2>
+<p>Una vela solo informa de cuatro precios: apertura, máximo, mínimo y cierre. No dice si el máximo ocurrió antes que el mínimo. Si una vela contiene a la vez el stop y el take profit de una posición, el resultado depende del orden. El motor usa por defecto una regla razonable: en una vela alcista el camino es apertura → mínimo → máximo → cierre; en una bajista, apertura → máximo → mínimo → cierre. La alternativa conservadora es <b>suponer siempre el extremo adverso primero</b>.</p>
+<div class="sim" data-sim="intrabarra" data-title="Cuántas operaciones cambian según el orden supuesto"></div>
+<div class="sim-guide"><ul>
+<li>A la izquierda, una vela con stop y take profit dentro de su rango: según el camino supuesto, el resultado es −1 R o +1.64 R. A la derecha, para los datos reales, cuántas operaciones cambian y cuánto cambia el R medio.</li>
+<li>Con el stop y el take profit del manual (45–60 y 80–100 pips) cambian 0 operaciones en M1 y 2 en M5 (de 71): casi nada. Con niveles cortos (15–60 pips) cambian 9 de 72 en M5 y el R medio pasa de +0.011 a −0.039.</li>
+<li>Regla práctica: cuanto más cortos los niveles, mayor la dependencia del supuesto. Con velas de cinco minutos y niveles de 50 pips (5 USD) es un detalle; con velas de un minuto y niveles de 5 pips sería decisivo.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Supuesto 2: los costos</h2>
+<p>El resultado de una operación es el movimiento del precio menos spread, comisión y deslizamiento. En una estrategia de expectativa pequeña, esos costos deciden el signo.</p>
+<div class="sim" data-sim="costos-realistas" data-title="Cuánto cuesta cada supuesto de costos"></div>
+<div class="sim-guide"><ul>
+<li>El spread registrado en los datos es de 0.27 USD. Multiplíquelo por 2 (spread de 0.54: un horario con menor liquidez o un broker con peores condiciones) y el R medio de M5 baja de +0.108 a +0.048.</li>
+<li>Una comisión de 7 USD por lote cuesta unos 0.02 R; un pip de deslizamiento, unos 0.03 R; tres pips, 0.06 R.</li>
+<li>La línea punteada es la curva sin costos extra. La brecha entre ambas es lo que usted «pagaría» en vivo respecto de un backtest ingenuo.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Supuesto 3: no ver el futuro</h2>
+<p>La fuga de información es el error que más infla un backtest, y puede ser tan pequeña como <b>un solo bit</b> del futuro. La simulación siguiente toma las señales de una regla sin ventaja y descarta las operaciones cuya vela siguiente cierra en contra: es una trampa que ningún mercado permite, y produce una estrategia «excelente».</p>
+<div class="sim" data-sim="tramposa" data-title="Un bit del futuro convierte una regla sin ventaja en una estrella"></div>
+<div class="sim-guide"><ul>
+<li>«Honesta» opera todas las señales de la regla de zona del motor v1.2 (R ≈ −0.04 a −0.10). «Vela siguiente a favor» solo opera las señales en que la vela siguiente cierra a favor: R positivo y aparentemente sólido.</li>
+<li>Con «tres velas» la trampa es mayor. El patrón de la curva de capital es idéntico al de una estrategia real: sube, con caídas pequeñas.</li>
+<li>Si un resultado le parece demasiado bueno, sospeche de una fuga: preguntas útiles son «¿este dato estaba disponible en el instante de decidir?» y «¿qué pasa si desplazo la señal una vela hacia el futuro?».</li>
+</ul></div>
+<div class="box warn"><p>Fugas típicas: usar el cierre de la vela en curso para decidir la entrada en esa misma vela; calcular máximos o mínimos «de ayer» que incluyen horas posteriores a la decisión; normalizar o seleccionar parámetros con toda la muestra y luego evaluar en ella; usar un calendario de noticias con la hora real del dato cuando en vivo se conoce más tarde.</p></div>
+</section>
+
+<section>
+<h2>Cómo saber que el motor hace lo que dice</h2>
+<p>Un motor con un error sutil produce resultados que parecen razonables. La defensa más fuerte es una <b>segunda implementación independiente</b>. El motor del curso existe en dos versiones escritas por separado: JavaScript (el que corre en las simulaciones) y Python (el de los programas de práctica, que usa NumPy). Ambas se ejecutan sobre los mismos datos y los mismos parámetros, y se comparan <i>operación por operación</i>: barra de señal, barra de entrada y de salida, dirección, motivo, precio y resultado.</p>
+<div class="box val"><p>Resultado actual: <b>11 de 11 casos idénticos</b>, con diferencia máxima de 0 en precios, lotes, resultados, máximo favorable y máximo adverso. Los casos cubren M1, M5 y M15; las cuatro familias de entrada; vela de rechazo activada y desactivada; contra-tendencia; orden intrabarra normal y pesimista; costos, deslizamiento y cierre horario distintos; y gestión completa y apagada. El apéndice B detalla los casos.</p></div>
+<p>Una segunda prueba de sensatez es un <i>mundo con respuesta conocida</i>: en el mercado sintético sin memoria la esperanza de cualquier regla es cero antes de costos (capítulo 6). Si el motor mostrara una ventaja sostenida ahí, tendría un sesgo. Durante el desarrollo, una versión inicial del generador sintético mostró +0.08 R sin ventaja: era un artefacto de simular los extremos de vela con pocos pasos (capítulo 9), y fue detectado con esta prueba.</p>
+</section>
+
+<section>
+<h2>Práctica: orden intrabarra, costos y fuga</h2>
+<div class="box py"><p>El programa mide cuántas operaciones cambian con el orden pesimista, el efecto de cada costo sobre el R medio y el resultado de la regla tramposa.</p>
+<div class="py" data-py="10-motor"></div></div>
+<div class="box read"><ul>
+<li><b>Orden</b>: con los niveles del manual, el R medio es idéntico (M1: −0.000 contra −0.000) o casi (M5: +0.108 contra +0.107). Con niveles de 15–60 pips en M5 pasa de +0.011 a −0.039 (9 operaciones distintas de 72).</li>
+<li><b>Costos</b> (M5): +0.108 sin costos extra; +0.048 con spread doble; +0.089 con comisión de 7 USD; +0.078 con un pip de deslizamiento; +0.047 con tres pips; +0.060 con comisión y un pip a la vez. Los costos «pequeños» le restan entre un 20 % y un 55 % del resultado.</li>
+<li><b>Trampa</b>: la regla de zona del v1.2 da R = −0.097 en M1 (102 operaciones) y −0.037 en M5 (294). Filtrando por «la vela siguiente cierra a favor» pasa a +0.112 y +0.283. Un bit de futuro cambia el signo.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>El motor entra en la apertura de la vela siguiente a la señal, con Ask para compras, Bid para ventas y deslizamiento adverso.</li>
+<li>El orden de los extremos dentro de la vela importa poco con niveles de decenas de pips y mucho con niveles muy cortos.</li>
+<li>Los costos pequeños (spread doble, comisión, un pip de deslizamiento) pueden restar la mitad de una expectativa de +0.1 R.</li>
+<li>Un solo bit de información del futuro basta para convertir una regla sin ventaja en una estrategia «brillante».</li>
+<li>La verificación más fuerte es una segunda implementación independiente que produzca las mismas operaciones.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>¿Por qué una venta se cierra al Ask y no al Bid?
+<details><summary>Respuesta</summary><p>Porque cerrar una venta es comprar de vuelta, y se compra al precio de venta del mercado (Ask = Bid + spread).</p></details></li>
+<li><span class="lvl">Básico</span>Una vela contiene el stop y el take profit en su rango. Con el supuesto pesimista, ¿qué resultado se registra?
+<details><summary>Respuesta</summary><p>El stop (−1 R aproximadamente), porque se supone que el extremo adverso ocurrió primero.</p></details></li>
+<li><span class="lvl">Intermedio</span>Con 70 operaciones, un costo extra de 0.03 R por operación, ¿cuánto resta al total en R y en USD (125 por R)?
+<details><summary>Respuesta</summary><p>70 × 0.03 = 2.1 R = 262 USD.</p></details></li>
+<li><span class="lvl">Intermedio</span>¿Por qué el «bit del futuro» es una fuga tan eficaz con tan poca información?
+<details><summary>Respuesta</summary><p>Porque el resultado de una operación de corta duración depende fuertemente del primer movimiento: saber que la siguiente vela cierra a favor ya predice gran parte del resultado final.</p></details></li>
+<li><span class="lvl">Avanzado</span>Dos implementaciones independientes dan los mismos resultados. ¿Qué errores no detecta esta prueba?
+<details><summary>Respuesta</summary><p>Los errores de <i>especificación</i> compartidos (por ejemplo, si ambas calculan el Ask de la misma forma equivocada o ambas interpretan igual una regla ambigua del manual) y las fugas de datos presentes en ambos programas. Detecta errores de implementación, no de diseño.</p></details></li>
+</ol>
+</section>
+</template>

@@ -1,0 +1,100 @@
+<template class="chapter-src" data-id="salidas" data-num="6" data-title="Las salidas: stop, take profit y gestión de la operación" data-part="Parte II · Anatomía de la estrategia" data-short="Stop y TP por ATR con topes; SL defensivo, break-even proporcional, estancamiento y cierre horario; por qué ninguna regla de salida crea ventaja y qué hace en realidad la gestión">
+<p class="lead">Después de entrar, la estrategia vigila la posición en cinco niveles: un stop inicial, un take profit, un stop defensivo, un break-even proporcional y una salida por estancamiento. Cada pieza tiene una razón intuitiva, pero conviene saber con precisión qué hace con el resultado. Este capítulo demuestra un hecho central: <b>ninguna regla de salida, por sofisticada que sea, puede crear ventaja</b>; solo reparte la misma esperanza entre más aciertos pequeños o menos aciertos grandes.</p>
+
+<section>
+<h2>Stop y take profit iniciales</h2>
+<p>Al abrir la posición, el motor fija dos niveles a partir del ATR14 de M15 en ese instante:</p>
+<div class="eq key" data-name="Stop y take profit del manual">\[\mathrm{SL}=\mathrm{clip}\big(0.8\cdot\mathrm{ATR},\,45,\,60\big)\ \text{pips},\qquad \mathrm{TP}=\mathrm{clip}\big(1.4\cdot\mathrm{ATR},\,80,\,100\big)\ \text{pips}\]</div>
+<ul>
+<li><b>Compensación de spread</b> (<code>--compensar-spread-sl</code>): se suma el spread al stop para que la horquilla Ask/Bid no lo active sin que el mercado se haya movido. Así el riesgo en dólares ya incluye el costo.</li>
+<li><b>Re-anclaje al fill real</b> (<code>--reanclar-al-fill</code>): si el precio de llenado difiere del esperado, los niveles se recalculan a partir del precio real, para que el riesgo no cambie por el deslizamiento.</li>
+<li>El tamaño de la posición sale de dividir el riesgo (125 USD) entre la distancia total del stop (capítulo 7).</li>
+</ul>
+<h3>Los cuatro mecanismos de gestión</h3>
+<div class="tablewrap"><table>
+<thead><tr><th>Mecanismo</th><th>Se activa cuando…</th><th>Acción</th></tr></thead>
+<tbody>
+<tr><td>SL defensivo</td><td>el precio avanza +20 pips a favor</td><td>el stop pasa de −55 a <b>−20 pips</b> respecto de la entrada</td></tr>
+<tr><td>Break-even proporcional</td><td>el precio avanza el 42 % del recorrido al TP (≈ +38 pips)</td><td>el stop pasa a <b>entrada + 5 pips</b> (ganancia neta asegurada)</td></tr>
+<tr><td>Estancamiento</td><td>pasan 30 minutos sin progreso de +15 pips y el flotante es ≤ −5 pips</td><td>cierre a mercado</td></tr>
+<tr><td>Cierre horario</td><td>20:00 de Madrid (21:00 el viernes)</td><td>cierre a mercado</td></tr>
+</tbody></table></div>
+<p>El orden es progresivo: primero el SL defensivo, después el break-even. Si el precio llega de golpe a +40 pips, el stop salta directamente al break-even.</p>
+</section>
+
+<section>
+<h2>Una operación, paso a paso</h2>
+<p>Con esta simulación puede tomar una de las operaciones reales del manual y cambiar las reglas de gestión para ver cómo se transforma la <i>misma</i> trayectoria de precios. Es la mejor manera de entender qué hace cada mecanismo.</p>
+<div class="sim" data-sim="una-operacion" data-title="La misma operación con distintas reglas de gestión"></div>
+<div class="sim-guide"><ul>
+<li>Elija una operación. La línea verde es el take profit; la roja discontinua, el stop, que se desplaza cuando se activa el SL defensivo (escalón intermedio) o el break-even (escalón final).</li>
+<li>Apague el SL defensivo en una operación que salió por <i>SL defensivo</i> (−0.4 R típico): muchas veces el precio vuelve y termina en el stop inicial (−1 R) o, con suerte, en el take profit. A veces mejora, a veces empeora: el efecto promedio es lo que cuenta (capítulo 17).</li>
+<li>El break-even convierte un buen número de operaciones en «aciertos» de +0.09 R: esa cifra es la que infla el porcentaje de aciertos del manual.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Ninguna regla de salida crea ventaja</h2>
+<p>Suponga un precio sin memoria: cada movimiento es independiente del anterior y su esperanza es cero (una caminata aleatoria). Un trader entra en un momento cualquiera y fija un stop a \(a\) pips y un take profit a \(b\) pips. La probabilidad de tocar primero el take profit es \(a/(a+b)\) (el problema de la ruina del jugador), de modo que:</p>
+<div class="eq key" data-name="Esperanza de una salida fija en un mercado sin ventaja">\[E=\frac{a}{a+b}\cdot b-\frac{b}{a+b}\cdot a=0\]</div>
+<p>No importa qué \(a\) y \(b\) se elijan: la esperanza es cero. Lo mismo ocurre con cualquier regla de salida que dependa solo del pasado (mover el stop, cerrar por tiempo, cerrar por estancamiento): es un <i>tiempo de parada</i> sobre una martingala y su valor esperado es igual al inicial. Los costos solo restan.</p>
+<div class="sim" data-sim="martingala" data-title="Mil operaciones sin ventaja, con cualquier stop y take profit"></div>
+<div class="sim-guide"><ul>
+<li>Cada operación es una caminata aleatoria de pasos de 5 pips que termina al tocar el stop o el take profit. Se repiten hasta 6 000 veces.</li>
+<li>Cambie el stop y el take profit: el acierto sigue exactamente \(a/(a+b)\) y el resultado medio se queda en cero (más o menos su error), salvo el costo que usted agregue.</li>
+<li>Con take profit de 300 pips solo se acierta el 15 % de las veces, pero cada acierto vale 5.5 R: la curva de promedio acumulado es mucho más ruidosa, y converge igual a cero.</li>
+<li>Consecuencia práctica: <b>una buena gestión no es una fuente de rentabilidad</b>. Si el resultado de una estrategia mejora al «optimizar» la salida, lo más probable es que haya mejorado porque se ajustó al ruido de la muestra, no porque haya encontrado una ventaja.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Entonces, ¿para qué sirve la gestión?</h2>
+<p>Sirve para <b>cambiar la forma</b> del resultado, no su media:</p>
+<ul>
+<li>Un break-even temprano sube el porcentaje de aciertos y reduce las ganancias grandes: \(p\) sube y \(b\) baja.</li>
+<li>Un SL defensivo reduce el tamaño de las pérdidas de los trades que llegaron a ir a favor, pero convierte en pérdida (de −0.4 R) algunos trades que habrían terminado bien.</li>
+<li>La salida por estancamiento recorta las pérdidas en los trades que no avanzan, a costa de cerrar algunos que luego habrían reaccionado.</li>
+</ul>
+<p>Con datos reales, la prueba más limpia es entrar <i>al azar</i> a favor del sesgo (sin regla de entrada) y cambiar la gestión. Si la gestión creara ventaja, el resultado medio debería moverse. El programa del final lo hace en M5.</p>
+<div class="sim" data-sim="gestion-forma" data-title="Cómo cambia la forma del resultado al activar cada mecanismo"></div>
+<div class="sim-guide"><ul>
+<li>Cada columna es una configuración de gestión aplicada a las mismas entradas del manual. El punto es el R medio y la barra su intervalo del 95 %. Los intervalos se solapan casi todos: con tan pocas operaciones no se distingue una gestión de otra por su esperanza.</li>
+<li>Lo que sí cambia con claridad es el <i>perfil</i>: el acierto va de 30 % a 50 %, la ganancia media de +0.8 R a +1.6 R y la pérdida media de −0.5 R a −1.0 R.</li>
+<li>Cambie a «entradas al azar» para repetir la prueba con una sola réplica de entradas aleatorias a favor del sesgo.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Práctica: martingala y gestión sobre entradas al azar</h2>
+<div class="box py"><p>La parte A simula 20 000 operaciones por fila en una caminata simétrica; la parte B toma el oro real en M5 y entra al azar a favor del sesgo, cien veces por configuración, cambiando solo la gestión.</p>
+<div class="py" data-py="06-salidas"></div></div>
+<div class="box read"><ul>
+<li><b>Parte A</b>: el acierto simulado coincide con el teórico (50.3 % contra 50 %; 38.6 contra 37.9; 26.8 contra 26.8; 15.5 contra 15.5) y el R medio simulado queda entre −0.001 y +0.018 con errores estándar de 0.007–0.017: indistinguible de cero.</li>
+<li><b>Parte B</b>: con entradas aleatorias, el R medio de las siete configuraciones va de −0.008 a +0.043, con desviaciones entre réplicas de 0.10 a 0.23. Cambia el acierto (de 23.3 % a 57.8 %), no la esperanza.</li>
+<li>La gestión completa del manual (46.2 % de aciertos) y «solo break-even» (57.8 %) producen el mismo R medio dentro del ruido (−0.008 y +0.018).</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>SL = 0.8 × ATR (45–60 pips) más spread; TP = 1.4 × ATR (80–100 pips); la gestión añade SL defensivo, break-even proporcional, estancamiento y cierre horario.</li>
+<li>En un mercado sin memoria, toda regla de salida basada en el pasado tiene esperanza cero antes de costos.</li>
+<li>La gestión cambia el reparto entre porcentaje de aciertos y tamaño de las ganancias, no la esperanza.</li>
+<li>Un «acierto» por break-even vale +0.09 R: el porcentaje de aciertos del manual (46–49 %) incluye muchas operaciones casi neutras.</li>
+<li>Si optimizar la salida «mejora» un backtest, desconfíe: probablemente se ajustó el ruido.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Con stop 55 y take profit 90 en un mercado sin ventaja, ¿qué acierto esperaría?
+<details><summary>Respuesta</summary><p>55 ÷ (55 + 90) = 37.9 %. Y el resultado medio es cero antes de costos.</p></details></li>
+<li><span class="lvl">Básico</span>¿Por qué el porcentaje de aciertos del manual (≈ 47 %) puede ser engañoso?
+<details><summary>Respuesta</summary><p>Porque el break-even cierra en +5 pips netos (≈ +0.09 R) muchas operaciones que cuentan como aciertos aunque aporten casi nada. Solo el 22–24 % de las operaciones llega al take profit.</p></details></li>
+<li><span class="lvl">Intermedio</span>Con stop 45 y TP 135 (payoff 3), ¿qué acierto de equilibrio sin costos y cuál con \(c=0.06\)?
+<details><summary>Respuesta</summary><p>1/(1+3) = 25 %; con costo, 1.06/(1+3+0.06) = 26.1 %.</p></details></li>
+<li><span class="lvl">Intermedio</span>El SL defensivo lleva el stop de −55 a −20 pips. Si el precio cumple +20 pips y retrocede hasta tocar ese stop, ¿cuánto se pierde en R?
+<details><summary>Respuesta</summary><p>−20 pips de 55 pips de riesgo = −0.36 R (más el costo del spread, ≈ −0.4 R). En lugar de −1 R. Pero si habría seguido hasta el TP, se pierde +1.64 R.</p></details></li>
+<li><span class="lvl">Avanzado</span>Demuestre que, en una caminata aleatoria simétrica, mover el stop a break-even cuando el precio avanza \(m\) pips no cambia la esperanza antes de costos.
+<details><summary>Respuesta</summary><p>La regla define un tiempo de parada \(\tau\) (se cierra al tocar el stop original, el break-even o el TP). El proceso de precios es una martingala acotada hasta \(\tau\), así que \(E[P_\tau]=P_0\) por el teorema de parada opcional. El valor esperado del resultado es cero para cualquier regla que solo use el pasado, incluido el break-even. Cambia la distribución (más resultados cercanos a cero), no su media.</p></details></li>
+</ol>
+</section>
+</template>

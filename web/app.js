@@ -129,7 +129,11 @@ const SCIENTIFIC_THESAURUS = {
     'comics': ['comic', 'historietas', 'manga', 'ilustrado', 'lectura', 'pdf'],
     'podcast': ['podcasts', 'spotify', 'audio', 'episodio', 'voz', 'escuchar'],
     'podcasts': ['podcast', 'spotify', 'audio', 'episodios'],
-    'recorrido': ['tour 3d', 'gemelo digital', 'laboratorio unicauca', 'departamento de fisica']
+    'recorrido': ['tour 3d', 'gemelo digital', 'laboratorio unicauca', 'departamento de fisica'],
+    'oro': ['xauusd', 'oro con metodo', 'trading', 'backtest', 'walkforward', 'monte carlo', 'ftmo', 'cuentas fondeadas', 'finanzas cuantitativas', 'londres', 'sesgo h4'],
+    'xauusd': ['oro', 'oro con metodo', 'trading', 'backtesting', 'londres', 'forex', 'spread', 'fondos'],
+    'trading': ['oro', 'xauusd', 'backtest', 'finanzas', 'cuentas claras', 'truetrading', 'ftmo', 'monte carlo'],
+    'backtest': ['oro', 'xauusd', 'backtesting', 'walkforward', 'monte carlo', 'sobreajuste', 'overfitting']
 };
 
 const SPANISH_STOP_WORDS = new Set([
@@ -3073,6 +3077,9 @@ window.renderEnrolledCourses = renderEnrolledCourses;
                         <a href="/material/1_cursos/hBN-MC/index.html" target="_blank" class="btn btn-secondary" style="font-size:0.82rem; padding:0.45rem 0.85rem; border-color:rgba(168, 85, 247, 0.45); color:#c084fc; display:inline-flex; align-items:center; gap:0.35rem;" title="Abrir mi simulador científico privado MC hBN">
                             🔬 MC hBN
                         </a>
+                        <a href="/material/1_cursos/oro/dist/index.html" target="_blank" class="btn btn-secondary" style="font-size:0.82rem; padding:0.45rem 0.85rem; border-color:rgba(234, 179, 8, 0.45); color:#facc15; display:inline-flex; align-items:center; gap:0.35rem;" title="Abrir curso privado Oro con Método (XAUUSD)">
+                            🪙 Oro con Método
+                        </a>
                         <a href="/material/1_cursos/diagnosticas/dist/public/panel.html" target="_blank" class="btn btn-secondary" style="font-size:0.82rem; padding:0.45rem 0.85rem; border-color:rgba(56, 189, 248, 0.45); color:#38bdf8; display:inline-flex; align-items:center; gap:0.35rem;" title="Abrir panel docente de pruebas diagnósticas">
                             📊 Panel Pruebas
                         </a>
@@ -3537,6 +3544,7 @@ window.renderEnrolledCourses = renderEnrolledCourses;
             const isTransformadores = c.id === 'transformadores';
             const isRecorrido = c.id === 'recorrido';
             const isCuantica = c.id === 'cuantica';
+            const isOro = c.id === 'oro';
             const isPrivado = !!c.esPrivado;
             const isDiagnosticas = c.id === 'diagnosticas';
             const isFaro = c.id === 'faro';
@@ -3547,7 +3555,9 @@ window.renderEnrolledCourses = renderEnrolledCourses;
             const likeInfo = getItemLikeInfo('curso-' + c.id);
 
             let openBtnText = '';
-            if (isPrivado) {
+            if (isOro) {
+                openBtnText = adminMode ? 'Abrir Curso Oro (Docente) 🪙' : 'Acceso Privado Docente 🔒';
+            } else if (isPrivado) {
                 openBtnText = adminMode ? 'Abrir Simulador (Docente) 🔬' : 'Acceso Privado Docente 🔒';
             } else if (isDiagnosticas) {
                 openBtnText = 'Ver Portal Institucional 🏛️';
@@ -3592,7 +3602,11 @@ window.renderEnrolledCourses = renderEnrolledCourses;
             const tagClass = isKids ? 'lab-tag' : (isLab ? 'lab-tag' : (c.destacado ? 'interactive' : ''));
 
             let lockStatusBadge = '';
-            if (isPrivado) {
+            if (isOro) {
+                lockStatusBadge = adminMode 
+                    ? `<span class="unlocked-tag admin-badge" style="border-color:rgba(234, 179, 8, 0.4); color:#facc15;" title="Proyecto de trading cuantitativo exclusivo del docente">🪙 Proyecto Docente</span>`
+                    : `<span class="badge" style="font-size:0.65rem; padding:0.2rem 0.5rem; background:rgba(234, 179, 8, 0.15); color:#facc15; border-color:rgba(234, 179, 8, 0.35);">🔒 Solo Profesor / Admin</span>`;
+            } else if (isPrivado) {
                 lockStatusBadge = adminMode 
                     ? `<span class="unlocked-tag admin-badge" style="border-color:rgba(168,85,247,0.4); color:#c084fc;" title="Herramienta privada de investigación del docente">🔬 Investigación Privada</span>`
                     : `<span class="badge" style="font-size:0.65rem; padding:0.2rem 0.5rem; background:rgba(168,85,247,0.15); color:#c084fc; border-color:rgba(168,85,247,0.35);">🔬 Privado Docente</span>`;
@@ -3637,15 +3651,15 @@ window.renderEnrolledCourses = renderEnrolledCourses;
                             ${!courseUnlocked && c.descuentoTag ? `<span class="badge" style="font-size:0.65rem; padding:0.2rem 0.5rem; background:rgba(245,158,11,0.15); color:var(--accent-amber); border-color:rgba(245,158,11,0.3);">${c.descuentoTag}</span>` : '<span style="color:var(--accent-emerald);">● Activo</span>'}
                         </div>
                         <div style="font-size:0.75rem; color:var(--text-muted);">
-                            ${courseUnlocked ? (adminMode ? 'Acceso maestro docente liberado' : 'Materia desbloqueada para este semestre') : (isSquash ? 'Demo con rutinas pre-generadas · Controles con clave' : (isLab ? 'Banco de pruebas libre · Ensayos con clave' : 'Cap. 0 y 1 en demo · Resto con clave de alumno o compra'))}
+                            ${courseUnlocked ? (adminMode ? 'Acceso maestro docente liberado' : 'Materia desbloqueada para este semestre') : (isPrivado ? 'Proyecto privado y exclusivo del profesor/administrador' : (isSquash ? 'Demo con rutinas pre-generadas · Controles con clave' : (isLab ? 'Banco de pruebas libre · Ensayos con clave' : 'Cap. 0 y 1 en demo · Resto con clave de alumno o compra')))}
                         </div>
                     </div>
                     <div class="card-actions" style="flex-wrap:wrap; gap:0.4rem;">
-                        ${c.demoPath ? (isPrivado && !adminMode ? `<button type="button" class="btn btn-secondary" onclick="openAdminPanel()" style="flex:1; justify-content:center; border-color:rgba(168,85,247,0.4); color:#c084fc;">${openBtnText}</button>` : `<a href="${c.demoPath}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="flex:1; justify-content:center; ${(c.id === 'venturi' || c.id === 'pendulo' || c.id === 'riel') ? 'background:linear-gradient(135deg, #059669, #10b981); border:none;' : ''} ${isPrivado ? "background:linear-gradient(135deg, #a855f7, #6366f1); border:none;" : ""}">${openBtnText}</a>`) : ''}
+                        ${c.demoPath ? (isPrivado && !adminMode ? `<button type="button" class="btn btn-secondary" onclick="openAdminPanel()" style="flex:1; justify-content:center; border-color:${isOro ? 'rgba(234, 179, 8, 0.4)' : 'rgba(168,85,247,0.4)'}; color:${isOro ? '#facc15' : '#c084fc'};">${openBtnText}</button>` : `<a href="${c.demoPath}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="flex:1; justify-content:center; ${(c.id === 'venturi' || c.id === 'pendulo' || c.id === 'riel') ? 'background:linear-gradient(135deg, #059669, #10b981); border:none;' : ''} ${isOro ? 'background:linear-gradient(135deg, #d97706, #eab308); color:#000; font-weight:700; border:none;' : (isPrivado ? "background:linear-gradient(135deg, #a855f7, #6366f1); border:none;" : "")}">${openBtnText}</a>`) : ''}
                         ${(isDiagnosticas && adminMode) ? `<a href="/material/1_cursos/diagnosticas/dist/public/panel.html" target="_blank" class="btn btn-secondary" style="border-color:rgba(56,189,248,0.5); color:#38bdf8; display:inline-flex; align-items:center; gap:0.35rem;" title="Abrir panel docente de pruebas">📊 Panel Docente</a>` : ''}
                         ${c.id === 'venturi' ? `<button type="button" class="btn btn-secondary" onclick="openVenturiGroupModal()" style="border-color:rgba(56,189,248,0.5); color:#38bdf8; display:inline-flex; align-items:center; gap:0.35rem;" title="Organizar puestos y asignar bancos para grupos (1 al 24)">👥 Puestos Grupos (1-24)</button>` : ''}
                         ${c.id === 'pendulo' ? `<button type="button" class="btn btn-secondary" onclick="openPenduloGroupModal()" style="border-color:rgba(56,189,248,0.5); color:#38bdf8; display:inline-flex; align-items:center; gap:0.35rem;" title="Organizar puestos y asignar bancos para grupos (1 al 24)">👥 Puestos Grupos (1-24)</button>` : ''}
-                        ${!courseUnlocked ? `<button class="btn btn-secondary btn-course-key" onclick="openCourseKeyModal('${c.id}')" title="Ingresar clave para ${c.titulo}">🔑 Clave Alumno</button>` : ''}
+                        ${(!courseUnlocked && !isPrivado) ? `<button class="btn btn-secondary btn-course-key" onclick="openCourseKeyModal('${c.id}')" title="Ingresar clave para ${c.titulo}">🔑 Clave Alumno</button>` : ''}
                         ${!courseUnlocked && c.enlaceCompra ? `<button class="btn btn-secondary" onclick="openPaymentModal('${c.id}')" style="border-color:rgba(0,234,144,0.5); color:#00EA90; display:inline-flex; align-items:center; gap:0.35rem;" title="Comprar en portal oficial Wompi (PSE / Nequi / Bancolombia)"><img src="./wompi-iso-secondary.svg" style="height:14px; width:14px;" />${buyBtnText}</button>` : ''}
                         <button class="btn btn-secondary" onclick="openCourseDetails('${c.id}')">${detailsBtnText}</button>
                         <button class="bookmark-btn ${getSavedCourses().includes(c.id) ? 'saved' : ''}" onclick="toggleSaveCourse('${c.id}', event)" title="${getSavedCourses().includes(c.id) ? 'Quitar de guardados' : 'Guardar curso en mi espacio'}" style="padding:0.4rem 0.65rem;">
@@ -7202,6 +7216,23 @@ window.renderEnrolledCourses = renderEnrolledCourses;
                             </a>
                         </div>
 
+                        <!-- Card 1b: Oro con Método (XAUUSD) -->
+                        <div style="background:rgba(15,23,42,0.65); border:1px solid rgba(234,179,8,0.3); border-radius:10px; padding:1rem; display:flex; flex-direction:column; justify-content:space-between;">
+                            <div>
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+                                    <span style="font-size:0.75rem; color:#facc15; font-weight:700; text-transform:uppercase;">Finanzas Cuantitativas & Backtesting</span>
+                                    <span class="badge" style="font-size:0.65rem; background:rgba(234,179,8,0.2); color:#facc15; border-color:rgba(234,179,8,0.4);">Exclusivo Docente</span>
+                                </div>
+                                <h5 style="color:#fff; font-size:0.98rem; margin:0 0 0.4rem;">🪙 Oro con Método: Estrategia XAUUSD</h5>
+                                <p style="font-size:0.78rem; color:var(--text-muted); margin:0 0 0.85rem; line-height:1.4;">
+                                    Estrategia intradía en ventana de Londres con sesgo H4. 12 capítulos, 21 simuladores, motor de backtest walk-forward, Monte Carlo y plan de cuentas fondeadas.
+                                </p>
+                            </div>
+                            <a href="/material/1_cursos/oro/dist/index.html" target="_blank" class="btn btn-primary" style="font-size:0.82rem; padding:0.45rem 0.85rem; background:linear-gradient(135deg, #d97706, #eab308); color:#000; font-weight:700; border:none; justify-content:center;">
+                                🪙 Abrir Curso Oro (Docente)
+                            </a>
+                        </div>
+
                         <!-- Card 2: Pruebas Diagnósticas Panel -->
                         <div style="background:rgba(15,23,42,0.65); border:1px solid rgba(56,189,248,0.3); border-radius:10px; padding:1rem; display:flex; flex-direction:column; justify-content:space-between;">
                             <div>
@@ -9627,7 +9658,7 @@ window.renderEnrolledCourses = renderEnrolledCourses;
     // ==========================================================================
     const PAGE_CATALOG = [
         { id: 'inicio', title: 'Portal de Bienvenida', short: 'Inicio', icon: '🏠', order: 1 },
-        { id: 'cursos', title: 'Cursos & Laboratorios (39)', short: 'Cursos & Labs', icon: '🚀', order: 2 },
+        { id: 'cursos', title: 'Cursos & Laboratorios (40)', short: 'Cursos & Labs', icon: '🚀', order: 2 },
         { id: 'quizzes', title: 'Evaluaciones & Quizzes con PIN', short: 'Quizzes PIN', icon: '📝', order: 3 },
         { id: 'trivia', title: 'Gran Trivia de Física (1.000 preg.)', short: 'Trivia Física', icon: '🎯', order: 4 },
         { id: 'trivia-historia', title: 'Historia de la Física (500 preg.)', short: 'Historia Física', icon: '📜', order: 5 },

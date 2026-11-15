@@ -1,0 +1,96 @@
+<template class="chapter-src" data-id="entradas" data-num="5" data-title="Las reglas de entrada: pro-tendencia, rechazo y anti-persecución" data-part="Parte II · Anatomía de la estrategia" data-short="Venta a favor de un sesgo bajista tras un rebote; el embudo de filtros; lectura del manual frente al motor v1.2; cuatro familias de entrada; anatomía de una señal real">
+<p class="lead">La regla de entrada del manual dice, en sustancia: «cuando el sesgo de fondo es bajista y el precio rebota hasta el techo de los últimos 30 minutos y es rechazado, vende». Es una estrategia de <b>comprar caídas en tendencia alcista y vender rebotes en tendencia bajista</b>. Este capítulo la desarma condición por condición, muestra cuántas señales sobreviven a cada filtro con datos reales y compara la lectura del manual con la del motor v1.2, que no son la misma regla.</p>
+
+<section>
+<h2>La idea: a favor de la tendencia, en el rebote</h2>
+<p>Una entrada <span class="term">pro-tendencia</span> opera en la dirección del sesgo H4: vende si es bajista, compra si es alcista. Lo hace no al romper un nivel (eso sería una entrada de <i>momento</i>), sino cuando el precio <b>retrocede contra la tendencia hasta un extremo local y es rechazado</b> (una entrada de <i>pullback</i>). La apuesta es que la tendencia de fondo se reanude y que el rechazo marque el final del retroceso.</p>
+<div class="box ex"><p>Sesgo bajista. El precio sube durante 20 minutos hasta tocar el máximo de los últimos 30 minutos (H30). La vela M1 que lo toca cierra bajista: el comprador no pudo sostenerlo. La estrategia vende ahí, con stop justo por encima del rebote.</p></div>
+<h3>Las seis condiciones de una venta</h3>
+<ol>
+<li><b>Sesgo H4 bajista</b>: cierre de H4 por debajo de la EMA50 de H4 menos la banda neutra.</li>
+<li><b>Toque del extremo corto</b>: el máximo de la vela es mayor o igual que \(H_{30}\).</li>
+<li><b>Vela de rechazo</b>: la vela M1 cierra bajista (\((Ct O)\)).</li>
+<li><b>Anti-persecución</b>: el cierre queda a menos de 8 pips (0.80 USD) de \(H_{30}\); si cerró mucho más abajo, ya se perdió la entrada.</li>
+<li><b>Filtro de impulso</b>: el cierre está sobre la EMA20 de M15 (hubo un rebote real).</li>
+<li><b>Límite pro-tendencia</b>: el cierre no supera a \(H_{120}\) en más de 20 pips (no se vende en pleno desbordamiento).</li>
+</ol>
+<p>Las compras son la imagen especular con sesgo alcista, \(L_{30}\), vela alcista y EMA20 por encima. En la versión 1.3 la <b>contra-tendencia</b> está eliminada (<code>--solo-pro-tendencia</code>).</p>
+<div class="box warn"><p>La redacción literal del manual dice «el precio perfora o toca el techo local H30 (\(C\ge H_{30}\))» y además exige una vela M1 bajista. Leída así, la condición casi nunca se cumple: una vela que cierra bajista suele cerrar por debajo de donde abrió, que era (casi) el cierre anterior, es decir, por debajo del máximo previo. En 100 000 velas M1 reales solo 2 cumplen «C ≥ H30 y vela bajista» dentro de la ventana. La lectura que sí produce señales es «el <b>máximo</b> toca H30» (\(H\ge H_{30}\)), y es la que usa el motor del curso.</p></div>
+</section>
+
+<section>
+<h2>El embudo: de 100 000 velas a unas pocas señales</h2>
+<p>Cada filtro descarta velas. La simulación recorre las 100 000 velas M1 (o M5) y cuenta cuántas sobreviven tras aplicar las condiciones en orden.</p>
+<div class="sim" data-sim="embudo" data-title="El embudo de condiciones de la venta"></div>
+<div class="sim-guide"><ul>
+<li>Cada barra es el número de velas que cumplen esa condición y todas las anteriores (escala logarítmica). Cambie los parámetros para ver cuál condición «corta» más.</li>
+<li>La ventana de entradas deja el 17.6 % de las velas; el sesgo bajista, el 54 % de ellas; el toque de H30, el 9 %; el rechazo, el 24 % de los toques. Al final quedan <b>67 velas</b> en M1 (3.4 meses) y 35 en M5 (17 meses).</li>
+<li>El filtro «cierre a menos de 8 pips de H30» elimina cerca de dos tercios de los rechazos en M1 y casi nueve de cada diez en M5. Es el que más pesa: sube de 8 a 20 pips y las señales se triplican.</li>
+<li>El límite sobre H120 y el sesgo con banda de 15 pips eliminan casi nada: son filtros «de seguridad» más que de selección.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Cuatro formas de entrar al mismo tipo de mercado</h2>
+<p>El motor del curso implementa cuatro familias de regla, todas «a favor del sesgo H4», para comparar con la misma vara:</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Modo</th><th>Venta con sesgo bajista cuando…</th><th>Origen</th></tr></thead>
+<tbody>
+<tr><td><code>tocar</code></td><td>el máximo toca H30, vela bajista, cierre a ≤ 8 pips de H30 y sobre la EMA20</td><td>manual v1.3</td></tr>
+<tr><td><code>zona</code></td><td>el cierre está ≥ 40 pips sobre la EMA20, entre H120 − 60 y H120 + 20 pips, con vela bajista</td><td>motor v1.2</td></tr>
+<tr><td><code>ema</code></td><td>el máximo toca la EMA20 de M15 y la vela cierra por debajo, a ≤ 12 pips</td><td>variante del curso</td></tr>
+<tr><td><code>ruptura</code></td><td>el cierre rompe L30 hacia abajo, a ≤ 15 pips de él (momento)</td><td>contraste</td></tr>
+</tbody></table></div>
+<div class="sim" data-sim="modos-entrada" data-title="Cuántas señales produce cada familia y cómo le va a cada una"></div>
+<div class="sim-guide"><ul>
+<li>Las barras claras son las señales crudas; las oscuras, las operaciones que sobreviven a las reglas diarias (una a la vez, máximo dos balas, cooldown). A la derecha, el R medio con su intervalo de confianza del 95 %.</li>
+<li>La regla del manual (<code>tocar</code>) produce 59 operaciones en M1 y 71 en M5; la del motor v1.2 (<code>zona</code>), 102 y 294. Pocas señales no es un defecto: es una estrategia selectiva, pero implica que cualquier conclusión descansa sobre pocas operaciones.</li>
+<li>Elija el conjunto de datos: ninguna familia tiene un intervalo de confianza que excluya el cero con tan poca muestra. La <i>ruptura</i> (momento) es la única con signo claramente negativo en ambas series.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Anatomía de una señal real</h2>
+<p>Las señales son hechos concretos: una vela, un precio, una hora. La siguiente simulación permite recorrer, una por una, las operaciones que el manual habría abierto con los datos reales, y ver el contexto (las 50 velas previas), la entrada, los niveles y el desenlace. El detalle de lo que ocurre después de entrar es el tema del capítulo 6.</p>
+<div class="sim" data-sim="anatomia-senal" data-title="Recorrido por las operaciones reales del manual"></div>
+<div class="sim-guide"><ul>
+<li>El triángulo marca la vela de señal; el punto de color de la derecha, la salida, con su motivo. La línea roja discontinua es el stop (escalonada si cambia por gestión) y la verde, el take profit.</li>
+<li>Fíjese en la distancia entre el techo y el stop: la señal se activa en el máximo del rebote, así que si la tendencia reanuda, el precio se aleja rápido; si el rebote continúa, el stop se toca.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Práctica: embudo y lectura literal con datos reales</h2>
+<div class="box py"><p>El programa recorre el embudo de condiciones de la venta en M1 y M5, cuenta la lectura literal del manual y compara las señales crudas de las dos reglas (<code>tocar</code> y <code>zona</code>).</p>
+<div class="py" data-py="05-entradas"></div></div>
+<div class="box read"><ul>
+<li><b>Embudo M1</b>: 99 878 velas con historia → 17 640 en la ventana → 9 621 con sesgo bajista → 865 tocan H30 → 207 cierran bajistas → 76 a menos de 8 pips → 67 sobre la EMA20 → 67 bajo H120 + 20 pips. Una de cada 1 500 velas es una señal de venta.</li>
+<li><b>Embudo M5</b>: el «rechazo» cierra 27 % de los toques; el filtro de 8 pips deja solo el 11.5 %, porque una vela M5 es más larga y su cierre se aleja más del máximo.</li>
+<li><b>Lectura literal</b>: «C ≥ H30 con vela bajista» solo ocurre en 2 velas M1 y 2 M5.</li>
+<li><b>Señales crudas</b>: <code>tocar</code> da 111 en M1 (67 ventas, 44 compras) y 76 en M5; <code>zona</code>, 1 693 en M1 y 881 en M5. Con las reglas diarias (una posición a la vez) quedan 59 / 71 y 102 / 294 operaciones.</li>
+</ul></div>
+</section>
+
+<section>
+<h2>Resumen y problemas</h2>
+<div class="box keys"><ul>
+<li>La estrategia vende rebotes hasta un extremo de 30 minutos en sesgo bajista y compra caídas en sesgo alcista: pullback pro-tendencia, sin contra-tendencia.</li>
+<li>La lectura literal «C ≥ H30 con vela bajista» casi nunca ocurre; la lectura operativa es «el máximo toca H30».</li>
+<li>De 100 000 velas M1 quedan unas 110 señales (67 ventas y 44 compras) con las reglas por defecto; la anti-persecución de 8 pips es el filtro más restrictivo.</li>
+<li>El motor v1.2 («zona del H120 con EMA + 40 pips») es otra regla, con 15 veces más señales.</li>
+<li>Con tan pocas operaciones, ninguna conclusión sobre la regla de entrada es firme sin la prueba del capítulo 12.</li>
+</ul></div>
+<ol class="problems">
+<li><span class="lvl">Básico</span>Sesgo bajista, H30 = 4 200.50. Una vela M1 tiene máximo 4 200.62, apertura 4 200.40 y cierre 4 200.10. ¿Cumple las condiciones 2, 3 y 4?
+<details><summary>Respuesta</summary><p>Sí. Máximo 4 200.62 ≥ 4 200.50 (toque); cierre &lt; apertura (rechazo); |4 200.50 − 4 200.10| = 0.40 USD = 4 pips ≤ 8 (anti-persecución).</p></details></li>
+<li><span class="lvl">Básico</span>¿Para qué sirve la anti-persecución?
+<details><summary>Respuesta</summary><p>Evita entrar tarde: si la vela de rechazo cerró 20 pips por debajo de H30, el precio ya se movió a favor y la entrada, con el stop colocado sobre el rebote, tendría un riesgo mayor y una ganancia potencial menor.</p></details></li>
+<li><span class="lvl">Intermedio</span>En M5, 6 barras equivalen a 30 minutos. ¿Cuántas velas de M5 se necesitan para calcular H120?
+<details><summary>Respuesta</summary><p>24 velas (120 ÷ 5).</p></details></li>
+<li><span class="lvl">Intermedio</span>Si 865 velas tocan H30 y 207 cierran bajistas, ¿por qué no son ≈ 50 %?
+<details><summary>Respuesta</summary><p>Porque cuando el máximo toca el techo de 30 minutos, la vela suele estar subiendo (cierra alcista). Que cierre bajista exige que se haya girado dentro de la misma vela: ocurre 24 % de las veces. El rechazo es el filtro de «giro confirmado».</p></details></li>
+<li><span class="lvl">Avanzado</span>Con 111 señales crudas en 3.4 meses y reglas de una posición a la vez, se obtienen 59 operaciones. ¿Qué mecanismo elimina las 52 restantes?
+<details><summary>Respuesta</summary><p>La señal aparece mientras hay otra operación abierta, durante el enfriamiento de 5 minutos, o después de haber agotado las dos balas del día o de bloquearse por el One and Done, la meta o el tope diario.</p></details></li>
+</ol>
+</section>
+</template>
