@@ -204,7 +204,7 @@ MS.Sim = (function () {
   /* ---------- panel en vivo ---------- */
   function renderLive(force) {
     const now = performance.now();
-    if (!force && now - S.lastBody < 110) return;
+    if (!force && now - S.lastBody < (S.playing ? 160 : 80)) return;
     S.lastBody = now;
     const pl = S.tl && S.tl.players.find((p) => p.id === S.focus);
     if (!pl) return;
@@ -244,7 +244,7 @@ MS.Sim = (function () {
   }
 
   /* ---------- dibujo ---------- */
-  function sizeOf(cv) { const r = cv.getBoundingClientRect(); return { w: Math.max(50, r.width), h: Math.max(50, r.height) }; }
+  function sizeOf(cv) { return { w: Math.max(50, cv.clientWidth || 300), h: Math.max(50, cv.clientHeight || 300) }; }
   function draw() {
     if (!S.tl) return;
     if (S.view !== 'top') { const { w, h } = sizeOf(cvTV); const ctx = U.fitCanvas(cvTV, w, h); TV.draw(ctx, w, h, S.tl, S.t, S.cam, S.opts); }
@@ -256,7 +256,7 @@ MS.Sim = (function () {
   function frame(ts) {
     raf = 0;
     if (!visible) return;
-    const dt = lastTs ? Math.min(0.1, (ts - lastTs) / 1000) : 0;
+    const dt = lastTs ? Math.min(0.05, (ts - lastTs) / 1000) : 0;
     lastTs = ts;
     if (S.playing && S.tl) {
       S.t += dt * S.speed;

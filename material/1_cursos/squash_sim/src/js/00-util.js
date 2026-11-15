@@ -74,7 +74,7 @@ MS.U = (function () {
   };
   /* Prepara un canvas con densidad de píxeles adecuada; devuelve ctx con escala 1 = px CSS */
   U.fitCanvas = (cv, w, h) => {
-    const dpr = Math.min(2.5, (typeof window !== 'undefined' && window.devicePixelRatio) || 1);
+    const dpr = Math.min(1.5, (typeof window !== 'undefined' && window.devicePixelRatio) || 1);
     const W = Math.round(w * dpr), H = Math.round(h * dpr);
     if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
     const ctx = cv.getContext('2d');

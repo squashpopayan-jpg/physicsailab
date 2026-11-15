@@ -47,7 +47,7 @@ MS.Body = (function () {
       const ctx = U.fitCanvas(cv, w, h);
       ctx.clearRect(0, 0, w, h);
       const T = tokens();
-      const lod = mode === 'dual' ? 2 : 3;
+      const lod = mode === 'dual' ? 1 : 2;
       const Q = mesh(lod);
       const style = { anat: { colors: st.colors, base: T.musc, none: T.none }, sel: st.sel, line: T.line, selLine: T.ink };
       const sc = (h - (mode === 'dual' ? 30 : 16)) / 1.84, baseY = h - (mode === 'dual' ? 24 : 8);
