@@ -27,7 +27,8 @@
         "historia",
         "kids",
         "riel",
-        "esp32_display"
+        "esp32_display",
+        "calibre"
     ];
     const DEFAULT_COURSE_KEYS = {
         "mecanica": ["MECANICA-2026", "OBANDO-MEC-26", "MEC-QXN7-26"],
@@ -69,7 +70,8 @@
         "pln": ["PLN-2026", "MAQUINAS-LEEN-26", "NLP-IA-26", "PLN-L37N-26"],
         "instalacion": ["OBRA-ELECTRICA-2026", "INSTALACION-2026", "OBANDO-OBRA-26", "INST-8492-26"],
         "esp32_display": ["ESP32-DISPLAY-2026", "OBANDO-ESP32-26", "ESP-DISP-26"],
-        "oro": ["OBANDO-ADMIN-2026", "ORO-2026", "XAUUSD-2026", "OBANDO-ORO-26"]
+        "oro": ["OBANDO-ADMIN-2026", "ORO-2026", "XAUUSD-2026", "OBANDO-ORO-26"],
+        "calibre": ["CALIBRE-2026", "VERNIER-2026", "MICROMETRO-2026", "OBANDO-CAL-26"]
     };
 
     function getCurrentCourseId() {
@@ -93,9 +95,11 @@
             if (raw === 'instalacion' || raw === 'obra-electrica') return 'instalacion';
             if (raw === 'esp32_display' || raw === 'esp32-display') return 'esp32_display';
             if (raw === 'oro' || raw === 'oro-con-metodo') return 'oro';
+            if (raw === 'calibre' || raw === 'calibrador' || raw === 'vernier' || raw === 'metrologia') return 'calibre';
             return raw;
         }
 
+        if (p.includes('/1_cursos/calibre') || p.includes('calibrador') || p.includes('vernier') || p.includes('micrometro') || p.includes('metrologia')) return 'calibre';
         if (p.includes('/1_cursos/oro') || p.includes('oro-con-metodo') || p.includes('/oro/')) return 'oro';
         if (p.includes('esp32_display') || p.includes('esp32-display') || p.includes('guia-esp32-display') || p.includes('ojo-de-murcielago')) return 'esp32_display';
         if (p.includes('/instalacion/') || p.includes('obra-electrica') || p.includes('obra_electrica')) return 'instalacion';
@@ -174,6 +178,7 @@
         if (t.includes('protoboard')) return 'protoboard';
         if (t.includes('fisicoquímica') || t.includes('fisicoquimica')) return 'fisicoquimica';
         if (t.includes('oro con método') || t.includes('oro con metodo') || t.includes('xauusd')) return 'oro';
+        if (t.includes('vernier') || t.includes('micrómetro') || t.includes('micrometro') || t.includes('calibrador') || t.includes('metrología') || t.includes('metrologia')) return 'calibre';
 
         return 'general';
     }
@@ -185,7 +190,7 @@
             return localStorage.getItem('physicsailab_admin') === 'true';
         }
         // Cursos 100% liberados y cortesías de bienvenida:
-        if (cId === 'venturi' || cId === 'pendulo' || cId === 'recorrido' || cId === 'historia' || cId === 'kids' || cId === 'riel' || cId === 'pec') return true;
+        if (cId === 'venturi' || cId === 'pendulo' || cId === 'recorrido' || cId === 'historia' || cId === 'kids' || cId === 'riel' || cId === 'pec' || cId === 'calibre') return true;
         if (LAB_COURSE_IDS.includes(cId)) return true;
 
         try {
@@ -2330,7 +2335,7 @@
     function checkCurrentHashLock() {
         if (isUnlocked()) return;
         const cId = getCurrentCourseId();
-        if (cId === 'venturi' || cId === 'pendulo' || cId === 'riel' || isVenturi || isPendulo) return;
+        if (cId === 'venturi' || cId === 'pendulo' || cId === 'riel' || cId === 'calibre' || isVenturi || isPendulo) return;
         const rawHash = decodeURIComponent(location.hash.replace(/^#/, '')).split('.')[0].toLowerCase();
         if (!rawHash || rawHash === 'inicio') return;
 

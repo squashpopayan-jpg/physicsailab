@@ -1,0 +1,445 @@
+<header class="top">
+  <a class="brand" href="#practica" aria-label="Metrología: vernier y micrómetro, inicio">
+    <svg width="46" height="26" viewBox="0 0 46 26" aria-hidden="true"><path d="M2 7h42v8H2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M2 15v9M8 15v7M44 7V2M36 7V2" stroke="currentColor" stroke-width="2"/><path d="M12 7v3M17 7v3M22 7v3M27 7v3M32 7v3" stroke="currentColor" stroke-width="1.5"/><path d="M14 15v3M19 15v3M24 15v3" stroke="currentColor" stroke-width="1.5"/></svg>
+    <span>Vernier y micrómetro<small>Laboratorio de metrología dimensional</small></span>
+  </a>
+  <nav class="nav" aria-label="Secciones">
+    <a href="#practica" data-tab="practica">Práctica</a>
+    <a href="#entrenador" data-tab="entrenador">Entrenador</a>
+    <a href="#cuaderno" data-tab="cuaderno">Cuaderno</a>
+    <a href="#teoria" data-tab="teoria">Teoría</a>
+  </nav>
+  <div class="top-chip" id="topChip">Banco N.º <b id="topBanco">01</b><span id="topGrupo"></span></div>
+</header>
+
+<main class="main">
+<!-- ================= PRÁCTICA ================= -->
+<section id="v-practica" class="view" aria-labelledby="hPractica">
+  <div class="intro">
+    <div>
+      <p class="eyebrow">Práctica · Medición de longitudes con instrumentos de precisión</p>
+      <h1 id="hPractica">Calibrador vernier (pie de rey) y micrómetro</h1>
+      <p>Mida piezas reales con la resolución real del instrumento. Cada banco trae su <b>error de cero</b>, piezas con <b>conicidad y ovalidad</b>, materiales blandos que <b>se aplastan</b> si aprieta de más y un <b>trinquete</b> que limita la fuerza. Lea la escala con la lupa, anote lo que ve y corrija lo que haya que corregir.</p>
+    </div>
+    <form class="setup panel" id="setupForm" autocomplete="off">
+      <label for="selBanco">Banco<select id="selBanco"></select></label>
+      <label for="inpGrupo" class="grow">Integrantes del grupo<input type="text" id="inpGrupo" placeholder="Nombres y apellidos"></label>
+      <button class="btn primary" type="submit">Usar este banco</button>
+      <p class="small muted">El docente asigna el banco: cada uno tiene instrumentos con errores y piezas ligeramente distintas. Cambiarlo no borra el cuaderno.</p>
+    </form>
+  </div>
+
+  <div class="lab-grid">
+    <div class="lab-main">
+      <div class="panel stage">
+        <div class="stage-head">
+          <h2 id="hInstr">Instrumento</h2>
+          <div class="toggles">
+            <label class="chk"><input type="checkbox" id="chkPartes"> Nombres de las partes</label>
+            <button class="btn ghost small-btn" id="btnSonido" aria-pressed="true" type="button">Sonido: sí</button>
+          </div>
+        </div>
+        <div class="canvas-wrap"><canvas id="escena" tabindex="0" role="img" aria-label="Escena del laboratorio: instrumento con la pieza entre las mordazas. Arrastre horizontalmente para abrir o cerrar; con el teclado use las flechas."></canvas><div class="canvas-msg" id="escenaMsg" hidden></div></div>
+        <div class="mandos">
+          <div class="mando-grupo" role="group" aria-label="Mover el instrumento">
+            <button class="btn" id="btnMenos" type="button" aria-label="Cerrar un paso">◀ Cerrar</button>
+            <label class="paso">Paso <select id="selPaso"></select></label>
+            <button class="btn" id="btnMas" type="button" aria-label="Abrir un paso">Abrir ▶</button>
+          </div>
+          <div class="mando-grupo" role="group" aria-label="Acciones rápidas">
+            <button class="btn ghost" id="btnAbrir" type="button">Abrir</button>
+            <button class="btn ghost" id="btnContacto" type="button">Contacto suave</button>
+            <button class="btn ghost" id="btnApretar" type="button">Apretar</button>
+          </div>
+          <label class="metodo" id="metodoWrap">Cómo cierra<select id="selMetodo"><option value="trinquete">Con el trinquete (correcto)</option><option value="tambor">Girando el tambor (sin trinquete)</option></select></label>
+          <div class="fuerza" id="fuerzaBox" aria-live="polite">
+            <div class="fuerza-top"><span>Fuerza sobre la pieza</span><b id="fuerzaVal">0,0 N</b></div>
+            <div class="fuerza-bar"><i id="fuerzaFill"></i><u id="fuerzaMark" hidden></u></div>
+            <div class="fuerza-nota small" id="fuerzaNota">Sin contacto.</div>
+          </div>
+        </div>
+        <p class="hint small">Arrastre sobre la escena para abrir o cerrar (con <kbd>Mayús</kbd> el movimiento es 10 veces más fino) o use las flechas del teclado. Al tocar la pieza las mordazas se detienen; si sigue empujando, la fuerza crece y la lectura cambia.</p>
+      </div>
+
+      <div class="panel lupa-panel">
+        <div class="stage-head">
+          <h2>Lectura ampliada</h2>
+          <div class="toggles">
+            <label class="chk"><input type="checkbox" id="chkAyuda"> Ayuda de lectura</label>
+          </div>
+        </div>
+        <div class="canvas-wrap"><canvas id="lupa" role="img" aria-label="Vista ampliada de la escala del instrumento para leer la medida" tabindex="0"></canvas></div>
+        <div class="lupa-ctl">
+          <label>Lente <output id="outZoom">×6</output><input type="range" id="rngZoom" min="3" max="12" step="1" value="6"></label>
+          <label>Posición del ojo <output id="outOjo">0° (de frente)</output><input type="range" id="rngOjo" min="-30" max="30" step="1" value="0"></label>
+          <label class="chk"><input type="checkbox" id="chkLente" checked> Lente activa</label>
+        </div>
+        <p class="hint small">Mueva el puntero sobre la lectura: la lente amplía lo que hay debajo. Mirar de frente (0°) evita el error de paralaje; si inclina la mirada, las líneas se desplazan.</p>
+      </div>
+    </div>
+
+    <aside class="lab-side">
+      <section class="panel" aria-labelledby="hMontaje">
+        <h2 id="hMontaje">1 · Montaje</h2>
+        <label for="selInstr">Instrumento<select id="selInstr"></select></label>
+        <label for="selObj">Pieza<select id="selObj"></select></label>
+        <label for="selAttr">Magnitud a medir<select id="selAttr"></select></label>
+        <div class="dos-sl">
+          <label>Punto a lo largo <output id="outPos">50 %</output><input type="range" id="rngPos" min="0" max="100" step="1" value="50"></label>
+          <label>Giro de la pieza <output id="outAng">0°</output><input type="range" id="rngAng" min="0" max="180" step="1" value="0"></label>
+        </div>
+        <div class="info-pieza" id="infoPieza"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="hAnotar">
+        <h2 id="hAnotar">2 · Anotar la lectura</h2>
+        <p class="small muted" id="anotarAyuda">Escriba lo que marca el instrumento (lectura bruta, sin corregir el cero) y la unidad en que la escribe.</p>
+        <form id="formLect" class="lect-form" autocomplete="off">
+          <label for="inpLect">Lectura<input type="text" id="inpLect" inputmode="decimal" placeholder="p. ej. 12,35"></label>
+          <label for="selUn">Unidad<select id="selUn"></select></label>
+          <button class="btn primary" type="submit" id="btnComprobar">Comprobar y anotar</button>
+        </form>
+        <div class="fb" id="fb" role="status" aria-live="polite" hidden></div>
+        <div class="fb-acc" id="fbAcc" hidden>
+          <button class="btn ghost" id="btnComo" type="button">¿Cómo se lee?</button>
+          <button class="btn ghost" id="btnForzar" type="button">Anotar de todos modos</button>
+        </div>
+        <ol class="pasos-lectura" id="pasosLectura" hidden></ol>
+      </section>
+
+      <section class="panel" aria-labelledby="hGuia">
+        <h2 id="hGuia">Guía de la práctica</h2>
+        <ol class="checklist" id="guia"></ol>
+        <p class="small muted">Los pasos se marcan solos a medida que usted anota lecturas y completa el cuaderno.</p>
+      </section>
+
+      <section class="panel" aria-labelledby="hUlt">
+        <h2 id="hUlt">Últimas lecturas</h2>
+        <div id="ultimas" class="ultimas"></div>
+        <p class="small"><a href="#cuaderno">Abrir el cuaderno completo</a></p>
+      </section>
+    </aside>
+  </div>
+</section>
+
+<!-- ================= ENTRENADOR ================= -->
+<section id="v-entrenador" class="view" hidden aria-labelledby="hEnt">
+  <div class="intro intro-simple">
+    <div>
+      <p class="eyebrow">Entrenador de lectura</p>
+      <h1 id="hEnt">Aprenda a leer la escala</h1>
+      <p>Posiciones al azar, sin pieza: solo usted y la escala. Escriba la lectura, compruébela y, si falla, vea el procedimiento paso a paso. Active «Otra unidad» para practicar también las conversiones de longitud.</p>
+    </div>
+  </div>
+  <div class="ent-grid">
+    <div class="panel">
+      <div class="stage-head"><h2 id="entTitulo">Lectura</h2>
+        <div class="toggles"><label class="chk"><input type="checkbox" id="entAyuda"> Ayuda de lectura</label></div></div>
+      <div class="canvas-wrap"><canvas id="entLupa" role="img" aria-label="Escala del instrumento para practicar la lectura" tabindex="0"></canvas></div>
+      <div class="lupa-ctl">
+        <label>Lente <output id="entOutZoom">×6</output><input type="range" id="entZoom" min="3" max="12" step="1" value="6"></label>
+        <label class="chk"><input type="checkbox" id="entLente" checked> Lente activa</label>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>Pregunta</h2>
+      <label for="entInstr">Instrumento<select id="entInstr"></select></label>
+      <label class="chk"><input type="checkbox" id="entOtra"> Pedir la respuesta en otra unidad</label>
+      <p class="ent-q" id="entPregunta">…</p>
+      <form id="entForm" class="lect-form" autocomplete="off">
+        <label for="entInp">Respuesta<input type="text" id="entInp" inputmode="decimal" placeholder="p. ej. 23,46"></label>
+        <label for="entUn">Unidad<select id="entUn"></select></label>
+        <button class="btn primary" type="submit" id="entComprobar">Comprobar</button>
+      </form>
+      <div class="fb" id="entFb" role="status" aria-live="polite" hidden></div>
+      <div class="fb-acc" id="entAcc" hidden>
+        <button class="btn ghost" id="entVer" type="button">Ver paso a paso</button>
+        <button class="btn primary" id="entSig" type="button">Siguiente lectura</button>
+      </div>
+      <ol class="pasos-lectura" id="entPasos" hidden></ol>
+      <button class="btn" id="entNueva" type="button">Otra lectura</button>
+      <div class="ent-stats" id="entStats"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CUADERNO ================= -->
+<section id="v-cuaderno" class="view" hidden aria-labelledby="hCuad">
+  <div class="intro intro-simple">
+    <div>
+      <p class="eyebrow">Cuaderno de laboratorio</p>
+      <h1 id="hCuad">Datos, incertidumbres y conversiones</h1>
+      <p>Todo lo que anotó en la práctica se organiza aquí: corrección del cero, promedio, desviación, incertidumbre y el resultado expresado en distintas unidades de longitud. Al final, volumen y densidad con su incertidumbre.</p>
+    </div>
+    <div class="panel exp">
+      <h3>Entrega</h3>
+      <div class="exp-btns">
+        <button class="btn" id="btnCSV" type="button">Descargar CSV</button>
+        <button class="btn" id="btnJSON" type="button">Descargar JSON</button>
+        <button class="btn danger" id="btnBorrar" type="button">Borrar cuaderno</button>
+      </div>
+    </div>
+  </div>
+
+  <section class="panel" aria-labelledby="hC1">
+    <h2 id="hC1">1 · Conozca su instrumento</h2>
+    <p class="small muted">Calcule la resolución (apreciación) a partir de la escala. Compruebe después con el instrumento del banco.</p>
+    <div class="res-grid" id="resGrid"></div>
+  </section>
+
+  <section class="panel" aria-labelledby="hC2">
+    <h2 id="hC2">2 · Error de cero</h2>
+    <p class="small muted">Con las mordazas cerradas (pieza «Sin pieza: cerrar y leer el cero») el instrumento debería marcar 0. Si no lo hace, la diferencia es un error sistemático que se resta de todas las lecturas.</p>
+    <div id="ceroTabla"></div>
+  </section>
+
+  <section class="panel" aria-labelledby="hC3">
+    <h2 id="hC3">3 · Mediciones y resultados</h2>
+    <div class="tabla-scroll"><table class="tabla" id="tablaGrupos"></table></div>
+    <details class="detalle"><summary>Ver todas las lecturas anotadas</summary><div class="tabla-scroll"><table class="tabla" id="tablaFilas"></table></div></details>
+  </section>
+
+  <section class="panel" aria-labelledby="hC4">
+    <h2 id="hC4">4 · Unidades de longitud</h2>
+    <p class="small muted">Elija un resultado y exprese la misma longitud en otras unidades. La incertidumbre se convierte con el mismo factor.</p>
+    <label for="selConv">Resultado<select id="selConv"></select></label>
+    <div class="tabla-scroll"><table class="tabla" id="tablaConv"></table></div>
+  </section>
+
+  <section class="panel" aria-labelledby="hC5">
+    <h2 id="hC5">5 · Volumen y densidad</h2>
+    <p class="small muted">Con las medidas de una pieza (y su masa en la balanza) calcule el volumen, su incertidumbre y la densidad; compare con la tabla de materiales.</p>
+    <label for="selDens">Pieza<select id="selDens"></select></label>
+    <div id="densOut"></div>
+  </section>
+
+  <section class="panel" aria-labelledby="hC6">
+    <h2 id="hC6">Bitácora</h2>
+    <div class="bitacora" id="bitacora"></div>
+  </section>
+</section>
+
+<!-- ================= TEORÍA ================= -->
+<section id="v-teoria" class="view" hidden aria-labelledby="hTeo">
+  <div class="intro intro-simple">
+    <div>
+      <p class="eyebrow">Fundamentos</p>
+      <h1 id="hTeo">Medir longitudes con precisión</h1>
+      <p>Todo lo necesario para la práctica: unidades, resolución, incertidumbre, el principio del nonio y del tornillo micrométrico, ejemplos resueltos con la escala dibujada y una autoevaluación.</p>
+    </div>
+  </div>
+  <div class="teo-grid">
+    <nav class="toc panel" aria-label="Contenido">
+      <h3>Contenido</h3>
+      <ol>
+        <li><a href="#t-unidades">Unidades de longitud</a></li>
+        <li><a href="#t-incert">Resolución e incertidumbre</a></li>
+        <li><a href="#t-vernier">Calibrador vernier</a></li>
+        <li><a href="#t-micro">Micrómetro</a></li>
+        <li><a href="#t-ejemplos">Ejemplos resueltos</a></li>
+        <li><a href="#t-cero">Error de cero</a></li>
+        <li><a href="#t-errores">Errores y buenas prácticas</a></li>
+        <li><a href="#t-comparar">Vernier o micrómetro</a></li>
+        <li><a href="#t-quiz">Autoevaluación</a></li>
+        <li><a href="#t-ref">Referencias</a></li>
+      </ol>
+    </nav>
+    <article class="teo">
+      <section id="t-unidades" class="panel">
+        <h2>1 · Unidades de longitud</h2>
+        <p>Medir es comparar una magnitud con una unidad patrón. La unidad de longitud del Sistema Internacional es el <b>metro (m)</b>, definido fijando la velocidad de la luz en el vacío, <i>c</i> = 299 792 458 m/s. En el taller se usan sus submúltiplos y, en muchos catálogos, la pulgada.</p>
+        <div class="tabla-scroll"><table class="tabla compacta">
+          <thead><tr><th>Unidad</th><th>Símbolo</th><th>Equivale a</th><th>Dónde aparece</th></tr></thead>
+          <tbody>
+            <tr><td>kilómetro</td><td>km</td><td>1000 m</td><td>distancias</td></tr>
+            <tr><td>metro</td><td>m</td><td>100 cm = 1000 mm</td><td>unidad SI</td></tr>
+            <tr><td>centímetro</td><td>cm</td><td>10 mm = 0,01 m</td><td>escala numerada del calibrador</td></tr>
+            <tr><td>milímetro</td><td>mm</td><td>0,001 m = 1000 µm</td><td>taller, planos</td></tr>
+            <tr><td>micrómetro (micra)</td><td>µm</td><td>0,001 mm = 10⁻⁶ m</td><td>tolerancias finas, rugosidad</td></tr>
+            <tr><td>nanómetro</td><td>nm</td><td>10⁻⁹ m = 0,001 µm</td><td>óptica, nanotecnología</td></tr>
+            <tr><td>pulgada</td><td>in</td><td><b>25,4 mm exactos</b></td><td>catálogos de rodamientos, tornillos, tubería</td></tr>
+            <tr><td>pie</td><td>ft</td><td>12 in = 304,8 mm exactos</td><td>construcción, aviación</td></tr>
+            <tr><td>milésima de pulgada</td><td>mil (thou)</td><td>0,001 in = 0,0254 mm</td><td>calibradores y micrómetros en pulgadas</td></tr>
+          </tbody></table></div>
+        <p class="aviso"><b>No confunda</b> el <i>micrómetro</i> (instrumento) con el <i>micrómetro o micra</i> (unidad, µm). El instrumento mide en milímetros y centésimas o milésimas de milímetro.</p>
+        <h3>Cómo convertir sin equivocarse</h3>
+        <p>Multiplique por un <b>factor unitario</b> (una fracción igual a 1) que cancele la unidad que no quiere. Ejemplo: 12,700 mm a pulgadas:</p>
+        <p class="formula">12,700 mm × (1 in / 25,4 mm) = <b>0,5000 in</b></p>
+        <p>Y de 0,3750 in a milímetros: 0,3750 in × (25,4 mm / 1 in) = <b>9,525 mm</b>. Con potencias de diez: 1,25 mm = 1,25×10⁻³ m = 1,25×10³ µm = 0,125 cm.</p>
+        <div class="calc" id="calcConv">
+          <h3>Conversor de longitudes</h3>
+          <div class="calc-row"><label>Valor<input type="text" id="cvVal" inputmode="decimal" value="12,7"></label><label>Unidad<select id="cvUn"></select></label></div>
+          <div class="tabla-scroll"><table class="tabla compacta" id="cvOut"></table></div>
+        </div>
+      </section>
+
+      <section id="t-incert" class="panel">
+        <h2>2 · Resolución, exactitud e incertidumbre</h2>
+        <ul>
+          <li><b>Resolución (apreciación, cuenta mínima):</b> el cambio más pequeño que el instrumento puede indicar. Un vernier de 0,02 mm solo distingue medidas que difieren 0,02 mm o más.</li>
+          <li><b>Exactitud:</b> cercanía de la medida al valor verdadero. <b>Precisión (repetibilidad):</b> cercanía entre medidas repetidas. Un instrumento puede ser muy repetible y estar descalibrado (un error de cero lo hace inexacto).</li>
+          <li><b>Error sistemático:</b> siempre en el mismo sentido (error de cero, instrumento descalibrado). Se <u>corrige</u>. <b>Error aleatorio:</b> varía de una lectura a otra (posición, apriete, irregularidades de la pieza). Se <u>reduce</u> repitiendo y promediando.</li>
+        </ul>
+        <h3>Cómo se expresa un resultado</h3>
+        <p>Con <i>n</i> lecturas <i>x</i><sub>i</sub> (ya corregidas del cero): promedio <i>x̄</i>, desviación estándar <i>s</i> y desviación del promedio <i>s</i>/√<i>n</i>. La incertidumbre se compone de la resolución y de la repetibilidad:</p>
+        <p class="formula"><i>u</i> = √[ (r/2)² + (<i>s</i>/√<i>n</i>)² + (u<sub>cero</sub>)² ] &nbsp;&nbsp; con &nbsp; r = resolución y u<sub>cero</sub> = r/2</p>
+        <p>El resultado se escribe <b>x̄ ± u</b> con la incertidumbre en una o dos cifras significativas y el valor con los mismos decimales: <b>12,35 ± 0,03 mm</b>, no «12,3512 ± 0,0273 mm». Si se mide una vez, solo cuenta la resolución.</p>
+        <h3>Propagación a un volumen</h3>
+        <p>Para un cilindro, <i>V</i> = π<i>D</i>²<i>L</i>/4 y las incertidumbres relativas se combinan así:</p>
+        <p class="formula">(<i>u</i><sub>V</sub>/<i>V</i>)² = (2<i>u</i><sub>D</sub>/<i>D</i>)² + (<i>u</i><sub>L</sub>/<i>L</i>)²</p>
+        <p>El diámetro pesa el doble porque está elevado al cuadrado: por eso conviene medirlo con el instrumento más fino (el micrómetro). En el cuaderno, el cálculo se hace con derivadas numéricas para cualquier fórmula.</p>
+        <h3>Cifras significativas</h3>
+        <p>Los ceros a la izquierda no cuentan; los de la derecha después de la coma sí. 0,0985 tiene 3 cifras; 12,50 tiene 4. La lectura de un instrumento debe escribirse con <u>todas</u> sus cifras, aunque la última sea 0: «12,50 mm» y «12,5 mm» no dicen lo mismo sobre la resolución.</p>
+      </section>
+
+      <section id="t-vernier" class="panel">
+        <h2>3 · Calibrador vernier (pie de rey)</h2>
+        <h3>Partes</h3>
+        <p>La <b>regla</b> con la escala principal y la mordaza fija; la <b>corredera</b> con la mordaza móvil y el <b>nonio</b> (escala secundaria); las <b>mordazas exteriores</b> (piezas macizas, diámetros externos), las <b>mordazas de interiores</b> (agujeros y ranuras) y la <b>varilla de profundidad</b>. Active «Nombres de las partes» en la práctica para verlas sobre el instrumento.</p>
+        <h3>Principio del nonio</h3>
+        <p>En un nonio de <i>N</i> divisiones, esas <i>N</i> divisiones ocupan la longitud de <i>N</i> − 1 divisiones de la regla. Si una división de la regla vale <i>a</i>, una del nonio vale <i>a</i>(<i>N</i> − 1)/<i>N</i>, y la diferencia entre ambas es la resolución:</p>
+        <p class="formula"><b>r = a / N</b> &nbsp;&nbsp;(división de la regla ÷ número de divisiones del nonio)</p>
+        <div class="tabla-scroll"><table class="tabla compacta">
+          <thead><tr><th>Regla (a)</th><th>Nonio (N)</th><th>El nonio abarca</th><th>Resolución r</th></tr></thead>
+          <tbody>
+            <tr><td>1 mm</td><td>10</td><td>9 mm</td><td>1/10 = <b>0,1 mm</b></td></tr>
+            <tr><td>1 mm</td><td>20</td><td>19 mm</td><td>1/20 = <b>0,05 mm</b></td></tr>
+            <tr><td>1 mm</td><td>50</td><td>49 mm</td><td>1/50 = <b>0,02 mm</b></td></tr>
+            <tr><td>0,025 in</td><td>25</td><td>0,6 in (24 divisiones)</td><td>0,025/25 = <b>0,001 in</b></td></tr>
+          </tbody></table></div>
+        <h3>Cómo leer (siempre los mismos tres pasos)</h3>
+        <ol>
+          <li><b>Regla:</b> anote la última marca que queda a la izquierda del cero del nonio.</li>
+          <li><b>Nonio:</b> busque la línea que coincide con alguna marca de la regla; multiplique su número por la resolución.</li>
+          <li><b>Sume</b> y escriba el resultado con las cifras de la resolución.</li>
+        </ol>
+        <h3>Medir con cada mordaza</h3>
+        <ul>
+          <li><b>Exteriores:</b> pieza entre las mordazas grandes, lo más cerca posible de la regla (para disminuir el error de Abbe), perpendicular al eje. Apriete lo justo.</li>
+          <li><b>Interiores:</b> abra las cuchillas dentro del agujero hasta tocar las dos paredes y busque el diámetro mayor (bascule suavemente: la lectura máxima es el diámetro). La lectura de la escala ya incluye el espesor de las cuchillas.</li>
+          <li><b>Profundidad:</b> apoye el extremo de la regla en la superficie, perpendicular, y baje la varilla hasta el fondo.</li>
+        </ul>
+      </section>
+
+      <section id="t-micro" class="panel">
+        <h2>4 · Micrómetro de exteriores</h2>
+        <h3>Partes</h3>
+        <p>El <b>marco</b> en C, el <b>yunque</b> fijo, el <b>husillo</b> (tornillo de precisión) que se mueve, el <b>manguito</b> con la escala fija (línea de referencia con marcas de milímetro y de medio milímetro), el <b>tambor</b> con la escala móvil y el <b>trinquete</b> que limita la fuerza.</p>
+        <h3>Principio del tornillo micrométrico</h3>
+        <p>El husillo avanza un <b>paso</b> <i>p</i> por vuelta. El tambor tiene <i>n</i> divisiones; girar una división desplaza el husillo <i>p</i>/<i>n</i>:</p>
+        <p class="formula"><b>r = p / n</b> &nbsp;&nbsp; métrico: 0,5 mm / 50 = <b>0,01 mm</b> &nbsp;·&nbsp; pulgadas: 0,025 in / 25 = <b>0,001 in</b></p>
+        <p>Con nonio en el manguito (10 líneas que ocupan 9 divisiones del tambor), la resolución baja a <b>0,001 mm</b>.</p>
+        <h3>Cómo leer</h3>
+        <ol>
+          <li><b>Manguito:</b> milímetros enteros visibles (marcas de arriba) y, si se ve, <b>+0,5 mm</b> (marca de abajo).</li>
+          <li><b>Tambor:</b> número de la división frente a la línea de referencia × 0,01 mm.</li>
+          <li><b>Nonio</b> (si lo hay): la línea del manguito que coincide con una del tambor × 0,001 mm.</li>
+          <li><b>Sume.</b> Error clásico: olvidar los 0,5 mm cuando la marca inferior ya está descubierta.</li>
+        </ol>
+        <h3>El trinquete y la fuerza de medición</h3>
+        <p>Una fuerza de medición normalizada (alrededor de 5 a 10 N) hace comparables las lecturas. Si cierra girando el tambor se puede aplicar mucha más fuerza: el marco se flexiona unas micras y las piezas blandas (caucho, papel, tubos delgados, cobre) se aplastan. El trinquete patina («clic») al llegar a la fuerza correcta. <b>En la práctica, pruebe el O-ring y la goma con ambas formas de cerrar</b> y compare.</p>
+        <h3>Cuidados</h3>
+        <ul>
+          <li>Limpie las caras de medición antes de comprobar el cero; una mota de polvo de 3 µm basta para falsearlo.</li>
+          <li>No sostenga el marco con la mano por mucho tiempo: el calor lo dilata (el acero se dilata cerca de 11,5 µm por metro y por °C).</li>
+          <li>Compruebe el instrumento con un <b>bloque patrón</b>; el de 25 mm verifica el fondo del recorrido.</li>
+        </ul>
+      </section>
+
+      <section id="t-ejemplos" class="panel">
+        <h2>5 · Ejemplos resueltos</h2>
+        <p>Cada dibujo es la escala real del instrumento en esa posición, con la ayuda de lectura activa. Las explicaciones las genera el mismo motor que usa la práctica.</p>
+        <div id="ejemplos"></div>
+      </section>
+
+      <section id="t-cero" class="panel">
+        <h2>6 · Error de cero</h2>
+        <p>Con las mordazas cerradas el instrumento debe marcar cero. Si marca <i>e</i><sub>0</sub>, <u>todas</u> las lecturas están corridas esa cantidad:</p>
+        <p class="formula"><b>valor corregido = lectura − e<sub>0</sub></b> &nbsp;&nbsp; (con el signo de e<sub>0</sub>)</p>
+        <ul>
+          <li><b>Cero positivo</b> (cerrado marca +0,05 mm): una pieza que lee 12,35 mm vale 12,35 − 0,05 = <b>12,30 mm</b>.</li>
+          <li><b>Cero negativo</b> (cerrado marca −0,03 mm): lee 12,35 mm → 12,35 − (−0,03) = <b>12,38 mm</b>.</li>
+          <li>En el micrómetro, un cero negativo se reconoce porque el tambor «no llega» al cero: marca 49 en vez de 0 con el manguito sin descubrir la primera marca.</li>
+        </ul>
+        <div class="calc">
+          <h3>Corrector de cero</h3>
+          <div class="calc-row"><label>Lectura (mm)<input type="text" id="czL" inputmode="decimal" value="12,35"></label><label>Cero e₀ (mm)<input type="text" id="czE" inputmode="decimal" value="0,05"></label><label>Resolución r (mm)<input type="text" id="czR" inputmode="decimal" value="0,05"></label></div>
+          <p class="calc-out" id="czOut"></p>
+        </div>
+        <div class="calc">
+          <h3>Calculadora de resolución</h3>
+          <div class="calc-row"><label>Vernier: división de la regla (mm)<input type="text" id="rsA" inputmode="decimal" value="1"></label><label>Divisiones del nonio N<input type="text" id="rsN" inputmode="decimal" value="20"></label></div>
+          <div class="calc-row"><label>Micrómetro: paso (mm)<input type="text" id="rsP" inputmode="decimal" value="0,5"></label><label>Divisiones del tambor n<input type="text" id="rsT" inputmode="decimal" value="50"></label></div>
+          <p class="calc-out" id="rsOut"></p>
+        </div>
+      </section>
+
+      <section id="t-errores" class="panel">
+        <h2>7 · Errores frecuentes y buenas prácticas</h2>
+        <div class="tabla-scroll"><table class="tabla compacta">
+          <thead><tr><th>Error</th><th>Efecto</th><th>Cómo evitarlo</th></tr></thead>
+          <tbody>
+            <tr><td>No verificar el cero</td><td>Error sistemático en todas las lecturas</td><td>Cerrar, limpiar, leer y anotar el cero antes de medir</td></tr>
+            <tr><td>Apretar demasiado</td><td>Lectura menor; piezas blandas deformadas; instrumento dañado</td><td>Trinquete en el micrómetro; contacto suave en el calibrador</td></tr>
+            <tr><td>Paralaje</td><td>Coincidencia del nonio mal identificada</td><td>Mirar perpendicularmente a la escala</td></tr>
+            <tr><td>Pieza ladeada</td><td>Lectura mayor (se mide una diagonal)</td><td>Pieza perpendicular a las mordazas; bascule y tome el mínimo (exteriores) o el máximo (interiores)</td></tr>
+            <tr><td>Medir una sola vez</td><td>No se detecta la conicidad ni la ovalidad</td><td>Varios puntos y giros; promedio y desviación</td></tr>
+            <tr><td>Suponer que la pieza es perfecta</td><td>Se confunde variación de la pieza con error del instrumento</td><td>Distinguir <i>s</i> de la pieza de la resolución del instrumento</td></tr>
+            <tr><td>Olvidar 0,5 mm (micrómetro)</td><td>Error de exactamente 0,5 mm</td><td>Mirar la marca inferior del manguito</td></tr>
+            <tr><td>Confundir unidades</td><td>Factores de 10, 100, 1000 ó 25,4</td><td>Escribir siempre la unidad; estimar el orden de magnitud</td></tr>
+          </tbody></table></div>
+      </section>
+
+      <section id="t-comparar" class="panel">
+        <h2>8 · ¿Vernier o micrómetro?</h2>
+        <div class="tabla-scroll"><table class="tabla compacta">
+          <thead><tr><th></th><th>Calibrador vernier</th><th>Micrómetro de exteriores</th></tr></thead>
+          <tbody>
+            <tr><td>Resolución habitual</td><td>0,02 – 0,1 mm</td><td>0,01 mm (0,001 mm con nonio)</td></tr>
+            <tr><td>Incertidumbre típica</td><td>≈ 0,03 – 0,1 mm</td><td>≈ 0,003 – 0,005 mm</td></tr>
+            <tr><td>Rango</td><td>0 – 150 mm (o más)</td><td>25 mm por instrumento (0–25, 25–50, …)</td></tr>
+            <tr><td>Mide</td><td>exteriores, interiores y profundidades</td><td>exteriores (existen variantes para otros usos)</td></tr>
+            <tr><td>Fuerza de medición</td><td>depende de la mano</td><td>controlada por el trinquete</td></tr>
+            <tr><td>Úselo para</td><td>medidas rápidas y variadas</td><td>diámetros y espesores críticos</td></tr>
+          </tbody></table></div>
+        <p>Regla práctica: el instrumento debe ser unas <b>10 veces</b> más fino que la tolerancia que se quiere verificar. Para una tolerancia de ±0,05 mm conviene un micrómetro de 0,01 mm, no un vernier de 0,05 mm.</p>
+      </section>
+
+      <section id="t-quiz" class="panel">
+        <h2>9 · Autoevaluación</h2>
+        <div id="quiz"></div>
+        <p class="quiz-total" id="quizTotal" aria-live="polite"></p>
+      </section>
+
+      <section id="t-ref" class="panel">
+        <h2>10 · Referencias</h2>
+        <ul class="small">
+          <li>BIPM. <i>The International System of Units (SI Brochure)</i>, 9.ª ed. (definición del metro).</li>
+          <li>JCGM 100:2008. <i>Evaluation of measurement data — Guide to the expression of uncertainty in measurement</i> (GUM).</li>
+          <li>ISO 13385-1. <i>Dimensional measuring equipment — Callipers; Design and metrological characteristics</i>.</li>
+          <li>ISO 3611. <i>Micrometers for external measurements; Design and metrological characteristics</i>.</li>
+          <li>DIN 862 (calibradores) y DIN 863 (micrómetros): requisitos de error de indicación y fuerza de medición.</li>
+        </ul>
+      </section>
+    </article>
+  </div>
+</section>
+
+<!-- ================= DOCENTE ================= -->
+<section id="v-docente" class="view" hidden aria-labelledby="hDoc">
+  <div class="intro intro-simple"><div><p class="eyebrow">Para el docente</p><h1 id="hDoc">Clave de respuestas y control</h1></div></div>
+  <div class="panel" id="docGate">
+    <form id="docForm" class="lect-form"><label for="docClave">Clave del docente<input type="password" id="docClave" autocomplete="off"></label><button class="btn primary" type="submit">Entrar</button></form>
+    <p class="small muted" id="docMsg"></p>
+  </div>
+  <div id="docBody" hidden></div>
+</section>
+</main>
+
+<footer class="foot">
+  <p>Elaborado por <b>Mg. Manuel Alejandro Obando</b> · Departamento de Física, Universidad del Cauca. <a href="#docente" id="linkDoc">Docente</a></p>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<div class="modal" id="confirmBox" hidden><div class="modal-in" role="dialog" aria-modal="true" aria-labelledby="confirmTitle"><h3 id="confirmTitle"></h3><p id="confirmText"></p><div class="modal-btns"><button class="btn" id="confirmNo" type="button">Cancelar</button><button class="btn danger" id="confirmYes" type="button">Sí, continuar</button></div></div></div>
+<div class="modal" id="copyBox" hidden><div class="modal-in wide" role="dialog" aria-modal="true" aria-labelledby="copyName"><h3 id="copyName"></h3><p class="small">Copie el contenido y péguelo en un archivo.</p><textarea id="copyText" rows="12" readonly></textarea><div class="modal-btns"><button class="btn primary" id="copyClose" type="button">Cerrar</button></div></div></div>

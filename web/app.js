@@ -92,6 +92,10 @@ const SCIENTIFIC_THESAURUS = {
     'oled': ['esp32 display', 'ssd1306', 'i2c', 'ojo de murcielago', 'pantalla'],
     'ultrasonico': ['hc-sr04', 'murcielago', 'sensor distancia', 'esp32 display', 'divisor de tension', 'echo', 'trigger', 'pantalla'],
     'electronica': ['protoboard', 'dispositivos', 'arduino', 'esp32', 'circuitos', 'diodos', 'transistores', 'spice'],
+    'calibre': ['vernier', 'pie de rey', 'micrometro', 'palmer', 'metrologia', 'nonio', 'instrumentos', 'incertidumbre', 'medicion', 'trinquete', 'cero'],
+    'vernier': ['calibre', 'pie de rey', 'nonio', 'micrometro', 'metrologia', 'medicion', 'instrumento', 'mordazas'],
+    'micrometro': ['calibre', 'palmer', 'tornillo micrometrico', 'tambor', 'trinquete', 'vernier', 'metrologia', 'precision'],
+    'metrologia': ['calibre', 'vernier', 'micrometro', 'incertidumbre', 'tolerancia', 'precision', 'exactitud', 'patron'],
     'venturi': ['bernoulli', 'presion', 'fluido', 'tubo', 'caudal', 'hidrodinamica', 'manometro', 'manometrico', 'densidad', 'flujo'],
     'bernoulli': ['venturi', 'fluidos', 'presion', 'energia mecanica', 'caudal'],
     'fluidos': ['venturi', 'bernoulli', 'presion', 'viscosidad', 'densidad', 'arquimedes', 'pascal', 'torricelli'],
@@ -234,6 +238,7 @@ const CURATED_SEARCH_SUGGESTIONS = [
     { text: 'Física KIDS (100% Libre)', sub: '10 mundos, 47 capítulos y 126 juegos familiares', icon: '🌈', query: 'Física KIDS' },
     { text: 'Tubo de Venturi & Bernoulli', sub: 'Laboratorio virtual con 24 puestos de medición', icon: '🌊', query: 'Tubo de Venturi Bernoulli' },
     { text: 'Péndulo Simple y Medición de g', sub: 'Banco interactivo de calibración de gravedad', icon: '⏱️', query: 'Péndulo Simple' },
+    { text: 'Calibrador Vernier & Micrómetro', sub: 'Laboratorio de metrología con 24 puestos de medición', icon: '📏', query: 'Calibrador Vernier' },
     { text: 'Laboratorio de Transformadores v2', sub: 'Modelado Steinmetz, saturación y osciloscopio', icon: '🔋', query: 'Laboratorio de Transformadores' },
     { text: 'Gran Trivia de Física (1.000 Preguntas)', sub: 'Desafío interactivo con 3 vidas y ranking', icon: '🎯', query: 'Gran Trivia de Física' },
     { text: 'Trivia de Historia de la Física', sub: 'Epistemología, personajes y descubrimientos', icon: '📜', query: 'Historia de la Física' },
@@ -3538,6 +3543,7 @@ window.renderEnrolledCourses = renderEnrolledCourses;
             const isProtoboard = c.id === 'protoboard';
             const isInstalacion = c.id === 'instalacion';
             const isEsp32Display = c.id === 'esp32_display';
+            const isCalibre = c.id === 'calibre';
             const isVenturi = c.id === 'venturi';
             const isRiel = c.id === 'riel';
             const isPendulo = c.id === 'pendulo';
@@ -3583,6 +3589,8 @@ window.renderEnrolledCourses = renderEnrolledCourses;
                 openBtnText = courseUnlocked ? 'Abrir Obra Eléctrica (Nueva Ventana ↗) 🏠' : 'Vista Previa Obra Eléctrica 👁️';
             } else if (isEsp32Display) {
                 openBtnText = 'Abrir Guía ESP32 (Acceso Libre ↗) 🦇';
+            } else if (isCalibre) {
+                openBtnText = '📏 Abrir Laboratorio Calibre (Acceso Libre ↗)';
             } else if (isVenturi || isPendulo || isRiel) {
                 openBtnText = '🧪 Abrir Laboratorio Libre (Nueva Ventana ↗)';
             } else if (isTransformadores) {
@@ -3615,7 +3623,7 @@ window.renderEnrolledCourses = renderEnrolledCourses;
             } else if (courseUnlocked) {
                 if (c.id === 'kids') {
                     lockStatusBadge = `<span class="kids-badge-rainbow" title="Cortesía Educativa para Niños y Familias · 100% Libre">🌈 100% LIBRE · NIÑOS</span>`;
-                } else if (c.id === 'venturi' || c.id === 'pendulo' || c.id === 'riel') {
+                } else if (c.id === 'venturi' || c.id === 'pendulo' || c.id === 'riel' || c.id === 'calibre') {
                     lockStatusBadge = `<span class="unlocked-tag" style="background:rgba(16,185,129,0.18); color:#34d399; border-color:rgba(16,185,129,0.45); font-weight:800;" title="Laboratorio Virtual Universitario · Acceso 100% Abierto y Libre">🧪 Laboratorio Liberado</span>`;
                 } else if (c.id === 'historia' || c.esCortesia) {
                     lockStatusBadge = `<span class="unlocked-tag" style="background:rgba(217,119,6,0.18); color:#f59e0b; border-color:rgba(217,119,6,0.45);" title="Cortesía de Bienvenida · Acceso Libre para todos">🎁 Cortesía Libre</span>`;
@@ -3655,7 +3663,7 @@ window.renderEnrolledCourses = renderEnrolledCourses;
                         </div>
                     </div>
                     <div class="card-actions" style="flex-wrap:wrap; gap:0.4rem;">
-                        ${c.demoPath ? (isPrivado && !adminMode ? `<button type="button" class="btn btn-secondary" onclick="openAdminPanel()" style="flex:1; justify-content:center; border-color:${isOro ? 'rgba(234, 179, 8, 0.4)' : 'rgba(168,85,247,0.4)'}; color:${isOro ? '#facc15' : '#c084fc'};">${openBtnText}</button>` : `<a href="${c.demoPath}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="flex:1; justify-content:center; ${(c.id === 'venturi' || c.id === 'pendulo' || c.id === 'riel') ? 'background:linear-gradient(135deg, #059669, #10b981); border:none;' : ''} ${isOro ? 'background:linear-gradient(135deg, #d97706, #eab308); color:#000; font-weight:700; border:none;' : (isPrivado ? "background:linear-gradient(135deg, #a855f7, #6366f1); border:none;" : "")}">${openBtnText}</a>`) : ''}
+                        ${c.demoPath ? (isPrivado && !adminMode ? `<button type="button" class="btn btn-secondary" onclick="openAdminPanel()" style="flex:1; justify-content:center; border-color:${isOro ? 'rgba(234, 179, 8, 0.4)' : 'rgba(168,85,247,0.4)'}; color:${isOro ? '#facc15' : '#c084fc'};">${openBtnText}</button>` : `<a href="${c.demoPath}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="flex:1; justify-content:center; ${(c.id === 'venturi' || c.id === 'pendulo' || c.id === 'riel' || c.id === 'calibre') ? 'background:linear-gradient(135deg, #059669, #10b981); border:none;' : ''} ${isOro ? 'background:linear-gradient(135deg, #d97706, #eab308); color:#000; font-weight:700; border:none;' : (isPrivado ? "background:linear-gradient(135deg, #a855f7, #6366f1); border:none;" : "")}">${openBtnText}</a>`) : ''}
                         ${(isDiagnosticas && adminMode) ? `<a href="/material/1_cursos/diagnosticas/dist/public/panel.html" target="_blank" class="btn btn-secondary" style="border-color:rgba(56,189,248,0.5); color:#38bdf8; display:inline-flex; align-items:center; gap:0.35rem;" title="Abrir panel docente de pruebas">📊 Panel Docente</a>` : ''}
                         ${c.id === 'venturi' ? `<button type="button" class="btn btn-secondary" onclick="openVenturiGroupModal()" style="border-color:rgba(56,189,248,0.5); color:#38bdf8; display:inline-flex; align-items:center; gap:0.35rem;" title="Organizar puestos y asignar bancos para grupos (1 al 24)">👥 Puestos Grupos (1-24)</button>` : ''}
                         ${c.id === 'pendulo' ? `<button type="button" class="btn btn-secondary" onclick="openPenduloGroupModal()" style="border-color:rgba(56,189,248,0.5); color:#38bdf8; display:inline-flex; align-items:center; gap:0.35rem;" title="Organizar puestos y asignar bancos para grupos (1 al 24)">👥 Puestos Grupos (1-24)</button>` : ''}
@@ -9658,7 +9666,7 @@ window.renderEnrolledCourses = renderEnrolledCourses;
     // ==========================================================================
     const PAGE_CATALOG = [
         { id: 'inicio', title: 'Portal de Bienvenida', short: 'Inicio', icon: '🏠', order: 1 },
-        { id: 'cursos', title: 'Cursos & Laboratorios (40)', short: 'Cursos & Labs', icon: '🚀', order: 2 },
+        { id: 'cursos', title: 'Cursos & Laboratorios (41)', short: 'Cursos & Labs', icon: '🚀', order: 2 },
         { id: 'quizzes', title: 'Evaluaciones & Quizzes con PIN', short: 'Quizzes PIN', icon: '📝', order: 3 },
         { id: 'trivia', title: 'Gran Trivia de Física (1.000 preg.)', short: 'Trivia Física', icon: '🎯', order: 4 },
         { id: 'trivia-historia', title: 'Historia de la Física (500 preg.)', short: 'Historia Física', icon: '📜', order: 5 },

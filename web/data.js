@@ -66,7 +66,8 @@ window.PLATFORM_DATA = {
         "pln": ["PLN-2026", "MAQUINAS-LEEN-26", "NLP-IA-26", "PLN-L37N-26"],
         "instalacion": ["OBRA-ELECTRICA-2026", "INSTALACION-2026", "OBANDO-OBRA-26", "INST-8492-26"],
         "esp32_display": ["ESP32-DISPLAY-2026", "OBANDO-ESP32-26", "ESP-DISP-26"],
-        "oro": ["OBANDO-ADMIN-2026", "ORO-2026", "XAUUSD-2026", "OBANDO-ORO-26"]
+        "oro": ["OBANDO-ADMIN-2026", "ORO-2026", "XAUUSD-2026", "OBANDO-ORO-26"],
+        "calibre": ["CALIBRE-2026", "VERNIER-2026", "MICROMETRO-2026", "OBANDO-CAL-26"]
     },
 
     // Configuración oficial de Pasarelas de Pago (Wompi PSE, Bancolombia, Nequi y Hotmart)
@@ -1411,6 +1412,40 @@ window.PLATFORM_DATA = {
             descuentoTag: "Laboratorio Abierto 100% Libre",
             esCortesia: true,
             accesoLibre: true,
+            enlaceCompra: null,
+            enlaceWompi: null
+        },
+        {
+            id: "calibre",
+            titulo: "Laboratorio Virtual: Calibrador Vernier & Micrómetro (Metrología Dimensional)",
+            nivel: "Universitario / Educación Media / Física Experimental",
+            modulos: "Banco de Metrología con 24 Puestos Independientes, Vernier, Micrómetro & Densidad",
+            categoria: "Laboratorio Virtual",
+            categoriaFiltro: "labs",
+            descripcion: "Laboratorio interactivo de metrología dimensional para la práctica de calibrador vernier (pie de rey) y micrómetro de exteriores (Palmer) elaborado por el Mg. Manuel Alejandro Obando (Universidad del Cauca). Diseñado con 24 puestos de trabajo independientes (bancos 1 al 24) con variaciones físicas determinísticas por grupo (errores de cero positivo/negativo, rigidez del marco y fuerza del trinquete de 5–8,5 N) para evitar copias. Incluye resolución real de instrumentos (0,1 / 0,05 / 0,02 mm y 0,001 in en vernier; 0,01 y 0,001 mm en micrómetro), medición de exteriores, interiores y profundidad, piezas cilíndricas/esféricas con conicidad y rugosidad, control de paralaje, entrenador interactivo de lectura de nonios, cuaderno digital con evaluación automática y diagnóstico de errores en 8 unidades, cálculo de incertidumbres (GUM), densidad y panel de control docente con clave.",
+            temas: [
+                "01. Asignación de Bancos: 24 Puestos con Errores de Cero y Piezas Determinísticas",
+                "02. Calibrador Vernier (Pie de Rey): Nonios de 0,1 mm, 0,05 mm, 0,02 mm y 0,001 in",
+                "03. Micrómetro de Exteriores (Palmer): Paso de 0,5 mm, Tambor de 50 Divisiones y Nonio a 1 µm",
+                "04. Fuerza de Medición: Mecanismo de Trinquete con Clic (5–8,5 N) vs Tambor Directo",
+                "05. Detección y Corrección Rigurosa del Error de Cero Positivo y Negativo",
+                "06. Medición de Piezas Reales: Diámetros Exteriores, Interiores, Profundidad y Bloques Patrón",
+                "07. Deformación Elástica en Materiales Blandos y Rigidez Mecánica del Marco",
+                "08. Control de Ángulo de Visión y Errores Sistemáticos por Paralaje",
+                "09. Entrenador de Lectura de Nonios con Racha de Aciertos y Cuestionario Teórico",
+                "10. Cuaderno Digital: Propagación de Incertidumbres (GUM), Densidad, Exportación y Panel Docente"
+            ],
+            destacado: true,
+            tipo: "Laboratorio Virtual de Metrología",
+            esLaboratorio: true,
+            bancosDisponibles: 24,
+            demoPath: "/material/1_cursos/calibre/dist/index.html",
+            precioEstimado: "Acceso Libre / Abierto",
+            precioCOP: 0,
+            precioUSD: 0,
+            accesoLibre: true,
+            descuentoTag: "Laboratorio Abierto 100% Libre",
+            esCortesia: true,
             enlaceCompra: null,
             enlaceWompi: null
         },
