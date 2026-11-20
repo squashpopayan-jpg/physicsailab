@@ -152,14 +152,7 @@ const server = http.createServer((req, res) => {
         subPath = decodedUrl === '/' ? 'index.html' : decodedUrl.replace(/^\//, '');
     }
 
-    let filePath = resolveFile(baseDir, subPath);
-
-    if (filePath && fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
-        const indexCandidate = path.join(filePath, 'index.html');
-        if (fs.existsSync(indexCandidate)) {
-            filePath = indexCandidate;
-        }
-    }
+    const filePath = resolveFile(baseDir, subPath);
 
     if (!filePath || !fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
         res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
