@@ -3032,6 +3032,9 @@ window.renderEnrolledCourses = renderEnrolledCourses;
         const navTradingBtn = document.getElementById('nav-trading-btn');
         const mobileTradingBtn = document.getElementById('mobile-trading-btn');
         const drawerTradingItem = document.getElementById('drawer-trading-item');
+        const navPrestamosBtn = document.getElementById('nav-prestamos-btn');
+        const mobilePrestamosBtn = document.getElementById('mobile-prestamos-btn');
+        const drawerPrestamosItem = document.getElementById('drawer-prestamos-item');
         const navAdminBtnLabel = document.getElementById('nav-admin-btn-label');
         const mobileAdminBtnLabel = document.getElementById('mobile-admin-btn-label');
 
@@ -3052,6 +3055,15 @@ window.renderEnrolledCourses = renderEnrolledCourses;
         }
         if (drawerTradingItem) {
             drawerTradingItem.style.display = adminActive ? 'block' : 'none';
+        }
+        if (navPrestamosBtn) {
+            navPrestamosBtn.style.display = adminActive ? 'inline-flex' : 'none';
+        }
+        if (mobilePrestamosBtn) {
+            mobilePrestamosBtn.style.display = adminActive ? 'inline-flex' : 'none';
+        }
+        if (drawerPrestamosItem) {
+            drawerPrestamosItem.style.display = adminActive ? 'block' : 'none';
         }
         if (navAdminBtnLabel) {
             navAdminBtnLabel.textContent = adminActive ? 'Admin 👑' : 'Docente';
