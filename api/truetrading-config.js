@@ -4,7 +4,7 @@
 
 const crypto = require('crypto');
 
-const DEFAULT_API_URL = 'https://educational-calculator-briefly-ellen.trycloudflare.com';
+const DEFAULT_API_URL = 'https://dvd-deals-paul-zoloft.trycloudflare.com';
 const FIREBASE_CONFIG_URL = 'https://squashpopayan-65e33-default-rtdb.firebaseio.com/physicsailab/truetrading_config.json';
 
 function cleanUrl(raw) {

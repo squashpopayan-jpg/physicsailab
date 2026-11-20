@@ -26,7 +26,7 @@
 
 * **URL Base HTTPS (Cifrada con SSL Cloudflare):**  
   ```text
-  https://educational-calculator-briefly-ellen.trycloudflare.com
+  https://dvd-deals-paul-zoloft.trycloudflare.com
   ```
 * **CORS:** Totalmente habilitado (`Access-Control-Allow-Origin: *`). La llamada desde `https://physicsailab.com` funciona directo sin bloqueos.
 
