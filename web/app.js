@@ -2423,6 +2423,11 @@ window.renderEnrolledCourses = renderEnrolledCourses;
                 <button class="profile-tab-btn ${activeTab === 'courses' ? 'active' : ''}" onclick="switchProfileTab('courses')">
                     🎓 Mis Cursos (${enrolledCourses.length})
                 </button>
+                ${adminMode ? `
+                <button class="profile-tab-btn ${activeTab === 'proyectos_privados' ? 'active' : ''}" onclick="switchProfileTab('proyectos_privados')" style="color:#fbbf24; font-weight:700;">
+                    👑 Proyectos Privados (Docente)
+                </button>
+                ` : ''}
                 <button class="profile-tab-btn ${activeTab === 'saved_courses' ? 'active' : ''}" onclick="switchProfileTab('saved_courses')">
                     ⭐ Cursos Guardados (${savedCourseIds.length})
                 </button>
@@ -2444,6 +2449,86 @@ window.renderEnrolledCourses = renderEnrolledCourses;
             <div class="profile-tab-panel ${activeTab === 'courses' ? 'active' : ''}" id="profile-tab-courses">
                 ${renderProfileCoursesTab(enrolledCourses)}
             </div>
+
+            ${adminMode ? `
+            <div class="profile-tab-panel ${activeTab === 'proyectos_privados' ? 'active' : ''}" id="profile-tab-proyectos_privados">
+                <div style="background:linear-gradient(135deg, rgba(245,158,11,0.08), rgba(15,23,42,0.8)); border:1px solid rgba(245,158,11,0.35); border-radius:14px; padding:1.25rem; margin-bottom:1.25rem;">
+                    <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem;">
+                        <span class="unlocked-tag admin-badge">👑 Acceso Exclusivo Docente</span>
+                        <span style="font-size:0.75rem; color:#facc15; font-weight:700;">Mg. Manuel Alejandro Obando</span>
+                    </div>
+                    <p style="font-size:0.85rem; color:var(--text-muted); margin:0;">
+                        Estos proyectos y monitores ejecutivos están protegidos y ocultos para los visitantes generales. Solo son accesibles desde este perfil docente o desde el Panel de Administración.
+                    </p>
+                </div>
+                <div class="saved-items-grid">
+                    <div class="saved-card" style="border-left:3px solid #22d3ee;">
+                        <div>
+                            <span class="card-tag" style="background:rgba(34,211,238,0.15); color:#22d3ee; font-size:0.7rem;">Deporte & Telemetría AI</span>
+                            <h4 style="font-size:1.05rem; margin:0.35rem 0; color:#fff;">⌚ Garmin AI Pro · ManuSquash</h4>
+                            <p style="font-size:0.8rem; color:var(--text-muted); line-height:1.4; margin-bottom:0.75rem;">
+                                Telemetría biométrica, entrenamientos, carga aguda/crónica y análisis de rendimiento deportivo personal.
+                            </p>
+                        </div>
+                        <div style="display:flex; gap:0.5rem; margin-top:auto;">
+                            <a href="/garmin/" target="_blank" class="btn btn-primary" style="flex:1; justify-content:center; background:linear-gradient(135deg, #0284c7, #22d3ee); color:#000; font-weight:700;">Abrir Garmin Pro ⌚</a>
+                        </div>
+                    </div>
+
+                    <div class="saved-card" style="border-left:3px solid #fbbf24;">
+                        <div>
+                            <span class="card-tag" style="background:rgba(245,158,11,0.15); color:#fbbf24; font-size:0.7rem;">Trading & Cuantitativa</span>
+                            <h4 style="font-size:1.05rem; margin:0.35rem 0; color:#fff;">📈 TrueTrading Gold · Monitor MT5</h4>
+                            <p style="font-size:0.8rem; color:var(--text-muted); line-height:1.4; margin-bottom:0.75rem;">
+                                Monitoreo en vivo de cuentas FTMO 100k y VT Markets Cent conectadas vía túnel seguro Cloudflare al VPS.
+                            </p>
+                        </div>
+                        <div style="display:flex; gap:0.5rem; margin-top:auto;">
+                            <a href="/truetrading/" target="_blank" class="btn btn-primary" style="flex:1; justify-content:center; background:linear-gradient(135deg, #d97706, #fbbf24); color:#000; font-weight:700;">Abrir TrueTrading 📈</a>
+                        </div>
+                    </div>
+
+                    <div class="saved-card" style="border-left:3px solid #eab308;">
+                        <div>
+                            <span class="card-tag" style="background:rgba(234,179,8,0.15); color:#facc15; font-size:0.7rem;">Estrategia Intradía XAUUSD</span>
+                            <h4 style="font-size:1.05rem; margin:0.35rem 0; color:#fff;">🪙 Oro con Método: Backtest & Simuladores</h4>
+                            <p style="font-size:0.8rem; color:var(--text-muted); line-height:1.4; margin-bottom:0.75rem;">
+                                Suite de 12 capítulos, 21 simuladores, validación walk-forward y modelos Monte Carlo para el oro.
+                            </p>
+                        </div>
+                        <div style="display:flex; gap:0.5rem; margin-top:auto;">
+                            <a href="/material/1_cursos/oro/dist/index.html" target="_blank" class="btn btn-primary" style="flex:1; justify-content:center; background:linear-gradient(135deg, #b45309, #facc15); color:#000; font-weight:700;">Abrir Curso Oro 🪙</a>
+                        </div>
+                    </div>
+
+                    <div class="saved-card" style="border-left:3px solid #c084fc;">
+                        <div>
+                            <span class="card-tag" style="background:rgba(192,132,252,0.15); color:#c084fc; font-size:0.7rem;">Simulación Cuántica</span>
+                            <h4 style="font-size:1.05rem; margin:0.35rem 0; color:#fff;">🔬 Simulador Científico MC hBN</h4>
+                            <p style="font-size:0.8rem; color:var(--text-muted); line-height:1.4; margin-bottom:0.75rem;">
+                                Laboratorio computacional Monte Carlo para monocapas de nitruro de boro hexagonal (hBN).
+                            </p>
+                        </div>
+                        <div style="display:flex; gap:0.5rem; margin-top:auto;">
+                            <a href="/material/1_cursos/hBN-MC/index.html" target="_blank" class="btn btn-secondary" style="flex:1; justify-content:center; border-color:rgba(192,132,252,0.4); color:#c084fc;">Abrir MC hBN 🔬</a>
+                        </div>
+                    </div>
+
+                    <div class="saved-card" style="border-left:3px solid #818cf8;">
+                        <div>
+                            <span class="card-tag" style="background:rgba(129,140,248,0.15); color:#818cf8; font-size:0.7rem;">Control Maestro</span>
+                            <h4 style="font-size:1.05rem; margin:0.35rem 0; color:#fff;">🔐 Panel Docente & Telemetría</h4>
+                            <p style="font-size:0.8rem; color:var(--text-muted); line-height:1.4; margin-bottom:0.75rem;">
+                                Gestión de alumnos, rotación de claves mensuales, telemetría de visitas y control general.
+                            </p>
+                        </div>
+                        <div style="display:flex; gap:0.5rem; margin-top:auto;">
+                            <button onclick="closeStudentProfileModal(); openAdminPanel();" class="btn btn-primary" style="flex:1; justify-content:center; background:linear-gradient(135deg, #4f46e5, #818cf8);">Abrir Panel Docente ⚙️</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            ` : ''}
 
             <div class="profile-tab-panel ${activeTab === 'saved_courses' ? 'active' : ''}" id="profile-tab-saved_courses">
                 ${renderProfileSavedCoursesTab(savedCourseIds)}
@@ -3026,33 +3111,9 @@ window.renderEnrolledCourses = renderEnrolledCourses;
         const adminActive = isAdmin();
         const unlockedList = getUnlockedCourses();
 
-        const navGarminBtn = document.getElementById('nav-garmin-btn');
-        const mobileGarminBtn = document.getElementById('mobile-garmin-btn');
-        const drawerGarminItem = document.getElementById('drawer-garmin-item');
-        const navTradingBtn = document.getElementById('nav-trading-btn');
-        const mobileTradingBtn = document.getElementById('mobile-trading-btn');
-        const drawerTradingItem = document.getElementById('drawer-trading-item');
         const navAdminBtnLabel = document.getElementById('nav-admin-btn-label');
         const mobileAdminBtnLabel = document.getElementById('mobile-admin-btn-label');
 
-        if (navGarminBtn) {
-            navGarminBtn.style.display = adminActive ? 'inline-flex' : 'none';
-        }
-        if (mobileGarminBtn) {
-            mobileGarminBtn.style.display = adminActive ? 'inline-flex' : 'none';
-        }
-        if (drawerGarminItem) {
-            drawerGarminItem.style.display = adminActive ? 'block' : 'none';
-        }
-        if (navTradingBtn) {
-            navTradingBtn.style.display = adminActive ? 'inline-flex' : 'none';
-        }
-        if (mobileTradingBtn) {
-            mobileTradingBtn.style.display = adminActive ? 'inline-flex' : 'none';
-        }
-        if (drawerTradingItem) {
-            drawerTradingItem.style.display = adminActive ? 'block' : 'none';
-        }
         if (navAdminBtnLabel) {
             navAdminBtnLabel.textContent = adminActive ? 'Admin 👑' : 'Docente';
         }
@@ -3497,7 +3558,8 @@ window.renderEnrolledCourses = renderEnrolledCourses;
         if (f === 'materiales') f = 'labs';
         if (f === 'ia') f = 'aplicada';
 
-        const baseCourses = (data.cursos || []).filter(c => !c.oculto);
+        const adminActive = isAdmin();
+        const baseCourses = (data.cursos || []).filter(c => !c.oculto && (!c.privado && !c.esPrivado || adminActive));
         let filtered = f === 'all'
             ? baseCourses
             : baseCourses.filter(c => {
@@ -9529,11 +9591,18 @@ window.renderEnrolledCourses = renderEnrolledCourses;
         }
     } catch (e) {}
 
-    // Adaptar dinámicamente si cambia el tamaño de pantalla
+    // Adaptar dinámicamente si cambia el ancho de pantalla (con debounce para evitar tirones en móviles al scrollear)
+    let _lastWindowWidth = window.innerWidth;
+    let _windowResizeTimer = null;
     window.addEventListener('resize', () => {
-        renderCourses();
-        renderSpotifyChannels();
-        renderPhysicsFacts(currentFactFilter);
+        if (window.innerWidth === _lastWindowWidth) return;
+        _lastWindowWidth = window.innerWidth;
+        clearTimeout(_windowResizeTimer);
+        _windowResizeTimer = setTimeout(() => {
+            renderCourses();
+            renderSpotifyChannels();
+            renderPhysicsFacts(currentFactFilter);
+        }, 150);
     });
 
     // ========================================================
@@ -9833,6 +9902,10 @@ window.renderEnrolledCourses = renderEnrolledCourses;
                 }
             }
         });
+
+        if (typeof window.ensurePhysicsGameStarted === 'function') {
+            window.ensurePhysicsGameStarted();
+        }
 
         updatePageSwitcherTabs(sectionId);
 

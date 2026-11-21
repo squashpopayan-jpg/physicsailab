@@ -3362,19 +3362,81 @@
     window.QuantumSnakeGame = QuantumSnakeGame;
     window.PacCoulombGame = PacCoulombGame;
 
-    // Auto-init when DOM is ready
-    document.addEventListener('DOMContentLoaded', () => {
+    // Inicialización inteligente y ahorro de CPU: Los bucles a 60fps solo se ejecutan
+    // cuando el usuario ingresa visualmente a la sección de juegos.
+    let gameInitialized = false;
+    function ensureGameStarted() {
+        const juegosSec = document.getElementById('juegos');
         const arena = document.getElementById('game-arena-card');
-        if (arena) {
-            window.switchPhysicsGame('cannon');
+        if (!arena) return;
+
+        const isVisible = juegosSec && (juegosSec.classList.contains('active-page-view') || window.getComputedStyle(juegosSec).display !== 'none');
+        if (!isVisible || document.hidden) {
+            if (currentGame === 'cannon' && CannonGame.animId) {
+                cancelAnimationFrame(CannonGame.animId);
+                CannonGame.animId = null;
+            } else if (currentGame === 'orbit' && OrbitGame.animId) {
+                cancelAnimationFrame(OrbitGame.animId);
+                OrbitGame.animId = null;
+            } else if (currentGame === 'circuit' && CircuitGame.animId) {
+                cancelAnimationFrame(CircuitGame.animId);
+                CircuitGame.animId = null;
+            } else if (currentGame === 'snake' && QuantumSnakeGame.animId) {
+                cancelAnimationFrame(QuantumSnakeGame.animId);
+                QuantumSnakeGame.animId = null;
+            } else if (currentGame === 'pacman' && PacCoulombGame.animId) {
+                cancelAnimationFrame(PacCoulombGame.animId);
+                PacCoulombGame.animId = null;
+            }
+            return;
+        }
+
+        if (!gameInitialized) {
+            gameInitialized = true;
+            window.switchPhysicsGame(currentGame || 'cannon');
+        } else {
+            if (currentGame === 'cannon' && !CannonGame.animId) CannonGame.loop();
+            else if (currentGame === 'orbit' && !OrbitGame.animId) OrbitGame.loop();
+            else if (currentGame === 'circuit' && !CircuitGame.animId) CircuitGame.loop();
+            else if (currentGame === 'snake' && !QuantumSnakeGame.animId) QuantumSnakeGame.loop();
+            else if (currentGame === 'pacman' && !PacCoulombGame.animId) PacCoulombGame.loop();
+        }
+    }
+    window.ensurePhysicsGameStarted = ensureGameStarted;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const juegosSec = document.getElementById('juegos');
+        if (juegosSec && window.IntersectionObserver) {
+            const obs = new IntersectionObserver((entries) => {
+                entries.forEach(e => {
+                    ensureGameStarted();
+                });
+            }, { threshold: 0.05 });
+            obs.observe(juegosSec);
+        } else {
+            ensureGameStarted();
         }
     });
 
+    window.addEventListener('hashchange', () => {
+        setTimeout(ensureGameStarted, 100);
+    });
+
+    document.addEventListener('visibilitychange', () => {
+        ensureGameStarted();
+    });
+
+    let _gameResizeTimer = null;
     window.addEventListener('resize', () => {
-        if (currentGame === 'cannon') CannonGame.resize();
-        else if (currentGame === 'orbit') OrbitGame.resize();
-        else if (currentGame === 'circuit') CircuitGame.resize();
-        else if (currentGame === 'snake') QuantumSnakeGame.resize();
-        else if (currentGame === 'pacman') PacCoulombGame.resize();
+        clearTimeout(_gameResizeTimer);
+        _gameResizeTimer = setTimeout(() => {
+            const juegosSec = document.getElementById('juegos');
+            if (juegosSec && window.getComputedStyle(juegosSec).display === 'none') return;
+            if (currentGame === 'cannon') CannonGame.resize();
+            else if (currentGame === 'orbit') OrbitGame.resize();
+            else if (currentGame === 'circuit') CircuitGame.resize();
+            else if (currentGame === 'snake') QuantumSnakeGame.resize();
+            else if (currentGame === 'pacman') PacCoulombGame.resize();
+        }, 120);
     });
 })();
